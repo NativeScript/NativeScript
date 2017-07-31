@@ -45,7 +45,7 @@ export class Frame extends FrameBase {
     constructor() {
         super();
         this._ios = new iOSFrame(this);
-        this.nativeView = this._ios.controller.view;
+        this.nativeViewProtected = this._ios.controller.view;
 
         // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
         let frameRef = new WeakRef(this);
@@ -276,7 +276,7 @@ export class Frame extends FrameBase {
     public requestLayout(): void {
         super.requestLayout();
         // Invalidate our Window so that layout is triggered again.
-        let window = this.nativeView.window;
+        let window = this.nativeViewProtected.window;
         if (window) {
             window.setNeedsLayout();
         }
@@ -364,7 +364,7 @@ export class Frame extends FrameBase {
 
     public remeasureFrame(): void {
         this.requestLayout();
-        let window: UIWindow = this.nativeView.window;
+        let window: UIWindow = this.nativeViewProtected.window;
         if (window) {
             window.layoutIfNeeded();
         }

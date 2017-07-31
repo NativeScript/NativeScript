@@ -34,7 +34,7 @@ const symbolUrl = Symbol("backgroundImageUrl");
 export module ios {
     export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
         const background = view.style.backgroundInternal;
-        const nativeView = <NativeView>view.nativeView;
+        const nativeView = <NativeView>view.nativeViewProtected;
 
         if (nativeView.hasNonUniformBorder) {
             clearNonUniformBorders(nativeView);
@@ -286,7 +286,7 @@ function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor)
         return;
     }
 
-    const nativeView = view.nativeView as UIView;
+    const nativeView = view.nativeViewProtected as UIView;
     const frame = nativeView.frame;
     const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
     const boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;

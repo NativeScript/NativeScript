@@ -42,9 +42,9 @@ export function test_placeholder_creatingView() {
 
     function testAction(views: Array<viewModule.View>) {
         if (isIOS) {
-            TKUnit.assert(p.nativeView instanceof UITextView, "nativeView property should be UITextView. Current value: " + p.nativeView);
+            TKUnit.assert(p.nativeViewProtected instanceof UITextView, "nativeView property should be UITextView. Current value: " + p.nativeViewProtected);
         } else if (isAndroid) {
-            TKUnit.assert(p.nativeView instanceof android.widget.TextView, "Native view should be android.widget.TextView. Current value: " + p.nativeView);
+            TKUnit.assert(p.nativeViewProtected instanceof android.widget.TextView, "Native view should be android.widget.TextView. Current value: " + p.nativeViewProtected);
         }
     };
 

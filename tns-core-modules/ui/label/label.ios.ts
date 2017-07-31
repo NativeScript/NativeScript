@@ -19,18 +19,18 @@ enum FixedSize {
 }
 
 export class Label extends TextBase implements LabelDefinition {
-    nativeView: TNSLabel;
+    nativeViewProtected: TNSLabel;
     private _fixedSize: FixedSize;
 
     constructor() {
         super();
 
-        this.nativeView = TNSLabel.new();
-        this.nativeView.userInteractionEnabled = true;
+        this.nativeViewProtected = TNSLabel.new();
+        this.nativeViewProtected.userInteractionEnabled = true;
     }
 
     get ios(): TNSLabel {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     get textWrap(): boolean {
@@ -56,7 +56,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         if (nativeView) {
             const width = layout.getMeasureSpecSize(widthMeasureSpec);
             const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -85,7 +85,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [whiteSpaceProperty.setNative](value: WhiteSpace) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         switch (value) {
             case "normal":
                 nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
@@ -103,7 +103,7 @@ export class Label extends TextBase implements LabelDefinition {
         if (value instanceof Background) {
             ios.createBackgroundUIColor(this, (color: UIColor) => {
                 const cgColor = color ? color.CGColor : null;
-                this.nativeView.layer.backgroundColor = cgColor;
+                this.nativeViewProtected.layer.backgroundColor = cgColor;
             }, true);
         }
 
@@ -111,7 +111,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [borderTopWidthProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: layout.toDeviceIndependentPixels(this.effectiveBorderTopWidth),
@@ -122,7 +122,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [borderRightWidthProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
@@ -133,7 +133,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [borderBottomWidthProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
@@ -144,7 +144,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [borderLeftWidthProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
@@ -155,7 +155,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [paddingTopProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const padding = nativeView.padding;
         nativeView.padding = {
             top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
@@ -166,7 +166,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [paddingRightProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
@@ -177,7 +177,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [paddingBottomProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
@@ -188,7 +188,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     [paddingLeftProperty.setNative](value: Length) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
@@ -199,4 +199,4 @@ export class Label extends TextBase implements LabelDefinition {
     }
 }
 
-Label.prototype.recycleNativeView = true;
+Label.prototype.recycleNativeView = "auto";

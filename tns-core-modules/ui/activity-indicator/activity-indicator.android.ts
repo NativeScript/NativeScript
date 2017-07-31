@@ -3,7 +3,7 @@
 export * from "./activity-indicator-common";
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-    nativeView: android.widget.ProgressBar;
+    nativeViewProtected: android.widget.ProgressBar;
 
     public createNativeView() {
         const progressBar =  new android.widget.ProgressBar(this._context);
@@ -17,7 +17,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
     [busyProperty.setNative](value: boolean) {
         if (this.visibility === Visibility.VISIBLE) {
-            this.nativeView.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+            this.nativeViewProtected.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
         }
     }
 
@@ -27,13 +27,13 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case Visibility.VISIBLE:
-                this.nativeView.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+                this.nativeViewProtected.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
                 break;
             case Visibility.HIDDEN:
-                this.nativeView.setVisibility(android.view.View.INVISIBLE);
+                this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
                 break;
             case Visibility.COLLAPSE:
-                this.nativeView.setVisibility(android.view.View.GONE);
+                this.nativeViewProtected.setVisibility(android.view.View.GONE);
                 break;
             default: 
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
@@ -45,9 +45,9 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
     [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this.nativeView.getIndeterminateDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeViewProtected.getIndeterminateDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this.nativeView.getIndeterminateDrawable().clearColorFilter();
+            this.nativeViewProtected.getIndeterminateDrawable().clearColorFilter();
         }
     }
 }

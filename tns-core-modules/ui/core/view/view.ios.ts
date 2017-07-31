@@ -22,7 +22,7 @@ const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends ViewCommon {
-    nativeView: UIView;
+    nativeViewProtected: UIView;
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
@@ -113,7 +113,7 @@ export class View extends ViewCommon {
 
     @profile
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const view = this.nativeView;
+        const view = this.nativeViewProtected;
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -163,11 +163,11 @@ export class View extends ViewCommon {
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-        if (!this.nativeView) {
+        if (!this.nativeViewProtected) {
             return;
         }
 
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
 
         let frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
         this._setNativeViewFrame(nativeView, frame);
@@ -187,11 +187,11 @@ export class View extends ViewCommon {
     }
 
     public getLocationInWindow(): Point {
-        if (!this.nativeView || !this.nativeView.window) {
+        if (!this.nativeViewProtected || !this.nativeViewProtected.window) {
             return undefined;
         }
 
-        let pointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
+        let pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
         return {
             x: pointInWindow.x,
             y: pointInWindow.y
@@ -199,12 +199,12 @@ export class View extends ViewCommon {
     }
 
     public getLocationOnScreen(): Point {
-        if (!this.nativeView || !this.nativeView.window) {
+        if (!this.nativeViewProtected || !this.nativeViewProtected.window) {
             return undefined;
         }
 
-        let pointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
-        let pointOnScreen = this.nativeView.window.convertPointToWindow(pointInWindow, null);
+        let pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
+        let pointOnScreen = this.nativeViewProtected.window.convertPointToWindow(pointInWindow, null);
         return {
             x: pointOnScreen.x,
             y: pointOnScreen.y
@@ -212,14 +212,14 @@ export class View extends ViewCommon {
     }
 
     public getLocationRelativeTo(otherView: ViewDefinition): Point {
-        if (!this.nativeView || !this.nativeView.window ||
-            !otherView.nativeView || !otherView.nativeView.window ||
-            this.nativeView.window !== otherView.nativeView.window) {
+        if (!this.nativeViewProtected || !this.nativeViewProtected.window ||
+            !otherView.nativeViewProtected || !otherView.nativeViewProtected.window ||
+            this.nativeViewProtected.window !== otherView.nativeViewProtected.window) {
             return undefined;
         }
 
-        let myPointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
-        let otherPointInWindow = otherView.nativeView.convertPointToView(otherView.nativeView.bounds.origin, null);
+        let myPointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
+        let otherPointInWindow = otherView.nativeViewProtected.convertPointToView(otherView.nativeViewProtected.bounds.origin, null);
         return {  
             x: myPointInWindow.x - otherPointInWindow.x,
             y: myPointInWindow.y - otherPointInWindow.y
@@ -227,7 +227,7 @@ export class View extends ViewCommon {
     }
 
     private _onSizeChanged(): void {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return;
         }
@@ -253,13 +253,13 @@ export class View extends ViewCommon {
         newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
         newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
-        if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
+        if (!CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, newTransform)) {
             let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
-            this.nativeView.transform = newTransform;
-            this._hasTransfrom = this.nativeView && !CGAffineTransformEqualToTransform(this.nativeView.transform, CGAffineTransformIdentity);
+            this.nativeViewProtected.transform = newTransform;
+            this._hasTransfrom = this.nativeViewProtected && !CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, CGAffineTransformIdentity);
             if (!updateSuspended) {
                 CATransaction.commit();
             }
@@ -268,9 +268,9 @@ export class View extends ViewCommon {
 
     public updateOriginPoint(originX: number, originY: number) {
         let newPoint = CGPointMake(originX, originY);
-        this.nativeView.layer.anchorPoint = newPoint;
+        this.nativeViewProtected.layer.anchorPoint = newPoint;
         if (this._cachedFrame) {
-            this._setNativeViewFrame(this.nativeView, this._cachedFrame);
+            this._setNativeViewFrame(this.nativeViewProtected, this._cachedFrame);
         }
     }
 
@@ -290,56 +290,56 @@ export class View extends ViewCommon {
     }
 
     [isEnabledProperty.getDefault](): boolean {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         return nativeView instanceof UIControl ? nativeView.enabled : true;
     }
     [isEnabledProperty.setNative](value: boolean) {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         if (nativeView instanceof UIControl) {
             nativeView.enabled = value;
         }
     }
 
     [originXProperty.getDefault](): number {
-        return this.nativeView.layer.anchorPoint.x;
+        return this.nativeViewProtected.layer.anchorPoint.x;
     }
     [originXProperty.setNative](value: number) {
         this.updateOriginPoint(value, this.originY);
     }
 
     [originYProperty.getDefault](): number {
-        return this.nativeView.layer.anchorPoint.y;
+        return this.nativeViewProtected.layer.anchorPoint.y;
     }
     [originYProperty.setNative](value: number) {
         this.updateOriginPoint(this.originX, value);
     }
 
     [automationTextProperty.getDefault](): string {
-        return this.nativeView.accessibilityLabel;
+        return this.nativeViewProtected.accessibilityLabel;
     }
     [automationTextProperty.setNative](value: string) {
-        this.nativeView.accessibilityIdentifier = value;
-        this.nativeView.accessibilityLabel = value;
+        this.nativeViewProtected.accessibilityIdentifier = value;
+        this.nativeViewProtected.accessibilityLabel = value;
     }
 
     [isUserInteractionEnabledProperty.getDefault](): boolean {
-        return this.nativeView.userInteractionEnabled;
+        return this.nativeViewProtected.userInteractionEnabled;
     }
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        this.nativeView.userInteractionEnabled = value;
+        this.nativeViewProtected.userInteractionEnabled = value;
     }
 
     [visibilityProperty.getDefault](): Visibility {
-        return this.nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
+        return this.nativeViewProtected.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
     }
     [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case Visibility.VISIBLE:
-                this.nativeView.hidden = false;
+                this.nativeViewProtected.hidden = false;
                 break;
             case Visibility.HIDDEN:
             case Visibility.COLLAPSE:
-                this.nativeView.hidden = true;
+                this.nativeViewProtected.hidden = true;
                 break;
             default:
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
@@ -347,10 +347,10 @@ export class View extends ViewCommon {
     }
 
     [opacityProperty.getDefault](): number {
-        return this.nativeView.alpha;
+        return this.nativeViewProtected.alpha;
     }
     [opacityProperty.setNative](value: number) {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
             CATransaction.begin();
@@ -400,11 +400,11 @@ export class View extends ViewCommon {
         return 0;
     }
     [zIndexProperty.setNative](value: number) {
-        this.nativeView.layer.zPosition = value;
+        this.nativeViewProtected.layer.zPosition = value;
     }
 
     [backgroundInternalProperty.getDefault](): UIColor {
-        return this.nativeView.backgroundColor;
+        return this.nativeViewProtected.backgroundColor;
     }
     [backgroundInternalProperty.setNative](value: UIColor | Background) {
         this._nativeBackgroundState = "invalid";
@@ -420,10 +420,10 @@ export class View extends ViewCommon {
         }
 
         if (value instanceof UIColor) {
-            this.nativeView.backgroundColor = value;
+            this.nativeViewProtected.backgroundColor = value;
         } else {
             ios.createBackgroundUIColor(this, (color: UIColor) => {
-                this.nativeView.backgroundColor = color;
+                this.nativeViewProtected.backgroundColor = color;
             });
             this._setNativeClipToBounds();
         }
@@ -437,22 +437,22 @@ export class View extends ViewCommon {
 
     _setNativeClipToBounds() {
         let backgroundInternal = this.style.backgroundInternal;
-        this.nativeView.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
+        this.nativeViewProtected.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
     }
 }
 View.prototype._nativeBackgroundState = "unset";
 
 export class CustomLayoutView extends View {
 
-    nativeView: UIView;
+    nativeViewProtected: UIView;
 
     constructor() {
         super();
-        this.nativeView = UIView.new();
+        this.nativeViewProtected = UIView.new();
     }
 
     get ios(): UIView {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -462,8 +462,8 @@ export class CustomLayoutView extends View {
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
         super._addViewToNativeVisualTree(child, atIndex);
 
-        const parentNativeView = this.nativeView;
-        const childNativeView = child.nativeView;
+        const parentNativeView = this.nativeViewProtected;
+        const childNativeView = child.nativeViewProtected;
 
         if (parentNativeView && childNativeView) {
             if (typeof atIndex !== "number" || atIndex >= parentNativeView.subviews.count) {
@@ -481,8 +481,8 @@ export class CustomLayoutView extends View {
     public _removeViewFromNativeVisualTree(child: View): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (child.nativeView) {
-            child.nativeView.removeFromSuperview();
+        if (child.nativeViewProtected) {
+            child.nativeViewProtected.removeFromSuperview();
         }
     }
 }

@@ -90,12 +90,12 @@ function initializeNativeClasses(): void {
 }
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
-    nativeView: android.widget.TextView;
+    nativeViewProtected: android.widget.TextView;
 
     public setupNativeView(tabIndex: number): void {
         // TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
         // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android
-        const titleTextView = <android.widget.TextView>this.parent.nativeView.getTabWidget().getChildAt(tabIndex).findViewById(TITLE_TEXT_VIEW_ID);
+        const titleTextView = <android.widget.TextView>this.parent.nativeViewProtected.getTabWidget().getChildAt(tabIndex).findViewById(TITLE_TEXT_VIEW_ID);
 
         this.setNativeView(titleTextView);
         if (titleTextView) {
@@ -107,7 +107,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
     private titleDirty: boolean;
     public _update(): void {
-        const tv = this.nativeView;
+        const tv = this.nativeViewProtected;
         if (tv) {
             let title = this.title;
             title = (title === null || title === undefined) ? "" : title;
@@ -119,37 +119,37 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
     }
 
     [colorProperty.getDefault](): number {
-        return this.nativeView.getCurrentTextColor();
+        return this.nativeViewProtected.getCurrentTextColor();
     }
     [colorProperty.setNative](value: Color | number) {
         const color = value instanceof Color ? value.android : value;
-        this.nativeView.setTextColor(color);
+        this.nativeViewProtected.setTextColor(color);
     }
 
     [fontSizeProperty.getDefault](): { nativeSize: number } {
-        return { nativeSize: this.nativeView.getTextSize() };
+        return { nativeSize: this.nativeViewProtected.getTextSize() };
     }
     [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (typeof value === "number") {
-            this.nativeView.setTextSize(value);
+            this.nativeViewProtected.setTextSize(value);
         } else {
-            this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+            this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
         }
     }
 
     [fontInternalProperty.getDefault](): android.graphics.Typeface {
-        return this.nativeView.getTypeface();
+        return this.nativeViewProtected.getTypeface();
     }
     [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
-        this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+        this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
     [selectedBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {
-        const viewGroup = <android.view.ViewGroup>this.nativeView.getParent();
+        const viewGroup = <android.view.ViewGroup>this.nativeViewProtected.getParent();
         return viewGroup.getBackground().getConstantState();
     }
     [selectedBackgroundColorProperty.setNative](value: Color | android.graphics.drawable.Drawable.ConstantState) {
-        const viewGroup = <android.view.ViewGroup>this.nativeView.getParent();
+        const viewGroup = <android.view.ViewGroup>this.nativeViewProtected.getParent();
         if (value instanceof Color) {
             const color = value.android;
             const backgroundDrawable = viewGroup.getBackground();
@@ -174,7 +174,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 export class SegmentedBar extends SegmentedBarBase {
-    nativeView: android.widget.TabHost;
+    nativeViewProtected: android.widget.TabHost;
     private _tabContentFactory: android.widget.TabHost.TabContentFactory;
     private _addingTab: boolean;
 
@@ -211,19 +211,19 @@ export class SegmentedBar extends SegmentedBarBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = this;
         this._tabContentFactory = this._tabContentFactory || new TabContentFactory(this);
     }
 
     public disposeNativeView() {
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = null;
         super.disposeNativeView();
     }
 
     private insertTab(tabItem: SegmentedBarItem, index: number): void {
-        const tabHost = this.nativeView;
+        const tabHost = this.nativeViewProtected;
         const tab = tabHost.newTabSpec(index + "");
         tab.setIndicator(tabItem.title + "");
         tab.setContent(this._tabContentFactory);
@@ -238,14 +238,14 @@ export class SegmentedBar extends SegmentedBarBase {
         return -1;
     }
     [selectedIndexProperty.setNative](value: number) {
-        this.nativeView.setCurrentTab(value);
+        this.nativeViewProtected.setCurrentTab(value);
     }
 
     [itemsProperty.getDefault](): SegmentedBarItem[] {
         return null;
     }
     [itemsProperty.setNative](value: SegmentedBarItem[]) {
-        this.nativeView.clearAllTabs();
+        this.nativeViewProtected.clearAllTabs();
 
         const newItems = value;
         if (newItems) {

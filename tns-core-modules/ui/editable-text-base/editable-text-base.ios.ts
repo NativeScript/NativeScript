@@ -7,14 +7,14 @@
 export * from "./editable-text-base-common";
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
-    public nativeView: UITextField | UITextView;
+    public nativeViewProtected: UITextField | UITextView;
     public dismissSoftInput() {
-        this.nativeView.resignFirstResponder();
+        this.nativeViewProtected.resignFirstResponder();
         this.notify({ eventName: EditableTextBase.blurEvent, object: this });
     }
 
     [keyboardTypeProperty.getDefault](): "datetime"| "phone" | "number" | "url" | "email" | string {
-        let keyboardType = this.nativeView.keyboardType;
+        let keyboardType = this.nativeViewProtected.keyboardType;
         switch (keyboardType) {
             case UIKeyboardType.NumbersAndPunctuation:
                 return "number";
@@ -65,11 +65,11 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
         }
 
-        this.nativeView.keyboardType = newKeyboardType;
+        this.nativeViewProtected.keyboardType = newKeyboardType;
     }
 
     [returnKeyTypeProperty.getDefault](): "done" | "next" | "go" | "search" | "send" | string {
-        let returnKeyType = this.nativeView.returnKeyType;
+        let returnKeyType = this.nativeViewProtected.returnKeyType;
         switch (returnKeyType) {
             case UIReturnKeyType.Done:
                 return "done";
@@ -118,11 +118,11 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
         }
 
-        this.nativeView.returnKeyType = newValue;
+        this.nativeViewProtected.returnKeyType = newValue;
     }
 
     [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allcharacters" {
-        let autocapitalizationType = this.nativeView.autocapitalizationType;
+        let autocapitalizationType = this.nativeViewProtected.autocapitalizationType;
         switch (autocapitalizationType) {
             case UITextAutocapitalizationType.None:
                 return "none";
@@ -160,11 +160,11 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
         }
 
-        this.nativeView.autocapitalizationType = newValue;
+        this.nativeViewProtected.autocapitalizationType = newValue;
     }
 
     [autocorrectProperty.getDefault](): boolean | number {
-        let autocorrectionType = this.nativeView.autocorrectionType;
+        let autocorrectionType = this.nativeViewProtected.autocorrectionType;
         switch (autocorrectionType) {
             case UITextAutocorrectionType.Yes:
                 return true;
@@ -184,7 +184,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             newValue = UITextAutocorrectionType.No;
         }
 
-        this.nativeView.autocorrectionType = newValue;
+        this.nativeViewProtected.autocorrectionType = newValue;
     }
 }
 

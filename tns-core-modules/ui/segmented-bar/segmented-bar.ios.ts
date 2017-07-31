@@ -26,7 +26,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
     constructor() {
         super();
-        this.nativeView = this._ios = UISegmentedControl.new();
+        this.nativeViewProtected = this._ios = UISegmentedControl.new();
 
         this._selectionHandler = SelectionHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.ValueChanged);

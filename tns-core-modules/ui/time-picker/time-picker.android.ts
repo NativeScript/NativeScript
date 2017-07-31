@@ -39,7 +39,7 @@ function initializeTimeChangedListener(): void {
 let apiLevel: number;
 
 export class TimePicker extends TimePickerBase {
-    nativeView: android.widget.TimePicker;
+    nativeViewProtected: android.widget.TimePicker;
     updatingNativeValue: boolean;
 
     public createNativeView() {
@@ -54,7 +54,7 @@ export class TimePicker extends TimePickerBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = this;
 
         const calendar = (<any>nativeView).calendar;
@@ -71,9 +71,9 @@ export class TimePicker extends TimePickerBase {
         this.updatingNativeValue = true;
         try {
             if (apiLevel >= 23) {
-                (<any>this.nativeView).setMinute(value);
+                (<any>this.nativeViewProtected).setMinute(value);
             } else {
-                this.nativeView.setCurrentMinute(new java.lang.Integer(value));
+                this.nativeViewProtected.setCurrentMinute(new java.lang.Integer(value));
             }
         } finally {
             this.updatingNativeValue = false;
@@ -84,9 +84,9 @@ export class TimePicker extends TimePickerBase {
         this.updatingNativeValue = true;
         try {
             if (apiLevel >= 23) {
-                (<any>this.nativeView).setHour(value);
+                (<any>this.nativeViewProtected).setHour(value);
             } else {
-                this.nativeView.setCurrentHour(new java.lang.Integer(value));
+                this.nativeViewProtected.setCurrentHour(new java.lang.Integer(value));
             }
         } finally {
             this.updatingNativeValue = false;

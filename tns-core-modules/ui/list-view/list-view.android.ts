@@ -43,7 +43,7 @@ function initializeItemClickListener(): void {
 }
 
 export class ListView extends ListViewBase {
-    nativeView: android.widget.ListView;
+    nativeViewProtected: android.widget.ListView;
 
     private _androidViewId: number = -1;
 
@@ -77,7 +77,7 @@ export class ListView extends ListViewBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         (<any>nativeView).itemClickListener.owner = this;
         const adapter = (<any>nativeView).adapter;
         adapter.owner = this;
@@ -89,7 +89,7 @@ export class ListView extends ListViewBase {
     }
 
     public disposeNativeView() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         nativeView.setAdapter(null);
         (<any>nativeView).itemClickListener.owner = null;
         (<any>nativeView).adapter.owner = null;
@@ -98,7 +98,7 @@ export class ListView extends ListViewBase {
     }
 
     public refresh() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView || !nativeView.getAdapter()) {
             return;
         }
@@ -114,7 +114,7 @@ export class ListView extends ListViewBase {
     }
 
     public scrollToIndex(index: number) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             nativeView.setSelection(index);
         }
@@ -166,14 +166,14 @@ export class ListView extends ListViewBase {
     }
 
     [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         return {
             dividerHeight: nativeView.getDividerHeight(),
             divider: nativeView.getDivider()
         };
     }
     [separatorColorProperty.setNative](value: Color | { dividerHeight: number, divider: android.graphics.drawable.Drawable }) {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         if (value instanceof Color) {
             nativeView.setDivider(new android.graphics.drawable.ColorDrawable(value.android));
             nativeView.setDividerHeight(1);
@@ -192,7 +192,7 @@ export class ListView extends ListViewBase {
             this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
         }
 
-        this.nativeView.setAdapter(new ListViewAdapterClass(this));
+        this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
         this.refresh();
     }
 }
@@ -293,13 +293,13 @@ function ensureListViewAdapterClass() {
                     if (args.view instanceof LayoutBase &&
                         !(args.view instanceof ProxyViewContainer)) {
                         this.owner._addView(args.view);
-                        convertView = args.view.nativeView;
+                        convertView = args.view.nativeViewProtected;
                     } else {
                         let sp = new StackLayout();
                         sp.addChild(args.view);
                         this.owner._addView(sp);
 
-                        convertView = sp.nativeView;
+                        convertView = sp.nativeViewProtected;
                     }
                 }
 

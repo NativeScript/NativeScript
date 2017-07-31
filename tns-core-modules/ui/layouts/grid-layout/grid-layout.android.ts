@@ -7,7 +7,7 @@ export * from "./grid-layout-common";
 
 function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutParams, value: T) => void) {
     return function(this: View, value: T) {
-        const nativeView: android.view.View = this.nativeView;
+        const nativeView: android.view.View = this.nativeViewProtected;
         const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
             setter(lp, value);
@@ -50,7 +50,7 @@ export class ItemSpec extends ItemSpecBase {
 }
 
 export class GridLayout extends GridLayoutBase {
-    nativeView: org.nativescript.widgets.GridLayout;
+    nativeViewProtected: org.nativescript.widgets.GridLayout;
 
     public createNativeView() {
         return new org.nativescript.widgets.GridLayout(this._context);
@@ -79,32 +79,32 @@ export class GridLayout extends GridLayoutBase {
     }
 
     public _onRowAdded(itemSpec: ItemSpec) {
-        if (this.nativeView) {
+        if (this.nativeViewProtected) {
             const nativeSpec = createNativeSpec(itemSpec);
             itemSpec.nativeSpec = nativeSpec;
-            this.nativeView.addRow(nativeSpec);
+            this.nativeViewProtected.addRow(nativeSpec);
         }
     }
 
     public _onColumnAdded(itemSpec: ItemSpec) {
-        if (this.nativeView) {
+        if (this.nativeViewProtected) {
             const nativeSpec = createNativeSpec(itemSpec);
             itemSpec.nativeSpec = nativeSpec;
-            this.nativeView.addColumn(nativeSpec);
+            this.nativeViewProtected.addColumn(nativeSpec);
         }
     }
 
     public _onRowRemoved(itemSpec: ItemSpec, index: number) {
         itemSpec.nativeSpec = null;
-        if (this.nativeView) {
-            this.nativeView.removeRowAt(index);
+        if (this.nativeViewProtected) {
+            this.nativeViewProtected.removeRowAt(index);
         }
     }
 
     public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
         itemSpec.nativeSpec = null;
-        if (this.nativeView) {
-            this.nativeView.removeColumnAt(index);
+        if (this.nativeViewProtected) {
+            this.nativeViewProtected.removeColumnAt(index);
         }
     }
 

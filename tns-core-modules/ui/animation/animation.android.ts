@@ -209,7 +209,7 @@ export class Animation extends AnimationBase {
     }
 
     private _createAnimators(propertyAnimation: PropertyAnimation): void {
-        if (!propertyAnimation.target.nativeView) {
+        if (!propertyAnimation.target.nativeViewProtected) {
             return;
         }
 
@@ -232,7 +232,7 @@ export class Animation extends AnimationBase {
         this._target = propertyAnimation.target;
 
         let nativeArray;
-        const nativeView = <android.view.View>propertyAnimation.target.nativeView;
+        const nativeView = <android.view.View>propertyAnimation.target.nativeViewProtected;
         const animators = new Array<android.animation.Animator>();
         const propertyUpdateCallbacks = new Array<Function>();
         const propertyResetCallbacks = new Array<Function>();
@@ -273,7 +273,7 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[opacityProperty.keyframe] = originalValue1;
                     }
-                    if (propertyAnimation.target.nativeView) {
+                    if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[opacityProperty.setNative](propertyAnimation.target.style.opacity);
                     }
                 }));
@@ -306,7 +306,7 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
                     }
                     
-                    if (propertyAnimation.target.nativeView && propertyAnimation.target[backgroundColorProperty.setNative]) {
+                    if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[backgroundColorProperty.setNative]) {
                         propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
                     }
                 }));
@@ -346,7 +346,7 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[translateYProperty.keyframe] = originalValue2;
                     }
 
-                    if (propertyAnimation.target.nativeView) {
+                    if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[translateXProperty.setNative](propertyAnimation.target.style.translateX);
                         propertyAnimation.target[translateYProperty.setNative](propertyAnimation.target.style.translateY);
                     }
@@ -391,7 +391,7 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[scaleYProperty.keyframe] = originalValue2;
                     }
 
-                    if (propertyAnimation.target.nativeView) {
+                    if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[scaleXProperty.setNative](propertyAnimation.target.style.scaleX);
                         propertyAnimation.target[scaleYProperty.setNative](propertyAnimation.target.style.scaleY);
                     }
@@ -419,7 +419,7 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
                     }
                     
-                    if (propertyAnimation.target.nativeView) {
+                    if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
                     }
                 }));
@@ -468,7 +468,7 @@ export class Animation extends AnimationBase {
 
     private _enableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeView;
+            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeViewProtected;
             if (cache) {
                 let layerType = cache.getLayerType();
                 if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
@@ -481,7 +481,7 @@ export class Animation extends AnimationBase {
 
     private _disableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeView;
+            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeViewProtected;
             if (cache && cache.layerType !== undefined) {
                 cache.setLayerType(cache.layerType, null);
                 cache.layerType = undefined;

@@ -8,7 +8,7 @@ export * from "./progress-common";
 const R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL = 0x01010078;
 
 export class Progress extends ProgressBase {
-    nativeView: android.widget.ProgressBar;
+    nativeViewProtected: android.widget.ProgressBar;
 
     public createNativeView() {
         return new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
@@ -18,21 +18,21 @@ export class Progress extends ProgressBase {
         return 0;
     }
     [valueProperty.setNative](value: number) {
-        this.nativeView.setProgress(value);
+        this.nativeViewProtected.setProgress(value);
     }
 
     [maxValueProperty.getDefault](): number {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this.nativeView.setMax(value);
+        this.nativeViewProtected.setMax(value);
     }
 
     [colorProperty.getDefault](): android.graphics.drawable.Drawable {
         return null;
     }
     [colorProperty.setNative](value: Color) {
-        let progressDrawable = this.nativeView.getProgressDrawable();
+        let progressDrawable = this.nativeViewProtected.getProgressDrawable();
         if (!progressDrawable) {
             return;
         }
@@ -48,7 +48,7 @@ export class Progress extends ProgressBase {
         return null;
     }
     [backgroundColorProperty.setNative](value: Color) {
-        let progressDrawable = this.nativeView.getProgressDrawable();
+        let progressDrawable = this.nativeViewProtected.getProgressDrawable();
         if (!progressDrawable) {
             return;
         }

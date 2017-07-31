@@ -15,7 +15,7 @@ export function checkNativeItemsTextColor(bar: segmentedBarModule.SegmentedBar):
     // }
 
     for (let i = 0, itemsLength = bar.items.length; i < itemsLength; i++) {
-        let textView = <android.widget.TextView>bar.items[0].nativeView;
+        let textView = <android.widget.TextView>bar.items[0].nativeViewProtected;
         isValid = bar.color && bar.color.android === textView.getCurrentTextColor();
     }
 

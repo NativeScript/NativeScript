@@ -3,28 +3,28 @@ import { ActivityIndicatorBase, busyProperty, colorProperty, Color } from "./act
 export * from "./activity-indicator-common";
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-    nativeView: UIActivityIndicatorView;
+    nativeViewProtected: UIActivityIndicatorView;
 
     constructor() {
         super();
-        this.nativeView = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
-        this.nativeView.hidesWhenStopped = true;
+        this.nativeViewProtected = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
+        this.nativeViewProtected.hidesWhenStopped = true;
     }
 
     get ios(): UIActivityIndicatorView {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     [busyProperty.getDefault](): boolean {
-        if ((<any>this.nativeView).isAnimating) {
-            return (<any>this.nativeView).isAnimating();
+        if ((<any>this.nativeViewProtected).isAnimating) {
+            return (<any>this.nativeViewProtected).isAnimating();
         }
         else {
-            return this.nativeView.animating;
+            return this.nativeViewProtected.animating;
         }
     }
     [busyProperty.setNative](value: boolean) {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         if (value) {
             nativeView.startAnimating();
         } else {
@@ -37,9 +37,9 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this.nativeView.color;
+        return this.nativeViewProtected.color;
     }
     [colorProperty.setNative](value: UIColor | Color) {
-        this.nativeView.color = value instanceof Color ? value.ios : value;
+        this.nativeViewProtected.color = value instanceof Color ? value.ios : value;
     }
 }

@@ -3,7 +3,7 @@
 export * from "./dock-layout-common";
 
 View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "top" | "right" | "bottom") {
-    const nativeView: android.view.View = this.nativeView;
+    const nativeView: android.view.View = this.nativeViewProtected;
     const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
     if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
         switch (value) {
@@ -32,7 +32,7 @@ View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "t
 }
 
 export class DockLayout extends DockLayoutBase {
-    nativeView: org.nativescript.widgets.DockLayout;
+    nativeViewProtected: org.nativescript.widgets.DockLayout;
 
     public createNativeView() {
         return new org.nativescript.widgets.DockLayout(this._context);
@@ -42,6 +42,6 @@ export class DockLayout extends DockLayoutBase {
         return true;
     }
     [stretchLastChildProperty.setNative](value: boolean) {
-        this.nativeView.setStretchLastChild(value);
+        this.nativeViewProtected.setStretchLastChild(value);
     }
 }

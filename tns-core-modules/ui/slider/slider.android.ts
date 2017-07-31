@@ -46,7 +46,7 @@ function initializeSeekBarChangeListener(): void {
 
 export class Slider extends SliderBase {
     _supressNativeValue: boolean;
-    nativeView: android.widget.SeekBar;
+    nativeViewProtected: android.widget.SeekBar;
 
     public createNativeView() {
         initializeSeekBarChangeListener();
@@ -59,19 +59,19 @@ export class Slider extends SliderBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = this;
     }
 
     public disposeNativeView() {
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = null;
         super.disposeNativeView();
     }
 
     public resetNativeView(): void {
         super.resetNativeView();
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         nativeView.setMax(100);
         nativeView.setProgress(0);
         nativeView.setKeyProgressIncrement(1);
@@ -84,7 +84,7 @@ export class Slider extends SliderBase {
      */
     private setNativeValuesSilently(newValue: number, newMaxValue: number) {
         this._supressNativeValue = true;
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         try {
             nativeView.setMax(newMaxValue);
             nativeView.setProgress(newValue);
@@ -117,9 +117,9 @@ export class Slider extends SliderBase {
     }
     [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this.nativeView.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeViewProtected.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this.nativeView.getThumb().clearColorFilter();
+            this.nativeViewProtected.getThumb().clearColorFilter();
         }
     }
 
@@ -128,9 +128,9 @@ export class Slider extends SliderBase {
     }
     [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this.nativeView.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeViewProtected.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this.nativeView.getProgressDrawable().clearColorFilter();
+            this.nativeViewProtected.getProgressDrawable().clearColorFilter();
         }
     }
 

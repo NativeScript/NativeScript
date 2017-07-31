@@ -28,45 +28,45 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 }
 
 export class ScrollView extends ScrollViewBase {
-    public nativeView: UIScrollView;
+    public nativeViewProtected: UIScrollView;
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
     private _delegate: UIScrollViewDelegateImpl;
 
     constructor() {
         super();
-        this.nativeView = UIScrollView.new();
+        this.nativeViewProtected = UIScrollView.new();
         this._setNativeClipToBounds();
     }
 
     _setNativeClipToBounds() {
         // Always set clipsToBounds for scroll-view
-        this.nativeView.clipsToBounds = true;
+        this.nativeViewProtected.clipsToBounds = true;
     }
 
     protected attachNative() {
         this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
-        this.nativeView.delegate = this._delegate;
+        this.nativeViewProtected.delegate = this._delegate;
     }
 
     protected dettachNative() {
-        this.nativeView.delegate = null;
+        this.nativeViewProtected.delegate = null;
     }
 
     protected updateScrollBarVisibility(value) {
         if (this.orientation === "horizontal") {
-            this.nativeView.showsHorizontalScrollIndicator = value;
+            this.nativeViewProtected.showsHorizontalScrollIndicator = value;
         } else {
-            this.nativeView.showsVerticalScrollIndicator = value;
+            this.nativeViewProtected.showsVerticalScrollIndicator = value;
         } 
     }
 
     get horizontalOffset(): number {
-        return this.nativeView.contentOffset.x;
+        return this.nativeViewProtected.contentOffset.x;
     }
 
     get verticalOffset(): number {
-        return this.nativeView.contentOffset.y;
+        return this.nativeViewProtected.contentOffset.y;
     }
 
     get scrollableWidth(): number {
@@ -74,7 +74,7 @@ export class ScrollView extends ScrollViewBase {
             return 0;
         }
 
-        return Math.max(0, this.nativeView.contentSize.width - this.nativeView.bounds.size.width);
+        return Math.max(0, this.nativeViewProtected.contentSize.width - this.nativeViewProtected.bounds.size.width);
     }
 
     get scrollableHeight(): number {
@@ -82,7 +82,7 @@ export class ScrollView extends ScrollViewBase {
             return 0;
         }
 
-        return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height);
+        return Math.max(0, this.nativeViewProtected.contentSize.height - this.nativeViewProtected.bounds.size.height);
     }
 
     [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
@@ -93,20 +93,20 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get ios(): UIView {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
         if (this.orientation === "vertical") {
-            const bounds = this.nativeView.bounds.size;
-            this.nativeView.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
+            const bounds = this.nativeViewProtected.bounds.size;
+            this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
         }
     }
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
         if (this.orientation === "horizontal") {
-            const bounds = this.nativeView.bounds.size;
-            this.nativeView.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
+            const bounds = this.nativeViewProtected.bounds.size;
+            this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
         }
     }
 
@@ -135,7 +135,7 @@ export class ScrollView extends ScrollViewBase {
 
             let w = layout.toDeviceIndependentPixels(childSize.measuredWidth);
             let h = layout.toDeviceIndependentPixels(childSize.measuredHeight);
-            this.nativeView.contentSize = CGSizeMake(w, h);
+            this.nativeViewProtected.contentSize = CGSizeMake(w, h);
 
             this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth * density);
             this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight * density);
@@ -165,4 +165,4 @@ export class ScrollView extends ScrollViewBase {
     }
 }
 
-ScrollView.prototype.recycleNativeView = true;
+ScrollView.prototype.recycleNativeView = "auto";

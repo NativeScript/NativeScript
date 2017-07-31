@@ -86,7 +86,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     constructor() {
         super();
 
-        this.nativeView = this._ios = UITextView.new();
+        this.nativeViewProtected = this._ios = UITextView.new();
         if (!this._ios.font) {
             this._ios.font = UIFont.systemFontOfSize(12);
         }
@@ -123,7 +123,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             this.showHint(hint);
         } else {
             this._isShowingHint = false;
-            this.nativeView.text = '';
+            this.nativeViewProtected.text = '';
         }
     }
 
@@ -133,28 +133,28 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             const color = this.style.color;
 
             if (placeholderColor) {
-                this.nativeView.textColor = placeholderColor.ios;
+                this.nativeViewProtected.textColor = placeholderColor.ios;
             } else if (color) {
                 // Use semi-transparent version of color for back-compatibility 
-                this.nativeView.textColor = color.ios.colorWithAlphaComponent(0.22);
+                this.nativeViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
-                this.nativeView.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
+                this.nativeViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
             }
         } else {
             const color = this.style.color;
 
             if (color) {
-                this.nativeView.textColor = color.ios;
-                this.nativeView.tintColor = color.ios;
+                this.nativeViewProtected.textColor = color.ios;
+                this.nativeViewProtected.tintColor = color.ios;
             } else {
-                this.nativeView.textColor = null;
-                this.nativeView.tintColor = null;
+                this.nativeViewProtected.textColor = null;
+                this.nativeViewProtected.tintColor = null;
             }
         }
     }
 
     public showHint(hint: string) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
 
         this._isShowingHint = true;
         this._refreshColor();
@@ -184,10 +184,10 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     [editableProperty.getDefault](): boolean {
-        return this.nativeView.editable;
+        return this.nativeViewProtected.editable;
     }
     [editableProperty.setNative](value: boolean) {
-        this.nativeView.editable = value;
+        this.nativeViewProtected.editable = value;
     }
 
     [colorProperty.setNative](color: Color) {
@@ -199,98 +199,98 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     [borderTopWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.top,
+            value: this.nativeViewProtected.textContainerInset.top,
             unit: "px"
         };
     }
     [borderTopWidthProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
-        this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
+        this.nativeViewProtected.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
     [borderRightWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.right,
+            value: this.nativeViewProtected.textContainerInset.right,
             unit: "px"
         };
     }
     [borderRightWidthProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
-        this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
+        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
     [borderBottomWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.bottom,
+            value: this.nativeViewProtected.textContainerInset.bottom,
             unit: "px"
         };
     }
     [borderBottomWidthProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
-        this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
     [borderLeftWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.left,
+            value: this.nativeViewProtected.textContainerInset.left,
             unit: "px"
         };
     }
     [borderLeftWidthProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
-        this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+        this.nativeViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
     [paddingTopProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.top,
+            value: this.nativeViewProtected.textContainerInset.top,
             unit: "px"
         };
     }
     [paddingTopProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
-        this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
+        this.nativeViewProtected.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
     [paddingRightProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.right,
+            value: this.nativeViewProtected.textContainerInset.right,
             unit: "px"
         };
     }
     [paddingRightProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
-        this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
+        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
     [paddingBottomProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.bottom,
+            value: this.nativeViewProtected.textContainerInset.bottom,
             unit: "px"
         };
     }
     [paddingBottomProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
-        this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
     [paddingLeftProperty.getDefault](): Length {
         return {
-            value: this.nativeView.textContainerInset.left,
+            value: this.nativeViewProtected.textContainerInset.left,
             unit: "px"
         };
     }
     [paddingLeftProperty.setNative](value: Length) {
-        let inset = this.nativeView.textContainerInset;
+        let inset = this.nativeViewProtected.textContainerInset;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
-        this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+        this.nativeViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 }
 
-TextView.prototype.recycleNativeView = true;
+TextView.prototype.recycleNativeView = "auto";

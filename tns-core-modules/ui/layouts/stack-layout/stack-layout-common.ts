@@ -7,7 +7,7 @@ export class StackLayoutBase extends LayoutBase implements StackLayoutDefinition
     public orientation: Orientation;
 }
 
-StackLayoutBase.prototype.recycleNativeView = true;
+StackLayoutBase.prototype.recycleNativeView = "auto";
 
 const converter = makeParser<Orientation>(makeValidator("horizontal", "vertical"));
 

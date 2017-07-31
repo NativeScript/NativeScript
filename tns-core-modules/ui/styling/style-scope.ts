@@ -130,7 +130,7 @@ export class CssState {
     }
 
     public playPendingKeyframeAnimations() {
-        if (this._pendingKeyframeAnimations && this.view.nativeView) {
+        if (this._pendingKeyframeAnimations && this.view.nativeViewProtected) {
             this._pendingKeyframeAnimations.forEach(s => this.playKeyframeAnimationsFromRuleSet(s.ruleset));
             this._pendingKeyframeAnimations = null;
         }

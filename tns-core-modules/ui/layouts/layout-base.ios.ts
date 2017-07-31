@@ -3,7 +3,7 @@
 export * from "./layout-base-common";
 
 export class LayoutBase extends LayoutBaseCommon {
-    nativeView: UIView;
+    nativeViewProtected: UIView;
     
     [clipToBoundsProperty.getDefault](): boolean {
         return false;
@@ -14,7 +14,7 @@ export class LayoutBase extends LayoutBaseCommon {
 
     _setNativeClipToBounds() {
         if (this.clipToBounds) {
-            this.nativeView.clipsToBounds = true;
+            this.nativeViewProtected.clipsToBounds = true;
         } else {
             super._setNativeClipToBounds();
         }

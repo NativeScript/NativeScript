@@ -126,14 +126,13 @@ function putNativeView(context: Object, view: ViewBase): void {
         list = [];
         typeMap.set(typeName, list);
     }
-    list.push(new WeakRef(view.nativeView));
+    list.push(new WeakRef(view.nativeViewProtected));
 }
 
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
-    private _recycleNativeView: boolean;
     private _iosView: Object;
     private _androidView: Object;
     private _style: Style;
@@ -142,10 +141,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _visualState: string;
     private _inlineStyleSelector: SelectorCore;
     private __nativeView: any;
+    private _disableNativeViewRecycling: boolean;
     public domNode: DOMNode;
 
+    public recycleNativeView: "always" | "never" | "auto";
     public bindingContext: any;
-    public nativeView: any;
+    public nativeViewProtected: any;
     public parent: ViewBase;
     public isCollapsed; // Default(false) set in prototype
 
@@ -211,17 +212,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._style = new Style(this);
     }
 
+    get nativeView(): any {
+        this._disableNativeViewRecycling = true;
+        return this.nativeViewProtected;
+    }
+
     // TODO: Use Type.prototype.typeName instead.
     get typeName(): string {
         return types.getClass(this);
-    }
-
-    get recycleNativeView(): boolean {
-        return this._recycleNativeView;
-    }
-
-    set recycleNativeView(value: boolean) {
-        this._recycleNativeView = typeof value === "boolean" ? value : booleanConverter(value);
     }
 
     get style(): Style {
@@ -232,10 +230,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     get android(): any {
+        this._disableNativeViewRecycling = true;
         return this._androidView;
     }
 
     get ios(): any {
+        // this._disableNativeViewRecycling = true;
         return this._iosView;
     }
 
@@ -638,7 +638,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (this._styleScope === view._styleScope) {
             view._setStyleScope(null);
         }
-        
+
         if (view.isLoaded) {
             view.onUnloaded();
         }
@@ -670,16 +670,20 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     private resetNativeViewInternal(): void {
-        const nativeView = this.nativeView;
-        if (nativeView && this._recycleNativeView && isAndroid) {
-            resetNativeView(this);
-            if (this._isPaddingRelative) {
-                nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-            } else {
-                nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+        const nativeView = this.nativeViewProtected;
+        if (nativeView && isAndroid) {
+            const recycle = this.recycleNativeView;
+            if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+                resetNativeView(this);
+                if (this._isPaddingRelative) {
+                    nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+                } else {
+                    nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+                }
+                this.resetNativeView();
             }
-            this.resetNativeView();
         }
+
         if (this._cssState) {
             this._cancelAllAnimations();
         }
@@ -702,7 +706,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         let nativeView;
         if (isAndroid) {
-            if (this._recycleNativeView) {
+            const recycle = this.recycleNativeView;
+            if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
                 nativeView = <android.view.View>getNativeView(context, this.typeName);
             }
 
@@ -751,7 +756,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         // This will account for nativeView that is created in createNativeView, recycled
         // or for backward compatability - set before _setupUI in iOS contructor.
-        this.setNativeView(nativeView || this.nativeView);
+        this.setNativeView(nativeView || this.nativeViewProtected);
 
         if (this.parent) {
             let nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
@@ -775,7 +780,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this._suspendNativeUpdates();
             // We may do a `this.resetNativeView()` here?
         }
-        this.__nativeView = this.nativeView = value;
+        this.__nativeView = this.nativeViewProtected = value;
         if (this.__nativeView) {
             this._suspendedUpdates = undefined;
             this.initNativeView();
@@ -805,11 +810,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this.parent._removeViewFromNativeVisualTree(this);
         }
 
-        const nativeView = this.nativeView;
-        if (nativeView && this._recycleNativeView && isAndroid) {
-            const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
-            if (!nativeParent) {
-                putNativeView(this._context, this);
+        const nativeView = this.nativeViewProtected;
+        if (nativeView && isAndroid) {
+            const recycle = this.recycleNativeView;
+            if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+                const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+                if (!nativeParent) {
+                    putNativeView(this._context, this);
+                }
             }
         }
 
@@ -961,6 +969,7 @@ ViewBase.prototype._defaultPaddingRight = 0;
 ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
 ViewBase.prototype._isViewBase = true;
+ViewBase.prototype.recycleNativeView = "never";
 
 // Removing from visual tree does +1, adding to visual tree does -1, see parentChanged
 // Removing the nativeView does +1, adding the nativeView does -1, see set nativeView

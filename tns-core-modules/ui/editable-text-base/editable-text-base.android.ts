@@ -131,7 +131,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     _dirtyTextAccumulator: string;
     /* tslint:enable */
 
-    nativeView: android.widget.EditText;
+    nativeViewProtected: android.widget.EditText;
     private _keyListenerCache: android.text.method.KeyListener;
     private _inputType: number;
 
@@ -158,37 +158,37 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         (<any>nativeView).listener.owner = this;
         this._inputType = nativeView.getInputType();
     }
 
     public disposeNativeView(): void {
         super.disposeNativeView();
-        (<any>this.nativeView).listener.owner = null;
+        (<any>this.nativeViewProtected).listener.owner = null;
         this._keyListenerCache = null;
     }
 
     public resetNativeView(): void {
         super.resetNativeView();
-        this.nativeView.setInputType(this._inputType);
+        this.nativeViewProtected.setInputType(this._inputType);
     }
 
     public dismissSoftInput() {
-        ad.dismissSoftInput(this.nativeView);
+        ad.dismissSoftInput(this.nativeViewProtected);
     }
 
     public focus(): boolean {
         const result = super.focus();
         if (result) {
-            ad.showSoftInput(this.nativeView);
+            ad.showSoftInput(this.nativeViewProtected);
         }
 
         return result;
     }
 
     public _setInputType(inputType: number): void {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         try {
             this._changeFromCode = true;
             nativeView.setInputType(inputType);
@@ -221,7 +221,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     [keyboardTypeProperty.getDefault](): number {
-        return this.nativeView.getInputType();
+        return this.nativeViewProtected.getInputType();
     }
     [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | number) {
         let newInputType;
@@ -255,7 +255,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     [returnKeyTypeProperty.getDefault](): "done" | "next" | "go" | "search" | "send" | string {
-        let ime = this.nativeView.getImeOptions();
+        let ime = this.nativeViewProtected.getImeOptions();
         switch (ime) {
             case android.view.inputmethod.EditorInfo.IME_ACTION_DONE:
                 return "done";
@@ -304,11 +304,11 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
         }
 
-        this.nativeView.setImeOptions(newImeOptions);
+        this.nativeViewProtected.setImeOptions(newImeOptions);
     }
 
     [editableProperty.setNative](value: boolean) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (value) {
             nativeView.setKeyListener(this._keyListenerCache);
         } else {
@@ -320,7 +320,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allcharacters" | string {
-        let inputType = this.nativeView.getInputType();
+        let inputType = this.nativeViewProtected.getInputType();
         if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
             return "words";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) === android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) {
@@ -332,7 +332,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
     [autocapitalizationTypeProperty.setNative](value: string) {
-        let inputType = this.nativeView.getInputType();
+        let inputType = this.nativeViewProtected.getInputType();
         inputType = inputType & ~28672; //28672 (0x00070000) 13,14,15bits (111 0000 0000 0000)
 
         switch (value) {
@@ -363,7 +363,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     [autocorrectProperty.getDefault](): boolean {
-        let autocorrect = this.nativeView.getInputType();
+        let autocorrect = this.nativeViewProtected.getInputType();
         if ((autocorrect & android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) === android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) {
             return true;
         }
@@ -371,7 +371,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return false;
     }
     [autocorrectProperty.setNative](value: boolean) {
-        let inputType = this.nativeView.getInputType();
+        let inputType = this.nativeViewProtected.getInputType();
         switch (value) {
             case true:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
@@ -392,19 +392,19 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     [hintProperty.getDefault](): string {
-        return this.nativeView.getHint();
+        return this.nativeViewProtected.getHint();
     }
     [hintProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? null : value.toString();
-        this.nativeView.setHint(text);
+        this.nativeViewProtected.setHint(text);
     }
 
     [placeholderColorProperty.getDefault](): android.content.res.ColorStateList {
-        return this.nativeView.getHintTextColors();
+        return this.nativeViewProtected.getHintTextColors();
     }
     [placeholderColorProperty.setNative](value: Color | android.content.res.ColorStateList) {
         const color = value instanceof Color ? value.android : value;
-        this.nativeView.setHintTextColor(<any>color);
+        this.nativeViewProtected.setHintTextColor(<any>color);
     }
 
     [textTransformProperty.setNative](value: "default") {
@@ -413,10 +413,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     [maxLengthProperty.setNative](value: number) {
         if (value === Number.POSITIVE_INFINITY) {
-            this.nativeView.setFilters([]);
+            this.nativeViewProtected.setFilters([]);
         } else {
             const lengthFilter = new android.text.InputFilter.LengthFilter(value);
-            const filters = this.nativeView.getFilters();
+            const filters = this.nativeViewProtected.getFilters();
             const newFilters = [];
 
             // retain existing filters
@@ -428,7 +428,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             }
 
             newFilters.push(lengthFilter);
-            this.nativeView.setFilters(newFilters);
+            this.nativeViewProtected.setFilters(newFilters);
         }
     }
 }

@@ -5,7 +5,7 @@
 export * from "./html-view-common";
 
 export class HtmlView extends HtmlViewBase {
-    nativeView: android.widget.TextView;
+    nativeViewProtected: android.widget.TextView;
 
     public createNativeView() {
         return new android.widget.TextView(this._context);
@@ -13,7 +13,7 @@ export class HtmlView extends HtmlViewBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
 
         // This makes the html <a href...> work
         nativeView.setLinksClickable(true);
@@ -22,7 +22,7 @@ export class HtmlView extends HtmlViewBase {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        this.nativeView.setAutoLinkMask(0);
+        this.nativeViewProtected.setAutoLinkMask(0);
     }
 
     [htmlProperty.getDefault](): string {
@@ -36,7 +36,7 @@ export class HtmlView extends HtmlViewBase {
         if (value.search(/<a\s/i) >= 0) {
             mask = 0;
         }
-        this.nativeView.setAutoLinkMask(mask);
-        this.nativeView.setText(<any>android.text.Html.fromHtml(value));
+        this.nativeViewProtected.setAutoLinkMask(mask);
+        this.nativeViewProtected.setText(<any>android.text.Html.fromHtml(value));
     }
 }

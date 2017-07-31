@@ -86,7 +86,7 @@ function initializeWebViewClient(): void {
 }
 
 export class WebView extends WebViewBase {
-    nativeView: android.webkit.WebView;
+    nativeViewProtected: android.webkit.WebView;
 
     public createNativeView() {
         initializeWebViewClient();
@@ -102,11 +102,11 @@ export class WebView extends WebViewBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        (<any>this.nativeView).client.owner = this;
+        (<any>this.nativeViewProtected).client.owner = this;
     }
 
     public disposeNativeView() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             nativeView.destroy();
         }
@@ -116,7 +116,7 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(src: string) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return;
         }
@@ -125,7 +125,7 @@ export class WebView extends WebViewBase {
     }
 
     public _loadData(src: string) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return;
         }
@@ -135,18 +135,18 @@ export class WebView extends WebViewBase {
     }
 
     get canGoBack(): boolean {
-        return this.nativeView.canGoBack();
+        return this.nativeViewProtected.canGoBack();
     }
 
     public stopLoading() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             nativeView.stopLoading();
         }
     }
 
     get canGoForward(): boolean {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             return nativeView.canGoForward();
         }
@@ -154,21 +154,21 @@ export class WebView extends WebViewBase {
     }
 
     public goBack() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             return nativeView.goBack();
         }
     }
 
     public goForward() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             return nativeView.goForward();
         }
     }
 
     public reload() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             return nativeView.reload();
         }

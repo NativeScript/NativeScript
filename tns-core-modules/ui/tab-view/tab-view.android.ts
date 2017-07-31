@@ -66,13 +66,13 @@ function initializeNativeClasses() {
                 if (traceEnabled()) {
                     traceWrite("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
                 }
-                item.view.nativeView.restoreHierarchyState(this[VIEWS_STATES]);
+                item.view.nativeViewProtected.restoreHierarchyState(this[VIEWS_STATES]);
             }
 
-            if (item.view.nativeView) {
-                container.addView(item.view.nativeView);
+            if (item.view.nativeViewProtected) {
+                container.addView(item.view.nativeViewProtected);
             }
-            return item.view.nativeView;
+            return item.view.nativeViewProtected;
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, nativeView: android.view.View) {
@@ -112,7 +112,7 @@ function initializeNativeClasses() {
             }
             let viewStates = this[VIEWS_STATES];
             let childCallback = function (view: View): boolean {
-                let nativeView: android.view.View = view.nativeView;
+                let nativeView: android.view.View = view.nativeViewProtected;
                 if (nativeView && nativeView.isSaveFromParentEnabled && nativeView.isSaveFromParentEnabled()) {
                     nativeView.saveHierarchyState(viewStates);
                 }
@@ -182,32 +182,32 @@ function getDefaultAccentColor(context: android.content.Context): number {
 }
 
 export class TabViewItem extends TabViewItemBase {
-    nativeView: android.widget.TextView;
+    nativeViewProtected: android.widget.TextView;
     public tabItemSpec: org.nativescript.widgets.TabItemSpec;
     public index: number;
     private _defaultTransformationMethod: android.text.method.TransformationMethod;
 
     public initNativeView(): void {
         super.initNativeView();
-        if (this.nativeView) {
-            this._defaultTransformationMethod = this.nativeView.getTransformationMethod();
+        if (this.nativeViewProtected) {
+            this._defaultTransformationMethod = this.nativeViewProtected.getTransformationMethod();
         }
     }
 
     public resetNativeView(): void {
         super.resetNativeView();
-        if (this.nativeView) {
+        if (this.nativeViewProtected) {
             // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-            this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+            this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
         }
     }
 
     public createNativeView() {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     public _update(): void {
-        const tv = this.nativeView;
+        const tv = this.nativeViewProtected;
         if (tv) {
             const tabLayout = <org.nativescript.widgets.TabLayout>tv.getParent();
             tabLayout.updateItemAt(this.index, this.tabItemSpec);
@@ -215,28 +215,28 @@ export class TabViewItem extends TabViewItemBase {
     }
 
     [fontSizeProperty.getDefault](): { nativeSize: number } {
-        return { nativeSize: this.nativeView.getTextSize() };
+        return { nativeSize: this.nativeViewProtected.getTextSize() };
     }
     [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (typeof value === "number") {
-            this.nativeView.setTextSize(value);
+            this.nativeViewProtected.setTextSize(value);
         } else {
-            this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+            this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
         }
     }
 
     [fontInternalProperty.getDefault](): android.graphics.Typeface {
-        return this.nativeView.getTypeface();
+        return this.nativeViewProtected.getTypeface();
     }
     [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
-        this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+        this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
     [textTransformProperty.getDefault](): "default" {
         return "default";
     }
     [textTransformProperty.setNative](value: TextTransform | "default") {
-        const tv = this.nativeView;
+        const tv = this.nativeViewProtected;
         if (value === "default") {
             tv.setTransformationMethod(this._defaultTransformationMethod);
             tv.setText(this.title);
@@ -327,7 +327,7 @@ export class TabView extends TabViewBase {
             this._androidViewId = android.view.View.generateViewId();
         }
 
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         this._tabLayout = (<any>nativeView).tabLayout;
 
         const viewPager = (<any>nativeView).viewPager;

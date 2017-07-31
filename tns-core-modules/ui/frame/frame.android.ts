@@ -306,7 +306,7 @@ export class Frame extends FrameBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        this._android.rootViewGroup = this.nativeView;
+        this._android.rootViewGroup = this.nativeViewProtected;
         this._android.rootViewGroup.setId(this._containerViewId);
     }
 
@@ -713,7 +713,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             return label;
         }
 
-        return page.nativeView;
+        return page.nativeViewProtected;
     }
 
     @profile
@@ -815,7 +815,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         // Initialize native visual tree;
         rootView._setupUI(activity);
-        activity.setContentView(rootView.nativeView, new org.nativescript.widgets.CommonLayoutParams());
+        activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
         // frameId is negative w
         if (frame) {
             frame.navigate(navParam);

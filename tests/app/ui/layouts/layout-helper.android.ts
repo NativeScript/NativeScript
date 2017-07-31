@@ -66,18 +66,18 @@ class NativeGridLayout extends org.nativescript.widgets.GridLayout {
 }
 
 export class MyButton extends Button implements def.MyButton {
-    nativeView: NativeButton;
+    nativeViewProtected: NativeButton;
 
     public createNativeView() {
         return new NativeButton(this._context, this);
     }
 
     public initNativeView(): void {
-        this.nativeView.owner = this;
+        this.nativeViewProtected.owner = this;
     }
 
     public disposeNativeView() {
-        this.nativeView.owner = undefined;
+        this.nativeViewProtected.owner = undefined;
     }
 
     public measureCount: number = 0;
@@ -102,35 +102,35 @@ export class MyButton extends Button implements def.MyButton {
     }
 
     get layoutWidth(): number {
-        return this.nativeView.getWidth();
+        return this.nativeViewProtected.getWidth();
     }
 
     get layoutHeight(): number {
-        return this.nativeView.getHeight();
+        return this.nativeViewProtected.getHeight();
     }
 
     get layoutLeft(): number {
-        return this.nativeView.getLeft();
+        return this.nativeViewProtected.getLeft();
     }
 
     get layoutTop(): number {
-        return this.nativeView.getTop();
+        return this.nativeViewProtected.getTop();
     }
 }
 
 export class MyStackLayout extends StackLayout implements def.MyStackLayout {
-    nativeView: NativeStackLayout;
+    nativeViewProtected: NativeStackLayout;
 
     public createNativeView() {
         return new NativeStackLayout(this._context, this);
     }
 
     public initNativeView(): void {
-        this.nativeView.owner = this;
+        this.nativeViewProtected.owner = this;
     }
 
     public disposeNativeView() {
-        this.nativeView.owner = undefined;
+        this.nativeViewProtected.owner = undefined;
     }
 
     public measureCount: number = 0;
@@ -155,35 +155,35 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
     }
 
     get layoutWidth(): number {
-        return this.nativeView.getWidth();
+        return this.nativeViewProtected.getWidth();
     }
 
     get layoutHeight(): number {
-        return this.nativeView.getHeight();
+        return this.nativeViewProtected.getHeight();
     }
 
     get layoutLeft(): number {
-        return this.nativeView.getLeft();
+        return this.nativeViewProtected.getLeft();
     }
 
     get layoutTop(): number {
-        return this.nativeView.getTop();
+        return this.nativeViewProtected.getTop();
     }
 }
 
 export class MyGridLayout extends GridLayout implements def.MyGridLayout {
-    nativeView: NativeGridLayout;
+    nativeViewProtected: NativeGridLayout;
 
     public createNativeView() {
         return new NativeGridLayout(this._context, this);
     }
 
     public initNativeView(): void {
-        this.nativeView.owner = this;
+        this.nativeViewProtected.owner = this;
     }
 
     public disposeNativeView() {
-        this.nativeView.owner = undefined;
+        this.nativeViewProtected.owner = undefined;
     }
 
     public measureCount: number = 0;
@@ -208,19 +208,19 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
     }
 
     get layoutWidth(): number {
-        return this.nativeView.getWidth();
+        return this.nativeViewProtected.getWidth();
     }
 
     get layoutHeight(): number {
-        return this.nativeView.getHeight();
+        return this.nativeViewProtected.getHeight();
     }
 
     get layoutLeft(): number {
-        return this.nativeView.getLeft();
+        return this.nativeViewProtected.getLeft();
     }
 
     get layoutTop(): number {
-        return this.nativeView.getTop();
+        return this.nativeViewProtected.getTop();
     }
 }
 

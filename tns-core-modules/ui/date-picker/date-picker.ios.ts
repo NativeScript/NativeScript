@@ -9,57 +9,57 @@ export * from "./date-picker-common";
 
 export class DatePicker extends DatePickerBase {
     private _changeHandler: NSObject;
-    public nativeView: UIDatePicker;
+    public nativeViewProtected: UIDatePicker;
 
     constructor() {
         super();
 
-        this.nativeView = UIDatePicker.new();
-        this.nativeView.datePickerMode = UIDatePickerMode.Date;
+        this.nativeViewProtected = UIDatePicker.new();
+        this.nativeViewProtected.datePickerMode = UIDatePickerMode.Date;
 
         this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this.nativeView.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
+        this.nativeViewProtected.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
     }
 
     get ios(): UIDatePicker {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     [yearProperty.getDefault](): number {
-        return this.nativeView.date.getFullYear();
+        return this.nativeViewProtected.date.getFullYear();
     }
     [yearProperty.setNative](value: number) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.year = value;
         this.date = new Date(comps.year, comps.month - 1, comps.day);
     }
 
     [monthProperty.getDefault](): number {
-        return this.nativeView.date.getMonth();
+        return this.nativeViewProtected.date.getMonth();
     }
     [monthProperty.setNative](value: number) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.month = value;
         this.date = new Date(comps.year, comps.month - 1, comps.day);
     }
 
     [dayProperty.getDefault](): number {
-        return this.nativeView.date.getDay();
+        return this.nativeViewProtected.date.getDay();
     }
     [dayProperty.setNative](value: number) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.day = value;
         this.date = new Date(comps.year, comps.month - 1, comps.day);
     }
 
     [dateProperty.getDefault](): Date {
-        return this.nativeView.date;
+        return this.nativeViewProtected.date;
     }
     [dateProperty.setNative](value: Date) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.year = value.getFullYear();
         comps.month = value.getMonth() + 1;
@@ -68,28 +68,28 @@ export class DatePicker extends DatePickerBase {
     }
 
     [maxDateProperty.getDefault](): Date {
-        return this.nativeView.maximumDate;
+        return this.nativeViewProtected.maximumDate;
     }
     [maxDateProperty.setNative](value: Date) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         let nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
         picker.maximumDate = <any>nsDate;
     }
 
     [minDateProperty.getDefault](): Date {
-        return this.nativeView.minimumDate;
+        return this.nativeViewProtected.minimumDate;
     }
     [minDateProperty.setNative](value: Date) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         let nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
         picker.minimumDate = <any>nsDate;
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this.nativeView.valueForKey("textColor");
+        return this.nativeViewProtected.valueForKey("textColor");
     }
     [colorProperty.setNative](value: Color | UIColor) {
-        let picker = this.nativeView;
+        let picker = this.nativeViewProtected;
         picker.setValueForKey(value instanceof Color ? value.ios : value, "textColor");
     }
 }

@@ -142,7 +142,7 @@ export function test_binding_value_to_model() {
 
 function getNativeValue(mySwitch: switchModule.Switch): boolean {
     if (platform.isAndroid) {
-        const nativeView: android.widget.Switch = mySwitch.nativeView;
+        const nativeView: android.widget.Switch = mySwitch.nativeViewProtected;
         return nativeView.isChecked();
     } else if (mySwitch.ios) {
         return mySwitch.ios.on;
@@ -151,7 +151,7 @@ function getNativeValue(mySwitch: switchModule.Switch): boolean {
 
 function setNativeValue(mySwitch: switchModule.Switch, value: boolean) {
     if (platform.isAndroid) {
-        const nativeView: android.widget.Switch = mySwitch.nativeView;
+        const nativeView: android.widget.Switch = mySwitch.nativeViewProtected;
         nativeView.setChecked(value);
     }
     else if (mySwitch.ios) {
