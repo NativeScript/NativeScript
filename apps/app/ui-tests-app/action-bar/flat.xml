@@ -1,0 +1,9 @@
+<Page navigatedTo="onNavigateTo" >
+  <Page.actionBar>
+    <ActionBar title="Flat property" />
+  </Page.actionBar>
+  <StackLayout>
+    <Button margin="30" text="change flat property" tap="changeFlatPropertyValue"/>
+    <Label id="flatPropertyValue" />
+  </StackLayout>
+</Page>
