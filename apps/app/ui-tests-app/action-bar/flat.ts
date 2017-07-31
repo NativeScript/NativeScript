@@ -1,5 +1,5 @@
-import { Label } from "tns-core-modules/ui/Label";
-import { Page } from "tns-core-modules/ui/Page";
+import { Label } from "tns-core-modules/ui/label";
+import { Page } from "tns-core-modules/ui/page";
 
 export function onNavigateTo(args) {
     updateText(args.object);
