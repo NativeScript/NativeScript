@@ -1,4 +1,4 @@
-<Page backgroundColor="brown" navigatedTo="onNavigateTo" >
+<Page navigatedTo="onNavigateTo" >
   <Page.actionBar>
     <ActionBar title="Flat property" />
   </Page.actionBar>
