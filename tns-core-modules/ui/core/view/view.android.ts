@@ -1,7 +1,6 @@
 // Definitions.
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
-import { CacheLayerType } from "../../../utils/utils";
 
 // Types.
 import { Background, ad as androidBackground } from "../../styling/background";
@@ -510,11 +509,6 @@ export class View extends ViewCommon {
             }
 
             (<any>nativeView).background = undefined;
-            const cache = <CacheLayerType><any>nativeView;
-            if (cache.layerType !== undefined) {
-                cache.setLayerType(cache.layerType, null);
-                cache.layerType = undefined;
-            }
         }
     }
 }

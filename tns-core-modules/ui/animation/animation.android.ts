@@ -8,7 +8,7 @@ import {
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
 } from "../styling/style-properties";
 
-import { CacheLayerType, layout } from "../../utils/utils";
+import { layout } from "../../utils/utils";
 import lazy from "../../utils/lazy";
 
 export * from "./animation-common";
@@ -161,8 +161,6 @@ export class Animation extends AnimationBase {
             }
         }
 
-        this._enableHardwareAcceleration();
-
         if (traceEnabled()) {
             traceWrite("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), traceCategories.Animation);
         }
@@ -190,7 +188,6 @@ export class Animation extends AnimationBase {
         }
 
         this._propertyUpdateCallbacks.forEach(v => v());
-        this._disableHardwareAcceleration();
         this._resolveAnimationFinishedPromise();
 
         if (this._target) {
@@ -200,7 +197,6 @@ export class Animation extends AnimationBase {
 
     private _onAndroidAnimationCancel() { // tslint:disable-line 
         this._propertyResetCallbacks.forEach(v => v());
-        this._disableHardwareAcceleration();
         this._rejectAnimationFinishedPromise();
 
         if (this._target) {
@@ -464,28 +460,5 @@ export class Animation extends AnimationBase {
 
     private static _getAndroidRepeatCount(iterations: number): number {
         return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
-    }
-
-    private _enableHardwareAcceleration() {
-        for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeViewProtected;
-            if (cache) {
-                let layerType = cache.getLayerType();
-                if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
-                    cache.layerType = layerType;
-                    cache.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-                }
-            }
-        }
-    }
-
-    private _disableHardwareAcceleration() {
-        for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeViewProtected;
-            if (cache && cache.layerType !== undefined) {
-                cache.setLayerType(cache.layerType, null);
-                cache.layerType = undefined;
-            }
-        }
     }
 }
