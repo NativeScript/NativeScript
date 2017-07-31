@@ -285,7 +285,10 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     if (first.typeName !== "SearchBar") {
         // There are way too many differences in native methods for search-bar.
         // There are too many methods that just throw for newly created views in API lvl 19 and 17
-        TKUnit.waitUntilReady(() => layout.isLayoutValid);
+        if (sdkVersion < 21) {
+            TKUnit.waitUntilReady(() => layout.isLayoutValid);
+        }
+
         compareUsingReflection(newer, first);
     }
 
@@ -322,6 +325,7 @@ function compareUsingReflection(recycledNativeView: View, newNativeView: View): 
             || name === 'getY'
             || name.includes('getMeasured')
             || name === 'toString';
+
         if (skip || method.getParameterTypes().length > 0) {
             continue;
         }
