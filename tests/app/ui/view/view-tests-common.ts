@@ -961,6 +961,17 @@ export function testBackgroundImage() {
     });
 };
 
+export function testBackgroundShorthand_With_EmptyBorder() {
+    // Related to issue https://github.com/NativeScript/NativeScript/issues/4415
+    const lbl = new Label();
+    lbl.className = "test";
+    const css = ".test { border-width: 0; background: transparent; }";
+
+    helper.buildUIAndRunTest(lbl, (views: Array<View>) => {
+        helper.waitUntilLayoutReady(lbl);
+    }, css);
+};
+
 export function test_automation_text_default_value() {
     let view = new Button();
     TKUnit.assertTrue(view.automationText === undefined, "AutomationText default value should be UNDEFINED.");

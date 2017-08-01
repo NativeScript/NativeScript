@@ -6,7 +6,7 @@ import { android as androidApp } from "../../application";
 export * from "./background-common"
 
 interface AndroidView {
-    background: android.graphics.drawable.Drawable.ConstantState;
+    _cachedDrawableConstState: android.graphics.drawable.Drawable.ConstantState;
 }
 
 // TODO: Change this implementation to use 
@@ -41,8 +41,8 @@ export module ad {
         const drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
-        if (androidView.background === undefined && drawable) {
-            androidView.background = drawable.getConstantState();
+        if (androidView._cachedDrawableConstState === undefined && drawable) {
+            androidView._cachedDrawableConstState = drawable.getConstantState();
         }
 
         if (isSetColorFilterOnlyWidget(nativeView)
@@ -77,11 +77,11 @@ export module ad {
                 }
             }
         } else {
-            // TODO: newDrawable for BitmapDrawable will fail if we don't speicfy resource. Use the other overload.
-            const defaultDrawable = androidView.background ? androidView.background.newDrawable(nativeView.getResources()) : null;
+            // TODO: newDrawable for BitmapDrawable will fail if we don't specify resource. Use the other overload.
+            const defaultDrawable = androidView._cachedDrawableConstState ? androidView._cachedDrawableConstState.newDrawable(nativeView.getResources()) : null;
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, defaultDrawable);
-            androidView.background = undefined;
-            
+            androidView._cachedDrawableConstState = undefined;
+
             if (cache.layerType !== undefined) {
                 cache.setLayerType(cache.layerType, null);
                 cache.layerType = undefined;
