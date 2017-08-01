@@ -282,17 +282,17 @@ export interface AndroidActivityRequestPermissionsEventData extends AndroidActiv
     /**
      * The request code.
      */
-    requestCode: number,
+    requestCode: number;
 
     /**
      * The Permissions
      */
-    permissions: Array<string>,
+    permissions: Array<string>;
 
     /**
      * The Granted.
      */
-    grantResults: Array<number>
+    grantResults: Array<number>;
 }
 
 /**
