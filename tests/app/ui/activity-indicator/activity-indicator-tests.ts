@@ -55,7 +55,7 @@ if (platform.device.os === platform.platformNames.ios) {
         ai.color = new color.Color("red");
 
         function testAction(views: Array<viewModule.View>) {
-            TKUnit.assertEqual(ai.color.ios.CGColor, ai.nativeView.color.CGColor, "ai.color");
+            TKUnit.assertEqual(ai.color.ios.CGColor, ai.nativeViewProtected.color.CGColor, "ai.color");
         };
 
         helper.buildUIAndRunTest(ai, testAction);

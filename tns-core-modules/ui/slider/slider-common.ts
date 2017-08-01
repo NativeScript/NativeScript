@@ -10,7 +10,7 @@ export class SliderBase extends View implements SliderDefinition {
     public maxValue: number;
 }
 
-SliderBase.prototype.recycleNativeView = true;
+SliderBase.prototype.recycleNativeView = "auto";
 
 /**
  * Represents the observable property backing the value property of each Slider instance.

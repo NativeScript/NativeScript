@@ -23,7 +23,7 @@ function getComponents(date: Date | NSDate): NSDateComponents {
 export class TimePicker extends TimePickerBase {
     private _ios: UIDatePicker;
     private _changeHandler: NSObject;
-    public nativeView: UIDatePicker;
+    public nativeViewProtected: UIDatePicker;
 
     constructor() {
         super();
@@ -37,7 +37,7 @@ export class TimePicker extends TimePickerBase {
         let components = getComponents(NSDate.date());
         this.hour = components.hour;
         this.minute = components.minute;
-        this.nativeView = this._ios;
+        this.nativeViewProtected = this._ios;
     }
 
     get ios(): UIDatePicker {
@@ -45,67 +45,67 @@ export class TimePicker extends TimePickerBase {
     }
 
     [timeProperty.getDefault](): Date {
-        return this.nativeView.date;
+        return this.nativeViewProtected.date;
     }
     [timeProperty.setNative](value: Date) {
-        this.nativeView.date = getDate(this.hour, this.minute);
+        this.nativeViewProtected.date = getDate(this.hour, this.minute);
     }
 
     [minuteProperty.getDefault](): number {
-        return this.nativeView.date.getMinutes();
+        return this.nativeViewProtected.date.getMinutes();
     }
     [minuteProperty.setNative](value: number) {
-        this.nativeView.date = getDate(this.hour, value);
+        this.nativeViewProtected.date = getDate(this.hour, value);
     }
 
     [hourProperty.getDefault](): number {
-        return this.nativeView.date.getHours();
+        return this.nativeViewProtected.date.getHours();
     }
     [hourProperty.setNative](value: number) {
-        this.nativeView.date = getDate(value, this.minute);
+        this.nativeViewProtected.date = getDate(value, this.minute);
     }
 
     [minHourProperty.getDefault](): number {
-        return this.nativeView.minimumDate ? this.nativeView.minimumDate.getHours() : 0;
+        return this.nativeViewProtected.minimumDate ? this.nativeViewProtected.minimumDate.getHours() : 0;
     }
     [minHourProperty.setNative](value: number) {
-        this.nativeView.minimumDate = getDate(value, this.minute);
+        this.nativeViewProtected.minimumDate = getDate(value, this.minute);
     }
 
     [maxHourProperty.getDefault](): number {
-        return this.nativeView.maximumDate ? this.nativeView.maximumDate.getHours() : 24;
+        return this.nativeViewProtected.maximumDate ? this.nativeViewProtected.maximumDate.getHours() : 24;
     }
     [maxHourProperty.setNative](value: number) {
-        this.nativeView.maximumDate = getDate(value, this.minute);
+        this.nativeViewProtected.maximumDate = getDate(value, this.minute);
     }
 
     [minMinuteProperty.getDefault](): number {
-        return this.nativeView.minimumDate ? this.nativeView.minimumDate.getMinutes() : 0;
+        return this.nativeViewProtected.minimumDate ? this.nativeViewProtected.minimumDate.getMinutes() : 0;
     }
     [minMinuteProperty.setNative](value: number) {
-        this.nativeView.minimumDate = getDate(this.hour, value);
+        this.nativeViewProtected.minimumDate = getDate(this.hour, value);
     }
 
     [maxMinuteProperty.getDefault](): number {
-        return this.nativeView.maximumDate ? this.nativeView.maximumDate.getMinutes() : 60;
+        return this.nativeViewProtected.maximumDate ? this.nativeViewProtected.maximumDate.getMinutes() : 60;
     }
     [maxMinuteProperty.setNative](value: number) {
-        this.nativeView.maximumDate = getDate(this.hour, value);
+        this.nativeViewProtected.maximumDate = getDate(this.hour, value);
     }
 
     [timeProperty.getDefault](): number {
-        return this.nativeView.minuteInterval;
+        return this.nativeViewProtected.minuteInterval;
     }
     [timeProperty.setNative](value: number) {
-        this.nativeView.minuteInterval = value;
+        this.nativeViewProtected.minuteInterval = value;
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this.nativeView.valueForKey("textColor");
+        return this.nativeViewProtected.valueForKey("textColor");
     }
     [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
-        this.nativeView.setValueForKey(color, "textColor");
+        this.nativeViewProtected.setValueForKey(color, "textColor");
     }
 }
 

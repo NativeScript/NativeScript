@@ -359,7 +359,7 @@ function showReportPage(finalMessage: string) {
     if (page.android) {
         setTimeout(() => {
             messageContainer.dismissSoftInput();
-            (<android.view.View>messageContainer.nativeView).scrollTo(0, 0);
+            (<android.view.View>messageContainer.nativeViewProtected).scrollTo(0, 0);
         });
     }
 }

@@ -32,7 +32,7 @@ function initializeCheckedChangeListener(): void {
 }
 
 export class Switch extends SwitchBase {
-    nativeView: android.widget.Switch;
+    nativeViewProtected: android.widget.Switch;
     public checked: boolean;
 
     public createNativeView() {
@@ -46,12 +46,12 @@ export class Switch extends SwitchBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = this;
     }
 
     public disposeNativeView() {
-        const nativeView: any = this.nativeView;
+        const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = null;
         super.disposeNativeView();
     }
@@ -60,7 +60,7 @@ export class Switch extends SwitchBase {
         return false;
     }
     [checkedProperty.setNative](value: boolean) {
-        this.nativeView.setChecked(value);
+        this.nativeViewProtected.setChecked(value);
     }
 
     [colorProperty.getDefault](): number {
@@ -68,9 +68,9 @@ export class Switch extends SwitchBase {
     }
     [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this.nativeView.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeViewProtected.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this.nativeView.getThumbDrawable().clearColorFilter();
+            this.nativeViewProtected.getThumbDrawable().clearColorFilter();
         }
     }
 
@@ -79,9 +79,9 @@ export class Switch extends SwitchBase {
     }
     [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this.nativeView.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeViewProtected.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this.nativeView.getTrackDrawable().clearColorFilter();
+            this.nativeViewProtected.getTrackDrawable().clearColorFilter();
         }
     }
 

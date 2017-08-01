@@ -10,7 +10,7 @@ export class Progress extends ProgressBase {
 
     constructor() {
         super();
-        this.nativeView = this._ios = UIProgressView.new();
+        this.nativeViewProtected = this._ios = UIProgressView.new();
     }
     
     get ios(): UIProgressView {

@@ -177,7 +177,7 @@ export class TabView extends TabViewBase {
         super();
 
         this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
-        this.nativeView = this._ios.view;
+        this.nativeViewProtected = this._ios.view;
         this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
         //This delegate is set on the last line of _addTabs method.
@@ -327,7 +327,7 @@ export class TabView extends TabViewBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
 
             const width = layout.getMeasureSpecSize(widthMeasureSpec);

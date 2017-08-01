@@ -48,7 +48,7 @@ function initializeTextTransformation(): void {
 }
 
 export class TextBase extends TextBaseCommon {
-    nativeView: android.widget.TextView;
+    nativeViewProtected: android.widget.TextView;
     private _defaultTransformationMethod: android.text.method.TransformationMethod;
     private _paintFlags: number;
     private _minHeight: number;
@@ -57,7 +57,7 @@ export class TextBase extends TextBaseCommon {
     private _maxLines: number;
 
     public initNativeView(): void {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         this._defaultTransformationMethod = nativeView.getTransformationMethod();
         this._minHeight = nativeView.getMinHeight();
         this._maxHeight = nativeView.getMaxHeight();
@@ -68,7 +68,7 @@ export class TextBase extends TextBaseCommon {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
         nativeView.setSingleLine(this._isSingleLine);
         nativeView.setTransformationMethod(this._defaultTransformationMethod);
@@ -110,7 +110,7 @@ export class TextBase extends TextBaseCommon {
     }
 
     [formattedTextProperty.setNative](value: FormattedString) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!value) {
             if (nativeView instanceof android.widget.Button &&
                 nativeView.getTransformationMethod() instanceof TextTransformation) {
@@ -141,7 +141,7 @@ export class TextBase extends TextBaseCommon {
 
     [textTransformProperty.setNative](value: TextTransform) {
         if (value === "initial") {
-            this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+            this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
             return;
         }
 
@@ -151,26 +151,26 @@ export class TextBase extends TextBaseCommon {
         }
 
         initializeTextTransformation();
-        this.nativeView.setTransformationMethod(new TextTransformation(this));
+        this.nativeViewProtected.setTransformationMethod(new TextTransformation(this));
     }
 
     [textAlignmentProperty.getDefault](): TextAlignment {
         return "initial";
     }
     [textAlignmentProperty.setNative](value: TextAlignment) {
-        let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+        let verticalGravity = this.nativeViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
         switch (value) {
             case "initial":
             case "left":
-                this.nativeView.setGravity(android.view.Gravity.START | verticalGravity);
+                this.nativeViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
                 break;
 
             case "center":
-                this.nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+                this.nativeViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
                 break;
 
             case "right":
-                this.nativeView.setGravity(android.view.Gravity.END | verticalGravity);
+                this.nativeViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
                 break;
         }
     }
@@ -178,7 +178,7 @@ export class TextBase extends TextBaseCommon {
     // Overridden in TextField because setSingleLine(false) will remove methodTransformation.
     // and we don't want to allow TextField to be multiline
     [whiteSpaceProperty.setNative](value: WhiteSpace) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         switch (value) {
             case "initial":
             case "normal":
@@ -193,109 +193,109 @@ export class TextBase extends TextBaseCommon {
     }
 
     [colorProperty.getDefault](): android.content.res.ColorStateList {
-        return this.nativeView.getTextColors();
+        return this.nativeViewProtected.getTextColors();
     }
     [colorProperty.setNative](value: Color | android.content.res.ColorStateList) {
         if (!this.formattedText || !(value instanceof Color)) {
             if (value instanceof Color) {
-                this.nativeView.setTextColor(value.android);
+                this.nativeViewProtected.setTextColor(value.android);
             } else {
-                this.nativeView.setTextColor(value);
+                this.nativeViewProtected.setTextColor(value);
             }
         }
     }
 
     [fontSizeProperty.getDefault](): { nativeSize: number } {
-        return { nativeSize: this.nativeView.getTextSize() };
+        return { nativeSize: this.nativeViewProtected.getTextSize() };
     }
     [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (!this.formattedText || (typeof value !== "number")) {
             if (typeof value === "number") {
-                this.nativeView.setTextSize(value);
+                this.nativeViewProtected.setTextSize(value);
             } else {
-                this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+                this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
             }
         }
     }
 
     [lineHeightProperty.getDefault](): number {
-        return this.nativeView.getLineSpacingExtra() / layout.getDisplayDensity();
+        return this.nativeViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
     }
     [lineHeightProperty.setNative](value: number) {
-        this.nativeView.setLineSpacing(value * layout.getDisplayDensity(), 1);
+        this.nativeViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
     }
 
     [fontInternalProperty.getDefault](): android.graphics.Typeface {
-        return this.nativeView.getTypeface();
+        return this.nativeViewProtected.getTypeface();
     }
     [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         if (!this.formattedText || !(value instanceof Font)) {
-            this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+            this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
         }
     }
 
     [textDecorationProperty.getDefault](value: number) {
-        return this._paintFlags = this.nativeView.getPaintFlags();
+        return this._paintFlags = this.nativeViewProtected.getPaintFlags();
     }
 
     [textDecorationProperty.setNative](value: number | TextDecoration) {
         switch (value) {
             case "none":
-                this.nativeView.setPaintFlags(0);
+                this.nativeViewProtected.setPaintFlags(0);
                 break;
             case "underline":
-                this.nativeView.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG);
+                this.nativeViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG);
                 break;
             case "line-through":
-                this.nativeView.setPaintFlags(android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                this.nativeViewProtected.setPaintFlags(android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
                 break;
             case "underline line-through":
-                this.nativeView.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                this.nativeViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
                 break;
             default:
-                this.nativeView.setPaintFlags(value);
+                this.nativeViewProtected.setPaintFlags(value);
                 break;
         }
     }
 
     [letterSpacingProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeView);
+        return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeViewProtected);
     }
     [letterSpacingProperty.setNative](value: number) {
-        org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeView, value);
+        org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeViewProtected, value);
     }
 
     [paddingTopProperty.getDefault](): Length {
         return { value: this._defaultPaddingTop, unit: "px" }
     }
     [paddingTopProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
     [paddingRightProperty.getDefault](): Length {
         return { value: this._defaultPaddingRight, unit: "px" }
     }
     [paddingRightProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
     [paddingBottomProperty.getDefault](): Length {
         return { value: this._defaultPaddingBottom, unit: "px" }
     }
     [paddingBottomProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
     [paddingLeftProperty.getDefault](): Length {
         return { value: this._defaultPaddingLeft, unit: "px" }
     }
     [paddingLeftProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 
     _setNativeText(reset: boolean = false): void {
         if (reset) {
-            this.nativeView.setText(null);
+            this.nativeViewProtected.setText(null);
             return;
         }
 
@@ -308,7 +308,7 @@ export class TextBase extends TextBaseCommon {
             transformedText = getTransformedText(stringValue, this.textTransform);
         }
 
-        this.nativeView.setText(<any>transformedText);
+        this.nativeViewProtected.setText(<any>transformedText);
     }
 }
 

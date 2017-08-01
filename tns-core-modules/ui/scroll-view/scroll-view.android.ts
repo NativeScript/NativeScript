@@ -4,12 +4,12 @@ import { ScrollViewBase, layout, scrollBarIndicatorVisibleProperty } from "./scr
 export * from "./scroll-view-common";
 
 export class ScrollView extends ScrollViewBase {
-    nativeView: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
+    nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
     private _androidViewId: number = -1;
     private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
 
     get horizontalOffset(): number {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return 0;
         }
@@ -18,7 +18,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get verticalOffset(): number {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return 0;
         }
@@ -27,7 +27,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get scrollableWidth(): number {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView || this.orientation !== "horizontal") {
             return 0;
         }
@@ -36,7 +36,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get scrollableHeight(): number {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView || this.orientation !== "vertical") {
             return 0;
         }
@@ -49,14 +49,14 @@ export class ScrollView extends ScrollViewBase {
     }
     [scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
         if (this.orientation === "horizontal") {
-            this.nativeView.setHorizontalScrollBarEnabled(value);
+            this.nativeViewProtected.setHorizontalScrollBarEnabled(value);
         } else {
-            this.nativeView.setVerticalScrollBarEnabled(value);
+            this.nativeViewProtected.setVerticalScrollBarEnabled(value);
         }   
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView && this.orientation === "vertical") {
             value *= layout.getDisplayDensity();
 
@@ -69,7 +69,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView && this.orientation === "horizontal") {
             value *= layout.getDisplayDensity();
 
@@ -92,7 +92,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public _onOrientationChanged() {
-        if (this.nativeView) {
+        if (this.nativeViewProtected) {
             const parent = this.parent;
             if (parent) {
                 parent._removeView(this);
@@ -112,13 +112,13 @@ export class ScrollView extends ScrollViewBase {
             }
         });
 
-        this.nativeView.getViewTreeObserver().addOnScrollChangedListener(this.handler);
+        this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
     }
 
     private _lastScrollX: number = -1;
     private _lastScrollY: number = -1;
     private _onScrollChanged() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             // Event is only raised if the scroll values differ from the last time in order to wokraround a native Android bug.
             // https://github.com/NativeScript/NativeScript/issues/2362
@@ -138,9 +138,9 @@ export class ScrollView extends ScrollViewBase {
     }
 
     protected dettachNative() {
-        this.nativeView.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+        this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
         this.handler = null;
     }
 }
 
-ScrollView.prototype.recycleNativeView = false;
+ScrollView.prototype.recycleNativeView = "never";

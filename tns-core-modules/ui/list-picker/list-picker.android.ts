@@ -69,7 +69,7 @@ function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.gra
 }
 
 export class ListPicker extends ListPickerBase {
-    nativeView: android.widget.NumberPicker;
+    nativeViewProtected: android.widget.NumberPicker;
     private _selectorWheelPaint: android.graphics.Paint;
 
     public createNativeView() {
@@ -100,7 +100,7 @@ export class ListPicker extends ListPickerBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
         (<any>nativeView).formatter.owner = this;
         (<any>nativeView).valueChangedListener.owner = this;
@@ -117,14 +117,14 @@ export class ListPicker extends ListPickerBase {
     }
 
     public disposeNativeView() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         (<any>nativeView).formatter.owner = null;
         (<any>nativeView).valueChangedListener.owner = null;
         super.disposeNativeView();
     }
 
     private _fixNumberPickerRendering() {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
         nativeView.setFormatter(null);
         nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter 
@@ -142,7 +142,7 @@ export class ListPicker extends ListPickerBase {
     }
     [selectedIndexProperty.setNative](value: number) {
         if (value >= 0) {
-            this.nativeView.setValue(value);
+            this.nativeViewProtected.setValue(value);
         }
     }
 
@@ -151,7 +151,7 @@ export class ListPicker extends ListPickerBase {
     }
     [itemsProperty.setNative](value: any[] | ItemsSource) {
         let maxValue = value && value.length > 0 ? value.length - 1 : 0;
-        this.nativeView.setMaxValue(maxValue);
+        this.nativeViewProtected.setMaxValue(maxValue);
         this._fixNumberPickerRendering();
 
         // Coerce selected index after we have set items to native view.
@@ -159,7 +159,7 @@ export class ListPicker extends ListPickerBase {
     }
 
     [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
-	const editText = (<any>this.nativeView).editText;
+	const editText = (<any>this.nativeViewProtected).editText;
         return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: editText ? editText.getTextColors().getDefaultColor() : -1
@@ -176,7 +176,7 @@ export class ListPicker extends ListPickerBase {
         }
 
         this._selectorWheelPaint.setColor(wheelColor);
-        const editText = (<any>this.nativeView).editText;
+        const editText = (<any>this.nativeViewProtected).editText;
         if (editText) {
             editText.setTextColor(color);
         }

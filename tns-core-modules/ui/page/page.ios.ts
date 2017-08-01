@@ -90,7 +90,7 @@ class UIViewControllerImpl extends UIViewController {
         if (modalParent) {
             // if inside horizontally compact environment - fullScreen will be forced
             let isFullScreen = !owner._UIModalPresentationFormSheet ||
-                (modalParent.nativeView.traitCollection.horizontalSizeClass === UIUserInterfaceSizeClass.Compact);
+                (modalParent.nativeViewProtected.traitCollection.horizontalSizeClass === UIUserInterfaceSizeClass.Compact);
 
             let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
             let size = frame.size;
@@ -326,7 +326,7 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends PageBase {
-    nativeView: UIView;
+    nativeViewProtected: UIView;
 
     private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
@@ -338,14 +338,14 @@ export class Page extends PageBase {
     constructor() {
         super();
         this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-        this.nativeView = this._ios.view;
-        this.nativeView.backgroundColor = new Color("white").ios;
+        this.nativeViewProtected = this._ios.view;
+        this.nativeViewProtected.backgroundColor = new Color("white").ios;
     }
 
     public requestLayout(): void {
         super.requestLayout();
-        if ((!this.parent || this._modalParent) && this.ios && this.nativeView) {
-            this.nativeView.setNeedsLayout();
+        if ((!this.parent || this._modalParent) && this.ios && this.nativeViewProtected) {
+            this.nativeViewProtected.setNeedsLayout();
         }
     }
 

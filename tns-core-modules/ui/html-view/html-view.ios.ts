@@ -5,7 +5,7 @@
 export * from "./html-view-common";
 
 export class HtmlView extends HtmlViewBase {
-    nativeView: UITextView;
+    nativeViewProtected: UITextView;
 
     constructor() {
         super();
@@ -16,15 +16,15 @@ export class HtmlView extends HtmlViewBase {
         nativeView.userInteractionEnabled = true;
         nativeView.dataDetectorTypes = UIDataDetectorTypes.All;
 
-        this.nativeView = nativeView;
+        this.nativeViewProtected = nativeView;
     }
 
     get ios(): UITextView {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (nativeView) {
             const width = layout.getMeasureSpecSize(widthMeasureSpec);
             const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -51,6 +51,6 @@ export class HtmlView extends HtmlViewBase {
     [htmlProperty.setNative](value: string) {
         const htmlString = NSString.stringWithString(value + "");
         const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-        this.nativeView.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+        this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
     }
 }

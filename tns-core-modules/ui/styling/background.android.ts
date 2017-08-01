@@ -31,13 +31,13 @@ export module ad {
     }
 
     export function onBackgroundOrBorderPropertyChanged(view: View) {
-        const nativeView = <android.view.View>view.nativeView;
+        const nativeView = <android.view.View>view.nativeViewProtected;
         if (!nativeView) {
             return;
         }
 
         const background = view.style.backgroundInternal;
-        const cache = <CacheLayerType>view.nativeView;
+        const cache = <CacheLayerType>view.nativeViewProtected;
         const drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
@@ -111,7 +111,7 @@ function fromBase64(source: string): android.graphics.Bitmap {
 
 const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
-    const nativeView = <android.view.View>view.nativeView;
+    const nativeView = <android.view.View>view.nativeViewProtected;
     const context = nativeView.getContext();
 
     const background = view.style.backgroundInternal;

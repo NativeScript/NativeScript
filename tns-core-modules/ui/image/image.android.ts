@@ -40,7 +40,7 @@ function initializeImageLoadedListener() {
 }
 
 export class Image extends ImageBase {
-    nativeView: org.nativescript.widgets.ImageView;
+    nativeViewProtected: org.nativescript.widgets.ImageView;
 
     public decodeWidth = 0;
     public decodeHeight = 0;
@@ -62,21 +62,21 @@ export class Image extends ImageBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        (<any>this.nativeView).listener.owner = this;
+        (<any>this.nativeViewProtected).listener.owner = this;
     }
 
     public disposeNativeView() {
-        (<any>this.nativeView).listener.owner = null;
+        (<any>this.nativeViewProtected).listener.owner = null;
         super.disposeNativeView();
     }
 
     public resetNativeView(): void {
         super.resetNativeView();
-        this.nativeView.setImageMatrix(new android.graphics.Matrix());        
+        this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());        
     }
 
     public _createImageSourceFromSrc(value: string | ImageSource) {
-        const imageView = this.nativeView;
+        const imageView = this.nativeViewProtected;
         if (!imageView) {
             return;
         }
@@ -121,17 +121,17 @@ export class Image extends ImageBase {
     [stretchProperty.setNative](value: "none" | "aspectFill" | "aspectFit" | "fill") {
         switch (value) {
             case "aspectFit":
-                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+                this.nativeViewProtected.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
                 break;
             case "aspectFill":
-                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+                this.nativeViewProtected.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
                 break;
             case "fill":
-                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+                this.nativeViewProtected.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
                 break;
             case "none":
             default:
-                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
+                this.nativeViewProtected.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
                 break;
         }
     }
@@ -141,9 +141,9 @@ export class Image extends ImageBase {
     }
     [tintColorProperty.setNative](value: Color) {
         if (value === undefined) {
-            this.nativeView.clearColorFilter();
+            this.nativeViewProtected.clearColorFilter();
         } else {
-            this.nativeView.setColorFilter(value.android);
+            this.nativeViewProtected.setColorFilter(value.android);
         }
     }
 
@@ -151,7 +151,7 @@ export class Image extends ImageBase {
         return undefined;
     }
     [imageSourceProperty.setNative](value: ImageSource) {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         if (value && value.android) {
             const rotation = value.rotationAngle ? value.rotationAngle : 0;
             nativeView.setRotationAngle(rotation);

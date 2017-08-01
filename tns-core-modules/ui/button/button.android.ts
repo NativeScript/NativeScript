@@ -39,7 +39,7 @@ function initializeClickListener(): void {
 }
 
 export class Button extends ButtonBase {
-    nativeView: android.widget.Button;
+    nativeViewProtected: android.widget.Button;
 
     private _stateListAnimator: any;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
@@ -55,13 +55,13 @@ export class Button extends ButtonBase {
     }
 
     public initNativeView(): void {
-        const nativeView = this.nativeView;
+        const nativeView = this.nativeViewProtected;
         (<any>nativeView).clickListener.owner = this;
         super.initNativeView();
     }
 
     public disposeNativeView() {
-        (<any>this.nativeView).clickListener.owner = null;
+        (<any>this.nativeViewProtected).clickListener.owner = null;
         super.disposeNativeView();
     }
 
@@ -69,7 +69,7 @@ export class Button extends ButtonBase {
         super.resetNativeView();
 
         if (this._stateListAnimator && APILEVEL >= 21) {
-            (<any>this.nativeView).setStateListAnimator(this._stateListAnimator);
+            (<any>this.nativeViewProtected).setStateListAnimator(this._stateListAnimator);
             this._stateListAnimator = undefined;
         }
     }
@@ -97,41 +97,41 @@ export class Button extends ButtonBase {
         return { value: this._defaultPaddingTop, unit: "px" }
     }
     [paddingTopProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
     [paddingRightProperty.getDefault](): Length {
         return { value: this._defaultPaddingRight, unit: "px" }
     }
     [paddingRightProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
     [paddingBottomProperty.getDefault](): Length {
         return { value: this._defaultPaddingBottom, unit: "px" }
     }
     [paddingBottomProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
     [paddingLeftProperty.getDefault](): Length {
         return { value: this._defaultPaddingLeft, unit: "px" }
     }
     [paddingLeftProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 
     [zIndexProperty.setNative](value: number) {
         // API >= 21
         if (APILEVEL >= 21) {
-            const nativeView = this.nativeView;
+            const nativeView = this.nativeViewProtected;
             if (!this._stateListAnimator) {
                 this._stateListAnimator = (<any>nativeView).getStateListAnimator();
             }
             (<any>nativeView).setStateListAnimator(null);
         }
 
-        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
+        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
     }
 
     [textAlignmentProperty.setNative](value: TextAlignment) {

@@ -59,7 +59,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
                 this._addView(item);
             }
 
-            if (this.nativeView) {
+            if (this.nativeViewProtected) {
                 this[itemsProperty.setNative](items);
             }
         }
@@ -94,7 +94,7 @@ export interface SegmentedBarBase {
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
 }
 
-SegmentedBarBase.prototype.recycleNativeView = true;
+SegmentedBarBase.prototype.recycleNativeView = "auto";
 
 /**
  * Gets or sets the selected index dependency property of the SegmentedBar.

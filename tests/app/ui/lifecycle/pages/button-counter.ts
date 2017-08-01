@@ -19,4 +19,4 @@ export class Button extends button.Button {
         super._redrawNativeBackground(value);
     }
 }
-Button.prototype.recycleNativeView = false;
+Button.prototype.recycleNativeView = "never";

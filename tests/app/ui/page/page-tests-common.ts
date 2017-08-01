@@ -385,9 +385,9 @@ export function test_page_backgroundColor_is_white() {
     helper.navigate(factory);
     let whiteColor = new Color("white");
     if (platform.isIOS) {
-        TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeView.backgroundColor.CGColor), "page default backgroundColor should be white");
+        TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeViewProtected.backgroundColor.CGColor), "page default backgroundColor should be white");
     } else {
-        TKUnit.assertEqual(page.nativeView.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
+        TKUnit.assertEqual(page.nativeViewProtected.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
     }
 }
 

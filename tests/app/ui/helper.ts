@@ -261,8 +261,8 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     const test = createNew();
 
     // Make sure we are not reusing a native views.
-    first.recycleNativeView = false;
-    test.recycleNativeView = false;
+    first.recycleNativeView = "never";
+    test.recycleNativeView = "never";
 
     page.content = layout;
 
@@ -273,12 +273,12 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     // Needed so we can reset formattedText
     test["secure"] = false;
 
-    const nativeView = test.nativeView;
+    const nativeView = test.nativeViewProtected;
     // Mark so we reuse the native views.
-    test.recycleNativeView = true;
+    test.recycleNativeView = "always";
     layout.removeChild(test);
     const newer = createNew();
-    newer.recycleNativeView = true;
+    newer.recycleNativeView = "always";
     layout.addChild(newer);
     layout.addChild(first);
 
@@ -292,7 +292,7 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
         compareUsingReflection(newer, first);
     }
 
-    TKUnit.assertEqual(newer.nativeView, nativeView, "nativeView not reused.");
+    TKUnit.assertEqual(newer.nativeViewProtected, nativeView, "nativeView not reused.");
     checkDefaults(newer, first, props, nativeGetters || defaultNativeGetters);
     checkDefaults(newer, first, styleProps, nativeGetters || defaultNativeGetters);
 
@@ -301,8 +301,8 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
 }
 
 function compareUsingReflection(recycledNativeView: View, newNativeView: View): void {
-    const recycled: android.view.View = recycledNativeView.nativeView;
-    const newer: android.view.View = newNativeView.nativeView;
+    const recycled: android.view.View = recycledNativeView.nativeViewProtected;
+    const newer: android.view.View = newNativeView.nativeViewProtected;
     TKUnit.assertNotEqual(recycled, newer);
     const methods = newer.getClass().getMethods();
     for (let i = 0, length = methods.length; i < length; i++) {

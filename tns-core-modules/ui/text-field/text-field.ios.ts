@@ -136,14 +136,14 @@ class UITextFieldImpl extends UITextField {
 export class TextField extends TextFieldBase {
     private _ios: UITextField;
     private _delegate: UITextFieldDelegateImpl;
-    nativeView: UITextField;
+    nativeViewProtected: UITextField;
 
     constructor() {
         super();
         let weakRef = new WeakRef(this);
         this._ios = UITextFieldImpl.initWithOwner(weakRef);
         this._delegate = UITextFieldDelegateImpl.initWithOwner(weakRef);
-        this.nativeView = this._ios;
+        this.nativeViewProtected = this._ios;
     }
 
     @profile
@@ -162,7 +162,7 @@ export class TextField extends TextFieldBase {
     }
 
     [hintProperty.getDefault](): string {
-        return this.nativeView.placeholder;
+        return this.nativeViewProtected.placeholder;
     }
     [hintProperty.setNative](value: string) {
         let stringValue;
@@ -171,32 +171,32 @@ export class TextField extends TextFieldBase {
         } else {
             stringValue = value + "";
         }
-        this.nativeView.placeholder = stringValue;
+        this.nativeViewProtected.placeholder = stringValue;
     }
 
     [secureProperty.getDefault](): boolean {
-        return this.nativeView.secureTextEntry;
+        return this.nativeViewProtected.secureTextEntry;
     }
     [secureProperty.setNative](value: boolean) {
-        this.nativeView.secureTextEntry = value;
+        this.nativeViewProtected.secureTextEntry = value;
     }
 
     [colorProperty.getDefault](): { textColor: UIColor, tintColor: UIColor } {
         // return this.nativeView.tintColor;
-        console.log("----> TextField: colorProperty.getDefault: " + this.nativeView.textColor)
+        console.log("----> TextField: colorProperty.getDefault: " + this.nativeViewProtected.textColor)
         return {
-            textColor: this.nativeView.textColor,
-            tintColor: this.nativeView.tintColor
+            textColor: this.nativeViewProtected.textColor,
+            tintColor: this.nativeViewProtected.tintColor
         };
     }
     [colorProperty.setNative](value: Color | { textColor: UIColor, tintColor: UIColor }) {
         if (value instanceof Color) {
             let color = value instanceof Color ? value.ios : value;
-            this.nativeView.textColor = color;
-            this.nativeView.tintColor = color;
+            this.nativeViewProtected.textColor = color;
+            this.nativeViewProtected.tintColor = color;
         } else {
-            this.nativeView.textColor = value.textColor;
-            this.nativeView.tintColor = value.tintColor;
+            this.nativeViewProtected.textColor = value.textColor;
+            this.nativeViewProtected.tintColor = value.tintColor;
         }
     }
 
@@ -204,7 +204,7 @@ export class TextField extends TextFieldBase {
         return null;
     }
     [placeholderColorProperty.setNative](value: UIColor | Color) {
-        let nativeView = this.nativeView;
+        let nativeView = this.nativeViewProtected;
         let colorAttibutes = NSMutableDictionary.new<string, any>();
         colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
         let stringValue;

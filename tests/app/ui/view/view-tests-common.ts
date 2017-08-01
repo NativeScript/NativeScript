@@ -14,7 +14,7 @@ import * as helper from "../../ui/helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
-import { isIOS } from "tns-core-modules/platform";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -350,8 +350,8 @@ class TestView extends Layout {
     private _nativeView;
     constructor(public name: string) {
         super();
-        this._nativeView = this.nativeView;
-        this.nativeView = undefined;
+        this._nativeView = this.nativeViewProtected;
+        this.nativeViewProtected = undefined;
     }
 
     public createNativeView() {
@@ -578,7 +578,7 @@ export function test_NativeSetter_called_when_add_and_remove() {
 export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
     const firstView = new TestView("firstView");
     const secondView = new TestView("secondView");
-    secondView.recycleNativeView = !isIOS;
+    secondView.recycleNativeView = isAndroid ? "always" : "never";
     secondView.customCssProperty = "testCssValue";
     secondView.custom = "testViewValue";
 

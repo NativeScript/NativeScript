@@ -12,8 +12,8 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        this.nativeView.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
+        this.nativeViewProtected.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
     }
 }
 
-TextView.prototype.recycleNativeView = true;
+TextView.prototype.recycleNativeView = "auto";

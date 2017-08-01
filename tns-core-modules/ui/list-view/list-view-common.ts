@@ -129,7 +129,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
         rowHeightProperty.coerce(this);
     }
 }
-ListViewBase.prototype.recycleNativeView = true;
+ListViewBase.prototype.recycleNativeView = "auto";
 
 export interface ListViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
@@ -188,7 +188,7 @@ export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
     name: "rowHeight", defaultValue: defaultRowHeight, equalityComparer: Length.equals,
     coerceValue: (target, value) => {
         // We coerce to default value if we don't have display density.
-        return target.nativeView ? value : defaultRowHeight;
+        return target.nativeViewProtected ? value : defaultRowHeight;
     },
     valueChanged: (target, oldValue, newValue) => {
         target._effectiveRowHeight = Length.toDevicePixels(newValue, autoEffectiveRowHeight);

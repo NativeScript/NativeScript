@@ -191,7 +191,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                     valueChanged(owner, oldValue, value);
                 }
 
-                if (owner.nativeView && !(defaultValueKey in owner)) {
+                if (owner.nativeViewProtected && !(defaultValueKey in owner)) {
                     owner[defaultValueKey] = owner[getDefault] ? owner[getDefault]() : defaultValue;
                 }
 

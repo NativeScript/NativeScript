@@ -3,15 +3,15 @@ import { LayoutBase } from "./layout-base";
 
 export * from "./layout-base";
 export class Layout extends LayoutBase implements LayoutDefinition {
-    nativeView: UIView;
+    nativeViewProtected: UIView;
 
     constructor() {
         super();
-        this.nativeView = UIView.new();
+        this.nativeViewProtected = UIView.new();
     }
 
     get ios(): UIView {
-        return this.nativeView;
+        return this.nativeViewProtected;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
