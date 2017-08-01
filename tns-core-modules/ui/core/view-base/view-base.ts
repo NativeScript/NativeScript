@@ -133,7 +133,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
-    private _recycleNativeView: boolean;
+    // Disable view recycling
+    // private _recycleNativeView: boolean;
     private _iosView: Object;
     private _androidView: Object;
     private _style: Style;
@@ -216,12 +217,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         return types.getClass(this);
     }
 
-    get recycleNativeView(): boolean {
-        return this._recycleNativeView;
+    // Disable view recycling
+    get recycleNativeView(): any {
+        // return this._recycleNativeView;
+        return false;
     }
-
-    set recycleNativeView(value: boolean) {
-        this._recycleNativeView = typeof value === "boolean" ? value : booleanConverter(value);
+    set recycleNativeView(value: any) {
+        // this._recycleNativeView = typeof value === "boolean" ? value : booleanConverter(value);
     }
 
     get style(): Style {
@@ -670,16 +672,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     private resetNativeViewInternal(): void {
-        const nativeView = this.nativeView;
-        if (nativeView && this._recycleNativeView && isAndroid) {
-            resetNativeView(this);
-            if (this._isPaddingRelative) {
-                nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-            } else {
-                nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-            }
-            this.resetNativeView();
-        }
+        // Disable view recycling
+        // const nativeView = this.nativeView;
+        // if (nativeView && this._recycleNativeView && isAndroid) {
+        //     resetNativeView(this);
+        //     if (this._isPaddingRelative) {
+        //         nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+        //     } else {
+        //         nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+        //     }
+        //     this.resetNativeView();
+        // }
         if (this._cssState) {
             this._cancelAllAnimations();
         }
@@ -702,9 +705,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         let nativeView;
         if (isAndroid) {
-            if (this._recycleNativeView) {
-                nativeView = <android.view.View>getNativeView(context, this.typeName);
-            }
+            // Disable view recycling
+            // if (this._recycleNativeView) {
+            //     nativeView = <android.view.View>getNativeView(context, this.typeName);
+            // }
 
             if (!nativeView) {
                 nativeView = <android.view.View>this.createNativeView();
@@ -805,13 +809,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this.parent._removeViewFromNativeVisualTree(this);
         }
 
-        const nativeView = this.nativeView;
-        if (nativeView && this._recycleNativeView && isAndroid) {
-            const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
-            if (!nativeParent) {
-                putNativeView(this._context, this);
-            }
-        }
+        // Disable view recycling
+        // const nativeView = this.nativeView;
+        // if (nativeView && this._recycleNativeView && isAndroid) {
+        //     const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+        //     if (!nativeParent) {
+        //         putNativeView(this._context, this);
+        //     }
+        // }
 
         this.disposeNativeView();
 

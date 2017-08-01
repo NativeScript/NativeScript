@@ -146,7 +146,9 @@ export abstract class ViewBase extends Observable {
     public nativeView: any;
 
     public bindingContext: any;
-    public recycleNativeView: boolean;
+
+    // Reserved for future use. Currently not used
+    public recycleNativeView: any;
 
     /**
      * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".

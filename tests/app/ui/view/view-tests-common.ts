@@ -575,36 +575,37 @@ export function test_NativeSetter_called_when_add_and_remove() {
     });
 };
 
-export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
-    const firstView = new TestView("firstView");
-    const secondView = new TestView("secondView");
-    secondView.recycleNativeView = !isIOS;
-    secondView.customCssProperty = "testCssValue";
-    secondView.custom = "testViewValue";
+// Disable view recycling
+// export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
+//     const firstView = new TestView("firstView");
+//     const secondView = new TestView("secondView");
+//     secondView.recycleNativeView = !isIOS;
+//     secondView.customCssProperty = "testCssValue";
+//     secondView.custom = "testViewValue";
 
-    helper.buildUIAndRunTest(firstView, () => {
-        TKUnit.assertEqual(secondView.cssPropCounter, 0, "1");
-        TKUnit.assertEqual(secondView.viewPropCounter, 0, "2");
+//     helper.buildUIAndRunTest(firstView, () => {
+//         TKUnit.assertEqual(secondView.cssPropCounter, 0, "1");
+//         TKUnit.assertEqual(secondView.viewPropCounter, 0, "2");
 
-        // Add to visual tree
-        firstView.addChild(secondView);
-        TKUnit.assertEqual(secondView.cssPropCounter, 1, "3");
-        TKUnit.assertEqual(secondView.viewPropCounter, 1, "4");
+//         // Add to visual tree
+//         firstView.addChild(secondView);
+//         TKUnit.assertEqual(secondView.cssPropCounter, 1, "3");
+//         TKUnit.assertEqual(secondView.viewPropCounter, 1, "4");
 
-        // Set new value
-        secondView.customCssProperty = "test2";
-        secondView.custom = "test2";
-        TKUnit.assertEqual(secondView.cssPropCounter, 2, "5");
-        TKUnit.assertEqual(secondView.viewPropCounter, 2, "6");
+//         // Set new value
+//         secondView.customCssProperty = "test2";
+//         secondView.custom = "test2";
+//         TKUnit.assertEqual(secondView.cssPropCounter, 2, "5");
+//         TKUnit.assertEqual(secondView.viewPropCounter, 2, "6");
 
-        // Remove from visual tree
-        firstView.removeChild(secondView);
+//         // Remove from visual tree
+//         firstView.removeChild(secondView);
 
-        // we don't recycle nativeViews on iOS yet so reset is not called.
-        TKUnit.assertEqual(secondView.cssPropCounter, isIOS ? 2 : 3, "7");
-        TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
-    });
-};
+//         // we don't recycle nativeViews on iOS yet so reset is not called.
+//         TKUnit.assertEqual(secondView.cssPropCounter, isIOS ? 2 : 3, "7");
+//         TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
+//     });
+// };
 
 export function test_InheritableProperties_getValuesFromParent() {
     const testValue = 35;

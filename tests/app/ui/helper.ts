@@ -241,59 +241,61 @@ let cssSetters: Map<string, any>;
 let defaultNativeGetters: Map<string, (view) => any>;
 
 export function nativeView_recycling_test(createNew: () => View, createLayout?: () => LayoutBase, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
-    if (isIOS) {
-        // recycling not implemented yet.
-        return;
-    }
+    return;
 
-    setupSetters();
-    const page = getClearCurrentPage();
-    let layout: LayoutBase = new FlexboxLayout();
-    if (createLayout) {
-        // This is done on purpose. We need the constructor of Flexbox
-        // to run otherwise some module fileds stays uninitialized.
-        layout = createLayout();
-    }
+    // if (isIOS) {
+    //     // recycling not implemented yet.
+    //     return;
+    // }
 
-    page.content = layout;
+    // setupSetters();
+    // const page = getClearCurrentPage();
+    // let layout: LayoutBase = new FlexboxLayout();
+    // if (createLayout) {
+    //     // This is done on purpose. We need the constructor of Flexbox
+    //     // to run otherwise some module fileds stays uninitialized.
+    //     layout = createLayout();
+    // }
 
-    const first = createNew();
-    const test = createNew();
+    // page.content = layout;
 
-    // Make sure we are not reusing a native views.
-    first.recycleNativeView = false;
-    test.recycleNativeView = false;
+    // const first = createNew();
+    // const test = createNew();
 
-    page.content = layout;
+    // // Make sure we are not reusing a native views.
+    // first.recycleNativeView = false;
+    // test.recycleNativeView = false;
 
-    layout.addChild(test);
+    // page.content = layout;
 
-    setValue(test.style, cssSetters);
-    setValue(test, setters, customSetters);
-    // Needed so we can reset formattedText
-    test["secure"] = false;
+    // layout.addChild(test);
 
-    const nativeView = test.nativeView;
-    // Mark so we reuse the native views.
-    test.recycleNativeView = true;
-    layout.removeChild(test);
-    const newer = createNew();
-    newer.recycleNativeView = true;
-    layout.addChild(newer);
-    layout.addChild(first);
+    // setValue(test.style, cssSetters);
+    // setValue(test, setters, customSetters);
+    // // Needed so we can reset formattedText
+    // test["secure"] = false;
 
-    if (first.typeName !== "SearchBar" && sdkVersion > 19) {
-        // There are way too many differences in native methods for search-bar.
-        // There are too many methods that just throw for newly created views in API lvl 19 and 17 
-        compareUsingReflection(newer, first);
-    }
+    // const nativeView = test.nativeView;
+    // // Mark so we reuse the native views.
+    // test.recycleNativeView = true;
+    // layout.removeChild(test);
+    // const newer = createNew();
+    // newer.recycleNativeView = true;
+    // layout.addChild(newer);
+    // layout.addChild(first);
 
-    TKUnit.assertEqual(newer.nativeView, nativeView, "nativeView not reused.");
-    checkDefaults(newer, first, props, nativeGetters || defaultNativeGetters);
-    checkDefaults(newer, first, styleProps, nativeGetters || defaultNativeGetters);
+    // if (first.typeName !== "SearchBar" && sdkVersion > 19) {
+    //     // There are way too many differences in native methods for search-bar.
+    //     // There are too many methods that just throw for newly created views in API lvl 19 and 17 
+    //     compareUsingReflection(newer, first);
+    // }
 
-    layout.removeChild(newer);
-    layout.removeChild(first);
+    // TKUnit.assertEqual(newer.nativeView, nativeView, "nativeView not reused.");
+    // checkDefaults(newer, first, props, nativeGetters || defaultNativeGetters);
+    // checkDefaults(newer, first, styleProps, nativeGetters || defaultNativeGetters);
+
+    // layout.removeChild(newer);
+    // layout.removeChild(first);
 }
 
 function compareUsingReflection(recycledNativeView: View, newNativeView: View): void {
