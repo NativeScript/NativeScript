@@ -1,15 +1,17 @@
-import { Label } from "tns-core-modules/ui/Label";
-import { Page } from "tns-core-modules/ui/Page";
+import { Label } from "tns-core-modules/ui/label";
+import { Page } from "tns-core-modules/ui/page";
 
 export function onNavigateTo(args) {
-    const actionBar = (<Page>args.object).actionBar;
-    args.object.flatPropertyValue = <Label>args.object.getViewById("flatPropertyValue");
-    actionBar.flat = true;
-    args.object.flatPropertyValue.text = "Action bar flat property is set to: " + actionBar.flat;
+    updateText(args.object);
 }
 
 export function changeFlatPropertyValue(args) {
-    const actionBar = (<Page>args.object.page).actionBar;
-    actionBar.flat = !actionBar.flat;
-    args.object.page.flatPropertyValue.text = "Action bar flat property is set to: " + actionBar.flat;
+    const page = <Page>args.object.page;
+    page.actionBar.flat = !page.actionBar.flat;
+    updateText(page);
+}
+
+function updateText(page: Page) {
+    const label = <Label>page.getViewById("flatPropertyValue");
+    label.text = "Action bar flat property is set to: " + page.actionBar.flat;
 }

@@ -1,5 +1,5 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
-import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout, Color } from "./action-bar-common";
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, flatProperty, layout, Color } from "./action-bar-common";
 import { ImageSource, fromFileOrResource } from "../../image-source";
 
 export * from "./action-bar-common";
@@ -358,5 +358,12 @@ export class ActionBar extends ActionBarBase {
         return null;
     }
     [backgroundInternalProperty.setNative](value: UIColor) { // tslint:disable-line
+    }
+
+    [flatProperty.setNative](value: boolean) { // tslint:disable-line
+        let navBar = this.navBar;
+        if (navBar) {
+            this.updateFlatness(navBar);
+        }
     }
 }
