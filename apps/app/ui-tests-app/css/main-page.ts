@@ -14,6 +14,7 @@ export function loadExamples() {
     examples.set("formatted", "css/decoration-transform-formattedtext");
     examples.set("radius", "css/radius");
     examples.set("spacing", "css/letter-spacing");
+    examples.set("line-height", "css/line-height");
     examples.set("decoration", "css/text-decoration");
     examples.set("transform", "css/text-transform");
     examples.set("whitespace", "css/white-space");
@@ -39,6 +40,5 @@ export function loadExamples() {
     examples.set("styled-formatted-text", "css/styled-formatted-text");
     examples.set("non-uniform-radius", "css/non-uniform-radius");
     examples.set("missing-background-image", "css/missing-background-image");
-
     return examples;
 }

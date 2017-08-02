@@ -30,6 +30,11 @@ export class TextBase extends View implements AddChildFromBuilder {
     letterSpacing: number;
 
     /**
+     * Gets or sets lineHeight style property.
+     */
+    lineHeight: number;
+
+    /**
      * Gets or sets text-alignment style property.
      */
     textAlignment: TextAlignment;
