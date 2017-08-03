@@ -8,6 +8,8 @@ interface Time {
     minute: number;
 }
 
+const dateComparer = (x: Date, y: Date): boolean => (x <= y && x >= y);
+
 export function getValidTime(picker: TimePickerDefinition, hour: number, minute: number): Time {
     if (picker.minuteInterval > 1) {
         let minuteFloor = minute - (minute % picker.minuteInterval);
@@ -97,7 +99,7 @@ export abstract class TimePickerBase extends View implements TimePickerDefinitio
 
 TimePickerBase.prototype.recycleNativeView = "auto";
 
-export var minHourProperty = new Property<TimePickerBase, number>({
+export const minHourProperty = new Property<TimePickerBase, number>({
     name: "minHour", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
         if (!isHourValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "minHour", newValue));
@@ -106,7 +108,7 @@ export var minHourProperty = new Property<TimePickerBase, number>({
 });
 minHourProperty.register(TimePickerBase);
 
-export var maxHourProperty = new Property<TimePickerBase, number>({
+export const maxHourProperty = new Property<TimePickerBase, number>({
     name: "maxHour", defaultValue: 23, valueChanged: (picker, oldValue, newValue) => {
         if (!isHourValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "maxHour", newValue));
@@ -116,7 +118,7 @@ export var maxHourProperty = new Property<TimePickerBase, number>({
 });
 maxHourProperty.register(TimePickerBase);
 
-export var minMinuteProperty = new Property<TimePickerBase, number>({
+export const minMinuteProperty = new Property<TimePickerBase, number>({
     name: "minMinute", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
         if (!isMinuteValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "minMinute", newValue));
@@ -125,7 +127,7 @@ export var minMinuteProperty = new Property<TimePickerBase, number>({
 });
 minMinuteProperty.register(TimePickerBase);
 
-export var maxMinuteProperty = new Property<TimePickerBase, number>({
+export const maxMinuteProperty = new Property<TimePickerBase, number>({
     name: "maxMinute", defaultValue: 59, valueChanged: (picker, oldValue, newValue) => {
         if (!isMinuteValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "maxMinute", newValue));
@@ -134,7 +136,7 @@ export var maxMinuteProperty = new Property<TimePickerBase, number>({
 });
 maxMinuteProperty.register(TimePickerBase);
 
-export var minuteIntervalProperty = new Property<TimePickerBase, number>({
+export const minuteIntervalProperty = new Property<TimePickerBase, number>({
     name: "minuteInterval", defaultValue: 1, valueChanged: (picker, oldValue, newValue) => {
         if (!isMinuteIntervalValid(newValue)) {
             throw new Error(getErrorMessage(picker, "minuteInterval", newValue));
@@ -143,11 +145,7 @@ export var minuteIntervalProperty = new Property<TimePickerBase, number>({
 });
 minuteIntervalProperty.register(TimePickerBase);
 
-function dateComparer(x: Date, y: Date): boolean {
-    return (x <= y && x >= y) ? true : false;
-}
-
-export var minuteProperty = new Property<TimePickerBase, number>({
+export const minuteProperty = new Property<TimePickerBase, number>({
     name: "minute", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
         if (!isMinuteValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "minute", newValue));
@@ -158,7 +156,7 @@ export var minuteProperty = new Property<TimePickerBase, number>({
 });
 minuteProperty.register(TimePickerBase);
 
-export var hourProperty = new Property<TimePickerBase, number>({
+export const hourProperty = new Property<TimePickerBase, number>({
     name: "hour", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
         if (!isHourValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "Hour", newValue));
@@ -170,8 +168,9 @@ export var hourProperty = new Property<TimePickerBase, number>({
 });
 hourProperty.register(TimePickerBase);
 
-export var timeProperty = new Property<TimePickerBase, Date>({
-    name: "time", equalityComparer: dateComparer, valueChanged: (picker, oldValue, newValue) => {
+export const timeProperty = new Property<TimePickerBase, Date>({
+    name: "time", defaultValue: new Date(), equalityComparer: dateComparer,
+    valueChanged: (picker, oldValue, newValue) => {
         if (!isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "time", newValue));
         }

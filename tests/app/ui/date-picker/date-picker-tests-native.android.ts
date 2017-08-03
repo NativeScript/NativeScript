@@ -5,7 +5,7 @@ export function getNativeYear(datePicker: datePickerModule.DatePicker): number {
 }
 
 export function getNativeMonth(datePicker: datePickerModule.DatePicker): number {
-    return datePicker.android.getMonth() + 1;
+    return datePicker.android.getMonth();
 }
 
 export function getNativeDay(datePicker: datePickerModule.DatePicker): number {
@@ -25,7 +25,7 @@ export function setNativeYear(datePicker: datePickerModule.DatePicker, value: nu
 }
 
 export function setNativeMonth(datePicker: datePickerModule.DatePicker, value: number): void {
-    datePicker.android.updateDate(datePicker.android.getYear(), value - 1, datePicker.android.getDayOfMonth());
+    datePicker.android.updateDate(datePicker.android.getYear(), value, datePicker.android.getDayOfMonth());
 }
 
 export function setNativeDay(datePicker: datePickerModule.DatePicker, value: number): void {
@@ -33,5 +33,5 @@ export function setNativeDay(datePicker: datePickerModule.DatePicker, value: num
 }
 
 export function setNativeDate(datePicker: datePickerModule.DatePicker, year: number, month: number, day: number): void {
-    datePicker.android.updateDate(year, month - 1, day);
+    datePicker.android.updateDate(year, month, day);
 }

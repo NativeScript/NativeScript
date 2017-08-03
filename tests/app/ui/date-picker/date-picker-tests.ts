@@ -13,6 +13,7 @@ import * as helper from "../helper";
 export function test_recycling() {
     helper.nativeView_recycling_test(() => new datePickerModule.DatePicker());
 }
+const currentDate = new Date();
 
 function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {
     TKUnit.assertEqual(datePicker.year, expectedYear, "datePicker.year");
@@ -43,7 +44,7 @@ function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: numbe
 
 export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicker> {
     public create() {
-        let datePicker = new datePickerModule.DatePicker();
+        const datePicker = new datePickerModule.DatePicker();
         datePicker.id = "DatePicker";
         return datePicker;
     }
@@ -63,7 +64,7 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public test_DummyForCodeSnippet() {
-        let datePicker = new datePickerModule.DatePicker();
+        const datePicker = new datePickerModule.DatePicker();
         // >> date-picker-configure
         datePicker.year = 1980;
         datePicker.month = 2;
@@ -80,72 +81,72 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
         }
     }
     
-    public test_WhenCreated_YearIsUndefined() {
-        let actualValue = this.testView.year;
-        let expectedValue = undefined;
+    public test_WhenCreated_YearIsCurrentYear() {
+        const actualValue = this.testView.year;
+        const expectedValue = currentDate.getFullYear();
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
-    public test_WhenCreated_MonthIsUndefined() {
-        let actualValue = this.testView.month;
-        let expectedValue = undefined;
+    public test_WhenCreated_MonthIsCurrentMonth() {
+        const actualValue = this.testView.month;
+        const expectedValue = currentDate.getMonth();
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
-    public test_WhenCreated_DayIsUndefined() {
-        let actualValue = this.testView.day;
-        let expectedValue = undefined;
+    public test_WhenCreated_DayIsCurrentDay() {
+        const actualValue = this.testView.day;
+        const expectedValue = currentDate.getDate();
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
-    public test_WhenCreated_DateIsUndefined() {
-        let actualValue = this.testView.date;
-        let expectedValue = undefined;
-        TKUnit.assertEqual(actualValue, expectedValue);
+    public test_WhenCreated_DateIsCurrentDate() {
+        const expectedValue = currentDate;
+        assertDate(this.testView, expectedValue.getFullYear(), expectedValue.getMonth(), expectedValue.getDate());
     }
 
     public testYearFromLocalToNative() {
-        let expectedValue = 1980;
+        const expectedValue = 1980;
         this.testView.year = expectedValue;
-        let actualValue = datePickerTestsNative.getNativeYear(this.testView);
+        const actualValue = datePickerTestsNative.getNativeYear(this.testView);
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
     public testMonthFromLocalToNative() {
-        let expectedValue = 5;
+        const expectedValue = 5;
         this.testView.month = expectedValue;
-        let actualValue = datePickerTestsNative.getNativeMonth(this.testView);
+        const actualValue = datePickerTestsNative.getNativeMonth(this.testView);
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
     public testDayFromLocalToNative() {
-        let expectedValue = 19;
+        const expectedValue = 19;
         this.testView.day = expectedValue;
-        let actualValue = datePickerTestsNative.getNativeDay(this.testView);
+        const actualValue = datePickerTestsNative.getNativeDay(this.testView);
         TKUnit.assertEqual(actualValue, expectedValue);
     }
     
     public test_DateIsSetCorrectlyWhenDayIsSet() {
-        let today = new Date(2016, 3, 15);
+        const today = new Date(2016, 3, 15);
         this.testView.year = today.getFullYear();
         this.testView.month = today.getMonth();
-        let expectedValue = today.getDate();
+
+        const expectedValue = today.getDate();
         this.testView.day = expectedValue;
         
-        let expectedDate = new Date(today.getFullYear(), today.getMonth() - 1, expectedValue);
+        const expectedDate = new Date(today.getFullYear(), today.getMonth(), expectedValue);
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
         TKUnit.assertEqual(this.testView.date.getFullYear(), expectedDate.getFullYear(), "Getting Year from date property failed.");
     }
     
     public test_DateIsSetCorrectlyWhenMonthIsSet() {
-        let today = new Date(2016, 3, 15);
+        const today = new Date(2016, 3, 15);
         this.testView.year = today.getFullYear();
         this.testView.day = today.getDate();
         
-        let expectedValue = today.getMonth();
+        const expectedValue = today.getMonth();
         this.testView.month = expectedValue;
-        let expectedDate = new Date(today.getFullYear(), expectedValue - 1, today.getDate());
+        const expectedDate = new Date(today.getFullYear(), expectedValue, today.getDate());
         
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
@@ -153,13 +154,13 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public test_DateIsSetCorrectlyWhenYearIsSet() {
-        let current = new Date(2016, 3, 15);
+        const current = new Date(2016, 3, 15);
         this.testView.month = current.getMonth();
         this.testView.day = current.getDate();
         
-        let expectedValue = 1980;
+        const expectedValue = 1980;
         this.testView.year = expectedValue;
-        let expectedDate = new Date(1980, current.getMonth() - 1, current.getDate());
+        const expectedDate = new Date(1980, current.getMonth(), current.getDate());
         
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
@@ -167,102 +168,102 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public testMaxDateFromLocalToNative() {
-        let expectedValue = new Date(1980, 1, 9);
+        const expectedValue = new Date(1980, 1, 9);
         this.testView.maxDate = expectedValue;
-        let actualValue = datePickerTestsNative.getNativeMaxDate(this.testView);
+        const actualValue = datePickerTestsNative.getNativeMaxDate(this.testView);
         TKUnit.assertEqual(actualValue.getTime(), expectedValue.getTime());
     }
     
     public testMinDateFromLocalToNative() {
-        let expectedValue = new Date(1980, 1, 9);
+        const expectedValue = new Date(1980, 1, 9);
         this.testView.minDate = expectedValue;
-        let actualValue = datePickerTestsNative.getNativeMinDate(this.testView);
+        const actualValue = datePickerTestsNative.getNativeMinDate(this.testView);
         TKUnit.assertEqual(actualValue.getTime(), expectedValue.getTime());
     }
     
     public testYearFromNativeToLocal() {
-        let expectedValue = 1981;
+        const expectedValue = 1981;
         datePickerTestsNative.setNativeYear(this.testView, expectedValue);
-        let actualValue = this.testView.year;
+        const actualValue = this.testView.year;
         TKUnit.assertEqual(actualValue, expectedValue);
     }
     
     public testMonthFromNativeToLocal() {
-        //Use July as it has 31 days
-        var expectedValue = 7;
+        // Use July as it has 31 days
+        const expectedValue = 7;
         datePickerTestsNative.setNativeMonth(this.testView, expectedValue);
-        var actualValue = this.testView.month;
+        const actualValue = this.testView.month;
         TKUnit.assertEqual(actualValue, expectedValue);
     }
     
     public testYearMonthDayFromNativeToLocal() {
-        var testYear = 2000;
-        var testMonth = 3;
-        var testDay = 24;
+        const testYear = 2000;
+        const testMonth = 3;
+        const testDay = 24;
 
         datePickerTestsNative.setNativeDate(this.testView, testYear, testMonth, testDay);
         assertDate(this.testView, testYear, testMonth, testDay);
     }
     
     public testDayFromNativeToLocal() {
-        let expectedValue = 20;
+        const expectedValue = 20;
         datePickerTestsNative.setNativeDay(this.testView, expectedValue);
-        let actualValue = this.testView.day;
+        const actualValue = this.testView.day;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     }
     
     public test_DateFromNativeToLocalWithDay() {
-        let today = new Date();
-        let expectedValue = 20;
+        const today = new Date();
+        const expectedValue = 20;
         
         datePickerTestsNative.setNativeDate(this.testView, today.getFullYear(), today.getMonth(), expectedValue);
         
-        let expectedDate = new Date(today.getFullYear(), today.getMonth() - 1, expectedValue);
+        const expectedDate = new Date(today.getFullYear(), today.getMonth(), expectedValue);
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
         TKUnit.assertEqual(this.testView.date.getFullYear(), expectedDate.getFullYear(), "Getting Year from date property failed.");
     }
     
     public test_DateFromNativeToLocalWithMonth() {
-        let today = new Date();
-        let expectedValue = 7;
+        const today = new Date();
+        const expectedValue = 7;
         
         datePickerTestsNative.setNativeDate(this.testView, today.getFullYear(), expectedValue, today.getDate());
         
-        let expectedDate = new Date(today.getFullYear(), expectedValue - 1, today.getDate());
+        const expectedDate = new Date(today.getFullYear(), expectedValue, today.getDate());
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
         TKUnit.assertEqual(this.testView.date.getFullYear(), expectedDate.getFullYear(), "Getting Year from date property failed.");
     }
     
     public test_DateFromNativeToLocalWithYear() {
-        let today = new Date();
+        const today = new Date();
             
-        var expectedValue = 1981;
+        const expectedValue = 1981;
         datePickerTestsNative.setNativeDate(this.testView, expectedValue, today.getMonth(), today.getDate());
         
-        let expectedDate = new Date(expectedValue, today.getMonth() - 1, today.getDate());
+        const expectedDate = new Date(expectedValue, today.getMonth(), today.getDate());
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
         TKUnit.assertEqual(this.testView.date.getFullYear(), expectedDate.getFullYear(), "Getting Year from date property failed.");
     }
     
     public test_DateFromNativeToLocalWithAll() {
-        var testYear = 2000;
-        var testMonth = 3;
-        var testDay = 24;
+        const testYear = 2000;
+        const testMonth = 3;
+        const testDay = 24;
         
         datePickerTestsNative.setNativeDate(this.testView, testYear, testMonth, testDay);
-        let expectedDate = new Date(testYear, testMonth - 1, testDay);
+        const expectedDate = new Date(testYear, testMonth, testDay);
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");
         TKUnit.assertEqual(this.testView.date.getFullYear(), expectedDate.getFullYear(), "Getting Year from date property failed.");
     }
     
     public testSetYearMonthDay_BeforeLoaded() {
-        var testYear = 2000;
-        var testMonth = 3;
-        var testDay = 24;
+        const testYear = 2000;
+        const testMonth = 3;
+        const testDay = 24;
         
         this.setUpDatePicker(testYear, testMonth, testDay);
 
@@ -276,9 +277,9 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public testSetYearMonthDay_AfterLoaded() {
-        var testYear = 2000;
-        var testMonth = 3;
-        var testDay = 24;
+        const testYear = 2000;
+        const testMonth = 3;
+        const testDay = 24;
         
         this.testView.year = testYear;
         this.testView.month = testMonth;
