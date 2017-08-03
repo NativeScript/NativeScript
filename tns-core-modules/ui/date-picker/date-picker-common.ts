@@ -33,7 +33,7 @@ monthProperty.register(DatePickerBase);
 
 export const dayProperty = new Property<DatePickerBase, number>({
     name: "day",
-    defaultValue: defaultDate.getDay(),
+    defaultValue: defaultDate.getDate(),
     valueConverter: v => parseInt(v),
 });
 dayProperty.register(DatePickerBase);
