@@ -31,8 +31,8 @@ function initializeDateChangedListener(): void {
                 dateChanged = true;
             }
 
-            if ((month + 1) !== owner.month) {
-                monthProperty.nativeValueChange(owner, month + 1);
+            if (month !== owner.month) {
+                monthProperty.nativeValueChange(owner, month);
                 dateChanged = true;
             }
 
@@ -59,9 +59,7 @@ export class DatePicker extends DatePickerBase {
         picker.setCalendarViewShown(false);
         const listener = new DateChangedListener(this);
 
-        // DatePicker Months are 1-based, whereas
-        // Native and JS Months are 0-based
-        picker.init(this.year, this.month - 1, this.day, listener);
+        picker.init(this.year, this.month, this.day, listener);
         (<any>picker).listener = listener;
         return picker;
     }
@@ -79,7 +77,7 @@ export class DatePicker extends DatePickerBase {
     private updateNativeDate(): void {
         const nativeView = this.nativeViewProtected;
         const year = typeof this.year === "number" ? this.year : nativeView.getYear();
-        const month = typeof this.month === "number" ? (this.month - 1) : nativeView.getMonth();
+        const month = typeof this.month === "number" ? this.month : nativeView.getMonth();
         const day = typeof this.day === "number" ? this.day : nativeView.getDayOfMonth();
         this.date = new Date(year, month, day);
     }
@@ -97,7 +95,7 @@ export class DatePicker extends DatePickerBase {
         return this.nativeViewProtected.getMonth();
     }
     [monthProperty.setNative](value: number) {
-        if (this.nativeViewProtected.getMonth() !== (value - 1)) {
+        if (this.nativeViewProtected.getMonth() !== value) {
             this.updateNativeDate();
         }
     }
