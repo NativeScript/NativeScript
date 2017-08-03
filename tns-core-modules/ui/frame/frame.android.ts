@@ -513,12 +513,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             traceWrite(`${fragment}.onHiddenChanged(${hidden})`, traceCategories.NativeLifecycle);
         }
         superFunc.call(fragment, hidden);
-        // if (hidden) {
-        //     onFragmentHidden(fragment, false);
-        // }
-        // else {
-        //     onFragmentShown(fragment);
-        // }
     }
 
     @profile

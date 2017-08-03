@@ -30,7 +30,6 @@ let defaultEnterAnimatorStatic: android.animation.Animator;
 let defaultExitAnimatorStatic: android.animation.Animator;
 let fragmentCompleted: any;
 
-
 export function _waitForAnimationEnd(newFragment, currentFragment): void {
     if (waitingQueue.size > 0) {
         throw new Error('Calling navigation before previous queue completes.');

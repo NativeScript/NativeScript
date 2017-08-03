@@ -159,6 +159,10 @@ export function waitUntilNavigatedFrom(oldPage: Page) {
         completed = true;
     }
 
+    oldPage.on("navigatedFrom", navigatedFrom);
+    TKUnit.waitUntilReady(() => completed);
+}
+
 export function waitUntilLayoutReady(view: View): void {
     TKUnit.waitUntilReady(() => view.isLayoutValid);
 }

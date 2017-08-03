@@ -33,8 +33,8 @@ export function test_AnimatingProperties(done) {
         translate: { x: 100, y: 100 },
         scale: { x: 2, y: 2 },
         rotate: 180,
-        duration: 10,
-        delay: 100,
+        duration: 5,
+        delay: 10,
         iterations: 3,
         curve: enums.AnimationCurve.easeIn
     })
@@ -58,7 +58,7 @@ export function test_CancellingAnimation(done) {
     let label = prepareTest();
 
     // >> animation-cancel
-    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 20 });
+    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
 
     animation1.play()
         .then(() => {
@@ -87,7 +87,7 @@ export function test_CancellingAnimate(done) {
     let label = prepareTest();
 
     // >> animation-cancel2
-    var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 20 })
+    var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 5 })
         .then(() => {
             //console.log("Animation finished");
             // >> (hide)
@@ -188,9 +188,9 @@ export function test_AnimatingMultipleViews(done) {
 
     // >> animation-multiple-views
     var animations: Array<animation.AnimationDefinition> = [
-        { target: label1, translate: { x: 200, y: 200 }, duration: 20, delay: 0 },
-        { target: label2, translate: { x: 200, y: 200 }, duration: 20, delay: 7 },
-        { target: label3, translate: { x: 200, y: 200 }, duration: 20, delay: 14 },
+        { target: label1, translate: { x: 200, y: 200 }, duration: 5, delay: 0 },
+        { target: label2, translate: { x: 200, y: 200 }, duration: 5, delay: 2 },
+        { target: label3, translate: { x: 200, y: 200 }, duration: 5, delay: 4 },
     ];
     var a = new animation.Animation(animations);
     a.play()
@@ -215,7 +215,7 @@ export function test_AnimatingMultipleViews(done) {
 export function test_AnimateOpacity(done) {
     let label = prepareTest();
 
-    label.animate({ opacity: 0.75, duration: 20 })
+    label.animate({ opacity: 0.75, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.opacity, 0.75, "label.opacity");
             done();
@@ -301,7 +301,7 @@ export function test_AnimateBackgroundColor(done) {
     let label = prepareTest();
     var red = new colorModule.Color("Red");
 
-    label.animate({ backgroundColor: red, duration: 20 })
+    label.animate({ backgroundColor: red, duration: 5 })
         .then(() => {
             TKUnit.assert((<colorModule.Color>label.backgroundColor).equals(red));
             done();
@@ -316,7 +316,7 @@ export function test_AnimateBackgroundColor_FromString(done) {
     var expected = "Red";
     var clr = new colorModule.Color(expected);
 
-    label.animate({ backgroundColor: <any>expected, duration: 20 })
+    label.animate({ backgroundColor: <any>expected, duration: 5 })
         .then(() => {
             TKUnit.assert((<colorModule.Color>label.backgroundColor).equals(clr));
             done();
@@ -329,7 +329,7 @@ export function test_AnimateBackgroundColor_FromString(done) {
 export function test_AnimateTranslate(done) {
     let label = prepareTest();
 
-    label.animate({ translate: { x: 100, y: 200 }, duration: 20 })
+    label.animate({ translate: { x: 100, y: 200 }, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
@@ -344,7 +344,7 @@ export function test_AnimateTranslate(done) {
 export function test_AnimateScale(done) {
     let label = prepareTest();
 
-    label.animate({ scale: { x: 2, y: 3 }, duration: 20 })
+    label.animate({ scale: { x: 2, y: 3 }, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
@@ -359,7 +359,7 @@ export function test_AnimateScale(done) {
 export function test_AnimateRotate(done) {
     let label = prepareTest();
 
-    label.animate({ rotate: 123, duration: 20 })
+    label.animate({ rotate: 123, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
@@ -377,7 +377,7 @@ export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
         translate: { x: 100, y: 200 },
         scale: { x: 2, y: 3 },
         rotate: 123,
-        duration: 20
+        duration: 5
     })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
@@ -396,12 +396,12 @@ export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
 export function test_AnimateTranslateScaleAndRotateSequentially(done) {
     let label = prepareTest();
 
-    label.animate({ translate: { x: 100, y: 200 }, duration: 20 })
+    label.animate({ translate: { x: 100, y: 200 }, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
             assertIOSNativeTransformIsCorrect(label);
-            return label.animate({ scale: { x: 2, y: 3 }, duration: 20 });
+            return label.animate({ scale: { x: 2, y: 3 }, duration: 5 });
         })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
@@ -409,7 +409,7 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             assertIOSNativeTransformIsCorrect(label);
-            return label.animate({ rotate: 123, duration: 20 });
+            return label.animate({ rotate: 123, duration: 5 });
         })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
@@ -428,8 +428,8 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
 export function test_AnimationsAreAlwaysPlayed(done) {
     let label = prepareTest();
 
-    var animation1 = label.createAnimation({ opacity: 0, duration: 20 });
-    var animation2 = label.createAnimation({ opacity: 1, duration: 20 });
+    var animation1 = label.createAnimation({ opacity: 0, duration: 5 });
+    var animation2 = label.createAnimation({ opacity: 1, duration: 5 });
 
     animation1.play()
         .then(() => {
@@ -449,7 +449,7 @@ export function test_AnimationsAreAlwaysPlayed(done) {
 export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
     let label = prepareTest();
 
-    var animation = label.createAnimation({ opacity: 0, duration: 20 });
+    var animation = label.createAnimation({ opacity: 0, duration: 5 });
 
     animation.play()
         .then(function onResolved() {
@@ -464,7 +464,7 @@ export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
 export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
     let label = prepareTest();
 
-    var animation = label.createAnimation({ opacity: 0, duration: 20 });
+    var animation = label.createAnimation({ opacity: 0, duration: 5 });
 
     animation.play()
         .then(function onResolved() {

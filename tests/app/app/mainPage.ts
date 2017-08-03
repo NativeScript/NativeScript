@@ -57,6 +57,7 @@ function onNavigatedTo(args) {
 
     runTests();
 }
+
 export function createPage() {
     return page;
 }

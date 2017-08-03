@@ -22,16 +22,12 @@ export class UITest<T extends View> implements trace.TraceWriter {
         return this._testView;
     }
 
-    public waitUntilTestElementIsLoaded(timeoutSec?: number): void {
-        TKUnit.waitUntilReady(() => {
-            return this.testView.isLoaded;
-        }, timeoutSec || 1);
+    public waitUntilTestElementIsLoaded(timeoutSec: number = 1): void {
+        TKUnit.waitUntilReady(() => this.testView.isLoaded, timeoutSec);
     }
 
-    public waitUntilTestElementLayoutIsValid(timeoutSec?: number): void {
-        TKUnit.waitUntilReady(() => {
-            return this.testView.isLayoutValid;
-        }, timeoutSec || 1);
+    public waitUntilTestElementLayoutIsValid(timeoutSec: number = 1): void {
+        TKUnit.waitUntilReady(() => this.testView.isLayoutValid, timeoutSec);
     }
 
     public create(): T {

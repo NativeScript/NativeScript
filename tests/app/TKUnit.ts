@@ -15,6 +15,7 @@ import * as timer from "tns-core-modules/timer";
 import * as trace from "tns-core-modules/trace";
 import * as types from "tns-core-modules/utils/types";
 import * as platform from "tns-core-modules/platform";
+import { topmost } from "tns-core-modules/ui/frame";
 
 import * as utils from "tns-core-modules/utils/utils";
 
@@ -42,12 +43,12 @@ export function time(): number {
     }
 }
 
-export var write = function write(message: string, type?: number) {
+export function write(message: string, type?: number) {
     //console.log(message);
     trace.write(message, trace.categories.Test, type);
 }
 
-var runTest = function (testInfo: TestInfoEntry) {
+function runTest(testInfo: TestInfoEntry) {
     let start = time();
     let duration;
     try {
@@ -74,7 +75,7 @@ var runTest = function (testInfo: TestInfoEntry) {
             testInfo.errorMessage = e.message;
         }
     }
-};
+}
 
 export interface TestFailure {
     moduleName: string;
@@ -89,55 +90,45 @@ export interface TestModuleRunResult {
     failed: Array<TestFailure>;
 }
 
-var testsQueue: Array<TestInfoEntry>;
-var defaultTimeout = 5000;
+let testsQueue: Array<TestInfoEntry>;
+const defaultTimeout = 5000;
 
-// testInfo : {testFunc: func, testName: string, isTest: boolean, isPassed: boolean, errorMessage: string}
 function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?: number) {
-    var error;
-    var isDone = false;
-    var handle;
-    var testStartTime = time();
+    let error;
+    let isDone = false;
+    let handle;
+    const testStartTime = time();
     //write("--- [" + testInfo.testName + "] Started at: " + testStartTime, trace.messageType.info);
-    var doneCallback = function (e: Error) {
+    const doneCallback = (e: Error) => {
         if (e) {
             error = e;
-        }
-        else {
+        } else {
             isDone = true;
         }
     }
-    var testTimeout = testInfo.testTimeout;
-    if (!testTimeout) {
-        testTimeout = defaultTimeout;
-    }
+    
+    const timeout = testTimeout || testInfo.testTimeout || defaultTimeout;
 
     let duration;
-    var checkFinished = function () {
+    const checkFinished = () => {
         duration = time() - testStartTime;
         testInfo.duration = duration;
         if (isDone) {
-            write("--- [" + testInfo.testName + "] OK, duration: " + duration, trace.messageType.info);
-            //write("--- [" + testInfo.testName + "] took: " + (new Date().getTime() - testStartTime), trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration}`, trace.messageType.info);
             testInfo.isPassed = true;
             runTests(testsQueue, recursiveIndex + 1);
-        }
-        else if (error) {
-            write("--- [" + testInfo.testName + "]  FAILED: " + error.message + ", duration: " + duration, trace.messageType.error);
-            //write("--- [" + testInfo.testName + "] took: " + (new Date().getTime() - testStartTime), trace.messageType.info);
+        } else if (error) {
+            write(`--- ["${testInfo.testName}"] FAILED: ${error.message}, duration: ${duration}`, trace.messageType.error);
             testInfo.errorMessage = error.message;
             runTests(testsQueue, recursiveIndex + 1);
-        }
-        else {
-            var testEndTime = time();
-            if (testEndTime - testStartTime > testTimeout) {
-                write("--- [" + testInfo.testName + "]  TIMEOUT, duration: " + duration, trace.messageType.error);
-                //write("--- [" + testInfo.testName + "] took: " + (testEndTime - testStartTime), trace.messageType.info);
+        } else {
+            const testEndTime = time();
+            if (testEndTime - testStartTime > timeout) {
+                write(`--- ["${testInfo.testName}"] TIMEOUT, duration: ${duration}`, trace.messageType.error);
                 testInfo.errorMessage = "Test timeout.";
                 runTests(testsQueue, recursiveIndex + 1);
-            }
-            else {
-                setTimeout(checkFinished, 10);
+            } else {
+                setTimeout(checkFinished, 0);
             }
         }
     }
@@ -146,7 +137,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
         if (testInfo.instance) {
             testInfo.testFunc.apply(testInfo.instance, [doneCallback]);
         } else {
-            var func: any = testInfo.testFunc;
+            const func: any = testInfo.testFunc;
             func(doneCallback);
         }
     } catch (e) {
@@ -156,17 +147,15 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
     setTimeout(checkFinished, 0);
 }
 
-// tests : Array<{testFunc: func, testName: string, isTest: boolean, isPassed: boolean, errorMessage: string}>
-export var runTests = function (tests: Array<TestInfoEntry>, recursiveIndex) {
+export function runTests(tests: Array<TestInfoEntry>, recursiveIndex) {
     testsQueue = tests;
+    
+    for (let i = recursiveIndex; i < testsQueue.length; i++) {
+        const testEntry = testsQueue[i];
 
-    var i;
-    for (i = recursiveIndex; i < testsQueue.length; i++) {
-        var testEntry = testsQueue[i];
         if (testEntry.testFunc.length > 0) {
             return runAsync(testEntry, i);
-        }
-        else {
+        } else {
             runTest(testEntry);
         }
     }
@@ -176,35 +165,31 @@ export function assert(test: any, message?: string) {
     if (!test) {
         throw new Error(message);
     }
-};
+}
 
 export function assertTrue(test: boolean, message?: string) {
     if (test !== true) {
         throw new Error(message);
     }
-};
+}
 
 export function assertFalse(test: boolean, message?: string) {
     if (test !== false) {
         throw new Error(message);
     }
-};
+}
 
 export function assertNotEqual(actual: any, expected: any, message?: string) {
-
-    var equals = false;
+    let equals = false;
     if (types.isUndefined(actual) && types.isUndefined(expected)) {
         equals = true;
-    }
-    else if (!types.isNullOrUndefined(actual) && !types.isNullOrUndefined(expected)) {
+    } else if (!types.isNullOrUndefined(actual) && !types.isNullOrUndefined(expected)) {
         if (types.isFunction(actual.equals)) {
-
             // Use the equals method
             if (actual.equals(expected)) {
                 equals = true;
             }
-        }
-        else {
+        } else {
             equals = actual === expected;
         }
     }
@@ -228,7 +213,7 @@ export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual
     else if (actual !== expected) {
         throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})`);
     }
-};
+}
 
 /**
  * Assert two json like objects are deep equal.
@@ -310,13 +295,13 @@ export function assertNull(actual: any, message?: string) {
     if (actual !== null && actual !== undefined) {
         throw new Error(message + " Actual: " + actual + " is not null/undefined");
     }
-};
+}
 
 export function assertNotNull(actual: any, message?: string) {
     if (actual === null || actual === undefined) {
         throw new Error(message + " Actual: " + actual + " is null/undefined");
     }
-};
+}
 
 export function areClose(actual: number, expected: number, delta: number): boolean {
     if (isNaN(actual) || Math.abs(actual - expected) > delta) {
@@ -325,18 +310,19 @@ export function areClose(actual: number, expected: number, delta: number): boole
 
     return true;
 }
+
 export function assertAreClose(actual: number, expected: number, delta: number, message?: string) {
     if (!areClose(actual, expected, delta)) {
         throw new Error(message + " Numbers are not close enough. Actual: " + actual + " Expected: " + expected + " Delta: " + delta);
     }
-};
+}
 
 export function arrayAssert(actual: Array<any>, expected: Array<any>, message?: string) {
     if (actual.length !== expected.length) {
         throw new Error(message + " Actual array length: " + actual.length + " Expected array length: " + expected.length);
     }
-    var i;
-    for (i = 0; i < actual.length; i++) {
+
+    for (let i = 0; i < actual.length; i++) {
         if (actual[i] !== expected[i]) {
             throw new Error(message + " Actual element at " + i + " is: " + actual[i] + " Expected element is: " + expected[i]);
         }
@@ -344,7 +330,7 @@ export function arrayAssert(actual: Array<any>, expected: Array<any>, message?: 
 }
 
 export function assertThrows(testFunc: () => void, assertMessage?: string, expectedMessage?: string) {
-    var actualError: Error;
+    let actualError: Error;
     try {
         testFunc();
     } catch (e) {
@@ -360,29 +346,29 @@ export function assertThrows(testFunc: () => void, assertMessage?: string, expec
     }
 }
 
-export var wait = function (seconds: number) {
-    waitUntilReady(function () {
-        return false;
-    }, seconds, false);
-};
+export function wait(seconds: number): void {
+    waitUntilReady(() => false, seconds, false);
+}
 
-export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 300, shouldThrow: boolean = true) {
+export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 300, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
     }
 
     if (Application.ios) {
-        const waitTime = 20 / 1000;
-        var totalWaitTime = 0;
+        // const waitTime = 1 / 10000;
+        let totalWaitTime = 0;
         while (true) {
-            utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));
-
+            // const nsDate = <any>NSDate.dateWithTimeIntervalSinceNow(waitTime);
+            const begin = time();
+            const currentRunLoop = utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop);
+            currentRunLoop.limitDateForMode(currentRunLoop.currentMode);
             if (isReady()) {
                 break;
             }
 
-            totalWaitTime += waitTime;
-            if (timeoutSec && totalWaitTime >= timeoutSec) {
+            totalWaitTime += (time() - begin);
+            if (totalWaitTime >= timeoutSec) {
                 if (shouldThrow) {
                     throw new Error("waitUntilReady Timeout.");
                 } else {
@@ -393,26 +379,23 @@ export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number
     } else if (Application.android) {
         doModalAndroid(isReady, timeoutSec, shouldThrow);
     }
-};
+}
 
 // Setup for the Android modal loop implementation
 // TODO: If these platform-specific implementations continue to grow, think of per-platform separation (TKUnit.android)
-var nextMethod;
-var targetField;
-var prepared;
+let nextMethod;
+let targetField;
+let prepared;
 
-var prepareModal = function () {
+function prepareModal() {
     if (prepared) {
         return;
     }
 
-    var clsMsgQueue = java.lang.Class.forName("android.os.MessageQueue");
-    var clsMsg = java.lang.Class.forName("android.os.Message");
-
-    nextMethod;
-    var methods = clsMsgQueue.getDeclaredMethods();
-    var i;
-    for (i = 0; i < methods.length; i++) {
+    const clsMsgQueue = java.lang.Class.forName("android.os.MessageQueue");
+    const clsMsg = java.lang.Class.forName("android.os.Message");
+    const methods = clsMsgQueue.getDeclaredMethods();
+    for (let i = 0; i < methods.length; i++) {
         if (methods[i].getName() === "next") {
             nextMethod = methods[i];
             nextMethod.setAccessible(true);
@@ -420,9 +403,8 @@ var prepareModal = function () {
         }
     }
 
-    targetField;
-    var fields = clsMsg.getDeclaredFields();
-    for (i = 0; i < fields.length; i++) {
+    const fields = clsMsg.getDeclaredFields();
+    for (let i = 0; i < fields.length; i++) {
         if (fields[i].getName() === "target") {
             targetField = fields[i];
             targetField.setAccessible(true);
@@ -433,28 +415,28 @@ var prepareModal = function () {
     prepared = true;
 }
 
-var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number, shouldThrow: boolean = true) {
+function doModalAndroid(quitLoop: () => boolean, timeoutSec: number, shouldThrow: boolean = true) {
     if (!quitLoop) {
         return;
     }
 
     prepareModal();
 
-    var queue = android.os.Looper.myQueue();
+    const queue = android.os.Looper.myQueue();
 
     let quit = false;
     let timeout = false;
-    timer.setTimeout(function () {
+    timer.setTimeout(() => {
         quit = true;
         timeout = true;
     }, timeoutSec * 1000);
 
-    var msg;
+    let msg;
 
     while (!quit) {
         msg = nextMethod.invoke(queue, null);
         if (msg) {
-            var target = targetField.get(msg);
+            const target = targetField.get(msg);
             if (!target) {
                 quit = true;
             } else {
@@ -474,4 +456,4 @@ var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number, shou
             quit = true;
         }
     }
-};
+}

@@ -6,6 +6,7 @@ import { Color } from "tns-core-modules/color";
 import { NavigationEntry, NavigationTransition, topmost as topmostFrame } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { AnimationCurve } from "tns-core-modules/ui/enums"
+import { CustomTransition } from "./custom-transition";
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
@@ -26,54 +27,37 @@ function _testTransition(navigationTransition: NavigationTransition) {
     helper.navigateWithEntry(navigationEntry);
 }
 
-// Extremely slow. Run only if needed.
-export var test_Transitions = function () {
-    let topmost = topmostFrame();
-    let mainTestPage = topmost.currentPage;
-    let mainPageFactory = function (): Page {
+export function test_Transitions() {
+    const topmost = topmostFrame();
+    const mainTestPage = topmost.currentPage;
+    const mainPageFactory = function (): Page {
         return mainTestPage;
     };
 
     helper.navigate(() => {
-        var page = new Page();
+        const page = new Page();
         page.id = "TransitionsTestPage_MAIN"
         page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
         return page;
     });
 
     var transitions;
-    var testCustomTransition = true;
     if (platform.device.os === platform.platformNames.ios) {
         transitions = ["curl"];
-    }
-    else {
-        var _sdkVersion = parseInt(platform.device.sdkVersion);
+    } else {
+        const _sdkVersion = parseInt(platform.device.sdkVersion);
         transitions = _sdkVersion >= 21 ? ["explode"] : [];
-        if (_sdkVersion === 23) {
-            // Apparently, there is some kind of Android 6.0 (API 23) bug when using ObjectAnimators
-            // http://stackoverflow.com/questions/33188485/resultindex-is-1-the-polygon-must-be-invalid-adter-addview
-            testCustomTransition = false;
-        }
     }
-    transitions = transitions.concat(["fade", "flip", "slide"]);
-    var durations = [undefined, 10];
-    var curves = [undefined, AnimationCurve.easeIn];
+
+    transitions = transitions.concat(["fade", "slide"]);
+
+    // Custom transition
+    _testTransition({ instance: new CustomTransition(), duration: 10 });
 
     // Built-in transitions
     transitions.forEach(name => {
-        durations.forEach(duration => {
-            curves.forEach(curve => {
-                _testTransition({ name, duration, curve });
-            });
-        });
+        _testTransition({ name, duration: 20, curve: AnimationCurve.easeIn });
     });
 
-    // Custom transition
-    if (testCustomTransition) {
-        var customTransitionModule = require("./custom-transition");
-        var customTransition = new customTransitionModule.CustomTransition();
-        _testTransition({ instance: customTransition });
-    }
-
-    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
+    // helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
 }

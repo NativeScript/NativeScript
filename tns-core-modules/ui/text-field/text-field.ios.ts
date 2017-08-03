@@ -182,8 +182,6 @@ export class TextField extends TextFieldBase {
     }
 
     [colorProperty.getDefault](): { textColor: UIColor, tintColor: UIColor } {
-        // return this.nativeView.tintColor;
-        console.log("----> TextField: colorProperty.getDefault: " + this.nativeViewProtected.textColor)
         return {
             textColor: this.nativeViewProtected.textColor,
             tintColor: this.nativeViewProtected.tintColor
