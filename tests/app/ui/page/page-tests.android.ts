@@ -1,45 +1,41 @@
-﻿import * as PageModule from "tns-core-modules/ui/page";
-import * as TKUnit from "../../TKUnit";
-import * as LabelModule from "tns-core-modules/ui/label";
-import * as PageTestCommon from "./page-tests-common";
+﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as frame from "tns-core-modules/ui/frame";
-import * as types from "tns-core-modules/utils/types";
+import * as PageTestCommon from "./page-tests-common";
+import { Page } from "tns-core-modules/ui/page";
+import { Label } from "tns-core-modules/ui/label";
+import { topmost } from "tns-core-modules/ui/frame";
 
 global.moduleMerge(PageTestCommon, exports);
 
 export function test_NavigateToNewPage_WithAndroidCache() {
     // Clear history if any.
     helper.navigate(() => {
-        let launchPage = new PageModule.Page();
+        const launchPage = new Page();
         launchPage.id = "launchPage_test_NavigateToNewPage_WithAndroidCache";
         return launchPage;
     });
 
-    TKUnit.assertEqual(frame.topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
+    TKUnit.assertEqual(topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
 
-    var testPage: PageModule.Page;
-    var label: LabelModule.Label;
+    let testPage: Page;
+    let label: Label;
 
-    var pageFactory = function (): PageModule.Page {
-        testPage = new PageModule.Page();
+    const pageFactory = function (): Page {
+        testPage = new Page();
         testPage.id = "testPage_test_NavigateToNewPage_WithAndroidCache";
-        label = new LabelModule.Label();
+        label = new Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
         return testPage;
     };
 
-    var androidFrame = frame.topmost().android;
-    var cachingBefore = androidFrame.cachePagesOnNavigate;
+    const androidFrame = topmost().android;
+    const cachingBefore = androidFrame.cachePagesOnNavigate;
     try {
         androidFrame.cachePagesOnNavigate = true;
-
         helper.navigateWithHistory(pageFactory);
-
         helper.goBack();
-    }
-    finally {
+    } finally {
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
 
@@ -56,9 +52,9 @@ export function test_NavigateToNewPage_WithAndroidCache() {
 }
 
 export function test_NavigateToNewPage_InnerControl() {
-    var testPage: PageModule.Page;
-    var pageFactory = function () {
-        testPage = new PageModule.Page();
+    let testPage: Page;
+    const pageFactory = function () {
+        testPage = new Page();
         testPage.id = "testPage_test_NavigateToNewPage_InnerControl";
         PageTestCommon.addLabelToPage(testPage);
         return testPage;
@@ -67,8 +63,7 @@ export function test_NavigateToNewPage_InnerControl() {
     helper.navigateWithHistory(pageFactory);
     helper.goBack();
 
-    var label = <LabelModule.Label>testPage.content;  
-
+    const label = <Label>testPage.content;
     TKUnit.assertNull(label._context, "InnerControl._context should be undefined after navigate back.");
     TKUnit.assertNull(label.android, "InnerControl.android should be undefined after navigate back.");
     TKUnit.assertNull(label.nativeViewProtected, "InnerControl.nativeView should be undefined after navigate back.");
@@ -76,20 +71,18 @@ export function test_NavigateToNewPage_InnerControl() {
     TKUnit.assertFalse(label._isAddedToNativeVisualTree, "InnerControl._isAddedToNativeVisualTree should become false after navigating back");
 }
 
-export var test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow = function () {
-    var testPage: PageModule.Page;
-    var pageFactory = function () {
-        var testPage = new PageModule.Page();
+export function test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow() {
+    const pageFactory = function () {
+        const testPage = new Page();
         testPage.id = "testPage_test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow";
-        testPage.content = new LabelModule.Label();
         return testPage;
     };
 
-    var androidFrame = frame.topmost().android;
-    var cachingBefore = androidFrame.cachePagesOnNavigate;
-    
+    const androidFrame = topmost().android;
+    const cachingBefore = androidFrame.cachePagesOnNavigate;
+
     helper.navigate(pageFactory);
-    
+
     try {
         // Set caching to same value.
         androidFrame.cachePagesOnNavigate = cachingBefore;
@@ -100,23 +93,16 @@ export var test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow = func
 }
 
 export var test_Resolve_Fragment_ForPage = function () {
-    var testPage: PageModule.Page;
-    var navigatedTo = false;
-    
-    var pageFactory = function () {
-        testPage = new PageModule.Page();
-        testPage.content = new LabelModule.Label();
-        // use navigatedTo to ensure the fragment is already created
-        testPage.on("navigatedTo", function(args) {
-            navigatedTo = true;
-        });
+    let testPage: Page;
+    const pageFactory = () => {
+        testPage = new Page();
         return testPage;
     };
 
-    helper.navigate(pageFactory);
+    const frame = topmost();
+    frame.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 
-    TKUnit.waitUntilReady(() => navigatedTo === true);
-
-    var fragment = frame.topmost().android.fragmentForPage(testPage);
-    TKUnit.assertFalse(types.isNullOrUndefined(fragment), "Failed to resolve native fragment for page");
+    const fragment = frame.android.fragmentForPage(testPage);
+    TKUnit.assertNotNull(fragment, "Failed to resolve native fragment for page");
 }

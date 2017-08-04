@@ -110,51 +110,66 @@ export function test_setTimeout_callbackShouldBeCleared() {
     TKUnit.assert(!completed, "Callback should be cleared when clearTimeout() is executed for specified id!");
 };
 
-export function test_setInterval_callbackCalledDuringPeriod() {
+export function test_setInterval_callbackCalledDuringPeriod(done) {
     let counter = 0;
-    let expected = 4;
+    const expected = 4;
 
+    const start = TKUnit.time();
     // >> timer-set-expression
     const id = timer.setInterval(() => {
         // >> (hide)
         counter++;
+        if (counter === 4) {
+            const end = TKUnit.time();
+            timer.clearInterval(id);
+            done(end - start > 250 ? new Error('setInterval too slow.') : null);
+        }
         // << (hide)
     }, 50);
     // << timer-set-expression
 
-    TKUnit.waitUntilReady(() => counter >= expected, 0.25, false);
-    timer.clearInterval(id);
-    TKUnit.assert(counter >= expected, "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
+    // TKUnit.waitUntilReady(() => counter >= expected, 0.500, false);
+    // timer.clearInterval(id);
+    // TKUnit.assert(counter >= expected, "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
 };
 
-export function test_setInterval_callbackCalledWithExtraArgs() {
+export function test_setInterval_callbackCalledWithExtraArgs(done) {
     let counter: number = 0;
-    let expected: number = 4;
-    let rnd: number = Math.random();
+    const expected: number = 4;
+    const rnd: number = Math.random();
 
+    const start = TKUnit.time();
     const id = timer.setInterval((arg) => {
         counter += arg === rnd ? 1 : -1;
+        if (counter === 4) {
+            const end = TKUnit.time();
+            timer.clearInterval(id);
+            done(end - start > 250 ? new Error('setInterval too slow.') : null);
+        }
     }, 50, rnd);
 
-    TKUnit.waitUntilReady(() => counter >= expected, 0.25, false);
-    timer.clearInterval(id);
-    TKUnit.assert(counter >= expected, "Callback raised " + counter + " times with arguments.");
+    // TKUnit.waitUntilReady(() => counter >= expected, 0.500, false);
+    // timer.clearInterval(id);
+    // TKUnit.assert(counter >= expected, "Callback raised " + counter + " times with arguments.");
 };
 
-export function test_setInterval_callbackShouldBeCleared() {
+export function test_setInterval_callbackShouldBeCleared(done) {
     let counter = 0;
 
+    const start = TKUnit.time();
     // >> timer-set-interval
     const id = timer.setInterval(() => {
         // >> (hide)
-        counter++;
+        const end = TKUnit.time();
+        timer.clearInterval(id);
+        done(end - start > 150 ? new Error('setInterval too slow.') : null);
         // << (hide)
         timer.clearInterval(id);
     }, 50);
     // << timer-set-interval
 
-    TKUnit.wait(0.15);
-    TKUnit.assertEqual(counter,  1, "Callback should be raised only once!");
+    // TKUnit.wait(0.15);
+    // TKUnit.assertEqual(counter, 1, "Callback should be raised only once!");
 };
 
 export function test_clearTimeout_multipleTimes_afterTick() {

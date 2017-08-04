@@ -1,32 +1,27 @@
 ﻿// >> article-require-page-module
-import * as pageModule from "tns-core-modules/ui/page";
+import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
-import * as frameModule from "tns-core-modules/ui/frame";
+import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
 // << article-require-page-module
+
+import { resolvePageFromEntry } from "tns-core-modules/ui/frame";
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
-    let page = args.object;
+    const page = args.object;
     page.bindingContext = { name: "Some name" };
 }
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from "../../TKUnit";
-import * as labelModule from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as helper from "../helper";
-import * as view from "tns-core-modules/ui/core/view";
-import * as observable from "tns-core-modules/data/observable";
-import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
 import { Label } from "tns-core-modules/ui/label";
-import { EventData } from "tns-core-modules/data/observable";
-import { PercentLength } from "tns-core-modules/ui/core/view";
-import * as platform from "tns-core-modules/platform";
-import { unsetValue } from "tns-core-modules/ui/core/view";
 import { Color } from "tns-core-modules/color";
 
 export function addLabelToPage(page: Page, text?: string) {
-    let label = new Label();
+    const label = new Label();
     label.text = text || "The quick brown fox jumps over the lazy dog.";
     page.content = label;
 }
@@ -40,16 +35,11 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
     let label: Label;
     let nativeInstanceCreated = false;
 
-    let handler = function (data) {
-        if (label.ios || label.android) {
-            nativeInstanceCreated = true;
-        }
-    }
-
-    let pageFactory = function (): Page {
+    const handler = (data) => nativeInstanceCreated = !!label.nativeViewProtected;
+    const pageFactory = () => {
         page = new Page();
         page.id = `page_test_AfterPageLoaded_is_called_NativeInstance_is_created`;
-        page.on(view.View.loadedEvent, handler);
+        page.on(Label.loadedEvent, handler);
 
         label = new Label();
         label.text = "Text";
@@ -60,7 +50,7 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
     helper.navigate(pageFactory);
 
     TKUnit.assertTrue(nativeInstanceCreated, "nativeInstanceCreated");
-    page.off(view.View.loadedEvent, handler);
+    page.off(Label.loadedEvent, handler);
 }
 
 export function test_PageLoaded_is_called_once() {
@@ -69,11 +59,11 @@ export function test_PageLoaded_is_called_once() {
     let page2: Page;
 
     let loaded = 0;
-    let handler = function (data) {
+    const handler = function (data) {
         loaded++;
     }
 
-    let pageFactory = function (): Page {
+    const pageFactory = function (): Page {
         page1 = new Page();
         page1.id = `page1_test_PageLoaded_is_called_once`;
         addLabelToPage(page1, "Page 1");
@@ -83,40 +73,40 @@ export function test_PageLoaded_is_called_once() {
     helper.navigate(pageFactory);
     TKUnit.assertEqual(loaded, 0);
 
-    let pageFactory2 = function (): Page {
+    const pageFactory2 = function (): Page {
         page2 = new Page();
         page2.id = `page2_test_PageLoaded_is_called_once`;
         addLabelToPage(page2, "Page 2");
-        page2.on(view.View.loadedEvent, handler);
+        page2.on(Label.loadedEvent, handler);
         return page2;
     };
 
     helper.navigate(pageFactory2);
 
     TKUnit.assertEqual(loaded, 1);
-    page2.off(view.View.loadedEvent, handler);
+    page2.off(Label.loadedEvent, handler);
 }
 
 export function test_NavigateToNewPage() {
     // >> article-create-navigate-to-page
-    let currentPage;
-    let topFrame = frameModule.topmost();
-    currentPage = topFrame.currentPage;
+
+    const topFrame = topmost();
+    const currentPage = topFrame.currentPage;
 
     let testPage: Page;
-    let pageFactory = function (): Page {
-        testPage = new pageModule.Page();
-        let label = new labelModule.Label();
+    const pageFactory = function (): Page {
+        testPage = new Page();
+        const label = new Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
         return testPage;
     };
 
-    let navEntry = {
+    const navEntry = {
         create: pageFactory,
         animated: false
     };
-      topFrame.navigate(navEntry);
+    topFrame.navigate(navEntry);
     // << article-create-navigate-to-page
 
     TKUnit.waitUntilReady(() => testPage.isLayoutValid);
@@ -125,7 +115,7 @@ export function test_NavigateToNewPage() {
     topFrame.goBack();
     // << article-navigating-backward
 
-    TKUnit.waitUntilReady(() => topFrame.currentPage === currentPage);
+    TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
     TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
     TKUnit.assertNull(testPage._context, "Page._context should become undefined after navigating back");
     TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
@@ -142,10 +132,11 @@ export function test_PageNavigation_EventSequence_WithoutTransition() {
 }
 
 function _test_PageNavigation_EventSequence(withTransition: boolean) {
+    const context = { property: "this is the context" };
+    const eventSequence = [];
+
     let testPage: Page;
-    let context = { property: "this is the context" };
-    let eventSequence = [];
-    let pageFactory = function () {
+    const pageFactory = () => {
         testPage = new Page();
         testPage.id = "testPage_test_PageNavigation_EventSequence";
         addLabelToPage(testPage);
@@ -155,15 +146,15 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
             TKUnit.assertEqual(data.context, context, "navigatingTo: navigationContext");
         });
 
-        testPage.on(Page.loadedEvent, function (data: observable.EventData) {
+        testPage.on(Page.loadedEvent, function (data: EventData) {
             eventSequence.push("loaded");
-            TKUnit.assertNotEqual(frameModule.topmost().currentPage, data.object);
+            TKUnit.assertNotEqual(topmost().currentPage, data.object);
         });
 
         testPage.on(Page.navigatedToEvent, function (data: NavigatedData) {
             eventSequence.push("navigatedTo");
             TKUnit.assertEqual(data.context, context, "navigatedTo : navigationContext");
-            TKUnit.assertEqual(frameModule.topmost().currentPage, data.object);
+            TKUnit.assertEqual(topmost().currentPage, data.object);
         });
 
         testPage.on(Page.navigatingFromEvent, function (data: NavigatedData) {
@@ -183,54 +174,47 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
         return testPage;
     };
 
-    let navigationEntry: frameModule.NavigationEntry;
-    if (withTransition) {
-        navigationEntry = {
-            create: pageFactory,
-            context: context,
-            animated: true,
-            transition: {
-                name: "slide",
-                duration: 100,
-            }
-        }
+    const navigationEntry: NavigationEntry = {
+        create: pageFactory,
+        context: context,
+        animated: withTransition,
+        transition: withTransition ? {
+            name: "slide",
+            duration: 10,
+        } : undefined
     }
-    else {
-        navigationEntry = {
-            create: pageFactory,
-            context: context,
-            animated: false
-        }
-    }
+
     helper.navigateWithEntry(navigationEntry);
     helper.goBack();
 
-    let expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "unloaded", "navigatedFrom"];
+    const expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "unloaded", "navigatedFrom"];
     TKUnit.arrayAssert(eventSequence, expectedEventSequence, "Actual event sequence is not equal to expected. Actual: " + eventSequence + "; Expected: " + expectedEventSequence);
 }
 
 export function test_NavigateTo_WithContext() {
-    let currentPage = frameModule.topmost().currentPage;
+    const currentPage = topmost().currentPage;
     // >> article-pass-data
-    let testPage: pageModule.Page;
-    let pageFactory = function (): pageModule.Page {
-        testPage = new pageModule.Page();
-        testPage.on(pageModule.Page.navigatedToEvent, function () {
+    let testPage: Page;
+    const pageFactory = function (): Page {
+        testPage = new Page();
+        testPage.on(Page.navigatedToEvent, function () {
             //console.log(JSON.stringify(context));
         });
         return testPage;
     };
-    let navEntry = {
+
+    const navEntry = {
         create: pageFactory,
         context: "myContext",
         animated: false
     };
-    let topFrame = frameModule.topmost();
+
+    const topFrame = topmost();
     topFrame.navigate(navEntry);
     // << article-pass-data
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage !== currentPage && testPage.isLayoutValid);
+    TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
 
-    let actualContextValue = testPage.navigationContext;
+    const actualContextValue = testPage.navigationContext;
     TKUnit.assertEqual(actualContextValue, "myContext");
 
     helper.goBack();
@@ -239,34 +223,35 @@ export function test_NavigateTo_WithContext() {
 
 //https://github.com/NativeScript/NativeScript/issues/731
 export function test_NavigateTo_WithBindingContext() {
-    let currentPage = frameModule.topmost().currentPage;
+    const currentPage = topmost().currentPage;
     let testPage: Page;
     let bindingContext;
-    let pageFactory = function (): Page {
+    const pageFactory = function (): Page {
         testPage = new Page();
-        testPage.on(pageModule.Page.navigatingToEvent, function (args: NavigatedData) {
+        testPage.on(Page.navigatingToEvent, function (args: NavigatedData) {
             bindingContext = (<Page>args.object).bindingContext;
         });
         return testPage;
     };
-    let navEntry = {
+
+    const navEntry = {
         create: pageFactory,
         bindingContext: "bindng context",
         animated: false
     };
-    let topFrame = frameModule.topmost();
+
+    const topFrame = topmost();
     topFrame.navigate(navEntry);
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage !== currentPage && testPage.isLayoutValid);
+    TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
     helper.goBack();
 
     TKUnit.assertEqual(bindingContext, navEntry.bindingContext, "The Page's bindingContext should be equal to the NavigationEntry.bindingContext property when navigating to.");
 }
 
 export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
-
     helper.navigate(() => new Page());
     let testPage: Page;
-    let pageFactory = function () {
+    const pageFactory = function () {
         testPage = new Page();
         testPage.id = "testPage_test_FrameBackStack_WhenNavigatingForwardAndBack";
         addLabelToPage(testPage);
@@ -275,7 +260,7 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
 
     helper.navigateWithHistory(pageFactory);
 
-    let topFrame = frameModule.topmost();
+    const topFrame = topmost();
     TKUnit.assertEqual(topFrame.backStack.length, 1);
     TKUnit.assertTrue(topFrame.canGoBack(), "topFrame.canGoBack() should be true");
 
@@ -286,38 +271,38 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
 }
 
 export function test_LoadPageFromModule() {
-    let topFrame = frameModule.topmost();
+    const topFrame = topmost();
     helper.navigateToModule("ui/page/test-page-module");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module.");
-    let testLabel = <Label>topFrame.currentPage.content;
+    const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page module.");
 }
 
 export function test_LoadPageFromDeclarativeWithCSS() {
-    let topFrame = frameModule.topmost();
+    const topFrame = topmost();
     helper.navigateToModule("ui/page/test-page-declarative-css");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
-    let testLabel = <Label>topFrame.currentPage.content;
+    const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page declarative file with css.");
     TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
 }
 
 export function test_LoadPageFromModuleWithCSS() {
-    let topFrame = frameModule.topmost();
+    const topFrame = topmost();
     helper.navigateToModule("ui/page/test-page-module-css");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
-    let testLabel = <Label>topFrame.currentPage.content;
+    const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page module css.");
     TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
 }
 
 export function test_NavigateToPageCreatedWithNavigationEntry() {
-    let expectedText = "Label created with a NavigationEntry";
+    const expectedText = "Label created with a NavigationEntry";
     let testPage: Page;
-    let pageFactory = function () {
+    const pageFactory = function () {
         testPage = new Page();
         testPage.id = "testPage_test_NavigateToPageCreatedWithNavigationEntry";
         addLabelToPage(testPage, expectedText);
@@ -326,23 +311,23 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
 
     helper.navigate(pageFactory);
 
-    let actualContent = <Label>testPage.content;
+    const actualContent = <Label>testPage.content;
     TKUnit.assertEqual(actualContent.text, expectedText);
 }
 
 export function test_cssShouldBeAppliedToAllNestedElements() {
-    let expectedText = "Some text";
-    let testPage = new Page();
+    const expectedText = "Some text";
+    const testPage = new Page();
     testPage.id = "testPage_test_cssShouldBeAppliedToAllNestedElements";
-    let label = new Label();
+    const label = new Label();
     label.text = expectedText;
 
-    let stackLayout = new StackLayout();
+    const stackLayout = new StackLayout();
     stackLayout.addChild(label);
     testPage.content = stackLayout;
     testPage.css = "stackLayout {background-color: #FFFF0000;} label {background-color: #FF00FF00;}";
 
-    let pageFactory = function () {
+    const pageFactory = function () {
         return testPage;
     };
 
@@ -353,18 +338,18 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
 }
 
 export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
-    let expectedText = "Some text";
-    let testPage = new Page();
+    const expectedText = "Some text";
+    const testPage = new Page();
     testPage.id = "testPage_test_cssShouldBeAppliedAfterChangeToAllNestedElements";
-    let label = new Label();
+    const label = new Label();
     label.text = expectedText;
 
-    let stackLayout = new StackLayout();
+    const stackLayout = new StackLayout();
     stackLayout.addChild(label);
     testPage.content = stackLayout;
     testPage.css = "stackLayout {background-color: #FFFF0000;} label {background-color: #FF00FF00;}";
 
-    let pageFactory = function () {
+    const pageFactory = function () {
         return testPage;
     };
 
@@ -379,12 +364,12 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
 }
 
 export function test_page_backgroundColor_is_white() {
-    let page = new Page();
+    const page = new Page();
     page.id = "page_test_page_backgroundColor_is_white";
-    let factory = () => page;
+    const factory = () => page;
     helper.navigate(factory);
-    let whiteColor = new Color("white");
-    if (platform.isIOS) {
+    const whiteColor = new Color("white");
+    if (isIOS) {
         TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeViewProtected.backgroundColor.CGColor), "page default backgroundColor should be white");
     } else {
         TKUnit.assertEqual(page.nativeViewProtected.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
@@ -392,43 +377,43 @@ export function test_page_backgroundColor_is_white() {
 }
 
 export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() {
-    let page;
-    let loadedEventHandler = function (args) {
-        TKUnit.assertNotEqual(frameModule.topmost().currentPage, args.object, "When a page is loaded it should not yet be the current page.");
+    let page: Page;
+    const loadedEventHandler = function (args) {
+        TKUnit.assertNotEqual(topmost().currentPage, args.object, "When a page is loaded it should not yet be the current page.");
     }
 
-    let pageFactory = function (): Page {
+    const pageFactory = function (): Page {
         page = new Page();
         page.id = "page_test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage";
-        page.on(view.View.loadedEvent, loadedEventHandler);
-        let label = new Label();
+        page.on(Label.loadedEvent, loadedEventHandler);
+        const label = new Label();
         label.text = "Text";
         page.content = label;
         return page;
     };
 
     helper.navigate(pageFactory);
-    page.off(view.View.loadedEvent, loadedEventHandler);
+    page.off(Label.loadedEvent, loadedEventHandler);
 }
 
 export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage() {
-    let page;
-    let navigatedEventHandler = function (args) {
-        TKUnit.assertEqual(frameModule.topmost().currentPage, args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.navigatedTo event handler. Expected: ${args.object.id}; Actual: ${frameModule.topmost().currentPage.id};`);
+    let page: Page;
+    const navigatedEventHandler = function (args) {
+        TKUnit.assertEqual(topmost().currentPage, args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.navigatedTo event handler. Expected: ${args.object.id}; Actual: ${topmost().currentPage.id};`);
     }
 
-    let pageFactory = function (): Page {
+    const pageFactory = function (): Page {
         page = new Page();
         page.id = "page_test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage";
         page.on(Page.navigatedToEvent, navigatedEventHandler);
-        let label = new Label();
+        const label = new Label();
         label.text = "Text";
         page.content = label;
         return page;
     };
 
     helper.navigate(pageFactory);
-    page.off(view.View.loadedEvent, navigatedEventHandler);
+    page.off(Label.loadedEvent, navigatedEventHandler);
 }
 
 export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
@@ -436,23 +421,23 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
     let page2;
     let forwardCounter = 0;
     let backCounter = 0;
-    let navigatedEventHandler = function (args: NavigatedData) {
+
+    const navigatedEventHandler = (args: NavigatedData) => {
         if (args.isBackNavigation) {
             backCounter++;
-        }
-        else {
+        } else {
             forwardCounter++;
         }
     }
 
-    let pageFactory1 = function (): Page {
+    const pageFactory1 = function (): Page {
         page1 = new Page();
         page1.id = "page1_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page1.on(Page.navigatedToEvent, navigatedEventHandler);
         return page1;
     };
 
-    let pageFactory2 = function (): Page {
+    const pageFactory2 = function (): Page {
         page2 = new Page();
         page2.id = "page2_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page2.on(Page.navigatedToEvent, navigatedEventHandler);
@@ -473,55 +458,56 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
-    if (platform.device.os === platform.platformNames.android
-        && android.os.Build.VERSION.SDK_INT === android.os.Build.VERSION_CODES.JELLY_BEAN_MR1
-        && android.os.Build.CPU_ABI.indexOf("x86") !== -1) {
-        // Skip this test on x68 Android with API Level 17
-        return;
-    }
+    // if (platform.device.os === platform.platformNames.android
+    //     && android.os.Build.VERSION.SDK_INT === android.os.Build.VERSION_CODES.JELLY_BEAN_MR1
+    //     && android.os.Build.CPU_ABI.indexOf("x86") !== -1) {
+    //     // Skip this test on x68 Android with API Level 17
+    //     return;
+    // }
 
-    let masterPage;
-    let ctx = {
+    const ctx = {
         shownModally: false
     };
 
+    let masterPage;
     let modalClosed = false;
-    let modalCloseCallback = function (returnValue: any) {
+
+    const modalCloseCallback = function (returnValue: any) {
         TKUnit.assertTrue(ctx.shownModally, "Modal-page must be shown!");
         TKUnit.assertEqual(returnValue, "return value", "Modal-page must return value!");
         modalClosed = true;
     }
 
     let modalPage: Page;
-
     let shownModally = 0;
-    let onShownModal = function (args: ShownModallyData) {
+
+    const onShownModal = function (args: ShownModallyData) {
         shownModally++;
         modalPage.off(Page.shownModallyEvent, onShownModal);
     }
 
     let modalLoaded = 0;
-    let onModalLoaded = function (args: EventData) {
+    const onModalLoaded = function (args: EventData) {
         modalLoaded++;
         modalPage.off(Page.loadedEvent, onModalLoaded);
     }
 
     let modalUnloaded = 0;
-    let onModalUnloaded = function (args: EventData) {
+    const onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
         TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
-    let navigatedToEventHandler = function (args) {
-        let page = <Page>args.object;
+    const navigatedToEventHandler = function (args) {
+        const page = <Page>args.object;
         TKUnit.assertNull(page.modal, "currentPage.modal should be undefined when no modal page is shown!");
-        let basePath = "ui/page/";
-        let entry: frameModule.NavigationEntry = {
+        const basePath = "ui/page/";
+        const entry: NavigationEntry = {
             moduleName: basePath + "modal-page"
         };
 
-        modalPage = <Page>frameModule.resolvePageFromEntry(entry);
+        modalPage = <Page>resolvePageFromEntry(entry);
         modalPage.on(Page.shownModallyEvent, onShownModal);
         modalPage.on(Page.loadedEvent, onModalLoaded);
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
@@ -530,11 +516,11 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
     };
 
-    let masterPageFactory = function (): Page {
+    const masterPageFactory = function (): Page {
         masterPage = new Page();
         masterPage.id = "masterPage_test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal";
         masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
-        let label = new Label();
+        const label = new Label();
         label.text = "Text";
         masterPage.content = label;
         return masterPage;
@@ -551,17 +537,17 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 }
 
 export function test_percent_width_and_height_support() {
-    let testPage = new Page();
+    const testPage = new Page();
     testPage.id = "test_percent_width_and_height_support";
 
-    let stackLayout = new StackLayout();
+    const stackLayout = new StackLayout();
     (<any>stackLayout).width = "50%";
     (<any>stackLayout).height = "50%";
 
     testPage.content = stackLayout;
 
-    let pageWidth = testPage.getMeasuredWidth();
-    let pageHeight = testPage.getMeasuredHeight()
+    const pageWidth = testPage.getMeasuredWidth();
+    const pageHeight = testPage.getMeasuredHeight()
 
     TKUnit.assertEqual(pageWidth, Math.round(pageWidth / 2), "Current page MeasuredWidth incorrect");
     TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");
@@ -575,20 +561,20 @@ export function test_percent_width_and_height_support() {
 }
 
 export function test_percent_margin_support() {
-    let testPage = new Page();
+    const testPage = new Page();
     testPage.id = "ttest_percent_margin_support";
 
-    let stackLayout = new StackLayout();
+    const stackLayout = new StackLayout();
     stackLayout.margin = "10%";
     testPage.content = stackLayout;
 
-    let pageWidth = testPage.getMeasuredWidth();
-    let pageHeight = testPage.getMeasuredHeight()
+    const pageWidth = testPage.getMeasuredWidth();
+    const pageHeight = testPage.getMeasuredHeight()
 
-    let marginLeft = pageWidth * 0.1;
-    let marginTop = pageHeight * 0.1;
+    const marginLeft = pageWidth * 0.1;
+    const marginTop = pageHeight * 0.1;
 
-    let bounds = stackLayout._getCurrentLayoutBounds();
+    const bounds = stackLayout._getCurrentLayoutBounds();
     TKUnit.assertEqual(bounds.left, Math.round(marginLeft), "Page's content LEFT position incorrect");
     TKUnit.assertEqual(bounds.top, Math.round(marginTop), "Page's content  TOP position incorrect");
     TKUnit.assertEqual(bounds.right, Math.round(marginLeft + pageWidth), "Page's content  RIGHT position incorrect");
@@ -604,9 +590,9 @@ export function test_percent_margin_support() {
 }
 
 //export function test_ModalPage_Layout_is_Correct() {
-//    let testPage: Page;
-//    let label: Label;
-//    let pageFactory = function () {
+//    const testPage: Page;
+//    const label: Label;
+//    const pageFactory = function () {
 //        testPage = new Page();
 //        label = new Label();
 //        label.text = "Will Show modal page";
@@ -615,20 +601,20 @@ export function test_percent_margin_support() {
 //    };
 
 //    helper.navigate(pageFactory);
-//    let basePath = "ui/page/";
+//    const basePath = "ui/page/";
 //    testPage.showModal(basePath + "page21", testPage, () => { }, false);
 
 //    // TODO: Remove this once navigate and showModal returns Promise<Page>.
 //    TKUnit.wait(0.350);
-//    let childPage = (<any>testPage).childPage;
-//    let closeCallback: Function = (<any>testPage).close;
+//    const childPage = (<any>testPage).childPage;
+//    const closeCallback: Function = (<any>testPage).close;
 
 //    try {
-//        let layout = <StackLayout>childPage.content;
-//        let repeater = layout.getChildAt(1);
+//        const layout = <StackLayout>childPage.content;
+//        const repeater = layout.getChildAt(1);
 //        TKUnit.assertTrue(repeater.isLayoutValid, "layout should be valid.");
-//        let bounds = repeater._getCurrentLayoutBounds();
-//        let height = bounds.bottom - bounds.top;
+//        const bounds = repeater._getCurrentLayoutBounds();
+//        const height = bounds.bottom - bounds.top;
 //        TKUnit.assertTrue(height > 0, "Layout should be >0.");
 
 //        closeCallback();
