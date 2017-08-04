@@ -8,7 +8,7 @@ import { Page } from "../page";
 // Types.
 import { FrameBase, application, NavigationContext, stack, goBack, View, Observable, traceEnabled, traceWrite, traceCategories } from "./frame-common";
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
-import { _setAndroidFragmentTransitions, _waitForAnimationEnd, _onFragmentCreateAnimator } from "./fragment.transitions";
+import { _setAndroidFragmentTransitions, _waitForAnimationEnd, _onFragmentCreateAnimator, _updateAnimationFragment } from "./fragment.transitions";
 
 import { profile } from "../../profiling";
 
@@ -85,7 +85,7 @@ export class Frame extends FrameBase {
         const isBack = this._isBack;
         let page: Page = this.currentPage;
         if (page) {
-            if (page.frame === this) {
+            if (page.frame === this && isBack) {
                 this._removeView(page);
             }
 
@@ -410,50 +410,29 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 }
 
 function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
-    let fragmentTag = fragment.getTag();
-    let page: Page;
-    let entry: BackstackEntry;
-
+    const fragmentTag = fragment.getTag();
     if (traceEnabled()) {
         traceWrite(`Finding page for ${fragmentTag}.`, traceCategories.NativeLifecycle);
     }
 
     if (fragmentTag === DIALOG_FRAGMENT_TAG) {
-        if (traceEnabled()) {
-            traceWrite(`No need to find page for dialog fragment.`, traceCategories.NativeLifecycle);
-        }
         return;
     }
 
+    let entry: BackstackEntry;
     if (frame._currentEntry && frame._currentEntry.fragmentTag === fragmentTag) {
-        page = frame.currentPage;
         entry = frame._currentEntry;
-        if (traceEnabled()) {
-            traceWrite(`Current page matches fragment ${fragmentTag}.`, traceCategories.NativeLifecycle);
-        }
-    }
-    else {
-        const backStack = frame.backStack;
-        for (let i = 0; i < backStack.length; i++) {
-            if (backStack[i].fragmentTag === fragmentTag) {
-                entry = backStack[i];
-                break;
-            }
-        }
-        if (entry) {
-            page = entry.resolvedPage;
-            if (traceEnabled()) {
-                traceWrite(`Found ${page} for ${fragmentTag}`, traceCategories.NativeLifecycle);
-            }
-        }
+    } else {
+        entry = frame.backStack.find((value) => value.fragmentTag === fragmentTag);
     }
 
+    const page = entry ? entry.resolvedPage : undefined;
     if (page) {
-        let callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
+        const callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
         callbacks.frame = frame;
         callbacks.entry = entry;
-    }
-    else {
+        _updateAnimationFragment(fragment);
+    } else {
         throw new Error(`Could not find a page for ${fragmentTag}.`);
     }
 }
@@ -505,7 +484,6 @@ export function setFragmentClass(clazz: any) {
 class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     public frame: Frame;
     public entry: BackstackEntry;
-    public clearHistory: boolean;
 
     @profile
     public onHiddenChanged(fragment: android.app.Fragment, hidden: boolean, superFunc: Function): void {
@@ -546,15 +524,13 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         // There is no entry set to the fragment, so this must be destroyed fragment that was recreated by Android.
         // We should find its corresponding page in our backstack and set it manually.
         if (!this.entry) {
-            let frameId = fragment.getArguments().getInt(FRAMEID);
-            let frame = getFrameById(frameId);
-            if (frame) {
-                this.frame = frame;
-            } else {
+            const frameId = fragment.getArguments().getInt(FRAMEID);
+            const frame = getFrameById(frameId);
+            if (!frame) {
                 throw new Error(`Cannot find Frame for ${fragment}`);
             }
 
-            findPageForFragment(fragment, this.frame);
+            findPageForFragment(fragment, frame);
         }
     }
 
@@ -571,8 +547,9 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 fragment.getFragmentManager().beginTransaction().hide(fragment).commit();
             }
 
-            if (page.parent === this.frame) {
-                if (!page.isLoaded) {
+            const frame = this.frame;
+            if (page.parent === frame) {
+                if (frame.isLoaded && !page.isLoaded) {
                     page.onLoaded();
                 }
             } else {

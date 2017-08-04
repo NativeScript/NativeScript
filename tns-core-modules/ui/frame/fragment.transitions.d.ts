@@ -28,5 +28,9 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
 /**
  * @private
  */
+export function _updateAnimationFragment(fragment: any): void;
+/**
+ * @private
+ */
 export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
 //@endprivate

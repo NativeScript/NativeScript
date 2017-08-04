@@ -127,10 +127,6 @@ export function test_setInterval_callbackCalledDuringPeriod(done) {
         // << (hide)
     }, 50);
     // << timer-set-expression
-
-    // TKUnit.waitUntilReady(() => counter >= expected, 0.500, false);
-    // timer.clearInterval(id);
-    // TKUnit.assert(counter >= expected, "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
 };
 
 export function test_setInterval_callbackCalledWithExtraArgs(done) {
@@ -147,10 +143,6 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
             done(end - start > 250 ? new Error('setInterval too slow.') : null);
         }
     }, 50, rnd);
-
-    // TKUnit.waitUntilReady(() => counter >= expected, 0.500, false);
-    // timer.clearInterval(id);
-    // TKUnit.assert(counter >= expected, "Callback raised " + counter + " times with arguments.");
 };
 
 export function test_setInterval_callbackShouldBeCleared(done) {
@@ -167,9 +159,6 @@ export function test_setInterval_callbackShouldBeCleared(done) {
         timer.clearInterval(id);
     }, 50);
     // << timer-set-interval
-
-    // TKUnit.wait(0.15);
-    // TKUnit.assertEqual(counter, 1, "Callback should be raised only once!");
 };
 
 export function test_clearTimeout_multipleTimes_afterTick() {

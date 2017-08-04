@@ -4,7 +4,7 @@
   "readme": "NativeScript Application",
   "repository": "<fill-your-repository-here>",
   "nativescript": {
-    "id": "org.nativescript.tests",
+    "id": "org.nativescript.UnitTestApp",
     "tns-ios": {
       "version": "3.1.0"
     },
