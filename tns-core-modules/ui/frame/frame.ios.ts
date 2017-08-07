@@ -5,7 +5,7 @@ import { profile } from "../../profiling";
 
 //Types.
 import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
-import { _createIOSAnimatedTransitioning } from "../transition";
+import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
 import * as uiUtils from "tns-core-modules/ui/utils";

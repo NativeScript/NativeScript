@@ -29,7 +29,7 @@ export function isRunningOnEmulator(): boolean {
     }
 }
 
-export var allTests = {};
+export const allTests = {};
 
 import * as domNodeTest from "./debugger/dom-node-tests";
 allTests["DOM-NODE"] = domNodeTest;
@@ -226,23 +226,19 @@ allTests["ANIMATION"] = animationTests;
 import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
 allTests["LIFECYCLE"] = lifecycle;
 
+
 import * as cssAnimationTests from "./ui/animation/css-animation-tests";
 allTests["CSS-ANIMATION"] = cssAnimationTests;
 
 import * as transitionTests from "./navigation/transition-tests";
-// Skip transitions on android emulators with API 23
-if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
-    allTests["TANSITIONS"] = transitionTests;
-}
-
+allTests["TANSITIONS"] = transitionTests;
 import * as searchBarTests from "./ui/search-bar/search-bar-tests";
 allTests["SEARCH-BAR"] = searchBarTests;
 
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
-var testsWithLongDelay = {
-    test_Transitions: 3 * 60 * 1000,
+const testsWithLongDelay = {
     testLocation: 10000,
     testLocationOnce: 10000,
     testLocationOnceMaximumAge: 10000,
@@ -257,14 +253,14 @@ var testsWithLongDelay = {
     test_AnimateBackgroundColor_FromString: 10 * 1000
 }
 
-var startTime;
-var running = false;
-var testsQueue = new Array<TestInfo>();
+let startTime;
+let running = false;
+let testsQueue = new Array<TestInfo>();
 
 function printRunTestStats() {
     const testCases = new Array<string>();
 
-    var failedTestCount = 0;
+    let failedTestCount = 0;
     const failedTestInfo = [];
     const slowTests = new Array<string>();
 
@@ -285,7 +281,7 @@ function printRunTestStats() {
 
     const totalTime = (TKUnit.time() - startTime).toFixed(2);
 
-    let finalMessage = `\n`+
+    let finalMessage = `\n` +
         `=== ALL TESTS COMPLETE ===\n` +
         `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` +
         `DURATION: ${totalTime} ms\n`;
@@ -335,14 +331,13 @@ function generateTestFile(allTests: TestInfo[]) {
 }
 
 function showReportPage(finalMessage: string) {
-    let stack = new StackLayout();
-
-    let btn = new Button();
+    const stack = new StackLayout();
+    const btn = new Button();
     btn.text = "Rerun tests";
     btn.on("tap", () => runAll(testsSelector));
     stack.addChild(btn);
 
-    let messageContainer = new TextView();
+    const messageContainer = new TextView();
     messageContainer.editable = messageContainer.autocorrect = false;
     messageContainer.text = finalMessage;
     stack.addChild(messageContainer);
@@ -378,16 +373,16 @@ function log(): void {
 }
 
 let testsSelector: string
-export var runAll = function (testSelector?: string) {
+export function runAll(testSelector?: string) {
     testsSelector = testSelector;
     if (running) {
         // TODO: We may schedule pending run requests
         return;
     }
 
-    var singleModuleName, singleTestName;
+    let singleModuleName, singleTestName;
     if (testSelector) {
-        var pair = testSelector.split(".");
+        const pair = testSelector.split(".");
         singleModuleName = pair[0];
         if (singleModuleName) {
             if (singleModuleName.length === 0) {
@@ -409,17 +404,17 @@ export var runAll = function (testSelector?: string) {
 
     console.log("TESTS: " + singleModuleName ? singleModuleName : "" + " " + singleTestName ? singleTestName : "");
 
-    var totalSuccess = 0;
-    var totalFailed: Array<TKUnit.TestFailure> = [];
+    const totalSuccess = 0;
+    const totalFailed: Array<TKUnit.TestFailure> = [];
     testsQueue.push(new TestInfo(() => { running = true; startTime = TKUnit.time(); }));
-    for (var name in allTests) {
+    for (const name in allTests) {
         if (singleModuleName && (singleModuleName !== name.toLowerCase())) {
             continue;
         }
 
-        var testModule = allTests[name];
+        const testModule = allTests[name];
 
-        var test = testModule.createTestCase ? testModule.createTestCase() : testModule;
+        const test = testModule.createTestCase ? testModule.createTestCase() : testModule;
         test.name = name;
 
         testsQueue.push(new TestInfo(startLog, test));
@@ -428,17 +423,17 @@ export var runAll = function (testSelector?: string) {
             testsQueue.push(new TestInfo(test.setUpModule, test));
         }
 
-        for (var testName in test) {
+        for (const testName in test) {
             if (singleTestName && (singleTestName !== testName.toLowerCase())) {
                 continue;
             }
 
-            var testFunction = test[testName];
+            const testFunction = test[testName];
             if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
                 if (test.setUp) {
                     testsQueue.push(new TestInfo(test.setUp, test));
                 }
-                var testTimeout = testsWithLongDelay[testName];
+                const testTimeout = testsWithLongDelay[testName];
                 testsQueue.push(new TestInfo(testFunction, test, true, name + "." + testName, false, null, testTimeout));
                 if (test.tearDown) {
                     testsQueue.push(new TestInfo(test.tearDown, test));
@@ -456,8 +451,6 @@ export var runAll = function (testSelector?: string) {
 
     TKUnit.runTests(testsQueue, 0);
 }
-
-
 
 class TestInfo implements TKUnit.TestInfoEntry {
     testFunc: () => void;

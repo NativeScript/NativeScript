@@ -153,7 +153,14 @@ export function getClearCurrentPage(): Page {
 }
 
 export function waitUntilNavigatedFrom(oldPage: Page) {
-    TKUnit.waitUntilReady(() => getCurrentPage() && getCurrentPage() !== oldPage);
+    let completed = false;
+    function navigatedFrom(args) {
+        args.object.page.off("navigatedFrom", navigatedFrom);
+        completed = true;
+    }
+
+    oldPage.on("navigatedFrom", navigatedFrom);
+    TKUnit.waitUntilReady(() => completed);
 }
 
 export function waitUntilLayoutReady(view: View): void {

@@ -111,7 +111,9 @@ export function test_navigating_away_does_not_excessively_reset() {
 
     const page2 = helper.navigateToModule("ui/lifecycle/pages/page-one");
 
-    helper.waitUntilLayoutReady(page2);
+    if (!page2.isLayoutValid) {
+        helper.waitUntilLayoutReady(page2);
+    }
 
     // NOTE: Recycling may mess this up so feel free to change the test,
     // but ensure a reasonable amount of native setters were called when the views navigate away

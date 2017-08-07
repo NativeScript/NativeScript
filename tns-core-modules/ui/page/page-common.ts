@@ -297,6 +297,9 @@ export class PageBase extends ContentView implements PageDefinition {
         eachDescendant(this, resetCssValuesFunc);
     }
 }
+
+PageBase.prototype.recycleNativeView = "never";
+
 export interface PageBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
     on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;

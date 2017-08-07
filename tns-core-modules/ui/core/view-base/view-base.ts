@@ -814,8 +814,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (nativeView && isAndroid) {
             const recycle = this.recycleNativeView;
             if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-                const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
-                if (!nativeParent) {
+                // const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+                const nativeParent = (<android.view.View>nativeView).getParent();
+                const animation = (<android.view.View>nativeView).getAnimation();
+                if (!nativeParent && !animation) {
                     putNativeView(this._context, this);
                 }
             }
