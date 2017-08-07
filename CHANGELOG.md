@@ -1,6 +1,25 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 3.1.1 (2017, August 08)
+
+### Fixed
+- [(# 4514)](https://github.com/NativeScript/NativeScript/issues/4514) IOS: Text/xml content type not treated as text 
+- [(# 4450)](https://github.com/NativeScript/NativeScript/issues/4450) IOS: TNS 3.1 breaks background-color through css binding 
+- [(# 4443)](https://github.com/NativeScript/NativeScript/issues/4443) IOS: Can't load local files in a WebView on device 
+- [(# 4415)](https://github.com/NativeScript/NativeScript/issues/4415) Style error when setting background after upgrading to NS 3
+- [(# 4342)](https://github.com/NativeScript/NativeScript/issues/4342) Unable to change the fontWeight. 
+- [(# 4322)](https://github.com/NativeScript/NativeScript/issues/4322) Flashing border on scroll within ListView on Android when border-radius is applied 
+- [(# 4283)](https://github.com/NativeScript/NativeScript/issues/4283) IOS: ActionBar will appear broken when internet sharing bar is displayed 
+- [(# 4046)](https://github.com/NativeScript/NativeScript/issues/4046) Animating a view is broken and freezes the animated properties 
+
+### New
+- [(# 4522)](https://github.com/NativeScript/NativeScript/issues/4522) Allow toggling of ScrollBar indicators on ScrollView 
+- [(# 2740)](https://github.com/NativeScript/NativeScript/issues/2740) Improved ActionBar CSS Support 
+- [(# 1664)](https://github.com/NativeScript/NativeScript/issues/1664) Implemented css line-height property
+
+
+
 ## 3.1.0 (2017, June 22)
 
 ### Fixed
