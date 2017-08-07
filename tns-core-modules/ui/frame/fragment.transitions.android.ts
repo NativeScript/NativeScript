@@ -26,6 +26,11 @@ const popExitFakeResourceId = -40;
 
 const waitingQueue = new Set<android.app.Fragment>();
 
+interface TransitionListener {
+    new(fragment: android.app.Fragment): ExpandedTransitionListener;
+}
+
+let TransitionListener: TransitionListener;
 let AnimationListener: android.animation.Animator.AnimatorListener;
 let loadAnimatorMethod: java.lang.reflect.Method;
 let reflectionDone: boolean;
@@ -33,13 +38,86 @@ let defaultEnterAnimatorStatic: android.animation.Animator;
 let defaultExitAnimatorStatic: android.animation.Animator;
 let fragmentCompleted: android.app.Fragment;
 
-export function _updateAnimationFragment(fragment: android.app.Fragment): void {
-    const callbacks = getFragmentCallbacks(fragment);
+interface ExpandedAnimator extends android.animation.Animator {
+    transitionType?: string;
+    fragment?: android.app.Fragment;
+}
+
+interface ExpandedTransitionListener extends android.transition.Transition.TransitionListener {
+    fragment: android.app.Fragment;
+    enterTransition: android.transition.Transition;
+    exitTransition: android.transition.Transition;
+    reenterTransition: android.transition.Transition;
+    returnTransition: android.transition.Transition;
+}
+
+interface ExpandedEntry extends BackstackEntry {
+    enterTransitionListener: ExpandedTransitionListener;
+    exitTransitionListener: ExpandedTransitionListener;
+    reenterTransitionListener: ExpandedTransitionListener;
+    returnTransitionListener: ExpandedTransitionListener;
+
+    enterAnimator: ExpandedAnimator;
+    exitAnimator: ExpandedAnimator;
+    popEnterAnimator: ExpandedAnimator;
+    popExitAnimator: ExpandedAnimator;
+
+    transition: Transition;
+    transitionName: string;
+}
+
+interface FragmentCallbacks {
+    frame: Frame;
+    entry: ExpandedEntry;
+}
+
+function getFragmentCallbacks(fragment: android.app.Fragment): FragmentCallbacks {
+    return fragment[CALLBACKS] as FragmentCallbacks;
+}
+
+export function _updateAnimationFragment(newFragment: android.app.Fragment): void {
+    const callbacks = getFragmentCallbacks(newFragment);
     const entry = callbacks.entry;
-    updateAnimatorTarget(entry.enterAnimator, fragment);
-    updateAnimatorTarget(entry.exitAnimator, fragment);
-    updateAnimatorTarget(entry.popEnterAnimator, fragment);
-    updateAnimatorTarget(entry.popExitAnimator, fragment);
+    // oldFragment should be a fragment that we hold reference to but it
+    // is no longer used in the activity because activity was recreated.
+    // We take the oldFragment from any of the animators or transitions.
+    // It should be the same and we must have an oldFragment.
+    const animator = entry.enterAnimator || entry.exitAnimator || entry.popEnterAnimator || entry.popExitAnimator;
+    const transitionListener = entry.enterTransitionListener || entry.exitTransitionListener || entry.reenterTransitionListener || entry.returnTransitionListener;
+
+    const oldFragmentOwner = animator || transitionListener;
+    const oldFragment = oldFragmentOwner ? oldFragmentOwner.fragment : null;
+
+    updateAnimatorTarget(entry.enterAnimator, newFragment);
+    updateAnimatorTarget(entry.exitAnimator, newFragment);
+    updateAnimatorTarget(entry.popEnterAnimator, newFragment);
+    updateAnimatorTarget(entry.popExitAnimator, newFragment);
+
+    clearAllTransitions(oldFragment);
+
+    const enterTransitionListener = entry.enterTransitionListener;
+    if (enterTransitionListener) {
+        enterTransitionListener.fragment = newFragment;
+        newFragment.setEnterTransition(enterTransitionListener.enterTransition);
+    }
+
+    const exitTransitionListener = entry.exitTransitionListener;
+    if (exitTransitionListener) {
+        exitTransitionListener.fragment = newFragment;
+        newFragment.setExitTransition(exitTransitionListener.exitTransition);
+    }
+
+    const reenterTransitionListener = entry.reenterTransitionListener;
+    if (reenterTransitionListener) {
+        reenterTransitionListener.fragment = newFragment;
+        newFragment.setReenterTransition(reenterTransitionListener.reenterTransition);
+    }
+
+    const returnTransitionListener = entry.returnTransitionListener;
+    if (returnTransitionListener) {
+        returnTransitionListener.fragment = newFragment;
+        newFragment.setReturnTransition(returnTransitionListener.returnTransition);
+    }
 }
 
 function updateAnimatorTarget(animator: ExpandedAnimator, fragment: android.app.Fragment): void {
@@ -107,7 +185,7 @@ export function _setAndroidFragmentTransitions(
     let currentFragmentNeedsDifferentAnimation = false;
     if (currentEntry &&
         (currentEntry.transitionName !== name || currentEntry.transition !== transition)) {
-        clearTransitions(currentFragment);
+        clearTransitions(currentFragment, true);
         currentFragmentNeedsDifferentAnimation = true;
     }
 
@@ -123,19 +201,19 @@ export function _setAndroidFragmentTransitions(
         // setReturnTransition: Pop Exit, same as Enter if not specified
 
         if (name.indexOf('slide') === 0) {
-            setupSlideTransition(navigationTransition, newFragment, name);
+            setupNewFragmentSlideTransition(navigationTransition, newFragment, name);
             if (currentFragmentNeedsDifferentAnimation) {
-                setupSlideTransition(navigationTransition, currentFragment, name, true);
+                setupCurrentFragmentSlideTransition(navigationTransition, currentFragment, name);
             }
         } else if (name === 'fade') {
-            setupFadeTransition(navigationTransition, newFragment, name);
+            setupNewFragmentFadeTransition(navigationTransition, newFragment);
             if (currentFragmentNeedsDifferentAnimation) {
-                setupFadeTransition(navigationTransition, currentFragment, name, true);
+                setupCurrentFragmentFadeTransition(navigationTransition, currentFragment);
             }
         } else if (name === 'explode') {
-            setupExplodeTransition(navigationTransition, newFragment);
+            setupNewFragmentExplodeTransition(navigationTransition, newFragment);
             if (currentFragmentNeedsDifferentAnimation) {
-                setupExplodeTransition(navigationTransition, currentFragment, true);
+                setupCurrentFragmentExplodeTransition(navigationTransition, currentFragment);
             }
         }
     } else if (name.indexOf('slide') === 0) {
@@ -156,9 +234,9 @@ export function _setAndroidFragmentTransitions(
     // Having transition means we have custom animation
     if (transition) {
         fragmentTransaction.setCustomAnimations(enterFakeResourceId, exitFakeResourceId, popEnterFakeResourceId, popExitFakeResourceId);
-        setupAnimation(newFragment, transition);
+        setupAllAnimation(newFragment, transition);
         if (currentFragmentNeedsDifferentAnimation) {
-            setupAnimation(currentFragment, transition, true);
+            setupExitAndPopEnterAnimation(currentFragment, transition);
         }
     }
 
@@ -189,21 +267,6 @@ export function _onFragmentCreateAnimator(fragment: android.app.Fragment, nextAn
     return null;
 }
 
-interface ExpandedAnimator extends android.animation.Animator {
-    transitionType?: string;
-    fragment?: android.app.Fragment;
-}
-
-interface ExpandedEntry extends BackstackEntry {
-    enterAnimator: android.animation.Animator;
-    exitAnimator: android.animation.Animator;
-    popEnterAnimator: android.animation.Animator;
-    popExitAnimator: android.animation.Animator;
-
-    transition: Transition;
-    transitionName: string;
-}
-
 class NoTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
         return createDummyZeroDurationAnimator();
@@ -222,6 +285,62 @@ class DefaultTransition extends Transition {
                 return getDefaultAnimation(false);
         }
     }
+}
+
+// Transition listener can't be static because
+// android is cloning transitions and we can't expand them :(
+function getTransitionListener(fragment: android.app.Fragment): ExpandedTransitionListener {
+    if (!TransitionListener) {
+        @Interfaces([(<any>android).transition.Transition.TransitionListener])
+        class TransitionListenerImpl extends java.lang.Object implements android.transition.Transition.TransitionListener {
+            constructor(public fragment: android.app.Fragment) {
+                super();
+                return global.__native(this);
+            }
+
+            public onTransitionStart(transition: android.transition.Transition): void {
+                if (traceEnabled()) {
+                    traceWrite(`START ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
+                }
+            }
+
+            onTransitionEnd(transition: android.transition.Transition): void {
+                const expandedFragment = this.fragment;
+                if (traceEnabled()) {
+                    traceWrite(`END ${toShortString(transition)} transition for ${expandedFragment}`, traceCategories.Transition);
+                }
+
+                transitionOrAnimationCompleted(expandedFragment);
+            }
+
+            onTransitionResume(transition: android.transition.Transition): void {
+                if (traceEnabled()) {
+                    traceWrite(`RESUME ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
+                }
+            }
+
+            onTransitionPause(transition: android.transition.Transition): void {
+                if (traceEnabled()) {
+                    traceWrite(`PAUSE ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
+                }
+            }
+
+            onTransitionCancel(transition: android.transition.Transition): void {
+                if (traceEnabled()) {
+                    traceWrite(`CANCEL ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
+                }
+            }
+
+            enterTransition: android.transition.Transition;
+            exitTransition: android.transition.Transition;
+            reenterTransition: android.transition.Transition;
+            returnTransition: android.transition.Transition;
+        }
+
+        TransitionListener = TransitionListenerImpl;
+    }
+
+    return new TransitionListener(fragment);
 }
 
 function getAnimationListener(): android.animation.Animator.IAnimatorListener {
@@ -266,172 +385,262 @@ function getAnimationListener(): android.animation.Animator.IAnimatorListener {
     return AnimationListener;
 }
 
-function clearAnimationListener(animator: ExpandedAnimator): void {
-    const fragment = animator ? animator.fragment : null;
+function clearAnimationListener(animator: ExpandedAnimator, listener: android.animation.Animator.IAnimatorListener): void {
+    if (!animator) {
+        return;
+    }
+
+    animator.removeListener(listener);
+
+    const fragment = animator.fragment;
     if (!fragment) {
         return;
     }
 
+    animator.fragment = null;
     const entry = getFragmentCallbacks(fragment).entry;
     if (traceEnabled()) {
         traceWrite(`Clear ${animator.transitionType} - ${entry.transition} for ${fragment}`, traceCategories.Transition);
     }
-
-    animator.fragment = null;
-    entry.transition = null;
-    entry.transitionName = null;
 }
 
-function clearTransitions(fragment: android.app.Fragment): void {
+function clearTransitions(fragment: android.app.Fragment, removeListener: boolean): void {
     if (sdkVersion() >= 21) {
-        const exitTransition = (<any>fragment).getExitTransition();
-        if (exitTransition) {
-            if (traceEnabled()) {
-                traceWrite(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+        const entry = getFragmentCallbacks(fragment).entry;
+        const exitListener = entry.exitTransitionListener;
+        if (exitListener) {
+            const exitTransition = fragment.getExitTransition();
+            if (exitTransition) {
+                if (removeListener) {
+                    exitTransition.removeListener(exitListener);
+                }
+
+                fragment.setExitTransition(null);//exit
+                if (traceEnabled()) {
+                    traceWrite(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+                }
             }
-            if (exitTransition.transitionListener) {
-                exitTransition.transitionListener.remove();
+
+            if (removeListener) {
+                entry.exitTransitionListener = null;
             }
-            (<any>fragment).setExitTransition(null);//exit
         }
 
-        const reenterTransition = (<any>fragment).getReenterTransition();
-        if (reenterTransition) {
-            if (traceEnabled()) {
-                traceWrite(`Cleared Pop Enter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+        const reenterListener = entry.reenterTransitionListener;
+        if (reenterListener) {
+            const reenterTransition = fragment.getReenterTransition();
+            if (reenterTransition) {
+                if (removeListener) {
+                    reenterTransition.removeListener(reenterListener);
+                }
+
+                fragment.setReenterTransition(null);//popEnter
+                if (traceEnabled()) {
+                    traceWrite(`Cleared Reenter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+                }
             }
-            if (reenterTransition.transitionListener) {
-                reenterTransition.transitionListener.remove();
+
+            if (removeListener) {
+                entry.reenterTransitionListener = null;
             }
-            (<any>fragment).setReenterTransition(null);//popEnter
         }
     }
 }
 
-function allowTransitionOverlap(fragment: any): void {
+function clearAllTransitions(fragment: android.app.Fragment): void {
+    if (!fragment) {
+        return;
+    }
+
+    clearTransitions(fragment, false);
+
+    if (sdkVersion() >= 21) {
+        const entry = getFragmentCallbacks(fragment).entry;
+        const enterListener = entry.enterTransitionListener;
+        if (enterListener) {
+            const enterTransition = fragment.getEnterTransition();
+            if (enterTransition) {
+                fragment.setEnterTransition(null);//exit
+                if (traceEnabled()) {
+                    traceWrite(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+                }
+            }
+        }
+
+        const returnListener = entry.returnTransitionListener;
+        if (returnListener) {
+            const returnTransition = fragment.getReturnTransition();
+            if (returnTransition) {
+                fragment.setReturnTransition(null);//popEnter
+                if (traceEnabled()) {
+                    traceWrite(`Cleared Return ${returnTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+                }
+            }
+        }
+    }
+}
+
+function allowTransitionOverlap(fragment: android.app.Fragment): void {
     if (fragment) {
         fragment.setAllowEnterTransitionOverlap(true);
         fragment.setAllowReturnTransitionOverlap(true);
     }
 }
 
-function setEnterTransition(navigationTransition: NavigationTransition, fragment: any, transition: any): void {
+function setEnterTransition(navigationTransition: NavigationTransition, fragment: android.app.Fragment, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
-    addNativeTransitionListener(fragment, transition);
+    const listener = addNativeTransitionListener(fragment, transition);
+    // attach listener to JS object so that it will be alive as long as entry.
+    getFragmentCallbacks(fragment).entry.enterTransitionListener = listener;
+    listener.enterTransition = transition;
     fragment.setEnterTransition(transition);
 }
 
-function setExitTransition(navigationTransition: NavigationTransition, fragment: any, transition: any): void {
+function setExitTransition(navigationTransition: NavigationTransition, fragment: android.app.Fragment, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
-    addNativeTransitionListener(fragment, transition);
+    const listener = addNativeTransitionListener(fragment, transition);
+    // attach listener to JS object so that it will be alive as long as entry.
+    getFragmentCallbacks(fragment).entry.exitTransitionListener = listener;
+    listener.exitTransition = transition;
     fragment.setExitTransition(transition);
 }
 
-function setReenterTransition(navigationTransition: NavigationTransition, fragment: any, transition: any): void {
+function setReenterTransition(navigationTransition: NavigationTransition, fragment: android.app.Fragment, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
-    addNativeTransitionListener(fragment, transition);
+    const listener = addNativeTransitionListener(fragment, transition);
+    // attach listener to JS object so that it will be alive as long as entry.
+    getFragmentCallbacks(fragment).entry.reenterTransitionListener = listener;
+    listener.reenterTransition = transition;
     fragment.setReenterTransition(transition);
 }
 
-function setReturnTransition(navigationTransition: NavigationTransition, fragment: any, transition: any): void {
+function setReturnTransition(navigationTransition: NavigationTransition, fragment: android.app.Fragment, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
-    addNativeTransitionListener(fragment, transition);
+    const listener = addNativeTransitionListener(fragment, transition);
+    // attach listener to JS object so that it will be alive as long as entry.
+    getFragmentCallbacks(fragment).entry.returnTransitionListener = listener;
+    listener.returnTransition = transition;
     fragment.setReturnTransition(transition);
 }
 
-function setupSlideTransition(navigationTransition: NavigationTransition, fragment: android.app.Fragment, name: string, isCurrent: boolean = false): void {
+function setupNewFragmentSlideTransition(navTransition: NavigationTransition, fragment: android.app.Fragment, name: string): void {
     const direction = name.substr("slide".length) || "left"; //Extract the direction from the string
     switch (direction) {
         case "left":
-            setExitTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.LEFT));
-            if (!isCurrent) {
-                setEnterTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.RIGHT));
-            }
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.LEFT));
+            setEnterTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.RIGHT));
             break;
 
         case "right":
-            setExitTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.RIGHT));
-            if (!isCurrent) {
-                setEnterTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.LEFT));
-            }
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.RIGHT));
+            setEnterTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.LEFT));
             break;
 
         case "top":
-            setExitTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.TOP));
-            if (!isCurrent) {
-                setEnterTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.BOTTOM));
-            }
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.TOP));
+            setEnterTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.BOTTOM));
             break;
 
         case "bottom":
-            setExitTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.BOTTOM));
-            if (!isCurrent) {
-                setEnterTransition(navigationTransition, fragment, new (<any>android).transition.Slide(android.view.Gravity.TOP));
-            }
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.BOTTOM));
+            setEnterTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.TOP));
             break;
     }
 }
 
-function setupFadeTransition(navigationTransition: NavigationTransition, fragment: any, name: string, isCurrent: boolean = false): void {
-    const fadeIn = (<any>android).transition.Fade.IN;
-    const fadeOut = (<any>android).transition.Fade.OUT;
+function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition, fragment: android.app.Fragment, name: string): void {
+    const direction = name.substr("slide".length) || "left"; //Extract the direction from the string
+    switch (direction) {
+        case "left":
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.LEFT));
+            break;
 
-    const fadeOutExit = new (<any>android).transition.Fade(fadeOut);
-    setExitTransition(navigationTransition, fragment, fadeOutExit);
+        case "right":
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.RIGHT));
+            break;
+
+        case "top":
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.TOP));
+            break;
+
+        case "bottom":
+            setExitTransition(navTransition, fragment, new android.transition.Slide(android.view.Gravity.BOTTOM));
+            break;
+    }
+}
+
+function setupNewFragmentFadeTransition(navTransition: NavigationTransition, fragment: android.app.Fragment): void {
+    setupCurrentFragmentFadeTransition(navTransition, fragment);
+
+    const fadeInEnter = new android.transition.Fade(android.transition.Fade.IN);
+    setEnterTransition(navTransition, fragment, fadeInEnter);
+
+    const fadeOutReturn = new android.transition.Fade(android.transition.Fade.OUT);
+    setReturnTransition(navTransition, fragment, fadeOutReturn);
+}
+
+function setupCurrentFragmentFadeTransition(navTransition: NavigationTransition, fragment: android.app.Fragment): void {
+    const fadeOutExit = new android.transition.Fade(android.transition.Fade.OUT);
+    setExitTransition(navTransition, fragment, fadeOutExit);
 
     // NOTE: There is a bug in Fade transition so we need to set all 4
     // otherwise back navigation will complete immediately (won't run the reverse transition).
-    const fadeInReenter = new (<any>android).transition.Fade(fadeIn);
-    setReenterTransition(navigationTransition, fragment, fadeInReenter);
-
-    if (!isCurrent) {
-        const fadeInEnter = new (<any>android).transition.Fade(fadeIn);
-        setEnterTransition(navigationTransition, fragment, fadeInEnter);
-
-        const fadeOutReturn = new (<any>android).transition.Fade(fadeOut);
-        setReturnTransition(navigationTransition, fragment, fadeOutReturn);
-    }
+    const fadeInReenter = new android.transition.Fade(android.transition.Fade.IN);
+    setReenterTransition(navTransition, fragment, fadeInReenter);
 }
 
-function setupExplodeTransition(navigationTransition: NavigationTransition, newFragment: any, isCurrent: boolean = false): void {
-    setExitTransition(navigationTransition, newFragment, new (<any>android).transition.Explode());
-    if (!isCurrent) {
-        setEnterTransition(navigationTransition, newFragment, new (<any>android).transition.Explode());
-    }
+function setupCurrentFragmentExplodeTransition(navTransition: NavigationTransition, fragment: android.app.Fragment): void {
+    setExitTransition(navTransition, fragment, new android.transition.Explode());
 }
 
-function setupAnimation(fragment: android.app.Fragment, transition: Transition, isCurrent: boolean = false): void {
+function setupNewFragmentExplodeTransition(navTransition: NavigationTransition, fragment: android.app.Fragment): void {
+    setExitTransition(navTransition, fragment, new android.transition.Explode());
+    setEnterTransition(navTransition, fragment, new android.transition.Explode());
+}
+
+function setupExitAndPopEnterAnimation(fragment: android.app.Fragment, transition: Transition): void {
     const entry = getFragmentCallbacks(fragment).entry;
     const listener = getAnimationListener();
 
     const exitAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.exit);
     exitAnimator.transitionType = AndroidTransitionType.exit;
-    entry.exitAnimator = exitAnimator;
     exitAnimator.fragment = fragment;
     exitAnimator.addListener(listener);
+    // remove previous listener if we are changing the animator.
+    clearAnimationListener(entry.exitAnimator, listener);
+    entry.exitAnimator = exitAnimator;
 
     const popEnterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.popEnter);
     popEnterAnimator.transitionType = AndroidTransitionType.popEnter;
-    entry.popEnterAnimator = popEnterAnimator;
     popEnterAnimator.fragment = fragment;
     popEnterAnimator.addListener(listener);
-
-    if (!isCurrent) {
-        const enterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.enter);
-        enterAnimator.transitionType = AndroidTransitionType.enter;
-        entry.enterAnimator = enterAnimator;
-        enterAnimator.fragment = fragment;
-        enterAnimator.addListener(listener);
-
-        const popExitAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.popExit);
-        popExitAnimator.transitionType = AndroidTransitionType.popExit;
-        entry.popExitAnimator = popExitAnimator;
-        popExitAnimator.fragment = fragment;
-        popExitAnimator.addListener(listener);
-    }
+    // remove previous listener if we are changing the animator.
+    clearAnimationListener(entry.popEnterAnimator, listener);
+    entry.popEnterAnimator = popEnterAnimator;
 }
 
-function setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: any/*android.transition.Transition*/) {
+function setupAllAnimation(fragment: android.app.Fragment, transition: Transition): void {
+    setupExitAndPopEnterAnimation(fragment, transition);
+
+    const entry = getFragmentCallbacks(fragment).entry;
+    const listener = getAnimationListener();
+
+    // setupAllAnimation is called only for new fragments so we don't 
+    // need to clearAnimationListener for enter & popExit animators.
+    const enterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.enter);
+    enterAnimator.transitionType = AndroidTransitionType.enter;
+    enterAnimator.fragment = fragment;
+    enterAnimator.addListener(listener);
+    entry.enterAnimator = enterAnimator;
+
+    const popExitAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.popExit);
+    popExitAnimator.transitionType = AndroidTransitionType.popExit;
+    popExitAnimator.fragment = fragment;
+    popExitAnimator.addListener(listener);
+    entry.popExitAnimator = popExitAnimator;
+}
+
+function setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: android.transition.Transition) {
     if (navigationTransition.duration) {
         nativeTransition.setDuration(navigationTransition.duration);
     }
@@ -443,15 +652,6 @@ function setUpNativeTransition(navigationTransition: NavigationTransition, nativ
 function transitionsCompleted(fragment: android.app.Fragment): boolean {
     waitingQueue.delete(fragment);
     return waitingQueue.size === 0;
-}
-
-interface FragmentCallbacks {
-    frame: Frame;
-    entry: ExpandedEntry;
-}
-
-function getFragmentCallbacks(fragment: android.app.Fragment): FragmentCallbacks {
-    return fragment[CALLBACKS] as FragmentCallbacks;
 }
 
 function transitionOrAnimationCompleted(fragment: android.app.Fragment): void {
@@ -468,60 +668,14 @@ function transitionOrAnimationCompleted(fragment: android.app.Fragment): void {
     }
 }
 
-function toShortString(nativeTransition: any): string {
+function toShortString(nativeTransition: android.transition.Transition): string {
     return `${nativeTransition.getClass().getSimpleName()}@${nativeTransition.hashCode().toString(16)}`;
 }
 
-function addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
-
-    const transitionListener = new (<any>android).transition.Transition.TransitionListener({
-        onTransitionCancel: function (transition: any): void {
-            if (traceEnabled()) {
-                traceWrite(`CANCEL ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
-            }
-        },
-        onTransitionEnd: function (transition: any): void {
-            const expandedFragment = this.fragment;
-            if (traceEnabled()) {
-                traceWrite(`END ${toShortString(transition)} transition for ${expandedFragment}`, traceCategories.Transition);
-            }
-
-            if (expandedFragment) {
-                transitionOrAnimationCompleted(expandedFragment);
-            }
-        },
-        onTransitionPause: function (transition: any): void {
-            if (traceEnabled()) {
-                traceWrite(`PAUSE ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
-            }
-        },
-        onTransitionResume: function (transition: any): void {
-            if (traceEnabled()) {
-                traceWrite(`RESUME ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
-            }
-        },
-        onTransitionStart: function (transition: any): void {
-            if (traceEnabled()) {
-                traceWrite(`START ${toShortString(transition)} transition for ${this.fragment}`, traceCategories.Transition);
-            }
-        }
-    });
-    transitionListener.fragment = fragment;
-    transitionListener.transition = nativeTransition;
-    transitionListener.listener = transitionListener;
-    transitionListener.remove = function () {
-        if (!this.listener || !this.transition) {
-            return;
-        }
-        this.transition.removeListener(this.listener);
-        this.fragment = null;
-        this.listener = null;
-        this.transition.transitionListener = null;
-        this.transition = null;
-    };
-
-    nativeTransition.addListener(transitionListener);
-    nativeTransition.transitionListener = transitionListener;
+function addNativeTransitionListener(fragment: android.app.Fragment, nativeTransition: android.transition.Transition): ExpandedTransitionListener {
+    const listener = getTransitionListener(fragment);
+    nativeTransition.addListener(listener);
+    return listener;
 }
 
 function javaObjectArray(...params: java.lang.Object[]) {
@@ -570,25 +724,25 @@ function createDummyZeroDurationAnimator(): ExpandedAnimator {
     return animator;
 }
 
-function printTransitions(f: any) {
-    if (f && traceEnabled()) {
-        const entry = getFragmentCallbacks(f).entry;
-        let result = `${f} Transitions:`;
+function printTransitions(fragment: android.app.Fragment) {
+    if (fragment && traceEnabled()) {
+        const entry = getFragmentCallbacks(fragment).entry;
+        let result = `${fragment} Transitions:`;
         if (entry.transitionName) {
-            result += `transitionName=${entry.transitionName}`;
+            result += `transitionName=${entry.transitionName}, `;
         }
 
         if (entry.transition) {
-            result += `enterAnimator=${entry.enterAnimator}`;
-            result += `exitAnimator=${entry.exitAnimator}`;    
-            result += `popEnterAnimator=${entry.popEnterAnimator}`;
-            result += `popExitAnimator=${entry.popExitAnimator}`;
+            result += `enterAnimator=${entry.enterAnimator}, `;
+            result += `exitAnimator=${entry.exitAnimator}, `;
+            result += `popEnterAnimator=${entry.popEnterAnimator}, `;
+            result += `popExitAnimator=${entry.popExitAnimator}, `;
         }
         if (sdkVersion() >= 21) {
-            result += `${f.getEnterTransition() ? " enter=" + toShortString(f.getEnterTransition()) : ""}`;
-            result += `${f.getExitTransition() ? " exit=" + toShortString(f.getExitTransition()) : ""}`;
-            result += `${f.getReenterTransition() ? " popEnter=" + toShortString(f.getReenterTransition()) : ""}`;
-            result += `${f.getReturnTransition() ? " popExit=" + toShortString(f.getReturnTransition()) : ""}`;
+            result += `${fragment.getEnterTransition() ? " enter=" + toShortString(fragment.getEnterTransition()) : ""}`;
+            result += `${fragment.getExitTransition() ? " exit=" + toShortString(fragment.getExitTransition()) : ""}`;
+            result += `${fragment.getReenterTransition() ? " popEnter=" + toShortString(fragment.getReenterTransition()) : ""}`;
+            result += `${fragment.getReturnTransition() ? " popExit=" + toShortString(fragment.getReturnTransition()) : ""}`;
         }
         traceWrite(result, traceCategories.Transition);
     }

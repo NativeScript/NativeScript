@@ -28,7 +28,7 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
 /**
  * @private
  */
-export function _updateAnimationFragment(fragment: any): void;
+export function _updateAnimationFragment(newFragment: any): void;
 /**
  * @private
  */
