@@ -143,6 +143,35 @@ export function test_default_native_values() {
     helper.buildUIAndRunTest(slider, testAction);
 }
 
+export function test_values_change_native_values() {
+    const slider = new Slider();
+    slider.minValue = 0;
+    slider.value = 0;
+    slider.maxValue = 10;
+    function testAction(views: Array<View>) {
+        TKUnit.assertEqual(getNativeValue(slider), 0, "1: wrong native slider.value");
+        TKUnit.assertEqual(getNativeMaxValue(slider), 10, "1: Wrong native slider.maxValue");
+
+        slider.value = 5;
+        TKUnit.assertEqual(getNativeValue(slider), 5, "2: wrong native slider.value");
+        TKUnit.assertEqual(getNativeMaxValue(slider), 10, "2: Wrong native slider.maxValue");
+
+        slider.minValue = 10;
+        TKUnit.assertEqual(getNativeValue(slider), isIOS ? 10 : 0, "3: wrong native slider.value");
+        TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 10 : 0, "3: Wrong native slider.maxValue");
+
+        slider.maxValue = 20;
+        TKUnit.assertEqual(getNativeValue(slider), isIOS ? 10 : 0, "4: wrong native slider.value");
+        TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, "4: Wrong native slider.maxValue");
+
+        slider.value = 15;
+        TKUnit.assertEqual(getNativeValue(slider), isIOS ? 15: 5, "5: wrong native slider.value");
+        TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, "5: Wrong native slider.maxValue");
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
 export function test_set_min_max_value() {
     const slider = new Slider();
     slider.minValue = MIN_TEST_VALUE;
@@ -315,10 +344,9 @@ export function test_property_changed_event_when_setting_minValue_no_adjust() {
     function testAction(views: Array<View>) {
         const changedProperties = {};
         let allChanges = 0;
-
-        attachValueChangedEvents(slider, (data: EventData) => {
+        attachValueChangedEvents(slider, (data: PropertyChangeData) => {
             allChanges++;
-            changedProperties[(<PropertyChangeData>data).propertyName] = true;
+            changedProperties[data.propertyName] = true;
         });
 
         // Act
@@ -342,9 +370,9 @@ export function test_property_changed_event_when_setting_minValue_with_adjust() 
     function testAction(views: Array<View>) {
         const changedProperties = {};
         let allChanges = 0;
-        attachValueChangedEvents(slider, (data: EventData) => {
+        attachValueChangedEvents(slider, (data: PropertyChangeData) => {
             allChanges++;
-            changedProperties[(<PropertyChangeData>data).propertyName] = true;
+            changedProperties[data.propertyName] = true;
         });
 
         // Act
@@ -369,9 +397,9 @@ export function test_property_changed_event_when_setting_maxValue_no_adjust() {
     function testAction(views: Array<View>) {
         const changedProperties = {};
         let allChanges = 0;
-        attachValueChangedEvents(slider, (data: EventData) => {
+        attachValueChangedEvents(slider, (data: PropertyChangeData) => {
             allChanges++;
-            changedProperties[(<PropertyChangeData>data).propertyName] = true;
+            changedProperties[data.propertyName] = true;
         });
 
         // Act
@@ -395,9 +423,9 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
     function testAction(views: Array<View>) {
         const changedProperties = {};
         let allChanges = 0;
-        attachValueChangedEvents(slider, (data: EventData) => {
+        attachValueChangedEvents(slider, (data: PropertyChangeData) => {
             allChanges++;
-            changedProperties[(<PropertyChangeData>data).propertyName] = true;
+            changedProperties[data.propertyName] = true;
         });
 
         // Act
@@ -487,17 +515,16 @@ function getNativeValue(slider: Slider): number {
 function getNativeMaxValue(slider: Slider): number {
     if (slider.android) {
         return slider.android.getMax();
-    }
-    else if (slider.ios) {
+    } else if (slider.ios) {
         return slider.ios.maximumValue;
     }
 }
 
 function setNativeValue(slider: Slider, value: number) {
     if (slider.android) {
-        slider.android.setProgress(value);
-    }
-    else if (slider.ios) {
+        const seekBar = (<android.widget.SeekBar>slider.android);
+        seekBar.setProgress(value);
+    } else if (slider.ios) {
         slider.ios.value = value;
 
         // setting value trough code does not send notification, so simulate that manually.
