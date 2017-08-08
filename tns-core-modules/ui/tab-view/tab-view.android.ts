@@ -19,11 +19,11 @@ const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
 interface PagerAdapter {
-    new (owner: TabView, items: Array<TabViewItem>): android.support.v4.view.PagerAdapter;
+    new(owner: TabView, items: Array<TabViewItem>): android.support.v4.view.PagerAdapter;
 }
 
 interface PageChangedListener {
-    new (owner: TabView): android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
+    new(owner: TabView): android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 }
 
 let PagerAdapter: PagerAdapter;
@@ -87,7 +87,7 @@ function initializeNativeClasses() {
             container.removeView(nativeView);
 
             // Note: this.owner._removeView will clear item.view.nativeView.
-            // So call this after the native instance is removed form the container. 
+            // So call this after the native instance is removed form the container.
             // if (item.view.parent === this.owner) {
             //     this.owner._removeView(item.view);
             // }
@@ -208,9 +208,10 @@ export class TabViewItem extends TabViewItemBase {
 
     public _update(): void {
         const tv = this.nativeViewProtected;
-        if (tv) {
-            const tabLayout = <org.nativescript.widgets.TabLayout>tv.getParent();
-            tabLayout.updateItemAt(this.index, this.tabItemSpec);
+        const tabView = this.parent as TabView;
+        if (tv && tabView) {
+            this.tabItemSpec = createTabItemSpec(this);
+            tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
         }
     }
 
@@ -313,7 +314,7 @@ export class TabView extends TabViewBase {
         const listener = new PageChangedListener(this);
         (<any>viewPager).addOnPageChangeListener(listener);
         (<any>viewPager).listener = listener;
-        
+
         const adapter = new PagerAdapter(this, null);
         viewPager.setAdapter(adapter);
         (<any>viewPager).adapter = adapter;
@@ -380,6 +381,10 @@ export class TabView extends TabViewBase {
         });
 
         this._pagerAdapter.notifyDataSetChanged();
+    }
+
+    public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
+        this._tabLayout.updateItemAt(index, spec);
     }
 
     [androidOffscreenTabLimitProperty.getDefault](): number {
