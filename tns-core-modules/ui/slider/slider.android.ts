@@ -86,30 +86,30 @@ export class Slider extends SliderBase {
      * We need this method to call native setMax and setProgress methods when minValue property is changed,
      * without handling the native value changed callback.
      */
-    private setNativeValuesSilently(newValue: number, newMaxValue: number) {
+    private setNativeValuesSilently() {
         this._supressNativeValue = true;
         const nativeView = this.nativeViewProtected;
         try {
-            nativeView.setMax(newMaxValue);
-            nativeView.setProgress(newValue);
+            nativeView.setMax(this.maxValue - this.minValue);
+            nativeView.setProgress(this.value - this.minValue);
         } finally {
             this._supressNativeValue = false;
         }
     }
 
     [valueProperty.setNative](value: number) {
-        this.setNativeValuesSilently(value - this.minValue, this.maxValue - this.minValue);
+        this.setNativeValuesSilently();
     }
 
     [minValueProperty.setNative](value: number) {
-       this.setNativeValuesSilently(this.value - value, this.maxValue - value);
+       this.setNativeValuesSilently();
     }
 
     [maxValueProperty.getDefault](): number {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this.setNativeValuesSilently(this.value - this.minValue, value - this.minValue);
+        this.setNativeValuesSilently();
     }
 
     [colorProperty.getDefault](): number {
