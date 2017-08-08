@@ -19,11 +19,11 @@ const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
 interface PagerAdapter {
-    new (owner: TabView, items: Array<TabViewItem>): android.support.v4.view.PagerAdapter;
+    new(owner: TabView, items: Array<TabViewItem>): android.support.v4.view.PagerAdapter;
 }
 
 interface PageChangedListener {
-    new (owner: TabView): android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
+    new(owner: TabView): android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 }
 
 let PagerAdapter: PagerAdapter;
@@ -208,11 +208,10 @@ export class TabViewItem extends TabViewItemBase {
 
     public _update(): void {
         const tv = this.nativeViewProtected;
-        if (tv) {
-            const tabLayout = <org.nativescript.widgets.TabLayout>tv.getParent().getParent().getParent();
+        const tabView = this.parent as TabView;
+        if (tv && tabView) {
             this.tabItemSpec = createTabItemSpec(this);
-
-            tabLayout.updateItemAt(this.index, this.tabItemSpec);
+            tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
         }
     }
 
@@ -382,6 +381,10 @@ export class TabView extends TabViewBase {
         });
 
         this._pagerAdapter.notifyDataSetChanged();
+    }
+
+    public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
+        this._tabLayout.updateItemAt(index, spec);
     }
 
     [androidOffscreenTabLimitProperty.getDefault](): number {
