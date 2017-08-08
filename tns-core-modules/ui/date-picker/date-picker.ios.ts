@@ -25,30 +25,18 @@ export class DatePicker extends DatePickerBase {
         return this.nativeViewProtected;
     }
 
-    [yearProperty.getDefault](): number {
-        return this.nativeViewProtected.date.getFullYear();
-    }
     [yearProperty.setNative](value: number) {
-        this.date = new Date(value, this.month, this.day);
+        this.date = new Date(value, this.month - 1, this.day);
     }
 
-    [monthProperty.getDefault](): number {
-        return this.nativeViewProtected.date.getMonth();
-    }
     [monthProperty.setNative](value: number) {
-        this.date = new Date(this.year, value, this.day);
+        this.date = new Date(this.year, value - 1, this.day);
     }
 
-    [dayProperty.getDefault](): number {
-        return this.nativeViewProtected.date.getDay();
-    }
     [dayProperty.setNative](value: number) {
-        this.date = new Date(this.year, this.month, value);
+        this.date = new Date(this.year, this.month - 1, value);
     }
 
-    [dateProperty.getDefault](): Date {
-        return this.nativeViewProtected.date;
-    }
     [dateProperty.setNative](value: Date) {
         const picker = this.nativeViewProtected;
         const comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
@@ -108,9 +96,8 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
             dateChanged = true;
         }
 
-        const jsMonth = comps.month - 1;
-        if (jsMonth !== owner.month) {
-            monthProperty.nativeValueChange(owner, jsMonth);
+        if (comps.month !== owner.month) {
+            monthProperty.nativeValueChange(owner, comps.month);
             dateChanged = true;
         }
 
@@ -120,7 +107,7 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
         }
 
         if (dateChanged) {
-            dateProperty.nativeValueChange(owner, new Date(comps.year, jsMonth, comps.day));
+            dateProperty.nativeValueChange(owner, new Date(comps.year, comps.month - 1, comps.day));
         }
     }
 

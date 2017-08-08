@@ -31,8 +31,8 @@ function initializeDateChangedListener(): void {
                 dateChanged = true;
             }
 
-            if (month !== owner.month) {
-                monthProperty.nativeValueChange(owner, month);
+            if (month !== (owner.month - 1)) {
+                monthProperty.nativeValueChange(owner, month + 1);
                 dateChanged = true;
             }
 
@@ -77,42 +77,29 @@ export class DatePicker extends DatePickerBase {
     private updateNativeDate(): void {
         const nativeView = this.nativeViewProtected;
         const year = typeof this.year === "number" ? this.year : nativeView.getYear();
-        const month = typeof this.month === "number" ? this.month : nativeView.getMonth();
+        const month = typeof this.month === "number" ? this.month - 1 : nativeView.getMonth();
         const day = typeof this.day === "number" ? this.day : nativeView.getDayOfMonth();
         this.date = new Date(year, month, day);
     }
 
-    [yearProperty.getDefault](): number {
-        return this.nativeViewProtected.getYear();
-    }
     [yearProperty.setNative](value: number) {
         if (this.nativeViewProtected.getYear() !== value) {
             this.updateNativeDate();
         }
     }
 
-    [monthProperty.getDefault](): number {
-        return this.nativeViewProtected.getMonth();
-    }
     [monthProperty.setNative](value: number) {
-        if (this.nativeViewProtected.getMonth() !== value) {
+        if (this.nativeViewProtected.getMonth() !== (value - 1)) {
             this.updateNativeDate();
         }
     }
 
-    [dayProperty.getDefault](): number {
-        return this.nativeViewProtected.getDayOfMonth();
-    }
     [dayProperty.setNative](value: number) {
         if (this.nativeViewProtected.getDayOfMonth() !== value) {
             this.updateNativeDate();
         }
     }
 
-    [dateProperty.getDefault](): Date {
-        const nativeView = this.nativeViewProtected;
-        return new Date(nativeView.getYear(), nativeView.getMonth(), nativeView.getDayOfMonth());
-    }
     [dateProperty.setNative](value: Date) {
         const nativeView = this.nativeViewProtected;
         if (nativeView.getDayOfMonth() !== value.getDay()

@@ -7,7 +7,7 @@ export function getNativeYear(datePicker: datePickerModule.DatePicker): number {
 }
 
 export function getNativeMonth(datePicker: datePickerModule.DatePicker): number {
-    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, datePicker.ios.date).month - 1;
+    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, datePicker.ios.date).month;
 }
 
 export function getNativeDay(datePicker: datePickerModule.DatePicker): number {
@@ -31,7 +31,7 @@ export function setNativeYear(datePicker: datePickerModule.DatePicker, value: nu
 
 export function setNativeMonth(datePicker: datePickerModule.DatePicker, value: number): void {
     var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, datePicker.ios.date);
-    comps.month = value + 1;
+    comps.month = value;
     datePicker.ios.setDateAnimated(utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
     (<any>datePicker)._changeHandler.valueChanged(datePicker.ios);
 }
@@ -46,7 +46,7 @@ export function setNativeDay(datePicker: datePickerModule.DatePicker, value: num
 export function setNativeDate(datePicker: datePickerModule.DatePicker, year: number, month: number, day: number): void {
     var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, datePicker.ios.date);
     comps.year = year;
-    comps.month = month + 1;
+    comps.month = month;
     comps.day = day;
     datePicker.ios.setDateAnimated(utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
     (<any>datePicker)._changeHandler.valueChanged(datePicker.ios);

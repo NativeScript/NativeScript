@@ -26,7 +26,7 @@ yearProperty.register(DatePickerBase);
 
 export const monthProperty = new Property<DatePickerBase, number>({
     name: "month",
-    defaultValue: defaultDate.getMonth(),
+    defaultValue: defaultDate.getMonth() + 1,
     valueConverter: v => parseInt(v),
 });
 monthProperty.register(DatePickerBase);
