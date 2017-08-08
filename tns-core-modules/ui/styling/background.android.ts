@@ -2,7 +2,7 @@ import { View } from "../core/view";
 import { CacheLayerType, isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
-import { android as androidApp } from "../../application";
+import * as application from "../../application";
 export * from "./background-common"
 
 interface AndroidView {
@@ -228,7 +228,14 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
     imageFetcher.initCache();
 }
 
-androidApp.on("activityStarted", (args) => {
+function onLivesync(args): void {
+    if (imageFetcher) {
+        imageFetcher.clearCache();
+    }
+}
+application.on("livesync", onLivesync);
+
+application.android.on("activityStarted", (args) => {
     if (!imageFetcher) {
         initImageCache(args.activity);
     } else {
@@ -236,7 +243,7 @@ androidApp.on("activityStarted", (args) => {
     }
 });
 
-androidApp.on("activityStopped", (args) => {
+application.android.on("activityStopped", (args) => {
     if (imageFetcher) {
         imageFetcher.closeCache();
     }
