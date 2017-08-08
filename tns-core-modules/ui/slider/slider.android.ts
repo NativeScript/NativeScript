@@ -6,66 +6,70 @@ import {
 
 export * from "./slider-common";
 
-interface SeekBarChangeListener {
-    new (owner: Slider): android.widget.SeekBar.OnSeekBarChangeListener;
+interface OwnerSeekBar extends android.widget.SeekBar {
+    owner: Slider;
 }
 
-let SeekBarChangeListener: SeekBarChangeListener;
+let SeekBar: typeof android.widget.SeekBar;
+let SeekBarChangeListener: android.widget.SeekBar.OnSeekBarChangeListener;
 
-function initializeSeekBarChangeListener(): void {
-    if (SeekBarChangeListener) {
-        return;
+function initializeModule(): void {
+    if (!SeekBar) {
+        SeekBar = android.widget.SeekBar;
     }
 
-    @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
-    class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
-        constructor(public owner: Slider) {
-            super();
-            return global.__native(this);
-        }
+    if (!SeekBarChangeListener) {
+        @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
+        class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
+            constructor() {
+                super();
+                return global.__native(this);
+            }
 
-        onProgressChanged(seekBar: android.widget.SeekBar, progress: number, fromUser: boolean): void {
-            const owner = this.owner;
-            if (!owner._supressNativeValue) {
-                let newValue: number = seekBar.getProgress() + owner.minValue;
-                valueProperty.nativeValueChange(owner, newValue);
+            onProgressChanged(seekBar: OwnerSeekBar, progress: number, fromUser: boolean): void {
+                const owner = seekBar.owner;
+                if (!owner._supressNativeValue) {
+                    const newValue = progress + owner.minValue;
+                    valueProperty.nativeValueChange(owner, newValue);
+                }
+            }
+
+            onStartTrackingTouch(seekBar: OwnerSeekBar): void {
+                //
+            }
+
+            onStopTrackingTouch(seekBar: OwnerSeekBar): void {
+                //
             }
         }
 
-        onStartTrackingTouch(seekBar: android.widget.SeekBar): void {
-            //
-        }
-
-        onStopTrackingTouch(seekBar: android.widget.SeekBar): void {
-            //
-        }
+        SeekBarChangeListener = new SeekBarChangeListenerImpl();
     }
+}
 
-    SeekBarChangeListener = SeekBarChangeListenerImpl;
+function getListener(): android.widget.SeekBar.OnSeekBarChangeListener {
+    return SeekBarChangeListener;
 }
 
 export class Slider extends SliderBase {
     _supressNativeValue: boolean;
-    nativeViewProtected: android.widget.SeekBar;
+    nativeViewProtected: OwnerSeekBar;
 
     public createNativeView() {
-        initializeSeekBarChangeListener();
-        const listener = new SeekBarChangeListener(this);
-        const nativeView = new android.widget.SeekBar(this._context);
+        initializeModule();
+        const nativeView = new SeekBar(this._context);
+        const listener = getListener();
         nativeView.setOnSeekBarChangeListener(listener);
-        (<any>nativeView).listener = listener;
         return nativeView;
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeViewProtected;
-        nativeView.listener.owner = this;
+        this.nativeViewProtected.owner = this;
     }
 
     public disposeNativeView() {
-        const nativeView: any = this.nativeViewProtected;
-        nativeView.listener.owner = null;
+        this.nativeViewProtected.owner = null;
         super.disposeNativeView();
     }
 
@@ -82,34 +86,30 @@ export class Slider extends SliderBase {
      * We need this method to call native setMax and setProgress methods when minValue property is changed,
      * without handling the native value changed callback.
      */
-    private setNativeValuesSilently(newValue: number, newMaxValue: number) {
+    private setNativeValuesSilently() {
         this._supressNativeValue = true;
         const nativeView = this.nativeViewProtected;
         try {
-            nativeView.setMax(newMaxValue);
-            nativeView.setProgress(newValue);
+            nativeView.setMax(this.maxValue - this.minValue);
+            nativeView.setProgress(this.value - this.minValue);
         } finally {
             this._supressNativeValue = false;
         }
     }
 
-    [valueProperty.getDefault](): number {
-        return 0;
-    }
     [valueProperty.setNative](value: number) {
-        this.setNativeValuesSilently(value - this.minValue, this.maxValue - this.minValue);
+        this.setNativeValuesSilently();
     }
-    [minValueProperty.getDefault](): number {
-        return 0;
-    }
+
     [minValueProperty.setNative](value: number) {
-        this.setNativeValuesSilently(this.value - value, this.maxValue - value);
+       this.setNativeValuesSilently();
     }
+
     [maxValueProperty.getDefault](): number {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this.setNativeValuesSilently(value - this.minValue, value);
+        this.setNativeValuesSilently();
     }
 
     [colorProperty.getDefault](): number {
