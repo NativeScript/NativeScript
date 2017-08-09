@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Page>
-  <Border cornerRadius="20" borderWidth="4" borderColor="darkgray"
-      style="background-color: lightblue; margin:20;">
-    <Label verticalAlignment="center" horizontalAlignment="center" text="Content" />
-  </Border>
-</Page>
