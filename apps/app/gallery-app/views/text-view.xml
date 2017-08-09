@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Page>
-  <TextView verticalAlignment="center" horizontalAlignment="center"
-            width="300" height="300"
-            text="The quick brown fox jumps over the lazy dog."/>
-</Page>

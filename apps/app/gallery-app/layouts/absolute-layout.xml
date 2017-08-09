@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Page>
-  <AbsoluteLayout>
-    <Button text="1" left="50" top="50" width="100" height="100" style="background-color: red;"/>
-    <Button text="2" left="200" top="100" width="100" height="300" style="background-color: lightblue;"/>
-    <Button text="3" left="50" top="280" width="200" height="100" style="background-color: lightgreen;"/>
-  </AbsoluteLayout>
-</Page>

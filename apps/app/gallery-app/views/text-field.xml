@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Page>
-  <TextField verticalAlignment="center" horizontalAlignment="center" width="300" hint="Enter text..."/>
-</Page>

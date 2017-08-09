@@ -32,6 +32,8 @@ export function pageLoaded(args: EventData) {
     examples.set("text-field", "text-field/main-page");
     examples.set("text-view", "text-view/main-page");
     examples.set("webview", "web-view/main-page");
+    examples.set("progress-bar", "progress-bar/main-page");
+    examples.set("date-picker", "date-picker/date-picker");
     page.bindingContext = new MainPageViewModel(wrapLayout, examples);
 
     const parent = page.getViewById('parentLayout');
