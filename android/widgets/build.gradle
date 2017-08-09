@@ -11,7 +11,7 @@ def computeCompileSdkVersion () {
         return compileSdk
     }
     else {
-        return 23
+        return 25
     }
 }
 
@@ -29,7 +29,7 @@ def computeTargetSdkVersion() {
         return targetSdk
     }
     else {
-        return 23
+        return 25
     }
 }
 

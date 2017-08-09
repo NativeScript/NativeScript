@@ -522,24 +522,20 @@ class MeasureHelper {
     }
 
     public void setInfinityWidth(boolean value) {
-        if (this.infinityWidth != value) {
-            this.infinityWidth = value;
+        this.infinityWidth = value;
 
-            for (int i = 0, size = this.columns.size(); i < size; i++) {
-                ItemGroup columnGroup = this.columns.get(i);
-                columnGroup.setIsLengthInfinity(value);
-            }
+        for (int i = 0, size = this.columns.size(); i < size; i++) {
+            ItemGroup columnGroup = this.columns.get(i);
+            columnGroup.setIsLengthInfinity(value);
         }
     }
 
     public void setInfinityHeight(boolean value) {
-        if (this.infinityHeight != value) {
-            this.infinityHeight = value;
+        this.infinityHeight = value;
 
-            for (int i = 0, size = this.rows.size(); i < size; i++) {
-                ItemGroup rowGroup = this.rows.get(i);
-                rowGroup.setIsLengthInfinity(value);
-            }
+        for (int i = 0, size = this.rows.size(); i < size; i++) {
+            ItemGroup rowGroup = this.rows.get(i);
+            rowGroup.setIsLengthInfinity(value);
         }
     }
 
