@@ -176,7 +176,7 @@ let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
     if (defaultAccentColor === undefined) {
         //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-        defaultAccentColor = ad.resources.getPalleteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
+        defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
     }
     return defaultAccentColor;
 }
@@ -299,7 +299,7 @@ export class TabView extends TabViewBase {
             tabLayout.setSelectedIndicatorColors([accentColor]);
         }
 
-        const primaryColor = ad.resources.getPalleteColor(PRIMARY_COLOR, context);
+        const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
         if (primaryColor) {
             tabLayout.setBackgroundColor(primaryColor);
         }

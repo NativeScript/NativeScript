@@ -167,7 +167,7 @@ export module ad {
             return resources.getIdentifier(uri, null, null);
         }
 
-        export function getPalleteColor(name: string, context: android.content.Context): number {
+        export function getPaletteColor(name: string, context: android.content.Context): number {
             if (attrCache.has(name)) {
                 return attrCache.get(name);
             }

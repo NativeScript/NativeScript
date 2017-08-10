@@ -171,7 +171,7 @@ export module ad {
          * Gets a color from the current theme.
          * @param name - Name of the color resource.
          */
-        export function getPalleteColor(name: string, context: any /* android.content.Context */): number;
+        export function getPaletteColor(name: string, context: any /* android.content.Context */): number;
     }
 }
 /**
