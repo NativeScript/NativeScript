@@ -610,11 +610,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         const app = application.android;
         const intent = activity.getIntent();
-        const launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: app, android: intent };
-        application.notify(launchArgs);
-
+        let rootView = this.notifyLaunch(intent);
         let frameId = -1;
-        let rootView = launchArgs.root;
         const extras = intent.getExtras();
 
         // We have extras when we call - new Frame().navigate();
@@ -670,6 +667,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
 
         activityInitialized = true;
+    }
+
+    @profile
+    private notifyLaunch(intent: android.content.Intent): View {
+        const launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: application.android, android: intent };
+        application.notify(launchArgs);
+        return launchArgs.root;
     }
 
     @profile

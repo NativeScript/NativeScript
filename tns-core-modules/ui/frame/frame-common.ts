@@ -8,6 +8,7 @@ import { resolveFileName } from "../../file-system/file-name-resolver";
 import { knownFolders, path } from "../../file-system";
 import { parse, loadPage } from "../builder";
 import * as application from "../../application";
+import { profile } from "tns-core-modules/profiling";
 
 export { application };
 
@@ -81,71 +82,58 @@ export function reloadPage(): void {
 // attach on global, so it can be overwritten in NativeScript Angular
 (<any>global).__onLiveSyncCore = reloadPage;
 
-export function resolvePageFromEntry(entry: NavigationEntry): Page {
-    let page: Page;
+const entryCreatePage = profile("entry.create", (entry: NavigationEntry): Page => {
+    const page = entry.create();
 
-    if (entry.create) {
-        page = entry.create();
-
-        if (!page) {
-            throw new Error("Failed to create Page with entry.create() function.");
-        }
-
-        page._refreshCss();
-    }
-    else if (entry.moduleName) {
-        // Current app full path.
-        let currentAppPath = knownFolders.currentApp().path;
-        //Full path of the module = current app full path + module name.
-        let moduleNamePath = path.join(currentAppPath, entry.moduleName);
-        traceWrite("frame module path: " + moduleNamePath, traceCategories.Navigation);
-        traceWrite("frame module module: " + entry.moduleName, traceCategories.Navigation);
-
-        let moduleExports;
-        // web-pack case where developers register their page JS file manually.
-        if (global.moduleExists(entry.moduleName)) {
-            if (traceEnabled()) {
-                traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
-            }
-            moduleExports = global.loadModule(entry.moduleName);
-        } else {
-            let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
-            if (moduleExportsResolvedPath) {
-                if (traceEnabled()) {
-                    traceWrite("Loading JS file: " + moduleExportsResolvedPath, traceCategories.Navigation);
-                }
-
-                // Exclude extension when doing require.
-                moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
-                moduleExports = global.loadModule(moduleExportsResolvedPath);
-            }
-        }
-
-        if (moduleExports && moduleExports.createPage) {
-            if (traceEnabled()) {
-                traceWrite("Calling createPage()", traceCategories.Navigation);
-            }
-            page = moduleExports.createPage();
-
-            let cssFileName = resolveFileName(moduleNamePath, "css");
-            // If there is no cssFile only appCss will be applied at loaded.
-            if (cssFileName) {
-                page.addCssFile(cssFileName);
-            }
-        } else {
-            // cssFileName is loaded inside pageFromBuilder->loadPage
-            page = pageFromBuilder(moduleNamePath, moduleExports);
-        }
-
-        if (!page) {
-            throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
-        }
+    if (!page) {
+        throw new Error("Failed to create Page with entry.create() function.");
     }
 
+    page._refreshCss();
     return page;
+});
+
+interface PageModuleExports {
+    createPage?: () => Page;
 }
 
-function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
+const moduleCreatePage = profile("module.createPage", (moduleNamePath: string, moduleExports: PageModuleExports): Page => {
+    if (traceEnabled()) {
+        traceWrite("Calling createPage()", traceCategories.Navigation);
+    }
+    var page = moduleExports.createPage();
+
+    let cssFileName = resolveFileName(moduleNamePath, "css");
+    // If there is no cssFile only appCss will be applied at loaded.
+    if (cssFileName) {
+        page.addCssFile(cssFileName);
+    }
+    return page;
+});
+
+const loadPageModule = profile("loadPageModule", (moduleNamePath: string, entry: NavigationEntry): PageModuleExports => {
+    // web-pack case where developers register their page JS file manually.
+    if (global.moduleExists(entry.moduleName)) {
+        if (traceEnabled()) {
+            traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
+        }
+        return global.loadModule(entry.moduleName);
+    } else {
+        let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
+        if (moduleExportsResolvedPath) {
+            if (traceEnabled()) {
+                traceWrite("Loading JS file: " + moduleExportsResolvedPath, traceCategories.Navigation);
+            }
+
+            // Exclude extension when doing require.
+            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
+            return global.loadModule(moduleExportsResolvedPath);
+        }
+    }
+    return null;
+});
+
+const pageFromBuilder = profile("pageFromBuilder", (moduleNamePath: string, moduleExports: any): Page => {
     let page: Page;
 
     // Possible XML file path.
@@ -165,7 +153,37 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     // }
 
     return page;
-}
+});
+
+export const resolvePageFromEntry = profile("resolvePageFromEntry", (entry: NavigationEntry): Page => {
+    let page: Page;
+
+    if (entry.create) {
+        page = entryCreatePage(entry);
+    } else if (entry.moduleName) {
+        // Current app full path.
+        let currentAppPath = knownFolders.currentApp().path;
+        //Full path of the module = current app full path + module name.
+        const moduleNamePath = path.join(currentAppPath, entry.moduleName);
+        traceWrite("frame module path: " + moduleNamePath, traceCategories.Navigation);
+        traceWrite("frame module module: " + entry.moduleName, traceCategories.Navigation);
+
+        const moduleExports = loadPageModule(moduleNamePath, entry);
+
+        if (moduleExports && moduleExports.createPage) {
+            page = moduleCreatePage(moduleNamePath, moduleExports);
+        } else {
+            // cssFileName is loaded inside pageFromBuilder->loadPage
+            page = pageFromBuilder(moduleNamePath, moduleExports);
+        }
+
+        if (!page) {
+            throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
+        }
+    }
+
+    return page;
+});
 
 export interface NavigationContext {
     entry: BackstackEntry;
@@ -377,6 +395,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
     }
 
+    @profile
     private performNavigation(navigationContext: NavigationContext) {
         let navContext = navigationContext.entry;
 
@@ -391,6 +410,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._navigateCore(navContext);
     }
 
+    @profile
     private performGoBack(navigationContext: NavigationContext) {
         const navContext = navigationContext.entry;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
