@@ -132,7 +132,7 @@ export class ImageSource implements ImageSourceDefinition {
 
         const data = getImageData(this.ios, format, quality);
         if (data) {
-            return data.writeToFileAtomically(path, true);
+            return NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
         }
 
         return false;
