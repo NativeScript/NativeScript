@@ -56,7 +56,7 @@ export function testSaveToFile() {
     // >> imagesource-save-to
     var img = imageSource.fromFile(imagePath);
     var folder = fs.knownFolders.documents();
-    var path = fs.path.join(folder.path, "Test.png");
+    var path = fs.path.join(folder.path, "test.png");
     var saved = img.saveToFile(path, "png");
     // << imagesource-save-to
     TKUnit.assert(saved, "Image not saved to file");
@@ -66,16 +66,16 @@ export function testSaveToFile() {
 export function testFromFile() {
     // >> imagesource-load-local
     var folder = fs.knownFolders.documents();
-    var path = fs.path.join(folder.path, "Test.png");
+    var path = fs.path.join(folder.path, "test.png");
     var img = imageSource.fromFile(path);
     // << imagesource-load-local
 
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 
     // remove the image from the file system
-    var file = folder.getFile("Test.png");
+    var file = folder.getFile("test.png");
     file.remove();
-    TKUnit.assert(!fs.File.exists(path), "Test.png not removed");
+    TKUnit.assert(!fs.File.exists(path), "test.png not removed");
 }
 
 export function testNativeFields() {
