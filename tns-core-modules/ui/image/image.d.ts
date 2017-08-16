@@ -31,7 +31,7 @@ export class Image extends View {
     src: any;
 
     /**
-     * Gets a value indicating if the image is currently loading
+     * Gets a value indicating if the image is currently loading.
      */
     readonly isLoading: boolean;
 

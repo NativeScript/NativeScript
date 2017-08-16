@@ -19,7 +19,7 @@ export class HtmlView extends View {
     /**
      * Gets the native [UILabel](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UILabel_Class/) that represents the user interface for this component. Valid only when running on iOS.
      */
-    ios: any /* UILabel */;
+    ios: any /* UITextView */;
 
     /**
      * Gets or sets html string for the HtmlView.

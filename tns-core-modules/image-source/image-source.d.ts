@@ -19,7 +19,7 @@ export class ImageSource {
     width: number;
 
    /**
-    * Gets or sets the rotation angle that should be applied to image. (Used in android)
+    * Gets or sets the rotation angle that should be applied to the image. (Used in android)
     */
     rotationAngle: number;
 
@@ -76,13 +76,13 @@ export class ImageSource {
     fromData(data: any): Promise<boolean>;        
 
     /**
-     * Loads this instance from the specified native image data.
+     * Loads this instance from the specified base64 encoded string.
      * @param source The Base64 string to load the image from.
      */
     loadFromBase64(source: string): boolean;
     
     /**
-     * Loads this instance from the specified native image data asynchronously.
+     * Loads this instance from the specified base64 encoded string asynchronously.
      * @param source The Base64 string to load the image from.
      */
     fromBase64(source: string): Promise<boolean>;        
@@ -110,6 +110,10 @@ export class ImageSource {
     toBase64String(format: "png" | "jpeg" | "jpg", quality?: number): string;
 }
 
+/**
+ * Creates a new ImageSource instance and loads it from the specified image asset asynchronously.
+ * @param asset The image asset.
+ */
 export function fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;
 
 /**
@@ -125,14 +129,14 @@ export function fromResource(name: string): ImageSource;
 export function fromFile(path: string): ImageSource;
 
 /**
-* Creates a new ImageSource instance and loads it from the specified resource name.
+* Creates a new ImageSource instance and loads it from the specified native image data.
 * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
 */
 export function fromData(data: any): ImageSource;
 
 /**
- * Creates a new ImageSource instance and loads it from the specified resource name.
- * @param source The Base64 string to load the image from.
+ * Creates a new ImageSource instance and loads it from the specified base64 encoded string.
+ * @param source The base64 encoded string to load the image from.
  */
 export function fromBase64(source: string): ImageSource;
 
@@ -150,7 +154,7 @@ export function fromNativeSource(source: any): ImageSource;
 export function fromUrl(url: string): Promise<ImageSource>;
 
 /**
- * Creates a new ImageSource instance and loads it from the specified local file or resource(if spexified with "res://" prefix)
+ * Creates a new ImageSource instance and loads it from the specified local file or resource (if specified with the "res://" prefix).
  * @param path The location of the file on the file system.
  */
 export function fromFileOrResource(path: string): ImageSource;

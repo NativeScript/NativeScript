@@ -61,8 +61,8 @@ export class ListView extends View {
     /**
      * A function that returns the appropriate ket template based on the data item.
      */
-
     itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
+
     /**
      * Gets or set the items separator line color of the ListView. 
      */

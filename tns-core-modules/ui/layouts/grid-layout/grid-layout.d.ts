@@ -35,7 +35,7 @@ export class ItemSpec {
     isAuto: boolean;
 
     /** 
-     * Returns true if this ItemSpec instance holds weighted propertion  
+     * Returns true if this ItemSpec instance holds weighted proportion
      * of available space. 
      */
     isStar: boolean;
@@ -107,7 +107,7 @@ export class GridLayout extends LayoutBase {
     public removeColumn(itemSpec: ItemSpec): void;
 
     /**
-     * Removes all columns specification from a GridLayout.
+     * Removes all column specifications from a GridLayout.
      */
     public removeColumns(): void;
 
@@ -117,7 +117,7 @@ export class GridLayout extends LayoutBase {
     public removeRow(itemSpec: ItemSpec): void;
 
     /**
-     * Removes all rows specification from a GridLayout.
+     * Removes all row specifications from a GridLayout.
      */
     public removeRows(): void;
 

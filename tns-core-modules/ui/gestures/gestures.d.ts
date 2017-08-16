@@ -44,7 +44,7 @@ export enum GestureTypes {
 }
 
 /**
- * Defines an enum with supported gesture types.
+ * Defines an enum with supported gesture states.
  */
 export enum GestureStateTypes {
     /**
@@ -196,7 +196,7 @@ export interface Pointer {
 }
 
 /**
- * Provides gesture event data for pinch gesture.
+ * Provides gesture event data.
  */
 export interface GestureEventDataWithState extends GestureEventData {
     state: number;
