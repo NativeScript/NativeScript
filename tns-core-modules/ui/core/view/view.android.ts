@@ -486,7 +486,11 @@ export class View extends ViewCommon {
         } else {
             const nativeView = this.nativeViewProtected;
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
-            nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+             if (this._isPaddingRelative) {
+                nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            } else {
+                nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            }
 
             (<any>nativeView).background = undefined;
             const cache = <CacheLayerType><any>nativeView;

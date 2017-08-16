@@ -2,9 +2,9 @@
 import * as commonTests from "./view-tests-common";
 import * as helper from "../../ui/helper";
 import * as view from "tns-core-modules/ui/core/view";
-import * as button from "tns-core-modules/ui/button";
+import { Button } from "tns-core-modules/ui/button";
 import * as types from "tns-core-modules/utils/types";
-import * as stack from "tns-core-modules/ui/layouts/stack-layout";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as labelModule from "tns-core-modules/ui/label";
 import * as frame from "tns-core-modules/ui/frame";
 import * as trace from "tns-core-modules/trace";
@@ -13,6 +13,101 @@ import { Color } from "tns-core-modules/color";
 trace.enable();
 
 global.moduleMerge(commonTests, exports);
+
+// function setup(): StackLayout {
+//     const page = helper.getClearCurrentPage();
+//     const stack = new StackLayout();
+//     page.content = stack;
+//     return stack;
+// }
+
+// export function test_recycle_native_view_never() {
+//     const stack = setup();
+//     const btn = new Button();
+//     btn.recycleNativeView = 'never';
+//     stack.addChild(btn);
+//     TKUnit.assertNotNull(btn.nativeViewProtected);
+
+//     const oldNativeView = btn.nativeViewProtected;
+//     stack.removeChild(btn);
+//     stack.addChild(btn);
+//     const newNativeView = btn.nativeViewProtected;
+//     TKUnit.assertNotEqual(oldNativeView, newNativeView);
+// }
+
+// export function test_recycle_native_view_always() {
+//     const stack = setup();
+//     const btn = new Button();
+//     btn.recycleNativeView = 'always';
+//     stack.addChild(btn);
+//     TKUnit.assertNotNull(btn.nativeViewProtected);
+
+//     const oldNativeView = btn.nativeViewProtected;
+//     stack.removeChild(btn);
+//     stack.addChild(btn);
+//     const newNativeView = btn.nativeViewProtected;
+//     TKUnit.assertEqual(oldNativeView, newNativeView);
+// }
+
+// export function test_recycle_native_view_auto_access_nativeView() {
+//     const stack = setup();
+//     const btn = new Button();
+//     btn.recycleNativeView = 'auto';
+//     stack.addChild(btn);
+//     TKUnit.assertNotNull(btn.nativeView);
+
+//     const oldNativeView = btn.nativeViewProtected;
+//     stack.removeChild(btn);
+//     stack.addChild(btn);
+//     const newNativeView = btn.nativeViewProtected;
+//     TKUnit.assertNotEqual(oldNativeView, newNativeView);
+// }
+
+// export function test_recycle_native_view_auto_access_android() {
+//     const stack = setup();
+//     const btn = new Button();
+//     btn.recycleNativeView = 'auto';
+//     stack.addChild(btn);
+//     TKUnit.assertNotNull(btn.android);
+
+//     const oldNativeView = btn.nativeViewProtected;
+//     stack.removeChild(btn);
+//     stack.addChild(btn);
+//     const newNativeView = btn.nativeViewProtected;
+//     TKUnit.assertNotEqual(oldNativeView, newNativeView);
+// }
+
+// export function test_recycle_property_counter_few_properties() {
+//     const stack = setup();
+//     const btn = new Button();
+//     btn.text = "text";
+//     btn.recycleNativeView = 'auto';
+//     stack.addChild(btn);
+//     TKUnit.assertNotNull(btn.nativeViewProtected);
+
+//     const oldNativeView = btn.nativeViewProtected;
+//     stack.removeChild(btn);
+//     stack.addChild(btn);
+//     const newNativeView = btn.nativeViewProtected;
+//     TKUnit.assertEqual(oldNativeView, newNativeView);
+// }
+
+// export function test_recycle_property_counter_more_properties() {
+//     const stack = setup();
+//     const btn = new Button();
+//     btn.recyclePropertyCounter = 1;
+//     btn.recycleNativeView = 'auto';
+//     btn.text = "text";
+//     btn.style.margin = "20";
+//     stack.addChild(btn);
+//     TKUnit.assertNotNull(btn.nativeViewProtected);
+
+//     const oldNativeView = btn.nativeViewProtected;
+//     stack.removeChild(btn);
+//     stack.addChild(btn);
+//     const newNativeView = btn.nativeViewProtected;
+//     TKUnit.assertNotEqual(oldNativeView, newNativeView);
+// }
 
 export const test_event_setupUI_IsRaised = function () {
     const listener = new Listener("_setupUI");
@@ -38,8 +133,8 @@ export const test_event_setupUI_IsRaised_WhenAttached_Dynamically = function () 
         const listener = new Listener("_setupUI");
         trace.addEventListener(listener);
 
-        const newButton = new button.Button();
-        (<stack.StackLayout>views[1]).addChild(newButton);
+        const newButton = new Button();
+        (<StackLayout>views[1]).addChild(newButton);
 
         TKUnit.assertEqual(listener.receivedEvents.length, 1);
         TKUnit.assertEqual(listener.receivedEvents[0].name, "_setupUI");
@@ -75,8 +170,8 @@ export const test_event_onContextChanged_IsRaised_WhenAttached_Dynamically = fun
         const listener = new Listener("_onContextChanged");
         trace.addEventListener(listener);
 
-        const newButton = new button.Button();
-        (<stack.StackLayout>views[1]).addChild(newButton);
+        const newButton = new Button();
+        (<StackLayout>views[1]).addChild(newButton);
 
         TKUnit.assertEqual(listener.receivedEvents.length, 1);
         TKUnit.assertEqual(listener.receivedEvents[0].name, "_onContextChanged");
@@ -125,7 +220,7 @@ export const test_event_tearDownUI_IsRaised_WhenRemoved_Dynamically = function (
         trace.addEventListener(listener);
 
         // remove the button from the layout
-        (<stack.StackLayout>views[1]).removeChild(views[2]);
+        (<StackLayout>views[1]).removeChild(views[2]);
 
         TKUnit.assertEqual(listener.receivedEvents.length, 1);
         TKUnit.assertEqual(listener.receivedEvents[0].name, "_tearDownUI");
@@ -142,8 +237,8 @@ export const test_events_tearDownUIAndRemovedFromNativeVisualTree_AreRaised_When
     let removeFromNativeVisualTreeListener = new Listener("_removeViewFromNativeVisualTree");
 
     let page = frame.topmost().currentPage;
-    let stackLayout = new stack.StackLayout();
-    let btn = new button.Button();
+    let stackLayout = new StackLayout();
+    let btn = new Button();
     stackLayout.addChild(btn);
     page.content = stackLayout;
 
@@ -174,11 +269,11 @@ export const test_events_tearDownUIAndRemovedFromNativeVisualTree_AreRaised_When
 
 export const test_cachedProperties_Applied_WhenNativeWidged_IsCreated = function () {
     const test = function (views: Array<view.View>) {
-        const newButton = new button.Button();
+        const newButton = new Button();
         newButton.text = "Test Button";
         TKUnit.assert(types.isUndefined(newButton.android));
 
-        (<stack.StackLayout>views[1]).addChild(newButton);
+        (<StackLayout>views[1]).addChild(newButton);
 
         TKUnit.assert(types.isDefined(newButton.android));
         // TODO: There is currently an issue with the getText conversion to JavaScript string
@@ -190,9 +285,9 @@ export const test_cachedProperties_Applied_WhenNativeWidged_IsCreated = function
 
 export function test_automation_text_set_to_native() {
     const test = function (views: Array<view.View>) {
-        const newButton = new button.Button();
+        const newButton = new Button();
         newButton.automationText = "Button1";
-        (<stack.StackLayout>views[1]).addChild(newButton);
+        (<StackLayout>views[1]).addChild(newButton);
         TKUnit.assertEqual((<android.widget.Button>newButton.android).getContentDescription(), "Button1", "contentDescription not set to native view.");
     };
 
@@ -234,9 +329,9 @@ class Listener implements trace.EventListener {
 export const test_StylePropertiesDefaultValuesCache = function () {
     const testValue = 35;
 
-    const test = function (views: [view.View, stack.StackLayout, button.Button, view.View]) {
+    const test = function (views: [view.View, StackLayout, Button, view.View]) {
         const testLabel = new labelModule.Label();
-        const testButton = new button.Button();
+        const testButton = new Button();
 
         const stack = views[1];
 

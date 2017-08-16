@@ -306,6 +306,7 @@ export abstract class ViewBase extends Observable {
     public ensureDomNode();
 
     //@private
+    public _isPaddingRelative: boolean;
     public _styleScope: any;
 
     /**
@@ -321,6 +322,10 @@ export abstract class ViewBase extends Observable {
      * Allow multiple updates to be performed on the instance at once.
      */
     public _batchUpdate<T>(callback: () => T): T;
+    /**
+     * @private
+     */
+    _setupAsRootView(context: any): void;
     //@endprivate
 }
 

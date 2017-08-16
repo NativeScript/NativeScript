@@ -26,57 +26,122 @@ import { TextField } from 'tns-core-modules/ui/text-field';
 import { TextView } from 'tns-core-modules/ui/text-view';
 import { TimePicker } from 'tns-core-modules/ui/time-picker';
 import { View } from 'tns-core-modules/ui/core/view';
-import { FormattedString, Span } from "tns-core-modules/text/formatted-string";
+import { FormattedString, Span } from 'tns-core-modules/text/formatted-string';
+import { _getProperties, _getStyleProperties } from 'tns-core-modules/ui/core/properties';
+declare var __startCPUProfiler;
+declare var __stopCPUProfiler;
 
-export function testAll(layout: StackLayout): string {
+const count = 200;
+export function testSetup(layout: StackLayout): string {
     setupSetters();
-    const count = 100;
-    let result = '';
-    // result += test(layout, () => new FlexboxLayout(), count);    
-    // result += test(layout, () => new ActionBar(), count);
-    // result += test(layout, () => new ActivityIndicator(), count);
-    // result += test(layout, () => new Border(), count);
-    result += test(layout, () => new Button(), count);
-    // result += test(layout, () => new ContentView(), count);
-    // result += test(layout, () => new DatePicker(), count);
-    // result += test(layout, () => new HtmlView(), count);
-    // result += test(layout, () => new Image(), count);
-    // result += test(layout, () => new Label(), count);
-    // result += test(layout, () => new AbsoluteLayout(), count);
-    // result += test(layout, () => new DockLayout(), count);
-    // result += test(layout, () => new GridLayout(), count);
-    // result += test(layout, () => new StackLayout(), count);
-    // result += test(layout, () => new WrapLayout(), count);
-    // result += test(layout, () => new ListPicker(), count);
-    // result += test(layout, () => new ListView(), count);
-    // result += test(layout, () => new Page(), count);
-    // result += test(layout, () => new Progress(), count);
-    // result += test(layout, () => new Repeater(), count);
-    // result += test(layout, () => new Switch(), count);
-    // result += test(layout, () => new TextField(), count);
-    // result += test(layout, () => new TextView(), count);
-    
-    // Throws
-    // result += test(layout, () => new TabView(), count);
-    // result += test(layout, () => new SegmentedBar(), count);
-    // result += test(layout, () => new TimePicker(), count);
+    return '';
+}
 
-    return result;
+export function testFlexboxLayout(layout: StackLayout): string {
+    return test(layout, () => new FlexboxLayout(), count);
+}
+
+export function testDockLayout(layout: StackLayout): string {
+    return test(layout, () => new DockLayout(), count);
+}
+
+export function testGridLayout(layout: StackLayout): string {
+    return test(layout, () => new GridLayout(), count);
+}
+
+export function testStackLayout(layout: StackLayout): string {
+    return test(layout, () => new StackLayout(), count);
+}
+
+export function testWrapLayout(layout: StackLayout): string {
+    return test(layout, () => new WrapLayout(), count);
+}
+
+export function testAbsoluteLayout(layout: StackLayout): string {
+    return test(layout, () => new AbsoluteLayout(), count);
+}
+
+export function testButton(layout: StackLayout): string {
+    return test(layout, () => new Button(), count);
+}
+
+export function testActionBar(layout: StackLayout): string {
+    return test(layout, () => new ActionBar(), count);
+}
+
+export function testActivityIndicator(layout: StackLayout): string {
+    return test(layout, () => new ActivityIndicator(), count);
+}
+
+export function testBorder(layout: StackLayout): string {
+    return test(layout, () => new Border(), count);
+}
+
+export function testContentView(layout: StackLayout): string {
+    return test(layout, () => new ContentView(), count);
+}
+
+export function testDatePicker(layout: StackLayout): string {
+    return test(layout, () => new DatePicker(), count);
+}
+
+export function testHtmlView(layout: StackLayout): string {
+    return test(layout, () => new HtmlView(), count);
+}
+
+export function testImage(layout: StackLayout): string {
+    return test(layout, () => new Image(), count);
+}
+
+export function testLabel(layout: StackLayout): string {
+    return test(layout, () => new Label(), count);
+}
+
+export function testListPicker(layout: StackLayout): string {
+    return test(layout, () => new ListPicker(), count);
+}
+
+export function testListView(layout: StackLayout): string {
+    return test(layout, () => new ListView(), count);
+}
+
+export function testPage(layout: StackLayout): string {
+    return test(layout, () => new Page(), count);
+}
+
+export function testProgress(layout: StackLayout): string {
+    return test(layout, () => new Progress(), count);
+}
+
+export function testRepeater(layout: StackLayout): string {
+    return test(layout, () => new Repeater(), count);
+}
+
+export function testSwitch(layout: StackLayout): string {
+    return test(layout, () => new Switch(), count);
+}
+
+export function testTextField(layout: StackLayout): string {
+    return test(layout, () => new TextField(), count);
+}
+
+export function testTextView(layout: StackLayout): string {
+    return test(layout, () => new TextView(), count);
 }
 
 function test(layout: StackLayout, createView: () => View, count: number): string {
     const viewMap1 = new Map<string, any>();
     const cssMap1 = new Map<string, any>();
-    
+
     viewMap1.set('isEnabled', false);
-    let result = execute(layout, createView, count, viewMap1, cssMap1) + ', ';
+    let result = execute(layout, createView, count, viewMap1, cssMap1)
 
     viewMap1.set('text', 'text');
     viewMap1.set('automationText', "automationText");
     cssMap1.set('width', 100);
     cssMap1.set('height', 100);
     cssMap1.set('rotate', '90');
-    result += execute(layout, createView, count, viewMap1, cssMap1) + ', ';
+    result += execute(layout, createView, count, viewMap1, cssMap1)
 
     viewMap1.set('clipToBounds', false);
     viewMap1.set('left', '20');
@@ -91,7 +156,7 @@ function test(layout: StackLayout, createView: () => View, count: number): strin
     cssMap1.set('horizontalAlignment', 'center');
     cssMap1.set('verticalAlignment', 'center');
 
-    result += execute(layout, createView, count, viewMap1, cssMap1) + ', ';
+    result += execute(layout, createView, count, viewMap1, cssMap1)
 
     viewMap1.set('row', '1');
     viewMap1.set('rowSpan', '2');
@@ -110,45 +175,79 @@ function test(layout: StackLayout, createView: () => View, count: number): strin
     cssMap1.set('backgroundColor', 'red');
     cssMap1.set('backgroundImage', '~/logo.png');
 
-    result += execute(layout, createView, count, viewMap1, cssMap1) + ', ';
+    result += execute(layout, createView, count, viewMap1, cssMap1)
     result += execute(layout, createView, count, setters, cssSetters);
 
-    return `${createView().typeName}: ${result}\n`;
+    return `${createView().typeName}: ${result}`;
 }
 
+let b = false;
 function execute(layout: StackLayout, createView: () => View, count: number,
     viewProps: Map<string, any>, cssProps: Map<string, any>): string {
-    const not = profile(layout, createView, count, false, viewProps, cssProps);
-    const recycled = profile(layout, createView, count, true, viewProps, cssProps);
 
-    const improved = ((not - recycled) / not) * 100;
-    console.log(`recycled time: ${recycled}`);
-    console.log(`not recycled time: ${not}`);
-    const propCount = viewProps.size + cssProps.size;
-    return `${propCount}: ${improved.toFixed(0)}%`;
+    gc();
+    java.lang.System.gc();
+    gc();
+    java.lang.System.gc();
+    // b = !b;
+    // let not: { time: number, count: number };
+    let recycled: { time: number, count: number };
+    // if (b) {
+    //     not = profile(layout, createView, count, false, viewProps, cssProps);
+    //     recycled = profile(layout, createView, count, true, viewProps, cssProps);
+    // } else {
+    recycled = profile(layout, createView, count, true, viewProps, cssProps);
+    // not = profile(layout, createView, count, false, viewProps, cssProps);
+    // }
+
+    // console.log(`recycled: ${recycled.time}`);
+    // console.log(`not: ${not.time}`);
+    // const improved = ((not.time - recycled.time) / not.time) * 100;
+    const propCount = recycled.count;
+    return `\t${recycled.time.toFixed(0)}`;
 }
 
+const props = _getProperties();
+const styleProps = _getStyleProperties();
+
 function profile(layout: StackLayout, createView: () => View, count: number, recycle: boolean,
-    viewProps: Map<string, any>, cssProps: Map<string, any>): number {
+    viewProps: Map<string, any>, cssProps: Map<string, any>): { time: number, count: number } {
 
     const view = createView();
     view.recycleNativeView = recycle ? 'always' : 'never';
     const style = view.style;
+    // DatePicker throws OOM
+    const c = view.typeName === 'DatePicker' ? 1 : 5;
+    let total = 0;
+    let x = 0;
+    for (let i = 0; i < c; i++) {
+        x = 0;
+        viewProps.forEach((v, k) => {
+            const p = props.find(vp => (<any>vp).name === k);
+            // if (p && view[p.setNative]) {
+            view[k] = v;
+            x++;
+            // }
+        });
 
-    viewProps.forEach((v, k) => view[k] = v);
-    cssProps.forEach((v, k) => style[k] = v);
+        cssProps.forEach((v, k) => {
+            const p = styleProps.find(vp => (<any>vp).name === k);
+            // if (p && view[p.setNative]) {
+            style[k] = v;
+            x++;
+            // }
+        });
 
-    gc();
-    java.lang.System.gc();
-    const start = time();
-
-    for (let i = 0; i < count; i++) {
-        layout.addChild(view);
-        layout.removeChild(view);
+        const start = time();
+        for (let i = 0; i < count; i++) {
+            layout.addChild(view);
+            layout.removeChild(view);
+        }
+        const end = time() - start;
+        total += end;
     }
 
-    const end = time() - start;
-    return end;
+    return { time: total / c, count: x };
 }
 
 let setters: Map<string, any>;
@@ -282,11 +381,11 @@ function setupSetters(): void {
     setters.set('androidOffscreenTabLimit', '2');
 
     // text-base
-    const formattedText = new FormattedString();
-    const span = new Span();
-    span.text = 'span';
-    formattedText.spans.push(span);
-    setters.set('formattedText', formattedText);
+    // const formattedText = new FormattedString();
+    // const span = new Span();
+    // span.text = 'span';
+    // formattedText.spans.push(span);
+    // setters.set('formattedText', formattedText);
 
     // text-base
     setters.set('secure', 'true');

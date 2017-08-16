@@ -20,8 +20,6 @@ const DELEGATE = "_delegate";
 
 let navDepth = -1;
 
-const FRAME_CONTEXT = {};
-
 export class Frame extends FrameBase {
     private _ios: iOSFrame;
     private _paramToNavigate: any;
@@ -34,13 +32,6 @@ export class Frame extends FrameBase {
     public _right: number;
     public _bottom: number;
     public _isInitialNavigation: boolean = true;
-
-    public get _context(): any {
-        return FRAME_CONTEXT;
-    }
-    public set _context(value: any) {
-        throw new Error("Frame _context is readonly");
-    }
 
     constructor() {
         super();
@@ -254,10 +245,6 @@ export class Frame extends FrameBase {
     public get ios(): iOSFrame {
         return this._ios;
     }
-
-    // get nativeView(): any {
-    //     return this._ios.controller.view;
-    // }
 
     public static get defaultAnimatedNavigation(): boolean {
         return FrameBase.defaultAnimatedNavigation;
@@ -495,10 +482,10 @@ class UINavigationControllerImpl extends UINavigationController {
     }
 
     @profile
-    public viewDidLoad(): void {
-        super.viewDidLoad();
+    public viewWillAppear(animated: boolean): void {
+        super.viewWillAppear(animated);
         let owner = this._owner.get();
-        if (owner) {
+        if (owner && (!owner.isLoaded && !owner.parent)) {
             owner.onLoaded();
         }
     }

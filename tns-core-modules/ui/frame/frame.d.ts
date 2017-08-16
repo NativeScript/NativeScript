@@ -132,6 +132,10 @@ export class Frame extends View {
      * @private
      */
     _getNavBarVisible(page: Page): boolean;
+    /**
+     * @private
+     */
+    _findEntryForTag(fragmentTag: string): BackstackEntry;
     //@endprivate
 
     /**
