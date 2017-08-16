@@ -57,6 +57,7 @@ export class TextBase extends TextBaseCommon {
     private _maxLines: number;
 
     public initNativeView(): void {
+        initializeTextTransformation();
         const nativeView = this.nativeViewProtected;
         this._defaultTransformationMethod = nativeView.getTransformationMethod();
         this._minHeight = nativeView.getMinHeight();
@@ -123,8 +124,6 @@ export class TextBase extends TextBaseCommon {
             return;
         }
 
-        initializeTextTransformation();
-
         const spannableStringBuilder = createSpannableStringBuilder(value);
         nativeView.setText(<any>spannableStringBuilder);
 
@@ -150,7 +149,6 @@ export class TextBase extends TextBaseCommon {
             return;
         }
 
-        initializeTextTransformation();
         this.nativeViewProtected.setTransformationMethod(new TextTransformation(this));
     }
 

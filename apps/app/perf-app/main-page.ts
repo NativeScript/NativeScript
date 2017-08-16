@@ -16,6 +16,7 @@ export function pageLoaded(args: EventData) {
     let examples: Map<string, string> = new Map<string, string>();
     examples.set("properties", "properties/main-page");
     examples.set("flexbox", "flexbox/main-page");
+    examples.set("recycling", "recycling/main-page");
 
     let viewModel = new MainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
