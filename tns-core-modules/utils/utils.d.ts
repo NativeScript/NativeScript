@@ -86,9 +86,9 @@ export module layout {
 
     /**
      * Rounds value used in layout.
-     * @param value to round.
+     * @param px to round.
      */
-    export function round(value: px): px;
+    export function round(px: px): px;
 
     /**
      * Converts device pixels to device independent pixes and measure the nativeView.
