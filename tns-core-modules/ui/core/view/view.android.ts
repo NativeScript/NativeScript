@@ -7,7 +7,8 @@ import { CacheLayerType } from "../../../utils/utils";
 import { Background, ad as androidBackground } from "../../styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, 
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty
 } from "./view-common";
 
 import {
@@ -486,7 +487,18 @@ export class View extends ViewCommon {
         } else {
             const nativeView = this.nativeViewProtected;
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
-            nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            
+            const style = this.style;
+            const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
+            const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
+            const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
+            const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
+
+            if (this._isPaddingRelative) {
+                nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
+            } else {
+                nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+            }
 
             (<any>nativeView).background = undefined;
             const cache = <CacheLayerType><any>nativeView;

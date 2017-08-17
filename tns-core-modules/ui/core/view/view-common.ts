@@ -2,9 +2,6 @@
 import { View as ViewDefinition, Point, Size, Color, dip } from ".";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
-// Types.
-import { Source } from "../../../utils/debug";
-
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories
@@ -745,21 +742,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
 
         super.resetNativeView();
-    }
-
-    public toString(): string {
-        let str = this.typeName;
-        if (this.id) {
-            str += `<${this.id}>`;
-        } else {
-            str += `(${this._domId})`;
-        }
-        let source = Source.get(this);
-        if (source) {
-            str += `@${source};`;
-        }
-
-        return str;
     }
 
     public _setNativeViewFrame(nativeView: any, frame: any) {

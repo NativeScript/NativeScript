@@ -215,6 +215,7 @@ function createRootView(v?: View) {
         rootView = frame;
     }
 
+    rootView._setupAsRootView({});
     return rootView;
 }
 

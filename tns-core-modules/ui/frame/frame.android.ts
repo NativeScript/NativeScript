@@ -419,13 +419,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         return;
     }
 
-    let entry: BackstackEntry;
-    if (frame._currentEntry && frame._currentEntry.fragmentTag === fragmentTag) {
-        entry = frame._currentEntry;
-    } else {
-        entry = frame.backStack.find((value) => value.fragmentTag === fragmentTag);
-    }
-
+    const entry = frame._findEntryForTag(fragmentTag);
     const page = entry ? entry.resolvedPage : undefined;
     if (page) {
         const callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
@@ -668,7 +662,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         this._rootView = rootView;
 
         // Initialize native visual tree;
-        rootView._setupUI(activity);
+        rootView._setupAsRootView(activity);
         activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
         // frameId is negative w
         if (frame) {

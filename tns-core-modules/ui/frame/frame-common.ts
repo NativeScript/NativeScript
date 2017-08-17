@@ -334,6 +334,22 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._updateActionBar();
     }
 
+    public _findEntryForTag(fragmentTag: string): BackstackEntry {
+        let entry: BackstackEntry;
+        if (this._currentEntry && this._currentEntry.fragmentTag === fragmentTag) {
+            entry = this._currentEntry;
+        } else {
+            entry = this._backStack.find((value) => value.fragmentTag === fragmentTag);
+            // on API 26 fragments are recreated lazily after activity is destroyed.
+            if (!entry) {
+                const navigationItem = this._navigationQueue.find((value) => value.entry.fragmentTag === fragmentTag);
+                entry = navigationItem ? navigationItem.entry : undefined;
+            }
+        }
+
+        return entry;
+    }
+
     public navigationQueueIsEmpty(): boolean {
         return this._navigationQueue.length === 0;
     }

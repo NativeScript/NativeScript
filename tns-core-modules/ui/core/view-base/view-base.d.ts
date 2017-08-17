@@ -144,11 +144,9 @@ export abstract class ViewBase extends Observable {
      * read-only. If you want to set out-of-band the nativeView use the setNativeView method.
      */
     public nativeViewProtected: any;
-    public recycleNativeView: "always" | "never" | "auto";
-
     public nativeView: any;
     public bindingContext: any;
-   
+
     /**
      * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
      */
@@ -306,6 +304,14 @@ export abstract class ViewBase extends Observable {
     public ensureDomNode();
 
     //@private
+    /**
+     * @private
+     */
+    public recycleNativeView: "always" | "never" | "auto";
+    /**
+     * @private
+     */
+    public _isPaddingRelative: boolean;
     public _styleScope: any;
 
     /**
@@ -321,6 +327,10 @@ export abstract class ViewBase extends Observable {
      * Allow multiple updates to be performed on the instance at once.
      */
     public _batchUpdate<T>(callback: () => T): T;
+    /**
+     * @private
+     */
+    _setupAsRootView(context: any): void;
     //@endprivate
 }
 

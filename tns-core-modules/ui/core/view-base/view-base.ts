@@ -6,6 +6,7 @@ import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../la
 import { KeyframeAnimation } from "../../animation/keyframe-animation";
 
 // Types.
+import { Source } from "../../../utils/debug";
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
@@ -94,40 +95,40 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
 
 let viewIdCounter = 1;
 
-const contextMap = new WeakMap<Object, Map<string, WeakRef<Object>[]>>();
+// const contextMap = new WeakMap<Object, Map<string, WeakRef<Object>[]>>();
 
-function getNativeView(context: Object, typeName: string): Object {
-    let typeMap = contextMap.get(context);
-    if (!typeMap) {
-        typeMap = new Map<string, WeakRef<Object>[]>();
-        contextMap.set(context, typeMap);
-        return undefined;
-    }
+// function getNativeView(context: Object, typeName: string): Object {
+//     let typeMap = contextMap.get(context);
+//     if (!typeMap) {
+//         typeMap = new Map<string, WeakRef<Object>[]>();
+//         contextMap.set(context, typeMap);
+//         return undefined;
+//     }
 
-    const array = typeMap.get(typeName);
-    if (array) {
-        let nativeView;
-        while (array.length > 0) {
-            const weakRef = array.pop();
-            nativeView = weakRef.get();
-            if (nativeView) {
-                return nativeView;
-            }
-        }
-    }
-    return undefined;
-}
+//     const array = typeMap.get(typeName);
+//     if (array) {
+//         let nativeView;
+//         while (array.length > 0) {
+//             const weakRef = array.pop();
+//             nativeView = weakRef.get();
+//             if (nativeView) {
+//                 return nativeView;
+//             }
+//         }
+//     }
+//     return undefined;
+// }
 
-function putNativeView(context: Object, view: ViewBase): void {
-    const typeMap = contextMap.get(context);
-    const typeName = view.typeName;
-    let list = typeMap.get(typeName);
-    if (!list) {
-        list = [];
-        typeMap.set(typeName, list);
-    }
-    list.push(new WeakRef(view.nativeViewProtected));
-}
+// function putNativeView(context: Object, view: ViewBase): void {
+//     const typeMap = contextMap.get(context);
+//     const typeName = view.typeName;
+//     let list = typeMap.get(typeName);
+//     if (!list) {
+//         list = [];
+//         typeMap.set(typeName, list);
+//     }
+//     list.push(new WeakRef(view.nativeViewProtected));
+// }
 
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
     public static loadedEvent = "loaded";
@@ -141,7 +142,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _visualState: string;
     private _inlineStyleSelector: SelectorCore;
     private __nativeView: any;
-    private _disableNativeViewRecycling: boolean;
+    // private _disableNativeViewRecycling: boolean;
     public domNode: DOMNode;
 
     public recycleNativeView: "always" | "never" | "auto";
@@ -204,7 +205,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _defaultPaddingRight: number;
     public _defaultPaddingBottom: number;
     public _defaultPaddingLeft: number;
-    private _isPaddingRelative: boolean;
+    public _isPaddingRelative: boolean;
 
     constructor() {
         super();
@@ -213,7 +214,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     get nativeView(): any {
-        this._disableNativeViewRecycling = true;
+        // this._disableNativeViewRecycling = true;
         return this.nativeViewProtected;
     }
 
@@ -230,7 +231,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     get android(): any {
-        this._disableNativeViewRecycling = true;
+        // this._disableNativeViewRecycling = true;
         return this._androidView;
     }
 
@@ -670,23 +671,27 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     private resetNativeViewInternal(): void {
-        const nativeView = this.nativeViewProtected;
-        if (nativeView && isAndroid) {
-            const recycle = this.recycleNativeView;
-            if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-                resetNativeView(this);
-                if (this._isPaddingRelative) {
-                    nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-                } else {
-                    nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-                }
-                this.resetNativeView();
-            }
-        }
+        // const nativeView = this.nativeViewProtected;
+        // if (nativeView && isAndroid) {
+        //     const recycle = this.recycleNativeView;
+        //     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+        //         resetNativeView(this);
+        //         if (this._isPaddingRelative) {
+        //             nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+        //         } else {
+        //             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+        //         }
+        //         this.resetNativeView();
+        //     }
+        // }
 
         if (this._cssState) {
             this._cancelAllAnimations();
         }
+    }
+
+    _setupAsRootView(context: any): void {
+        this._setupUI(context);
     }
 
     @profile
@@ -706,10 +711,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         let nativeView;
         if (isAndroid) {
-            const recycle = this.recycleNativeView;
-            if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-                nativeView = <android.view.View>getNativeView(context, this.typeName);
-            }
+            // const recycle = this.recycleNativeView;
+            // if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+            //     nativeView = <android.view.View>getNativeView(context, this.typeName);
+            // }
 
             if (!nativeView) {
                 nativeView = <android.view.View>this.createNativeView();
@@ -790,13 +795,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public _tearDownUI(force?: boolean) {
+        if (traceEnabled()) {
+            traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
+        }
+
         // No context means we are already teared down.
         if (!this._context) {
             return;
-        }
-
-        if (traceEnabled()) {
-            traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }
 
         this.resetNativeViewInternal();
@@ -810,18 +815,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this.parent._removeViewFromNativeVisualTree(this);
         }
 
-        const nativeView = this.nativeViewProtected;
-        if (nativeView && isAndroid) {
-            const recycle = this.recycleNativeView;
-            if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-                // const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
-                const nativeParent = (<android.view.View>nativeView).getParent();
-                const animation = (<android.view.View>nativeView).getAnimation();
-                if (!nativeParent && !animation) {
-                    putNativeView(this._context, this);
-                }
-            }
-        }
+        // const nativeView = this.nativeViewProtected;
+        // if (nativeView && isAndroid) {
+        //     const recycle = this.recycleNativeView;
+        //     let shouldRecycle = false;
+        //     if (recycle === "always") {
+        //         shouldRecycle = true;
+        //     } else if (recycle === "auto" && !this._disableNativeViewRecycling) {
+        //         const propertiesSet = Object.getOwnPropertySymbols(this).length + Object.getOwnPropertySymbols(this.style).length / 2;
+        //         shouldRecycle = propertiesSet <= this.recyclePropertyCounter;
+        //     }
+
+        //     // const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+        //     const nativeParent = (<android.view.View>nativeView).getParent();
+        //     const animation = (<android.view.View>nativeView).getAnimation();
+        //     if (shouldRecycle && !nativeParent && !animation) {
+        //         putNativeView(this._context, this);
+        //     }
+        // }
 
         this.disposeNativeView();
 
@@ -940,6 +951,21 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                 animation.cancel();
             }
         }
+    }
+
+    public toString(): string {
+        let str = this.typeName;
+        if (this.id) {
+            str += `<${this.id}>`;
+        } else {
+            str += `(${this._domId})`;
+        }
+        let source = Source.get(this);
+        if (source) {
+            str += `@${source};`;
+        }
+
+        return str;
     }
 }
 

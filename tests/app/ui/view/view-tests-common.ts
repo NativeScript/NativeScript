@@ -601,8 +601,12 @@ export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
         firstView.removeChild(secondView);
 
         // we don't recycle nativeViews on iOS yet so reset is not called.
-        TKUnit.assertEqual(secondView.cssPropCounter, isIOS ? 2 : 3, "7");
-        TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
+        // Recycling disabled for android too
+        // TKUnit.assertEqual(secondView.cssPropCounter, isIOS ? 2 : 3, "7");
+        // TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
+
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "7");
+        TKUnit.assertEqual(secondView.viewPropCounter,2, "8");
     });
 };
 
