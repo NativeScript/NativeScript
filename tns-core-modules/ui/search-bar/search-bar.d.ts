@@ -68,7 +68,7 @@ export class SearchBar extends View {
     on(event: "close", callback: (args: EventData) => void, thisArg?: any);
 
     /**
-     * Hides the soft input method, ususally a soft keyboard.
+     * Hides the soft input method, usually a soft keyboard.
      */
     dismissSoftInput(): void;
 }

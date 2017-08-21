@@ -9,12 +9,12 @@ import { LayoutBase, View, Property } from "../layout-base";
  */
 export class DockLayout extends LayoutBase {
     /**
-     * Gets the value of the Left property from a given View.
+     * Gets the value of the Dock property from a given View.
      */
     static getDock(view: View): Dock;
 
     /**
-     * Sets the value of the Left property from a given View.
+     * Sets the value of the Dock property from a given View.
      */
     static setDock(view: View, value: Dock): void;
 

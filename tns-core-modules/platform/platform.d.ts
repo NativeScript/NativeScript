@@ -40,7 +40,7 @@ export interface Device {
     model: string;
 
     /**
-     * Gets the model of the device.
+     * Gets the OS of the device.
      * For example: "Android" or "iOS".
      */
     os: string;
@@ -52,32 +52,32 @@ export interface Device {
     osVersion: string;
 
     /**
-     * Gets the OS version.
+     * Gets the SDK version.
      * For example: 19(android), 8.1(ios).
      */
     sdkVersion: string;
 
     /**
-     * Gets the type current device.
-     * Available values: "phone", "tablet".
+     * Gets the type of the current device.
+     * Available values: "Phone", "Tablet".
      */
     deviceType: "Phone" | "Tablet";
 
     /**
      * Gets the uuid.
-     * On iOS this will return a new uuid if the application re-installed on the device.
+     * On iOS this will return a new uuid if the application is re-installed on the device.
      * If you need to receive the same uuid even after the application has been re-installed on the device,
      * use this plugin: https://www.npmjs.com/package/nativescript-ios-uuid
      */
     uuid: string;
 
     /**
-     * Gets the preferred language. For example "en"
+     * Gets the preferred language. For example "en" or "en-US".
      */
     language: string;
 
     /**
-     * Gets the preferred region. For example "US"
+     * Gets the preferred region. For example "US".
      */
     region: string;
 }
@@ -123,6 +123,6 @@ export module screen {
 }
 
 /**
- * Gets the current device information
+ * Gets the current device information.
  */
 export var device: Device;    

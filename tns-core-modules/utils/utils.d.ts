@@ -41,36 +41,43 @@ export module layout {
     export var UNSPECIFIED: number;
     export var EXACTLY: number;
     export var AT_MOST: number;
+
     /**
-     * Gets measure specification mode from a given specification as string.
+     * Gets layout mode from a given specification as string.
      * @param mode - The measure specification mode.
      */
     export function getMode(mode: number): string;
+
     /**
      * Gets measure specification mode from a given specification.
      * @param spec - The measure specification.
      */
     export function getMeasureSpecMode(spec: number): number;
+
     /**
      * Gets measure specification size from a given specification.
      * @param spec - The measure specification.
      */
     export function getMeasureSpecSize(spec: number): number;
+
     /**
      * Creates measure specification size from size and mode.
      * @param size - The size component of measure specification.
      * @param mode - The mode component of measure specification.
      */
     export function makeMeasureSpec(px: number, mode: number): number;
+
     /**
      * Gets display density for the current device.
      */
     export function getDisplayDensity(): number;
+
     /**
      * Convert device independent pixels to device pixels - dip to px.
      * @param value - The pixel to convert.
      */
     export function toDevicePixels(value: dip): px;
+
     /**
      * Convert device pixels to device independent pixels - px to dip.
      * @param value - The pixel to convert.
@@ -79,7 +86,7 @@ export module layout {
 
     /**
      * Rounds value used in layout.
-     * @param value to round.
+     * @param px to round.
      */
     export function round(px: px): px;
 
@@ -121,12 +128,12 @@ export module ad {
     export function getInputMethodManager(): any /* android.view.inputmethod.InputMethodManager */;
 
     /**
-     * Hides the soft input method, ususally a soft keyboard.
+     * Hides the soft input method, usually a soft keyboard.
      */
     export function dismissSoftInput(nativeView?: any /* android.view.View */): void;
 
     /**
-     * Shows the soft input method, ususally a soft keyboard.
+     * Shows the soft input method, usually a soft keyboard.
      */
     export function showSoftInput(nativeView: any /* android.view.View */): void;
 
@@ -139,6 +146,7 @@ export module ad {
          * @param str - An array of strings to convert.
          */
         export function stringArrayToStringSet(str: string[]): any;
+
         /**
          * Converts string hash set into array of strings.
          * @param stringSet - A string hash set to convert.
@@ -155,6 +163,7 @@ export module ad {
          * @param name - Name of the resource.
          */
         export function getDrawableId(name);
+
         /**
          * Gets the string id from a given name.
          * @param name - Name of the resource.
@@ -206,9 +215,10 @@ export module ios {
          * @param str - JavaScript string array to convert.
          */
         export function jsArrayToNSArray(str: string[]): any;
+
         /**
          * Converts NSArray to JavaScript array.
-         * @param str - NSArray to convert.
+         * @param a - NSArray to convert.
          */
         export function nsArrayToJSArray(a: any): string[];
     }
@@ -217,6 +227,7 @@ export module ios {
      * Gets an information about if current mode is Landscape.
      */
     export function isLandscape(): boolean;
+
     /**
      * Gets the iOS device major version (for 8.1 will return 8).
      */
@@ -265,14 +276,13 @@ export function escapeRegexSymbols(source: string): string
 export function convertString(value: any): any
 
 /**
- * Sorts an array by using merge sort algoritm (which ensures stable sort since the built-in Array.sort() does not promise a stable sort).
+ * Sorts an array by using merge sort algorithm (which ensures stable sort since the built-in Array.sort() does not promise a stable sort).
  * @param arr - array to be sorted
  * @param compareFunc - function that will be used to compare two elements of the array
  */
 export function mergeSort(arr: Array<any>, compareFunc: (a: any, b: any) => number): Array<any>
 
 /**
- * 
  * Checks if array has any duplicate elements.
  * @param arr - The array to be checked.
  */

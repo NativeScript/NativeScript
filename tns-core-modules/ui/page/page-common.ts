@@ -324,7 +324,7 @@ backgroundSpanUnderStatusBarProperty.register(PageBase);
 
 /**
  * Dependency property used to control if swipe back navigation in iOS is enabled.
- * This property is iOS sepecific. Default value: true
+ * This property is iOS specific. Default value: true
  */
 export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>({ name: "enableSwipeBackNavigation", defaultValue: true, valueConverter: booleanConverter });
 enableSwipeBackNavigationProperty.register(PageBase);

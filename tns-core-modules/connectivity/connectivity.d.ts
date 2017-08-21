@@ -25,14 +25,14 @@ export enum connectionType {
     wifi = 1,
 
     /**
-     * Denotes a mobile connection, i.e. cellular network or WAN
+     * Denotes a mobile connection, i.e. cellular network or WAN.
      */
     mobile = 2
 }
 
 /**
  * Starts monitoring the connection type.
- * @param connectionChangedCallback A function that will be called when the connection type changes.
+ * @param connectionTypeChangedCallback A function that will be called when the connection type changes.
  */
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void;
 

@@ -70,7 +70,7 @@ export class WebView extends View {
     goForward();
 
     /**
-     * Reload the current url.
+     * Reloads the current url.
      */
     reload();
 
@@ -101,10 +101,12 @@ export interface LoadEventData extends EventData {
      * Gets the url of the web-view.
      */
     url: string;
+
     /**
      * Gets the navigation type of the web-view.
      */
     navigationType: NavigationType;
+
     /**
      * Gets the error (if any). 
      */

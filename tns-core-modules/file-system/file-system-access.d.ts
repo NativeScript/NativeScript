@@ -38,14 +38,16 @@ export class FileSystemAccess {
 
     /**
      * Gets all entities of a given path (folder)
-     * @param onSuccess A callback function to call if operation is successful
+     * @param path Path to the file.
      * @param onError (optional) A callback function to use if any error occurs.
+     * Returns an array of entities in the folder.
      */
     getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }>;
 
     /**
      * Performs an action onSuccess for every entity in a folder with a given path.
      * Breaks the loop if onSuccess function returns false
+     * @param path Path to the file.
      * @param onEntity A callback function which is called for each entity.
      * @param onError (optional) A callback function to use if any error occurs.
      */
@@ -76,7 +78,7 @@ export class FileSystemAccess {
     deleteFolder(path: string, onError?: (error: any) => any);
 
     /**
-     * Deletes a content of a folder with a given path.
+     * Deletes all content of a folder with a given path.
      * @param path Path of the folder.
      * @param onError (optional) A callback function to use if any error occurs.
      */
@@ -97,7 +99,7 @@ export class FileSystemAccess {
     getDocumentsFolderPath(): string;
 
     /**
-     * Gets the special documents folder.
+     * Gets the special temp folder.
      * Returns for Android: "/data/data/applicationPackageName/cache", iOS: "/var/mobile/Applications/appID/Library/Caches"
      */
     getTempFolderPath(): string;
@@ -116,17 +118,17 @@ export class FileSystemAccess {
     /**
      * Reads a text from a file with a given path.
      * @param path The path to the source file.
-     * @param onSuccess A callback function which is called when a text is red.
      * @param onError (optional) A callback function to use if any error occurs.
      * @param encoding (optional) If set reads the text with the specified encoding (default UTF-8).
+     * Returns the text read.
      */
     readText(path: string, onError?: (error: any) => any, encoding?: any): string;
 
     /**
      * Reads a binary content from a file with a given path.
      * @param path The path to the source file.
-     * @param onSuccess A callback function which is called when a text is red.
      * @param onError (optional) A callback function to use if any error occurs.
+     * Returns the binary content read.
      */
     read(path: string, onError?: (error: any) => any): any;
 
@@ -134,7 +136,6 @@ export class FileSystemAccess {
      * Writes a text to a file with a given path.
      * @param path The path to the source file.
      * @param content The content which will be written to the file.
-     * @param onSuccess (optional) A callback function which is called when a text is written.
      * @param onError (optional) A callback function to use if any error occurs.
      * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
      */
@@ -144,7 +145,6 @@ export class FileSystemAccess {
      * Writes a binary to a file with a given path.
      * @param path The path to the source file.
      * @param content The content which will be written to the file.
-     * @param onSuccess (optional) A callback function which is called when a text is written.
      * @param onError (optional) A callback function to use if any error occurs.
      */
     write(path: string, content: any, onError?: (error: any) => any);
@@ -168,14 +168,17 @@ export class FileSystemAccess {
     normalizePath(path: string): string;
 
     /**
-     * Join two paths (without normalize) only removes some trailing and dublicating path separators.
+     * Joins two paths (without normalize). Only removes some trailing and duplicate path separators.
      * @param left First path to join.
      * @param right Second path to join.
+     * Returns the joined path.
      */
     joinPath(left: string, right: string): string;
 
     /**
      * Joins an array of file paths.
+     * @param paths An array of paths.
+     * Returns the joined path.
      */
     joinPaths(paths: string[]): string;
 }

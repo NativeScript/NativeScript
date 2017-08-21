@@ -32,7 +32,7 @@ export var suspendEvent: string;
 export var resumeEvent: string;
 
 /**
- * String value used when hooking to exitevent.
+ * String value used when hooking to exit event.
  */
 export var exitEvent: string;
 
@@ -212,7 +212,7 @@ export function on(event: "suspend", callback: (args: ApplicationEventData) => v
 export function on(event: "resume", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
 /**
- * This event is raised when the Application is about to exitEvent.
+ * This event is raised when the Application is about to exit.
  */
 export function on(event: "exit", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
@@ -285,7 +285,7 @@ export interface AndroidActivityRequestPermissionsEventData extends AndroidActiv
     requestCode: number;
 
     /**
-     * The Permissions
+     * The Permissions.
      */
     permissions: Array<string>;
 
@@ -425,7 +425,7 @@ export class AndroidApplication extends Observable {
     on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
 
     /**
-     * This event is raised on the back button is pressed in an android application.
+     * This event is raised when the Android activity requests permissions.
      */
     on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
 
