@@ -168,6 +168,12 @@ export module ad {
         export function getId(name: string): number;
 
         /**
+         * [Obsolete - please use getPaletteColor] Gets a color from current theme.
+         * @param name - Name of the color
+         */
+        export function getPalleteColor();
+
+        /**
          * Gets a color from the current theme.
          * @param name - Name of the color resource.
          */
