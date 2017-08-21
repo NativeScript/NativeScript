@@ -1,7 +1,8 @@
 ﻿//@private
-import * as tabViewModule from "tns-core-modules/ui/tab-view";
+import { TabView } from "tns-core-modules/ui/tab-view";
 
-export declare function getNativeTabCount(tabView: tabViewModule.TabView): number;
-export declare function selectNativeTab(tabView: tabViewModule.TabView, index: number): void;
-export declare function getNativeSelectedIndex(tabView: tabViewModule.TabView): number;
-export declare function getNativeFont(tabView: tabViewModule.TabView): any;
+export function getNativeTabCount(tabView: TabView): number;
+export function selectNativeTab(tabView: TabView, index: number): void;
+export function getNativeSelectedIndex(tabView: TabView): number;
+export function getNativeFont(tabView: TabView): any;
+export function getOriginalFont(tabView: TabView): any;

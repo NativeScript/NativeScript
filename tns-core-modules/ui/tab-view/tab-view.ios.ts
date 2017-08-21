@@ -120,7 +120,7 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
 }
 
 function updateItemIconPosition(tabBarItem: UITabBarItem): void {
-    tabBarItem.imageInsets = new UIEdgeInsets({top: 6, left: 0, bottom: -6, right: 0});
+    tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
 }
 
 export class TabViewItem extends TabViewItemBase {
@@ -130,7 +130,7 @@ export class TabViewItem extends TabViewItemBase {
         this._iosViewController = controller;
         this.setNativeView((<any>this)._nativeView = controller.view);
     }
-    
+
     public disposeNativeView() {
         this._iosViewController = undefined;
         this.setNativeView(undefined);
@@ -462,20 +462,18 @@ function getTitleAttributesForStates(tabView: TabView): TabStates {
     const result: TabStates = {};
 
     const font = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
-    let tabItemTextColor = tabView.style.tabTextColor;
-    if (tabItemTextColor instanceof Color) {
-        result.normalState = {
-            [UITextAttributeTextColor]: tabItemTextColor.ios,
-            [NSFontAttributeName]: font
-        }
+    const tabItemTextColor = tabView.style.tabTextColor;
+    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+    result.normalState = { [NSFontAttributeName]: font }
+    if (textColor) {
+        result.normalState[UITextAttributeTextColor] = textColor
     }
 
     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
-    if (tabSelectedItemTextColor instanceof Color) {
-        result.selectedState = {
-            [UITextAttributeTextColor]: tabSelectedItemTextColor.ios,
-            [NSFontAttributeName]: font
-        }
+    const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
+    result.selectedState = { [NSFontAttributeName]: font }
+    if (selectedTextColor) {
+        result.selectedState[UITextAttributeTextColor] = selectedTextColor
     }
 
     return result;
