@@ -186,6 +186,12 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         }
         return indexPath;
     }
+    
+    public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
+        tableView.deselectRowAtIndexPathAnimated(indexPath, true);
+
+        return indexPath;
+    }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
         let owner = this._owner.get();
