@@ -27,6 +27,7 @@ function initializeDialogFragment() {
             super(context);
 
             this.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+            return global.__native(this);
         }
 
         public onBackPressed() : void {
