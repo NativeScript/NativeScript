@@ -104,7 +104,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string)
             return fn.apply(this, arguments);
         } finally {
             const end = time();
-            console.log(`Timeline: Modules: ${name}  (${start}ms. - ${end}ms.)`);
+            console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
         }
     }
 }

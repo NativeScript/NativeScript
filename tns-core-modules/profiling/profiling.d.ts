@@ -125,6 +125,6 @@ export declare function startCPUProfile(name: string): void;
 export declare function stopCPUProfile(name: string): void;
 
 /**
- * Gets the uptime of the current process in miliseconds.
+ * Gets the uptime of the current process in milliseconds.
  */
 export function uptime(): number;
