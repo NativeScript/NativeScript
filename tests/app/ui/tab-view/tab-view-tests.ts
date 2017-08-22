@@ -290,54 +290,35 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
     }
 
     public test_FontIsReappliedWhenTabItemsChange = function () {
-        // let fontToString = (font: any): string => {
-        //     if (this.testView.ios){
-        //         return font.toString();
-        //     }
-        //     else {
-        //          return `${font.typeface} ${font.size}`;
-        //     }
-        // }
-
-        let assertFontsAreEqual = (actual: any, expected: any, message?: string) => {
+        const assertFontsAreEqual = (actual: any, expected: any, message?: string) => {
             if (this.testView.ios) {
                 TKUnit.assertEqual(actual, expected, message);
-            }
-            else {
+            } else {
                 TKUnit.assertEqual(actual.typeface, expected.typeface, `${message} [typeface]`);
                 TKUnit.assertEqual(actual.size, expected.size, `${message} [size]`);
             }
         }
 
-        //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
         this.testView.items = this._createItems(1);
         this.waitUntilTestElementIsLoaded();
 
-        let originalFont = tabViewTestsNative.getNativeFont(this.testView);
-        //console.log(`>>>>>>>>>>>>> originalFont: ${fontToString(originalFont)}`);
-        let nativeFont: any;
+        const originalFont = tabViewTestsNative.getOriginalFont(this.testView);
+        TKUnit.assertNotNull(originalFont, "Original Font should be applied");
 
-        //console.log(`>>>>>>>>>>>>> PACIFICO`);
         this.testView.style.font = "20 Pacifico";
-        nativeFont = tabViewTestsNative.getNativeFont(this.testView);
-        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
+        let nativeFont = tabViewTestsNative.getNativeFont(this.testView);
+        TKUnit.assertNotNull(nativeFont, "Native Font should not be null");
+        TKUnit.assertNotEqual(originalFont, nativeFont, "Font should be changed");
 
-        //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
         this.testView.items = this._createItems(2);
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be 20 Pacifico after rebinding items.");
-        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
-        //console.log(`>>>>>>>>>>>>> MONOSPACE;`);
         this.testView.style.font = "bold 12 monospace";
         nativeFont = tabViewTestsNative.getNativeFont(this.testView);
-        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
-        //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
         this.testView.items = this._createItems(3);
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be bold 12 monospace after rebinding items.");
-        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
-        //console.log(`>>>>>>>>>>>>> RESET`);
         this.testView.style.font = unsetValue;
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), originalFont, "Font must be the original one after resetting the style.");
     }

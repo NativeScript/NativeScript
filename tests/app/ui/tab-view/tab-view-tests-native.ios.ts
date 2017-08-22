@@ -19,20 +19,18 @@ export function getNativeSelectedIndex(tabView: tabViewModule.TabView): number {
     return tabView.ios.selectedIndex;
 }
 
-export function getNativeFont(tabView: tabViewModule.TabView): any {
-    let tabBar = <UITabBar>tabView.ios.tabBar;
-    let currentFont;
-
+export function getNativeFont(tabView: tabViewModule.TabView): UIFont {
+    const tabBar = <UITabBar>tabView.ios.tabBar;
     if (tabBar.items.count > 0) {
-        let currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
+        const currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
         if (currentAttrs) {
-            currentFont = currentAttrs.objectForKey(NSFontAttributeName);
+            return currentAttrs.objectForKey(NSFontAttributeName);
         }
     }
 
-    if (!currentFont) {
-        currentFont = UIFont.systemFontOfSize(getter(UIFont, UIFont.labelFontSize));
-    }
+    return null;
+}
 
-    return currentFont;
+export function getOriginalFont(tabView: tabViewModule.TabView): UIFont {
+    return tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
 }
