@@ -9,6 +9,7 @@ import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "
  */
 export class EditableTextBase extends TextBase {
     public static blurEvent: string;
+    public static focusEvent: string;
 
     /**
      * Gets or sets the soft keyboard type.

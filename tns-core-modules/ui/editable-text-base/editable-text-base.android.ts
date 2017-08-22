@@ -77,6 +77,7 @@ function initializeEditTextListeners(): void {
                     clearTimeout(dismissKeyboardTimeoutId);
                     dismissKeyboardTimeoutId = undefined;
                 }
+                owner.notify({ eventName: EditableTextBase.focusEvent, object: owner });
             }
             else {
                 if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {

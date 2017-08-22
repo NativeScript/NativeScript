@@ -5,6 +5,7 @@ export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
     public static blurEvent = "blur";
+    public static focusEvent = "focus";
 
     public keyboardType: KeyboardType;
     public returnKeyType: ReturnKeyType;

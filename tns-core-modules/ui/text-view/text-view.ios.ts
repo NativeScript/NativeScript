@@ -29,10 +29,11 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         return true;
     }
 
-    public textViewDidBeginEditing(textView: UITextView) {
-        var owner = this._owner.get();
+    public textViewDidBeginEditing(textView: UITextView): void {
+      const owner = this._owner.get();
         if (owner) {
             owner._isEditing = true;
+            owner.notify({ eventName: TextView.focusEvent, object: owner });
         }
     }
 
