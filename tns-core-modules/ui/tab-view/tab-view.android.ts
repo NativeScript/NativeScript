@@ -412,14 +412,14 @@ export class TabView extends TabViewBase {
         selectedIndexProperty.coerce(this);
     }
 
-    [tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {
-        return this._tabLayout.getBackground().getConstantState();
+    [tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
+        return this._tabLayout.getBackground();
     }
-    [tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable.ConstantState | Color) {
+    [tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable | Color) {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
-            this._tabLayout.setBackground(value ? value.newDrawable() : null);
+            this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
         }
     }
 
@@ -447,4 +447,15 @@ export class TabView extends TabViewBase {
         const color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);
     }
+}
+
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
+    if (value) {
+        const constantState = value.getConstantState();
+        if (constantState) {
+            return constantState.newDrawable(resources);
+        }
+    }
+
+    return value;
 }

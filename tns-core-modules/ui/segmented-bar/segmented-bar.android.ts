@@ -12,15 +12,15 @@ const R_ATTR_STATE_SELECTED = 0x010100a1;
 const TITLE_TEXT_VIEW_ID = 16908310; // http://developer.android.com/reference/android/R.id.html#title
 
 interface TabChangeListener {
-    new (owner: SegmentedBar): android.widget.TabHost.OnTabChangeListener;
+    new(owner: SegmentedBar): android.widget.TabHost.OnTabChangeListener;
 }
 
 interface TabContentFactory {
-    new (owner: SegmentedBar): android.widget.TabHost.TabContentFactory;
+    new(owner: SegmentedBar): android.widget.TabHost.TabContentFactory;
 }
 
 interface TabHost {
-    new (context: android.content.Context, attrs: android.util.AttributeSet): android.widget.TabHost;
+    new(context: android.content.Context, attrs: android.util.AttributeSet): android.widget.TabHost;
 }
 
 let apiLevel: number;
@@ -144,17 +144,18 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    [selectedBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {
+    [selectedBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
         const viewGroup = <android.view.ViewGroup>this.nativeViewProtected.getParent();
-        return viewGroup.getBackground().getConstantState();
+        return viewGroup.getBackground();
     }
-    [selectedBackgroundColorProperty.setNative](value: Color | android.graphics.drawable.Drawable.ConstantState) {
-        const viewGroup = <android.view.ViewGroup>this.nativeViewProtected.getParent();
+    [selectedBackgroundColorProperty.setNative](value: Color | android.graphics.drawable.Drawable) {
+        const nativeView = this.nativeViewProtected;
+        const viewGroup = <android.view.ViewGroup>nativeView.getParent();
         if (value instanceof Color) {
             const color = value.android;
             const backgroundDrawable = viewGroup.getBackground();
-            if (apiLevel > 21 && backgroundDrawable && typeof backgroundDrawable.setColorFilter === "function") {
-                const newDrawable = backgroundDrawable.getConstantState().newDrawable();
+            if (apiLevel > 21 && backgroundDrawable) {
+                const newDrawable = tryCloneDrawable(backgroundDrawable, nativeView.getResources());
                 newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
                 org.nativescript.widgets.ViewHelper.setBackground(viewGroup, newDrawable);
             } else {
@@ -164,13 +165,24 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
                 arr[0] = R_ATTR_STATE_SELECTED;
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, viewGroup.getRight(), viewGroup.getBottom());
-
                 org.nativescript.widgets.ViewHelper.setBackground(viewGroup, stateDrawable);
             }
         } else {
-            org.nativescript.widgets.ViewHelper.setBackground(viewGroup, value.newDrawable());
+            const backgroundDrawable = tryCloneDrawable(value, nativeView.getResources());
+            org.nativescript.widgets.ViewHelper.setBackground(viewGroup, backgroundDrawable);
         }
     }
+}
+
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
+    if (value) {
+        const constantState = value.getConstantState();
+        if (constantState) {
+            return constantState.newDrawable(resources);
+        }
+    }
+
+    return value;
 }
 
 export class SegmentedBar extends SegmentedBarBase {

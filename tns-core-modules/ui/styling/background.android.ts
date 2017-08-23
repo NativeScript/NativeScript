@@ -6,7 +6,7 @@ import * as application from "../../application";
 export * from "./background-common"
 
 interface AndroidView {
-    _cachedDrawableConstState: android.graphics.drawable.Drawable.ConstantState;
+    _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
 }
 
 // TODO: Change this implementation to use 
@@ -41,8 +41,9 @@ export module ad {
         const drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
-        if (androidView._cachedDrawableConstState === undefined && drawable) {
-            androidView._cachedDrawableConstState = drawable.getConstantState();
+        if (androidView._cachedDrawable === undefined && drawable) {
+            const constantState = drawable.getConstantState();
+            androidView._cachedDrawable = constantState || drawable;
         }
 
         if (isSetColorFilterOnlyWidget(nativeView)
@@ -77,10 +78,19 @@ export module ad {
                 }
             }
         } else {
-            // TODO: newDrawable for BitmapDrawable will fail if we don't specify resource. Use the other overload.
-            const defaultDrawable = androidView._cachedDrawableConstState ? androidView._cachedDrawableConstState.newDrawable(nativeView.getResources()) : null;
+            const cachedDrawable = androidView._cachedDrawable;
+            let defaultDrawable: android.graphics.drawable.Drawable;
+            if (cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState) {
+                defaultDrawable = cachedDrawable.newDrawable(nativeView.getResources())
+            } else if (cachedDrawable instanceof android.graphics.drawable.Drawable) {
+                defaultDrawable = cachedDrawable;
+            } else {
+                defaultDrawable = null;
+            }
+
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, defaultDrawable);
-            androidView._cachedDrawableConstState = undefined;
+            // TODO: Do we need to clear the drawable here? Can't we just reuse it again?
+            androidView._cachedDrawable = undefined;
 
             if (cache.layerType !== undefined) {
                 cache.setLayerType(cache.layerType, null);
