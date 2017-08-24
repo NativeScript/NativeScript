@@ -22,6 +22,7 @@
     "grunt-ts": "6.0.0-beta.11",
     "grunt-typedoc": "0.2.4",
     "http-server": "^0.9.0",
+    "madge": "^2.0.0",
     "markdown-snippet-injector": "0.2.2",
     "mocha": "2.2.5",
     "nativescript-typedoc-theme": "git://github.com/NativeScript/nativescript-typedoc-theme.git#master",
@@ -63,6 +64,8 @@
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
     "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && http-server",
     "test-tsc-es2016": "npm run tsc -- -p tsconfig.public.es2016.json",
-    "tslint": "tslint --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'"
+    "tslint": "tslint --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'",
+    "madge-ios": "tsc --skipLibCheck && tns prepare ios --path tests && madge --circular tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
+    "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/src/main/assets/app/tns_modules/tns-core-modules"
   }
 }
