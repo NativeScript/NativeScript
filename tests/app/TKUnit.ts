@@ -106,7 +106,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
             isDone = true;
         }
     }
-    
+
     const timeout = testTimeout || testInfo.testTimeout || defaultTimeout;
 
     let duration;
@@ -119,7 +119,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
             runTests(testsQueue, recursiveIndex + 1);
         } else if (error) {
             write(`--- ["${testInfo.testName}"] FAILED: ${error.message}, duration: ${duration}`, trace.messageType.error);
-            testInfo.errorMessage = error.message;
+           testInfo.errorMessage = error.message;
             runTests(testsQueue, recursiveIndex + 1);
         } else {
             const testEndTime = time();
@@ -128,7 +128,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
                 testInfo.errorMessage = "Test timeout.";
                 runTests(testsQueue, recursiveIndex + 1);
             } else {
-                setTimeout(checkFinished, 0);
+                setTimeout(checkFinished, 20);
             }
         }
     }
@@ -144,12 +144,12 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
         doneCallback(e);
     }
 
-    setTimeout(checkFinished, 0);
+    setTimeout(checkFinished, 20);
 }
 
 export function runTests(tests: Array<TestInfoEntry>, recursiveIndex) {
     testsQueue = tests;
-    
+
     for (let i = recursiveIndex; i < testsQueue.length; i++) {
         const testEntry = testsQueue[i];
 
