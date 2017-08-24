@@ -459,7 +459,16 @@ export class View extends ViewCommon {
     [backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
         const nativeView = this.nativeViewProtected;
         const drawable = nativeView.getBackground();
-        return drawable ? drawable.getConstantState().newDrawable(nativeView.getResources()) : null;
+        if (drawable) {
+            const constantState = drawable.getConstantState();
+            if (constantState) {
+                return constantState.newDrawable(nativeView.getResources());
+            } else {
+                return drawable;
+            }
+        }
+        
+        return null;
     }
     [backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
         this._redrawNativeBackground(value);
