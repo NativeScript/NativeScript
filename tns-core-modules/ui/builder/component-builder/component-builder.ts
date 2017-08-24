@@ -7,6 +7,7 @@ import { isEventOrGesture } from "../../core/bindable";
 import { File, path, knownFolders } from "../../../file-system";
 import { getBindingOptions, bindingConstants } from "../binding-builder";
 import { resolveFileName } from "../../../file-system/file-name-resolver";
+import { profile } from "tns-core-modules/profiling";
 import * as debugModule from "../../../utils/debug";
 import * as platform from "../../../platform";
 
@@ -24,14 +25,9 @@ const CODEFILE = "codeFile";
 const CSSFILE = "cssFile";
 const IMPORT = "import";
 
-export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object, moduleNamePath?: string): ComponentModule {
+const createComponentInstance = profile("createComponentInstance", (elementName: string, namespace: string): { instance: View, instanceModule: Object } => {
     var instance: View;
     var instanceModule: Object;
-    var componentModule: ComponentModule;
-
-    // Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
-    elementName = elementName.split("-").map(s => { return s[0].toUpperCase() + s.substring(1) }).join("");
-
     // Get module id.
     var moduleId = MODULES[elementName] || UI_PATH +
         (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
@@ -70,7 +66,10 @@ export function getComponentModule(elementName: string, namespace: string, attri
         throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
-    let cssApplied = false;
+    return { instance, instanceModule };
+});
+
+const getComponentModuleExports = profile("getComponentModuleExports", (instance: View, moduleExports: Object, attributes: Object): Object => {
     if (attributes) {
         if (attributes[IMPORT]) {
             let importPath = attributes[IMPORT].trim();
@@ -79,39 +78,43 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 importPath = path.join(knownFolders.currentApp().path, importPath.replace("~/", ""));
             }
 
-            exports = global.loadModule(importPath);
-            (<any>instance).exports = exports;
+            moduleExports = global.loadModule(importPath);
+            (<any>instance).exports = moduleExports;
         }
 
-        // if (instance instanceof Page) {
-            if (attributes[CODEFILE]) {
-                let codeFilePath = attributes[CODEFILE].trim();
-                if (codeFilePath.indexOf("~/") === 0) {
-                    codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
-                }
-
-                const codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
-                if (File.exists(codeFilePathWithExt)) {
-                    exports = global.loadModule(codeFilePath);
-                    (<any>instance).exports = exports;
-                } else {
-                    throw new Error(`Code file with path "${codeFilePathWithExt}" cannot be found!`);
-                }
+        if (attributes[CODEFILE]) {
+            let codeFilePath = attributes[CODEFILE].trim();
+            if (codeFilePath.indexOf("~/") === 0) {
+                codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
             }
 
-            if (attributes[CSSFILE] && typeof (<any>instance).addCssFile === "function") {
-                let cssFilePath = attributes[CSSFILE].trim();
-                if (cssFilePath.indexOf("~/") === 0) {
-                    cssFilePath = path.join(knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
-                }
-                if (File.exists(cssFilePath)) {
-                    (<any>instance).addCssFile(cssFilePath);
-                    cssApplied = true;
-                } else {
-                    throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
-                }
+            const codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
+            if (File.exists(codeFilePathWithExt)) {
+                moduleExports = global.loadModule(codeFilePath);
+                (<any>instance).exports = moduleExports;
+            } else {
+                throw new Error(`Code file with path "${codeFilePathWithExt}" cannot be found!`);
             }
-        // }
+        }
+    }
+    return moduleExports;
+});
+
+const applyComponentCss = profile("applyComponentCss", (instance: View, moduleNamePath: string, attributes: Object) => {
+    let cssApplied = false;
+    if (attributes) {
+        if (attributes[CSSFILE] && typeof (<any>instance).addCssFile === "function") {
+            let cssFilePath = attributes[CSSFILE].trim();
+            if (cssFilePath.indexOf("~/") === 0) {
+                cssFilePath = path.join(knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
+            }
+            if (File.exists(cssFilePath)) {
+                (<any>instance).addCssFile(cssFilePath);
+                cssApplied = true;
+            } else {
+                throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
+            }
+        }
     }
 
     if (typeof (<any>instance).addCssFile === "function") {//instance instanceof Page) {
@@ -129,7 +132,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
             (<any>instance)._refreshCss();
         }
     }
+});
 
+const applyComponentAttributes = profile("applyComponentAttributes", (instance: View, instanceModule: Object, moduleExports: Object, attributes: Object) => {
     if (instance && instanceModule) {
         for (let attr in attributes) {
 
@@ -157,16 +162,28 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 }
 
                 if (subObj !== undefined && subObj !== null) {
-                    setPropertyValue(subObj, instanceModule, exports, subPropName, attrValue);
+                    setPropertyValue(subObj, instanceModule, moduleExports, subPropName, attrValue);
                 }
             } else {
-                setPropertyValue(instance, instanceModule, exports, attr, attrValue);
+                setPropertyValue(instance, instanceModule, moduleExports, attr, attrValue);
             }
         }
+    }
+});
 
+export function getComponentModule(elementName: string, namespace: string, attributes: Object, moduleExports: Object, moduleNamePath?: string): ComponentModule {
+    // Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
+    elementName = elementName.split("-").map(s => { return s[0].toUpperCase() + s.substring(1) }).join("");
+
+    const { instance, instanceModule } = createComponentInstance(elementName, namespace);
+    moduleExports = getComponentModuleExports(instance, moduleExports, attributes);
+    applyComponentCss(instance, moduleNamePath, attributes);
+    applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
+
+    var componentModule;
+    if (instance && instanceModule) {
         componentModule = { component: instance, exports: instanceModule };
     }
-
     return componentModule;
 }
 

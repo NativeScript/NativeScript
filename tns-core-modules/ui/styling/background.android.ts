@@ -3,6 +3,7 @@ import { CacheLayerType, isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFI
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
 import * as application from "../../application";
+import { profile } from "tns-core-modules/profiling";
 export * from "./background-common"
 
 interface AndroidView {
@@ -245,16 +246,16 @@ function onLivesync(args): void {
 }
 application.on("livesync", onLivesync);
 
-application.android.on("activityStarted", (args) => {
+application.android.on("activityStarted", profile("initImageCache", args => {
     if (!imageFetcher) {
         initImageCache(args.activity);
     } else {
         imageFetcher.initCache();
     }
-});
+}));
 
-application.android.on("activityStopped", (args) => {
+application.android.on("activityStopped", profile("closeImageCache", args => {
     if (imageFetcher) {
         imageFetcher.closeCache();
     }
-});
+}));

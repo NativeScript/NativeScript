@@ -10,6 +10,7 @@ import { isString, isDefined } from "../../utils/types";
 import { ComponentModule, setPropertyValue, getComponentModule } from "./component-builder";
 import { platformNames, device } from "../../platform";
 import { resolveFileName } from "../../file-system/file-name-resolver";
+import { profile } from "tns-core-modules/profiling";
 import * as traceModule from "../../trace";
 
 const ios = platformNames.ios.toLowerCase();
@@ -445,28 +446,28 @@ namespace xml2ui {
                 this._state = TemplateParser.State.FINISHED;
 
                 if (this._setTemplateProperty && this._templateProperty.name in this._templateProperty.parent.component) {
-                    let template = this._build();
+                    let template = this.buildTemplate();
                     this._templateProperty.parent.component[this._templateProperty.name] = template;
                 }
             }
         }
 
-        public _build(): Template {
+        public buildTemplate(): Template {
             var context = this._context;
             var errorFormat = this._templateProperty.errorFormat;
             var sourceTracker = this._templateProperty.sourceTracker;
-            var template: Template = () => {
+            var template: Template = profile("Template()", () => {
                 var start: xml2ui.XmlArgsReplay;
                 var ui: xml2ui.ComponentParser;
 
                 (start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
-                    // No platform filter, it has been filtered allready
+                    // No platform filter, it has been filtered already
                     .pipe(new XmlStateParser(ui = new ComponentParser(context, errorFormat, sourceTracker)));
 
                 start.replay();
 
                 return ui.rootComponentModule.component;
-            }
+            });
             return template;
         }
     }
@@ -492,7 +493,7 @@ namespace xml2ui {
                     for (let i = 0; i < this._childParsers.length; i++) {
                         templates.push({
                             key: this._childParsers[i]["key"],
-                            createView: this._childParsers[i]._build()
+                            createView: this._childParsers[i].buildTemplate()
                         });
                     }
                     this.templateProperty.parent.component[this.templateProperty.name] = templates;
@@ -533,6 +534,22 @@ namespace xml2ui {
             this.context = context;
             this.error = errorFormat;
             this.sourceTracker = sourceTracker;
+        }
+
+        @profile
+        private buildComponent(args: xml.ParserEvent): ComponentModule {
+            if (args.prefix && args.namespace) {
+                // Custom components
+                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView);
+            } else {
+                // Default components
+                let namespace = args.namespace;
+                if (defaultNameSpaceMatcher.test(namespace || '')) {
+                    //Ignore the default ...tns.xsd namespace URL
+                    namespace = undefined;
+                }
+                return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath);
+            }
         }
 
         public parse(args: xml.ParserEvent): XmlStateConsumer {
@@ -579,20 +596,7 @@ namespace xml2ui {
 
                 } else {
 
-                    var componentModule: ComponentModule;
-
-                    if (args.prefix && args.namespace) {
-                        // Custom components
-                        componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView);
-                    } else {
-                        // Default components
-                        let namespace = args.namespace;
-                        if (defaultNameSpaceMatcher.test(namespace || '')) {
-                            //Ignore the default ...tns.xsd namespace URL
-                            namespace = undefined;
-                        }
-                        componentModule = getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath);
-                    }
+                    var componentModule = this.buildComponent(args);
 
                     if (componentModule) {
                         this.sourceTracker(componentModule.component, args.position);

@@ -167,6 +167,7 @@ export class PageBase extends ContentView implements PageDefinition {
         };
     }
 
+    @profile
     public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any) {
         this._navigationContext = context;
 
@@ -177,14 +178,17 @@ export class PageBase extends ContentView implements PageDefinition {
         this.notify(this.createNavigatedData(PageBase.navigatingToEvent, isBackNavigation));
     }
 
+    @profile
     public onNavigatedTo(isBackNavigation: boolean) {
         this.notify(this.createNavigatedData(PageBase.navigatedToEvent, isBackNavigation));
     }
 
+    @profile
     public onNavigatingFrom(isBackNavigation: boolean) {
         this.notify(this.createNavigatedData(PageBase.navigatingFromEvent, isBackNavigation));
     }
 
+    @profile
     public onNavigatedFrom(isBackNavigation: boolean) {
         this.notify(this.createNavigatedData(PageBase.navigatedFromEvent, isBackNavigation));
 

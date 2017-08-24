@@ -180,34 +180,45 @@ global.__onLiveSync = function () {
 };
 
 function initLifecycleCallbacks() {
-    // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
+    const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: android.app.Activity) => {
+        // Set app theme after launch screen was used during startup
+        const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
+        if (activityInfo.metaData) {
+            const setThemeOnLaunch = activityInfo.metaData.getInt("SET_THEME_ON_LAUNCH", -1);
+            if (setThemeOnLaunch !== -1) {
+                activity.setTheme(setThemeOnLaunch);
+            }
+        }
+    });
+
+    const notifyActivityCreated = profile("notifyActivityCreated", function(activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
+        androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
+    });
+
+    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function(activity: android.app.Activity) {
+        const rootView = activity.getWindow().getDecorView().getRootView();
+        let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+            onGlobalLayout() {
+                notify({ eventName: displayedEvent, object: androidApp, activity });
+                let viewTreeObserver = rootView.getViewTreeObserver();
+                viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener);
+            }
+        });
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+    });
+
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: profile("onActivityCreated", function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
-            // Set app theme after launch screen was used during startup
-            const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
-            if (activityInfo.metaData) {
-                const setThemeOnLaunch = activityInfo.metaData.getInt("SET_THEME_ON_LAUNCH", -1);
-                if (setThemeOnLaunch !== -1) {
-                    activity.setTheme(setThemeOnLaunch);
-                }
-            }
+            setThemeOnLaunch(activity);
 
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
             }
 
-            androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
+            notifyActivityCreated(activity, savedInstanceState);
 
             if (hasListeners(displayedEvent)) {
-                const rootView = activity.getWindow().getDecorView().getRootView();
-                let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
-                    onGlobalLayout() {
-                        notify({ eventName: displayedEvent, object: androidApp, activity });
-                        let viewTreeObserver = rootView.getViewTreeObserver();
-                        viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener);
-                    }
-                });
-                rootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+                subscribeForGlobalLayout(activity);
             }
         }),
 
