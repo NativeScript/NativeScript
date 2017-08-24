@@ -141,6 +141,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _registeredAnimations: Array<KeyframeAnimation>;
     private _visualState: string;
     private _inlineStyleSelector: SelectorCore;
+    private _invalidStyles: boolean;
     private __nativeView: any;
     // private _disableNativeViewRecycling: boolean;
     public domNode: DOMNode;
@@ -288,6 +289,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     @profile
     public onLoaded() {
         this._isLoaded = true;
+        this._updateStylesIfInvalid();
+
         this._resumeNativeUpdates();
         this._loadEachChild();
         this._emit("loaded");
@@ -337,10 +340,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     @profile
-    public _applyStyleFromScope() {
+    public _applyStyles() {
         const scope = this._styleScope;
         if (scope) {
-            scope.applySelectors(this);
+            scope.matchSelectors(this);
         } else {
             this._setCssState(null);
         }
@@ -585,13 +588,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     @profile
-    private _setStyleScope(scope: ssm.StyleScope): void {
-        this._styleScope = scope;
-        this._applyStyleFromScope();
-        this.eachChild((v) => {
-            v._setStyleScope(scope);
-            return true;
-        });
+    _setStyleScope(scope: ssm.StyleScope): void {
+        if (this._styleScope !== scope) {
+            this._styleScope = scope;
+            this._resetStyles();
+        }
     }
 
     public _addViewCore(view: ViewBase, atIndex?: number) {
@@ -970,6 +971,25 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         return str;
     }
+
+    _resetStyles(): void {
+        this._invalidStyles = true;
+        if (this.isLoaded) {
+            this._updateStylesIfInvalid();
+        }
+    }
+
+    _updateStylesIfInvalid(): void {
+        if (this._invalidStyles && this.isLoaded) {
+            this._applyStyles();
+            this._invalidStyles = false;
+            this.eachChild((child: ViewBase) => {
+                child._setStyleScope(this._styleScope)
+                child._resetStyles();
+                return true;
+            });
+        }
+    }
 }
 
 ViewBase.prototype.isCollapsed = false;
@@ -1019,20 +1039,12 @@ export const classNameProperty = new Property<ViewBase, string>({
         if (typeof newValue === "string") {
             newValue.split(" ").forEach(c => classes.add(c));
         }
-        resetStyles(view);
+        view._resetStyles();
     }
 });
 classNameProperty.register(ViewBase);
 
-function resetStyles(view: ViewBase): void {
-    view._applyStyleFromScope();
-    view.eachChild((child) => {
-        resetStyles(child);
-        return true;
-    });
-}
-
-export const idProperty = new Property<ViewBase, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
+export const idProperty = new Property<ViewBase, string>({ name: "id", valueChanged: (view, oldValue, newValue) => view._resetStyles });
 idProperty.register(ViewBase);
 
 export function booleanConverter(v: string): boolean {

@@ -221,6 +221,7 @@ export abstract class ViewBase extends Observable {
 
     _cssState: any /* "ui/styling/style-scope" */;
     _setCssState(next: any /* "ui/styling/style-scope" */);
+    _resetStyles();
     _registerAnimation(animation: KeyframeAnimation);
     _unregisterAnimation(animation: KeyframeAnimation);
     _cancelAllAnimations();

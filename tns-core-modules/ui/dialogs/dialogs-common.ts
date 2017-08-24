@@ -51,7 +51,7 @@ function applySelectors(view: View) {
     if (currentPage) {
         let styleScope = currentPage._getStyleScope();
         if (styleScope) {
-            styleScope.applySelectors(view);
+            styleScope.matchSelectors(view);
         }
     }
 }

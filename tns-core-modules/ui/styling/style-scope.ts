@@ -56,9 +56,100 @@ const applicationKeyframes: any = {};
 const animationsSymbol: symbol = Symbol("animations");
 const pattern: RegExp = /('|")(.*?)\1/;
 
+class CSSSource {
+    private _selectors: RuleSet[] = [];
+    private _ast: SyntaxTree;
+
+    private static cssFilesCache: { [path: string]: CSSSource } = {};
+
+    private constructor(private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source?: string) {
+        if (this._file && !this._source) {
+            this.load();
+        }
+        this.parse();
+    }
+
+    public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
+        const app = knownFolders.currentApp().path;
+        const file = resolveFileNameFromUrl(url, app, File.exists);
+        return new CSSSource(url, file, keyframes, undefined);
+    }
+
+    public static fromSource(source: string, keyframes: KeyframesMap, url?: string): CSSSource {
+        return new CSSSource(url, undefined, keyframes, source);
+    }
+
+    get selectors(): RuleSet[] { return this._selectors; }
+
+    @profile
+    private load(): void {
+        const file = File.fromPath(this._file);
+        this._source = file.readTextSync();
+    }
+
+    @profile
+    private parse(): void {
+        if (this._source) {
+            try {
+                this._ast = this._source ? parseCss(this._source, { source: this._file }) : null;
+                // TODO: Don't merge arrays, instead chain the css files.
+                if (this._ast) {
+                    this._selectors = [
+                        ...this.createSelectorsFromImports(),
+                        ...this.createSelectorsFromSyntaxTree()
+                    ];
+                }
+            } catch (e) {
+                traceWrite("Css styling failed: " + e, traceCategories.Error, traceMessageType.error);
+            }
+        } else {
+            this._selectors = [];
+        }
+    }
+
+    private createSelectorsFromImports(): RuleSet[] {
+        let selectors: RuleSet[] = [];
+        const imports = this._ast["stylesheet"]["rules"].filter(r => r.type === "import");
+        for (let i = 0; i < imports.length; i++) {
+            const importItem = imports[i]["import"];
+
+            const match = importItem && (<string>importItem).match(pattern);
+            const url = match && match[2];
+
+            if (url !== null && url !== undefined) {
+                const cssFile = CSSSource.fromFile(url, this._keyframes);
+                selectors = selectors.concat(cssFile.selectors);
+            }
+        }
+
+        return selectors;
+    }
+
+    private createSelectorsFromSyntaxTree(): RuleSet[] {
+        const nodes = this._ast.stylesheet.rules;
+        (<KeyframesDefinition[]>nodes.filter(isKeyframe)).forEach(node => this._keyframes[node.name] = node);
+
+        const rulesets = fromAstNodes(nodes);
+        if (rulesets && rulesets.length) {
+            ensureCssAnimationParserModule();
+
+            rulesets.forEach(rule => {
+                rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser
+                    .keyframeAnimationsFromCSSDeclarations(rule.declarations);
+            });
+        }
+
+        return rulesets;
+    }
+
+    toString(): string {
+        return this._file || this._url || "(in-memory)";
+    }
+}
+
 const onCssChanged = profile('"style-scope".onCssChanged', (args: application.CssChangedEventData) => {
     if (args.cssText) {
-        const parsed = createSelectorsFromCss(args.cssText, args.cssFile, applicationKeyframes);
+        const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
         if (parsed) {
             applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
             mergeCssSelectors();
@@ -72,22 +163,15 @@ function onLiveSync(args: application.CssChangedEventData): void {
     loadCss(application.getCssFileName());
 }
 
-const loadCss = profile(`"style-scope".loadCss`, (cssFile?: string) => {
+const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
     if (!cssFile) {
         return undefined;
     }
 
-    let result: RuleSet[];
-
-    const cssFileName = path.join(knownFolders.currentApp().path, cssFile);
-    if (File.exists(cssFileName)) {
-        const file = File.fromPath(cssFileName);
-        const applicationCss = file.readTextSync();
-        if (applicationCss) {
-            result = createSelectorsFromCss(applicationCss, cssFileName, applicationKeyframes);
-            applicationSelectors = result;
-            mergeCssSelectors();
-        }
+    const result = CSSSource.fromFile(cssFile, applicationKeyframes).selectors;
+    if (result.length > 0) {
+        applicationSelectors = result;
+        mergeCssSelectors();
     }
 });
 
@@ -204,7 +288,9 @@ export class StyleScope {
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;
         this._reset();
-        this._localCssSelectors = createSelectorsFromCss(this._css, cssFileName, this._keyframes);
+
+        const cssFile = CSSSource.fromSource(cssString, this._keyframes, cssFileName);
+        this._localCssSelectors = cssFile.selectors;
         this._localCssSelectorVersion++;
         this.ensureSelectors();
     }
@@ -217,7 +303,7 @@ export class StyleScope {
 
         this._css = this._css + cssString;
         this._reset();
-        let parsedCssSelectors = createSelectorsFromCss(cssString, cssFileName, this._keyframes);
+        let parsedCssSelectors = CSSSource.fromSource(cssString, this._keyframes, cssFileName);
         this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors);
         this._localCssSelectorVersion++;
         this.ensureSelectors();
@@ -267,7 +353,8 @@ export class StyleScope {
         }
     }
 
-    public applySelectors(view: ViewBase): void {
+    @profile
+    public matchSelectors(view: ViewBase): void {
         this.ensureSelectors();
 
         let state = this._selectors.query(view);
@@ -314,66 +401,7 @@ export class StyleScope {
     }
 }
 
-function createSelectorsFromCss(css: string, cssFileName: string, keyframes: Map<string, Keyframes>): RuleSet[] {
-    try {
-        const pageCssSyntaxTree = css ? parseCss(css, { source: cssFileName }) : null;
-        let pageCssSelectors: RuleSet[] = [];
-        if (pageCssSyntaxTree) {
-            pageCssSelectors = pageCssSelectors.concat(createSelectorsFromImports(pageCssSyntaxTree, keyframes));
-            pageCssSelectors = pageCssSelectors.concat(createSelectorsFromSyntaxTree(pageCssSyntaxTree, keyframes));
-        }
-        return pageCssSelectors;
-    } catch (e) {
-        traceWrite("Css styling failed: " + e, traceCategories.Error, traceMessageType.error);
-    }
-}
-
-function createSelectorsFromImports(tree: SyntaxTree, keyframes: Map<string, Keyframes>): RuleSet[] {
-    let selectors: RuleSet[] = [];
-
-    if (tree !== null && tree !== undefined) {
-        const imports = tree["stylesheet"]["rules"].filter(r => r.type === "import");
-
-        for (let i = 0; i < imports.length; i++) {
-            const importItem = imports[i]["import"];
-
-            const match = importItem && (<string>importItem).match(pattern);
-            const url = match && match[2];
-
-            if (url !== null && url !== undefined) {
-                const appDirectory = knownFolders.currentApp().path;
-                const fileName = resolveFileNameFromUrl(url, appDirectory, File.exists);
-
-                if (fileName !== null) {
-                    const file = File.fromPath(fileName);
-                    const text = file.readTextSync();
-                    if (text) {
-                        selectors = selectors.concat(createSelectorsFromCss(text, fileName, keyframes));
-                    }
-                }
-            }
-        }
-    }
-
-    return selectors;
-}
-
-function createSelectorsFromSyntaxTree(ast: SyntaxTree, keyframes: Map<string, Keyframes>): RuleSet[] {
-    const nodes = ast.stylesheet.rules;
-    (<KeyframesDefinition[]>nodes.filter(isKeyframe)).forEach(node => keyframes[node.name] = node);
-
-    const rulesets = fromAstNodes(nodes);
-    if (rulesets && rulesets.length) {
-        ensureCssAnimationParserModule();
-
-        rulesets.forEach(rule => {
-            rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser
-                .keyframeAnimationsFromCSSDeclarations(rule.declarations);
-        });
-    }
-
-    return rulesets;
-}
+type KeyframesMap = Map<string, Keyframes>;
 
 export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean): string {
     let fileName: string = typeof url === "string" ? url.trim() : "";
@@ -397,7 +425,7 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
 
 export function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
-    let inlineRuleSet = createSelectorsFromCss(localStyle, null, new Map());
+    let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
     const style = view.style;
 
     inlineRuleSet[0].declarations.forEach(d => {

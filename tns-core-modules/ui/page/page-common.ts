@@ -133,18 +133,11 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     // Used in component-builder.ts
+    @profile
     public _refreshCss(): void {
         const scopeVersion = this._styleScope.ensureSelectors();
         if (scopeVersion !== this._cssAppliedVersion) {
-            const styleScope = this._styleScope;
-            this._resetCssValues();
-            const checkSelectors = (view: View): boolean => {
-                styleScope.applySelectors(view);
-                return true;
-            };
-
-            checkSelectors(this);
-            eachDescendant(this, checkSelectors);
+            this._resetStyles();
             this._cssAppliedVersion = scopeVersion;
         }
     }
