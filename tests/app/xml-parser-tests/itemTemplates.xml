@@ -1,0 +1,15 @@
+<TabView>
+    <TabView.items>
+        <TabViewItem title="My Tab">
+            <TabViewItem.view>
+                <ListView items="{{ $value }}" itemTemplateSelector="selectItemTemplate">
+                    <ListView.itemTemplates>
+                        <template key="foo">
+                            <Label text="{{ title }}" />
+                        </template>
+                    </ListView.itemTemplates>
+                </ListView>
+            </TabViewItem.view>
+        </TabViewItem>
+    </TabView.items>
+</TabView>

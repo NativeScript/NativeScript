@@ -5,6 +5,7 @@
 import * as TKUnit from "../TKUnit";
 import * as xmlModule from "tns-core-modules/xml";
 import * as fs from "tns-core-modules/file-system";
+import * as builder from "tns-core-modules/ui/builder";
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, "Class XmlParser should be defined!");
@@ -182,3 +183,12 @@ export var test_XmlParser_NamespacesTest = function () {
     var xmlString = file.readTextSync();
     xmlParser.parse(xmlString);
 };
+
+export function test_MultiParserTemplate() {
+    const file = fs.File.fromPath(fs.path.join(__dirname, "itemTemplates.xml"));
+    const xml = file.readTextSync();
+
+    const view: any = builder.parse(xml);
+    TKUnit.assertNotNull(view.items)
+    TKUnit.assertEqual(view.items.length, 1);
+}
