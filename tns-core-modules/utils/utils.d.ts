@@ -15,16 +15,6 @@ export const FILE_PREFIX: string;
 interface Owned {
     owner: any;
 }
-
-/**
- * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType.
- * @private
- */
-interface CacheLayerType {
-    layerType: number;
-    setLayerType(layerType: number, paint: any): void;
-    getLayerType(): number;    
-}
 //@endprivate
 
 /**

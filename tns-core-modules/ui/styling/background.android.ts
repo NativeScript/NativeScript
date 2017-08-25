@@ -1,5 +1,5 @@
 import { View } from "../core/view";
-import { CacheLayerType, isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
+import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
 import * as application from "../../application";
@@ -38,7 +38,6 @@ export module ad {
         }
 
         const background = view.style.backgroundInternal;
-        const cache = <CacheLayerType>view.nativeViewProtected;
         const drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
@@ -68,16 +67,6 @@ export module ad {
             } else {
                 refreshBorderDrawable(view, backgroundDrawable);
             }
-
-            // This should be done only when backgroundImage is set!!!
-            if ((background.hasBorderWidth() || background.hasBorderRadius() || background.clipPath) && getSDK() < 18) {
-                // Switch to software because of unsupported canvas methods if hardware acceleration is on:
-                // http://developer.android.com/guide/topics/graphics/hardware-accel.html
-                if (cache.layerType === undefined) {
-                    cache.layerType = cache.getLayerType();
-                    cache.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
-                }
-            }
         } else {
             const cachedDrawable = androidView._cachedDrawable;
             let defaultDrawable: android.graphics.drawable.Drawable;
@@ -92,11 +81,6 @@ export module ad {
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, defaultDrawable);
             // TODO: Do we need to clear the drawable here? Can't we just reuse it again?
             androidView._cachedDrawable = undefined;
-
-            if (cache.layerType !== undefined) {
-                cache.setLayerType(cache.layerType, null);
-                cache.layerType = undefined;
-            }
         }
 
         // TODO: Can we move BorderWidths as separate native setter?
