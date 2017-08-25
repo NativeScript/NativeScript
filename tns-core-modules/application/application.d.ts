@@ -80,6 +80,8 @@ export interface LaunchEventData extends ApplicationEventData {
      * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
      */
     root?: View;
+
+    savedInstanceState?: any /* android.os.Bundle */;
 }
 
 /**

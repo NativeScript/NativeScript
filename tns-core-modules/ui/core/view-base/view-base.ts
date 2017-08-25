@@ -217,6 +217,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         // this._disableNativeViewRecycling = true;
         return this.nativeViewProtected;
     }
+    set nativeView(value: any) {
+        this.setNativeView(value);
+    }
 
     // TODO: Use Type.prototype.typeName instead.
     get typeName(): string {
