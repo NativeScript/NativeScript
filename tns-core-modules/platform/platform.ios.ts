@@ -67,8 +67,7 @@ class Device implements DeviceDefinition {
         var app_uuid = userDefaults.stringForKey(uuid_key);
 
         if (!app_uuid) {
-            var uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-            app_uuid = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+            app_uuid = NSUUID.UUID().UUIDString;
             userDefaults.setObjectForKey(app_uuid, uuid_key);
             userDefaults.synchronize();
         }
