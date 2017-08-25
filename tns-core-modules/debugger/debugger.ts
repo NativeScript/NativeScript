@@ -90,10 +90,10 @@ export namespace NetworkAgent {
     }
 
     export function responseReceived(requestId: number, result: org.nativescript.widgets.Async.Http.RequestResult, headers: any) {
-        let requestIdStr = requestId.toString();
+        const requestIdStr = requestId.toString();
         // Content-Type and content-type are both common in headers spelling
-        let mimeType: string = <string>headers["Content-Type"] || <string>headers["content-type"];
-        let response: NetworkAgent.Response = {
+        const mimeType: string = <string>headers["Content-Type"] || <string>headers["content-type"] || "application/octet-stream";
+        const response: NetworkAgent.Response = {
             url: result.url || "",
             status: result.statusCode,
             statusText: result.statusText || "",
@@ -102,7 +102,7 @@ export namespace NetworkAgent {
             fromDiskCache: false
         }
 
-        let responseData: NetworkAgent.ResponseData = {
+        const responseData: NetworkAgent.ResponseData = {
             requestId: requestIdStr,
             type: mimeTypeToType(response.mimeType),
             response: response,
@@ -112,17 +112,17 @@ export namespace NetworkAgent {
         global.__inspector.responseReceived(responseData);
         global.__inspector.loadingFinished({ requestId: requestIdStr, timestamp: getTimeStamp() });
 
-        let hasTextContent = responseData.type === "Document" || responseData.type === "Script";
+        const hasTextContent = responseData.type === "Document" || responseData.type === "Script";
         let data;
 
         if (!hasTextContent) {
             if (responseData.type === "Image") {
-                let bitmap = result.responseAsImage;
+                const bitmap = result.responseAsImage;
                 if (bitmap) {
-                    let outputStream = new java.io.ByteArrayOutputStream();
+                    const outputStream = new java.io.ByteArrayOutputStream();
                     bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, outputStream);
 
-                    let base64Image = android.util.Base64.encodeToString(outputStream.toByteArray(), android.util.Base64.DEFAULT);
+                    const base64Image = android.util.Base64.encodeToString(outputStream.toByteArray(), android.util.Base64.DEFAULT);
                     data = base64Image;
                 }
             }
@@ -130,7 +130,7 @@ export namespace NetworkAgent {
             data = result.responseAsString;
         }
 
-        let successfulRequestData: NetworkAgent.SuccessfulRequestData = {
+        const successfulRequestData: NetworkAgent.SuccessfulRequestData = {
             requestId: requestIdStr,
             data: data,
             hasTextContent: hasTextContent
@@ -140,14 +140,14 @@ export namespace NetworkAgent {
     }
 
     export function requestWillBeSent(requestId: number, options: any) {
-        let request: NetworkAgent.Request = {
+        const request: NetworkAgent.Request = {
             url: options.url,
             method: options.method,
             headers: options.headers || {},
             postData: options.content ? options.content.toString() : ""
         }
 
-        let requestData: NetworkAgent.RequestData = {
+        const requestData: NetworkAgent.RequestData = {
             requestId: requestId.toString(),
             url: request.url,
             request: request,
