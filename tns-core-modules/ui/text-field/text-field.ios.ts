@@ -33,6 +33,13 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         return true;
     }
 
+    public textFieldDidBeginEditing(textField: UITextField): void {
+        const owner = this._owner.get();
+        if (owner) {
+          owner.notify({ eventName: TextField.focusEvent, object: owner });
+        }
+    }
+
     public textFieldDidEndEditing(textField: UITextField) {
         const owner = this._owner.get();
         if (owner) {
