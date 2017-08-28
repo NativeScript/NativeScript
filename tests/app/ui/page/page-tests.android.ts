@@ -32,8 +32,10 @@ export function test_NavigateToNewPage_WithAndroidCache() {
     const androidFrame = topmost().android;
     const cachingBefore = androidFrame.cachePagesOnNavigate;
     try {
+        const currentPage = topmost().currentPage;
         androidFrame.cachePagesOnNavigate = true;
         helper.navigateWithHistory(pageFactory);
+        TKUnit.assertNotNull(currentPage.nativeView);
         helper.goBack();
     } finally {
         androidFrame.cachePagesOnNavigate = cachingBefore;
