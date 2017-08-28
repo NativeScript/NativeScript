@@ -16,12 +16,12 @@
     "tns-core-modules": "*"
   },
   "devDependencies": {
-    "tns-platform-declarations": "*",
     "babel-traverse": "6.10.4",
     "babel-types": "6.11.1",
     "babylon": "6.8.3",
     "lazy": "1.0.11",
     "nativescript-dev-typescript": "^0.3.0",
+    "tns-platform-declarations": "*",
     "typescript": "~2.2.1"
   }
 }
