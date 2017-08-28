@@ -398,39 +398,3 @@ function getSDK() {
 
     return SDK;
 }
-
-export function test_AndroidLayerType_BorderWidth() {
-    helper.buildUIAndRunTest(new labelModule.Label(), (views: Array<view.View>) => {
-        let lbl = <labelModule.Label>(views[0]);
-        let androidView = <android.view.View>lbl.android;
-        let originalLayerType = androidView.getLayerType();
-        lbl.borderWidth = 5;
-        TKUnit.assertEqual(androidView.getLayerType(), getSDK() < 18 ? android.view.View.LAYER_TYPE_SOFTWARE : originalLayerType);
-        lbl.borderWidth = 0;
-        TKUnit.assertEqual(androidView.getLayerType(), originalLayerType);
-    });
-};
-
-export function test_AndroidLayerType_BorderRadius() {
-    helper.buildUIAndRunTest(new labelModule.Label(), (views: Array<view.View>) => {
-        let lbl = <labelModule.Label>(views[0]);
-        let androidView = <android.view.View>lbl.android;
-        let originalLayerType = androidView.getLayerType();
-        lbl.borderRadius = 5;
-        TKUnit.assertEqual(androidView.getLayerType(), getSDK() < 18 ? android.view.View.LAYER_TYPE_SOFTWARE : originalLayerType);
-        lbl.borderRadius = 0;
-        TKUnit.assertEqual(androidView.getLayerType(), originalLayerType);
-    });
-};
-
-export function test_AndroidLayerType_ClipPath() {
-    helper.buildUIAndRunTest(new labelModule.Label(), (views: Array<view.View>) => {
-        let lbl = <labelModule.Label>(views[0]);
-        let androidView = <android.view.View>lbl.android;
-        let originalLayerType = androidView.getLayerType();
-        lbl.style.clipPath = "rect(0, 0, 100%, 100%)";
-        TKUnit.assertEqual(androidView.getLayerType(), getSDK() < 18 ? android.view.View.LAYER_TYPE_SOFTWARE : originalLayerType);
-        lbl.style.clipPath = undefined;
-        TKUnit.assertEqual(androidView.getLayerType(), originalLayerType);
-    });
-};
