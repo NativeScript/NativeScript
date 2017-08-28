@@ -1,0 +1,47 @@
+.p-10 {
+    padding: 10 20 10 20;
+}
+
+.m-b-10 {
+    margin-bottom: 10;
+}
+
+.page {
+    background-color: #F2F2F2;
+}
+
+ScrollView {
+    background-color: #FFF;
+}
+
+.bordered {
+    border-width: 5;
+    border-color: green;
+}
+
+.fixed-height {
+    height: 55;
+}
+
+.border-radius {
+    border-radius: 15;
+}
+
+.border-radius-nonuniform {
+    border-radius: 10 20 30 40;
+}
+
+.bordered-nonuniform {
+    border-top-color: red;
+    border-right-color: green;
+    border-bottom-color: blue;
+    border-left-color: purple;
+    border-top-width: 5;
+    border-right-width: 10;
+    border-bottom-width: 15;
+    border-left-width: 20;
+}
+
+.body {
+    font-size: 11;
+}

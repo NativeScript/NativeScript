@@ -1,4 +1,5 @@
-﻿import { TextView as TextViewDefinition } from ".";
+﻿import { ScrollEventData } from "../scroll-view";
+import { TextView as TextViewDefinition } from ".";
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
@@ -9,8 +10,8 @@ import { profile } from "../../profiling";
 
 export * from "../editable-text-base";
 
-class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
-    public static ObjCProtocols = [UITextViewDelegate];
+class UITextViewDelegateImpl extends NSObject implements UIScrollViewDelegate, UITextViewDelegate {
+    public static ObjCProtocols = [UITextViewDelegate, UIScrollViewDelegate];
 
     private _owner: WeakRef<TextView>;
 
@@ -75,6 +76,19 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         }
 
         return true;
+    }
+
+    public scrollViewDidScroll(sv: UIScrollView): void {
+        const owner = this._owner.get();
+        if (owner) {
+            const contentOffset = owner.nativeViewProtected.contentOffset;
+            owner.notify(<ScrollEventData>{
+                object: owner,
+                eventName: "scroll",
+                scrollX: contentOffset.x,
+                scrollY: contentOffset.y
+            });
+        }
     }
 }
 

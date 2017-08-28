@@ -1,4 +1,5 @@
-﻿import { ItemEventData } from ".";
+﻿import { ScrollEventData } from "../scroll-view";
+import { ItemEventData } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, Observable, Color,
     separatorColorProperty, itemTemplatesProperty, layout, EventData

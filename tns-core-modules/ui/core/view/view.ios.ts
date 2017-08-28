@@ -437,7 +437,10 @@ export class View extends ViewCommon {
 
     _setNativeClipToBounds() {
         let backgroundInternal = this.style.backgroundInternal;
-        this.nativeViewProtected.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
+        this.nativeViewProtected.clipsToBounds =
+            this.nativeViewProtected instanceof UIScrollView ||
+            backgroundInternal.hasBorderWidth() ||
+            backgroundInternal.hasBorderRadius();
     }
 }
 View.prototype._nativeBackgroundState = "unset";
