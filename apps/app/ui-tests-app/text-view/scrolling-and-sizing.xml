@@ -17,18 +17,15 @@
         </StackLayout>
 
         <StackLayout class="p-10" row="2">
-            <Label text="border-radius" class="body m-b-10" />
-            <TextView hint="Add your comment..." class="bordered fixed-height border-radius" />
+            <TextView hint="bordered fixed-height border-radius" class="bordered fixed-height border-radius" />
         </StackLayout>
 
         <StackLayout class="p-10" row="2">
-            <Label text="border-radius = weird" class="body m-b-10" />
-            <TextView hint="Add your comment..." class="bordered fixed-height border-radius-nonuniform" />
+            <TextView hint="bordered fixed-height border-radius-nonuniform" class="bordered fixed-height border-radius-nonuniform" />
         </StackLayout>
 
         <StackLayout class="p-10" row="3">
-            <Label text="border-width = weird" class="body m-b-10" />
-            <TextView hint="Add your comment..." class="bordered-nonuniform fixed-height" />
+            <TextView hint="bordered-nonuniform fixed-height" class="bordered-nonuniform fixed-height" />
         </StackLayout>
  
     </StackLayout>
