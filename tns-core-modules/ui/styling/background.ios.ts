@@ -1,3 +1,5 @@
+import { ScrollEventData } from "../scroll-view";
+
 import { Background as BackgroundDefinition } from "./background";
 import { View, Point } from "../core/view";
 import { Color } from "../../color";
@@ -10,15 +12,15 @@ export * from "./background-common";
 interface NativeView extends UIView {
     hasNonUniformBorder: boolean;
 
-    borderLayer: CAShapeLayer;
+    borderLayer: CALayer;
 
     hasBorderMask: boolean;
     borderOriginalMask: CALayer;
 
-    topBorderLayer: CAShapeLayer;
-    rightBorderLayer: CAShapeLayer;
-    bottomBorderLayer: CAShapeLayer;
-    leftBorderLayer: CAShapeLayer;
+    topBorderLayer: CALayer;
+    rightBorderLayer: CALayer;
+    bottomBorderLayer: CALayer;
+    leftBorderLayer: CALayer;
 }
 
 interface Rect {
@@ -37,11 +39,15 @@ export module ios {
         const nativeView = <NativeView>view.nativeViewProtected;
 
         if (nativeView.hasNonUniformBorder) {
+            unsubscribeFromScrollNotifications(view);
             clearNonUniformBorders(nativeView);
         }
 
-        if (background.hasUniformBorderColor() && background.hasBorderRadius()) {
+        const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
+        const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
+        if (background.hasUniformBorderColor() && (hasNonUniformBorderWidths || hasNonUniformBorderRadiuses)) {
             drawUniformColorNonUniformBorders(nativeView, background);
+            subscribeForScrollNotifications(view);
         } else if (background.hasUniformBorder()) {
             const layer = nativeView.layer;
             const borderColor = background.getUniformBorderColor();
@@ -52,6 +58,7 @@ export module ios {
             layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
         } else {
             drawNoRadiusNonUniformBorders(nativeView, background);
+            subscribeForScrollNotifications(view);
         }
 
         // Clip-path should be called after borders are applied.
@@ -66,6 +73,42 @@ export module ios {
         } else {
             setUIColorFromImage(view, nativeView, callback, flip);
         }
+    }
+}
+
+function onScroll(this: void, args: ScrollEventData): void {
+    const view = <View>args.object;
+    const nativeView = view.nativeViewProtected;
+    if (nativeView instanceof UIScrollView) {
+        adjustLayersForScrollView(<any>nativeView);
+    }
+}
+
+function adjustLayersForScrollView(nativeView: UIScrollView & NativeView) {
+    const layer = nativeView.borderLayer;
+    if (layer instanceof CALayer) {
+        // Compensates with transition for the background layers for scrolling in ScrollView based controls.
+        CATransaction.begin();
+        CATransaction.setValueForKey(kCFBooleanTrue, kCATransactionDisableActions);
+        const offset = nativeView.contentOffset;
+        const transform = { a: 1, b: 0, c: 0, d: 1, tx: offset.x, ty: offset.y };
+        layer.setAffineTransform(transform);
+        if (nativeView.layer.mask) {
+            nativeView.layer.mask.setAffineTransform(transform);
+        }
+        CATransaction.commit();
+    }
+}
+
+function unsubscribeFromScrollNotifications(view: View) {
+    if (view.nativeViewProtected instanceof UIScrollView) {
+        view.off("scroll", onScroll);
+    }
+}
+function subscribeForScrollNotifications(view: View) {
+    if (view.nativeViewProtected instanceof UIScrollView) {
+        view.on("scroll", onScroll);
+        adjustLayersForScrollView(<any>view.nativeViewProtected);
     }
 }
 
@@ -507,12 +550,15 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
 }
 
 function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {
-    const layer = nativeView.layer;
-    layer.borderColor = undefined;
-    layer.borderWidth = 0;
-    layer.cornerRadius = 0;
+    const borderLayer = CALayer.layer();
+    nativeView.layer.addSublayer(borderLayer);
+    nativeView.borderLayer = borderLayer;
 
-    const layerBounds = layer.bounds;
+    borderLayer.borderColor = undefined;
+    borderLayer.borderWidth = 0;
+    borderLayer.cornerRadius = 0;
+
+    const layerBounds = nativeView.layer.bounds;
     const layerOrigin = layerBounds.origin;
     const layerSize = layerBounds.size;
 
@@ -555,7 +601,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
         topBorderLayer.fillColor = background.borderTopColor.ios.CGColor;
         topBorderLayer.path = topBorderPath;
 
-        layer.addSublayer(topBorderLayer);
+        borderLayer.addSublayer(topBorderLayer);
         nativeView.topBorderLayer = topBorderLayer;
         hasNonUniformBorder = true;
     }
@@ -573,7 +619,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
         rightBorderLayer.fillColor = background.borderRightColor.ios.CGColor;
         rightBorderLayer.path = rightBorderPath;
 
-        layer.addSublayer(rightBorderLayer);
+        borderLayer.addSublayer(rightBorderLayer);
         nativeView.rightBorderLayer = rightBorderLayer;
         hasNonUniformBorder = true;
     }
@@ -591,7 +637,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
         bottomBorderLayer.fillColor = background.borderBottomColor.ios.CGColor;
         bottomBorderLayer.path = bottomBorderPath;
 
-        layer.addSublayer(bottomBorderLayer);
+        borderLayer.addSublayer(bottomBorderLayer);
         nativeView.bottomBorderLayer = bottomBorderLayer;
         hasNonUniformBorder = true;
     }
@@ -609,7 +655,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
         leftBorderLayer.fillColor = background.borderLeftColor.ios.CGColor;
         leftBorderLayer.path = leftBorderPath;
 
-        layer.addSublayer(leftBorderLayer);
+        borderLayer.addSublayer(leftBorderLayer);
         nativeView.leftBorderLayer = leftBorderLayer;
         hasNonUniformBorder = true;
     }

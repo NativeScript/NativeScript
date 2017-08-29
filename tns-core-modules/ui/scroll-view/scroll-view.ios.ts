@@ -17,7 +17,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
         if (owner) {
             owner.notify(<ScrollEventData>{
                 object: owner,
-                eventName: ScrollViewBase.scrollEvent,
+                eventName: "scroll",
                 scrollX: owner.horizontalOffset,
                 scrollY: owner.verticalOffset
             });

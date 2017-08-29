@@ -52,3 +52,5 @@ apps/hooks/
 apps/node_modules/
 
 package-lock.json
+
+.nsbuildinfo

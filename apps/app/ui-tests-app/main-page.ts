@@ -25,6 +25,7 @@ export function pageLoaded(args: EventData) {
     examples.set("modalview", "modal-view/modal-view");
     examples.set("page", "page/main-page");
     examples.set("perf", "perf/main-page");
+    examples.set("scroll-view", "scroll-view/main-page");
     examples.set("segStyle", "segmented-bar/all");
     examples.set("search-bar", "search-bar/main-page");
     examples.set("tab-view", "tab-view/main-page");

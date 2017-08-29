@@ -16,6 +16,7 @@ export function loadExamples() {
     examples.set("bindings", "list-view/listview-binding");
     examples.set("listview-bg-separator-color", "list-view/listview-bg-separator-color");
     examples.set("csslv", "list-view/csslv");
+    examples.set("scrolling-and-sizing", "list-view/scrolling-and-sizing");
 
     return examples;
 }
