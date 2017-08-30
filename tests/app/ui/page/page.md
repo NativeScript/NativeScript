@@ -16,7 +16,7 @@ Using a page requires the Page module.
 ```
 {%snippet article-set-bindingcontext%}
 ### Creating and navigating to the created page.
-{%snippet artivle-create-navigate-to-page%}
+{%snippet article-create-navigate-to-page%}
 ### Navigating backward is as simple as calling a single method.
 {%snippet article-navigating-backward%}
 ### Pass data to the new page.
