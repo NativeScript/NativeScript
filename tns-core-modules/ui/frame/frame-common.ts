@@ -89,7 +89,6 @@ const entryCreatePage = profile("entry.create", (entry: NavigationEntry): Page =
         throw new Error("Failed to create Page with entry.create() function.");
     }
 
-    page._refreshCss();
     return page;
 });
 

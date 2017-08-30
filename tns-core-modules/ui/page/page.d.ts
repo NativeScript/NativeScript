@@ -254,15 +254,6 @@ export class Page extends ContentView {
      * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
      */
     public onNavigatedFrom(isBackNavigation: boolean): void;
-
-    /**
-     * @private
-     */
-    _refreshCss(): void;
-    /**
-     * @private
-     */ 
-    _getStyleScope(): styleScope.StyleScope;
     //@endprivate
 }
 

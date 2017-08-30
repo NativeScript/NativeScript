@@ -1,7 +1,7 @@
 import { Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
-import { resetCSSProperties } from "../core/properties";
+import { unsetValue } from "../core/properties";
 import {
     SyntaxTree,
     Keyframes as KeyframesDefinition,
@@ -80,6 +80,7 @@ class CSSSource {
     }
 
     get selectors(): RuleSet[] { return this._selectors; }
+    get source(): string { return this._source; }
 
     @profile
     private load(): void {
@@ -190,69 +191,186 @@ if (application.hasLaunched()) {
 }
 
 export class CssState {
-    private _pendingKeyframeAnimations: SelectorCore[];
+    static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
+    static emptyPropertyBag: Readonly<{}> = Object.freeze({});
+    static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
+    static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = { selectors: [], changeMap: new Map() };
 
-    constructor(private view: ViewBase, private match: SelectorsMatch<ViewBase>) {
+    _onDynamicStateChangeHandler: () => void;
+    _appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
+    _appliedPropertyValues: Readonly<{}>;
+    _appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
+
+    _match: SelectorsMatch<ViewBase>;
+    _matchInvalid: boolean;
+
+    constructor(private view: ViewBase) {
+        this._onDynamicStateChangeHandler = () => this.updateDynamicState();
     }
 
-    public get changeMap(): ChangeMap<ViewBase> {
-        return this.match.changeMap;
-    }
-
-    public apply(): void {
-        this.view._cancelAllAnimations();
-        resetCSSProperties(this.view.style);
-
-        let matchingSelectors = this.match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
-        if (this.view.inlineStyleSelector) {
-            matchingSelectors.push(this.view.inlineStyleSelector);
+    /**
+     * Called when a change had occurred that may invalidate the statically matching selectors (class, id, ancestor selectors).
+     * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
+     */
+    public onChange(): void {
+        if (this.view.isLoaded) {
+            this.unsubscribeFromDynamicUpdates();
+            this.updateMatch();
+            this.subscribeForDynamicUpdates();
+            this.updateDynamicState();
+        } else {
+            this._matchInvalid = true;
         }
-
-        matchingSelectors.forEach(s => this.applyDescriptors(s.ruleset));
-        this._pendingKeyframeAnimations = matchingSelectors;
-        this.playPendingKeyframeAnimations();
     }
 
-    public playPendingKeyframeAnimations() {
-        if (this._pendingKeyframeAnimations && this.view.nativeViewProtected) {
-            this._pendingKeyframeAnimations.forEach(s => this.playKeyframeAnimationsFromRuleSet(s.ruleset));
-            this._pendingKeyframeAnimations = null;
+    public onLoaded(): void {
+        if (this._matchInvalid) {
+            this.updateMatch();
         }
+        this.subscribeForDynamicUpdates();
+        this.updateDynamicState();
     }
 
-    private applyDescriptors(ruleset: RuleSet): void {
-        let style = this.view.style;
-        ruleset.declarations.forEach(d => {
-            try {
-                // Use the "css:" prefixed name, so that CSS value source is set.
-                let cssPropName = `css:${d.property}`;
-                if (cssPropName in style) {
-                    style[cssPropName] = d.value;
-                } else {
-                    this.view[d.property] = d.value;
+    public onUnloaded(): void {
+        this.unsubscribeFromDynamicUpdates();
+    }
+
+    @profile
+    private updateMatch() {
+        this._match = this.view._styleScope ? this.view._styleScope.matchSelectors(this.view) : CssState.emptyMatch;
+        this._matchInvalid = false;
+    }
+
+    @profile
+    private updateDynamicState(): void {
+        const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
+
+        this.stopKeyframeAnimations();
+        this.setPropertyValues(matchingSelectors);
+        this.playKeyframeAnimations(matchingSelectors);
+    }
+
+    private playKeyframeAnimations(matchingSelectors: SelectorCore[]): void {
+        const animations: kam.KeyframeAnimation[] = [];
+
+        matchingSelectors.forEach(selector => {
+            let ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset[animationsSymbol];
+            if (ruleAnimations) {
+                ensureKeyframeAnimationModule();
+                for (let animationInfo of ruleAnimations) {
+                    let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+                    if (animation) {
+                        animations.push(animation);
+                    }
                 }
-            } catch (e) {
-                traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
             }
         });
+
+        animations.forEach(animation => animation.play(<View>this.view));
+        Object.freeze(animations);
+        this._appliedAnimations = animations;
     }
 
-    private playKeyframeAnimationsFromRuleSet(ruleset: RuleSet): void {
-        let ruleAnimations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
-        if (ruleAnimations) {
-            ensureKeyframeAnimationModule();
-            for (let animationInfo of ruleAnimations) {
-                let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
-                if (animation) {
-                    this.view._registerAnimation(animation);
-                    animation.play(<View>this.view)
-                        .then(() => { this.view._unregisterAnimation(animation); })
-                        .catch((e) => { this.view._unregisterAnimation(animation); });
+    private stopKeyframeAnimations(): void {
+        this._appliedAnimations
+            .filter(animation => animation.isPlaying)
+            .forEach(animation => animation.cancel());
+        this._appliedAnimations = CssState.emptyAnimationArray;
+    }
+
+    /**
+     * Calculate the difference between the previously applied property values,
+     * and the new set of property values that have to be applied for the provided selectors.
+     * Apply the values and ensure each property setter is called at most once to avoid excessive change notifications.
+     * @param matchingSelectors 
+     */
+    private setPropertyValues(matchingSelectors: SelectorCore[]): void {
+        const newPropertyValues = new this.view.style.PropertyBag();
+        matchingSelectors.forEach(selector =>
+            selector.ruleset.declarations.forEach(declaration =>
+                newPropertyValues[declaration.property] = declaration.value));
+        Object.freeze(newPropertyValues);
+
+        this.view._batchUpdate(() => {
+            const oldProperties = this._appliedPropertyValues;
+            for(const key in oldProperties) {
+                if (!(key in newPropertyValues)) {
+                    if (key in this.view.style) {
+                        this.view.style[`css:${key}`] = unsetValue;
+                    } else {
+                        // TRICKY: How do we unset local value?
+                    }
                 }
             }
-        }
+            for(const property in newPropertyValues) {
+                if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+                    continue;
+                }
+                const value = newPropertyValues[property];
+                try {
+                    if (property in this.view.style) {
+                        this.view.style[`css:${property}`] = value;
+                    } else {
+                        this.view[property] = value;
+                    }
+                } catch (e) {
+                    traceWrite(`Failed to apply property [${property}] with value [${value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                }
+            }
+        });
+
+        this._appliedPropertyValues = newPropertyValues;
+    }
+
+    private subscribeForDynamicUpdates(): void {
+        const changeMap = this._match.changeMap;
+        changeMap.forEach((changes, view) => {
+            if (changes.attributes) {
+                changes.attributes.forEach(attribute => {
+                    view.addEventListener(attribute + "Change", this._onDynamicStateChangeHandler);
+                });
+            }
+            if (changes.pseudoClasses) {
+                changes.pseudoClasses.forEach(pseudoClass => {
+                    let eventName = ":" + pseudoClass;
+                    view.addEventListener(":" + pseudoClass, this._onDynamicStateChangeHandler);
+                    if (view[eventName]) {
+                        view[eventName](+1);
+                    }
+                });
+            }
+        });
+        this._appliedChangeMap = changeMap;
+    }
+
+    private unsubscribeFromDynamicUpdates(): void {
+        this._appliedChangeMap.forEach((changes, view) => {
+            if (changes.attributes) {
+                changes.attributes.forEach(attribute => {
+                    view.removeEventListener("onPropertyChanged:" + attribute, this._onDynamicStateChangeHandler);
+                });
+            }
+            if (changes.pseudoClasses) {
+                changes.pseudoClasses.forEach(pseudoClass => {
+                    let eventName = ":" + pseudoClass;
+                    view.removeEventListener(eventName, this._onDynamicStateChangeHandler);
+                    if (view[eventName]) {
+                        view[eventName](-1);
+                    }
+                });
+            }
+        });
+        this._appliedChangeMap = CssState.emptyChangeMap;
+    }
+
+    toString(): string {
+        return `${this.view}._cssState`;
     }
 }
+CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;
+CssState.prototype._appliedPropertyValues = CssState.emptyPropertyBag;
+CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
+CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
 
@@ -284,6 +402,10 @@ export class StyleScope {
         this.appendCss(cssString, cssFileName)
     }
 
+    public addCssFile(cssFileName: string): void {
+        this.appendCss(null, cssFileName);
+    }
+
     @profile
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;
@@ -297,14 +419,14 @@ export class StyleScope {
 
     @profile
     private appendCss(cssString: string, cssFileName?): void {
-        if (!cssString) {
+        if (!cssString && !cssFileName) {
             return;
         }
 
-        this._css = this._css + cssString;
         this._reset();
-        let parsedCssSelectors = CSSSource.fromSource(cssString, this._keyframes, cssFileName);
-        this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors);
+        let parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromFile(cssFileName, this._keyframes);
+        this._css = this._css + parsedCssSelectors.source;
+        this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors.selectors); 
         this._localCssSelectorVersion++;
         this.ensureSelectors();
     }
@@ -354,13 +476,9 @@ export class StyleScope {
     }
 
     @profile
-    public matchSelectors(view: ViewBase): void {
+    public matchSelectors(view: ViewBase): SelectorsMatch<ViewBase> {
         this.ensureSelectors();
-
-        let state = this._selectors.query(view);
-
-        let nextState = new CssState(view, state);
-        view._setCssState(nextState);
+        return this._selectors.query(view);
     }
 
     public query(node: Node): SelectorCore[] {
@@ -410,20 +528,23 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
         fileName = fileName.replace("~/", "");
     }
 
-    let local = path.join(appDirectory, fileName);
-    if (fileExists(local)) {
-        return local;
+    const isAbsolutePath = fileName.indexOf("/") === 0;
+    const absolutePath = isAbsolutePath ? fileName : path.join(appDirectory, fileName);
+    if (fileExists(absolutePath)) {
+        return absolutePath;
     }
 
-    let external = path.join(appDirectory, "tns_modules", fileName);
-    if (fileExists(external)) {
-        return external;
+    if (!isAbsolutePath) {
+        const external = path.join(appDirectory, "tns_modules", fileName);
+        if (fileExists(external)) {
+            return external;
+        }
     }
 
     return null;
 }
 
-export function applyInlineStyle(view: ViewBase, styleStr: string) {
+export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
     const style = view.style;
@@ -441,7 +562,7 @@ export function applyInlineStyle(view: ViewBase, styleStr: string) {
             traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
         }
     });
-}
+});
 
 function isKeyframe(node: CssNode): node is KeyframesDefinition {
     return node.type === "keyframes";

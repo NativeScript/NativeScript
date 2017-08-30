@@ -22,14 +22,12 @@ export class PageBase extends ContentView implements PageDefinition {
     public static showingModallyEvent = "showingModally";
 
     protected _closeModalCallback: Function;
-    private _modalContext: any;
 
+    private _modalContext: any;
     private _navigationContext: any;
 
     private _actionBar: ActionBar;
-    private _cssAppliedVersion: number;
 
-    public _styleScope: StyleScope; // same as in ViewBase, but strongly typed
     public _modal: PageBase;
     public _fragmentTag: string;
     
@@ -51,8 +49,7 @@ export class PageBase extends ContentView implements PageDefinition {
     }
     set css(value: string) {
         this._styleScope.css = value;
-        this._cssFiles = {};
-        this._refreshCss();
+        this._onCssStateChange();
     }
 
     get actionBar(): ActionBar {
@@ -94,52 +91,14 @@ export class PageBase extends ContentView implements PageDefinition {
         return this;
     }
 
-    @profile
-    public onLoaded(): void {
-        this._refreshCss();
-        super.onLoaded();
-    }
-
-    public onUnloaded() {
-        const styleScope = this._styleScope;
-        super.onUnloaded();
-        this._styleScope = styleScope;
-    }
-
     public addCss(cssString: string): void {
-        this._addCssInternal(cssString);
+        this._styleScope.addCss(cssString);
+        this._onCssStateChange();
     }
 
-    private _addCssInternal(cssString: string, cssFileName?: string): void {
-        this._styleScope.addCss(cssString, cssFileName);
-        this._refreshCss();
-    }
-
-    private _cssFiles = {};
     public addCssFile(cssFileName: string) {
-        if (cssFileName.indexOf("~/") === 0) {
-            cssFileName = path.join(knownFolders.currentApp().path, cssFileName.replace("~/", ""));
-        }
-        if (!this._cssFiles[cssFileName]) {
-            if (File.exists(cssFileName)) {
-                const file = File.fromPath(cssFileName);
-                const text = file.readTextSync();
-                if (text) {
-                    this._addCssInternal(text, cssFileName);
-                    this._cssFiles[cssFileName] = true;
-                }
-            }
-        }
-    }
-
-    // Used in component-builder.ts
-    @profile
-    public _refreshCss(): void {
-        const scopeVersion = this._styleScope.ensureSelectors();
-        if (scopeVersion !== this._cssAppliedVersion) {
-            this._resetStyles();
-            this._cssAppliedVersion = scopeVersion;
-        }
+        this._styleScope.addCssFile(cssFileName);
+        this._onCssStateChange();
     }
 
     public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
@@ -268,10 +227,6 @@ export class PageBase extends ContentView implements PageDefinition {
         this.notify(args);
     }
 
-    public _getStyleScope(): StyleScope {
-        return this._styleScope;
-    }
-
     public eachChildView(callback: (child: View) => boolean) {
         super.eachChildView(callback);
         callback(this.actionBar);
@@ -281,17 +236,8 @@ export class PageBase extends ContentView implements PageDefinition {
         return (this.content ? 1 : 0) + (this.actionBar ? 1 : 0);
     }
 
-    private _resetCssValues() {
-        const resetCssValuesFunc = (view: View): boolean => {
-            view._batchUpdate(() => {
-                view._cancelAllAnimations();
-                resetCSSProperties(view.style);
-            });
-            return true;
-        };
-
-        resetCssValuesFunc(this);
-        eachDescendant(this, resetCssValuesFunc);
+    _inheritStyleScope(styleScope: StyleScope): void {
+        // The Page have its own scope.
     }
 }
 

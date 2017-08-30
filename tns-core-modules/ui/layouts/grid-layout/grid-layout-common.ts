@@ -281,27 +281,14 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
         this.requestLayout();
     }
 
-    _applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
-        if (attributeName === "columns") {
-            this._setColumns(attributeValue);
-            return true;
-        }
-        else if (attributeName === "rows") {
-            this._setRows(attributeValue);
-            return true;
-        }
-
-        return super._applyXmlAttribute(attributeName, attributeValue);
-    }
-
-    private _setColumns(value: string) {
-        this.removeColumns();
-        parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addColumn(spec));
-    }
-
-    private _setRows(value: string) {
+    set rows(value: string) {
         this.removeRows();
         parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addRow(spec));
+    }
+
+    set columns(value: string) {
+        this.removeColumns();
+        parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addColumn(spec));
     }
 }
 

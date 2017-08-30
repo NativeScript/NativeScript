@@ -67,6 +67,7 @@ export function test_applies_css_changes_to_application_rules_after_page_load() 
     helper.buildUIAndRunTest(label1, function (views: Array<viewModule.View>) {
         application.addCss(".applicationChangedLabelAfter { color: blue; }");
         label1.className = "applicationChangedLabelAfter";
+        console.log("IsLoaded: " + label1.isLoaded);
         helper.assertViewColor(label1, "#0000FF");
     });
 }
@@ -615,7 +616,7 @@ export function test_setInlineStyle_setsLocalValues() {
     stack.addChild(testButton);
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
-        (<any>testButton)._applyInlineStyle("color: red;");
+        (<any>testButton).style = "color: red;";
         helper.assertViewColor(testButton, "#FF0000");
     });
 }
@@ -624,7 +625,7 @@ export function test_setStyle_throws() {
     const testButton = new buttonModule.Button();
 
     TKUnit.assertThrows(function () {
-        (<any>testButton).style = "background-color: red;";
+        (<any>testButton).style = {};
     }, "View.style property is read-only.");
 }
 

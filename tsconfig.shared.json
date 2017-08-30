@@ -10,7 +10,7 @@
         "removeComments": true,
         "experimentalDecorators": true,
         "diagnostics": true,
-        "sourceMap": true,
+        "inlineSourceMap": true,
         "jsx": "react",
         "reactNamespace": "UIBuilder",
         "lib": [

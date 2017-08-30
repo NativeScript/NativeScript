@@ -67,7 +67,7 @@ export interface Size {
  * This class is the base class for all UI components. 
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
  */
-export abstract class View extends ViewBase implements ApplyXmlAttributes {
+export abstract class View extends ViewBase {
     /**
      * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
      */
@@ -82,8 +82,6 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
      * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
      */
     bindingContext: any;
-
-    //----------Style property shortcuts----------
 
     /**
      * Gets or sets the border color of the view.
@@ -413,12 +411,6 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
      */
     public focus(): boolean;
 
-    /**
-     * Sets in-line CSS string as style.
-     * @param style - In-line CSS string. 
-     */
-    public setInlineStyle(style: string): void;
-
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
     /**
@@ -490,7 +482,6 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
 
     _eachLayoutView(callback: (View) => void): void;
 
-    public _applyXmlAttribute(attribute: string, value: any): boolean;
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
@@ -645,19 +636,6 @@ export interface AddChildFromBuilder {
      * @param value - Value of the element.
      */
     _addChildFromBuilder(name: string, value: any): void;
-}
-
-/**
- * Defines an interface used to create a member of a class from string representation (used in xml declaration).
- */
-export interface ApplyXmlAttributes {
-    /**
-     * Called for every attribute in xml declaration. <... fontWeight="bold" ../>
-     * @param attributeName - the name of the attribute (fontAttributes)
-     * @param attrValue - the value of the attribute (bold)
-     * Should return true if this attribute is handled and there is no need default handler to process it.
-     */
-    _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
 }
 
 export const automationTextProperty: Property<View, string>;

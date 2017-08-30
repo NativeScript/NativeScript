@@ -49,7 +49,7 @@ export function getCurrentPage(): Page {
 function applySelectors(view: View) {
     let currentPage = getCurrentPage();
     if (currentPage) {
-        let styleScope = currentPage._getStyleScope();
+        let styleScope = currentPage._styleScope;
         if (styleScope) {
             styleScope.matchSelectors(view);
         }

@@ -1,0 +1,8 @@
+<Page xmlns:btnCount="ui/lifecycle/pages/button-counter">
+    <StackLayout id="stack">
+        <btnCount:Button id="btn1" text="one" class="nocolor" />
+        <btnCount:Button id="btn2" text="two" class="red" />
+        <btnCount:Button id="btn3" text="three" class="blue" />
+        <btnCount:Button id="btn4" text="four" class="red blue" />
+    </StackLayout>
+</Page>

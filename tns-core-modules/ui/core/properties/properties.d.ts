@@ -77,6 +77,7 @@ export class CssProperty<T extends Style, U> {
     public readonly setNative: symbol;
     public readonly name: string;
     public readonly cssName: string;
+    public readonly cssLocalName: string;
     public readonly defaultValue: U;
     public register(cls: { prototype: T }): void;
     public isSet(instance: T): boolean;
@@ -92,7 +93,7 @@ export class ShorthandProperty<T extends Style, P> {
     public readonly name: string;
     public readonly cssName: string;
 
-    public register(cls: { prototype: T }): void;
+    public register(cls: typeof Style): void;
 }
 
 export class CssAnimationProperty<T extends Style, U> {
@@ -100,11 +101,10 @@ export class CssAnimationProperty<T extends Style, U> {
 
     public readonly getDefault: symbol;
     public readonly setNative: symbol;
-    public readonly key: symbol;
 
     public readonly name: string;
     public readonly cssName: string;
-    public readonly native: symbol;
+    public readonly cssLocalName: string;
 
     readonly keyframe: string;
 

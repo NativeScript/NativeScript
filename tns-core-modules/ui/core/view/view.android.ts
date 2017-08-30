@@ -100,7 +100,6 @@ export class View extends ViewCommon {
             this.nativeViewProtected.setClickable(this._isClickable);
         }
 
-        this._cancelAllAnimations();
         super.onUnloaded();
     }
 

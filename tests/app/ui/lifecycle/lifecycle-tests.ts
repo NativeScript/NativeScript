@@ -1,7 +1,7 @@
 import * as helper from "../helper";
 import * as btnCounter from "./pages/button-counter";
 import * as TKUnit from "../../TKUnit";
-import { isIOS } from "tns-core-modules/platform";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.
 
@@ -118,4 +118,51 @@ export function test_navigating_away_does_not_excessively_reset() {
     // NOTE: Recycling may mess this up so feel free to change the test,
     // but ensure a reasonable amount of native setters were called when the views navigate away
     assert(1);
+}
+
+export function test_css_sets_properties() {
+    const page = helper.navigateToModule("ui/lifecycle/pages/page-two");
+    const buttons = ["btn1", "btn2", "btn3", "btn4"].map(id => page.getViewById<btnCounter.Button>(id));
+    buttons.forEach(btn => {
+        TKUnit.assertEqual(btn.colorSetNativeCount, 1, `Expected ${btn.id}'s native color to propagated exactly once when inflating from xml.`);
+        TKUnit.assertEqual(btn.colorPropertyChangeCount, 1, `Expected ${btn.id}'s colorChange to be fired exactly once when inflating from xml.`);
+    });
+
+    buttons.forEach(btn => {
+        btn.className = "";
+    });
+
+    const expectedChangesAfterClearingClasses = [1, 2, 2, 2];
+    for (var i = 0; i < buttons.length; i++) {
+        TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedChangesAfterClearingClasses[i], `Expected ${buttons[i].id} native set after clear.`);
+        TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterClearingClasses[i], `Expected ${buttons[i].id} change notifications after clear.`);
+    }
+
+    buttons[0].className = "nocolor";
+    buttons[1].className = "red";
+    buttons[2].className = "blue";
+    buttons[3].className = "red blue";
+
+    const expectedChangesAfterResettingClasses = [1, 3, 3, 3];
+    for (let i = 0; i < buttons.length; i++) {
+        TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} native set after classes are reapplied.`);
+        TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} change notifications classes are reapplied.`);
+    }
+
+    const stack: any = page.getViewById("stack");
+    page.content = null;
+
+    for (let i = 0; i < buttons.length; i++) {
+        TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} native set to not be called when removed from page.`);
+        TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} change notifications for css properties to not occur when removed from page.`);
+    }
+
+    page.content = stack;
+
+    // TODO: The check counts here should be the same as the counts before removing from the page.
+    const expectedNativeSettersAfterReaddedToPage = isAndroid ? [2, 4, 4, 4] : expectedChangesAfterResettingClasses;
+    for (let i = 0; i < buttons.length; i++) {
+        TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedNativeSettersAfterReaddedToPage[i], `Expected ${buttons[i].id} native set to not be called when added to page.`);
+        TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} change notifications for css properties to not occur when added to page.`);
+    }
 }

@@ -168,11 +168,6 @@ export abstract class ViewBase extends Observable {
     public className: string;
 
     /**
-     * Gets or sets inline style selectors for this view.   
-     */
-    public inlineStyleSelector: SelectorCore;
-
-    /**
      * Gets owner page. This is a read-only property.
      */
     public readonly page: Page;
@@ -220,16 +215,22 @@ export abstract class ViewBase extends Observable {
     _domId: number;
 
     _cssState: any /* "ui/styling/style-scope" */;
-    _setCssState(next: any /* "ui/styling/style-scope" */);
-    _resetStyles();
-    _registerAnimation(animation: KeyframeAnimation);
-    _unregisterAnimation(animation: KeyframeAnimation);
-    _cancelAllAnimations();
+    /**
+     * @private
+     * Notifies each child's css state for change, recursively.
+     * Either the style scope, className or id properties were changed. 
+     */
+    _onCssStateChange(): void;
 
     public cssClasses: Set<string>;
     public cssPseudoClasses: Set<string>;
 
     public _goToVisualState(state: string): void;
+    /**
+     * This used to be the way to set attribute values in early {N} versions.
+     * Now attributes are expected to be set as plain properties on the view instances.
+     * @deprecated
+     */
     public _applyXmlAttribute(attribute, value): boolean;
     public setInlineStyle(style: string): void;
 
@@ -294,7 +295,7 @@ export abstract class ViewBase extends Observable {
     /**
      * @protected
      * @unstable
-     * A widget can call this method to discard mathing css pseudo class.
+     * A widget can call this method to discard matching css pseudo class.
      */
     public deletePseudoClass(name: string): void;
 
@@ -332,6 +333,11 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     _setupAsRootView(context: any): void;
+
+    /**
+     * @private
+     */
+    _inheritStyleScope(styleScope: any /* StyleScope */): void;
     //@endprivate
 }
 
