@@ -238,6 +238,10 @@ allTests["SEARCH-BAR"] = searchBarTests;
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
+const testsSuitesWithLongDelay = {
+    HTTP: 15 * 1000,
+}
+
 const testsWithLongDelay = {
     testLocation: 10000,
     testLocationOnce: 10000,
@@ -433,7 +437,7 @@ export function runAll(testSelector?: string) {
                 if (test.setUp) {
                     testsQueue.push(new TestInfo(test.setUp, test));
                 }
-                const testTimeout = testsWithLongDelay[testName];
+                const testTimeout = testsWithLongDelay[testName] || testsSuitesWithLongDelay[name];
                 testsQueue.push(new TestInfo(testFunction, test, true, name + "." + testName, false, null, testTimeout));
                 if (test.tearDown) {
                     testsQueue.push(new TestInfo(test.tearDown, test));
