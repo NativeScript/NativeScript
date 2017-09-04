@@ -14,12 +14,12 @@ export * from "../../styling/style-properties";
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
 /**
- * Denotes a length number that is in device independent pixels units.
+ * Denotes a length number that is in device independent pixel units.
  */
 export type dip = number;
 
 /**
- * Denotes a length number that is in phisical device pixels.
+ * Denotes a length number that is in physical device pixels.
  */
 export type px = number;
 
@@ -576,7 +576,7 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
 }
 
 /**
- * Base class for all UI components that implements custom layouts. 
+ * Base class for all UI components that implement custom layouts. 
  */
 export class CustomLayoutView extends View {
     //@private
