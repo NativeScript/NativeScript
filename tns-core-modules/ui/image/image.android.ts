@@ -1,5 +1,5 @@
 ﻿import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
+    ImageSource, ImageAsset, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
 import { knownFolders } from "../../file-system";
@@ -75,7 +75,7 @@ export class Image extends ImageBase {
         this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());        
     }
 
-    public _createImageSourceFromSrc(value: string | ImageSource) {
+    public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset) {
         const imageView = this.nativeViewProtected;
         if (!imageView) {
             return;

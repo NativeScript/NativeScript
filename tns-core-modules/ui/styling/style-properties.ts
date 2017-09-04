@@ -1,5 +1,5 @@
 // Types
-import { 
+import {
     Transformation,
     TransformationValue,
     TransformFunctionsInfo,
@@ -456,13 +456,13 @@ const TRANSFORMATIONS = Object.freeze([
 const STYLE_TRANSFORMATION_MAP = Object.freeze({
     "scale": value => ({ property: "scale", value }),
     "scale3d": value => ({ property: "scale", value }),
-    "scaleX": ({x}) => ({ property: "scale", value: { x, y: IDENTITY_TRANSFORMATION.scale.y } }),
-    "scaleY": ({y}) => ({ property: "scale", value: { y, x: IDENTITY_TRANSFORMATION.scale.x } }),
+    "scaleX": ({ x }) => ({ property: "scale", value: { x, y: IDENTITY_TRANSFORMATION.scale.y } }),
+    "scaleY": ({ y }) => ({ property: "scale", value: { y, x: IDENTITY_TRANSFORMATION.scale.x } }),
 
     "translate": value => ({ property: "translate", value }),
     "translate3d": value => ({ property: "translate", value }),
-    "translateX": ({x}) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
-    "translateY": ({y}) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
+    "translateX": ({ x }) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
+    "translateY": ({ y }) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
 
     "rotate": value => ({ property: "rotate", value }),
 });
@@ -501,12 +501,12 @@ export function transformConverter(text: string): TransformFunctionsInfo {
         return fullTransformations;
     }
 
-   const affineMatrix = transformations
+    const affineMatrix = transformations
         .map(getTransformMatrix)
         .reduce(multiplyAffine2d)
-   const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
+    const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
 
-   return decompose2DTransformMatrix(cssMatrix);
+    return decompose2DTransformMatrix(cssMatrix);
 }
 
 // using general regex and manually checking the matched
@@ -528,8 +528,8 @@ function parseTransformString(text: string): Transformation[] {
     return matches;
 }
 
-function normalizeTransformation({ property, value }: Transformation) { 
-    return STYLE_TRANSFORMATION_MAP[property](value);
+function normalizeTransformation({ property, value }: Transformation): Transformation {
+    return <any>STYLE_TRANSFORMATION_MAP[property](value);
 }
 
 function convertTransformValue(property: string, stringValue: string)
