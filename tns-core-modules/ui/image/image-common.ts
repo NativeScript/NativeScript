@@ -5,7 +5,7 @@ import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-s
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
 
 export * from "../core/view";
-export { ImageSource, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
+export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
 export abstract class ImageBase extends View implements ImageDefinition {
     public imageSource: ImageSource;
@@ -24,7 +24,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
     /**
      * @internal
      */
-    public _createImageSourceFromSrc(value: string | ImageSource): void {
+    public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset): void {
         const originalValue = value;
         const sync = this.loadMode === "sync";
         if (typeof value === "string" || value instanceof String) {
