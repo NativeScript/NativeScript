@@ -1,6 +1,28 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 3.2.0 (2017, September 07)
+
+### Fixed
+
+- [(# 4728)](https://github.com/NativeScript/NativeScript/issues/4728) Android: A crash where some Drawables do not implement getConstantState
+- [(# 4424)](https://github.com/NativeScript/NativeScript/issues/4424) Android: Slider's value does not work when maxValue set
+- [(# 4230)](https://github.com/NativeScript/NativeScript/issues/4230) IOS: A crash when setting FontFamily to Font-Awesome on a Span
+- [(# 4733)](https://github.com/NativeScript/NativeScript/issues/4733) IOS: A TextView scrolling and sizing issue
+- [(# 4302)](https://github.com/NativeScript/NativeScript/issues/4302) IOS: Icon fonts does not work for TabViewItem
+- [(# 4582)](https://github.com/NativeScript/NativeScript/issues/4582) IOS: Label with formatted text and theme classes crashes
+- [(# 4138)](https://github.com/NativeScript/NativeScript/issues/4138) Cannot change TabView icon
+- [(# 4419)](https://github.com/NativeScript/NativeScript/issues/4419) Debugger.js exception for HTTP requests with no Content-Type
+- [(# 4650)](https://github.com/NativeScript/NativeScript/issues/4650) Image replacement is not respected during tns run android 
+- [(# 3963)](https://github.com/NativeScript/NativeScript/issues/3963) ListView multiple item templates do not work inside a TabView
+- [(# 4647)](https://github.com/NativeScript/NativeScript/issues/4647) Rename utils.ad.getPalleteColor to getPaletteColor
+- [(# 4725)](https://github.com/NativeScript/NativeScript/pull/4725) Remove ListView selected state when rowHeight is set
+
+### New
+- [(# 4808)](https://github.com/NativeScript/NativeScript/issues/4808) Android: Keep nativeViews when navigating forward
+- [(# 4464)](https://github.com/NativeScript/NativeScript/issues/4464) Enable overlap for custom transitions
+- [(# 2181)](https://github.com/NativeScript/NativeScript/issues/2181) Focus and blur events
+
 ## 3.1.1 (2017, August 08)
 
 ### Fixed
@@ -17,8 +39,6 @@ Cross Platform Modules Changelog
 - [(# 4522)](https://github.com/NativeScript/NativeScript/issues/4522) Allow toggling of ScrollBar indicators on ScrollView 
 - [(# 2740)](https://github.com/NativeScript/NativeScript/issues/2740) Improved ActionBar CSS Support 
 - [(# 1664)](https://github.com/NativeScript/NativeScript/issues/1664) Implemented css line-height property
-
-
 
 ## 3.1.0 (2017, June 22)
 
