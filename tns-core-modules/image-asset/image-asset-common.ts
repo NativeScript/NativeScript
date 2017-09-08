@@ -4,9 +4,10 @@ import * as platform from "../platform";
 
 export class ImageAsset  extends observable.Observable implements definition.ImageAsset {
     private _options: definition.ImageAssetOptions;
-    private _ios: PHAsset;
     private _nativeImage: any;
-    private _android: string; //file name of the image
+
+    ios: any;
+    android: any;
 
     get options(): definition.ImageAssetOptions {
         return this._options;
@@ -14,22 +15,6 @@ export class ImageAsset  extends observable.Observable implements definition.Ima
 
     set options(value: definition.ImageAssetOptions) {
         this._options = value;
-    }
-
-    get ios(): PHAsset {
-        return this._ios;
-    }
-
-    set ios(value: PHAsset) {
-        this._ios = value;
-    }
-
-    get android(): string {
-        return this._android;
-    }
-
-    set android(value: string) {
-        this._android = value;
     }
 
     get nativeImage(): any {

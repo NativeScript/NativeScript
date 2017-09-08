@@ -23,8 +23,8 @@ export abstract class FontBase implements FontDefinition {
         public readonly fontWeight: FontWeight) {
     }
 
-    public abstract getAndroidTypeface(): android.graphics.Typeface;
-    public abstract getUIFont(defaultFont: UIFont): UIFont;
+    public abstract getAndroidTypeface(): any /* android.graphics.Typeface */;
+    public abstract getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
     public abstract withFontFamily(family: string): FontBase;
     public abstract withFontStyle(style: string): FontBase;
     public abstract withFontWeight(weight: string): FontBase;

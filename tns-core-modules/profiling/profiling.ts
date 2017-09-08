@@ -1,5 +1,6 @@
 declare var __startCPUProfiler: any;
 declare var __stopCPUProfiler: any;
+declare var org;
 
 import { TimerInfo as TimerInfoDefinition, InstrumentationMode } from ".";
 

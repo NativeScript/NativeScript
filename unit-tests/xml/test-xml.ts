@@ -1,6 +1,5 @@
 import {assert} from "chai";
-//TODO: use a path mapping to the "xml" module after upgrading to TS 2.1
-var xml = require("../tns-core-modules/xml");
+const xml = require("tns-core-modules/xml");
 
 describe("xml parser", () => {
     let last_element = null;

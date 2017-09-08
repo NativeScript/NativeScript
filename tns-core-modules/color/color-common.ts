@@ -68,7 +68,7 @@ export class Color implements definition.Color {
         return this._name;
     }
 
-    get ios(): UIColor {
+    get ios(): any {
         return undefined;
     }
 

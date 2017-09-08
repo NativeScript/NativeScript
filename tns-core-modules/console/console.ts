@@ -5,6 +5,9 @@ const enum MessageType {
     error = 3
 }
 
+declare function __time(): number;
+declare var android;
+
 function __message(message: any, level: string) {
     if ((<any>global).__consoleMessage) {
         (<any>global).__consoleMessage(message, level);
@@ -227,7 +230,7 @@ export class Console {
     }
 
     private timeMillis() {
-        return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
+        return __time(); // 1 ms = 1000000 ns
     }
 
     public time(reportName: string): void {
