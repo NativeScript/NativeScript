@@ -10,7 +10,7 @@ import { isString, isDefined } from "../../utils/types";
 import { ComponentModule, setPropertyValue, getComponentModule } from "./component-builder";
 import { platformNames, device } from "../../platform";
 import { resolveFileName } from "../../file-system/file-name-resolver";
-import { profile } from "tns-core-modules/profiling";
+import { profile } from "../../profiling";
 import * as traceModule from "../../trace";
 
 const ios = platformNames.ios.toLowerCase();

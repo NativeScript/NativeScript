@@ -22,12 +22,6 @@
         "tns-platform-declarations/references.d.ts",
         "tns-core-modules/references.d.ts",
         "tns-platform-declarations/ios/objc-x86_64/",
-        "node-tests/"
-    ],
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "tns-core-modules/*": ["tns-core-modules/*"]
-        }
-    }
+        "unit-tests/common-types.d.ts"
+    ]
 }

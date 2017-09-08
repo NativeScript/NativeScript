@@ -9,6 +9,11 @@ import {
     Node as CssNode,
 } from "../../css";
 import {
+    CSS3Parser,
+    CSSNativeScript
+} from "../../css/parser";
+
+import {
     RuleSet,
     SelectorsMap,
     SelectorCore,
@@ -42,6 +47,16 @@ function ensureCssAnimationParserModule() {
     }
 }
 
+let parser: "rework" | "nativescript" = "rework";
+try {
+    const appConfig = require("~/package.json");
+    if (appConfig && appConfig.cssParser === "nativescript") {
+        parser = "nativescript";
+    }
+} catch(e) {
+    //
+}
+
 export function mergeCssSelectors(): void {
     applicationCssSelectors = applicationSelectors.slice();
     applicationCssSelectors.push.apply(applicationCssSelectors, applicationAdditionalSelectors);
@@ -58,25 +73,49 @@ const pattern: RegExp = /('|")(.*?)\1/;
 
 class CSSSource {
     private _selectors: RuleSet[] = [];
-    private _ast: SyntaxTree;
-
     private static cssFilesCache: { [path: string]: CSSSource } = {};
 
-    private constructor(private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source?: string) {
-        if (this._file && !this._source) {
-            this.load();
-        }
+    private constructor(private _ast: SyntaxTree, private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source: string) {
         this.parse();
     }
 
+    public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
+        try {
+            const cssOrAst = global.loadModule(uri);
+            if (cssOrAst) {
+                if (typeof cssOrAst === "string") {
+                    return CSSSource.fromSource(cssOrAst, keyframes, uri);
+                } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
+                    return CSSSource.fromAST(cssOrAst, keyframes, uri);
+                } else {
+                    // Probably a webpack css-loader exported object.
+                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, uri);
+                }
+            }
+        } catch(e) {
+            //
+        }
+        return CSSSource.fromFile(uri, keyframes);
+    }
+
     public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
+        const file = CSSSource.resolveCSSPathFromURL(url);
+        return new CSSSource(undefined, url, file, keyframes, undefined);
+    }
+
+    @profile
+    public static resolveCSSPathFromURL(url: string): string {
         const app = knownFolders.currentApp().path;
         const file = resolveFileNameFromUrl(url, app, File.exists);
-        return new CSSSource(url, file, keyframes, undefined);
+        return file;
     }
 
     public static fromSource(source: string, keyframes: KeyframesMap, url?: string): CSSSource {
-        return new CSSSource(url, undefined, keyframes, source);
+        return new CSSSource(undefined, url, undefined, keyframes, source);
+    }
+
+    public static fromAST(ast: SyntaxTree, keyframes: KeyframesMap, url?: string): CSSSource {
+        return new CSSSource(ast, url, undefined, keyframes, undefined);
     }
 
     get selectors(): RuleSet[] { return this._selectors; }
@@ -90,21 +129,50 @@ class CSSSource {
 
     @profile
     private parse(): void {
-        if (this._source) {
-            try {
-                this._ast = this._source ? parseCss(this._source, { source: this._file }) : null;
-                // TODO: Don't merge arrays, instead chain the css files.
-                if (this._ast) {
-                    this._selectors = [
-                        ...this.createSelectorsFromImports(),
-                        ...this.createSelectorsFromSyntaxTree()
-                    ];
+        try {
+            if (!this._ast) {
+                if (!this._source && this._file) {
+                    this.load();
                 }
-            } catch (e) {
-                traceWrite("Css styling failed: " + e, traceCategories.Error, traceMessageType.error);
+                if (this._source) {
+                    this.parseCSSAst();
+                }
             }
-        } else {
+            if (this._ast) {
+                this.createSelectors();
+            } else {
+                this._selectors = [];
+            }
+        } catch (e) {
+            traceWrite("Css styling failed: " + e, traceCategories.Error, traceMessageType.error);
             this._selectors = [];
+        }
+    }
+
+    @profile
+    private parseCSSAst() {
+        if (this._source) {
+            switch(parser) {
+                case "nativescript":
+                    const cssparser = new CSS3Parser(this._source);
+                    const stylesheet = cssparser.parseAStylesheet();
+                    const cssNS = new CSSNativeScript();
+                    this._ast = cssNS.parseStylesheet(stylesheet);
+                    return;
+                case "rework":
+                    this._ast = parseCss(this._source, { source: this._file });
+                    return;
+            }
+        }
+    }
+
+    @profile
+    private createSelectors() {
+        if (this._ast) {
+            this._selectors = [
+                ...this.createSelectorsFromImports(),
+                ...this.createSelectorsFromSyntaxTree()
+            ];
         }
     }
 
@@ -118,7 +186,7 @@ class CSSSource {
             const url = match && match[2];
 
             if (url !== null && url !== undefined) {
-                const cssFile = CSSSource.fromFile(url, this._keyframes);
+                const cssFile = CSSSource.fromURI(url, this._keyframes);
                 selectors = selectors.concat(cssFile.selectors);
             }
         }
@@ -169,7 +237,7 @@ const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
         return undefined;
     }
 
-    const result = CSSSource.fromFile(cssFile, applicationKeyframes).selectors;
+    const result = CSSSource.fromURI(cssFile, applicationKeyframes).selectors;
     if (result.length > 0) {
         applicationSelectors = result;
         mergeCssSelectors();
@@ -179,15 +247,15 @@ const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
 application.on("cssChanged", onCssChanged);
 application.on("livesync", onLiveSync);
 
-export const loadCssOnLaunch = profile('"style-scope".loadCssOnLaunch', () => {
-    loadCss(application.getCssFileName());
-    application.off("launch", loadCssOnLaunch);
+export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: application.LoadAppCSSEventData) => {
+    loadCss(args.cssFile);
+    application.off("loadAppCss", loadAppCSS);
 });
 
 if (application.hasLaunched()) {
-    loadCssOnLaunch();
+    loadAppCSS({ eventName: "loadAppCss", object: <any>application, cssFile: application.getCssFileName() });
 } else {
-    application.on("launch", loadCssOnLaunch);
+    application.on("loadAppCss", loadAppCSS);
 }
 
 export class CssState {

@@ -8,9 +8,9 @@ import {
 import { dip, px, percent } from "../core/view";
 
 import { Color } from "../../color";
-import { Font, parseFont, FontStyle, FontWeight } from "./font";
+import { Font, parseFont, FontStyle, FontWeight } from "../../ui/styling/font";
 import { layout } from "../../utils/utils";
-import { Background } from "./background";
+import { Background } from "../../ui/styling/background";
 import { isIOS } from "../../platform";
 
 import { Style } from "./style";

@@ -8,7 +8,7 @@ import { resolveFileName } from "../../file-system/file-name-resolver";
 import { knownFolders, path } from "../../file-system";
 import { parse, loadPage } from "../builder";
 import * as application from "../../application";
-import { profile } from "tns-core-modules/profiling";
+import { profile } from "../../profiling";
 
 export { application };
 

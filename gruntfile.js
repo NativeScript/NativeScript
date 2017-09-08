@@ -109,7 +109,7 @@ module.exports = function(grunt) {
     
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
     nodeTestEnv.NODE_PATH = localCfg.outTnsCoreModules;
-    localCfg.nodeTestsDir = path.join(localCfg.outDir, 'node-tests');
+    localCfg.nodeTestsDir = path.join(localCfg.outDir, 'unit-tests');
     localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
     localCfg.commitSHA = getCommitSha();
@@ -202,7 +202,7 @@ module.exports = function(grunt) {
                 src: [
                     "**/*.d.ts",
                     //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
-                    "!node-tests/**",
+                    "!unit-tests/**",
                     "!org.nativescript.widgets.d.ts",
                     "!android17.d.ts",
                     "!**/*.android.d.ts",
@@ -255,7 +255,7 @@ module.exports = function(grunt) {
                     '**/*',
                     '!*.md',
                     '!node_modules/**/*',
-                    '!node-tests/**/*',
+                    '!unit-tests/**/*',
                 ],
                 cwd: localCfg.outDir,
                 dest: "<%= grunt.option('path') %>/node_modules/tns-core-modules/",
@@ -279,7 +279,7 @@ module.exports = function(grunt) {
             },
             compileAll: "npm run compile-all",
             setupLinks: "npm run setup",
-            compileNodeTests: "npm run compile-node-tests",
+            runUnitTests: "npm run unit-test",
             tslint: "npm run tslint",
         },
         simplemocha: {
@@ -368,7 +368,7 @@ module.exports = function(grunt) {
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
-        "node-tests",
+        "run-unit-test",
         "copy:modulesPackageDef",
         "exec:packModules"
     ]);
@@ -384,13 +384,9 @@ module.exports = function(grunt) {
         "copy:jsLibs",
     ]);
 
-    grunt.registerTask("node-tests", [
+    grunt.registerTask("run-unit-test", [
         "clean:nodeTests",
-        "shell:compileNodeTests",
-        "copy:childPackageFiles",
-        "copy:jsLibs",
-        "env:nodeTests",
-        "exec:mochaNode", //spawn a new process to use the new NODE_PATH
+        "shell:runUnitTests"
     ]);
 
     grunt.registerTask("apiref", [

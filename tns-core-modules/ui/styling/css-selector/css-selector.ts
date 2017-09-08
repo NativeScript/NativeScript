@@ -1,9 +1,9 @@
 ﻿import { Node, Declaration, Changes, ChangeMap } from ".";
 import { isNullOrUndefined } from "../../../utils/types";
-import { escapeRegexSymbols } from "../../../utils/utils";
+import { escapeRegexSymbols } from "../../../utils/utils-common";
 
 import * as cssParser from "../../../css";
-import * as selectorParser from "../css-selector-parser";
+import * as parser from "../../../css/parser";
 
 const enum Specificity {
     Inline =        0x01000000,
@@ -60,7 +60,7 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: b
     return cls => {
         cls.prototype.specificity = specificity;
         cls.prototype.rarity = rarity;
-        cls.prototype.combinator = "";
+        cls.prototype.combinator = undefined;
         cls.prototype.dynamic = dynamic;
         return cls;
     }
@@ -408,61 +408,55 @@ function createDeclaration(decl: cssParser.Declaration): any {
     return { property: decl.property.toLowerCase(), value: decl.value };
 }
 
-export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
-    try {
-        let ast = selectorParser.parse(sel);
-        if (ast.length === 0) {
-            return new InvalidSelector(new Error("Empty selector"));
-        }
-
-        let selectors = ast.map(createSimpleSelector);
-        let sequences: (SimpleSelector | SimpleSelectorSequence)[] = [];
-        // Join simple selectors into sequences, set combinators
-        for (let seqStart = 0, seqEnd = 0, last = selectors.length - 1; seqEnd <= last; seqEnd++) {
-            let sel = selectors[seqEnd];
-            let astComb = ast[seqEnd].comb;
-            if (astComb || seqEnd === last) {
-                if (seqStart === seqEnd) {
-                    // This is a sequnce with single SimpleSelector, so we will not combine it into SimpleSelectorSequence.
-                    sel.combinator = astComb;
-                    sequences.push(sel);
-                } else {
-                    let sequence = new SimpleSelectorSequence(selectors.slice(seqStart, seqEnd + 1));
-                    sequence.combinator = astComb;
-                    sequences.push(sequence);
-                }
-                seqStart = seqEnd + 1;
-            }
-        }
-
-        if (sequences.length === 1) {
-            // This is a selector with a single SinmpleSelectorSequence so we will not combine it into Selector.
-            return sequences[0];
-        } else {
-            return new Selector(sequences);
-        }
-    } catch(e) {
-        return new InvalidSelector(e);
+function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector {
+    switch(ast.type) {
+        case "*": return new UniversalSelector();
+        case "#": return new IdSelector(ast.identifier);
+        case "": return new TypeSelector(ast.identifier.replace(/-/, '').toLowerCase());
+        case ".": return new ClassSelector(ast.identifier);
+        case ":": return new PseudoClassSelector(ast.identifier);
+        case "[]": return ast.test ? new AttributeSelector(ast.property, ast.test, ast.value) : new AttributeSelector(ast.property);
     }
 }
 
-function createSimpleSelector(sel: selectorParser.SimpleSelector): SimpleSelector {
-    if (selectorParser.isUniversal(sel)) {
-        return new UniversalSelector();
-    } else if (selectorParser.isId(sel)) {
-        return new IdSelector(sel.ident);
-    } else if (selectorParser.isType(sel)) {
-        return new TypeSelector(sel.ident.replace(/-/, '').toLowerCase());
-    } else if (selectorParser.isClass(sel)) {
-        return new ClassSelector(sel.ident);
-    } else if (selectorParser.isPseudo(sel)) {
-        return new PseudoClassSelector(sel.ident);
-    } else if (selectorParser.isAttribute(sel)) {
-        if (sel.test) {
-            return new AttributeSelector(sel.prop, sel.test, sel.value);
-        } else {
-            return new AttributeSelector(sel.prop)
+function createSimpleSelectorSequenceFromAst(ast: parser.SimpleSelectorSequence): SimpleSelectorSequence | SimpleSelector {
+    if (ast.length === 0) {
+        return new InvalidSelector(new Error("Empty simple selector sequence."));
+    } else if (ast.length === 1) {
+        return createSimpleSelectorFromAst(ast[0]);
+    } else {
+        return new SimpleSelectorSequence(ast.map(createSimpleSelectorFromAst));
+    }
+}
+
+function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSelectorSequence | Selector {
+    if (ast.length === 0) {
+        return new InvalidSelector(new Error("Empty selector."));
+    } else if (ast.length <= 2) {
+        return createSimpleSelectorSequenceFromAst(ast[0]);
+    } else {
+        let simpleSelectorSequences = [];
+        for (var i = 0; i < ast.length; i += 2) {
+            const simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i]);
+            const combinator = <parser.Combinator>ast[i + 1];
+            if (combinator) {
+                simpleSelectorSequence.combinator = combinator;
+            }
+            simpleSelectorSequences.push(simpleSelectorSequence);
         }
+        return new Selector(simpleSelectorSequences);
+    }
+}
+
+export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
+    try {
+        let parsedSelector = parser.parseSelector(sel);
+        if (!parsedSelector) {
+            return new InvalidSelector(new Error("Empty selector"));
+        }
+        return createSelectorFromAst(parsedSelector.value);
+    } catch(e) {
+        return new InvalidSelector(e);
     }
 }
 

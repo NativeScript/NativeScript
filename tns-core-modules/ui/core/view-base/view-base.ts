@@ -26,6 +26,7 @@ export * from "../bindable";
 export * from "../properties";
 
 import * as ssm from "../../styling/style-scope";
+
 let styleScopeModule: typeof ssm;
 function ensureStyleScopeModule() {
     if (!styleScopeModule) {
@@ -588,7 +589,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             // }
 
             if (!nativeView) {
-                nativeView = <android.view.View>this.createNativeView();
+                nativeView = this.createNativeView();
             }
 
             this._androidView = nativeView;
@@ -597,7 +598,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                     this._isPaddingRelative = nativeView.isPaddingRelative();
                 }
 
-                let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
+                let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
                 if (result === undefined) {
                     result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
                     (<any>nativeView).defaultPaddings = result;

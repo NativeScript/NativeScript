@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "inlineSourceMap": false
+    },
+    "extends": "./tsconfig.shared",
+    "include": [
+        "tns-core-modules/**/*.ts",
+        "unit-tests/**/*.ts"
+    ],
+    "exclude": [
+        "**/*.android.ts",
+        "**/*.ios.ts",
+        "tns-platform-declarations",
+        "tns-core-modules/node-modules",
+        "tns-core-modules/references.d.ts"
+    ]
+}
