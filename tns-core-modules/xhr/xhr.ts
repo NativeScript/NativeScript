@@ -131,6 +131,7 @@ export class XMLHttpRequest {
     private textTypes: string[] = [
         'text/plain',
         'application/xml',
+        'application/rss+xml',
         'text/html',
         'text/xml'
     ];
