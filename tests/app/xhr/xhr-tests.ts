@@ -267,6 +267,25 @@ export function test_xhr_events() {
     TKUnit.assertEqual(errorEventData, 'error data');
 }
 
+export function test_xhr_responseType_rss() {
+    const xhr = <any>new XMLHttpRequest();
+    const rawRssFeed = '<rss> <channel><item><title>Test</title></item></channel></rss>';
+    const response = {
+        statusCode: 200,
+        content: {
+            toString: function(){ return this.raw },
+            raw: rawRssFeed
+        },
+        headers: {
+            "Content-Type": "application/rss+xml"
+        }
+    }
+
+    xhr._loadResponse(response);
+    TKUnit.assertEqual(xhr.responseType, "text");
+    TKUnit.assertEqual(xhr.response, rawRssFeed);
+}
+
 export function test_xhr_responseType_text() {
     const xhr = <any>new XMLHttpRequest();
     const response = {
