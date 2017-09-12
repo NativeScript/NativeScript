@@ -27,7 +27,7 @@ export class Background implements BackgroundDefinition {
     public borderBottomRightRadius: number = 0;
     public clipPath: string;
 
-    private clone(): Background {
+    clone(): Background {
         const clone = new Background();
 
         clone.color = this.color;
