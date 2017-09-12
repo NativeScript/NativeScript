@@ -58,8 +58,13 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
             traceWrite("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", traceCategories.Debug);
         }
         let owner = this._owner.get();
+        
         if (owner) {
-            owner._onLoadFinished(webView.request.URL.absoluteString);
+            let src = owner.src;
+            if (webView.request && webView.request.URL) {
+                src = webView.request.URL.absoluteString;
+            }
+            owner._onLoadFinished(src);
         }
     }
 
