@@ -1,6 +1,6 @@
 ﻿// Deifinitions.
 import { View } from "../core/view";
-import { Color } from "../../color";
+import { Color } from "tns-core-modules/color";
 import { Page } from "../page";
 import * as frameModule from "../frame";
 

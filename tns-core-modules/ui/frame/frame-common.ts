@@ -7,7 +7,7 @@ import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, tra
 import { resolveFileName } from "../../file-system/file-name-resolver";
 import { knownFolders, path } from "../../file-system";
 import { parse, loadPage } from "../builder";
-import * as application from "../../application";
+import * as application from "tns-core-modules/application";
 import { profile } from "tns-core-modules/profiling";
 
 export { application };

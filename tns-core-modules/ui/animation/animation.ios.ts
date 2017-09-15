@@ -7,7 +7,7 @@ import {
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
 } from "../styling/style-properties";
 
-import { ios } from "../../utils/utils";
+import { ios } from "tns-core-modules/utils/utils";
 
 export * from "./animation-common";
 

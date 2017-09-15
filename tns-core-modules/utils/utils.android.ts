@@ -4,7 +4,7 @@
 
 export * from "./utils-common";
 
-import { getNativeApplication, android as androidApp } from "../application";
+import { getNativeApplication, android as androidApp } from "tns-core-modules/application";
 
 export module layout {
     let density: number;

@@ -6,7 +6,7 @@
 import { Span } from "./span";
 import { ObservableArray } from "../data/observable-array";
 import { ViewBase } from "../ui/core/view";
-import { Color } from "../color";
+import { Color } from "tns-core-modules/color";
 import { FontStyle, FontWeight } from "../ui/styling/font";
 import { TextDecoration } from "../ui/text-base";
 

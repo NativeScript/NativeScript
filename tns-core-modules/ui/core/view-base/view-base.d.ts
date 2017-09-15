@@ -6,13 +6,13 @@ import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style }
 import { BindingOptions, Observable } from "../bindable";
 
 import { SelectorCore } from "../../styling/css-selector";
-import { isIOS, isAndroid } from "../../../platform";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
 
 import { KeyframeAnimation } from "../../animation/keyframe-animation";
 import { Page } from "../../page";
-import { layout } from "../../../utils/utils";
+import { layout } from "tns-core-modules/utils/utils";
 
-import { Color } from "../../../color";
+import { Color } from "tns-core-modules/color";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
 import { DOMNode } from "../../../debugger/dom-node";

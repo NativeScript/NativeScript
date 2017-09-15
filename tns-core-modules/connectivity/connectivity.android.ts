@@ -1,4 +1,4 @@
-﻿import { getNativeApplication, android as androidApp} from "../application";
+﻿import { getNativeApplication, android as androidApp} from "tns-core-modules/application";
 
 export enum connectionType {
     none = 0,

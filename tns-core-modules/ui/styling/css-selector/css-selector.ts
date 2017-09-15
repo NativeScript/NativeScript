@@ -1,6 +1,6 @@
 ﻿import { Node, Declaration, Changes, ChangeMap } from ".";
 import { isNullOrUndefined } from "../../../utils/types";
-import { escapeRegexSymbols } from "../../../utils/utils";
+import { escapeRegexSymbols } from "tns-core-modules/utils/utils";
 
 import * as cssParser from "../../../css";
 import * as selectorParser from "../css-selector-parser";

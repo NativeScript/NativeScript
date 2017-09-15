@@ -1,5 +1,5 @@
 ﻿import * as textModule from "../text";
-import { getNativeApplication } from "../application";
+import { getNativeApplication } from "tns-core-modules/application";
 
 let applicationContext: android.content.Context;
 function getApplicationContext() {

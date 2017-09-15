@@ -2,7 +2,7 @@
 import * as trace from "../../trace";
 import * as httpRequestModule from "../../http/http-request";
 
-import * as utils from "../../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 import getter = utils.ios.getter;
 
 var httpRequest: typeof httpRequestModule;

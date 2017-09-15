@@ -8,7 +8,7 @@ import {
 } from "./gestures-common";
 
 // Import layout from utils directly to avoid circular references
-import { layout } from "../../utils/utils";
+import { layout } from "tns-core-modules/utils/utils";
 
 export * from "./gestures-common";
 

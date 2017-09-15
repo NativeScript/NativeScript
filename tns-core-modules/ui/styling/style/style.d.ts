@@ -3,7 +3,7 @@
  */ /** */
 
 import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
-import { Color } from "../../../color";
+import { Color } from "tns-core-modules/color";
 import { Background } from "../background";
 import { Font, FontStyle, FontWeight } from "../font";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
@@ -63,6 +63,7 @@ export class Style extends Observable {
     public tintColor: Color;
     public placeholderColor: Color;
 
+    public background: string | Color;
     public backgroundColor: Color;
     public backgroundImage: string;
     public backgroundRepeat: BackgroundRepeat;

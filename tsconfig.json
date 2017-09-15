@@ -21,7 +21,6 @@
         "obj",
         "tns-platform-declarations/references.d.ts",
         "tns-core-modules/references.d.ts",
-        "tns-platform-declarations/ios/objc-x86_64/",
-        "unit-tests/"
+        "tns-platform-declarations/ios/objc-x86_64/"
     ]
 }

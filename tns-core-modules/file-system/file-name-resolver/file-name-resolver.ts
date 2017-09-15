@@ -1,8 +1,8 @@
 import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from "../file-name-resolver";
-import { screen, device } from "../../platform";
+import { screen, device } from "tns-core-modules/platform";
 import { path as fsPath, Folder, File } from "../file-system";
 import * as trace from "../../trace";
-import * as appModule from "../../application";
+import * as appModule from "tns-core-modules/application";
 
 const MIN_WH: string = "minWH";
 const MIN_W: string = "minW";

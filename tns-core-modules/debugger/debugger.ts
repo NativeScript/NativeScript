@@ -36,7 +36,7 @@ export namespace domains {
     }
 }
 
-var network;
+var network, java, android;
 
 export function getNetwork(): domains.network.NetworkDomainDebugger {
     return network;
@@ -89,7 +89,7 @@ export namespace NetworkAgent {
         timestamp: number;
     }
 
-    export function responseReceived(requestId: number, result: org.nativescript.widgets.Async.Http.RequestResult, headers: any) {
+    export function responseReceived(requestId: number, result: any /* org.nativescript.widgets.Async.Http.RequestResult */, headers: any) {
         const requestIdStr = requestId.toString();
         // Content-Type and content-type are both common in headers spelling
         const mimeType: string = <string>headers["Content-Type"] || <string>headers["content-type"] || "application/octet-stream";

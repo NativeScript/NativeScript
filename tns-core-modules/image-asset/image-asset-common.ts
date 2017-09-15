@@ -1,6 +1,6 @@
 import * as definition from ".";
 import * as observable from "../data/observable";
-import * as platform from "../platform";
+import * as platform from "tns-core-modules/platform";
 
 export class ImageAsset  extends observable.Observable implements definition.ImageAsset {
     private _options: definition.ImageAssetOptions;

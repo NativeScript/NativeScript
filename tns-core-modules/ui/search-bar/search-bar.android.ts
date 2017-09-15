@@ -3,7 +3,7 @@ import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty
 } from "./search-bar-common";
-import { ad } from "../../utils/utils";
+import { ad } from "tns-core-modules/utils/utils";
 
 export * from "./search-bar-common";
 

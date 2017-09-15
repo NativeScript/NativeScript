@@ -1,5 +1,5 @@
 import { Style as StyleDefinition } from ".";
-import { Color } from "../../../color";
+import { Color } from "tns-core-modules/color";
 import { Font, FontStyle, FontWeight } from "../font";
 import { Background } from "../background";
 import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
@@ -35,6 +35,7 @@ export class Style extends Observable implements StyleDefinition {
     public tintColor: Color;
     public placeholderColor: Color;
 
+    public background: string | Color;
     public backgroundColor: Color;
     public backgroundImage: string;
     public backgroundRepeat: BackgroundRepeat;

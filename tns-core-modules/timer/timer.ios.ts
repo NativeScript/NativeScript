@@ -1,4 +1,4 @@
-﻿import * as utils from "../utils/utils";
+﻿import * as utils ffrom "tns-core-modules/utils/utils"
 
 //iOS specific timer functions implementation.
 var timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();

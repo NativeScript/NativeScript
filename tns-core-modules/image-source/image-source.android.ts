@@ -5,8 +5,8 @@ import * as httpModule from "../http";
 
 // Types.
 import { path as fsPath, knownFolders } from "../file-system";
-import { isFileOrResourcePath, RESOURCE_PREFIX } from "../utils/utils";
-import { getNativeApplication } from "../application";
+import { isFileOrResourcePath, RESOURCE_PREFIX } from "tns-core-modules/utils/utils";
+import { getNativeApplication } from "tns-core-modules/application";
 
 export { isFileOrResourcePath };
 

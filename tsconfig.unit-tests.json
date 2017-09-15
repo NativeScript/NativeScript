@@ -9,15 +9,6 @@
         "**/*.ios.ts",
         "tns-platform-declarations",
         "tns-core-modules/node-modules",
-        "tns-core-modules/references.d.ts",
-        "tns-core-modules/debugger",
-        "tns-core-modules/file-system"
-    ],
-    "compilerOptions": {
-        "types": [
-            "node",
-            "chai",
-            "mocha"
-        ]
-    }
+        "tns-core-modules/references.d.ts"
+    ]
 }

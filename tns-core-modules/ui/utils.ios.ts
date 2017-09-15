@@ -1,5 +1,5 @@
 ﻿import { View } from "./core/view";
-import * as utils from "../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 import getter = utils.ios.getter;
 
 export module ios {

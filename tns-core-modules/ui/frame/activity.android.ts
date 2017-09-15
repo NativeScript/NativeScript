@@ -1,6 +1,6 @@
 import { setActivityCallbacks, AndroidActivityCallbacks } from "./frame";
 import * as globals from "../../globals";
-import * as appModule from "../../application";
+import * as appModule from "tns-core-modules/application";
 
 if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
     globals.install();

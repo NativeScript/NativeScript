@@ -9,7 +9,7 @@ import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
 import * as uiUtils from "tns-core-modules/ui/utils";
-import * as utils from "../../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 export * from "./frame-common";
 

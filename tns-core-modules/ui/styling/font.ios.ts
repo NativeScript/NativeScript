@@ -1,8 +1,8 @@
-﻿import { FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from "./font-common";
+﻿import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from "./font-common";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
-import { device } from "../../platform"
+import { device } from "tns-core-modules/platform"
 import * as fs from "../../file-system";
-import * as utils from "../../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 export * from "./font-common";
 
 const EMULATE_OBLIQUE = true;

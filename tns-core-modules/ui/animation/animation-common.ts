@@ -9,7 +9,7 @@ import {
 import { View } from "../core/view";
 
 // Types.
-import { Color } from "../../color";
+import { Color } from "tns-core-modules/color";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
 
 export { Color, traceEnabled, traceWrite, traceCategories };

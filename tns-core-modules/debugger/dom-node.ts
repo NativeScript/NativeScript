@@ -1,7 +1,7 @@
 import { getSetProperties, getComputedCssValues } from "../ui/core/properties";
 import { PercentLength } from "../ui/styling/style-properties";
 import { ViewBase } from "../ui/core/view";
-import { Color } from "../color";
+import { Color } from "tns-core-modules/color";
 import { CSSComputedStyleProperty } from "./css-agent";
 import { Inspector } from "./devtools-elements";
 

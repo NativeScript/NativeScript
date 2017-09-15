@@ -2,7 +2,7 @@
  * @module "ui/styling/background"
  */ /** */
 
-import { Color } from "../../color";
+import { Color } from "tns-core-modules/color";
 import { View, BackgroundRepeat } from "../core/view";
 
 export class Background {

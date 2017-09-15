@@ -7,7 +7,7 @@ import * as types from "../../utils/types";
 import * as imageSourceModule from "../../image-source";
 import * as fsModule from "../../file-system";
 
-import * as utils from "../../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 import getter = utils.ios.getter;
 
 import * as domainDebugger from "../../debugger/debugger";

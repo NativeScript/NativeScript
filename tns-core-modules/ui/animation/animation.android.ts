@@ -8,7 +8,7 @@ import {
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
 } from "../styling/style-properties";
 
-import { layout } from "../../utils/utils";
+import { layout } from "tns-core-modules/utils/utils";
 import lazy from "../../utils/lazy";
 
 export * from "./animation-common";

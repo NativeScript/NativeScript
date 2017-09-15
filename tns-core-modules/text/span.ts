@@ -1,4 +1,4 @@
-﻿import { Color } from "../color";
+﻿import { Color } from "tns-core-modules/color"
 import { Span as SpanDefinition } from "./span";
 import { ViewBase } from "../ui/core/view";
 import { FontStyle, FontWeight, } from "../ui/styling/font";

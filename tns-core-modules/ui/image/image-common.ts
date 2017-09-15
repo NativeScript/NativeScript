@@ -2,7 +2,7 @@
 import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
-import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
+import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "tns-core-modules/utils/utils";
 
 export * from "../core/view";
 export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };

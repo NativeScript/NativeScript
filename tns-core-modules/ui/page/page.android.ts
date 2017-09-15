@@ -2,7 +2,7 @@
 import { ActionBar } from "../action-bar";
 import { GridLayout } from "../layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
-import { device } from "../../platform";
+import { device } from "tns-core-modules/platform";
 import { profile } from "../../profiling";
 
 export * from "./page-common";

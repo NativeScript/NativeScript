@@ -6,7 +6,7 @@ import {
 } from "./list-view-common";
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
-import { ios } from "../../utils/utils";
+import { ios } from "tns-core-modules/utils/utils";
 import { profile } from "../../profiling";
 
 export * from "./list-view-common";

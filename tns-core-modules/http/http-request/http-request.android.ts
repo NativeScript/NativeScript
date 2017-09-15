@@ -2,7 +2,7 @@
  * Android specific http request implementation.
  */
 import * as imageSourceModule from "../../image-source";
-import * as platformModule from "../../platform";
+import * as platformModule from "tns-core-modules/platform";
 import * as fsModule from "../../file-system";
 import { getFilenameFromUrl } from "./http-request-common";
 

@@ -1,6 +1,6 @@
 ﻿import * as definition from "./fps-native";
 
-import * as utils from "../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 class FrameHandlerImpl extends NSObject {
 

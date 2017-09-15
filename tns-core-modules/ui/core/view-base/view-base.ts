@@ -9,15 +9,15 @@ import { KeyframeAnimation } from "../../animation/keyframe-animation";
 import { Source } from "../../../utils/debug";
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
-import { isIOS, isAndroid } from "../../../platform";
-import { layout } from "../../../utils/utils";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { layout } from "tns-core-modules/utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 import { DOMNode } from "../../../debugger/dom-node";
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";
 
-import { Color } from "../../../color";
+import { Color } from "tns-core-modules/color";
 
 import { profile } from "../../../profiling";
 

@@ -5,7 +5,7 @@
     textProperty, placeholderColorProperty, Color, textTransformProperty, maxLengthProperty
 } from "./editable-text-base-common";
 
-import { ad } from "../../utils/utils";
+import { ad } from "tns-core-modules/utils/utils";
 
 export * from "./editable-text-base-common";
 

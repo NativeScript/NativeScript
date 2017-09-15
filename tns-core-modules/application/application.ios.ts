@@ -10,7 +10,7 @@ export * from "./application-common";
 
 import { Frame, View, NavigationEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
-import * as utils from "../utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 class Responder extends UIResponder {
     //

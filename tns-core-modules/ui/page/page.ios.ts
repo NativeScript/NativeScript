@@ -3,8 +3,8 @@
     actionBarHiddenProperty, statusBarStyleProperty,
     traceEnabled, traceWrite, traceCategories, PercentLength, Color
 } from "./page-common";
-import { ios as iosApp } from "../../application";
-import { device } from "../../platform";
+import { ios as iosApp } from "tns-core-modules/application";
+import { device } from "tns-core-modules/platform";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
 import * as uiUtils from "tns-core-modules/ui/utils";
@@ -12,7 +12,7 @@ import { profile } from "../../profiling";
 
 export * from "./page-common";
 
-import { ios } from "../../utils/utils";
+import { ios } from "tns-core-modules/utils/utils";
 import getter = ios.getter;
 
 const ENTRY = "_entry";

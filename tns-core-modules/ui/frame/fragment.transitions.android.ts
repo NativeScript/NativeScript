@@ -7,7 +7,7 @@ import { SlideTransition } from "../transition/slide-transition";
 import { FadeTransition } from "../transition/fade-transition";
 import { FlipTransition } from "../transition/flip-transition";
 import { _resolveAnimationCurve } from "../animation";
-import { device } from "../../platform";
+import { device } from "tns-core-modules/platform";
 import lazy from "../../utils/lazy";
 
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";

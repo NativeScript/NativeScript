@@ -1,6 +1,6 @@
-﻿import { FontBase, parseFontFamily, genericFontFamilies, FontWeight } from "./font-common";
+﻿import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight } from "./font-common";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
-import * as application from "../../application";
+import * as application from "tns-core-modules/application";
 import * as fs from "../../file-system";
 
 export * from "./font-common";

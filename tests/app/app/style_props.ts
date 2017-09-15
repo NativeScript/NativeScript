@@ -2,7 +2,7 @@
 import * as pages from "tns-core-modules/ui/page";
 import * as stackLayoutDef from "tns-core-modules/ui/layouts/stack-layout";
 
-// import {isAndroid} from "platform";
+// import {isAndroid} from "tns-core-modules/platform";
 // import * as style from "ui/styling/style";
 // import {PropertyMetadata, PropertyMetadataSettings} from "ui/core/dependency-observable";
 // import * as view from "ui/core/view";

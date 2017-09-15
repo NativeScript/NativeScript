@@ -7,17 +7,17 @@ import {
 
 import { dip, px, percent } from "../core/view";
 
-import { Color } from "../../color";
-import { Font, parseFont, FontStyle, FontWeight } from "./font";
-import { layout } from "../../utils/utils";
-import { Background } from "./background";
-import { isIOS } from "../../platform";
+import { Color } from "tns-core-modules/color";
+import { Font, parseFont, FontStyle, FontWeight } from "tns-core-modules/ui/styling/font";
+import { layout } from "tns-core-modules/utils/utils";
+import { Background } from "tns-core-modules/ui/styling/background";
+import { isIOS } from "tns-core-modules/platform";
 
 import { Style } from "./style";
 
 import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
 
-import { hasDuplicates } from "../../utils/utils";
+import { hasDuplicates } from "tns-core-modules/utils/utils";
 import { radiansToDegrees } from "../../utils/number-utils";
 
 import {
@@ -568,6 +568,33 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 backgroundColorProperty.register(Style);
+
+export const backgroundProperty = new ShorthandProperty<Style, string | Color>({
+    name: "background",
+    cssName: "background",
+    getter(this: Style) {
+        return `${this.backgroundInternal.color}`; // Or gradient
+    },
+    converter(value: string | Color) {
+        if (typeof value === "string") {
+            let tokens = value.split(/\s+/)
+            try {
+                const color = new Color(value);
+                return [
+                    [backgroundColorProperty, color]
+                ];
+            } catch(e) {
+                // Try parse gradient
+                throw new Error(`Value '${value}' can not be converted to background.`);
+            }
+        } else if (value instanceof Color) {
+            return [
+                [backgroundColorProperty, value]
+            ];
+        }
+    }
+});
+backgroundProperty.register(Style);
 
 export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 export namespace BackgroundRepeat {

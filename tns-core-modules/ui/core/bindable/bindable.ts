@@ -5,11 +5,11 @@ import { unsetValue } from "../properties";
 import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "../weak-event-listener";
 import { bindingConstants, parentsRegex } from "../../builder/binding-builder";
-import { escapeRegexSymbols } from "../../../utils/utils";
+import { escapeRegexSymbols } from "tns-core-modules/utils/utils";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet, messageType as traceMessageType } from "../../../trace";
 import * as types from "../../../utils/types";
 
-import * as application from "../../../application";
+import * as application from "tns-core-modules/application";
 import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
 export {

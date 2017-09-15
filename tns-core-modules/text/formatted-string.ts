@@ -3,7 +3,7 @@ import { Span } from "./span";
 import { Observable, PropertyChangeData } from "../data/observable";
 import { ObservableArray, ChangedData } from "../data/observable-array";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../ui/core/view";
-import { Color } from "../color";
+import { Color } from "tns-core-modules/color";
 import { FontStyle, FontWeight } from "../ui/styling/font";
 import { TextDecoration } from "../ui/text-base";
 

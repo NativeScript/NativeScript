@@ -3,7 +3,7 @@ import { Background as BackgroundDefinition } from "./background";
 import { BackgroundRepeat } from "../core/view";
 
 // Types.
-import { Color } from "../../color";
+import { Color } from "tns-core-modules/color";
 
 export class Background implements BackgroundDefinition {
     public static default = new Background();

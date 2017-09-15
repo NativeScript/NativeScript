@@ -1,5 +1,5 @@
 ﻿import * as transition from "./transition";
-import * as platform from "../../platform";
+import * as platform from "tns-core-modules/platform";
 import lazy from "../../utils/lazy";
 
 const screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);

@@ -1,5 +1,5 @@
 ﻿import { Transition } from "./transition";
-import { screen } from "../../platform";
+import { screen } from "tns-core-modules/platform";
 
 let screenWidth = screen.mainScreen.widthDIPs;
 let screenHeight = screen.mainScreen.heightDIPs;

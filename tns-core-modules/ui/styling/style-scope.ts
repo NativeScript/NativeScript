@@ -23,7 +23,7 @@ import {
     messageType as traceMessageType,
 } from "../../trace";
 import { File, knownFolders, path } from "../../file-system";
-import * as application from "../../application";
+import * as application from "tns-core-modules/application";
 import { profile } from "../../profiling";
 
 import * as kam from "../animation/keyframe-animation";

@@ -9,7 +9,7 @@ import { getBindingOptions, bindingConstants } from "../binding-builder";
 import { resolveFileName } from "../../../file-system/file-name-resolver";
 import { profile } from "tns-core-modules/profiling";
 import * as debugModule from "../../../utils/debug";
-import * as platform from "../../../platform";
+import * as platform from "tns-core-modules/platform";
 
 const UI_PATH = "ui/";
 const MODULES = {

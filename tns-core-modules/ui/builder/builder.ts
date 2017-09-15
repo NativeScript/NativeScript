@@ -8,7 +8,7 @@ import * as xml from "../../xml";
 import { File, path, knownFolders } from "../../file-system";
 import { isString, isDefined } from "../../utils/types";
 import { ComponentModule, setPropertyValue, getComponentModule } from "./component-builder";
-import { platformNames, device } from "../../platform";
+import { platformNames, device } from "tns-core-modules/platform";
 import { resolveFileName } from "../../file-system/file-name-resolver";
 import { profile } from "tns-core-modules/profiling";
 import * as traceModule from "../../trace";

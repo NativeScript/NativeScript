@@ -1,8 +1,8 @@
 import { View } from "../core/view";
-import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
+import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "tns-core-modules/utils/utils";
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
-import * as application from "../../application";
+import * as application from "tns-core-modules/application";
 import { profile } from "tns-core-modules/profiling";
 export * from "./background-common"
 
