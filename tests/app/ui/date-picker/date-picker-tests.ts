@@ -99,6 +99,24 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
+    public test_WhenCreated_NativeYearIsCurrentYear() {
+        const actualValue = datePickerTestsNative.getNativeYear(this.testView);
+        const expectedValue = currentDate.getFullYear();
+        TKUnit.assertEqual(actualValue, expectedValue);
+    }
+
+    public test_WhenCreated_NativeMonthIsCurrentMonth() {
+        const actualValue = datePickerTestsNative.getNativeMonth(this.testView);
+        const expectedValue = currentDate.getMonth() + 1;
+        TKUnit.assertEqual(actualValue, expectedValue);
+    }
+
+    public test_WhenCreated_NativeDayIsCurrentDay() {
+        const actualValue = datePickerTestsNative.getNativeDay(this.testView);;
+        const expectedValue = currentDate.getDate();
+        TKUnit.assertEqual(actualValue, expectedValue);
+    }
+
     public testYearFromLocalToNative() {
         const expectedValue = 1980;
         this.testView.year = expectedValue;
