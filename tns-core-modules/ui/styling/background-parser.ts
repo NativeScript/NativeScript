@@ -2,6 +2,7 @@
 interface TokenRange {
     lastIndex: number;
 }
+
 interface Color {
     argb: number;
 }
@@ -13,19 +14,25 @@ interface Unit {
     unit: string;
 }
 
-const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*|()/g;
+const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*/gy;
 export function parseURL(value: string, lastIndex: number = 0): URL & TokenRange {
     urlRegEx.lastIndex = lastIndex;
     const result = urlRegEx.exec(value);
+    if (!result) {
+        return null;
+    }
     lastIndex = urlRegEx.lastIndex;
     const url = result[2] || result[3] || undefined;
     return url === undefined ? null : { url, lastIndex };
 }
 
-const hexColorRegEx = /\s*#((?:[0-9A-F]{8})|(?:[0-9A-F]{6})|(?:[0-9A-F]{3}))\s*|()/gi;
+const hexColorRegEx = /\s*#((?:[0-9A-F]{8})|(?:[0-9A-F]{6})|(?:[0-9A-F]{3}))\s*/giy;
 function parseHexColor(value: string, lastIndex: number = 0): Color & TokenRange {
     hexColorRegEx.lastIndex = lastIndex;
     const result = hexColorRegEx.exec(value);
+    if (!result) {
+        return null;
+    }
     lastIndex = hexColorRegEx.lastIndex;
     let hex = result[1];
     let argb;
@@ -49,22 +56,28 @@ function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): numbe
     }
 }
 
-const rgbColorRegEx = /\s*(rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\))|()/g;
+const rgbColorRegEx = /\s*(rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\))/gy;
 function parseRGBColor(value: string, lastIndex: number = 0): Color & TokenRange {
     rgbColorRegEx.lastIndex = lastIndex;
     const result = rgbColorRegEx.exec(value);
+    if (!result) {
+        return null;
+    }
     lastIndex = rgbColorRegEx.lastIndex;
     const argb = result[1] && rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]));
-    return argb === undefined ? null : { argb, lastIndex };
+    return { argb, lastIndex };
 }
 
-const rgbaColorRegEx = /\s*(rgba\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*,\s*([01]?\.?\d*)\s*\))|()/g;
+const rgbaColorRegEx = /\s*(rgba\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*,\s*([01]?\.?\d*)\s*\))/gy;
 function parseRGBAColor(value: string, lastIndex: number = 0): Color & TokenRange {
     rgbaColorRegEx.lastIndex = lastIndex;
     const result = rgbaColorRegEx.exec(value);
+    if (!result) {
+        return null;
+    }
     lastIndex = rgbaColorRegEx.lastIndex;
-    const argb = result[1] && rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
-    return argb === undefined ? null : { argb, lastIndex };
+    const argb = rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
+    return { argb, lastIndex };
 }
 
 const colorKeywords = {
@@ -233,14 +246,16 @@ interface Keyword {
     lastIndex: number;
 }
 
-const keywordRegEx = /\s*([a-z][\w\-]*)\s*|()/gi;
+const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
 function parseKeyword(value: string, lastIndex: number = 0, preParsedKeyword?: Keyword): Keyword {
     if (preParsedKeyword) {
         return preParsedKeyword;
     }
-
     keywordRegEx.lastIndex = lastIndex;
     const result = keywordRegEx.exec(value);
+    if (!result) {
+        return null;
+    }
     lastIndex = keywordRegEx.lastIndex;
     const keyword = result[1];
     // TRICKY: We return null instead of undefined so passing it in places where optional parameters are accepted
@@ -262,17 +277,17 @@ function parseRepeat(value: string, lastIndex: number = 0, keyword = parseKeywor
     return null;
 }
 
-const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*|()/g;
-export function parseUnit(value: string, lastIndex: number = 0): TokenRange & Unit {
+const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
+export function parseUnit(str: string, lastIndex: number = 0): TokenRange & Unit {
     unitRegEx.lastIndex = lastIndex;
-    const result = unitRegEx.exec(value);
-    lastIndex = unitRegEx.lastIndex;
-    if (result[1]) {
-        let value = parseFloat(result[1]);
-        const unit = <any>result[2] || "dip";
-        return { value, unit, lastIndex };
+    const result = unitRegEx.exec(str);
+    if (!result) {
+        return null;
     }
-    return null;
+    lastIndex = unitRegEx.lastIndex;
+    const value = parseFloat(result[1]);
+    const unit = <any>result[2] || "dip";
+    return { value, unit, lastIndex };
 }
 
 export function parsePercentageOrLength(value: string, lastIndex: number = 0): TokenRange & LengthPercentage {
@@ -462,7 +477,7 @@ export interface RadialGradient {
     colors: ColorStop[];
 }
 
-const directionRegEx = /\s*to\s*(left|right|top|bottom)\s*(left|right|top|bottom)?\s*|()/g;
+const directionRegEx = /\s*to\s*(left|right|top|bottom)\s*(left|right|top|bottom)?\s*/gy;
 const sideDirections = {
     top: Math.PI * 0/2,
     right: Math.PI * 1/2,
@@ -490,8 +505,8 @@ const cornerDirections = {
 function parseDirection(value: string, lastIndex: number = 0): TokenRange & Angle {
     directionRegEx.lastIndex = lastIndex;
     const result = directionRegEx.exec(value);
-    if (!result[1]) {
-        return null; // At least one direction expected!
+    if (!result) {
+        return null;
     }
     lastIndex = directionRegEx.lastIndex;
     const firstDirection = result[1];
@@ -504,20 +519,20 @@ function parseDirection(value: string, lastIndex: number = 0): TokenRange & Angl
     }
 }
 
-const openingBracketRegEx = /\s*(\()\s*|()/g;
-const closingBracketRegEx = /\s*(\))\s*|()/g;
-const closingBracketOrCommaRegEx = /\s*(\)|,)\s*|()/g;
+const openingBracketRegEx = /\s*\(\s*/gy;
+const closingBracketRegEx = /\s*\)\s*/gy;
+const closingBracketOrCommaRegEx = /\s*(\)|,)\s*/gy;
 function parseArgumentsList(value: string, lastIndex: number, argument: (value: string, lastIndex: number, index: number) => TokenRange): TokenRange {
     openingBracketRegEx.lastIndex = lastIndex;
     const openingBracket = openingBracketRegEx.exec(value);
-    if (!openingBracket[1]) {
+    if (!openingBracket) {
         return null;
     }
     lastIndex = openingBracketRegEx.lastIndex;
 
     closingBracketRegEx.lastIndex = lastIndex;
     const closingBracket = closingBracketRegEx.exec(value);
-    if (closingBracket[1]) {
+    if (closingBracket) {
         return { lastIndex };
     }
 
@@ -530,7 +545,7 @@ function parseArgumentsList(value: string, lastIndex: number, argument: (value: 
         
         closingBracketOrCommaRegEx.lastIndex = lastIndex;
         const closingBracketOrComma = closingBracketOrCommaRegEx.exec(value);
-        if (closingBracketOrComma[1]) {
+        if (closingBracketOrComma) {
             lastIndex = closingBracketOrCommaRegEx.lastIndex;
             if (closingBracketOrComma[1] === ",") {
                 continue;
@@ -543,11 +558,11 @@ function parseArgumentsList(value: string, lastIndex: number, argument: (value: 
     }
 }
 
-const linearGradientStartRegEx = /\s*(linear-gradient)\s*|()/g;
+const linearGradientStartRegEx = /\s*linear-gradient\s*/gy;
 export function parseLinearGradient(value: string, lastIndex: number = 0): TokenRange & { gradient: LinearGradient } {
     linearGradientStartRegEx.lastIndex = lastIndex;
     const lgs = linearGradientStartRegEx.exec(value);
-    if (!lgs[1]) {
+    if (!lgs) {
         return null;
     }
     lastIndex = linearGradientStartRegEx.lastIndex;
@@ -618,14 +633,14 @@ export interface BackgroundPosition {
     };
 }
 
-const slashRegEx = /\s*(\/)\s*|()/g;
+const slashRegEx = /\s*(\/)\s*/gy;
 function parseSlash(value: string, lastIndex: number): TokenRange {
     slashRegEx.lastIndex = lastIndex;
     const slash = slashRegEx.exec(value);
-    if (slash[1]) {
-        return { lastIndex: slashRegEx.lastIndex };
+    if (!slash) {
+        return null;
     }
-    return null;
+    return { lastIndex: slashRegEx.lastIndex };
 }
 
 export function parseBackground(value: string): Background {
