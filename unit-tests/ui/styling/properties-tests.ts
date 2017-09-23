@@ -22,10 +22,6 @@ describe("ui", () => {
                     view.style.background = "#996633";
                     assert.equal(view.style.backgroundColor.toString(), "#996633");
                 });
-                it.skip("can be set to gradient, and sets the backgroundGradient property", () => {
-                    var view = new CustomView();
-                    view.style.background = "linear-gradient(red, yellow)";
-                });
             });
         });
     });
@@ -91,26 +87,62 @@ describe("ui", () => {
                 lastIndex: 19
             });
             test(parseBackgroundPosition, "right center", { x: "right", y: "center", lastIndex: 12 });
-            // test(parseBackgroundPosition, "center left 100%");
-            // test(parseBackgroundPosition, "top 50% left 100%");
-            // test(parseBackgroundPosition, "bottom left 25%");
-            // test(parseBackgroundPosition, "top 100% left 25%");
+            test(parseBackgroundPosition, "center left 100%", { x: { align: "left", offset: 1, unit: "%" }, y: "center", lastIndex: 16 });
+            test(parseBackgroundPosition, "top 50% left 100%", { x: { align: "left", offset: 1, unit: "%" }, y: { align: "top", offset: 0.5, unit: "%" }, lastIndex: 17 });
+            test(parseBackgroundPosition, "bottom left 25%", { x: { align: "left", offset: 0.25, unit: "%" }, y: "bottom", lastIndex: 15 });
+            test(parseBackgroundPosition, "top 100% left 25%", { x: { align: "left", offset: 0.25, unit: "%" }, y: { align: "top", offset: 1, unit: "%" }, lastIndex: 17 });
         });
 
         describe("background", () => {
             test(parseBackground, "   #996633  ", { color: 0xFF996633 });
-            test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { color: 0xFF00FF00, image: "smiley.gif", repeat: { x: false, y: true } });
+            test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { color: 0xFF00FF00, image: { url: "smiley.gif" }, repeat: { x: false, y: true } });
             test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% #00ff00', {
                 color: 0xFF00FF00,
-                image: "smiley.gif",
+                image: { url: "smiley.gif" },
                 repeat: { x: false, y: false },
                 position: {
                     x: { align: "left", offset: 1, unit: "%" },
                     y: { align: "top", offset: 0.5, unit: "%" }
                 }
             });
-            test(parseBackground, '  linear-gradient(to right, red , yellow) ', null);
-            test(parseBackground, '  radial-gradient(red 5%, yellow 15%, green 60%)   ', null);
+            test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% / 100px 100px #00ff00', {
+                color: 0xFF00FF00,
+                image: { url: "smiley.gif" },
+                repeat: { x: false, y: false },
+                position: {
+                    x: { align: "left", offset: 1, unit: "%" },
+                    y: { align: "top", offset: 0.5, unit: "%" }
+                },
+                size: { x: { value: 100, unit: "px" }, y: { value: 100, unit: "px" }}
+            });
+            test(parseBackground, '  linear-gradient(to right top) ', {
+                image: {
+                    gradient: "linear",
+                    angle: Math.PI * 1/4,
+                    colors: []
+                }
+            });
+            test(parseBackground, '  linear-gradient(45deg, #0000FF, #00FF00) ', {
+                image: {
+                    gradient: "linear",
+                    angle: Math.PI * 1/4,
+                    colors: [
+                        { argb: 0xFF0000FF },
+                        { argb: 0xFF00FF00 }
+                    ]
+                }
+            });
+            test(parseBackground, 'linear-gradient(0deg, blue, green 40%, red)', {
+                image: {
+                    gradient: "linear",
+                    angle: Math.PI * 0/4,
+                    colors: [
+                        { argb: 0xFF0000FF },
+                        { argb: 0xFF008000, offset: { value: 0.4, unit: "%" }},
+                        { argb: 0xFFFF0000 }
+                    ]
+                }
+            });
         });
     });
 });

@@ -1,6 +1,20 @@
 
+interface TokenRange {
+    lastIndex: number;
+}
+interface Color {
+    argb: number;
+}
+interface URL {
+    url: string;
+}
+interface Unit {
+    value: number;
+    unit: string;
+}
+
 const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*|()/g;
-export function parseURL(value: string, lastIndex: number = 0): { url: string, lastIndex: number } {
+export function parseURL(value: string, lastIndex: number = 0): URL & TokenRange {
     urlRegEx.lastIndex = lastIndex;
     const result = urlRegEx.exec(value);
     lastIndex = urlRegEx.lastIndex;
@@ -9,7 +23,7 @@ export function parseURL(value: string, lastIndex: number = 0): { url: string, l
 }
 
 const hexColorRegEx = /\s*#((?:[0-9A-F]{8})|(?:[0-9A-F]{6})|(?:[0-9A-F]{3}))\s*|()/gi;
-function parseHexColor(value: string, lastIndex: number = 0): { argb: number, lastIndex: number } {
+function parseHexColor(value: string, lastIndex: number = 0): Color & TokenRange {
     hexColorRegEx.lastIndex = lastIndex;
     const result = hexColorRegEx.exec(value);
     lastIndex = hexColorRegEx.lastIndex;
@@ -36,7 +50,7 @@ function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): numbe
 }
 
 const rgbColorRegEx = /\s*(rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\))|()/g;
-function parseRGBColor(value: string, lastIndex: number = 0): { argb: number, lastIndex: number } {
+function parseRGBColor(value: string, lastIndex: number = 0): Color & TokenRange {
     rgbColorRegEx.lastIndex = lastIndex;
     const result = rgbColorRegEx.exec(value);
     lastIndex = rgbColorRegEx.lastIndex;
@@ -45,7 +59,7 @@ function parseRGBColor(value: string, lastIndex: number = 0): { argb: number, la
 }
 
 const rgbaColorRegEx = /\s*(rgba\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*,\s*([01]?\.?\d*)\s*\))|()/g;
-function parseRGBAColor(value: string, lastIndex: number = 0): { argb: number, lastIndex: number } {
+function parseRGBAColor(value: string, lastIndex: number = 0): Color & TokenRange {
     rgbaColorRegEx.lastIndex = lastIndex;
     const result = rgbaColorRegEx.exec(value);
     lastIndex = rgbaColorRegEx.lastIndex;
@@ -53,8 +67,165 @@ function parseRGBAColor(value: string, lastIndex: number = 0): { argb: number, l
     return argb === undefined ? null : { argb, lastIndex };
 }
 
-export function parseColor(value: string, lastIndex: number = 0): { argb: number, lastIndex: number } {
-    return parseHexColor(value, lastIndex) || parseRGBColor(value, lastIndex) || parseRGBAColor(value, lastIndex);
+const colorKeywords = {
+    aliceblue: 0xFFF0F8FF,
+    antiquewhite: 0xFFFAEBD7,
+    aqua: 0xFF00FFFF,
+    aquamarine: 0xFF7FFFD4,
+    azure: 0xFFF0FFFF,
+    beige: 0xFFF5F5DC,
+    bisque: 0xFFFFE4C4,
+    black: 0xFF000000,
+    blanchedalmond: 0xFFFFEBCD,
+    blue: 0xFF0000FF,
+    blueviolet: 0xFF8A2BE2,
+    brown: 0xFFA52A2A,
+    burlywood: 0xFFDEB887,
+    cadetblue: 0xFF5F9EA0,
+    chartreuse: 0xFF7FFF00,
+    chocolate: 0xFFD2691E,
+    coral: 0xFFFF7F50,
+    cornflowerblue: 0xFF6495ED,
+    cornsilk: 0xFFFFF8DC,
+    crimson: 0xFFDC143C,
+    cyan: 0xFF00FFFF,
+    darkblue: 0xFF00008B,
+    darkcyan: 0xFF008B8B,
+    darkgoldenrod: 0xFFB8860B,
+    darkgray: 0xFFA9A9A9,
+    darkgreen: 0xFF006400,
+    darkgrey: 0xFFA9A9A9,
+    darkkhaki: 0xFFBDB76B,
+    darkmagenta: 0xFF8B008B,
+    darkolivegreen: 0xFF556B2F,
+    darkorange: 0xFFFF8C00,
+    darkorchid: 0xFF9932CC,
+    darkred: 0xFF8B0000,
+    darksalmon: 0xFFE9967A,
+    darkseagreen: 0xFF8FBC8F,
+    darkslateblue: 0xFF483D8B,
+    darkslategray: 0xFF2F4F4F,
+    darkslategrey: 0xFF2F4F4F,
+    darkturquoise: 0xFF00CED1,
+    darkviolet: 0xFF9400D3,
+    deeppink: 0xFFFF1493,
+    deepskyblue: 0xFF00BFFF,
+    dimgray: 0xFF696969,
+    dimgrey: 0xFF696969,
+    dodgerblue: 0xFF1E90FF,
+    firebrick: 0xFFB22222,
+    floralwhite: 0xFFFFFAF0,
+    forestgreen: 0xFF228B22,
+    fuchsia: 0xFFFF00FF,
+    gainsboro: 0xFFDCDCDC,
+    ghostwhite: 0xFFF8F8FF,
+    gold: 0xFFFFD700,
+    goldenrod: 0xFFDAA520,
+    gray: 0xFF808080,
+    green: 0xFF008000,
+    greenyellow: 0xFFADFF2F,
+    grey: 0xFF808080,
+    honeydew: 0xFFF0FFF0,
+    hotpink: 0xFFFF69B4,
+    indianred: 0xFFCD5C5C,
+    indigo: 0xFF4B0082,
+    ivory: 0xFFFFFFF0,
+    khaki: 0xFFF0E68C,
+    lavender: 0xFFE6E6FA,
+    lavenderblush: 0xFFFFF0F5,
+    lawngreen: 0xFF7CFC00,
+    lemonchiffon: 0xFFFFFACD,
+    lightblue: 0xFFADD8E6,
+    lightcoral: 0xFFF08080,
+    lightcyan: 0xFFE0FFFF,
+    lightgoldenrodyellow: 0xFFFAFAD2,
+    lightgray: 0xFFD3D3D3,
+    lightgreen: 0xFF90EE90,
+    lightgrey: 0xFFD3D3D3,
+    lightpink: 0xFFFFB6C1,
+    lightsalmon: 0xFFFFA07A,
+    lightseagreen: 0xFF20B2AA,
+    lightskyblue: 0xFF87CEFA,
+    lightslategray: 0xFF778899,
+    lightslategrey: 0xFF778899,
+    lightsteelblue: 0xFFB0C4DE,
+    lightyellow: 0xFFFFFFE0,
+    lime: 0xFF00FF00,
+    limegreen: 0xFF32CD32,
+    linen: 0xFFFAF0E6,
+    magenta: 0xFFFF00FF,
+    maroon: 0xFF800000,
+    mediumaquamarine: 0xFF66CDAA,
+    mediumblue: 0xFF0000CD,
+    mediumorchid: 0xFFBA55D3,
+    mediumpurple: 0xFF9370DB,
+    mediumseagreen: 0xFF3CB371,
+    mediumslateblue: 0xFF7B68EE,
+    mediumspringgreen: 0xFF00FA9A,
+    mediumturquoise: 0xFF48D1CC,
+    mediumvioletred: 0xFFC71585,
+    midnightblue: 0xFF191970,
+    mintcream: 0xFFF5FFFA,
+    mistyrose: 0xFFFFE4E1,
+    moccasin: 0xFFFFE4B5,
+    navajowhite: 0xFFFFDEAD,
+    navy: 0xFF000080,
+    oldlace: 0xFFFDF5E6,
+    olive: 0xFF808000,
+    olivedrab: 0xFF6B8E23,
+    orange: 0xFFFFA500,
+    orangered: 0xFFFF4500,
+    orchid: 0xFFDA70D6,
+    palegoldenrod: 0xFFEEE8AA,
+    palegreen: 0xFF98FB98,
+    paleturquoise: 0xFFAFEEEE,
+    palevioletred: 0xFFDB7093,
+    papayawhip: 0xFFFFEFD5,
+    peachpuff: 0xFFFFDAB9,
+    peru: 0xFFCD853F,
+    pink: 0xFFFFC0CB,
+    plum: 0xFFDDA0DD,
+    powderblue: 0xFFB0E0E6,
+    purple: 0xFF800080,
+    red: 0xFFFF0000,
+    rosybrown: 0xFFBC8F8F,
+    royalblue: 0xFF4169E1,
+    saddlebrown: 0xFF8B4513,
+    salmon: 0xFFFA8072,
+    sandybrown: 0xFFF4A460,
+    seagreen: 0xFF2E8B57,
+    seashell: 0xFFFFF5EE,
+    sienna: 0xFFA0522D,
+    silver: 0xFFC0C0C0,
+    skyblue: 0xFF87CEEB,
+    slateblue: 0xFF6A5ACD,
+    slategray: 0xFF708090,
+    slategrey: 0xFF708090,
+    snow: 0xFFFFFAFA,
+    springgreen: 0xFF00FF7F,
+    steelblue: 0xFF4682B4,
+    tan: 0xFFD2B48C,
+    teal: 0xFF008080,
+    thistle: 0xFFD8BFD8,
+    tomato: 0xFFFF6347,
+    turquoise: 0xFF40E0D0,
+    violet: 0xFFEE82EE,
+    wheat: 0xFFF5DEB3,
+    white: 0xFFFFFFFF,
+    whitesmoke: 0xFFF5F5F5,
+    yellow: 0xFFFFFF00,
+    yellowgreen: 0xFF9ACD32
+};
+
+function parseColorKeyword(value, lastIndex: number, keyword = parseKeyword(value, lastIndex)): Color & TokenRange {
+    if (keyword && keyword.keyword in colorKeywords) {
+        return { argb: colorKeywords[keyword.keyword], lastIndex: keyword.lastIndex };
+    }
+    return null;
+}
+
+export function parseColor(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): Color & TokenRange {
+    return parseHexColor(value, lastIndex) || parseColorKeyword(value, lastIndex, keyword) || parseRGBColor(value, lastIndex) || parseRGBAColor(value, lastIndex);
 }
 
 interface Keyword {
@@ -77,45 +248,107 @@ function parseKeyword(value: string, lastIndex: number = 0, preParsedKeyword?: K
     return keyword === undefined ? null : { keyword, lastIndex }
 }
 
-const backgroundRepeatMap = {
-    "repeat": Object.freeze({ x: true, y: true }),
-    "repeat-x": Object.freeze({ x: true, y: false }),
-    "repeat-y": Object.freeze({ x: false, y: true }),
-    "no-repeat": Object.freeze({ x: false, y: false })
-}
-
-function parseRepeat(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): { repeat: { x: boolean, y: boolean }, lastIndex: number } {
-    if (keyword && keyword.keyword in backgroundRepeatMap) {
-        return { repeat: backgroundRepeatMap[keyword.keyword], lastIndex: keyword.lastIndex };
+const backgroundRepeatKeywords = new Set([ "repeat", "repeat-x", "repeat-y", "no-repeat" ]);
+function parseRepeat(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): BackgroundRepeat & TokenRange {
+    if (keyword && backgroundRepeatKeywords.has(keyword.keyword)) {
+        lastIndex = keyword.lastIndex;
+        switch (keyword.keyword) {
+            case "repeat": return { x: true, y: true, lastIndex };
+            case "repeat-x": return { x: true, y: false, lastIndex };
+            case "repeat-y": return { x: false, y: true, lastIndex };
+            case "no-repeat": return { x: false, y: false, lastIndex };
+        }
     }
     return null;
 }
 
-const percentageOrLengthRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)(px|dip|%)?\s*|()/g;
-export function parsePercentageOrLength(value: string, lastIndex: number = 0): Percentage | Length {
-    percentageOrLengthRegEx.lastIndex = lastIndex;
-    const result = percentageOrLengthRegEx.exec(value);
-    lastIndex = percentageOrLengthRegEx.lastIndex;
+const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*|()/g;
+export function parseUnit(value: string, lastIndex: number = 0): TokenRange & Unit {
+    unitRegEx.lastIndex = lastIndex;
+    const result = unitRegEx.exec(value);
+    lastIndex = unitRegEx.lastIndex;
     if (result[1]) {
         let value = parseFloat(result[1]);
-        const unit = <"px" | "dip" | "%">result[2] || "dip";
-        if (unit === "%") {
-            value /= 100;
-        }
+        const unit = <any>result[2] || "dip";
         return { value, unit, lastIndex };
     }
     return null;
 }
 
-interface Length {
-    value: number;
-    unit: "px" | "dip" | "%";
-    lastIndex: number;
+export function parsePercentageOrLength(value: string, lastIndex: number = 0): TokenRange & LengthPercentage {
+    const unitResult = parseUnit(value, lastIndex);
+    if (unitResult) {
+        const { lastIndex, value, unit } = unitResult;
+        if (unit === "%") {
+            return { value: value / 100, unit, lastIndex };
+        } else if (!unit) {
+            return { value, unit: "dip", lastIndex };
+        } else if (unit === "px" || unit === "dip") {
+            return { value, unit, lastIndex };
+        }
+    }
+    return null;
 }
-interface Percentage {
+
+export function parseAngle(value: string, lastIndex: number = 0): TokenRange & Angle {
+    const angleResult = parseUnit(value, lastIndex);
+    if (angleResult) {
+        const { lastIndex, value, unit } = angleResult;
+        return ({
+            "deg": (deg: number) => ({ angle: deg / 180 * Math.PI, lastIndex }),
+            "rad": (rad: number) => ({ angle: rad, lastIndex }),
+            "grad": (grad: number) => ({ angle: grad / 200 * Math.PI, lastIndex }),
+            "turn": (turn: number) => ({ angle: turn * Math.PI * 2, lastIndex })
+        }[unit] || (() => null))(value);
+    }
+    return null;
+}
+export interface Angle {
+    angle: number;
+}
+export interface Length {
     value: number;
     unit: "px" | "dip";
-    lastIndex: number;
+}
+export interface Percentage {
+    value: number;
+    unit: "%";
+}
+export type LengthPercentage = Length | Percentage; 
+
+const backgroundSizeKeywords = new Set(["auto", "contain", "cover"]);
+export function parseBackgroundSize(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): { size: BackgroundSize, lastIndex: number } {
+    if (keyword && backgroundSizeKeywords.has(keyword.keyword)) {
+        lastIndex = keyword.lastIndex;
+        const size = <"auto" | "cover" | "contain">keyword.keyword;
+        return { size, lastIndex };
+    }
+
+    // Parse one or two lengths... the other will be "auto"
+    const firstLength = parsePercentageOrLength(value, lastIndex);
+    if (firstLength) {
+        lastIndex = firstLength.lastIndex;
+        const secondLength = parsePercentageOrLength(value, firstLength.lastIndex);
+        if (secondLength) {
+            lastIndex = secondLength.lastIndex;
+            return { 
+                size: {
+                    x: { value: firstLength.value, unit: firstLength.unit },
+                    y: { value: secondLength.value, unit: secondLength.unit }
+                },
+                lastIndex
+            };
+        } else {
+            return {
+                size: { 
+                    x: { value: firstLength.value, unit: firstLength.unit },
+                    y: "auto"
+                },
+                lastIndex
+            };
+        }
+    }
+    return null;
 }
 
 const backgroundPositionKeywords = Object.freeze(new Set([ "left", "right", "top", "bottom", "center" ]));
@@ -127,7 +360,7 @@ const backgroundPositionKeywordsDirection: {[align: string]: "x" | "center" | "y
     "bottom": "y"
 }
 export function parseBackgroundPosition(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): BackgroundPosition & { lastIndex: number } {
-    function format<T extends "center">(align: T, offset: Percentage | Length) {
+    function format<T extends "center">(align: T, offset: LengthPercentage) {
         if (align === "center") {
             return "center"
         } else if (offset && offset.value !== 0) {
@@ -214,22 +447,162 @@ export function parseBackgroundPosition(value: string, lastIndex: number = 0, ke
     }
 }
 
+export interface ColorStop extends Color {
+    offset?: LengthPercentage;
+}
+
+export interface LinearGradient {
+    gradient: "linear";
+    angle: number;
+    colors: ColorStop[];
+}
+
+export interface RadialGradient {
+    gradient: "radial";
+    colors: ColorStop[];
+}
+
+const directionRegEx = /\s*to\s*(left|right|top|bottom)\s*(left|right|top|bottom)?\s*|()/g;
+const sideDirections = {
+    top: Math.PI * 0/2,
+    right: Math.PI * 1/2,
+    bottom: Math.PI * 2/2,
+    left: Math.PI * 3/2
+}
+const cornerDirections = {
+    top: {
+        right: Math.PI * 1/4,
+        left: Math.PI * 7/4
+    },
+    right: {
+        top: Math.PI * 1/4,
+        bottom: Math.PI * 3/4
+    },
+    bottom: {
+        right: Math.PI * 3/4,
+        left: Math.PI * 5/4
+    },
+    left: {
+        top: Math.PI * 7/4,
+        bottom: Math.PI * 5/4
+    }
+}
+function parseDirection(value: string, lastIndex: number = 0): TokenRange & Angle {
+    directionRegEx.lastIndex = lastIndex;
+    const result = directionRegEx.exec(value);
+    if (!result[1]) {
+        return null; // At least one direction expected!
+    }
+    lastIndex = directionRegEx.lastIndex;
+    const firstDirection = result[1];
+    if (result[2]) {
+        const secondDirection = result[2];
+        const direction = cornerDirections[firstDirection][secondDirection];
+        return direction === undefined ? null : { angle: direction, lastIndex };
+    } else {
+        return { angle: sideDirections[firstDirection], lastIndex }
+    }
+}
+
+const openingBracketRegEx = /\s*(\()\s*|()/g;
+const closingBracketRegEx = /\s*(\))\s*|()/g;
+const closingBracketOrCommaRegEx = /\s*(\)|,)\s*|()/g;
+function parseArgumentsList(value: string, lastIndex: number, argument: (value: string, lastIndex: number, index: number) => TokenRange): TokenRange {
+    openingBracketRegEx.lastIndex = lastIndex;
+    const openingBracket = openingBracketRegEx.exec(value);
+    if (!openingBracket[1]) {
+        return null;
+    }
+    lastIndex = openingBracketRegEx.lastIndex;
+
+    closingBracketRegEx.lastIndex = lastIndex;
+    const closingBracket = closingBracketRegEx.exec(value);
+    if (closingBracket[1]) {
+        return { lastIndex };
+    }
+
+    for(var index = 0; true; index++) {
+        const arg = argument(value, lastIndex, index);
+        if (!arg) {
+            return null;
+        }
+        lastIndex = arg.lastIndex;
+        
+        closingBracketOrCommaRegEx.lastIndex = lastIndex;
+        const closingBracketOrComma = closingBracketOrCommaRegEx.exec(value);
+        if (closingBracketOrComma[1]) {
+            lastIndex = closingBracketOrCommaRegEx.lastIndex;
+            if (closingBracketOrComma[1] === ",") {
+                continue;
+            } else if (closingBracketOrComma[1] === ")") {
+                return { lastIndex };
+            }
+        } else {
+            return null;
+        }
+    }
+}
+
+const linearGradientStartRegEx = /\s*(linear-gradient)\s*|()/g;
+export function parseLinearGradient(value: string, lastIndex: number = 0): TokenRange & { gradient: LinearGradient } {
+    linearGradientStartRegEx.lastIndex = lastIndex;
+    const lgs = linearGradientStartRegEx.exec(value);
+    if (!lgs[1]) {
+        return null;
+    }
+    lastIndex = linearGradientStartRegEx.lastIndex;
+
+    let angle = Math.PI;
+    const colors: ColorStop[] = [];
+
+    const parsedArgs = parseArgumentsList(value, lastIndex, (value, lastIndex, index) => {
+        if (!index) {
+            const angleArg = parseAngle(value, lastIndex) || parseDirection(value, lastIndex);
+            if (angleArg) {
+                angle = angleArg.angle;
+                return angleArg;
+            }
+        }
+
+        const color = parseColor(value, lastIndex);
+        if (color) {
+            const offset = parsePercentageOrLength(value, color.lastIndex);
+            if (offset) {
+                colors.push({ argb: color.argb, offset: <any>{ value: offset.value, unit: offset.unit } });
+                return offset;
+            }
+            colors.push({ argb: color.argb });
+            return color;
+        }
+    });
+    if (!parsedArgs) {
+        return null;
+    }
+    lastIndex = parsedArgs.lastIndex;
+
+    return { gradient: { gradient: "linear", angle, colors }, lastIndex };
+}
+
+export function parseRadialGradient(vlaue: string, lastIndex: number = 0): TokenRange & { gradient: RadialGradient } {
+    return null;
+}
+
 export interface Background {
-    /**
-     * Background color argb number.
-     */
     readonly color?: number;
-    /**
-     * Background image url.
-     */
-    readonly image?: string;
+    readonly image?: URL | LinearGradient;
     readonly repeat?: BackgroundRepeat;
     readonly position?: BackgroundPosition;
+    readonly size?: BackgroundSize;
 }
 
 export interface BackgroundRepeat {
     readonly x: boolean;
     readonly y: boolean;
+}
+
+export type BackgroundSize = "auto" | "cover" | "contain" | {
+    x: { value: number, unit: "%" | "px" | "dip" },
+    y: "auto" | { value: number, unit: "%" | "px" | "dip" }
 }
 
 export interface BackgroundPosition {
@@ -245,11 +618,22 @@ export interface BackgroundPosition {
     };
 }
 
+const slashRegEx = /\s*(\/)\s*|()/g;
+function parseSlash(value: string, lastIndex: number): TokenRange {
+    slashRegEx.lastIndex = lastIndex;
+    const slash = slashRegEx.exec(value);
+    if (slash[1]) {
+        return { lastIndex: slashRegEx.lastIndex };
+    }
+    return null;
+}
+
 export function parseBackground(value: string): Background {
     const background: any = {};
     let lastIndex = 0;
     while(lastIndex < value.length) {
-        const color = parseColor(value, lastIndex);
+        const keyword = parseKeyword(value, lastIndex);
+        const color = parseColor(value, lastIndex, keyword);
         if (color) {
             background.color = color.argb;
             lastIndex = color.lastIndex;
@@ -257,24 +641,39 @@ export function parseBackground(value: string): Background {
         }
         const url = parseURL(value, lastIndex);
         if (url) {
-            background.image = url.url;
+            background.image = { url: url.url };
             lastIndex = url.lastIndex;
             continue;
         }
-
-        const keyword = parseKeyword(value, lastIndex);
         const repeat = parseRepeat(value, lastIndex, keyword);
         if (repeat) {
-            background.repeat = repeat.repeat;
+            background.repeat = { x: repeat.x, y: repeat.y };
             lastIndex = repeat.lastIndex;
             continue;
         }
-
         const position = parseBackgroundPosition(value, lastIndex, keyword);
         if (position) {
             background.position = { x: position.x, y: position.y };
             lastIndex = position.lastIndex;
-            // Try to parse also <"/" size>
+
+            const slash = parseSlash(value, lastIndex);
+            if (slash) {
+                lastIndex = slash.lastIndex;
+                const size = parseBackgroundSize(value, lastIndex);
+                if (!size) {
+                    // Found / but no proper size following
+                    return null;
+                }
+                background.size = size.size;
+                lastIndex = size.lastIndex;
+            }
+            continue;
+        }
+
+        const gradient = parseLinearGradient(value, lastIndex) || parseRadialGradient(value, lastIndex);
+        if (gradient) {
+            background.image = gradient.gradient;
+            lastIndex = gradient.lastIndex;
             continue;
         }
 
