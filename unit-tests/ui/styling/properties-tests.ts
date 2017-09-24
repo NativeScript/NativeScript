@@ -95,11 +95,11 @@ describe("ui", () => {
 
         describe("background", () => {
             test(parseBackground, "   #996633  ", { color: 0xFF996633 });
-            test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { color: 0xFF00FF00, image: { url: "smiley.gif" }, repeat: { x: false, y: true } });
+            test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { color: 0xFF00FF00, image: "smiley.gif", repeat: "repeat-y" });
             test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% #00ff00', {
                 color: 0xFF00FF00,
-                image: { url: "smiley.gif" },
-                repeat: { x: false, y: false },
+                image: "smiley.gif",
+                repeat: "no-repeat",
                 position: {
                     x: { align: "left", offset: 1, unit: "%" },
                     y: { align: "top", offset: 0.5, unit: "%" }
@@ -107,8 +107,8 @@ describe("ui", () => {
             });
             test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% / 100px 100px #00ff00', {
                 color: 0xFF00FF00,
-                image: { url: "smiley.gif" },
-                repeat: { x: false, y: false },
+                image: "smiley.gif",
+                repeat: "no-repeat",
                 position: {
                     x: { align: "left", offset: 1, unit: "%" },
                     y: { align: "top", offset: 0.5, unit: "%" }

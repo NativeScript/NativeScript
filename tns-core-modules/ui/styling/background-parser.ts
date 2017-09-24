@@ -1,33 +1,31 @@
-
 interface TokenRange {
     lastIndex: number;
 }
 
-interface Color {
-    argb: number;
-}
-interface URL {
-    url: string;
-}
+declare type Parsed<V> = { lastIndex: number } & V;
+
+export type ARGB = number;
+export type URL = string;
+
 interface Unit {
     value: number;
     unit: string;
 }
 
 const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*/gy;
-export function parseURL(value: string, lastIndex: number = 0): URL & TokenRange {
+export function parseURL(value: string, lastIndex: number = 0): Parsed<{ url: URL }> {
     urlRegEx.lastIndex = lastIndex;
     const result = urlRegEx.exec(value);
     if (!result) {
         return null;
     }
     lastIndex = urlRegEx.lastIndex;
-    const url = result[2] || result[3] || undefined;
-    return url === undefined ? null : { url, lastIndex };
+    const url = result[2] || result[3];
+    return { url, lastIndex };
 }
 
 const hexColorRegEx = /\s*#((?:[0-9A-F]{8})|(?:[0-9A-F]{6})|(?:[0-9A-F]{3}))\s*/giy;
-function parseHexColor(value: string, lastIndex: number = 0): Color & TokenRange {
+function parseHexColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARGB }> {
     hexColorRegEx.lastIndex = lastIndex;
     const result = hexColorRegEx.exec(value);
     if (!result) {
@@ -36,16 +34,14 @@ function parseHexColor(value: string, lastIndex: number = 0): Color & TokenRange
     lastIndex = hexColorRegEx.lastIndex;
     let hex = result[1];
     let argb;
-    if (hex) {
-        if (hex.length === 8) {
-            argb = parseInt("0x" + hex);
-        } else if (hex.length === 6) {
-            argb = parseInt("0xFF" + hex);
-        } else if (hex.length === 3) {
-            argb = parseInt("0xFF" + hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]);
-        }
+    if (hex.length === 8) {
+        argb = parseInt("0x" + hex);
+    } else if (hex.length === 6) {
+        argb = parseInt("0xFF" + hex);
+    } else if (hex.length === 3) {
+        argb = parseInt("0xFF" + hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]);
     }
-    return argb === undefined ? null : { argb, lastIndex };
+    return { argb, lastIndex };
 }
 
 function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
@@ -57,7 +53,7 @@ function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): numbe
 }
 
 const rgbColorRegEx = /\s*(rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\))/gy;
-function parseRGBColor(value: string, lastIndex: number = 0): Color & TokenRange {
+function parseRGBColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARGB }> {
     rgbColorRegEx.lastIndex = lastIndex;
     const result = rgbColorRegEx.exec(value);
     if (!result) {
@@ -69,7 +65,7 @@ function parseRGBColor(value: string, lastIndex: number = 0): Color & TokenRange
 }
 
 const rgbaColorRegEx = /\s*(rgba\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*,\s*([01]?\.?\d*)\s*\))/gy;
-function parseRGBAColor(value: string, lastIndex: number = 0): Color & TokenRange {
+function parseRGBAColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARGB }> {
     rgbaColorRegEx.lastIndex = lastIndex;
     const result = rgbaColorRegEx.exec(value);
     if (!result) {
@@ -81,6 +77,8 @@ function parseRGBAColor(value: string, lastIndex: number = 0): Color & TokenRang
 }
 
 const colorKeywords = {
+    transparent: 0x00000000,
+
     aliceblue: 0xFFF0F8FF,
     antiquewhite: 0xFFFAEBD7,
     aqua: 0xFF00FFFF,
@@ -230,14 +228,14 @@ const colorKeywords = {
     yellowgreen: 0xFF9ACD32
 };
 
-function parseColorKeyword(value, lastIndex: number, keyword = parseKeyword(value, lastIndex)): Color & TokenRange {
+function parseColorKeyword(value, lastIndex: number, keyword = parseKeyword(value, lastIndex)): Parsed<{ argb: ARGB }> {
     if (keyword && keyword.keyword in colorKeywords) {
         return { argb: colorKeywords[keyword.keyword], lastIndex: keyword.lastIndex };
     }
     return null;
 }
 
-export function parseColor(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): Color & TokenRange {
+export function parseColor(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): Parsed<{ argb: ARGB }> {
     return parseHexColor(value, lastIndex) || parseColorKeyword(value, lastIndex, keyword) || parseRGBColor(value, lastIndex) || parseRGBAColor(value, lastIndex);
 }
 
@@ -264,15 +262,11 @@ function parseKeyword(value: string, lastIndex: number = 0, preParsedKeyword?: K
 }
 
 const backgroundRepeatKeywords = new Set([ "repeat", "repeat-x", "repeat-y", "no-repeat" ]);
-function parseRepeat(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): BackgroundRepeat & TokenRange {
+function parseRepeat(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): { backgroundRepeat: BackgroundRepeat } & TokenRange {
     if (keyword && backgroundRepeatKeywords.has(keyword.keyword)) {
         lastIndex = keyword.lastIndex;
-        switch (keyword.keyword) {
-            case "repeat": return { x: true, y: true, lastIndex };
-            case "repeat-x": return { x: true, y: false, lastIndex };
-            case "repeat-y": return { x: false, y: true, lastIndex };
-            case "no-repeat": return { x: false, y: false, lastIndex };
-        }
+        const backgroundRepeat = <BackgroundRepeat>keyword.keyword;
+        return { backgroundRepeat, lastIndex };
     }
     return null;
 }
@@ -462,7 +456,8 @@ export function parseBackgroundPosition(value: string, lastIndex: number = 0, ke
     }
 }
 
-export interface ColorStop extends Color {
+export interface ColorStop {
+    argb: ARGB;
     offset?: LengthPercentage;
 }
 
@@ -610,10 +605,7 @@ export interface Background {
     readonly size?: BackgroundSize;
 }
 
-export interface BackgroundRepeat {
-    readonly x: boolean;
-    readonly y: boolean;
-}
+export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 
 export type BackgroundSize = "auto" | "cover" | "contain" | {
     x: { value: number, unit: "%" | "px" | "dip" },
@@ -654,15 +646,9 @@ export function parseBackground(value: string): Background {
             lastIndex = color.lastIndex;
             continue;
         }
-        const url = parseURL(value, lastIndex);
-        if (url) {
-            background.image = { url: url.url };
-            lastIndex = url.lastIndex;
-            continue;
-        }
         const repeat = parseRepeat(value, lastIndex, keyword);
         if (repeat) {
-            background.repeat = { x: repeat.x, y: repeat.y };
+            background.repeat = repeat.backgroundRepeat;
             lastIndex = repeat.lastIndex;
             continue;
         }
@@ -685,6 +671,12 @@ export function parseBackground(value: string): Background {
             continue;
         }
 
+        const url = parseURL(value, lastIndex);
+        if (url) {
+            background.image = url.url;
+            lastIndex = url.lastIndex;
+            continue;
+        }
         const gradient = parseLinearGradient(value, lastIndex) || parseRadialGradient(value, lastIndex);
         if (gradient) {
             background.image = gradient.gradient;
