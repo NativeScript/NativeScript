@@ -1,37 +1,39 @@
-interface TokenRange {
-    lastIndex: number;
-}
-
-declare type Parsed<V> = { lastIndex: number } & V;
+declare type Parsed<V> = { start: number, end: number, value: V };
 
 export type ARGB = number;
 export type URL = string;
+export type Angle = number;
 
-interface Unit {
+interface Unit<T> {
     value: number;
     unit: string;
 }
+export type Length = Unit<"px" | "dip">;
+export type Percentage = Unit<"%">;
+export type LengthPercentage = Length | Percentage;
+
+export type Keyword = string;
 
 const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*/gy;
-export function parseURL(value: string, lastIndex: number = 0): Parsed<{ url: URL }> {
-    urlRegEx.lastIndex = lastIndex;
-    const result = urlRegEx.exec(value);
+export function parseURL(text: string, start: number = 0): Parsed<URL> {
+    urlRegEx.lastIndex = start;
+    const result = urlRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = urlRegEx.lastIndex;
-    const url = result[2] || result[3];
-    return { url, lastIndex };
+    const end = urlRegEx.lastIndex;
+    const value: URL = result[2] || result[3];
+    return { start, end, value };
 }
 
 const hexColorRegEx = /\s*#((?:[0-9A-F]{8})|(?:[0-9A-F]{6})|(?:[0-9A-F]{3}))\s*/giy;
-function parseHexColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARGB }> {
-    hexColorRegEx.lastIndex = lastIndex;
-    const result = hexColorRegEx.exec(value);
+function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
+    hexColorRegEx.lastIndex = start;
+    const result = hexColorRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = hexColorRegEx.lastIndex;
+    const end = hexColorRegEx.lastIndex;
     let hex = result[1];
     let argb;
     if (hex.length === 8) {
@@ -41,7 +43,7 @@ function parseHexColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARG
     } else if (hex.length === 3) {
         argb = parseInt("0xFF" + hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]);
     }
-    return { argb, lastIndex };
+    return { start, end, value: argb };
 }
 
 function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
@@ -53,27 +55,27 @@ function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): numbe
 }
 
 const rgbColorRegEx = /\s*(rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\))/gy;
-function parseRGBColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARGB }> {
-    rgbColorRegEx.lastIndex = lastIndex;
-    const result = rgbColorRegEx.exec(value);
+function parseRGBColor(text: string, start: number = 0): Parsed<ARGB> {
+    rgbColorRegEx.lastIndex = start;
+    const result = rgbColorRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = rgbColorRegEx.lastIndex;
-    const argb = result[1] && rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]));
-    return { argb, lastIndex };
+    const end = rgbColorRegEx.lastIndex;
+    const value = result[1] && rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]));
+    return { start, end, value };
 }
 
 const rgbaColorRegEx = /\s*(rgba\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*,\s*([01]?\.?\d*)\s*\))/gy;
-function parseRGBAColor(value: string, lastIndex: number = 0): Parsed<{ argb: ARGB }> {
-    rgbaColorRegEx.lastIndex = lastIndex;
-    const result = rgbaColorRegEx.exec(value);
+function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
+    rgbaColorRegEx.lastIndex = start;
+    const result = rgbaColorRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = rgbaColorRegEx.lastIndex;
-    const argb = rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
-    return { argb, lastIndex };
+    const end = rgbaColorRegEx.lastIndex;
+    const value = rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
+    return { start, end, value };
 }
 
 const colorKeywords = {
@@ -228,133 +230,106 @@ const colorKeywords = {
     yellowgreen: 0xFF9ACD32
 };
 
-function parseColorKeyword(value, lastIndex: number, keyword = parseKeyword(value, lastIndex)): Parsed<{ argb: ARGB }> {
-    if (keyword && keyword.keyword in colorKeywords) {
-        return { argb: colorKeywords[keyword.keyword], lastIndex: keyword.lastIndex };
+function parseColorKeyword(value, start: number, keyword = parseKeyword(value, start)): Parsed<ARGB> {
+    if (keyword && keyword.value in colorKeywords) {
+        const end = keyword.end;
+        const value = colorKeywords[keyword.value];
+        return { start, end, value };
     }
     return null;
 }
 
-export function parseColor(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): Parsed<{ argb: ARGB }> {
-    return parseHexColor(value, lastIndex) || parseColorKeyword(value, lastIndex, keyword) || parseRGBColor(value, lastIndex) || parseRGBAColor(value, lastIndex);
-}
-
-interface Keyword {
-    keyword: string;
-    lastIndex: number;
+export function parseColor(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<ARGB> {
+    return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseRGBColor(value, start) || parseRGBAColor(value, start);
 }
 
 const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
-function parseKeyword(value: string, lastIndex: number = 0, preParsedKeyword?: Keyword): Keyword {
-    if (preParsedKeyword) {
-        return preParsedKeyword;
-    }
-    keywordRegEx.lastIndex = lastIndex;
-    const result = keywordRegEx.exec(value);
+function parseKeyword(text: string, start: number = 0): Parsed<Keyword> {
+    keywordRegEx.lastIndex = start;
+    const result = keywordRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = keywordRegEx.lastIndex;
-    const keyword = result[1];
-    // TRICKY: We return null instead of undefined so passing it in places where optional parameters are accepted
-    // can figure out that it is provided as argument, and should not be re-parsed.
-    return keyword === undefined ? null : { keyword, lastIndex }
+    const end = keywordRegEx.lastIndex;
+    const value = result[1];
+    return { start, end, value }
 }
 
 const backgroundRepeatKeywords = new Set([ "repeat", "repeat-x", "repeat-y", "no-repeat" ]);
-function parseRepeat(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): { backgroundRepeat: BackgroundRepeat } & TokenRange {
-    if (keyword && backgroundRepeatKeywords.has(keyword.keyword)) {
-        lastIndex = keyword.lastIndex;
-        const backgroundRepeat = <BackgroundRepeat>keyword.keyword;
-        return { backgroundRepeat, lastIndex };
+function parseRepeat(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundRepeat> {
+    if (keyword && backgroundRepeatKeywords.has(keyword.value)) {
+        const end = keyword.end;
+        const value = <BackgroundRepeat>keyword.value;
+        return { start, end, value };
     }
     return null;
 }
 
 const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
-export function parseUnit(str: string, lastIndex: number = 0): TokenRange & Unit {
-    unitRegEx.lastIndex = lastIndex;
-    const result = unitRegEx.exec(str);
+export function parseUnit(text: string, start: number = 0): Parsed<Unit<string>> {
+    unitRegEx.lastIndex = start;
+    const result = unitRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = unitRegEx.lastIndex;
+    const end = unitRegEx.lastIndex;
     const value = parseFloat(result[1]);
     const unit = <any>result[2] || "dip";
-    return { value, unit, lastIndex };
+    return { start, end, value: { value, unit }};
 }
 
-export function parsePercentageOrLength(value: string, lastIndex: number = 0): TokenRange & LengthPercentage {
-    const unitResult = parseUnit(value, lastIndex);
+export function parsePercentageOrLength(text: string, start: number = 0): Parsed<LengthPercentage> {
+    const unitResult = parseUnit(text, start);
     if (unitResult) {
-        const { lastIndex, value, unit } = unitResult;
-        if (unit === "%") {
-            return { value: value / 100, unit, lastIndex };
-        } else if (!unit) {
-            return { value, unit: "dip", lastIndex };
-        } else if (unit === "px" || unit === "dip") {
-            return { value, unit, lastIndex };
+        const { start, end } = unitResult;
+        const value = <LengthPercentage>unitResult.value;
+        if (value.unit === "%") {
+            value.value /= 100;
+        } else if (!value.unit) {
+            value.unit = "dip";
+        } else if (value.unit === "px" || value.unit === "dip") {
+        } else {
+            return null;
         }
+        return { start, end, value };
     }
     return null;
 }
 
-export function parseAngle(value: string, lastIndex: number = 0): TokenRange & Angle {
-    const angleResult = parseUnit(value, lastIndex);
+const angleUnitsToRadMap: { [unit: string]: (start: number, end: number, value: number) => Parsed<Angle> } = {
+    "deg": (start: number, end: number, deg: number) => ({ start, end, value: deg / 180 * Math.PI }),
+    "rad": (start: number, end: number, rad: number) => ({ start, end, value: rad }),
+    "grad": (start: number, end: number, grad: number) => ({ start, end, value: grad / 200 * Math.PI }),
+    "turn": (start: number, end: number, turn: number) => ({ start, end, value: turn * Math.PI * 2 })
+}
+export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
+    const angleResult = parseUnit(value, start);
     if (angleResult) {
-        const { lastIndex, value, unit } = angleResult;
-        return ({
-            "deg": (deg: number) => ({ angle: deg / 180 * Math.PI, lastIndex }),
-            "rad": (rad: number) => ({ angle: rad, lastIndex }),
-            "grad": (grad: number) => ({ angle: grad / 200 * Math.PI, lastIndex }),
-            "turn": (turn: number) => ({ angle: turn * Math.PI * 2, lastIndex })
-        }[unit] || (() => null))(value);
+        const { start, end, value } = angleResult;
+        return (angleUnitsToRadMap[value.unit] || (() => null))(start, end, value.value);
     }
     return null;
 }
-export interface Angle {
-    angle: number;
-}
-export interface Length {
-    value: number;
-    unit: "px" | "dip";
-}
-export interface Percentage {
-    value: number;
-    unit: "%";
-}
-export type LengthPercentage = Length | Percentage; 
 
 const backgroundSizeKeywords = new Set(["auto", "contain", "cover"]);
-export function parseBackgroundSize(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): { size: BackgroundSize, lastIndex: number } {
-    if (keyword && backgroundSizeKeywords.has(keyword.keyword)) {
-        lastIndex = keyword.lastIndex;
-        const size = <"auto" | "cover" | "contain">keyword.keyword;
-        return { size, lastIndex };
+export function parseBackgroundSize(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundSize> {
+    let end = start;
+    if (keyword && backgroundSizeKeywords.has(keyword.value)) {
+        end = keyword.end;
+        const value = <"auto" | "cover" | "contain">keyword.value;
+        return { start, end, value };
     }
 
     // Parse one or two lengths... the other will be "auto"
-    const firstLength = parsePercentageOrLength(value, lastIndex);
+    const firstLength = parsePercentageOrLength(value, end);
     if (firstLength) {
-        lastIndex = firstLength.lastIndex;
-        const secondLength = parsePercentageOrLength(value, firstLength.lastIndex);
+        end = firstLength.end;
+        const secondLength = parsePercentageOrLength(value, firstLength.end);
         if (secondLength) {
-            lastIndex = secondLength.lastIndex;
-            return { 
-                size: {
-                    x: { value: firstLength.value, unit: firstLength.unit },
-                    y: { value: secondLength.value, unit: secondLength.unit }
-                },
-                lastIndex
-            };
+            end = secondLength.end;
+            return { start, end, value: { x: firstLength.value, y: secondLength.value }};
         } else {
-            return {
-                size: { 
-                    x: { value: firstLength.value, unit: firstLength.unit },
-                    y: "auto"
-                },
-                lastIndex
-            };
+            return { start, end, value: { x: firstLength.value, y: "auto" }};
         }
     }
     return null;
@@ -368,87 +343,71 @@ const backgroundPositionKeywordsDirection: {[align: string]: "x" | "center" | "y
     "top": "y",
     "bottom": "y"
 }
-export function parseBackgroundPosition(value: string, lastIndex: number = 0, keyword = parseKeyword(value, lastIndex)): BackgroundPosition & { lastIndex: number } {
-    function format<T extends "center">(align: T, offset: LengthPercentage) {
-        if (align === "center") {
-            return "center"
-        } else if (offset && offset.value !== 0) {
-            return { align, offset: offset.value, unit: offset.unit }
-        } else {
-            return align;
-        }
+export function parseBackgroundPosition(text: string, start: number = 0, keyword = parseKeyword(text, start)): Parsed<BackgroundPosition> {
+    function formatH(align: Parsed<HorizontalAlign>, offset: Parsed<LengthPercentage>) {
+        if (align.value === "center") return "center";
+        if (offset && offset.value.value !== 0) return { align: align.value, offset: offset.value };
+        return align.value;
     }
-    if (keyword && backgroundPositionKeywords.has(keyword.keyword)) {
-        lastIndex = keyword.lastIndex;
-        let firstDirection = backgroundPositionKeywordsDirection[keyword.keyword];
+    function formatV(align: Parsed<VerticalAlign>, offset: Parsed<LengthPercentage>) {
+        if (align.value === "center") return "center";
+        if (offset && offset.value.value !== 0) return { align: align.value, offset: offset.value };
+        return align.value;
+    }
+    let end = start;
+    if (keyword && backgroundPositionKeywords.has(keyword.value)) {
+        end = keyword.end;
+        let firstDirection = backgroundPositionKeywordsDirection[keyword.value];
 
-        const firstLength = firstDirection != "center" && parsePercentageOrLength(value, lastIndex);
+        const firstLength = firstDirection != "center" && parsePercentageOrLength(text, end);
         if (firstLength) {
-            lastIndex = firstLength.lastIndex;
+            end = firstLength.end;
         }
 
-        const secondKeyword = parseKeyword(value, lastIndex);
-        if (secondKeyword && backgroundPositionKeywords.has(secondKeyword.keyword)) {
-            lastIndex = secondKeyword.lastIndex;
-            let secondDirection = backgroundPositionKeywordsDirection[secondKeyword.keyword];
+        const secondKeyword = parseKeyword(text, end);
+        if (secondKeyword && backgroundPositionKeywords.has(secondKeyword.value)) {
+            end = secondKeyword.end;
+            let secondDirection = backgroundPositionKeywordsDirection[secondKeyword.end];
 
             if (firstDirection === secondDirection && firstDirection !== "center") {
                 return null; // Reject pair of both horizontal or both vertical alignments.
             }
 
-            const secondLength = secondDirection != "center" && parsePercentageOrLength(value, lastIndex);
+            const secondLength = secondDirection != "center" && parsePercentageOrLength(text, end);
             if (secondLength) {
-                lastIndex = secondLength.lastIndex;
+                end = secondLength.end;
             }
 
             if ((firstDirection === secondDirection && secondDirection === "center") || (firstDirection === "x" || secondDirection === "y")) {
-                return {
-                    x: format(<any>keyword.keyword, firstLength),
-                    y: format(<any>secondKeyword.keyword, secondLength),
-                    lastIndex
-                }
+                return { start, end, value: {
+                    x: formatH(<Parsed<HorizontalAlign>>keyword, firstLength),
+                    y: formatV(<Parsed<VerticalAlign>>secondKeyword, secondLength)
+                }};
             } else {
-                return {
-                    y: format(<any>keyword.keyword, firstLength),
-                    x: format(<any>secondKeyword.keyword, secondLength),
-                    lastIndex
-                }
+                return { start, end, value: {
+                    x: formatH(<Parsed<HorizontalAlign>>secondKeyword, secondLength),
+                    y: formatV(<Parsed<VerticalAlign>>keyword, firstLength),
+                }};
             }
         } else {
             if (firstDirection === "center") {
-                return { x: "center", y: "center", lastIndex };
+                return { start, end, value: { x: "center", y: "center" }};
             } else if (firstDirection === "x") {
-                return {
-                    x: format(<any>keyword.keyword, firstLength),
-                    y: "center",
-                    lastIndex
-                }
+                return { start, end, value: { x: formatH(<Parsed<HorizontalAlign>>keyword, firstLength), y: "center" }};
             } else {
-                return {
-                    x: "center",
-                    y: format(<any>keyword.keyword, firstLength),
-                    lastIndex
-                }
+                return { start, end, value: { x: "center", y: formatV(<Parsed<VerticalAlign>>keyword, firstLength) }};
             }
         }
     } else {
-        const firstLength = parsePercentageOrLength(value, lastIndex);
+        const firstLength = parsePercentageOrLength(text, end);
         if (firstLength) {
-            lastIndex = firstLength.lastIndex;
-            const secondLength = parsePercentageOrLength(value, lastIndex);
+            end = firstLength.end;
+            const secondLength = parsePercentageOrLength(text, end);
             if (secondLength) {
-                lastIndex = secondLength.lastIndex;
-                return {
-                    x: { align: "left", offset: firstLength.value, unit: firstLength.unit },
-                    y: { align: "top", offset: secondLength.value, unit: secondLength.unit },
-                    lastIndex
-                };
+                end = secondLength.end;
+                return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: { align: "top", offset: secondLength.value }}};
             } else {
-                return {
-                    x: { align: "left", offset: firstLength.value, unit: firstLength.unit },
-                    y: "center",
-                    lastIndex
-                };
+                return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: "center" }};
             }
         } else {
             return null;
@@ -462,7 +421,6 @@ export interface ColorStop {
 }
 
 export interface LinearGradient {
-    gradient: "linear";
     angle: number;
     colors: ColorStop[];
 }
@@ -497,55 +455,57 @@ const cornerDirections = {
         bottom: Math.PI * 5/4
     }
 }
-function parseDirection(value: string, lastIndex: number = 0): TokenRange & Angle {
-    directionRegEx.lastIndex = lastIndex;
-    const result = directionRegEx.exec(value);
+function parseDirection(text: string, start: number = 0): Parsed<Angle> {
+    directionRegEx.lastIndex = start;
+    const result = directionRegEx.exec(text);
     if (!result) {
         return null;
     }
-    lastIndex = directionRegEx.lastIndex;
+    const end = directionRegEx.lastIndex;
     const firstDirection = result[1];
     if (result[2]) {
         const secondDirection = result[2];
-        const direction = cornerDirections[firstDirection][secondDirection];
-        return direction === undefined ? null : { angle: direction, lastIndex };
+        const value = cornerDirections[firstDirection][secondDirection];
+        return value === undefined ? null : { start, end, value };
     } else {
-        return { angle: sideDirections[firstDirection], lastIndex }
+        return { start, end, value: sideDirections[firstDirection] }
     }
 }
 
 const openingBracketRegEx = /\s*\(\s*/gy;
 const closingBracketRegEx = /\s*\)\s*/gy;
 const closingBracketOrCommaRegEx = /\s*(\)|,)\s*/gy;
-function parseArgumentsList(value: string, lastIndex: number, argument: (value: string, lastIndex: number, index: number) => TokenRange): TokenRange {
-    openingBracketRegEx.lastIndex = lastIndex;
-    const openingBracket = openingBracketRegEx.exec(value);
+function parseArgumentsList<T>(text: string, start: number, argument: (value: string, lastIndex: number, index: number) => Parsed<T>): Parsed<Parsed<T>[]> {
+    openingBracketRegEx.lastIndex = start;
+    const openingBracket = openingBracketRegEx.exec(text);
     if (!openingBracket) {
         return null;
     }
-    lastIndex = openingBracketRegEx.lastIndex;
+    let end = openingBracketRegEx.lastIndex;
+    const value: Parsed<T>[] = [];
 
-    closingBracketRegEx.lastIndex = lastIndex;
-    const closingBracket = closingBracketRegEx.exec(value);
+    closingBracketRegEx.lastIndex = end;
+    const closingBracket = closingBracketRegEx.exec(text);
     if (closingBracket) {
-        return { lastIndex };
+        return { start, end, value };
     }
 
     for(var index = 0; true; index++) {
-        const arg = argument(value, lastIndex, index);
+        const arg = argument(text, end, index);
         if (!arg) {
             return null;
         }
-        lastIndex = arg.lastIndex;
+        end = arg.end;
+        value.push(arg);
         
-        closingBracketOrCommaRegEx.lastIndex = lastIndex;
-        const closingBracketOrComma = closingBracketOrCommaRegEx.exec(value);
+        closingBracketOrCommaRegEx.lastIndex = end;
+        const closingBracketOrComma = closingBracketOrCommaRegEx.exec(text);
         if (closingBracketOrComma) {
-            lastIndex = closingBracketOrCommaRegEx.lastIndex;
+            end = closingBracketOrCommaRegEx.lastIndex;
             if (closingBracketOrComma[1] === ",") {
                 continue;
             } else if (closingBracketOrComma[1] === ")") {
-                return { lastIndex };
+                return { start, end, value };
             }
         } else {
             return null;
@@ -553,48 +513,56 @@ function parseArgumentsList(value: string, lastIndex: number, argument: (value: 
     }
 }
 
+export function parseColorStop(text: string, start: number = 0): Parsed<ColorStop> {
+    const color = parseColor(text, start);
+    if (!color) {
+        return null;
+    }
+    let end = color.end;
+    const offset = parsePercentageOrLength(text, end);
+    if (offset) {
+        end = offset.end;
+        return { start, end, value: { argb: color.value, offset: offset.value }};
+    }
+    return { start, end, value: { argb: color.value }};
+}
+
 const linearGradientStartRegEx = /\s*linear-gradient\s*/gy;
-export function parseLinearGradient(value: string, lastIndex: number = 0): TokenRange & { gradient: LinearGradient } {
-    linearGradientStartRegEx.lastIndex = lastIndex;
-    const lgs = linearGradientStartRegEx.exec(value);
+export function parseLinearGradient(text: string, start: number = 0): Parsed<LinearGradient> {
+    linearGradientStartRegEx.lastIndex = start;
+    const lgs = linearGradientStartRegEx.exec(text);
     if (!lgs) {
         return null;
     }
-    lastIndex = linearGradientStartRegEx.lastIndex;
+    let end = linearGradientStartRegEx.lastIndex;
 
     let angle = Math.PI;
     const colors: ColorStop[] = [];
 
-    const parsedArgs = parseArgumentsList(value, lastIndex, (value, lastIndex, index) => {
-        if (!index) {
-            const angleArg = parseAngle(value, lastIndex) || parseDirection(value, lastIndex);
+    const parsedArgs = parseArgumentsList<Angle | ColorStop>(text, end, (text, start, index) => {
+        if (index === 0) {
+            // First arg can be gradient direction
+            const angleArg = parseAngle(text, start) || parseDirection(text, start);
             if (angleArg) {
-                angle = angleArg.angle;
+                angle = angleArg.value;
                 return angleArg;
             }
         }
 
-        const color = parseColor(value, lastIndex);
-        if (color) {
-            const offset = parsePercentageOrLength(value, color.lastIndex);
-            if (offset) {
-                colors.push({ argb: color.argb, offset: <any>{ value: offset.value, unit: offset.unit } });
-                return offset;
-            }
-            colors.push({ argb: color.argb });
-            return color;
+        const colorStop = parseColorStop(text, start);
+        if (colorStop) {
+            colors.push(colorStop.value);
+            return colorStop;
         }
+
+        return null;
     });
     if (!parsedArgs) {
         return null;
     }
-    lastIndex = parsedArgs.lastIndex;
+    end = parsedArgs.end;
 
-    return { gradient: { gradient: "linear", angle, colors }, lastIndex };
-}
-
-export function parseRadialGradient(vlaue: string, lastIndex: number = 0): TokenRange & { gradient: RadialGradient } {
-    return null;
+    return { start, end, value: { angle, colors }};
 }
 
 export interface Background {
@@ -608,85 +576,88 @@ export interface Background {
 export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 
 export type BackgroundSize = "auto" | "cover" | "contain" | {
-    x: { value: number, unit: "%" | "px" | "dip" },
-    y: "auto" | { value: number, unit: "%" | "px" | "dip" }
+    x: LengthPercentage,
+    y: "auto" | LengthPercentage
 }
 
+export type HorizontalAlign = "left" | "center" | "right";
+export type VerticalAlign = "top" | "center" | "bottom";
+export interface HorizontalAlignWithOffset {
+    readonly align: "left" | "right";
+    readonly offset: LengthPercentage;
+}
+export interface VerticalAlignWithOffset {
+    readonly align: "top" | "bottom";
+    readonly offset: LengthPercentage
+}
 export interface BackgroundPosition {
-    readonly x: "left" | "center" | "right" | {
-        readonly align: "left" | "right",
-        readonly offset: number,
-        readonly unit: "dip" | "px" | "%"
-    };
-    readonly y: "top" | "center" | "bottom" | {
-        readonly align: "top" | "bottom";
-        readonly offset: number;
-        readonly unit: "dip" | "px" | "%";
-    };
+    readonly x: HorizontalAlign | HorizontalAlignWithOffset;
+    readonly y: VerticalAlign | VerticalAlignWithOffset;
 }
 
 const slashRegEx = /\s*(\/)\s*/gy;
-function parseSlash(value: string, lastIndex: number): TokenRange {
-    slashRegEx.lastIndex = lastIndex;
-    const slash = slashRegEx.exec(value);
+function parseSlash(text: string, start: number): Parsed<"/"> {
+    slashRegEx.lastIndex = start;
+    const slash = slashRegEx.exec(text);
     if (!slash) {
         return null;
     }
-    return { lastIndex: slashRegEx.lastIndex };
+    const end = slashRegEx.lastIndex;
+    return { start, end, value: "/" };
 }
 
-export function parseBackground(value: string): Background {
-    const background: any = {};
-    let lastIndex = 0;
-    while(lastIndex < value.length) {
-        const keyword = parseKeyword(value, lastIndex);
-        const color = parseColor(value, lastIndex, keyword);
+export function parseBackground(text: string, start: number = 0): Parsed<Background> {
+    const value: any = {};
+    let end = start;
+    while(end < text.length) {
+        const keyword = parseKeyword(text, end);
+        const color = parseColor(text, end, keyword);
         if (color) {
-            background.color = color.argb;
-            lastIndex = color.lastIndex;
+            value.color = color.value;
+            end = color.end;
             continue;
         }
-        const repeat = parseRepeat(value, lastIndex, keyword);
+        const repeat = parseRepeat(text, end, keyword);
         if (repeat) {
-            background.repeat = repeat.backgroundRepeat;
-            lastIndex = repeat.lastIndex;
+            value.repeat = repeat.value;
+            end = repeat.end;
             continue;
         }
-        const position = parseBackgroundPosition(value, lastIndex, keyword);
+        const position = parseBackgroundPosition(text, end, keyword);
         if (position) {
-            background.position = { x: position.x, y: position.y };
-            lastIndex = position.lastIndex;
+            value.position = position.value;
+            end = position.end;
 
-            const slash = parseSlash(value, lastIndex);
+            const slash = parseSlash(text, end);
             if (slash) {
-                lastIndex = slash.lastIndex;
-                const size = parseBackgroundSize(value, lastIndex);
+                end = slash.end;
+                const size = parseBackgroundSize(text, end);
                 if (!size) {
                     // Found / but no proper size following
                     return null;
                 }
-                background.size = size.size;
-                lastIndex = size.lastIndex;
+                value.size = size.value;
+                end = size.end;
             }
             continue;
         }
 
-        const url = parseURL(value, lastIndex);
+        const url = parseURL(text, end);
         if (url) {
-            background.image = url.url;
-            lastIndex = url.lastIndex;
+            value.image = url.value;
+            end = url.end;
             continue;
         }
-        const gradient = parseLinearGradient(value, lastIndex) || parseRadialGradient(value, lastIndex);
+        const gradient = parseLinearGradient(text, end);
         if (gradient) {
-            background.image = gradient.gradient;
-            lastIndex = gradient.lastIndex;
+            value.image = gradient.value;
+            end = gradient.end;
             continue;
         }
 
         return null;
     }
-    return background;
+    return { start, end, value };
 }
 
 function getLeadingWhiteSpace(result: RegExpExecArray): string {
