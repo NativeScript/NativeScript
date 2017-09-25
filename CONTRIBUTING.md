@@ -55,7 +55,7 @@ git checkout -b <my-fix-branch> master
 ```
 
 4. The fun part! Make your code changes. Make sure you:
-    - Follow the [code conventions guide](CodeConvention.md).
+    - Follow the [code conventions guide](CodingConvention.md).
     - Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
 
 5. Before you submit your PR:
