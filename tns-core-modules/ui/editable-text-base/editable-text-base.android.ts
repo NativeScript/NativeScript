@@ -113,11 +113,13 @@ function initializeEditTextListeners(): void {
                     owner.dismissSoftInput();
                 }
                 owner._onReturnPress();
+                return true;
             }
 
             // If action is ACTION_NEXT then do not close keyboard
             if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
                 owner._onReturnPress();
+                return true;
             }
 
             return false;
