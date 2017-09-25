@@ -5,6 +5,19 @@ import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
 import { unsetValue } from "tns-core-modules/ui/core/view";
 
+export var test_value_Inherited_after_unset = function () {
+    let page = helper.getCurrentPage();
+    page.css = "StackLayout { color: #FF0000; } .blue { color: #0000FF; }";
+    let btn = new button.Button();
+    let testStack = new stack.StackLayout();
+    page.content = testStack;
+    testStack.addChild(btn);
+    btn.className = "blue";
+    helper.assertViewColor(btn, "#0000FF");
+    btn.className = "";
+    helper.assertViewColor(btn, "#FF0000");
+}
+
 export var test_value_Inherited_stronger_than_Default = function () {
     let page = helper.getCurrentPage();
     let btn = new button.Button();

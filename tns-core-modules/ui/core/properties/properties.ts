@@ -646,9 +646,10 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 }
 CssProperty.prototype.isStyleProperty = true;
 
-export class CssAnimationProperty<T extends Style, U> {
+export class CssAnimationProperty<T extends Style, U> implements definitions.CssAnimationProperty<T, U> {
     public readonly name: string;
     public readonly cssName: string;
+    public readonly cssLocalName: string;
 
     public readonly getDefault: symbol;
     public readonly setNative: symbol;
@@ -682,7 +683,9 @@ export class CssAnimationProperty<T extends Style, U> {
 
         this._valueConverter = options.valueConverter;
 
-        const cssName = "css:" + (options.cssName || propertyName);
+        const cssLocalName = (options.cssName || propertyName);
+        this.cssLocalName = cssLocalName;
+        const cssName = "css:" + cssLocalName;
         this.cssName = cssName;
 
         const keyframeName = "keyframe:" + propertyName;
@@ -866,8 +869,10 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 }
             }
 
+            const oldValue: U = key in this ? this[key] : defaultValue;
             const view = this.view;
             let value: U;
+            let unsetNativeValue = false;
             if (reset) {
                 // If unsetValue - we want to reset this property.
                 let parent = view.parent;
@@ -876,9 +881,12 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 if (style && style[sourceKey] > ValueSource.Default) {
                     value = style[propertyName];
                     this[sourceKey] = ValueSource.Inherited;
+                    this[key] = value;
                 } else {
                     value = defaultValue;
                     delete this[sourceKey];
+                    delete this[key];
+                    unsetNativeValue = true;
                 }
             } else {
                 this[sourceKey] = valueSource;
@@ -887,43 +895,29 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 } else {
                     value = boxedValue;
                 }
+                this[key] = value;
             }
 
-            const oldValue: U = key in this ? this[key] : defaultValue;
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
                 const view = this.view;
-                if (reset) {
-                    delete this[key];
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
-                    }
+                if (valueChanged) {
+                    valueChanged(this, oldValue, value);
+                }
 
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
-                            }
-                        } else {
+                if (view[setNative]) {
+                    if (view._suspendNativeUpdatesCount) {
+                        if (view._suspendedUpdates) {
+                            view._suspendedUpdates[propertyName] = property;
+                        }
+                    } else {
+                        if (unsetNativeValue) {
                             if (defaultValueKey in this) {
                                 view[setNative](this[defaultValueKey]);
                                 delete this[defaultValueKey];
                             } else {
                                 view[setNative](defaultValue);
-                            }
-                        }
-                    }
-                } else {
-                    this[key] = value;
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
-                    }
-
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
                             }
                         } else {
                             if (!(defaultValueKey in this)) {
@@ -981,6 +975,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
 
     protected readonly cssValueDescriptor: PropertyDescriptor;
     protected readonly localValueDescriptor: PropertyDescriptor;
+    protected readonly propertyBagDescriptor: PropertyDescriptor;
 
     public readonly sourceKey: symbol;
 
@@ -1025,19 +1020,32 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
             set: setLocalValue
         };
 
+        this.propertyBagDescriptor = {
+            enumerable: false,
+            configurable: true,
+            set(value: string) {
+                converter(value).forEach(([property, value]) => {
+                    this[property.cssLocalName] = value;
+                });
+            }
+        }
+
         cssSymbolPropertyMap[key] = this;
     }
 
-    public register(cls: { prototype: T }): void {
+    public register(cls: typeof Style): void {
         if (this.registered) {
             throw new Error(`Property ${this.name} already registered.`);
         }
+
         this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
         Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
         if (this.cssLocalName !== this.cssName) {
             Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
         }
+
+        Object.defineProperty(cls.prototype.PropertyBag, this.cssLocalName, this.propertyBagDescriptor);
     }
 }
 

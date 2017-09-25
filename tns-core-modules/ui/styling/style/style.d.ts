@@ -48,7 +48,6 @@ export interface CommonLayoutParams {
 }
 
 export class Style extends Observable {
-
     public fontInternal: Font;
     public backgroundInternal: Background;
 
@@ -149,4 +148,20 @@ export class Style extends Observable {
     public flexShrink: FlexShrink;
     public flexWrapBefore: FlexWrapBefore;
     public alignSelf: AlignSelf;
+
+    /**
+     * The property bag is a simple class that is paired with the Style class.
+     * Setting regular css properties on the PropertyBag should simply preserve their values.
+     * Setting shorthand css properties on the PropertyBag should decompose the provided value, and set each of the shorthand composite properties.
+     * The shorthand properties are defined as non-enumerable so it should be safe to for-in the keys that are set in the bag.
+     */
+    public readonly PropertyBag: PropertyBagClass;
+}
+
+interface PropertyBagClass {
+    new(): PropertyBag;
+    prototype: PropertyBag;
+}
+interface PropertyBag {
+    [property: string]: string;
 }

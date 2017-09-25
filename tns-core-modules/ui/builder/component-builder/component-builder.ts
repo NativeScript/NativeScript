@@ -125,12 +125,6 @@ const applyComponentCss = profile("applyComponentCss", (instance: View, moduleNa
                 cssApplied = true;
             }
         }
-
-        if (!cssApplied) {
-            // Called only to apply application css.
-            // If we have page css (through file or cssAttribute) we have appCss applied.
-            (<any>instance)._refreshCss();
-        }
     }
 });
 
@@ -211,13 +205,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         instance[propertyName] = exports[propertyValue];
     }
     else {
-        let attrHandled = false;
-        if (!attrHandled && instance._applyXmlAttribute) {
-            attrHandled = instance._applyXmlAttribute(propertyName, propertyValue);
-        }
-        if (!attrHandled) {
-            instance[propertyName] = propertyValue;
-        }
+        instance[propertyName] = propertyValue;
     }
 }
 

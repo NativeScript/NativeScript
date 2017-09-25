@@ -118,4 +118,7 @@ export class Style extends Observable implements StyleDefinition {
     public flexShrink: FlexShrink;
     public flexWrapBefore: FlexWrapBefore;
     public alignSelf: AlignSelf;
+
+    public PropertyBag: { new(): { [property: string]: string }, prototype: { [property: string]: string } };
 }
+Style.prototype.PropertyBag = class { [property: string]: string; }
