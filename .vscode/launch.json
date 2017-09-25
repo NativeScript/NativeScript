@@ -2,6 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "args": [ "--timeout", "999999", "--opts", "unit-tests/mocha.opts" ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "tsc-unit-tests"
+        },
+        {
             "name": "Launch on iOS",
             "type": "nativescript",
             "request": "launch",

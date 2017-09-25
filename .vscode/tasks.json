@@ -6,5 +6,23 @@
 	"isShellCommand": true,
 	"args": ["-p", "."],
 	"showOutput": "always",
-	"problemMatcher": "$tsc"
+	"problemMatcher": "$tsc",
+	"tasks": [
+		{
+			"taskName": "tsc-unit-tests",
+			"problemMatcher": "$tsc",
+			"command": "./node_modules/.bin/tsc",
+			"args": [ "-p", "tsconfig.unit-tests.json" ]
+		},
+		{
+			"taskName": "unit-tests",
+			"command": "npm",
+			"args": ["run", "unit-test"]
+		},
+		{
+			"taskName": "unit-tests-watch",
+			"command": "npm",
+			"args": ["run", "unit-test-watch"]
+		}
+	]
 }
