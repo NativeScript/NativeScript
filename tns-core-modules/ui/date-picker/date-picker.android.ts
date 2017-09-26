@@ -59,7 +59,7 @@ export class DatePicker extends DatePickerBase {
         picker.setCalendarViewShown(false);
         const listener = new DateChangedListener(this);
 
-        picker.init(this.year, this.month, this.day, listener);
+        picker.init(this.year, this.month - 1, this.day, listener);
         (<any>picker).listener = listener;
         return picker;
     }
