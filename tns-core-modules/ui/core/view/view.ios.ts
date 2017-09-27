@@ -1,7 +1,11 @@
 ﻿// Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
 
-import { ios, Background } from "../../styling/background";
+import { ios as iosBackground, Background } from "../../styling/background";
+// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
+// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
+import * as uiUtils from "tns-core-modules/ui/utils";
+
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories
@@ -61,9 +65,16 @@ export class View extends ViewCommon {
         super.requestLayout();
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
-        let parent = <View>this.parent;
-        if (parent && !parent.isLayoutRequested) {
-            parent.requestLayout();
+        const parent = <View>this.parent;
+        if (parent) {
+            if (!parent.isLayoutRequested) {
+                parent.requestLayout();
+            }
+        }
+
+        const nativeView = this.nativeViewProtected;
+        if (nativeView && this.isLoaded) {
+            nativeView.setNeedsLayout();
         }
     }
 
@@ -88,9 +99,12 @@ export class View extends ViewCommon {
     }
 
     @profile
-    public layout(left: number, top: number, right: number, bottom: number): void {
+    public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
         let { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
-        this.layoutNativeView(left, top, right, bottom);
+        if (setFrame) {
+            this.layoutNativeView(left, top, right, bottom);
+        }
+
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             this.onLayout(left, top, right, bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
@@ -167,15 +181,9 @@ export class View extends ViewCommon {
             return;
         }
 
-        let nativeView = this.nativeViewProtected;
-
-        let frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
+        const nativeView = this.nativeViewProtected;
+        const frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
         this._setNativeViewFrame(nativeView, frame);
-    }
-
-    public _updateLayout() {
-        let oldBounds = this._getCurrentLayoutBounds();
-        this.layoutNativeView(oldBounds.left, oldBounds.top, oldBounds.right, oldBounds.bottom);
     }
 
     public focus(): boolean {
@@ -220,7 +228,7 @@ export class View extends ViewCommon {
 
         let myPointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
         let otherPointInWindow = otherView.nativeViewProtected.convertPointToView(otherView.nativeViewProtected.bounds.origin, null);
-        return {  
+        return {
             x: myPointInWindow.x - otherPointInWindow.x,
             y: myPointInWindow.y - otherPointInWindow.y
         };
@@ -424,7 +432,7 @@ export class View extends ViewCommon {
         if (value instanceof UIColor) {
             this.nativeViewProtected.backgroundColor = value;
         } else {
-            ios.createBackgroundUIColor(this, (color: UIColor) => {
+            iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
                 this.nativeViewProtected.backgroundColor = color;
             });
             this._setNativeClipToBounds();
@@ -456,10 +464,6 @@ export class CustomLayoutView extends View {
         this.nativeViewProtected = UIView.new();
     }
 
-    get ios(): UIView {
-        return this.nativeViewProtected;
-    }
-
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
     }
@@ -488,6 +492,104 @@ export class CustomLayoutView extends View {
 
         if (child.nativeViewProtected) {
             child.nativeViewProtected.removeFromSuperview();
+        }
+    }
+}
+
+function isScrollable(controller: UIViewController, owner: View): boolean {
+    let scrollable = (<any>owner).scrollableContent;
+    if (scrollable === undefined) {
+        if (controller.childViewControllers.count > 0) {
+            scrollable = true;
+        } else {
+            let view = controller.view;
+            while (view) {
+                if (view instanceof UIScrollView) {
+                    scrollable = true;
+                    break;
+                }
+
+                view = view.subviews.count > 0 ? view.subviews[0] : null;
+            }
+        }
+    }
+
+    return scrollable === true || scrollable === "true";;
+}
+
+function getStatusBarHeight(controller: UIViewController): number {
+    let shouldReturnStatusBarHeight = false;
+    if (controller.presentingViewController) {
+        if (CGRectEqualToRect(controller.view.frame, controller.view.window.bounds)) {
+            shouldReturnStatusBarHeight = true;
+        }
+    } else {
+        shouldReturnStatusBarHeight = true;
+    }
+
+    return shouldReturnStatusBarHeight ? uiUtils.ios.getStatusBarHeight(controller) : 0;
+}
+
+export namespace ios {
+    export function layoutView(controller: UIViewController, owner: View): void {
+        const scrollableContent = isScrollable(controller, owner);
+        const navController = controller.navigationController;
+        const navBarVisible = navController && !navController.navigationBarHidden;
+        const navBarTranslucent = navController ? navController.navigationBar.translucent : false;
+
+        let navBarHeight = navBarVisible ? uiUtils.ios.getActualHeight(navController.navigationBar) : 0;
+        let statusBarHeight = getStatusBarHeight(controller);
+
+        const edgesForExtendedLayout = controller.edgesForExtendedLayout;
+        const extendedLayoutIncludesOpaqueBars = controller.extendedLayoutIncludesOpaqueBars;
+        const layoutExtendsOnTop = (edgesForExtendedLayout & UIRectEdge.Top) === UIRectEdge.Top;
+        if (!layoutExtendsOnTop
+            || (!extendedLayoutIncludesOpaqueBars && !navBarTranslucent && navBarVisible)
+            || (scrollableContent && navBarVisible)) {
+            navBarHeight = 0;
+            statusBarHeight = 0;
+        }
+
+        const tabBarController = controller.tabBarController;
+        const layoutExtendsOnBottom = (edgesForExtendedLayout & UIRectEdge.Bottom) === UIRectEdge.Bottom;
+
+        let tabBarHeight = 0;
+        const tabBarVisible = tabBarController && !tabBarController.tabBar.hidden;
+        const tabBarTranslucent = tabBarController ? tabBarController.tabBar.translucent : false;
+
+        // If tabBar is visible and we don't have scrollableContent and layout
+        // goes under tabBar we need to reduce available height with tabBar height
+        if (tabBarVisible && !scrollableContent && layoutExtendsOnBottom && (tabBarTranslucent || extendedLayoutIncludesOpaqueBars)) {
+            tabBarHeight = tabBarController.tabBar.frame.size.height;
+        }
+
+        const size = controller.view.bounds.size;
+        const width = layout.toDevicePixels(size.width);
+        const height = layout.toDevicePixels(size.height - tabBarHeight);
+
+        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(height - statusBarHeight - navBarHeight, layout.EXACTLY);
+
+        owner.measure(widthSpec, heightSpec);
+
+        // Page.nativeView.frame is never set by our layout...
+        owner.layout(0, statusBarHeight + navBarHeight, width, height, false);
+    }
+
+    export class UILayoutViewController extends UIViewController {
+        public owner: WeakRef<View>;
+        
+        public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
+            const controller = <UILayoutViewController>UILayoutViewController.new();
+            controller.owner = owner;
+            return controller;
+        }
+
+        public viewDidLayoutSubviews(): void {
+            super.viewDidLayoutSubviews();
+
+            const owner = this.owner.get();
+            layoutView(this, owner);
         }
     }
 }

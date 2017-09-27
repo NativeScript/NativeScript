@@ -314,7 +314,7 @@ function onTitlePropertyChanged(actionBar: ActionBarBase, oldValue: string, newV
     actionBar._onTitlePropertyChanged();
 }
 
-let titleProperty = new Property<ActionBarBase, string>({ name: "title", valueChanged: onTitlePropertyChanged });
+export const titleProperty = new Property<ActionBarBase, string>({ name: "title", valueChanged: onTitlePropertyChanged });
 titleProperty.register(ActionBarBase);
 
 function onItemChanged(item: ActionItemBase, oldValue: string, newValue: string) {
@@ -323,13 +323,13 @@ function onItemChanged(item: ActionItemBase, oldValue: string, newValue: string)
     }
 }
 
-let textProperty = new Property<ActionItemBase, string>({ name: "text", defaultValue: "", valueChanged: onItemChanged });
+export const textProperty = new Property<ActionItemBase, string>({ name: "text", defaultValue: "", valueChanged: onItemChanged });
 textProperty.register(ActionItemBase);
 
-let iconProperty = new Property<ActionItemBase, string>({ name: "icon", valueChanged: onItemChanged });
+export const iconProperty = new Property<ActionItemBase, string>({ name: "icon", valueChanged: onItemChanged });
 iconProperty.register(ActionItemBase);
 
-let visibilityProperty = new Property({ name: "visibility", defaultValue: "visible", valueChanged: onItemChanged });
+export const visibilityProperty = new Property({ name: "visibility", defaultValue: "visible", valueChanged: onItemChanged });
 visibilityProperty.register(ActionItemBase);
 
 export const flatProperty = new Property<ActionBarBase, boolean>({ name: "flat", defaultValue: false, valueConverter: booleanConverter });

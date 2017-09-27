@@ -675,10 +675,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return callback(this);
     }
 
-    public _updateLayout() {
-        // needed for iOS.
-    }
-
     public focus(): boolean {
         return undefined;
     }

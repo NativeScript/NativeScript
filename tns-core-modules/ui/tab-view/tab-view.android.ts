@@ -57,11 +57,7 @@ function initializeNativeClasses() {
                 traceWrite("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, traceCategory);
             }
 
-            let item = this.items[index];
-            // if (item.view.parent !== this.owner) {
-            //     this.owner._addView(item.view);
-            // }
-
+            const item = this.items[index];
             if (this[VIEWS_STATES]) {
                 if (traceEnabled()) {
                     traceWrite("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
@@ -72,6 +68,7 @@ function initializeNativeClasses() {
             if (item.view.nativeViewProtected) {
                 container.addView(item.view.nativeViewProtected);
             }
+
             return item.view.nativeViewProtected;
         }
 
@@ -103,17 +100,19 @@ function initializeNativeClasses() {
             }
 
             const owner: TabView = this.owner;
-            if (owner._childrenCount === 0) {
+            // no owner could happen when tabView was shown as modal.
+            if (!owner || owner._childrenCount === 0) {
                 return null;
             }
 
             if (!this[VIEWS_STATES]) {
                 this[VIEWS_STATES] = new android.util.SparseArray<android.os.Parcelable>();
             }
-            let viewStates = this[VIEWS_STATES];
-            let childCallback = function (view: View): boolean {
-                let nativeView: android.view.View = view.nativeViewProtected;
-                if (nativeView && nativeView.isSaveFromParentEnabled && nativeView.isSaveFromParentEnabled()) {
+
+            const viewStates = this[VIEWS_STATES];
+            const childCallback = function (view: View): boolean {
+                const nativeView: android.view.View = view.nativeViewProtected;
+                if (nativeView && nativeView.isSaveFromParentEnabled()) {
                     nativeView.saveHierarchyState(viewStates);
                 }
                 return true;
@@ -121,7 +120,7 @@ function initializeNativeClasses() {
 
             owner.eachChildView(childCallback);
 
-            let bundle = new android.os.Bundle();
+            const bundle = new android.os.Bundle();
             bundle.putSparseParcelableArray(VIEWS_STATES, viewStates);
             return bundle;
         }
@@ -351,6 +350,18 @@ export class TabView extends TabViewBase {
         super.disposeNativeView();
     }
 
+    public _loadEachChild(): void {
+        // We load childs once they are added to native parent or Frame
+        // cannot navigate because its nativeView is not added to window.
+        const index = this.selectedIndex;
+        if (index >= 0) {
+            const item = this.items[index];
+            if (!item.isLoaded && this.isLoaded) {
+                item.onLoaded();
+            }
+        }
+    }
+
     private setAdapterItems(items: Array<TabViewItem>) {
         (<any>this._pagerAdapter).items = items;
 
@@ -401,7 +412,12 @@ export class TabView extends TabViewBase {
         if (traceEnabled()) {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", true);", traceCategory);
         }
+
+        const item = this.items[value];
         this._viewPager.setCurrentItem(value, true);
+        if (!item.isLoaded && this.isLoaded) {
+            item.onLoaded();
+        }
     }
 
     [itemsProperty.getDefault](): TabViewItem[] {

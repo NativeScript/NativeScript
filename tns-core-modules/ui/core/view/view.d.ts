@@ -321,7 +321,7 @@ export abstract class View extends ViewBase {
      * @param r Right position, relative to parent
      * @param b Bottom position, relative to parent
      */
-    public layout(left: number, top: number, right: number, bottom: number): void;
+    public layout(left: number, top: number, right: number, bottom: number, setFrame?: boolean): void;
 
     /**
      * Returns the raw width component.
@@ -334,11 +334,6 @@ export abstract class View extends ViewBase {
     public getMeasuredHeight(): number;
 
     public getMeasuredState(): number;
-
-    /**
-     * Call this when something has changed which has invalidated the layout of this view. This will schedule a layout pass of the view tree.
-     */
-    public requestLayout(): void;
 
     /**
      * Measure the view and its content to determine the measured width and the measured height. This method is invoked by measure(int, int) and should be overriden by subclasses to provide accurate and efficient measurement of their contents.
@@ -498,10 +493,6 @@ export abstract class View extends ViewBase {
      */
     _setNativeClipToBounds(): void;
     /**
-     * @private
-     */
-    _updateLayout(): void;
-    /**
      * Called by measure method to cache measureSpecs.
      * @private
      */
@@ -643,3 +634,10 @@ export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
+
+export namespace ios {
+    export function layoutView(controller: UIViewController, owner: View): void;
+    export class UILayoutViewController extends UIViewController {
+        public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;
+    }
+}

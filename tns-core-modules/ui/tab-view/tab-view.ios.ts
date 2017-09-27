@@ -1,5 +1,6 @@
 ﻿import { Font } from "../styling/font";
 
+import { ios as iosView } from "../core/view";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
@@ -9,8 +10,12 @@ import { textTransformProperty, TextTransform, getTransformedText } from "../tex
 import { fromFileOrResource } from "../../image-source";
 import { Page } from "../page";
 import { profile } from "../../profiling";
+import * as uiUtils from "../utils";
+import * as utils from "../../utils/utils";
 
 export * from "./tab-view-common";
+
+const getter = utils.ios.getter;
 
 class UITabBarControllerImpl extends UITabBarController {
 
@@ -22,14 +27,11 @@ class UITabBarControllerImpl extends UITabBarController {
         return handler;
     }
 
-    public viewDidLayoutSubviews(): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.UITabBarControllerClass.viewDidLayoutSubviews();", traceCategories.Debug);
-        }
-        super.viewDidLayoutSubviews();
-        let owner = this._owner.get();
-        if (owner && owner.isLoaded) {
-            owner._updateLayout();
+    public viewWillAppear(animated: boolean): void {
+        super.viewWillAppear(animated);
+        const owner = this._owner.get();
+        if (owner && !owner.isLoaded && !owner.parent) {
+            owner.onLoaded();
         }
     }
 }
@@ -65,7 +67,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
             traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
         }
 
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             owner._onViewControllerShown(viewController);
         }
@@ -113,8 +115,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
     if (typeof (<any>tabBarItem).setTitlePositionAdjustment === "function") {
         (<any>tabBarItem).setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
-    }
-    else {
+    } else {
         tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
     }
 }
@@ -124,21 +125,20 @@ function updateItemIconPosition(tabBarItem: UITabBarItem): void {
 }
 
 export class TabViewItem extends TabViewItemBase {
-    private _iosViewController: UIViewController;
-
+    private __controller: UIViewController;
     public setViewController(controller: UIViewController) {
-        this._iosViewController = controller;
-        this.setNativeView((<any>this)._nativeView = controller.view);
+        this.__controller = controller;
+        this.setNativeView(controller.view);
     }
 
     public disposeNativeView() {
-        this._iosViewController = undefined;
+        this.__controller = undefined;
         this.setNativeView(undefined);
     }
 
     public _update() {
         const parent = <TabView>this.parent;
-        let controller = this._iosViewController;
+        const controller = this.__controller;
         if (parent && controller) {
             const icon = parent._getIcon(this.iconSource);
             const index = parent.items.indexOf(this);
@@ -147,8 +147,7 @@ export class TabViewItem extends TabViewItemBase {
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
-            }
-            else if (!title) {
+            } else if (!title) {
                 updateItemIconPosition(tabBarItem);
             }
 
@@ -166,6 +165,7 @@ export class TabViewItem extends TabViewItemBase {
 }
 
 export class TabView extends TabViewBase {
+    public viewController: UITabBarControllerImpl;
     public _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
@@ -176,7 +176,7 @@ export class TabView extends TabViewBase {
     constructor() {
         super();
 
-        this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
+        this.viewController = this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
         this.nativeViewProtected = this._ios.view;
         this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
@@ -199,9 +199,13 @@ export class TabView extends TabViewBase {
         return this._ios;
     }
 
-    // get nativeView(): UIView {
-    //     return this._ios.view;
-    // }
+    public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+        //
+    }
+
+    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+        //
+    }
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
@@ -210,8 +214,7 @@ export class TabView extends TabViewBase {
         }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
-        }
-        else {
+        } else {
             if (traceEnabled()) {
                 traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
             }
@@ -225,7 +228,11 @@ export class TabView extends TabViewBase {
         }
 
         // The "< Back" and "< More" navigation bars should not be visible simultaneously.
-        let page = <Page>this.page;
+        const page = this.page || this._selectedView.page || (<any>this)._selectedView.currentPage;
+        if (!page || !page.frame) {
+            return;
+        }
+
         let actionBarVisible = page.frame._getNavBarVisible(page);
 
         if (backToMoreWillBeVisible && actionBarVisible) {
@@ -251,6 +258,26 @@ export class TabView extends TabViewBase {
         }
     }
 
+    private getViewController(item: TabViewItem): UIViewController {
+        let newController: UIViewController = item.view ? item.view.viewController : null;
+
+        if (newController) {
+            return newController;
+        }
+
+        if (item.view.ios instanceof UIViewController) {
+            newController = item.view.ios;
+        } else if (item.view.ios && item.view.ios.controller instanceof UIViewController) {
+            newController = item.view.ios.controller;
+        } else {
+            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view));
+            newController.view = item.view.nativeViewProtected;
+            item.view.viewController = newController;
+        }
+
+        return newController;
+    }
+
     private setViewControllers(items: TabViewItem[]) {
         const length = items ? items.length : 0;
         if (length === 0) {
@@ -263,30 +290,21 @@ export class TabView extends TabViewBase {
 
         for (let i = 0; i < length; i++) {
             const item = items[i];
-            let newController: UIViewController;
-
-            if (item.view.ios instanceof UIViewController) {
-                newController = item.view.ios;
-            } else {
-                newController = UIViewController.new();
-                newController.view.addSubview(item.view.ios);
-            }
-
-            item.setViewController(newController);
+            const controller = this.getViewController(item);
+            item.setViewController(controller);
 
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
-            }
-            else if (!item.title) {
+            } else if (!item.title) {
                 updateItemIconPosition(tabBarItem);
             }
 
             applyStatesToItem(tabBarItem, states);
 
-            newController.tabBarItem = tabBarItem;
-            controllers.addObject(newController);
+            controller.tabBarItem = tabBarItem;
+            controllers.addObject(controller);
         }
 
         this._ios.viewControllers = controllers;
@@ -324,52 +342,6 @@ export class TabView extends TabViewBase {
         }
 
         return image;
-    }
-
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const nativeView = this.nativeViewProtected;
-        if (nativeView) {
-
-            const width = layout.getMeasureSpecSize(widthMeasureSpec);
-            const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
-            const height = layout.getMeasureSpecSize(heightMeasureSpec);
-            const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
-            this._tabBarHeight = layout.measureNativeView(this._ios.tabBar, width, widthMode, height, heightMode).height;
-            const moreNavBarVisible = !!this._ios.moreNavigationController.navigationBar.window;
-            this._navBarHeight = moreNavBarVisible ? layout.measureNativeView(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
-
-            const density = layout.getDisplayDensity();
-            let measureWidth = 0;
-            let measureHeight = 0;
-
-            const child = this._selectedView;
-            if (child) {
-                const childHeightMeasureSpec = layout.makeMeasureSpec(height - this._navBarHeight - this._tabBarHeight, heightMode);
-                const childSize = View.measureChild(this, child, widthMeasureSpec, childHeightMeasureSpec);
-
-                measureHeight = childSize.measuredHeight;
-                measureWidth = childSize.measuredWidth;
-            }
-
-            measureWidth = Math.max(measureWidth, this.effectiveMinWidth * density);
-            measureHeight = Math.max(measureHeight, this.effectiveMinHeight * density);
-
-            const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
-
-            this.setMeasuredDimension(widthAndState, heightAndState);
-        }
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        super.onLayout(left, top, right, bottom);
-
-        const child = this._selectedView;
-        if (child) {
-            View.layoutChild(this, child, 0, this._navBarHeight, right, (bottom - this._navBarHeight - this._tabBarHeight));
-        }
     }
 
     private _updateIOSTabBarColorsAndFonts(): void {

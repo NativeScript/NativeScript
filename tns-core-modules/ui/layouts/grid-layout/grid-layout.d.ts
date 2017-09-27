@@ -154,22 +154,22 @@ export class GridLayout extends LayoutBase {
 /**
  * Represents the observable property backing the column property.
  */
-export const columnProperty: Property<GridLayout, number>;
+export const columnProperty: Property<View, number>;
 
 /**
  * Represents the observable property backing the columnSpan property.
  */
-export const columnSpanProperty: Property<GridLayout, number>;
+export const columnSpanProperty: Property<View, number>;
 
 /**
  * Represents the observable property backing the row property.
  */
-export const rowProperty: Property<GridLayout, number>;
+export const rowProperty: Property<View, number>;
 
 /**
  * Represents the observable property backing the rowSpan property.
  */
-export const rowSpanProperty: Property<GridLayout, number>;
+export const rowSpanProperty: Property<View, number>;
 
 export type GridUnitType = "pixel" | "star" | "auto";
 export namespace GridUnitType {
