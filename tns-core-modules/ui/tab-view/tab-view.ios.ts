@@ -356,9 +356,6 @@ export class TabView extends TabViewBase {
         }
     }
 
-    [selectedIndexProperty.getDefault](): number {
-        return -1;
-    }
     [selectedIndexProperty.setNative](value: number) {
         if (traceEnabled()) {
             traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);

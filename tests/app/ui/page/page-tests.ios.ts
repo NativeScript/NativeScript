@@ -187,7 +187,6 @@ export function test_correct_layout_scrollable_content_true_flat_action_bar() {
     TKUnit.assertEqual(contentHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBar - navBarHeight - tabBarHeight");
 }
 
-
 export function test_correct_layout_scrollable_content_true_flat_action_bar_edges_span_under_opaque_bars() {
     const page = new Page();
     (<any>page).scrollableContent = true;
