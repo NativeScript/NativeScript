@@ -211,7 +211,7 @@ export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual
         }
     }
     else if (actual !== expected) {
-        throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})`);
+        throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})` );
     }
 }
 
@@ -350,7 +350,7 @@ export function wait(seconds: number): void {
     waitUntilReady(() => false, seconds, false);
 }
 
-export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 300, shouldThrow: boolean = true) {
+export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
     }

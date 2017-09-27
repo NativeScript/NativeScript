@@ -30,6 +30,7 @@ export class PageBase extends ContentView implements PageDefinition {
 
     public _modal: PageBase;
     public _fragmentTag: string;
+    public _frame: Frame;
     
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;
@@ -181,8 +182,7 @@ export class PageBase extends ContentView implements PageDefinition {
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof ActionBar) {
             this.actionBar = value;
-        }
-        else {
+        } else {
             super._addChildFromBuilder(name, value);
         }
     }
@@ -208,7 +208,7 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     public _raiseShownModallyEvent() {
-        let args: ShownModallyData = {
+        const args: ShownModallyData = {
             eventName: PageBase.shownModallyEvent,
             object: this,
             context: this._modalContext,
@@ -218,7 +218,7 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     protected _raiseShowingModallyEvent() {
-        let args: ShownModallyData = {
+        const args: ShownModallyData = {
             eventName: PageBase.showingModallyEvent,
             object: this,
             context: this._modalContext,
@@ -233,7 +233,7 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get _childrenCount(): number {
-        return (this.content ? 1 : 0) + (this.actionBar ? 1 : 0);
+        return (this.content ? 1 : 0) + (this._actionBar ? 1 : 0);
     }
 
     _inheritStyleScope(styleScope: StyleScope): void {

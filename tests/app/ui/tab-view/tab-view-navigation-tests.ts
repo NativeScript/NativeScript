@@ -39,12 +39,12 @@ function _createListView(): ListView {
         var button = <Button>args.view;
         if (!button) {
             button = new Button();
+            button.on(Button.tapEvent, _clickHandlerFactory(args.index));
             args.view = button;
         }
 
         button.text = "Button" + args.index;
         button.id = button.text;
-        button.on(Button.tapEvent, _clickHandlerFactory(args.index));
     });
 
     listView.items = items;
@@ -246,6 +246,9 @@ function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
         button.performClick();
     }
     else {
-        (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.TouchUpInside);
+        const tableView = <UITableView>tabView.ios.viewControllers[0].view;
+        const cell = <UITableViewCell>tableView.cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0));
+        const btn = <UIButton>cell.contentView.subviews[0];
+        btn.sendActionsForControlEvents(UIControlEvents.TouchUpInside);
     }
 }

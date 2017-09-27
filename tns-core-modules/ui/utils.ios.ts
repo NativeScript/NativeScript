@@ -5,20 +5,24 @@ import getter = utils.ios.getter;
 export module ios {
     export function getActualHeight(view: UIView): number {
         if (view.window && !view.hidden) {
-            return view.frame.size.height;
+            return utils.layout.toDevicePixels(view.frame.size.height);
         }
 
         return 0;
     }
 
-    export function getStatusBarHeight(): number {
-        var app = getter(UIApplication, UIApplication.sharedApplication);
+    export function getStatusBarHeight(viewController?: UIViewController): number {
+        const app = getter(UIApplication, UIApplication.sharedApplication);
         if (!app || app.statusBarHidden) {
             return 0;
         }
 
-        var statusFrame = app.statusBarFrame;
-        let min = Math.min(statusFrame.size.width, statusFrame.size.height);
+        if (viewController && viewController.prefersStatusBarHidden) {
+            return 0;
+        }
+
+        const statusFrame = app.statusBarFrame;
+        const min = Math.min(statusFrame.size.width, statusFrame.size.height);
         return utils.layout.toDevicePixels(min);
     }
 
@@ -27,24 +31,19 @@ export module ios {
             return;
         }
 
-        let size = parentBounds.size;
-        let width = utils.layout.toDevicePixels(size.width);
-        let height = utils.layout.toDevicePixels(size.height);
+        const size = parentBounds.size;
+        const width = utils.layout.toDevicePixels(size.width);
+        const height = utils.layout.toDevicePixels(size.height);
 
-        var superview = (<UIView>rootView.nativeViewProtected).superview;
-        var superViewRotationRadians;
-        if (superview) {
-            superViewRotationRadians = atan2f(superview.transform.b, superview.transform.a);
-        }
-
-        var origin = parentBounds.origin;
-        var left = origin.x;
-        var top = origin.y;
-
-        var widthSpec = utils.layout.makeMeasureSpec(width, utils.layout.EXACTLY);
-        var heightSpec = utils.layout.makeMeasureSpec(height, utils.layout.EXACTLY);
-
+        const widthSpec = utils.layout.makeMeasureSpec(width, utils.layout.EXACTLY);
+        const heightSpec = utils.layout.makeMeasureSpec(height, utils.layout.EXACTLY);
+        
         rootView.measure(widthSpec, heightSpec);
+
+        const origin = parentBounds.origin;
+        const left = origin.x;
+        const top = origin.y;
+
         rootView.layout(left, top, width, height);
     }
 }

@@ -6,7 +6,7 @@ import {
 export * from "./image-common";
 
 export class Image extends ImageBase {
-    private _ios: UIImageView;
+    nativeViewProtected: UIImageView;
     private _imageSourceAffectsLayout: boolean = true;
     private _templateImageWasCreated: boolean;
 
@@ -14,29 +14,26 @@ export class Image extends ImageBase {
         super();
 
         //TODO: Think of unified way of setting all the default values.
-        this.nativeViewProtected = this._ios = UIImageView.new();
-        this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
-        this._ios.userInteractionEnabled = true;
+        const imageView = UIImageView.new();
+        imageView.contentMode = UIViewContentMode.ScaleAspectFit;
+        imageView.userInteractionEnabled = true;
+        this.nativeViewProtected = imageView;
         this._setNativeClipToBounds();
     }
 
-    get ios(): UIImageView {
-        return this._ios;
-    }
-
     private setTintColor(value: Color) {
-        if (value && this._ios.image && !this._templateImageWasCreated) {
-            this._ios.image = this._ios.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+        if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
+            this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
             this._templateImageWasCreated = true;
-        } else if (this._ios.image && this._templateImageWasCreated) {
+        } else if (this.nativeViewProtected.image && this._templateImageWasCreated) {
             this._templateImageWasCreated = false;
-            this._ios.image = this._ios.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+            this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
         }
-        this._ios.tintColor = value ? value.ios : null;
+        this.nativeViewProtected.tintColor = value ? value.ios : null;
     }
 
     public _setNativeImage(nativeImage: UIImage) {
-        this.ios.image = nativeImage;
+        this.nativeViewProtected.image = nativeImage;
         this._templateImageWasCreated = false;
         this.setTintColor(this.style.tintColor);
 
@@ -47,32 +44,32 @@ export class Image extends ImageBase {
 
     _setNativeClipToBounds() {
         // Always set clipsToBounds for images
-        this._ios.clipsToBounds = true;
+        this.nativeViewProtected.clipsToBounds = true;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // We don't call super because we measure native view with specific size.     
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let nativeWidth = this.imageSource ? layout.toDevicePixels(this.imageSource.width) : 0;
-        let nativeHeight = this.imageSource ? layout.toDevicePixels(this.imageSource.height) : 0;
+        const nativeWidth = this.imageSource ? layout.toDevicePixels(this.imageSource.width) : 0;
+        const nativeHeight = this.imageSource ? layout.toDevicePixels(this.imageSource.height) : 0;
 
         let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
         let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
 
-        let finiteWidth: boolean = widthMode !== layout.UNSPECIFIED;
-        let finiteHeight: boolean = heightMode !== layout.UNSPECIFIED;
+        const finiteWidth: boolean = widthMode !== layout.UNSPECIFIED;
+        const finiteHeight: boolean = heightMode !== layout.UNSPECIFIED;
 
         this._imageSourceAffectsLayout = widthMode !== layout.EXACTLY || heightMode !== layout.EXACTLY;
 
         if (nativeWidth !== 0 && nativeHeight !== 0 && (finiteWidth || finiteHeight)) {
-            let scale = Image.computeScaleFactor(width, height, finiteWidth, finiteHeight, nativeWidth, nativeHeight, this.stretch);
-            let resultW = Math.round(nativeWidth * scale.width);
-            let resultH = Math.round(nativeHeight * scale.height);
+            const scale = Image.computeScaleFactor(width, height, finiteWidth, finiteHeight, nativeWidth, nativeHeight, this.stretch);
+            const resultW = Math.round(nativeWidth * scale.width);
+            const resultH = Math.round(nativeHeight * scale.height);
 
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;
@@ -84,8 +81,8 @@ export class Image extends ImageBase {
             }
         }
 
-        let widthAndState = Image.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = Image.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = Image.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = Image.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -123,44 +120,35 @@ export class Image extends ImageBase {
         return { width: scaleW, height: scaleH };
     }
 
-    [stretchProperty.getDefault](): "aspectFit" {
-        return "aspectFit";
-    }
     [stretchProperty.setNative](value: "none" | "aspectFill" | "aspectFit" | "fill") {
         switch (value) {
             case "aspectFit":
-                this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
+                this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFit;
                 break;
+
             case "aspectFill":
-                this._ios.contentMode = UIViewContentMode.ScaleAspectFill;
+                this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFill;
                 break;
+
             case "fill":
-                this._ios.contentMode = UIViewContentMode.ScaleToFill;
+                this.nativeViewProtected.contentMode = UIViewContentMode.ScaleToFill;
                 break;
+
             case "none":
             default:
-                this._ios.contentMode = UIViewContentMode.TopLeft;
+                this.nativeViewProtected.contentMode = UIViewContentMode.TopLeft;
                 break;
         }
     }
 
-    [tintColorProperty.getDefault](): Color {
-        return undefined;
-    }
     [tintColorProperty.setNative](value: Color) {
         this.setTintColor(value);
     }
 
-    [imageSourceProperty.getDefault](): ImageSource {
-        return undefined;
-    }
     [imageSourceProperty.setNative](value: ImageSource) {
         this._setNativeImage(value ? value.ios : null);
     }
 
-    [srcProperty.getDefault](): any {
-        return undefined;
-    }
     [srcProperty.setNative](value: any) {
         this._createImageSourceFromSrc(value);
     }

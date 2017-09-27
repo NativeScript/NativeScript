@@ -12,11 +12,6 @@ export function pageLoaded(args: ObservableEventData) {
     var page = <Page>args.object;
 
     page.bindingContext = appViewModel;
-
-    // Enable platform specific feature (in this case Android page caching)
-    if (topmostFrame().android) {
-        topmostFrame().android.cachePagesOnNavigate = true;
-    }
 }
 
 export function listViewItemTap(args: ListViewItemEventData) {

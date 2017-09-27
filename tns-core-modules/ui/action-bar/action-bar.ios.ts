@@ -66,11 +66,9 @@ export class ActionBar extends ActionBarBase {
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof NavigationButton) {
             this.navigationButton = value;
-        }
-        else if (value instanceof ActionItem) {
+        } else if (value instanceof ActionItem) {
             this.actionItems.addItem(value);
-        }
-        else if (value instanceof View) {
+        } else if (value instanceof View) {
             this.titleView = value;
         }
     }
@@ -98,7 +96,7 @@ export class ActionBar extends ActionBarBase {
         }
 
         // Find previous ViewController in the navigation stack
-        let indexOfViewController = navController.viewControllers.indexOfObject(viewController);
+        const indexOfViewController = navController.viewControllers.indexOfObject(viewController);
         if (indexOfViewController < navController.viewControllers.count && indexOfViewController > 0) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
@@ -109,8 +107,7 @@ export class ActionBar extends ActionBarBase {
                 let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
                 let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
-            }
-            else {
+            } else {
                 previousController.navigationItem.backBarButtonItem = null;
             }
         }
@@ -128,8 +125,7 @@ export class ActionBar extends ActionBarBase {
             let image = img.ios.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
             navigationBar.backIndicatorImage = image;
             navigationBar.backIndicatorTransitionMaskImage = image;
-        }
-        else {
+        } else {
             navigationBar.backIndicatorImage = null;
             navigationBar.backIndicatorTransitionMaskImage = null;
         }
@@ -150,15 +146,14 @@ export class ActionBar extends ActionBarBase {
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
-        let items = this.actionItems.getVisibleItems();
-        let leftBarItems = [];
-        let rightBarItems = [];
+        const items = this.actionItems.getVisibleItems();
+        const leftBarItems = [];
+        const rightBarItems = [];
         for (let i = 0; i < items.length; i++) {
-            let barButtonItem = this.createBarButtonItem(items[i]);
+            const barButtonItem = this.createBarButtonItem(items[i]);
             if (items[i].ios.position === "left") {
                 leftBarItems.push(barButtonItem);
-            }
-            else {
+            } else {
                 rightBarItems.splice(0, 0, barButtonItem);
             }
         }
@@ -171,7 +166,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     private createBarButtonItem(item: ActionItemDefinition): UIBarButtonItem {
-        let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
+        const tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
         // associate handler with menuItem or it will get collected by JSC.
         (<any>item).handler = tapHandler;
 
@@ -180,24 +175,21 @@ export class ActionBar extends ActionBarBase {
             let recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
             item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
-        }
-        else if (item.ios.systemIcon !== undefined) {
+        } else if (item.ios.systemIcon !== undefined) {
             let id: number = item.ios.systemIcon;
             if (typeof id === "string") {
                 id = parseInt(id);
             }
+
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
-        }
-        else if (item.icon) {
-            let img = fromFileOrResource(item.icon);
+        } else if (item.icon) {
+            const img = fromFileOrResource(item.icon);
             if (img && img.ios) {
                 barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.Plain, tapHandler, "tap");
-            }
-            else {
+            } else {
                 throw new Error("Error loading icon from " + item.icon);
             }
-        }
-        else {
+        } else {
             barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }
 
@@ -211,17 +203,16 @@ export class ActionBar extends ActionBarBase {
     }
 
     private updateColors(navBar: UINavigationBar) {
-        let color = this.color;
+        const color = this.color;
         if (color) {
             navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
             navBar.tintColor = color.ios;
-        }
-        else {
+        } else {
             navBar.titleTextAttributes = null;
             navBar.tintColor = null;
         }
 
-        let bgColor = <Color>this.backgroundColor;
+        const bgColor = <Color>this.backgroundColor;
         navBar.barTintColor = bgColor ? bgColor.ios : null;
     }
 

@@ -155,6 +155,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public domNode: dnm.DOMNode;
 
     public recycleNativeView: "always" | "never" | "auto";
+    public viewController: any;
     public bindingContext: any;
     public nativeViewProtected: any;
     public parent: ViewBase;
@@ -462,7 +463,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public requestLayout(): void {
-        let parent = this.parent;
+        // Default implementation for non View instances (like TabViewItem).
+        const parent = this.parent;
         if (parent) {
             parent.requestLayout();
         }
@@ -645,9 +647,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         } else {
             // TODO: Implement _createNativeView for iOS
             nativeView = this.createNativeView();
-            if (nativeView) {
-                this._iosView = nativeView;
-            }
+            this._iosView = nativeView || this.nativeViewProtected;
         }
 
         // This will account for nativeView that is created in createNativeView, recycled
@@ -655,7 +655,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this.setNativeView(nativeView || this.nativeViewProtected);
 
         if (this.parent) {
-            let nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+            const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
             this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
         }
 

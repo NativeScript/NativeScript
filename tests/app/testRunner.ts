@@ -346,7 +346,7 @@ function showReportPage(finalMessage: string) {
     page.className = unsetValue;
     page.bindingContext = unsetValue;
     page.style.color = unsetValue;
-    page.style.backgroundColor = unsetValue;
+    page.backgroundColor = "white";
     page.content = stack;
     messageContainer.focus();
     page.style.fontSize = 11;
