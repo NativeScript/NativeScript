@@ -140,7 +140,11 @@ export class Frame extends FrameBase {
         const fragmentTransaction = manager.beginTransaction();
 
         const animated = this._getIsAnimatedNavigation(backstackEntry.entry);
-        const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+        // NOTE: Don't use transition for the initial nagivation (same as on iOS)
+        //. On API 21+ transition won't be triggered unless there was at least one
+        // layout pass so we will wait forever for transitionCompleted handler...
+        // https://github.com/NativeScript/NativeScript/issues/4895
+        const navigationTransition = this._currentEntry ? this._getNavigationTransition(backstackEntry.entry) : null;
 
         _setAndroidFragmentTransitions(animated, navigationTransition, currentFragment, newFragment, fragmentTransaction, manager);
         if (currentFragment) {
