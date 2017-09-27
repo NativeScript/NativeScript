@@ -168,17 +168,6 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
     }
 
-    public testSettingNegativeSelectedIndexShouldThrow() {
-        var tabView = this.testView;
-        tabView.items = this._createItems(3);
-        this.waitUntilTestElementIsLoaded();
-
-        tabView.items.forEach((item, index, array) => {
-            const expected = index === tabView.selectedIndex;
-            TKUnit.assertEqual(item.isLoaded, expected);
-        });
-    }
-
     public testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
         var tabView = this.testView;
         this.waitUntilTestElementIsLoaded();

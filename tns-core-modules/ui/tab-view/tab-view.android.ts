@@ -350,18 +350,6 @@ export class TabView extends TabViewBase {
         super.disposeNativeView();
     }
 
-    public _loadEachChild(): void {
-        // We load childs once they are added to native parent or Frame
-        // cannot navigate because its nativeView is not added to window.
-        const index = this.selectedIndex;
-        if (index >= 0) {
-            const item = this.items[index];
-            if (!item.isLoaded && this.isLoaded) {
-                item.onLoaded();
-            }
-        }
-    }
-
     private setAdapterItems(items: Array<TabViewItem>) {
         (<any>this._pagerAdapter).items = items;
 
@@ -405,19 +393,12 @@ export class TabView extends TabViewBase {
         this._viewPager.setOffscreenPageLimit(value);
     }
 
-    [selectedIndexProperty.getDefault](): number {
-        return -1;
-    }
     [selectedIndexProperty.setNative](value: number) {
         if (traceEnabled()) {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", true);", traceCategory);
         }
 
-        const item = this.items[value];
         this._viewPager.setCurrentItem(value, true);
-        if (!item.isLoaded && this.isLoaded) {
-            item.onLoaded();
-        }
     }
 
     [itemsProperty.getDefault](): TabViewItem[] {
