@@ -246,9 +246,11 @@ export class CssState {
     private updateDynamicState(): void {
         const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
 
-        this.stopKeyframeAnimations();
-        this.setPropertyValues(matchingSelectors);
-        this.playKeyframeAnimations(matchingSelectors);
+        this.view._batchUpdate(() => {
+            this.stopKeyframeAnimations();
+            this.setPropertyValues(matchingSelectors);
+            this.playKeyframeAnimations(matchingSelectors);
+        });
     }
 
     private playKeyframeAnimations(matchingSelectors: SelectorCore[]): void {
@@ -307,33 +309,31 @@ export class CssState {
                 newPropertyValues[declaration.property] = declaration.value));
         Object.freeze(newPropertyValues);
 
-        this.view._batchUpdate(() => {
-            const oldProperties = this._appliedPropertyValues;
-            for(const key in oldProperties) {
-                if (!(key in newPropertyValues)) {
-                    if (key in this.view.style) {
-                        this.view.style[`css:${key}`] = unsetValue;
-                    } else {
-                        // TRICKY: How do we unset local value?
-                    }
+        const oldProperties = this._appliedPropertyValues;
+        for(const key in oldProperties) {
+            if (!(key in newPropertyValues)) {
+                if (key in this.view.style) {
+                    this.view.style[`css:${key}`] = unsetValue;
+                } else {
+                    // TRICKY: How do we unset local value?
                 }
             }
-            for(const property in newPropertyValues) {
-                if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
-                    continue;
-                }
-                const value = newPropertyValues[property];
-                try {
-                    if (property in this.view.style) {
-                        this.view.style[`css:${property}`] = value;
-                    } else {
-                        this.view[property] = value;
-                    }
-                } catch (e) {
-                    traceWrite(`Failed to apply property [${property}] with value [${value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
-                }
+        }
+        for(const property in newPropertyValues) {
+            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+                continue;
             }
-        });
+            const value = newPropertyValues[property];
+            try {
+                if (property in this.view.style) {
+                    this.view.style[`css:${property}`] = value;
+                } else {
+                    this.view[property] = value;
+                }
+            } catch (e) {
+                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
+            }
+        }
 
         this._appliedPropertyValues = newPropertyValues;
     }
