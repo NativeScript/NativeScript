@@ -9,7 +9,7 @@ import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
 export * from "./button-common";
 
 interface ClickListener {
-    new (owner: Button): android.view.View.OnClickListener;
+    new(owner: Button): android.view.View.OnClickListener;
 }
 
 let ClickListener: ClickListener;
@@ -29,7 +29,10 @@ function initializeClickListener(): void {
         }
 
         public onClick(v: android.view.View): void {
-            this.owner._emit(ButtonBase.tapEvent);
+            const owner = this.owner;
+            if (owner) {
+                owner._emit(ButtonBase.tapEvent);
+            }
         }
     }
 
