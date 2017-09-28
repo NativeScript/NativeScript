@@ -203,6 +203,7 @@ export class CssState {
 
     _match: SelectorsMatch<ViewBase>;
     _matchInvalid: boolean;
+    _playsKeyframeAnimations: boolean;
 
     constructor(private view: ViewBase) {
         this._onDynamicStateChangeHandler = () => this.updateDynamicState();
@@ -266,16 +267,31 @@ export class CssState {
             }
         });
 
-        animations.forEach(animation => animation.play(<View>this.view));
-        Object.freeze(animations);
-        this._appliedAnimations = animations;
+        if (this._playsKeyframeAnimations = animations.length > 0) {
+            animations.map(animation => animation.play(<View>this.view));
+            Object.freeze(animations);
+            this._appliedAnimations = animations;
+        }
     }
 
     private stopKeyframeAnimations(): void {
+        if (!this._playsKeyframeAnimations) {
+            return;
+        }
+
         this._appliedAnimations
             .filter(animation => animation.isPlaying)
             .forEach(animation => animation.cancel());
         this._appliedAnimations = CssState.emptyAnimationArray;
+
+        this.view.style["keyframe:rotate"] = unsetValue;
+        this.view.style["keyframe:scaleX"] = unsetValue;
+        this.view.style["keyframe:scaleY"] = unsetValue;
+        this.view.style["keyframe:translateX"] = unsetValue;
+        this.view.style["keyframe:translateY"] = unsetValue;
+        this.view.style["keyframe:backgroundColor"] = unsetValue;
+        this.view.style["keyframe:opacity"] = unsetValue;
+        this._playsKeyframeAnimations = false;
     }
 
     /**
