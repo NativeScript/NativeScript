@@ -129,6 +129,8 @@ export class TextBase extends TextBaseCommon {
         if (this.style.lineHeight) {
             const paragraphStyle = NSMutableParagraphStyle.alloc().init();
             paragraphStyle.lineSpacing = this.lineHeight;
+            // make sure a possible previously set text alignment setting is not lost when line height is specified
+            paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeViewProtected).textAlignment;
             attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
         }
 
@@ -167,6 +169,8 @@ export class TextBase extends TextBaseCommon {
         if (style.lineHeight) {
             const paragraphStyle = NSMutableParagraphStyle.alloc().init();
             paragraphStyle.lineSpacing = style.lineHeight;
+            // make sure a possible previously set text alignment setting is not lost when line height is specified
+            paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeViewProtected).textAlignment;
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
