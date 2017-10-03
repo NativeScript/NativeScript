@@ -75,7 +75,7 @@ export function getClass(object): string;
 /**
  * A function that gets the entire class hierarchy of an object.
  * @param object The object.
- * Return an array of strings with the name of all base classes.
+ * Returns an array of strings with the name of all base classes.
  */
 export function getBaseClasses(object): Array<string>;
 
