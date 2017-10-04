@@ -1,15 +1,35 @@
 ﻿// Definitions.
-import { AnimationDefinition } from ".";
-import { View } from "../core/view";
+import {AnimationDefinition} from '.';
+import {View} from '../core/view';
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
-    opacityProperty, backgroundColorProperty, rotateProperty,
-    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
-} from "../styling/style-properties";
+    AnimationBase,
+    AnimationPromise,
+    Color,
+    CubicBezierAnimationCurve,
+    Properties,
+    PropertyAnimation,
+    traceCategories,
+    traceEnabled,
+    traceWrite
+} from './animation-common';
+import {
+    backgroundColorProperty,
+    heightProperty,
+    opacityProperty,
+    PercentLength,
+    rotateProperty,
+    scaleXProperty,
+    scaleYProperty,
+    translateXProperty,
+    translateYProperty,
+    widthProperty
+} from '../styling/style-properties';
 
-import { layout } from "../../utils/utils";
-import lazy from "../../utils/lazy";
+import {layout} from '../../utils/utils';
+import lazy from '../../utils/lazy';
+
+import * as platform from '../../platform';
 
 export * from "./animation-common";
 
@@ -37,6 +57,8 @@ propertyKeys[Properties.opacity] = Symbol(keyPrefix + Properties.opacity);
 propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
 propertyKeys[Properties.scale] = Symbol(keyPrefix + Properties.scale);
 propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
+propertyKeys[Properties.height] = Symbol(keyPrefix + Properties.height);
+propertyKeys[Properties.width] = Symbol(keyPrefix + Properties.width);
 
 export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator): android.view.animation.Interpolator {
     switch (curve) {
@@ -195,7 +217,7 @@ export class Animation extends AnimationBase {
         }
     }
 
-    private _onAndroidAnimationCancel() { // tslint:disable-line 
+    private _onAndroidAnimationCancel() { // tslint:disable-line
         this._propertyResetCallbacks.forEach(v => v());
         this._rejectAnimationFinishedPromise();
 
@@ -301,7 +323,7 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
                     }
-                    
+
                     if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[backgroundColorProperty.setNative]) {
                         propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
                     }
@@ -414,12 +436,84 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
                     }
-                    
+
                     if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
                     }
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
+                break;
+            case Properties.height:
+                heightProperty._initDefaultNativeValue(style);
+                nativeArray = Array.create("float", 2);
+                let toValue = propertyAnimation.value;
+                let parent = propertyAnimation.target.parent as View;
+                if (!parent) {
+                    throw new Error('cannot animate height on root view');
+                }
+                const parentHeight: number = parent.getMeasuredHeight();
+                toValue = PercentLength.toDevicePixels(toValue, parentHeight, parentHeight) / platform.screen.mainScreen.scale;
+                let fromValue = originalValue1 = nativeView.getHeight() / platform.screen.mainScreen.scale;
+                nativeArray[0] = fromValue;
+                nativeArray[1] = toValue;
+                let heightAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
+                heightAnimator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                    onAnimationUpdate(animator: android.animation.ValueAnimator) {
+                        let argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
+                        propertyAnimation.target.style[setLocal ? heightProperty.name : heightProperty.keyframe] = argb;
+                    }
+                }));
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style[setLocal ? heightProperty.name : heightProperty.keyframe] = propertyAnimation.value;
+                }));
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    if (setLocal) {
+                        propertyAnimation.target.style[heightProperty.name] = originalValue1;
+                    } else {
+                        propertyAnimation.target.style[heightProperty.keyframe] = originalValue1;
+                    }
+
+                    if (propertyAnimation.target.nativeViewProtected) {
+                        propertyAnimation.target[heightProperty.setNative](propertyAnimation.target.style.height);
+                    }
+                }));
+                animators.push(heightAnimator);
+                break;
+
+            case Properties.width:
+                widthProperty._initDefaultNativeValue(style);
+                nativeArray = Array.create("float", 2);
+                let toWidthValue = propertyAnimation.value;
+                let widthParent = propertyAnimation.target.parent as View;
+                if (!widthParent) {
+                    throw new Error('cannot animate width on root view');
+                }
+                const parentWidth: number = widthParent.getMeasuredWidth();
+                toWidthValue = PercentLength.toDevicePixels(toWidthValue, parentWidth, parentWidth) / platform.screen.mainScreen.scale;
+                originalValue1 = nativeArray[0] = nativeView.getWidth() / platform.screen.mainScreen.scale;
+                nativeArray[1] = toWidthValue;
+                let widthAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
+                widthAnimator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                    onAnimationUpdate(animator: android.animation.ValueAnimator) {
+                        let argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
+                        propertyAnimation.target.style[setLocal ? widthProperty.name : widthProperty.keyframe] = argb;
+                    }
+                }));
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style[setLocal ? widthProperty.name : widthProperty.keyframe] = propertyAnimation.value;
+                }));
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    if (setLocal) {
+                        propertyAnimation.target.style[widthProperty.name] = originalValue1;
+                    } else {
+                        propertyAnimation.target.style[widthProperty.keyframe] = originalValue1;
+                    }
+
+                    if (propertyAnimation.target.nativeViewProtected) {
+                        propertyAnimation.target[widthProperty.setNative](propertyAnimation.target.style.width);
+                    }
+                }));
+                animators.push(widthAnimator);
                 break;
 
             default:

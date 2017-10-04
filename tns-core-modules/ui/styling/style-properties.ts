@@ -1,31 +1,28 @@
 // Types
-import {
-    Transformation,
-    TransformationValue,
-    TransformFunctionsInfo,
-} from "../animation/animation";
+import {Transformation, TransformationValue, TransformFunctionsInfo} from '../animation/animation';
 
-import { dip, px, percent } from "../core/view";
+import {dip, percent, px} from '../core/view';
 
-import { Color } from "../../color";
-import { Font, parseFont, FontStyle, FontWeight } from "./font";
-import { layout } from "../../utils/utils";
-import { Background } from "./background";
-import { isIOS } from "../../platform";
+import {Color} from '../../color';
+import {Font, FontStyle, FontWeight, parseFont} from './font';
+import {hasDuplicates, layout} from '../../utils/utils';
+import {Background} from './background';
+import {isIOS} from '../../platform';
 
-import { Style } from "./style";
-
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
-
-import { hasDuplicates } from "../../utils/utils";
-import { radiansToDegrees } from "../../utils/number-utils";
+import {Style} from './style';
 
 import {
-    decompose2DTransformMatrix,
-    getTransformMatrix,
-    matrixArrayToCssMatrix,
-    multiplyAffine2d,
-} from "../../matrix";
+    CssAnimationProperty,
+    CssProperty,
+    InheritedCssProperty,
+    makeParser,
+    makeValidator,
+    ShorthandProperty,
+    unsetValue
+} from '../core/properties';
+import {radiansToDegrees} from '../../utils/number-utils';
+
+import {decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d} from '../../matrix';
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -47,13 +44,19 @@ function equalsCommon(a: PercentLength, b: PercentLength): boolean {
         if (typeof b === "number") {
             return a == b; // tslint:disable-line
         }
+        if (!b) {
+            return false;
+        }
         return b.unit == "dip" && a == b.value; // tslint:disable-line
     }
     if (b == "auto") { // tslint:disable-line
         return false;
     }
     if (typeof b === "number") {
-        return a.unit == "dip" && a.value == b; // tslint:disable-line
+        return a ? (a.unit == "dip" && a.value == b) : false; // tslint:disable-line
+    }
+    if (!a || !b) {
+        return false;
     }
     return a.value == b.value && a.unit == b.unit; // tslint:disable-line
 }
@@ -81,6 +84,9 @@ function toDevicePixelsCommon(length: PercentLength, auto: number = Number.NaN, 
     }
     if (typeof length === "number") {
         return layout.round(layout.toDevicePixels(length));
+    }
+    if (!length) {
+        return auto;
     }
     switch (length.unit) {
         case "px":
@@ -186,10 +192,28 @@ export const minHeightProperty = new CssProperty<Style, Length>({
 });
 minHeightProperty.register(Style);
 
-export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: "auto", affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
+export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
+    name: "width", cssName: "width", defaultValue: "auto", equalityComparer: Length.equals,
+    // TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
+    //       on the animation property, so fake it here. x_x
+    valueChanged: (target, oldValue, newValue) => {
+        if (isIOS) {
+            target.view.requestLayout();
+        }
+    }, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
 
-export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: "auto", affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
+export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
+    name: "height", cssName: "height", defaultValue: "auto", equalityComparer: Length.equals,
+    // TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
+    //       on the animation property, so fake it here. -_-
+    valueChanged: (target, oldValue, newValue) => {
+        if (isIOS) {
+            target.view.requestLayout();
+        }
+    }, valueConverter: PercentLength.parse,
+
+});
 heightProperty.register(Style);
 
 const marginProperty = new ShorthandProperty<Style, string | PercentLength>({

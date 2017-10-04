@@ -9,6 +9,7 @@ import { AnimationPromise } from "tns-core-modules/ui/animation";
 
 // >> animation-require
 import * as animation from "tns-core-modules/ui/animation";
+import {PercentLength} from "tns-core-modules/ui/styling/style-properties";
 // << animation-require
 
 function prepareTest(): Label {
@@ -368,6 +369,65 @@ export function test_AnimateRotate(done) {
         .catch((e) => {
             done(e);
         });
+}
+
+// Bad inputs for PercentLength properties
+const badPercentLengthInputs: any[] = [
+  '-l??%',
+  'qre%',
+  'undefinedpx',
+  'undefined',
+  '-frog%'
+];
+
+export function test_AnimateHeight(done) {
+    let label = prepareTest();
+
+    label.animate({ height: 123, duration: 5 })
+        .then(() => {
+            TKUnit.assertEqual(label.height, 123, "label.height");
+            assertIOSNativeTransformIsCorrect(label);
+            done();
+        })
+        .catch((e) => {
+            done(e);
+        });
+}
+
+export function test_AnimateHeight_ShouldThrow_IfCannotParsePercentLength() {
+    const label = new Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+      badPercentLengthInputs.forEach((input) => {
+        TKUnit.assertThrows(() => {
+          label.animate({ height: input });
+        }, `Setting height to '${input}' should throw.`);
+      });
+    });
+}
+
+export function test_AnimateWidth(done) {
+    let label = prepareTest();
+
+    label.animate({ width: 123, duration: 5 })
+        .then(() => {
+            TKUnit.assertEqual(label.width, 123, "label.width");
+            assertIOSNativeTransformIsCorrect(label);
+            done();
+        })
+        .catch((e) => {
+            done(e);
+        });
+}
+
+export function test_AnimateWidth_ShouldThrow_IfCannotParsePercentLength() {
+    const label = new Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        badPercentLengthInputs.forEach((input) => {
+            TKUnit.assertThrows(() => {
+                label.animate({ width: input });
+            }, `Setting width to '${input}' should throw.`);
+        });
+    });
 }
 
 export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
