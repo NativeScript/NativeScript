@@ -3,7 +3,7 @@
 ## Linting
 
 We use [TSLint](https://palantir.github.io/tslint/) for linting. Rules are defined in `build/tslint.json`.
-Run the tslint form the root of the repo with:
+Run the tslint from the root of the repo with:
 
 ```bash
 npm run tslint
@@ -138,7 +138,7 @@ let adminUser = db.query("SELECT * FROM users ...");
 let admin_user = db.query("SELECT * FROM users ...");
 ```
 
-[camelcase]: http://en.wikipedia.org/wiki/camelCase#Variations_and_synonyms
+[camelcase]: https://en.wikipedia.org/wiki/camelCase#Variations_and_synonyms
 
 ## Type names
 
@@ -231,6 +231,7 @@ if (a == "") {
 ## Short-hand operators
 
 Try to avoid short-hand operators except in very simple scenarios.
+
 *Right:*
 
 ```TypeScript
@@ -272,7 +273,7 @@ if (a) return "winning";
 
 ## Boolean comparisons
 
-**Do not** directly compare with `true`, or `false`.
+**Do not** directly compare with `true` or `false`.
 
 *Right:*
 
