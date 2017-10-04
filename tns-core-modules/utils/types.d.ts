@@ -67,21 +67,21 @@ export function verifyCallback(value: any): void;
 
 /**
  * A function that gets the class name of an object.
- * @param object The object which class will be get.
+ * @param object The object.
  * Returns a string with the name of the class.
  */
 export function getClass(object): string;
 
 /**
  * A function that gets the entire class hierarchy of an object.
- * @param object The object which class hierarchy will be get.
- * Return an array of strings with the name of all classes.
+ * @param object The object.
+ * Returns an array of strings with the name of all base classes.
  */
 export function getBaseClasses(object): Array<string>;
 
 /**
  * A function that gets the ClassInfo for an object.
- * @param object The object for which the ClassInfo will be get.
+ * @param object The object.
  * Returns a ClassInfo for the object.
  */
 export function getClassInfo(object: Object): ClassInfo;
@@ -102,7 +102,7 @@ export class ClassInfo {
 }
 
 /**
- * Returns a string representation of a string to be shown in UI.
- * @param object The object which class hierarchy will be get.
+ * Returns a string representation of an object to be shown in UI.
+ * @param object The object.
  */
 export function toUIString(object): string;
