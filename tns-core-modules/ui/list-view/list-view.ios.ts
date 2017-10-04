@@ -8,6 +8,7 @@ import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { ios } from "../../utils/utils";
 import { profile } from "../../profiling";
+import { device } from "../../platform";
 
 export * from "./list-view-common";
 
@@ -222,6 +223,10 @@ export class ListView extends ListViewBase {
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
         this._ios.rowHeight = UITableViewAutomaticDimension;
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
+        if (parseInt(device.sdkVersion) >= 11) {
+            this._ios.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+        }
+        
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, View>();
