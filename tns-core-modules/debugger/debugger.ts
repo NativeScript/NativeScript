@@ -45,6 +45,16 @@ export function setNetwork(newNetwork: domains.network.NetworkDomainDebugger) {
     network = newNetwork;
 }
 
+var dom;
+
+export function getDOM(): any {
+    return dom;
+}
+
+export function setDOM(newDOM) {
+    dom = newDOM;
+}
+
 export namespace NetworkAgent {
     export interface Request {
         url: string;
