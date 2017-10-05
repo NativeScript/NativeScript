@@ -166,8 +166,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             } else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
                 throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
             } else if (item === Properties.width || item === Properties.height) {
-                // parse will throw if it sees an invalid value
-                PercentLength.parse(<any>animationDefinition[item]);
+                // Coerce input into a PercentLength object in case it's a string.
+                animationDefinition[item] = PercentLength.parse(<any>animationDefinition[item]);
             }
         }
 

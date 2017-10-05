@@ -288,6 +288,7 @@ export class Animation extends AnimationBase {
         let propertyNameToAnimate = animation.property;
         let toValue = animation.value;
         let fromValue;
+        const parent = animation.target.parent as View;
 
         let tempRotate = (animation.target.rotate || 0) * Math.PI / 180;
         let abs;
@@ -372,10 +373,11 @@ export class Animation extends AnimationBase {
                 break;
             case Properties.height:
                 propertyNameToAnimate = "bounds.size.height";
-                if (!animation.target.parent) {
+                if (!parent) {
                     throw new Error('cannot animate height on root view');
                 }
-                const parentHeight: number = animation.target.parent.effectiveHeight;
+                const parentHeight: number = parent.getMeasuredHeight();
+                toValue = PercentLength.parse(toValue);
                 toValue = PercentLength.toDevicePixels(toValue, parentHeight, parentHeight) / platform.screen.mainScreen.scale;
                 fromValue = nativeView.layer.bounds.size.height;
 
@@ -386,10 +388,11 @@ export class Animation extends AnimationBase {
                 break;
             case Properties.width:
                 propertyNameToAnimate = "bounds.size.width";
-                if (!animation.target.parent) {
+                if (!parent) {
                     throw new Error('cannot animate width on root view');
                 }
-                const parentWidth: number = animation.target.parent.effectiveWidth;
+                const parentWidth: number = parent.getMeasuredWidth();
+                toValue = PercentLength.parse(toValue);
                 toValue = PercentLength.toDevicePixels(toValue, parentWidth, parentWidth) / platform.screen.mainScreen.scale;
                 fromValue = nativeView.layer.bounds.size.width;
 

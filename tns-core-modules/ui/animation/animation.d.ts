@@ -37,12 +37,12 @@ export interface AnimationDefinition {
     /**
      * Animates the height of a view.
      */
-    height?: PercentLength;
+    height?: PercentLength | string;
 
     /**
      * Animates the width of a view.
      */
-    width?: PercentLength;
+    width?: PercentLength | string;
 
     /**
      * Animates the rotate affine transform of the view. Value should be a number specifying the rotation amount in degrees.
