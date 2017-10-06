@@ -60,6 +60,8 @@ declare class PHAsset extends PHObject {
 
 	readonly pixelWidth: number;
 
+	readonly playbackStyle: PHAssetPlaybackStyle;
+
 	readonly representsBurst: boolean;
 
 	readonly sourceType: PHAssetSourceType;
@@ -219,6 +221,14 @@ declare const enum PHAssetCollectionSubtype {
 
 	SmartAlbumScreenshots = 211,
 
+	SmartAlbumDepthEffect = 212,
+
+	SmartAlbumLivePhotos = 213,
+
+	SmartAlbumAnimated = 214,
+
+	SmartAlbumLongExposures = 215,
+
 	Any = 2147483647
 }
 
@@ -275,6 +285,8 @@ declare const enum PHAssetMediaSubtype {
 
 	PhotoLive = 8,
 
+	PhotoDepthEffect = 16,
+
 	VideoStreamed = 65536,
 
 	VideoHighFrameRate = 131072,
@@ -291,6 +303,21 @@ declare const enum PHAssetMediaType {
 	Video = 2,
 
 	Audio = 3
+}
+
+declare const enum PHAssetPlaybackStyle {
+
+	Unsupported = 0,
+
+	Image = 1,
+
+	ImageAnimated = 2,
+
+	LivePhoto = 3,
+
+	Video = 4,
+
+	VideoLooping = 5
 }
 
 declare class PHAssetResource extends NSObject {
@@ -577,6 +604,8 @@ declare class PHContentEditingInput extends NSObject {
 	readonly mediaSubtypes: PHAssetMediaSubtype;
 
 	readonly mediaType: PHAssetMediaType;
+
+	readonly playbackStyle: PHAssetPlaybackStyle;
 
 	readonly uniformTypeIdentifier: string;
 }

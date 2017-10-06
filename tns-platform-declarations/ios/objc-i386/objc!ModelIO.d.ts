@@ -1,4 +1,193 @@
 
+declare class MDLAnimatedMatrix4x4 extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedMatrix4x4; // inherited from NSObject
+
+	static new(): MDLAnimatedMatrix4x4; // inherited from NSObject
+}
+
+declare class MDLAnimatedQuaternionArray extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedQuaternionArray; // inherited from NSObject
+
+	static new(): MDLAnimatedQuaternionArray; // inherited from NSObject
+
+	readonly elementCount: number;
+
+	constructor(o: { elementCount: number; });
+
+	initWithElementCount(arrayElementCount: number): this;
+}
+
+declare class MDLAnimatedScalar extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedScalar; // inherited from NSObject
+
+	static new(): MDLAnimatedScalar; // inherited from NSObject
+
+	doubleAtTime(time: number): number;
+
+	floatAtTime(time: number): number;
+
+	getDoubleArrayMaxCount(valuesArray: interop.Pointer | interop.Reference<number>, maxCount: number): number;
+
+	getFloatArrayMaxCount(valuesArray: interop.Pointer | interop.Reference<number>, maxCount: number): number;
+
+	resetWithDoubleArrayAtTimesCount(valuesArray: interop.Pointer | interop.Reference<number>, timesArray: interop.Pointer | interop.Reference<number>, count: number): void;
+
+	resetWithFloatArrayAtTimesCount(valuesArray: interop.Pointer | interop.Reference<number>, timesArray: interop.Pointer | interop.Reference<number>, count: number): void;
+
+	setDoubleAtTime(value: number, time: number): void;
+
+	setFloatAtTime(value: number, time: number): void;
+}
+
+declare class MDLAnimatedScalarArray extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedScalarArray; // inherited from NSObject
+
+	static new(): MDLAnimatedScalarArray; // inherited from NSObject
+
+	readonly elementCount: number;
+
+	constructor(o: { elementCount: number; });
+
+	getDoubleArrayMaxCount(valuesArray: interop.Pointer | interop.Reference<number>, maxCount: number): number;
+
+	getDoubleArrayMaxCountAtTime(array: interop.Pointer | interop.Reference<number>, maxCount: number, time: number): number;
+
+	getFloatArrayMaxCount(valuesArray: interop.Pointer | interop.Reference<number>, maxCount: number): number;
+
+	getFloatArrayMaxCountAtTime(array: interop.Pointer | interop.Reference<number>, maxCount: number, time: number): number;
+
+	initWithElementCount(arrayElementCount: number): this;
+
+	resetWithDoubleArrayCountAtTimesCount(valuesArray: interop.Pointer | interop.Reference<number>, valuesCount: number, timesArray: interop.Pointer | interop.Reference<number>, timesCount: number): void;
+
+	resetWithFloatArrayCountAtTimesCount(valuesArray: interop.Pointer | interop.Reference<number>, valuesCount: number, timesArray: interop.Pointer | interop.Reference<number>, timesCount: number): void;
+
+	setDoubleArrayCountAtTime(array: interop.Pointer | interop.Reference<number>, count: number, time: number): void;
+
+	setFloatArrayCountAtTime(array: interop.Pointer | interop.Reference<number>, count: number, time: number): void;
+}
+
+declare class MDLAnimatedValue extends NSObject implements NSCopying {
+
+	static alloc(): MDLAnimatedValue; // inherited from NSObject
+
+	static new(): MDLAnimatedValue; // inherited from NSObject
+
+	interpolation: MDLAnimatedValueInterpolation;
+
+	readonly keyTimes: NSArray<number>;
+
+	readonly maximumTime: number;
+
+	readonly minimumTime: number;
+
+	readonly precision: MDLDataPrecision;
+
+	readonly timeSampleCount: number;
+
+	clear(): void;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	getTimesMaxCount(timesArray: interop.Pointer | interop.Reference<number>, maxCount: number): number;
+
+	isAnimated(): boolean;
+}
+
+declare const enum MDLAnimatedValueInterpolation {
+
+	Constant = 0,
+
+	Linear = 1
+}
+
+declare class MDLAnimatedVector2 extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedVector2; // inherited from NSObject
+
+	static new(): MDLAnimatedVector2; // inherited from NSObject
+}
+
+declare class MDLAnimatedVector3 extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedVector3; // inherited from NSObject
+
+	static new(): MDLAnimatedVector3; // inherited from NSObject
+}
+
+declare class MDLAnimatedVector3Array extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedVector3Array; // inherited from NSObject
+
+	static new(): MDLAnimatedVector3Array; // inherited from NSObject
+
+	readonly elementCount: number;
+
+	constructor(o: { elementCount: number; });
+
+	initWithElementCount(arrayElementCount: number): this;
+}
+
+declare class MDLAnimatedVector4 extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedVector4; // inherited from NSObject
+
+	static new(): MDLAnimatedVector4; // inherited from NSObject
+}
+
+declare class MDLAnimationBindComponent extends NSObject implements MDLComponent, NSCopying {
+
+	static alloc(): MDLAnimationBindComponent; // inherited from NSObject
+
+	static new(): MDLAnimationBindComponent; // inherited from NSObject
+
+	jointAnimation: MDLJointAnimation;
+
+	jointPaths: NSArray<string>;
+
+	skeleton: MDLSkeleton;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 declare class MDLAreaLight extends MDLPhysicallyPlausibleLight {
 
 	static alloc(): MDLAreaLight; // inherited from NSObject
@@ -34,6 +223,8 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	readonly URL: NSURL;
 
+	animations: MDLObjectContainerComponent;
+
 	readonly bufferAllocator: MDLMeshBufferAllocator;
 
 	readonly count: number;
@@ -43,6 +234,8 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 	frameInterval: number;
 
 	masters: MDLObjectContainerComponent;
+
+	resolver: MDLAssetResolver;
 
 	startTime: number;
 
@@ -76,11 +269,77 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	initWithURLVertexDescriptorBufferAllocatorPreserveTopologyError(URL: NSURL, vertexDescriptor: MDLVertexDescriptor, bufferAllocator: MDLMeshBufferAllocator, preserveTopology: boolean): this;
 
+	loadTextures(): void;
+
 	objectAtIndex(index: number): MDLObject;
 
 	objectAtIndexedSubscript(index: number): MDLObject;
 
+	objectAtPath(path: string): MDLObject;
+
 	removeObject(object: MDLObject): void;
+}
+
+interface MDLAssetResolver extends NSObjectProtocol {
+
+	canResolveAssetNamed(name: string): boolean;
+
+	resolveAssetNamed(name: string): NSURL;
+}
+declare var MDLAssetResolver: {
+
+	prototype: MDLAssetResolver;
+};
+
+declare class MDLBundleAssetResolver extends NSObject implements MDLAssetResolver {
+
+	static alloc(): MDLBundleAssetResolver; // inherited from NSObject
+
+	static new(): MDLBundleAssetResolver; // inherited from NSObject
+
+	path: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { bundle: string; });
+
+	canResolveAssetNamed(name: string): boolean;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithBundle(path: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	resolveAssetNamed(name: string): NSURL;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class MDLCamera extends MDLObject {
@@ -180,6 +439,15 @@ declare var MDLComponent: {
 	prototype: MDLComponent;
 };
 
+declare const enum MDLDataPrecision {
+
+	Undefined = 0,
+
+	Float = 1,
+
+	Double = 2
+}
+
 declare const enum MDLGeometryType {
 
 	Points = 0,
@@ -211,6 +479,13 @@ declare const enum MDLIndexBitDepth {
 
 	Uint32 = 32
 }
+
+interface MDLJointAnimation {
+}
+declare var MDLJointAnimation: {
+
+	prototype: MDLJointAnimation;
+};
 
 declare class MDLLight extends MDLObject {
 
@@ -318,9 +593,13 @@ declare class MDLMaterial extends NSObject implements MDLNamed, NSFastEnumeratio
 
 	initWithNameScatteringFunction(name: string, scatteringFunction: MDLScatteringFunction): this;
 
+	loadTexturesUsingResolver(resolver: MDLAssetResolver): void;
+
 	objectAtIndexedSubscript(idx: number): MDLMaterialProperty;
 
 	objectForKeyedSubscript(name: string): MDLMaterialProperty;
+
+	propertiesWithSemantic(semantic: MDLMaterialSemantic): NSArray<MDLMaterialProperty>;
 
 	propertyNamed(name: string): MDLMaterialProperty;
 
@@ -329,6 +608,8 @@ declare class MDLMaterial extends NSObject implements MDLNamed, NSFastEnumeratio
 	removeAllProperties(): void;
 
 	removeProperty(property: MDLMaterialProperty): void;
+
+	resolveTexturesWithResolver(resolver: MDLAssetResolver): void;
 
 	setProperty(property: MDLMaterialProperty): void;
 }
@@ -369,7 +650,7 @@ declare class MDLMaterialProperty extends NSObject implements MDLNamed, NSCopyin
 
 	textureSamplerValue: MDLTextureSampler;
 
-	readonly type: MDLMaterialPropertyType;
+	type: MDLMaterialPropertyType;
 
 	name: string; // inherited from MDLNamed
 
@@ -549,6 +830,25 @@ declare const enum MDLMaterialTextureWrapMode {
 	Mirror = 2
 }
 
+declare class MDLMatrix4x4Array extends NSObject implements NSCopying {
+
+	static alloc(): MDLMatrix4x4Array; // inherited from NSObject
+
+	static new(): MDLMatrix4x4Array; // inherited from NSObject
+
+	readonly elementCount: number;
+
+	readonly precision: MDLDataPrecision;
+
+	constructor(o: { elementCount: number; });
+
+	clear(): void;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithElementCount(arrayElementCount: number): this;
+}
+
 declare class MDLMesh extends MDLObject {
 
 	static alloc(): MDLMesh; // inherited from NSObject
@@ -561,6 +861,8 @@ declare class MDLMesh extends MDLObject {
 
 	static newIcosahedronWithRadiusInwardNormalsAllocator(radius: number, inwardNormals: boolean, allocator: MDLMeshBufferAllocator): MDLMesh;
 
+	static newIcosahedronWithRadiusInwardNormalsGeometryTypeAllocator(radius: number, inwardNormals: boolean, geometryType: MDLGeometryType, allocator: MDLMeshBufferAllocator): MDLMesh;
+
 	static newSubdividedMeshSubmeshIndexSubdivisionLevels(mesh: MDLMesh, submeshIndex: number, subdivisionLevels: number): MDLMesh;
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLMesh; // inherited from MDLObject
@@ -571,7 +873,7 @@ declare class MDLMesh extends MDLObject {
 
 	submeshes: NSMutableArray<MDLSubmesh>;
 
-	readonly vertexBuffers: NSArray<MDLMeshBuffer>;
+	vertexBuffers: NSArray<MDLMeshBuffer>;
 
 	vertexCount: number;
 
@@ -593,11 +895,15 @@ declare class MDLMesh extends MDLObject {
 
 	addNormalsWithAttributeNamedCreaseThreshold(attributeName: string, creaseThreshold: number): void;
 
-	addTangentBasisForTextureCoordinateAttributeNamedNormalAttributeNamedTangentAttributeNamed(textureCoordinateAttributeName: string, normalAttributeNamed: string, tangentAttributeNamed: string): void;
+	addOrthTanBasisForTextureCoordinateAttributeNamedNormalAttributeNamedTangentAttributeNamed(textureCoordinateAttributeName: string, normalAttributeName: string, tangentAttributeName: string): void;
 
-	addTangentBasisForTextureCoordinateAttributeNamedTangentAttributeNamedBitangentAttributeNamed(textureCoordinateAttributeName: string, tangentAttributeNamed: string, bitangentAttributeName: string): void;
+	addTangentBasisForTextureCoordinateAttributeNamedNormalAttributeNamedTangentAttributeNamed(textureCoordinateAttributeName: string, normalAttributeName: string, tangentAttributeName: string): void;
+
+	addTangentBasisForTextureCoordinateAttributeNamedTangentAttributeNamedBitangentAttributeNamed(textureCoordinateAttributeName: string, tangentAttributeName: string, bitangentAttributeName: string): void;
 
 	addUnwrappedTextureCoordinatesForAttributeNamed(textureCoordinateAttributeName: string): void;
+
+	flipTextureCoordinatesInAttributeNamed(textureCoordinateAttributeName: string): void;
 
 	generateAmbientOcclusionTextureWithQualityAttenuationFactorObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(bakeQuality: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string, materialPropertyName: string): boolean;
 
@@ -618,6 +924,8 @@ declare class MDLMesh extends MDLObject {
 	initWithVertexBuffersVertexCountDescriptorSubmeshes(vertexBuffers: NSArray<MDLMeshBuffer>, vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh>): this;
 
 	makeVerticesUnique(): void;
+
+	makeVerticesUniqueAndReturnError(): boolean;
 
 	removeAttributeNamed(name: string): void;
 
@@ -915,6 +1223,8 @@ declare class MDLObject extends NSObject implements MDLNamed {
 
 	children: MDLObjectContainerComponent;
 
+	readonly components: NSArray<MDLComponent>;
+
 	hidden: boolean;
 
 	instance: MDLObject;
@@ -931,9 +1241,15 @@ declare class MDLObject extends NSObject implements MDLNamed {
 
 	componentConformingToProtocol(protocol: any /* Protocol */): MDLComponent;
 
+	enumerateChildObjectsOfClassRootUsingBlockStopPointer(objectClass: typeof NSObject, root: MDLObject, block: (p1: MDLObject, p2: interop.Pointer | interop.Reference<boolean>) => void, stopPointer: interop.Pointer | interop.Reference<boolean>): void;
+
 	objectAtPath(path: string): MDLObject;
 
+	objectForKeyedSubscript(key: any /* Protocol */): MDLComponent;
+
 	setComponentForProtocol(component: MDLComponent, protocol: any /* Protocol */): void;
+
+	setObjectForKeyedSubscript(obj: MDLComponent, key: any /* Protocol */): void;
 }
 
 declare class MDLObjectContainer extends NSObject implements MDLObjectContainerComponent {
@@ -941,6 +1257,8 @@ declare class MDLObjectContainer extends NSObject implements MDLObjectContainerC
 	static alloc(): MDLObjectContainer; // inherited from NSObject
 
 	static new(): MDLObjectContainer; // inherited from NSObject
+
+	readonly count: number; // inherited from MDLObjectContainerComponent
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -955,6 +1273,7 @@ declare class MDLObjectContainer extends NSObject implements MDLObjectContainerC
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	readonly  // inherited from NSObjectProtocol
+	[index: number]: MDLObject;
 	[Symbol.iterator](): Iterator<any>;
 
 	addObject(object: MDLObject): void;
@@ -968,6 +1287,8 @@ declare class MDLObjectContainer extends NSObject implements MDLObjectContainerC
 	isKindOfClass(aClass: typeof NSObject): boolean;
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	objectAtIndexedSubscript(index: number): MDLObject;
 
 	performSelector(aSelector: string): any;
 
@@ -986,9 +1307,13 @@ declare class MDLObjectContainer extends NSObject implements MDLObjectContainerC
 
 interface MDLObjectContainerComponent extends MDLComponent, NSFastEnumeration {
 
+	count: number;
+
 	objects: NSArray<MDLObject>;
 
 	addObject(object: MDLObject): void;
+
+	objectAtIndexedSubscript(index: number): MDLObject;
 
 	removeObject(object: MDLObject): void;
 }
@@ -996,6 +1321,82 @@ declare var MDLObjectContainerComponent: {
 
 	prototype: MDLObjectContainerComponent;
 };
+
+declare class MDLPackedJointAnimation extends MDLObject implements MDLJointAnimation, NSCopying {
+
+	static alloc(): MDLPackedJointAnimation; // inherited from NSObject
+
+	static new(): MDLPackedJointAnimation; // inherited from NSObject
+
+	static objectWithSCNNode(scnNode: SCNNode): MDLPackedJointAnimation; // inherited from MDLObject
+
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLPackedJointAnimation; // inherited from MDLObject
+
+	readonly jointPaths: NSArray<string>;
+
+	readonly rotations: MDLAnimatedQuaternionArray;
+
+	readonly scales: MDLAnimatedVector3Array;
+
+	readonly translations: MDLAnimatedVector3Array;
+
+	constructor(o: { name: string; jointPaths: NSArray<string>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithNameJointPaths(name: string, jointPaths: NSArray<string>): this;
+}
+
+declare class MDLPathAssetResolver extends NSObject implements MDLAssetResolver {
+
+	static alloc(): MDLPathAssetResolver; // inherited from NSObject
+
+	static new(): MDLPathAssetResolver; // inherited from NSObject
+
+	path: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { path: string; });
+
+	canResolveAssetNamed(name: string): boolean;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithPath(path: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	resolveAssetNamed(name: string): NSURL;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
 
 declare class MDLPhotometricLight extends MDLPhysicallyPlausibleLight {
 
@@ -1020,6 +1421,8 @@ declare class MDLPhotometricLight extends MDLPhysicallyPlausibleLight {
 	generateCubemapFromLight(textureSize: number): void;
 
 	generateSphericalHarmonicsFromLight(sphericalHarmonicsLevel: number): void;
+
+	generateTexture(textureSize: number): MDLTexture;
 
 	initWithIESProfile(URL: NSURL): this;
 }
@@ -1089,6 +1492,57 @@ declare const enum MDLProbePlacement {
 	IrradianceDistribution = 1
 }
 
+declare class MDLRelativeAssetResolver extends NSObject implements MDLAssetResolver {
+
+	static alloc(): MDLRelativeAssetResolver; // inherited from NSObject
+
+	static new(): MDLRelativeAssetResolver; // inherited from NSObject
+
+	asset: MDLAsset;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { asset: MDLAsset; });
+
+	canResolveAssetNamed(name: string): boolean;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithAsset(asset: MDLAsset): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	resolveAssetNamed(name: string): NSURL;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 declare class MDLScatteringFunction extends NSObject implements MDLNamed {
 
 	static alloc(): MDLScatteringFunction; // inherited from NSObject
@@ -1112,6 +1566,27 @@ declare class MDLScatteringFunction extends NSObject implements MDLNamed {
 	readonly specular: MDLMaterialProperty;
 
 	name: string; // inherited from MDLNamed
+}
+
+declare class MDLSkeleton extends MDLObject implements NSCopying {
+
+	static alloc(): MDLSkeleton; // inherited from NSObject
+
+	static new(): MDLSkeleton; // inherited from NSObject
+
+	static objectWithSCNNode(scnNode: SCNNode): MDLSkeleton; // inherited from MDLObject
+
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLSkeleton; // inherited from MDLObject
+
+	readonly jointBindTransforms: MDLMatrix4x4Array;
+
+	readonly jointPaths: NSArray<string>;
+
+	constructor(o: { name: string; jointPaths: NSArray<string>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithNameJointPaths(name: string, jointPaths: NSArray<string>): this;
 }
 
 declare class MDLSkyCubeTexture extends MDLTexture {
@@ -1143,6 +1618,8 @@ declare class MDLSkyCubeTexture extends MDLTexture {
 	horizonElevation: number;
 
 	saturation: number;
+
+	sunAzimuth: number;
 
 	sunElevation: number;
 
@@ -1194,7 +1671,7 @@ declare class MDLSubmesh extends NSObject implements MDLNamed {
 
 	material: MDLMaterial;
 
-	readonly topology: MDLSubmeshTopology;
+	topology: MDLSubmeshTopology;
 
 	name: string; // inherited from MDLNamed
 
@@ -1242,6 +1719,10 @@ declare class MDLSubmeshTopology extends NSObject {
 	vertexCreaseIndices: MDLMeshBuffer;
 
 	vertexCreases: MDLMeshBuffer;
+
+	constructor(o: { submesh: MDLSubmesh; });
+
+	initWithSubmesh(submesh: MDLSubmesh): this;
 }
 
 declare class MDLTexture extends NSObject implements MDLNamed {
@@ -1274,6 +1755,8 @@ declare class MDLTexture extends NSObject implements MDLNamed {
 
 	imageFromTexture(): any;
 
+	imageFromTextureAtLevel(level: number): any;
+
 	texelDataWithBottomLeftOrigin(): NSData;
 
 	texelDataWithBottomLeftOriginAtMipLevelCreate(level: number, create: boolean): NSData;
@@ -1284,7 +1767,11 @@ declare class MDLTexture extends NSObject implements MDLNamed {
 
 	writeToURL(URL: NSURL): boolean;
 
+	writeToURLLevel(URL: NSURL, level: number): boolean;
+
 	writeToURLType(nsurl: NSURL, type: string): boolean;
+
+	writeToURLTypeLevel(nsurl: NSURL, type: string, level: number): boolean;
 }
 
 declare const enum MDLTextureChannelEncoding {
@@ -1306,6 +1793,8 @@ declare const enum MDLTextureChannelEncoding {
 	Uint32 = 4,
 
 	Float16 = 258,
+
+	Float16SR = 770,
 
 	Float32 = 260
 }
@@ -1422,6 +1911,194 @@ declare var MDLTransformComponent: {
 	prototype: MDLTransformComponent;
 };
 
+declare class MDLTransformMatrixOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformMatrixOp; // inherited from NSObject
+
+	static new(): MDLTransformMatrixOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedMatrix4x4;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
+interface MDLTransformOp {
+
+	name: string;
+
+	IsInverseOp(): boolean;
+}
+declare var MDLTransformOp: {
+
+	prototype: MDLTransformOp;
+};
+
+declare const enum MDLTransformOpRotationOrder {
+
+	XYZ = 1,
+
+	XZY = 2,
+
+	YXZ = 3,
+
+	YZX = 4,
+
+	ZXY = 5,
+
+	ZYX = 6
+}
+
+declare class MDLTransformRotateOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformRotateOp; // inherited from NSObject
+
+	static new(): MDLTransformRotateOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedVector3;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
+declare class MDLTransformRotateXOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformRotateXOp; // inherited from NSObject
+
+	static new(): MDLTransformRotateXOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedScalar;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
+declare class MDLTransformRotateYOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformRotateYOp; // inherited from NSObject
+
+	static new(): MDLTransformRotateYOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedScalar;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
+declare class MDLTransformRotateZOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformRotateZOp; // inherited from NSObject
+
+	static new(): MDLTransformRotateZOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedScalar;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
+declare class MDLTransformScaleOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformScaleOp; // inherited from NSObject
+
+	static new(): MDLTransformScaleOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedVector3;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
+declare class MDLTransformStack extends NSObject implements MDLTransformComponent, NSCopying {
+
+	static alloc(): MDLTransformStack; // inherited from NSObject
+
+	static new(): MDLTransformStack; // inherited from NSObject
+
+	readonly transformOps: NSArray<MDLTransformOp>;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly keyTimes: NSArray<number>; // inherited from MDLTransformComponent
+
+	readonly maximumTime: number; // inherited from MDLTransformComponent
+
+	readonly minimumTime: number; // inherited from MDLTransformComponent
+
+	resetsTransform: boolean; // inherited from MDLTransformComponent
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	addMatrixOpInverse(animatedValueName: string, inverse: boolean): MDLTransformMatrixOp;
+
+	addRotateOpOrderInverse(animatedValueName: string, order: MDLTransformOpRotationOrder, inverse: boolean): MDLTransformRotateOp;
+
+	addRotateXOpInverse(animatedValueName: string, inverse: boolean): MDLTransformRotateXOp;
+
+	addRotateYOpInverse(animatedValueName: string, inverse: boolean): MDLTransformRotateYOp;
+
+	addRotateZOpInverse(animatedValueName: string, inverse: boolean): MDLTransformRotateZOp;
+
+	addScaleOpInverse(animatedValueName: string, inverse: boolean): MDLTransformScaleOp;
+
+	addTranslateOpInverse(animatedValueName: string, inverse: boolean): MDLTransformTranslateOp;
+
+	animatedValueWithName(name: string): MDLAnimatedValue;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	count(): number;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class MDLTransformTranslateOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformTranslateOp; // inherited from NSObject
+
+	static new(): MDLTransformTranslateOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedVector3;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+}
+
 declare class MDLURLTexture extends MDLTexture {
 
 	static alloc(): MDLURLTexture; // inherited from NSObject
@@ -1479,6 +2156,8 @@ declare class MDLVertexAttributeData extends NSObject {
 	static alloc(): MDLVertexAttributeData; // inherited from NSObject
 
 	static new(): MDLVertexAttributeData; // inherited from NSObject
+
+	bufferSize: number;
 
 	dataStart: interop.Pointer | interop.Reference<any>;
 

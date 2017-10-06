@@ -68,6 +68,8 @@ declare class WKInterfaceController extends NSObject {
 
 	becomeCurrentPage(): void;
 
+	beginGlanceUpdates(): void;
+
 	clearAllMenuItems(): void;
 
 	contextForSegueWithIdentifier(segueIdentifier: string): any;
@@ -83,6 +85,8 @@ declare class WKInterfaceController extends NSObject {
 	dismissController(): void;
 
 	dismissTextInputController(): void;
+
+	endGlanceUpdates(): void;
 
 	handleActionWithIdentifierForLocalNotification(identifier: string, localNotification: UILocalNotification): void;
 

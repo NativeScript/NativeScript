@@ -37,9 +37,17 @@ declare class AUAudioUnit extends NSObject {
 
 	static registerSubclassAsComponentDescriptionNameVersion(cls: typeof NSObject, componentDescription: AudioComponentDescription, name: string, version: number): void;
 
+	MIDIOutputBufferSizeHint: number;
+
+	MIDIOutputEventBlock: (p1: number, p2: number, p3: number, p4: string) => number;
+
+	readonly MIDIOutputNames: NSArray<string>;
+
 	readonly allParameterValues: boolean;
 
 	readonly audioUnitName: string;
+
+	readonly audioUnitShortName: string;
 
 	readonly canPerformInput: boolean;
 
@@ -93,6 +101,8 @@ declare class AUAudioUnit extends NSObject {
 
 	readonly parameterTree: AUParameterTree;
 
+	readonly providesUserInterface: boolean;
+
 	readonly renderBlock: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>, p6: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number) => number;
 
 	renderQuality: number;
@@ -100,6 +110,8 @@ declare class AUAudioUnit extends NSObject {
 	readonly renderResourcesAllocated: boolean;
 
 	renderingOffline: boolean;
+
+	readonly running: boolean;
 
 	readonly scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: string) => void;
 
@@ -135,6 +147,8 @@ declare class AUAudioUnit extends NSObject {
 
 	reset(): void;
 
+	selectViewConfiguration(viewConfiguration: AUAudioUnitViewConfiguration): void;
+
 	setRenderResourcesAllocated(flag: boolean): void;
 
 	shouldChangeToFormatForBus(format: AVAudioFormat, bus: AUAudioUnitBus): boolean;
@@ -142,6 +156,8 @@ declare class AUAudioUnit extends NSObject {
 	startHardwareAndReturnError(): boolean;
 
 	stopHardware(): void;
+
+	supportedViewConfigurations(availableViewConfigurations: NSArray<AUAudioUnitViewConfiguration>): NSIndexSet;
 
 	tokenByAddingRenderObserver(observer: (p1: AudioUnitRenderActionFlags, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number) => void): number;
 }
@@ -167,6 +183,8 @@ declare class AUAudioUnitBus extends NSObject {
 	name: string;
 
 	readonly ownerAudioUnit: AUAudioUnit;
+
+	shouldAllocateBuffer: boolean;
 
 	supportedChannelCounts: NSArray<number>;
 
@@ -336,6 +354,12 @@ interface AUInputSamplesInOutputCallbackStruct {
 	userData: interop.Pointer | interop.Reference<any>;
 }
 declare var AUInputSamplesInOutputCallbackStruct: interop.StructType<AUInputSamplesInOutputCallbackStruct>;
+
+interface AUMIDIOutputCallbackStruct {
+	midiOutputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<MIDIPacketList>) => number>;
+	userData: interop.Pointer | interop.Reference<any>;
+}
+declare var AUMIDIOutputCallbackStruct: interop.StructType<AUMIDIOutputCallbackStruct>;
 
 interface AUNodeRenderCallback {
 	destNode: number;
@@ -622,7 +646,9 @@ declare const enum AUSpatializationAlgorithm {
 
 	kSpatializationAlgorithm_VectorBasedPanning = 4,
 
-	kSpatializationAlgorithm_StereoPassThrough = 5
+	kSpatializationAlgorithm_StereoPassThrough = 5,
+
+	kSpatializationAlgorithm_HRTFHQ = 6
 }
 
 interface AudioBalanceFade {
@@ -1134,6 +1160,10 @@ interface AudioUnitConnection {
 	destInputNumber: number;
 }
 declare var AudioUnitConnection: interop.StructType<AudioUnitConnection>;
+
+declare function AudioUnitExtensionCopyComponentList(extensionIdentifier: string): interop.Unmanaged<NSArray<any>>;
+
+declare function AudioUnitExtensionSetComponentList(extensionIdentifier: string, audioComponentInfo: NSArray<any>): number;
 
 interface AudioUnitExternalBuffer {
 	buffer: string;
@@ -2223,6 +2253,8 @@ declare const kAudioFileDoesNotAllow64BitDataSizeError: number;
 
 declare const kAudioFileEndOfFileError: number;
 
+declare const kAudioFileFLACType: number;
+
 declare const kAudioFileFileNotFoundError: number;
 
 declare const kAudioFileGlobalInfo_AllExtensions: number;
@@ -2358,6 +2390,8 @@ declare const kAudioFilePropertyReserveDuration: number;
 declare const kAudioFilePropertySourceBitDepth: number;
 
 declare const kAudioFilePropertyUseAudioTrack: number;
+
+declare const kAudioFileRF64Type: number;
 
 declare const kAudioFileSoundDesigner2Type: number;
 
@@ -2903,6 +2937,8 @@ declare const kAudioUnitComplexRenderSelect: number;
 
 declare const kAudioUnitErr_CannotDoInCurrentContext: number;
 
+declare const kAudioUnitErr_ExtensionNotFound: number;
+
 declare const kAudioUnitErr_FailedInitialization: number;
 
 declare const kAudioUnitErr_FileNotSpecified: number;
@@ -2928,6 +2964,8 @@ declare const kAudioUnitErr_InvalidProperty: number;
 declare const kAudioUnitErr_InvalidPropertyValue: number;
 
 declare const kAudioUnitErr_InvalidScope: number;
+
+declare const kAudioUnitErr_MIDIOutputBufferFull: number;
 
 declare const kAudioUnitErr_NoConnection: number;
 
@@ -3014,6 +3052,10 @@ declare const kAudioUnitProperty_IsInterAppConnected: number;
 declare const kAudioUnitProperty_LastRenderError: number;
 
 declare const kAudioUnitProperty_Latency: number;
+
+declare const kAudioUnitProperty_MIDIOutputCallback: number;
+
+declare const kAudioUnitProperty_MIDIOutputCallbackInfo: number;
 
 declare const kAudioUnitProperty_MakeConnection: number;
 

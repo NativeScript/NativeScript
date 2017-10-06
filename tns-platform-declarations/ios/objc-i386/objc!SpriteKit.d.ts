@@ -36,11 +36,11 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static actionNamed(name: string): SKAction;
 
-	static actionNamedDuration(name: string, sec: number): SKAction;
+	static actionNamedDuration(name: string, duration: number): SKAction;
 
 	static actionNamedFromURL(name: string, url: NSURL): SKAction;
 
-	static actionNamedFromURLDuration(name: string, url: NSURL, sec: number): SKAction;
+	static actionNamedFromURLDuration(name: string, url: NSURL, duration: number): SKAction;
 
 	static alloc(): SKAction; // inherited from NSObject
 
@@ -56,17 +56,17 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry>, times: NSArray<number>, restore: boolean): SKAction;
 
-	static applyAngularImpulseDuration(impulse: number, sec: number): SKAction;
+	static applyAngularImpulseDuration(impulse: number, duration: number): SKAction;
 
-	static applyForceAtPointDuration(force: CGVector, point: CGPoint, sec: number): SKAction;
+	static applyForceAtPointDuration(force: CGVector, point: CGPoint, duration: number): SKAction;
 
-	static applyForceDuration(force: CGVector, sec: number): SKAction;
+	static applyForceDuration(force: CGVector, duration: number): SKAction;
 
-	static applyImpulseAtPointDuration(impulse: CGVector, point: CGPoint, sec: number): SKAction;
+	static applyImpulseAtPointDuration(impulse: CGVector, point: CGPoint, duration: number): SKAction;
 
-	static applyImpulseDuration(impulse: CGVector, sec: number): SKAction;
+	static applyImpulseDuration(impulse: CGVector, duration: number): SKAction;
 
-	static applyTorqueDuration(torque: number, sec: number): SKAction;
+	static applyTorqueDuration(torque: number, duration: number): SKAction;
 
 	static changeChargeByDuration(v: number, duration: number): SKAction;
 
@@ -98,27 +98,27 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static colorizeWithColorBlendFactorDuration(colorBlendFactor: number, sec: number): SKAction;
 
-	static colorizeWithColorColorBlendFactorDuration(color: UIColor, colorBlendFactor: number, sec: number): SKAction;
+	static colorizeWithColorColorBlendFactorDuration(color: UIColor, colorBlendFactor: number, duration: number): SKAction;
 
-	static customActionWithDurationActionBlock(seconds: number, block: (p1: SKNode, p2: number) => void): SKAction;
+	static customActionWithDurationActionBlock(duration: number, block: (p1: SKNode, p2: number) => void): SKAction;
 
-	static fadeAlphaByDuration(factor: number, sec: number): SKAction;
+	static fadeAlphaByDuration(factor: number, duration: number): SKAction;
 
-	static fadeAlphaToDuration(alpha: number, sec: number): SKAction;
+	static fadeAlphaToDuration(alpha: number, duration: number): SKAction;
 
-	static fadeInWithDuration(sec: number): SKAction;
+	static fadeInWithDuration(duration: number): SKAction;
 
-	static fadeOutWithDuration(sec: number): SKAction;
+	static fadeOutWithDuration(duration: number): SKAction;
 
-	static falloffByDuration(falloff: number, sec: number): SKAction;
+	static falloffByDuration(falloff: number, duration: number): SKAction;
 
-	static falloffToDuration(falloff: number, sec: number): SKAction;
+	static falloffToDuration(falloff: number, duration: number): SKAction;
 
-	static followPathAsOffsetOrientToPathDuration(path: any, offset: boolean, orient: boolean, sec: number): SKAction;
+	static followPathAsOffsetOrientToPathDuration(path: any, offset: boolean, orient: boolean, duration: number): SKAction;
 
 	static followPathAsOffsetOrientToPathSpeed(path: any, offset: boolean, orient: boolean, speed: number): SKAction;
 
-	static followPathDuration(path: any, sec: number): SKAction;
+	static followPathDuration(path: any, duration: number): SKAction;
 
 	static followPathSpeed(path: any, speed: number): SKAction;
 
@@ -126,15 +126,15 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static hide(): SKAction;
 
-	static moveByDuration(delta: CGVector, sec: number): SKAction;
+	static moveByDuration(delta: CGVector, duration: number): SKAction;
 
-	static moveByXYDuration(deltaX: number, deltaY: number, sec: number): SKAction;
+	static moveByXYDuration(deltaX: number, deltaY: number, duration: number): SKAction;
 
-	static moveToDuration(location: CGPoint, sec: number): SKAction;
+	static moveToDuration(location: CGPoint, duration: number): SKAction;
 
-	static moveToXDuration(x: number, sec: number): SKAction;
+	static moveToXDuration(x: number, duration: number): SKAction;
 
-	static moveToYDuration(y: number, sec: number): SKAction;
+	static moveToYDuration(y: number, duration: number): SKAction;
 
 	static new(): SKAction; // inherited from NSObject
 
@@ -150,7 +150,7 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static reachToNodeRootNodeVelocity(node: SKNode, root: SKNode, velocity: number): SKAction;
 
-	static reachToRootNodeDuration(position: CGPoint, root: SKNode, sec: number): SKAction;
+	static reachToRootNodeDuration(position: CGPoint, root: SKNode, duration: number): SKAction;
 
 	static reachToRootNodeVelocity(position: CGPoint, root: SKNode, velocity: number): SKAction;
 
@@ -168,11 +168,11 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static resizeToWidthHeightDuration(width: number, height: number, duration: number): SKAction;
 
-	static rotateByAngleDuration(radians: number, sec: number): SKAction;
+	static rotateByAngleDuration(radians: number, duration: number): SKAction;
 
-	static rotateToAngleDuration(radians: number, sec: number): SKAction;
+	static rotateToAngleDuration(radians: number, duration: number): SKAction;
 
-	static rotateToAngleDurationShortestUnitArc(radians: number, sec: number, shortestUnitArc: boolean): SKAction;
+	static rotateToAngleDurationShortestUnitArc(radians: number, duration: number, shortestUnitArc: boolean): SKAction;
 
 	static runActionOnChildWithName(action: SKAction, name: string): SKAction;
 
@@ -180,19 +180,19 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static runBlockQueue(block: () => void, queue: NSObject): SKAction;
 
-	static scaleByDuration(scale: number, sec: number): SKAction;
+	static scaleByDuration(scale: number, duration: number): SKAction;
 
-	static scaleToDuration(scale: number, sec: number): SKAction;
+	static scaleToDuration(scale: number, duration: number): SKAction;
 
-	static scaleToSizeDuration(size: CGSize, sec: number): SKAction;
+	static scaleToSizeDuration(size: CGSize, duration: number): SKAction;
 
-	static scaleXByYDuration(xScale: number, yScale: number, sec: number): SKAction;
+	static scaleXByYDuration(xScale: number, yScale: number, duration: number): SKAction;
 
-	static scaleXToDuration(scale: number, sec: number): SKAction;
+	static scaleXToDuration(scale: number, duration: number): SKAction;
 
-	static scaleXToYDuration(xScale: number, yScale: number, sec: number): SKAction;
+	static scaleXToYDuration(xScale: number, yScale: number, duration: number): SKAction;
 
-	static scaleYToDuration(scale: number, sec: number): SKAction;
+	static scaleYToDuration(scale: number, duration: number): SKAction;
 
 	static sequence(actions: NSArray<SKAction>): SKAction;
 
@@ -204,9 +204,9 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static setTextureResize(texture: SKTexture, resize: boolean): SKAction;
 
-	static speedByDuration(speed: number, sec: number): SKAction;
+	static speedByDuration(speed: number, duration: number): SKAction;
 
-	static speedToDuration(speed: number, sec: number): SKAction;
+	static speedToDuration(speed: number, duration: number): SKAction;
 
 	static stereoPanByDuration(v: number, duration: number): SKAction;
 
@@ -214,15 +214,15 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static stop(): SKAction;
 
-	static strengthByDuration(strength: number, sec: number): SKAction;
+	static strengthByDuration(strength: number, duration: number): SKAction;
 
-	static strengthToDuration(strength: number, sec: number): SKAction;
+	static strengthToDuration(strength: number, duration: number): SKAction;
 
 	static unhide(): SKAction;
 
-	static waitForDuration(sec: number): SKAction;
+	static waitForDuration(duration: number): SKAction;
 
-	static waitForDurationWithRange(sec: number, durationRange: number): SKAction;
+	static waitForDurationWithRange(duration: number, durationRange: number): SKAction;
 
 	static warpToDuration(warp: SKWarpGeometry, duration: number): SKAction;
 
@@ -726,6 +726,8 @@ declare class SKLabelNode extends SKNode {
 
 	static alloc(): SKLabelNode; // inherited from NSObject
 
+	static labelNodeWithAttributedText(attributedText: NSAttributedString): SKLabelNode;
+
 	static labelNodeWithFontNamed(fontName: string): SKLabelNode;
 
 	static labelNodeWithText(text: string): SKLabelNode;
@@ -735,6 +737,8 @@ declare class SKLabelNode extends SKNode {
 	static node(): SKLabelNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKLabelNode; // inherited from SKNode
+
+	attributedText: NSAttributedString;
 
 	blendMode: SKBlendMode;
 
@@ -749,6 +753,12 @@ declare class SKLabelNode extends SKNode {
 	fontSize: number;
 
 	horizontalAlignmentMode: SKLabelHorizontalAlignmentMode;
+
+	lineBreakMode: NSLineBreakMode;
+
+	numberOfLines: number;
+
+	preferredMaxLayoutWidth: number;
 
 	text: string;
 
@@ -857,6 +867,8 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 	constraints: NSArray<SKConstraint>;
 
 	entity: GKEntity;
+
+	focusBehavior: SKNodeFocusBehavior;
 
 	readonly frame: CGRect;
 
@@ -1001,6 +1013,15 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 	updateFocusIfNeeded(): void;
 
 	valueForAttributeNamed(key: string): SKAttributeValue;
+}
+
+declare const enum SKNodeFocusBehavior {
+
+	None = 0,
+
+	Occluding = 1,
+
+	Focusable = 2
 }
 
 declare const enum SKParticleRenderOrder {
@@ -2150,6 +2171,21 @@ declare const enum SKTileSetType {
 	HexagonalFlat = 2,
 
 	HexagonalPointy = 3
+}
+
+declare class SKTransformNode extends SKNode {
+
+	static alloc(): SKTransformNode; // inherited from NSObject
+
+	static new(): SKTransformNode; // inherited from NSObject
+
+	static node(): SKTransformNode; // inherited from SKNode
+
+	static nodeWithFileNamed(filename: string): SKTransformNode; // inherited from SKNode
+
+	xRotation: number;
+
+	yRotation: number;
 }
 
 declare class SKTransition extends NSObject implements NSCopying {

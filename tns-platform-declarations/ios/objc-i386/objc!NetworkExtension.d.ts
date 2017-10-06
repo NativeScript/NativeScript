@@ -114,6 +114,70 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 	initWithSigningIdentifier(signingIdentifier: string): this;
 }
 
+declare var NEDNSProxyConfigurationDidChangeNotification: string;
+
+declare var NEDNSProxyErrorDomain: string;
+
+declare class NEDNSProxyManager extends NSObject {
+
+	static alloc(): NEDNSProxyManager; // inherited from NSObject
+
+	static new(): NEDNSProxyManager; // inherited from NSObject
+
+	static sharedManager(): NEDNSProxyManager;
+
+	enabled: boolean;
+
+	localizedDescription: string;
+
+	providerProtocol: NEDNSProxyProviderProtocol;
+
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum NEDNSProxyManagerError {
+
+	ConfigurationInvalid = 1,
+
+	ConfigurationDisabled = 2,
+
+	ConfigurationStale = 3,
+
+	ConfigurationCannotBeRemoved = 4
+}
+
+declare class NEDNSProxyProvider extends NEProvider {
+
+	static alloc(): NEDNSProxyProvider; // inherited from NSObject
+
+	static new(): NEDNSProxyProvider; // inherited from NSObject
+
+	readonly systemDNSSettings: NSArray<NEDNSSettings>;
+
+	cancelProxyWithError(error: NSError): void;
+
+	handleNewFlow(flow: NEAppProxyFlow): boolean;
+
+	startProxyWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: NSError) => void): void;
+
+	stopProxyWithReasonCompletionHandler(reason: NEProviderStopReason, completionHandler: () => void): void;
+}
+
+declare class NEDNSProxyProviderProtocol extends NEVPNProtocol {
+
+	static alloc(): NEDNSProxyProviderProtocol; // inherited from NSObject
+
+	static new(): NEDNSProxyProviderProtocol; // inherited from NSObject
+
+	providerBundleIdentifier: string;
+
+	providerConfiguration: NSDictionary<string, any>;
+}
+
 declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NEDNSSettings; // inherited from NSObject
@@ -181,6 +245,19 @@ declare const enum NEEvaluateConnectionRuleAction {
 	NeverConnect = 2
 }
 
+declare const enum NEFilterAction {
+
+	Invalid = 0,
+
+	Allow = 1,
+
+	Drop = 2,
+
+	Remediate = 3,
+
+	FilterData = 4
+}
+
 declare class NEFilterBrowserFlow extends NEFilterFlow implements NSCopying, NSSecureCoding {
 
 	static alloc(): NEFilterBrowserFlow; // inherited from NSObject
@@ -219,6 +296,8 @@ declare class NEFilterControlProvider extends NEFilterProvider {
 	handleNewFlowCompletionHandler(flow: NEFilterFlow, completionHandler: (p1: NEFilterControlVerdict) => void): void;
 
 	handleRemediationForFlowCompletionHandler(flow: NEFilterFlow, completionHandler: (p1: NEFilterControlVerdict) => void): void;
+
+	handleReport(report: NEFilterReport): void;
 
 	notifyRulesChanged(): void;
 }
@@ -303,6 +382,12 @@ declare class NEFilterFlow extends NSObject implements NSCopying, NSSecureCoding
 	static new(): NEFilterFlow; // inherited from NSObject
 
 	readonly URL: NSURL;
+
+	readonly sourceAppIdentifier: string;
+
+	readonly sourceAppUniqueIdentifier: NSData;
+
+	readonly sourceAppVersion: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -449,6 +534,27 @@ declare class NEFilterRemediationVerdict extends NEFilterVerdict implements NSCo
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
+declare class NEFilterReport extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEFilterReport; // inherited from NSObject
+
+	static new(): NEFilterReport; // inherited from NSObject
+
+	readonly action: NEFilterAction;
+
+	readonly flow: NEFilterFlow;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
 declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSecureCoding {
 
 	static alloc(): NEFilterSocketFlow; // inherited from NSObject
@@ -482,6 +588,8 @@ declare class NEFilterVerdict extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NEFilterVerdict; // inherited from NSObject
 
+	shouldReport: boolean;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -512,6 +620,196 @@ declare class NEFlowMetaData extends NSObject implements NSCopying, NSSecureCodi
 	encodeWithCoder(aCoder: NSCoder): void;
 
 	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NEHotspotConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEHotspotConfiguration; // inherited from NSObject
+
+	static new(): NEHotspotConfiguration; // inherited from NSObject
+
+	readonly SSID: string;
+
+	joinOnce: boolean;
+
+	lifeTimeInDays: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { HS20Settings: NEHotspotHS20Settings; eapSettings: NEHotspotEAPSettings; });
+
+	constructor(o: { SSID: string; });
+
+	constructor(o: { SSID: string; eapSettings: NEHotspotEAPSettings; });
+
+	constructor(o: { SSID: string; passphrase: string; isWEP: boolean; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithHS20SettingsEapSettings(hs20Settings: NEHotspotHS20Settings, eapSettings: NEHotspotEAPSettings): this;
+
+	initWithSSID(SSID: string): this;
+
+	initWithSSIDEapSettings(SSID: string, eapSettings: NEHotspotEAPSettings): this;
+
+	initWithSSIDPassphraseIsWEP(SSID: string, passphrase: string, isWEP: boolean): this;
+}
+
+declare const enum NEHotspotConfigurationEAPTLSVersion {
+
+	Version_1_0 = 0,
+
+	Version_1_1 = 1,
+
+	Version_1_2 = 2
+}
+
+declare const enum NEHotspotConfigurationEAPType {
+
+	EAPTLS = 13,
+
+	EAPTTLS = 21,
+
+	EAPPEAP = 25,
+
+	EAPFAST = 43
+}
+
+declare const enum NEHotspotConfigurationError {
+
+	Invalid = 0,
+
+	InvalidSSID = 1,
+
+	InvalidWPAPassphrase = 2,
+
+	InvalidWEPPassphrase = 3,
+
+	InvalidEAPSettings = 4,
+
+	InvalidHS20Settings = 5,
+
+	InvalidHS20DomainName = 6,
+
+	UserDenied = 7,
+
+	Internal = 8,
+
+	Pending = 9,
+
+	SystemConfiguration = 10,
+
+	Unknown = 11,
+
+	JoinOnceNotSupported = 12,
+
+	AlreadyAssociated = 13,
+
+	ApplicationIsNotInForeground = 14
+}
+
+declare class NEHotspotConfigurationManager extends NSObject {
+
+	static alloc(): NEHotspotConfigurationManager; // inherited from NSObject
+
+	static new(): NEHotspotConfigurationManager; // inherited from NSObject
+
+	static readonly sharedManager: NEHotspotConfigurationManager;
+
+	applyConfigurationCompletionHandler(configuration: NEHotspotConfiguration, completionHandler: (p1: NSError) => void): void;
+
+	getConfiguredSSIDsWithCompletionHandler(completionHandler: (p1: NSArray<string>) => void): void;
+
+	removeConfigurationForHS20DomainName(domainName: string): void;
+
+	removeConfigurationForSSID(SSID: string): void;
+}
+
+declare const enum NEHotspotConfigurationTTLSInnerAuthenticationType {
+
+	EAPTTLSInnerAuthenticationPAP = 0,
+
+	EAPTTLSInnerAuthenticationCHAP = 1,
+
+	EAPTTLSInnerAuthenticationMSCHAP = 2,
+
+	EAPTTLSInnerAuthenticationMSCHAPv2 = 3,
+
+	EAPTTLSInnerAuthenticationEAP = 4
+}
+
+declare class NEHotspotEAPSettings extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEHotspotEAPSettings; // inherited from NSObject
+
+	static new(): NEHotspotEAPSettings; // inherited from NSObject
+
+	outerIdentity: string;
+
+	password: string;
+
+	preferredTLSVersion: NEHotspotConfigurationEAPTLSVersion;
+
+	supportedEAPTypes: NSArray<number>;
+
+	tlsClientCertificateRequired: boolean;
+
+	trustedServerNames: NSArray<string>;
+
+	ttlsInnerAuthenticationType: NEHotspotConfigurationTTLSInnerAuthenticationType;
+
+	username: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	setIdentity(identity: any): boolean;
+
+	setTrustedServerCertificates(certificates: NSArray<any>): boolean;
+}
+
+declare class NEHotspotHS20Settings extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEHotspotHS20Settings; // inherited from NSObject
+
+	static new(): NEHotspotHS20Settings; // inherited from NSObject
+
+	MCCAndMNCs: NSArray<string>;
+
+	readonly domainName: string;
+
+	naiRealmNames: NSArray<string>;
+
+	roamingConsortiumOIs: NSArray<string>;
+
+	roamingEnabled: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { domainName: string; roamingEnabled: boolean; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDomainNameRoamingEnabled(domainName: string, roamingEnabled: boolean): this;
 }
 
 declare class NEHotspotHelper extends NSObject {
@@ -1274,6 +1572,17 @@ declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implement
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
+declare const enum NEVPNIKEv2TLSVersion {
+
+	VersionDefault = 0,
+
+	Version1_0 = 1,
+
+	Version1_1 = 2,
+
+	Version1_2 = 3
+}
+
 declare class NEVPNManager extends NSObject {
 
 	static alloc(): NEVPNManager; // inherited from NSObject
@@ -1357,6 +1666,10 @@ declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
 	enablePFS: boolean;
 
 	enableRevocationCheck: boolean;
+
+	maximumTLSVersion: NEVPNIKEv2TLSVersion;
+
+	minimumTLSVersion: NEVPNIKEv2TLSVersion;
 
 	serverCertificateCommonName: string;
 

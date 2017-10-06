@@ -28,6 +28,8 @@ interface VSAccountManagerDelegate extends NSObjectProtocol {
 	accountManagerDismissViewController(accountManager: VSAccountManager, viewController: UIViewController): void;
 
 	accountManagerPresentViewController(accountManager: VSAccountManager, viewController: UIViewController): void;
+
+	accountManagerShouldAuthenticateAccountProviderWithIdentifier?(accountManager: VSAccountManager, accountProviderIdentifier: string): boolean;
 }
 declare var VSAccountManagerDelegate: {
 
@@ -53,6 +55,8 @@ declare class VSAccountMetadata extends NSObject {
 
 	readonly accountProviderIdentifier: string;
 
+	readonly accountProviderResponse: VSAccountProviderResponse;
+
 	readonly authenticationExpirationDate: Date;
 
 	readonly verificationData: NSData;
@@ -68,6 +72,8 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	channelIdentifier: string;
 
+	featuredAccountProviderIdentifiers: NSArray<string>;
+
 	forceAuthentication: boolean;
 
 	includeAccountProviderIdentifier: boolean;
@@ -80,7 +86,24 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	supportedAccountProviderIdentifiers: NSArray<string>;
 
+	supportedAuthenticationSchemes: NSArray<string>;
+
 	verificationToken: string;
+}
+
+declare var VSAccountProviderAuthenticationSchemeSAML: string;
+
+declare class VSAccountProviderResponse extends NSObject {
+
+	static alloc(): VSAccountProviderResponse; // inherited from NSObject
+
+	static new(): VSAccountProviderResponse; // inherited from NSObject
+
+	readonly authenticationScheme: string;
+
+	readonly body: string;
+
+	readonly status: string;
 }
 
 declare var VSCheckAccessOptionPrompt: string;
@@ -102,8 +125,43 @@ declare const enum VSErrorCode {
 
 declare var VSErrorDomain: string;
 
+declare var VSErrorInfoKeyAccountProviderResponse: string;
+
 declare var VSErrorInfoKeySAMLResponse: string;
 
 declare var VSErrorInfoKeySAMLResponseStatus: string;
 
 declare var VSErrorInfoKeyUnsupportedProviderIdentifier: string;
+
+declare class VSSubscription extends NSObject {
+
+	static alloc(): VSSubscription; // inherited from NSObject
+
+	static new(): VSSubscription; // inherited from NSObject
+
+	accessLevel: VSSubscriptionAccessLevel;
+
+	expirationDate: Date;
+
+	tierIdentifiers: NSArray<string>;
+}
+
+declare const enum VSSubscriptionAccessLevel {
+
+	Unknown = 0,
+
+	FreeWithAccount = 1,
+
+	Paid = 2
+}
+
+declare class VSSubscriptionRegistrationCenter extends NSObject {
+
+	static alloc(): VSSubscriptionRegistrationCenter; // inherited from NSObject
+
+	static defaultSubscriptionRegistrationCenter(): VSSubscriptionRegistrationCenter;
+
+	static new(): VSSubscriptionRegistrationCenter; // inherited from NSObject
+
+	setCurrentSubscription(currentSubscription: VSSubscription): void;
+}

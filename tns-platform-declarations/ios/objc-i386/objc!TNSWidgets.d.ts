@@ -25,3 +25,5 @@ declare class TNSLabel extends UILabel {
 declare var TNSWidgetsVersionNumber: number;
 
 declare var TNSWidgetsVersionString: interop.Reference<number>;
+
+declare function __tns_uptime(): number;

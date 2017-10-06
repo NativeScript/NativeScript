@@ -10,7 +10,7 @@ declare const enum CNAuthorizationStatus {
 	Authorized = 3
 }
 
-declare class CNContact extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
+declare class CNContact extends NSObject implements NSCopying, NSItemProviderReading, NSItemProviderWriting, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): CNContact; // inherited from NSObject
 
@@ -18,9 +18,13 @@ declare class CNContact extends NSObject implements NSCopying, NSMutableCopying,
 
 	static descriptorForAllComparatorKeys(): CNKeyDescriptor;
 
+	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
 	static localizedStringForKey(key: string): string;
 
 	static new(): CNContact; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): CNContact;
 
 	static predicateForContactsInContainerWithIdentifier(containerIdentifier: string): NSPredicate;
 
@@ -90,11 +94,33 @@ declare class CNContact extends NSObject implements NSCopying, NSMutableCopying,
 
 	readonly urlAddresses: NSArray<CNLabeledValue<string>>;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly readableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderReading
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	static readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	areKeysAvailable(keyDescriptors: NSArray<CNKeyDescriptor>): boolean;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -102,11 +128,33 @@ declare class CNContact extends NSObject implements NSCopying, NSMutableCopying,
 
 	initWithCoder(aDecoder: NSCoder): this;
 
+	isEqual(object: any): boolean;
+
 	isKeyAvailable(key: string): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
 	isUnifiedWithContactWithIdentifier(contactIdentifier: string): boolean;
 
+	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare var CNContactBirthdayKey: string;
@@ -441,7 +489,13 @@ declare const enum CNErrorCode {
 
 	PredicateInvalid = 400,
 
-	PolicyViolation = 500
+	PolicyViolation = 500,
+
+	ClientIdentifierInvalid = 600,
+
+	ClientIdentifierDoesNotExist = 601,
+
+	VCardMalformed = 700
 }
 
 declare var CNErrorDomain: string;
@@ -551,6 +605,8 @@ declare var CNLabelContactRelationBrother: string;
 
 declare var CNLabelContactRelationChild: string;
 
+declare var CNLabelContactRelationDaughter: string;
+
 declare var CNLabelContactRelationFather: string;
 
 declare var CNLabelContactRelationFriend: string;
@@ -564,6 +620,8 @@ declare var CNLabelContactRelationParent: string;
 declare var CNLabelContactRelationPartner: string;
 
 declare var CNLabelContactRelationSister: string;
+
+declare var CNLabelContactRelationSon: string;
 
 declare var CNLabelContactRelationSpouse: string;
 
@@ -635,6 +693,8 @@ declare class CNMutableContact extends CNContact {
 	static alloc(): CNMutableContact; // inherited from NSObject
 
 	static new(): CNMutableContact; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): CNMutableContact; // inherited from NSItemProviderReading
 
 	birthday: NSDateComponents;
 
@@ -717,6 +777,10 @@ declare class CNMutablePostalAddress extends CNPostalAddress {
 	state: string;
 
 	street: string;
+
+	subAdministrativeArea: string;
+
+	subLocality: string;
 }
 
 declare class CNPhoneNumber extends NSObject implements NSCopying, NSSecureCoding {
@@ -763,6 +827,10 @@ declare class CNPostalAddress extends NSObject implements NSCopying, NSMutableCo
 	readonly state: string;
 
 	readonly street: string;
+
+	readonly subAdministrativeArea: string;
+
+	readonly subLocality: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -814,6 +882,10 @@ declare var CNPostalAddressPropertyAttribute: string;
 declare var CNPostalAddressStateKey: string;
 
 declare var CNPostalAddressStreetKey: string;
+
+declare var CNPostalAddressSubAdministrativeAreaKey: string;
+
+declare var CNPostalAddressSubLocalityKey: string;
 
 declare class CNSaveRequest extends NSObject {
 

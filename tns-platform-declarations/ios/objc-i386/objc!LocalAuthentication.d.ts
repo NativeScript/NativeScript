@@ -14,17 +14,32 @@ declare const enum LAAccessControlOperation {
 	UseKeyKeyExchange = 5
 }
 
+declare const enum LABiometryType {
+
+	None = 0,
+
+	TypeTouchID = 1,
+
+	TypeFaceID = 2
+}
+
 declare class LAContext extends NSObject {
 
 	static alloc(): LAContext; // inherited from NSObject
 
 	static new(): LAContext; // inherited from NSObject
 
+	readonly biometryType: LABiometryType;
+
 	readonly evaluatedPolicyDomainState: NSData;
+
+	interactionNotAllowed: boolean;
 
 	localizedCancelTitle: string;
 
 	localizedFallbackTitle: string;
+
+	localizedReason: string;
 
 	maxBiometryFailures: number;
 
@@ -68,7 +83,15 @@ declare const enum LAError {
 
 	AppCancel = -9,
 
-	InvalidContext = -10
+	InvalidContext = -10,
+
+	BiometryNotAvailable = -6,
+
+	BiometryNotEnrolled = -7,
+
+	BiometryLockout = -8,
+
+	NotInteractive = -1004
 }
 
 declare var LAErrorDomain: string;

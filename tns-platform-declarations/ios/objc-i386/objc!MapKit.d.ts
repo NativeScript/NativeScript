@@ -42,7 +42,15 @@ declare class MKAnnotationView extends UIView {
 
 	centerOffset: CGPoint;
 
+	readonly clusterAnnotationView: MKAnnotationView;
+
+	clusteringIdentifier: string;
+
+	collisionMode: MKAnnotationViewCollisionMode;
+
 	detailCalloutAccessoryView: UIView;
+
+	displayPriority: number;
 
 	dragState: MKAnnotationViewDragState;
 
@@ -66,11 +74,20 @@ declare class MKAnnotationView extends UIView {
 
 	initWithAnnotationReuseIdentifier(annotation: MKAnnotation, reuseIdentifier: string): this;
 
+	prepareForDisplay(): void;
+
 	prepareForReuse(): void;
 
 	setDragStateAnimated(newDragState: MKAnnotationViewDragState, animated: boolean): void;
 
 	setSelectedAnimated(selected: boolean, animated: boolean): void;
+}
+
+declare const enum MKAnnotationViewCollisionMode {
+
+	Rectangle = 0,
+
+	Circle = 1
 }
 
 declare const enum MKAnnotationViewDragState {
@@ -183,6 +200,86 @@ declare class MKCircleView extends MKOverlayPathView {
 	constructor(o: { circle: MKCircle; });
 
 	initWithCircle(circle: MKCircle): this;
+}
+
+declare class MKClusterAnnotation extends NSObject implements MKAnnotation {
+
+	static alloc(): MKClusterAnnotation; // inherited from NSObject
+
+	static new(): MKClusterAnnotation; // inherited from NSObject
+
+	readonly memberAnnotations: NSArray<MKAnnotation>;
+
+	subtitle: string;
+
+	title: string;
+
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { memberAnnotations: NSArray<MKAnnotation>; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithMemberAnnotations(memberAnnotations: NSArray<MKAnnotation>): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	setCoordinate(newCoordinate: CLLocationCoordinate2D): void;
+}
+
+declare class MKCompassButton extends UIView {
+
+	static alloc(): MKCompassButton; // inherited from NSObject
+
+	static appearance(): MKCompassButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): MKCompassButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKCompassButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKCompassButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKCompassButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKCompassButton; // inherited from UIAppearance
+
+	static compassButtonWithMapView(mapView: MKMapView): MKCompassButton;
+
+	static new(): MKCompassButton; // inherited from NSObject
+
+	compassVisibility: MKFeatureVisibility;
+
+	mapView: MKMapView;
 }
 
 declare function MKCoordinateForMapPoint(mapPoint: MKMapPoint): CLLocationCoordinate2D;
@@ -348,6 +445,21 @@ declare const enum MKErrorCode {
 
 declare var MKErrorDomain: string;
 
+declare var MKFeatureDisplayPriorityDefaultHigh: number;
+
+declare var MKFeatureDisplayPriorityDefaultLow: number;
+
+declare var MKFeatureDisplayPriorityRequired: number;
+
+declare const enum MKFeatureVisibility {
+
+	Adaptive = 0,
+
+	Hidden = 1,
+
+	Visible = 2
+}
+
 declare class MKGeodesicPolyline extends MKPolyline {
 
 	static alloc(): MKGeodesicPolyline; // inherited from NSObject
@@ -502,13 +614,17 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare class MKMapItem extends NSObject {
+declare class MKMapItem extends NSObject implements NSItemProviderReading, NSItemProviderWriting, NSSecureCoding {
 
 	static alloc(): MKMapItem; // inherited from NSObject
+
+	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	static mapItemForCurrentLocation(): MKMapItem;
 
 	static new(): MKMapItem; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): MKMapItem;
 
 	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem>, launchOptions: NSDictionary<string, any>): boolean;
 
@@ -524,12 +640,66 @@ declare class MKMapItem extends NSObject {
 
 	url: NSURL;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly readableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderReading
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	static readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { placemark: MKPlacemark; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithPlacemark(placemark: MKPlacemark): this;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
 	openInMapsWithLaunchOptions(launchOptions: NSDictionary<string, any>): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
+
+declare var MKMapItemTypeIdentifier: string;
 
 interface MKMapPoint {
 	x: number;
@@ -644,7 +814,9 @@ declare const enum MKMapType {
 
 	SatelliteFlyover = 3,
 
-	HybridFlyover = 4
+	HybridFlyover = 4,
+
+	MutedStandard = 5
 }
 
 declare class MKMapView extends UIView implements NSCoding {
@@ -737,6 +909,8 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	dequeueReusableAnnotationViewWithIdentifier(identifier: string): MKAnnotationView;
 
+	dequeueReusableAnnotationViewWithIdentifierForAnnotation(identifier: string, annotation: MKAnnotation): MKAnnotationView;
+
 	deselectAnnotationAnimated(annotation: MKAnnotation, animated: boolean): void;
 
 	encodeWithCoder(aCoder: NSCoder): void;
@@ -762,6 +936,8 @@ declare class MKMapView extends UIView implements NSCoding {
 	overlaysInLevel(level: MKOverlayLevel): NSArray<MKOverlay>;
 
 	regionThatFits(region: MKCoordinateRegion): MKCoordinateRegion;
+
+	registerClassForAnnotationViewWithReuseIdentifier(viewClass: typeof NSObject, identifier: string): void;
 
 	removeAnnotation(annotation: MKAnnotation): void;
 
@@ -794,11 +970,17 @@ declare class MKMapView extends UIView implements NSCoding {
 	viewForOverlay(overlay: MKOverlay): MKOverlayView;
 }
 
+declare var MKMapViewDefaultAnnotationViewReuseIdentifier: string;
+
+declare var MKMapViewDefaultClusterAnnotationViewReuseIdentifier: string;
+
 interface MKMapViewDelegate extends NSObjectProtocol {
 
 	mapViewAnnotationViewCalloutAccessoryControlTapped?(mapView: MKMapView, view: MKAnnotationView, control: UIControl): void;
 
 	mapViewAnnotationViewDidChangeDragStateFromOldState?(mapView: MKMapView, view: MKAnnotationView, newState: MKAnnotationViewDragState, oldState: MKAnnotationViewDragState): void;
+
+	mapViewClusterAnnotationForMemberAnnotations?(mapView: MKMapView, memberAnnotations: NSArray<MKAnnotation>): MKClusterAnnotation;
 
 	mapViewDidAddAnnotationViews?(mapView: MKMapView, views: NSArray<MKAnnotationView>): void;
 
@@ -844,6 +1026,41 @@ declare var MKMapViewDelegate: {
 
 	prototype: MKMapViewDelegate;
 };
+
+declare class MKMarkerAnnotationView extends MKAnnotationView {
+
+	static alloc(): MKMarkerAnnotationView; // inherited from NSObject
+
+	static appearance(): MKMarkerAnnotationView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): MKMarkerAnnotationView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKMarkerAnnotationView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKMarkerAnnotationView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKMarkerAnnotationView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKMarkerAnnotationView; // inherited from UIAppearance
+
+	static new(): MKMarkerAnnotationView; // inherited from NSObject
+
+	animatesWhenAdded: boolean;
+
+	glyphImage: UIImage;
+
+	glyphText: string;
+
+	glyphTintColor: UIColor;
+
+	markerTintColor: UIColor;
+
+	selectedGlyphImage: UIImage;
+
+	subtitleVisibility: MKFeatureVisibility;
+
+	titleVisibility: MKFeatureVisibility;
+}
 
 declare function MKMetersBetweenMapPoints(a: MKMapPoint, b: MKMapPoint): number;
 
@@ -1434,6 +1651,40 @@ declare class MKRouteStep extends NSObject {
 	readonly transportType: MKDirectionsTransportType;
 }
 
+declare class MKScaleView extends UIView {
+
+	static alloc(): MKScaleView; // inherited from NSObject
+
+	static appearance(): MKScaleView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): MKScaleView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKScaleView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKScaleView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKScaleView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKScaleView; // inherited from UIAppearance
+
+	static new(): MKScaleView; // inherited from NSObject
+
+	static scaleViewWithMapView(mapView: MKMapView): MKScaleView;
+
+	legendAlignment: MKScaleViewAlignment;
+
+	mapView: MKMapView;
+
+	scaleVisibility: MKFeatureVisibility;
+}
+
+declare const enum MKScaleViewAlignment {
+
+	Leading = 0,
+
+	Trailing = 1
+}
+
 declare const enum MKSearchCompletionFilterType {
 
 	LocationsAndQueries = 0,
@@ -1662,6 +1913,29 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 	constructor(o: { mapView: MKMapView; });
 
 	initWithMapView(mapView: MKMapView): this;
+}
+
+declare class MKUserTrackingButton extends UIView {
+
+	static alloc(): MKUserTrackingButton; // inherited from NSObject
+
+	static appearance(): MKUserTrackingButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): MKUserTrackingButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserTrackingButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKUserTrackingButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserTrackingButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKUserTrackingButton; // inherited from UIAppearance
+
+	static new(): MKUserTrackingButton; // inherited from NSObject
+
+	static userTrackingButtonWithMapView(mapView: MKMapView): MKUserTrackingButton;
+
+	mapView: MKMapView;
 }
 
 declare const enum MKUserTrackingMode {

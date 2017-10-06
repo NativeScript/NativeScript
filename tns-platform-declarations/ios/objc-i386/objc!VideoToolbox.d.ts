@@ -26,6 +26,8 @@ declare const enum VTCompressionSessionOptionFlags {
 
 declare function VTCompressionSessionPrepareToEncodeFrames(session: any): number;
 
+declare function VTCopySupportedPropertyDictionaryForEncoder(width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, outEncoderID: interop.Pointer | interop.Reference<string>, outSupportedProperties: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+
 declare function VTCopyVideoEncoderList(options: NSDictionary<any, any>, listOfVideoEncodersOut: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare function VTCreateCGImageFromCVPixelBuffer(pixelBuffer: any, options: NSDictionary<any, any>, imageOut: interop.Pointer | interop.Reference<any>): number;
@@ -95,6 +97,20 @@ declare function VTFrameSiloGetTypeID(): number;
 
 declare function VTFrameSiloSetTimeRangesForNextPass(silo: any, timeRangeCount: number, timeRangeArray: interop.Pointer | interop.Reference<CMTimeRange>): number;
 
+interface VTInt32Point {
+	x: number;
+	y: number;
+}
+declare var VTInt32Point: interop.StructType<VTInt32Point>;
+
+interface VTInt32Size {
+	width: number;
+	height: number;
+}
+declare var VTInt32Size: interop.StructType<VTInt32Size>;
+
+declare function VTIsHardwareDecodeSupported(codecType: number): boolean;
+
 declare function VTMultiPassStorageClose(multiPassStorage: any): number;
 
 declare function VTMultiPassStorageCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, multiPassStorageOut: interop.Pointer | interop.Reference<any>): number;
@@ -127,13 +143,19 @@ declare var kVTCompressionPropertyKey_AspectRatio16x9: string;
 
 declare var kVTCompressionPropertyKey_AverageBitRate: string;
 
+declare var kVTCompressionPropertyKey_BaseLayerFrameRate: string;
+
 declare var kVTCompressionPropertyKey_CleanAperture: string;
 
 declare var kVTCompressionPropertyKey_ColorPrimaries: string;
 
+declare var kVTCompressionPropertyKey_ContentLightLevelInfo: string;
+
 declare var kVTCompressionPropertyKey_DataRateLimits: string;
 
 declare var kVTCompressionPropertyKey_Depth: string;
+
+declare var kVTCompressionPropertyKey_EncoderID: string;
 
 declare var kVTCompressionPropertyKey_ExpectedDuration: string;
 
@@ -146,6 +168,8 @@ declare var kVTCompressionPropertyKey_FieldDetail: string;
 declare var kVTCompressionPropertyKey_H264EntropyMode: string;
 
 declare var kVTCompressionPropertyKey_ICCProfile: string;
+
+declare var kVTCompressionPropertyKey_MasteringDisplayColorVolume: string;
 
 declare var kVTCompressionPropertyKey_MaxFrameDelayCount: string;
 
@@ -256,6 +280,8 @@ declare var kVTDecompressionProperty_OnlyTheseFrames_IFrames: string;
 declare var kVTDecompressionProperty_OnlyTheseFrames_KeyFrames: string;
 
 declare var kVTDecompressionProperty_OnlyTheseFrames_NonDroppableFrames: string;
+
+declare var kVTDecompressionProperty_TemporalLevelLimit: string;
 
 declare var kVTDecompressionResolutionKey_Height: string;
 
@@ -382,6 +408,10 @@ declare var kVTProfileLevel_H264_Main_5_1: string;
 declare var kVTProfileLevel_H264_Main_5_2: string;
 
 declare var kVTProfileLevel_H264_Main_AutoLevel: string;
+
+declare var kVTProfileLevel_HEVC_Main10_AutoLevel: string;
+
+declare var kVTProfileLevel_HEVC_Main_AutoLevel: string;
 
 declare var kVTProfileLevel_MP4V_AdvancedSimple_L0: string;
 

@@ -134,10 +134,6 @@ declare const kDNSServiceFlagsBrowseDomains: number;
 
 declare const kDNSServiceFlagsDefault: number;
 
-declare const kDNSServiceFlagsDenyCellular: number;
-
-declare const kDNSServiceFlagsDenyExpensive: number;
-
 declare const kDNSServiceFlagsForce: number;
 
 declare const kDNSServiceFlagsForceMulticast: number;
@@ -160,15 +156,19 @@ declare const kDNSServiceFlagsNoAutoRename: number;
 
 declare const kDNSServiceFlagsNonBrowsable: number;
 
-declare const kDNSServiceFlagsPathEvaluationDone: number;
+declare const kDNSServiceFlagsPrivateFour: number;
+
+declare const kDNSServiceFlagsPrivateOne: number;
+
+declare const kDNSServiceFlagsPrivateThree: number;
+
+declare const kDNSServiceFlagsPrivateTwo: number;
 
 declare const kDNSServiceFlagsRegistrationDomains: number;
 
 declare const kDNSServiceFlagsReturnIntermediates: number;
 
 declare const kDNSServiceFlagsSecure: number;
-
-declare const kDNSServiceFlagsServiceIndex: number;
 
 declare const kDNSServiceFlagsShareConnection: number;
 

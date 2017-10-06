@@ -80,6 +80,10 @@ declare class CXCallController extends NSObject {
 	initWithQueue(queue: NSObject): this;
 
 	requestTransactionCompletion(transaction: CXTransaction, completion: (p1: NSError) => void): void;
+
+	requestTransactionWithActionCompletion(action: CXAction, completion: (p1: NSError) => void): void;
+
+	requestTransactionWithActionsCompletion(actions: NSArray<CXAction>, completion: (p1: NSError) => void): void;
 }
 
 declare const enum CXCallDirectoryEnabledStatus {
@@ -99,11 +103,21 @@ declare class CXCallDirectoryExtensionContext extends NSExtensionContext {
 
 	delegate: CXCallDirectoryExtensionContextDelegate;
 
+	readonly incremental: boolean;
+
 	addBlockingEntryWithNextSequentialPhoneNumber(phoneNumber: number): void;
 
 	addIdentificationEntryWithNextSequentialPhoneNumberLabel(phoneNumber: number, label: string): void;
 
 	completeRequestWithCompletionHandler(completion: (p1: boolean) => void): void;
+
+	removeAllBlockingEntries(): void;
+
+	removeAllIdentificationEntries(): void;
+
+	removeBlockingEntryWithPhoneNumber(phoneNumber: number): void;
+
+	removeIdentificationEntryWithPhoneNumber(phoneNumber: number): void;
 }
 
 interface CXCallDirectoryExtensionContextDelegate extends NSObjectProtocol {
@@ -257,7 +271,11 @@ declare const enum CXErrorCodeCallDirectoryManagerError {
 
 	MaximumEntriesExceeded = 5,
 
-	ExtensionDisabled = 6
+	ExtensionDisabled = 6,
+
+	CurrentlyLoading = 7,
+
+	UnexpectedIncrementalRemoval = 8
 }
 
 declare const enum CXErrorCodeIncomingCallError {
@@ -398,6 +416,8 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 	static new(): CXProviderConfiguration; // inherited from NSObject
 
 	iconTemplateImageData: NSData;
+
+	includesCallsInRecents: boolean;
 
 	readonly localizedName: string;
 

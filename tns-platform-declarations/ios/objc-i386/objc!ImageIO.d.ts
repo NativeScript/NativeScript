@@ -1,4 +1,6 @@
 
+declare function CGImageDestinationAddAuxiliaryDataInfo(idst: any, auxiliaryImageDataType: string, auxiliaryDataInfoDictionary: NSDictionary<any, any>): void;
+
 declare function CGImageDestinationAddImage(idst: any, image: any, properties: NSDictionary<any, any>): void;
 
 declare function CGImageDestinationAddImageAndMetadata(idst: any, image: any, metadata: any, options: NSDictionary<any, any>): void;
@@ -118,6 +120,8 @@ declare const enum CGImagePropertyOrientation {
 	kCGImagePropertyOrientationLeft = 8
 }
 
+declare function CGImageSourceCopyAuxiliaryDataInfoAtIndex(isrc: any, index: number, auxiliaryImageDataType: string): NSDictionary<any, any>;
+
 declare function CGImageSourceCopyMetadataAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): any;
 
 declare function CGImageSourceCopyProperties(isrc: any, options: NSDictionary<any, any>): NSDictionary<any, any>;
@@ -170,6 +174,16 @@ declare function CGImageSourceUpdateData(isrc: any, data: NSData, final: boolean
 declare function CGImageSourceUpdateDataProvider(isrc: any, provider: any, final: boolean): void;
 
 declare var kCFErrorDomainCGImageMetadata: string;
+
+declare var kCGImageAuxiliaryDataInfoData: string;
+
+declare var kCGImageAuxiliaryDataInfoDataDescription: string;
+
+declare var kCGImageAuxiliaryDataInfoMetadata: string;
+
+declare var kCGImageAuxiliaryDataTypeDepth: string;
+
+declare var kCGImageAuxiliaryDataTypeDisparity: string;
 
 declare var kCGImageDestinationBackgroundColor: string;
 
@@ -242,6 +256,12 @@ declare var kCGImagePropertyAPNGDelayTime: string;
 declare var kCGImagePropertyAPNGLoopCount: string;
 
 declare var kCGImagePropertyAPNGUnclampedDelayTime: string;
+
+declare var kCGImagePropertyAuxiliaryData: string;
+
+declare var kCGImagePropertyAuxiliaryDataType: string;
+
+declare var kCGImagePropertyBytesPerRow: string;
 
 declare var kCGImagePropertyCIFFCameraSerialNumber: string;
 
@@ -519,6 +539,8 @@ declare var kCGImagePropertyExifVersion: string;
 
 declare var kCGImagePropertyExifWhiteBalance: string;
 
+declare var kCGImagePropertyFileContentsDictionary: string;
+
 declare var kCGImagePropertyFileSize: string;
 
 declare var kCGImagePropertyGIFDelayTime: string;
@@ -600,6 +622,8 @@ declare var kCGImagePropertyGPSTrackRef: string;
 declare var kCGImagePropertyGPSVersion: string;
 
 declare var kCGImagePropertyHasAlpha: string;
+
+declare var kCGImagePropertyHeight: string;
 
 declare var kCGImagePropertyIPTCActionAdvised: string;
 
@@ -721,6 +745,10 @@ declare var kCGImagePropertyIPTCUrgency: string;
 
 declare var kCGImagePropertyIPTCWriterEditor: string;
 
+declare var kCGImagePropertyImageCount: string;
+
+declare var kCGImagePropertyImages: string;
+
 declare var kCGImagePropertyIsFloat: string;
 
 declare var kCGImagePropertyIsIndexed: string;
@@ -803,6 +831,8 @@ declare var kCGImagePropertyMakerOlympusDictionary: string;
 
 declare var kCGImagePropertyMakerPentaxDictionary: string;
 
+declare var kCGImagePropertyNamedColorSpace: string;
+
 declare var kCGImagePropertyOrientation: string;
 
 declare var kCGImagePropertyPNGAuthor: string;
@@ -834,6 +864,8 @@ declare var kCGImagePropertyPNGXPixelsPerMeter: string;
 declare var kCGImagePropertyPNGYPixelsPerMeter: string;
 
 declare var kCGImagePropertyPNGsRGBIntent: string;
+
+declare var kCGImagePropertyPixelFormat: string;
 
 declare var kCGImagePropertyPixelHeight: string;
 
@@ -884,6 +916,10 @@ declare var kCGImagePropertyTIFFWhitePoint: string;
 declare var kCGImagePropertyTIFFXResolution: string;
 
 declare var kCGImagePropertyTIFFYResolution: string;
+
+declare var kCGImagePropertyThumbnailImages: string;
+
+declare var kCGImagePropertyWidth: string;
 
 declare var kCGImageSourceCreateThumbnailFromImageAlways: string;
 

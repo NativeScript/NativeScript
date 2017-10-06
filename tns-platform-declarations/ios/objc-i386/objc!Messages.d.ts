@@ -18,6 +18,14 @@ declare class MSConversation extends NSObject {
 	insertStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError) => void): void;
 
 	insertTextCompletionHandler(text: string, completionHandler: (p1: NSError) => void): void;
+
+	sendAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string, completionHandler: (p1: NSError) => void): void;
+
+	sendMessageCompletionHandler(message: MSMessage, completionHandler: (p1: NSError) => void): void;
+
+	sendStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError) => void): void;
+
+	sendTextCompletionHandler(text: string, completionHandler: (p1: NSError) => void): void;
 }
 
 declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
@@ -31,6 +39,8 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 	error: NSError;
 
 	layout: MSMessageLayout;
+
+	readonly pending: boolean;
 
 	readonly senderParticipantIdentifier: NSUUID;
 
@@ -57,6 +67,8 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 declare const enum MSMessageErrorCode {
 
+	Unknown = -1,
+
 	FileNotFound = 1,
 
 	FileUnreadable = 2,
@@ -71,7 +83,11 @@ declare const enum MSMessageErrorCode {
 
 	StickerFileImproperFileFormat = 7,
 
-	URLExceedsMaxSize = 8
+	URLExceedsMaxSize = 8,
+
+	SendWithoutRecentInteraction = 9,
+
+	SendWhileNotVisible = 10
 }
 
 declare class MSMessageLayout extends NSObject implements NSCopying {
@@ -81,6 +97,19 @@ declare class MSMessageLayout extends NSObject implements NSCopying {
 	static new(): MSMessageLayout; // inherited from NSObject
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MSMessageLiveLayout extends MSMessageLayout {
+
+	static alloc(): MSMessageLiveLayout; // inherited from NSObject
+
+	static new(): MSMessageLiveLayout; // inherited from NSObject
+
+	readonly alternateLayout: MSMessageTemplateLayout;
+
+	constructor(o: { alternateLayout: MSMessageTemplateLayout; });
+
+	initWithAlternateLayout(alternateLayout: MSMessageTemplateLayout): this;
 }
 
 declare class MSMessageTemplateLayout extends MSMessageLayout {
@@ -110,10 +139,21 @@ declare const enum MSMessagesAppPresentationStyle {
 
 	Compact = 0,
 
-	Expanded = 1
+	Expanded = 1,
+
+	Transcript = 2
 }
 
-declare class MSMessagesAppViewController extends UIViewController {
+interface MSMessagesAppTranscriptPresentation {
+
+	contentSizeThatFits(size: CGSize): CGSize;
+}
+declare var MSMessagesAppTranscriptPresentation: {
+
+	prototype: MSMessagesAppTranscriptPresentation;
+};
+
+declare class MSMessagesAppViewController extends UIViewController implements MSMessagesAppTranscriptPresentation {
 
 	static alloc(): MSMessagesAppViewController; // inherited from NSObject
 
@@ -122,6 +162,8 @@ declare class MSMessagesAppViewController extends UIViewController {
 	readonly activeConversation: MSConversation;
 
 	readonly presentationStyle: MSMessagesAppPresentationStyle;
+
+	contentSizeThatFits(size: CGSize): CGSize;
 
 	didBecomeActiveWithConversation(conversation: MSConversation): void;
 
@@ -152,11 +194,19 @@ declare class MSMessagesAppViewController extends UIViewController {
 
 declare var MSMessagesErrorDomain: string;
 
-declare class MSSession extends NSObject {
+declare class MSSession extends NSObject implements NSSecureCoding {
 
 	static alloc(): MSSession; // inherited from NSObject
 
 	static new(): MSSession; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class MSSticker extends NSObject {

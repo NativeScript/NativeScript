@@ -194,7 +194,7 @@ declare class CKDatabaseNotification extends CKNotification {
 
 	static new(): CKDatabaseNotification; // inherited from NSObject
 
-	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKDatabaseNotification; // inherited from CKNotification
+	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<any, any>): CKDatabaseNotification; // inherited from CKNotification
 
 	readonly databaseScope: CKDatabaseScope;
 }
@@ -375,7 +375,9 @@ declare const enum CKErrorCode {
 
 	ManagedAccountRestricted = 32,
 
-	ParticipantMayNeedVerification = 33
+	ParticipantMayNeedVerification = 33,
+
+	ServerResponseLost = 34
 }
 
 declare var CKErrorDomain: string;
@@ -399,6 +401,8 @@ declare class CKFetchDatabaseChangesOperation extends CKDatabaseOperation {
 	recordZoneWithIDChangedBlock: (p1: CKRecordZoneID) => void;
 
 	recordZoneWithIDWasDeletedBlock: (p1: CKRecordZoneID) => void;
+
+	recordZoneWithIDWasPurgedBlock: (p1: CKRecordZoneID) => void;
 
 	resultsLimit: number;
 
@@ -482,7 +486,7 @@ declare class CKFetchRecordZoneChangesOperation extends CKDatabaseOperation {
 	initWithRecordZoneIDsOptionsByRecordZoneID(recordZoneIDs: NSArray<CKRecordZoneID>, optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>): this;
 }
 
-declare class CKFetchRecordZoneChangesOptions extends NSObject implements NSSecureCoding {
+declare class CKFetchRecordZoneChangesOptions extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CKFetchRecordZoneChangesOptions; // inherited from NSObject
 
@@ -497,6 +501,8 @@ declare class CKFetchRecordZoneChangesOptions extends NSObject implements NSSecu
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
@@ -737,7 +743,7 @@ declare class CKNotification extends NSObject {
 
 	static new(): CKNotification; // inherited from NSObject
 
-	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKNotification;
+	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<any, any>): CKNotification;
 
 	readonly alertActionLocalizationKey: string;
 
@@ -764,6 +770,18 @@ declare class CKNotification extends NSObject {
 	readonly soundName: string;
 
 	readonly subscriptionID: string;
+
+	readonly subtitle: string;
+
+	readonly subtitleLocalizationArgs: NSArray<string>;
+
+	readonly subtitleLocalizationKey: string;
+
+	readonly title: string;
+
+	readonly titleLocalizationArgs: NSArray<string>;
+
+	readonly titleLocalizationKey: string;
 }
 
 declare class CKNotificationID extends NSObject implements NSCopying, NSSecureCoding {
@@ -801,13 +819,29 @@ declare class CKNotificationInfo extends NSObject implements NSCopying, NSSecure
 
 	category: string;
 
+	collapseIDKey: string;
+
 	desiredKeys: NSArray<string>;
 
 	shouldBadge: boolean;
 
 	shouldSendContentAvailable: boolean;
 
+	shouldSendMutableContent: boolean;
+
 	soundName: string;
+
+	subtitle: string;
+
+	subtitleLocalizationArgs: NSArray<string>;
+
+	subtitleLocalizationKey: string;
+
+	title: string;
+
+	titleLocalizationArgs: NSArray<string>;
+
+	titleLocalizationKey: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -839,7 +873,11 @@ declare class CKOperation extends NSOperation {
 
 	allowsCellularAccess: boolean;
 
+	configuration: CKOperationConfiguration;
+
 	container: CKContainer;
+
+	group: CKOperationGroup;
 
 	longLived: boolean;
 
@@ -850,8 +888,71 @@ declare class CKOperation extends NSOperation {
 	timeoutIntervalForRequest: number;
 
 	timeoutIntervalForResource: number;
+}
 
-	usesBackgroundSession: boolean;
+declare class CKOperationConfiguration extends NSObject {
+
+	static alloc(): CKOperationConfiguration; // inherited from NSObject
+
+	static new(): CKOperationConfiguration; // inherited from NSObject
+
+	allowsCellularAccess: boolean;
+
+	container: CKContainer;
+
+	longLived: boolean;
+
+	qualityOfService: NSQualityOfService;
+
+	timeoutIntervalForRequest: number;
+
+	timeoutIntervalForResource: number;
+}
+
+declare class CKOperationGroup extends NSObject implements NSSecureCoding {
+
+	static alloc(): CKOperationGroup; // inherited from NSObject
+
+	static new(): CKOperationGroup; // inherited from NSObject
+
+	defaultConfiguration: CKOperationConfiguration;
+
+	expectedReceiveSize: CKOperationGroupTransferSize;
+
+	expectedSendSize: CKOperationGroupTransferSize;
+
+	name: string;
+
+	readonly operationGroupID: string;
+
+	quantity: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare const enum CKOperationGroupTransferSize {
+
+	Unknown = 0,
+
+	Kilobytes = 1,
+
+	Megabytes = 2,
+
+	TensOfMegabytes = 3,
+
+	HundredsOfMegabytes = 4,
+
+	Gigabytes = 5,
+
+	TensOfGigabytes = 6,
+
+	HundredsOfGigabytes = 7
 }
 
 declare var CKOwnerDefaultName: string;
@@ -908,7 +1009,7 @@ declare class CKQueryNotification extends CKNotification {
 
 	static new(): CKQueryNotification; // inherited from NSObject
 
-	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKQueryNotification; // inherited from CKNotification
+	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<any, any>): CKQueryNotification; // inherited from CKNotification
 
 	readonly databaseScope: CKDatabaseScope;
 
@@ -1190,7 +1291,7 @@ declare class CKRecordZoneNotification extends CKNotification {
 
 	static new(): CKRecordZoneNotification; // inherited from NSObject
 
-	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKRecordZoneNotification; // inherited from CKNotification
+	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<any, any>): CKRecordZoneNotification; // inherited from CKNotification
 
 	readonly databaseScope: CKDatabaseScope;
 
@@ -1511,6 +1612,8 @@ declare class CKUserIdentity extends NSObject implements NSCopying, NSSecureCodi
 	static alloc(): CKUserIdentity; // inherited from NSObject
 
 	static new(): CKUserIdentity; // inherited from NSObject
+
+	readonly contactIdentifiers: NSArray<string>;
 
 	readonly hasiCloudAccount: boolean;
 

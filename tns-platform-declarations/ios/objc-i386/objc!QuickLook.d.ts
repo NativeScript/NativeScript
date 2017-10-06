@@ -1,4 +1,19 @@
 
+declare class QLFileThumbnailRequest extends NSObject {
+
+	static alloc(): QLFileThumbnailRequest; // inherited from NSObject
+
+	static new(): QLFileThumbnailRequest; // inherited from NSObject
+
+	readonly fileURL: NSURL;
+
+	readonly maximumSize: CGSize;
+
+	readonly minimumSize: CGSize;
+
+	readonly scale: number;
+}
+
 declare class QLPreviewController extends UIViewController {
 
 	static alloc(): QLPreviewController; // inherited from NSObject
@@ -60,3 +75,36 @@ declare var QLPreviewItem: {
 
 	prototype: QLPreviewItem;
 };
+
+interface QLPreviewingController extends NSObjectProtocol {
+
+	preparePreviewOfFileAtURLCompletionHandler?(url: NSURL, handler: (p1: NSError) => void): void;
+
+	preparePreviewOfSearchableItemWithIdentifierQueryStringCompletionHandler?(identifier: string, queryString: string, handler: (p1: NSError) => void): void;
+}
+declare var QLPreviewingController: {
+
+	prototype: QLPreviewingController;
+};
+
+declare class QLThumbnailProvider extends NSObject {
+
+	static alloc(): QLThumbnailProvider; // inherited from NSObject
+
+	static new(): QLThumbnailProvider; // inherited from NSObject
+
+	provideThumbnailForFileRequestCompletionHandler(request: QLFileThumbnailRequest, handler: (p1: QLThumbnailReply, p2: NSError) => void): void;
+}
+
+declare class QLThumbnailReply extends NSObject {
+
+	static alloc(): QLThumbnailReply; // inherited from NSObject
+
+	static new(): QLThumbnailReply; // inherited from NSObject
+
+	static replyWithContextSizeCurrentContextDrawingBlock(contextSize: CGSize, drawingBlock: () => boolean): QLThumbnailReply;
+
+	static replyWithContextSizeDrawingBlock(contextSize: CGSize, drawingBlock: (p1: any) => boolean): QLThumbnailReply;
+
+	static replyWithImageFileURL(fileURL: NSURL): QLThumbnailReply;
+}

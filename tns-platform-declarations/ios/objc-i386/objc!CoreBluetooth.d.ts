@@ -269,10 +269,27 @@ declare const enum CBError {
 
 	ConnectionFailed = 10,
 
-	ConnectionLimitReached = 11
+	ConnectionLimitReached = 11,
+
+	UnkownDevice = 12
 }
 
 declare var CBErrorDomain: string;
+
+declare class CBL2CAPChannel extends NSObject {
+
+	static alloc(): CBL2CAPChannel; // inherited from NSObject
+
+	static new(): CBL2CAPChannel; // inherited from NSObject
+
+	readonly PSM: number;
+
+	readonly inputStream: NSInputStream;
+
+	readonly outputStream: NSOutputStream;
+
+	readonly peer: CBPeer;
+}
 
 declare class CBManager extends NSObject {
 
@@ -364,6 +381,8 @@ declare class CBPeripheral extends CBPeer {
 
 	readonly RSSI: number;
 
+	readonly canSendWriteWithoutResponse: boolean;
+
 	delegate: CBPeripheralDelegate;
 
 	readonly name: string;
@@ -381,6 +400,8 @@ declare class CBPeripheral extends CBPeer {
 	discoverServices(serviceUUIDs: NSArray<CBUUID>): void;
 
 	maximumWriteValueLengthForType(type: CBCharacteristicWriteType): number;
+
+	openL2CAPChannel(PSM: number): void;
 
 	readRSSI(): void;
 
@@ -407,6 +428,8 @@ interface CBPeripheralDelegate extends NSObjectProtocol {
 
 	peripheralDidModifyServices?(peripheral: CBPeripheral, invalidatedServices: NSArray<CBService>): void;
 
+	peripheralDidOpenL2CAPChannelError?(peripheral: CBPeripheral, channel: CBL2CAPChannel, error: NSError): void;
+
 	peripheralDidReadRSSIError?(peripheral: CBPeripheral, RSSI: number, error: NSError): void;
 
 	peripheralDidUpdateName?(peripheral: CBPeripheral): void;
@@ -422,6 +445,8 @@ interface CBPeripheralDelegate extends NSObjectProtocol {
 	peripheralDidWriteValueForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
 
 	peripheralDidWriteValueForDescriptorError?(peripheral: CBPeripheral, descriptor: CBDescriptor, error: NSError): void;
+
+	peripheralIsReadyToSendWriteWithoutResponse?(peripheral: CBPeripheral): void;
 }
 declare var CBPeripheralDelegate: {
 
@@ -450,6 +475,8 @@ declare class CBPeripheralManager extends CBManager {
 
 	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
 
+	publishL2CAPChannelWithEncryption(encryptionRequired: boolean): void;
+
 	removeAllServices(): void;
 
 	removeService(service: CBMutableService): void;
@@ -461,6 +488,8 @@ declare class CBPeripheralManager extends CBManager {
 	startAdvertising(advertisementData: NSDictionary<string, any>): void;
 
 	stopAdvertising(): void;
+
+	unpublishL2CAPChannel(PSM: number): void;
 
 	updateValueForCharacteristicOnSubscribedCentrals(value: NSData, characteristic: CBMutableCharacteristic, centrals: NSArray<CBCentral>): boolean;
 }
@@ -493,11 +522,17 @@ interface CBPeripheralManagerDelegate extends NSObjectProtocol {
 
 	peripheralManagerDidAddServiceError?(peripheral: CBPeripheralManager, service: CBService, error: NSError): void;
 
+	peripheralManagerDidOpenL2CAPChannelError?(peripheral: CBPeripheralManager, channel: CBL2CAPChannel, error: NSError): void;
+
+	peripheralManagerDidPublishL2CAPChannelError?(peripheral: CBPeripheralManager, PSM: number, error: NSError): void;
+
 	peripheralManagerDidReceiveReadRequest?(peripheral: CBPeripheralManager, request: CBATTRequest): void;
 
 	peripheralManagerDidReceiveWriteRequests?(peripheral: CBPeripheralManager, requests: NSArray<CBATTRequest>): void;
 
 	peripheralManagerDidStartAdvertisingError?(peripheral: CBPeripheralManager, error: NSError): void;
+
+	peripheralManagerDidUnpublishL2CAPChannelError?(peripheral: CBPeripheralManager, PSM: number, error: NSError): void;
 
 	peripheralManagerDidUpdateState(peripheral: CBPeripheralManager): void;
 
@@ -591,5 +626,7 @@ declare var CBUUIDCharacteristicUserDescriptionString: string;
 declare var CBUUIDCharacteristicValidRangeString: string;
 
 declare var CBUUIDClientCharacteristicConfigurationString: string;
+
+declare var CBUUIDL2CAPPSMCharacteristicString: string;
 
 declare var CBUUIDServerCharacteristicConfigurationString: string;

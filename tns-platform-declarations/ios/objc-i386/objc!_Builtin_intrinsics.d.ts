@@ -64,4 +64,18 @@ interface __mm_storel_epi64_struct {
 }
 declare var __mm_storel_epi64_struct: interop.StructType<__mm_storel_epi64_struct>;
 
+declare function _mm_clflush(p1: interop.Pointer | interop.Reference<any>): void;
+
+declare function _mm_getcsr(): number;
+
+declare function _mm_lfence(): void;
+
+declare function _mm_mfence(): void;
+
+declare function _mm_pause(): void;
+
+declare function _mm_setcsr(p1: number): void;
+
+declare function _mm_sfence(): void;
+
 declare function posix_memalign(__memptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __alignment: number, __size: number): number;

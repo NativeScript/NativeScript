@@ -371,6 +371,8 @@ declare const enum CFNetworkErrors {
 
 	kCFURLErrorDataLengthExceedsMaximum = -1103,
 
+	kCFURLErrorFileOutsideSafeArea = -1104,
+
 	kCFURLErrorSecureConnectionFailed = -1200,
 
 	kCFURLErrorServerCertificateHasBadDate = -1201,

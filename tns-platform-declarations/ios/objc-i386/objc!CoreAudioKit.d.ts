@@ -1,4 +1,29 @@
 
+declare class AUAudioUnitViewConfiguration extends NSObject implements NSSecureCoding {
+
+	static alloc(): AUAudioUnitViewConfiguration; // inherited from NSObject
+
+	static new(): AUAudioUnitViewConfiguration; // inherited from NSObject
+
+	readonly height: number;
+
+	readonly hostHasController: boolean;
+
+	readonly width: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { width: number; height: number; hostHasController: boolean; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithWidthHeightHostHasController(width: number, height: number, hostHasController: boolean): this;
+}
+
 declare class AUViewController extends UIViewController implements NSExtensionRequestHandling {
 
 	static alloc(): AUViewController; // inherited from NSObject

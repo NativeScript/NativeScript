@@ -8,11 +8,13 @@ declare var CAAction: {
 	prototype: CAAction;
 };
 
-declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, NSCoding, NSCopying {
+declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, NSCopying, NSSecureCoding, SCNAnimationProtocol {
 
 	static alloc(): CAAnimation; // inherited from NSObject
 
 	static animation(): CAAnimation;
+
+	static animationWithSCNAnimation(animation: SCNAnimation): CAAnimation;
 
 	static defaultValueForKey(key: string): any;
 
@@ -36,9 +38,17 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	beginTime: number; // inherited from CAMediaTiming
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
 	duration: number; // inherited from CAMediaTiming
 
 	fillMode: string; // inherited from CAMediaTiming
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	repeatCount: number; // inherited from CAMediaTiming
 
@@ -46,9 +56,19 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	speed: number; // inherited from CAMediaTiming
 
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
 	timeOffset: number; // inherited from CAMediaTiming
 
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -56,7 +76,25 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	initWithCoder(aDecoder: NSCoder): this;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
 	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void;
+
+	self(): this;
 
 	shouldArchiveValueForKey(key: string): boolean;
 }
@@ -100,6 +138,17 @@ declare class CABasicAnimation extends CAPropertyAnimation {
 	toValue: any;
 }
 
+declare const enum CACornerMask {
+
+	kCALayerMinXMinYCorner = 1,
+
+	kCALayerMaxXMinYCorner = 2,
+
+	kCALayerMinXMaxYCorner = 4,
+
+	kCALayerMaxXMaxYCorner = 8
+}
+
 declare function CACurrentMediaTime(): number;
 
 declare class CADisplayLink extends NSObject {
@@ -139,7 +188,7 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 
 	presentsWithTransaction: boolean;
 
-	drawableProperties: NSDictionary<any, any>; // inherited from EAGLDrawable
+	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
 }
 
 declare const enum CAEdgeAntialiasingMask {
@@ -153,34 +202,7 @@ declare const enum CAEdgeAntialiasingMask {
 	kCALayerTopEdge = 8
 }
 
-declare class CAEmitterBehavior extends NSObject implements NSCoding {
-
-	static alloc(): CAEmitterBehavior; // inherited from NSObject
-
-	static behaviorTypes(): NSArray<string>;
-
-	static behaviorWithType(type: string): CAEmitterBehavior;
-
-	static new(): CAEmitterBehavior; // inherited from NSObject
-
-	enabled: boolean;
-
-	name: string;
-
-	readonly type: string;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { type: string; });
-
-	encodeWithCoder(aCoder: NSCoder): void;
-
-	initWithCoder(aDecoder: NSCoder): this;
-
-	initWithType(type: string): this;
-}
-
-declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSCoding {
+declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureCoding {
 
 	static alloc(): CAEmitterCell; // inherited from NSObject
 
@@ -275,6 +297,8 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSCoding 
 	speed: number; // inherited from CAMediaTiming
 
 	timeOffset: number; // inherited from CAMediaTiming
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -372,7 +396,7 @@ declare class CAKeyframeAnimation extends CAPropertyAnimation {
 	values: NSArray<any>;
 }
 
-declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
+declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding {
 
 	static alloc(): CALayer; // inherited from NSObject
 
@@ -442,6 +466,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	mask: CALayer;
 
+	maskedCorners: CACornerMask;
+
 	masksToBounds: boolean;
 
 	minificationFilter: string;
@@ -501,6 +527,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 	speed: number; // inherited from CAMediaTiming
 
 	timeOffset: number; // inherited from CAMediaTiming
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -633,7 +661,7 @@ declare var CAMediaTiming: {
 	prototype: CAMediaTiming;
 };
 
-declare class CAMediaTimingFunction extends NSObject implements NSCoding {
+declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 
 	static alloc(): CAMediaTimingFunction; // inherited from NSObject
 
@@ -642,6 +670,8 @@ declare class CAMediaTimingFunction extends NSObject implements NSCoding {
 	static functionWithName(name: string): CAMediaTimingFunction;
 
 	static new(): CAMediaTimingFunction; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -917,8 +947,6 @@ declare class CATransition extends CAAnimation {
 
 	endProgress: number;
 
-	filter: any;
-
 	startProgress: number;
 
 	subtype: string;
@@ -926,7 +954,7 @@ declare class CATransition extends CAAnimation {
 	type: string;
 }
 
-declare class CAValueFunction extends NSObject implements NSCoding {
+declare class CAValueFunction extends NSObject implements NSSecureCoding {
 
 	static alloc(): CAValueFunction; // inherited from NSObject
 
@@ -935,6 +963,8 @@ declare class CAValueFunction extends NSObject implements NSCoding {
 	static new(): CAValueFunction; // inherited from NSObject
 
 	readonly name: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -980,22 +1010,6 @@ declare var kCAContentsFormatGray8Uint: string;
 declare var kCAContentsFormatRGBA16Float: string;
 
 declare var kCAContentsFormatRGBA8Uint: string;
-
-declare var kCAEmitterBehaviorAlignToMotion: string;
-
-declare var kCAEmitterBehaviorAttractor: string;
-
-declare var kCAEmitterBehaviorColorOverLife: string;
-
-declare var kCAEmitterBehaviorDrag: string;
-
-declare var kCAEmitterBehaviorLight: string;
-
-declare var kCAEmitterBehaviorSimpleAttractor: string;
-
-declare var kCAEmitterBehaviorValueOverLife: string;
-
-declare var kCAEmitterBehaviorWave: string;
 
 declare var kCAEmitterLayerAdditive: string;
 

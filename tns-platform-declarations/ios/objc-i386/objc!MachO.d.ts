@@ -79,6 +79,8 @@ declare function NXFindBestFatArch(cputype: number, cpusubtype: number, fat_arch
 
 declare function NXFindBestFatArch_64(cputype: number, cpusubtype: number, fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch_64>;
 
+declare function NXFreeArchInfo(x: interop.Pointer | interop.Reference<NXArchInfo>): void;
+
 declare function NXGetAllArchInfos(): interop.Pointer | interop.Reference<NXArchInfo>;
 
 declare function NXGetArchInfoFromCpuType(cputype: number, cpusubtype: number): interop.Pointer | interop.Reference<NXArchInfo>;
@@ -221,6 +223,26 @@ declare var _mh_dylinker_header: mach_header;
 
 declare var _mh_execute_header: mach_header;
 
+declare function _tlv_atexit(termFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, objAddr: interop.Pointer | interop.Reference<any>): void;
+
+declare function _tlv_bootstrap(): void;
+
+interface build_tool_version {
+	tool: number;
+	version: number;
+}
+declare var build_tool_version: interop.StructType<build_tool_version>;
+
+interface build_version_command {
+	cmd: number;
+	cmdsize: number;
+	platform: number;
+	minos: number;
+	sdk: number;
+	ntools: number;
+}
+declare var build_version_command: interop.StructType<build_version_command>;
+
 interface data_in_code_entry {
 	offset: number;
 	length: number;
@@ -257,6 +279,8 @@ interface dyld_all_image_infos {
 	dyldPath: string;
 	notifyPorts: interop.Reference<number>;
 	reserved: interop.Reference<number>;
+	compact_dyld_image_info_addr: number;
+	compact_dyld_image_info_size: number;
 }
 declare var dyld_all_image_infos: interop.StructType<dyld_all_image_infos>;
 
@@ -518,6 +542,15 @@ interface mach_header_64 {
 }
 declare var mach_header_64: interop.StructType<mach_header_64>;
 
+interface note_command {
+	cmd: number;
+	cmdsize: number;
+	data_owner: interop.Reference<number>;
+	offset: number;
+	size: number;
+}
+declare var note_command: interop.StructType<note_command>;
+
 interface prebind_cksum_command {
 	cmd: number;
 	cmdsize: number;
@@ -656,6 +689,10 @@ interface source_version_command {
 }
 declare var source_version_command: interop.StructType<source_version_command>;
 
+declare function swap_build_tool_version(bt: interop.Pointer | interop.Reference<build_tool_version>, ntools: number, target_byte_sex: NXByteOrder): void;
+
+declare function swap_build_version_command(bv: interop.Pointer | interop.Reference<build_version_command>, target_byte_sex: NXByteOrder): void;
+
 declare function swap_dyld_info_command(ed: interop.Pointer | interop.Reference<dyld_info_command>, target_byte_sex: NXByteOrder): void;
 
 declare function swap_dylib_module(mods: interop.Pointer | interop.Reference<dylib_module>, nmods: number, target_byte_sex: NXByteOrder): void;
@@ -693,6 +730,8 @@ declare function swap_load_command(lc: interop.Pointer | interop.Reference<load_
 declare function swap_mach_header(mh: interop.Pointer | interop.Reference<mach_header>, target_byte_order: NXByteOrder): void;
 
 declare function swap_mach_header_64(mh: interop.Pointer | interop.Reference<mach_header_64>, target_byte_order: NXByteOrder): void;
+
+declare function swap_note_command(nc: interop.Pointer | interop.Reference<note_command>, target_byte_sex: NXByteOrder): void;
 
 declare function swap_prebind_cksum_command(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command>, target_byte_sex: NXByteOrder): void;
 

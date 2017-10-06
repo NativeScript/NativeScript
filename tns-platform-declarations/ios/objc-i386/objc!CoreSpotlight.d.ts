@@ -77,6 +77,10 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	dataForSearchableIndexItemIdentifierTypeIdentifierError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string): NSData;
+
+	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean): NSURL;
+
 	isEqual(object: any): boolean;
 
 	isKindOfClass(aClass: typeof NSObject): boolean;
@@ -109,6 +113,8 @@ declare class CSLocalizedString extends NSString {
 	static alloc(): CSLocalizedString; // inherited from NSObject
 
 	static new(): CSLocalizedString; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): CSLocalizedString; // inherited from NSItemProviderReading
 
 	static string(): CSLocalizedString; // inherited from NSString
 
@@ -254,6 +260,10 @@ declare class CSSearchableIndex extends NSObject {
 }
 
 interface CSSearchableIndexDelegate extends NSObjectProtocol {
+
+	dataForSearchableIndexItemIdentifierTypeIdentifierError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string): NSData;
+
+	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean): NSURL;
 
 	searchableIndexDidFinishThrottle?(searchableIndex: CSSearchableIndex): void;
 
@@ -589,7 +599,15 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	projects: NSArray<string>;
 
+	providerDataTypeIdentifiers: NSArray<string>;
+
+	providerFileTypeIdentifiers: NSArray<string>;
+
+	providerInPlaceFileTypeIdentifiers: NSArray<string>;
+
 	publishers: NSArray<string>;
+
+	rankingHint: number;
 
 	rating: number;
 
@@ -652,6 +670,12 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	title: string;
 
 	totalBitRate: number;
+
+	userCreated: number;
+
+	userCurated: number;
+
+	userOwned: number;
 
 	version: string;
 

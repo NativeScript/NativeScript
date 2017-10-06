@@ -37,6 +37,8 @@ declare class MFMailComposeViewController extends UINavigationController {
 
 	setMessageBodyIsHTML(body: string, isHTML: boolean): void;
 
+	setPreferredSendingEmailAddress(emailAddress: string): void;
+
 	setSubject(subject: string): void;
 
 	setToRecipients(toRecipients: NSArray<string>): void;

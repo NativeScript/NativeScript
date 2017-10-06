@@ -66,6 +66,15 @@ declare const enum CTCharacterCollection {
 	kCTAdobeKorea1CharacterCollection = 5
 }
 
+declare const enum CTFontCollectionCopyOptions {
+
+	kCTFontCollectionCopyDefaultOptions = 0,
+
+	kCTFontCollectionCopyUnique = 1,
+
+	kCTFontCollectionCopyStandardSort = 2
+}
+
 declare function CTFontCollectionCreateCopyWithFontDescriptors(original: any, queryDescriptors: NSArray<any>, options: NSDictionary<any, any>): any;
 
 declare function CTFontCollectionCreateFromAvailableFonts(options: NSDictionary<any, any>): any;
@@ -1585,6 +1594,8 @@ declare var kCTBaselineClassRoman: string;
 
 declare var kCTBaselineInfoAttributeName: string;
 
+declare var kCTBaselineOffsetAttributeName: string;
+
 declare var kCTBaselineOriginalFont: string;
 
 declare var kCTBaselineReferenceFont: string;
@@ -1743,7 +1754,19 @@ declare const kCTFontTableBloc: number;
 
 declare const kCTFontTableBsln: number;
 
+declare const kCTFontTableCBDT: number;
+
+declare const kCTFontTableCBLC: number;
+
 declare const kCTFontTableCFF: number;
+
+declare const kCTFontTableCFF2: number;
+
+declare const kCTFontTableCOLR: number;
+
+declare const kCTFontTableCPAL: number;
+
+declare const kCTFontTableCidg: number;
 
 declare const kCTFontTableCmap: number;
 
@@ -1765,6 +1788,8 @@ declare const kCTFontTableFeat: number;
 
 declare const kCTFontTableFmtx: number;
 
+declare const kCTFontTableFond: number;
+
 declare const kCTFontTableFpgm: number;
 
 declare const kCTFontTableFvar: number;
@@ -1780,6 +1805,8 @@ declare const kCTFontTableGasp: number;
 declare const kCTFontTableGlyf: number;
 
 declare const kCTFontTableGvar: number;
+
+declare const kCTFontTableHVAR: number;
 
 declare const kCTFontTableHdmx: number;
 
@@ -1809,7 +1836,13 @@ declare const kCTFontTableLtag: number;
 
 declare const kCTFontTableMATH: number;
 
+declare const kCTFontTableMERG: number;
+
+declare const kCTFontTableMVAR: number;
+
 declare const kCTFontTableMaxp: number;
+
+declare const kCTFontTableMeta: number;
 
 declare const kCTFontTableMort: number;
 
@@ -1829,6 +1862,10 @@ declare const kCTFontTablePrep: number;
 
 declare const kCTFontTableProp: number;
 
+declare const kCTFontTableSTAT: number;
+
+declare const kCTFontTableSVG: number;
+
 declare const kCTFontTableSbit: number;
 
 declare const kCTFontTableSbix: number;
@@ -1839,9 +1876,13 @@ declare const kCTFontTableVDMX: number;
 
 declare const kCTFontTableVORG: number;
 
+declare const kCTFontTableVVAR: number;
+
 declare const kCTFontTableVhea: number;
 
 declare const kCTFontTableVmtx: number;
+
+declare const kCTFontTableXref: number;
 
 declare const kCTFontTableZapf: number;
 
@@ -1856,6 +1897,8 @@ declare var kCTFontUniqueNameKey: string;
 declare var kCTFontVariationAttribute: string;
 
 declare var kCTFontVariationAxisDefaultValueKey: string;
+
+declare var kCTFontVariationAxisHiddenKey: string;
 
 declare var kCTFontVariationAxisIdentifierKey: string;
 

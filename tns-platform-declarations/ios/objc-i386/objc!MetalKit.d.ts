@@ -187,31 +187,31 @@ declare class MTKTextureLoader extends NSObject {
 
 	initWithDevice(device: MTLDevice): this;
 
-	newTextureWithCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, NSObject>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, NSObject>): MTLTexture;
+	newTextureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, any>): MTLTexture;
 
-	newTextureWithContentsOfURLOptionsCompletionHandler(URL: NSURL, options: NSDictionary<string, NSObject>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithContentsOfURLOptionsCompletionHandler(URL: NSURL, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithContentsOfURLOptionsError(URL: NSURL, options: NSDictionary<string, NSObject>): MTLTexture;
+	newTextureWithContentsOfURLOptionsError(URL: NSURL, options: NSDictionary<string, any>): MTLTexture;
 
-	newTextureWithDataOptionsCompletionHandler(data: NSData, options: NSDictionary<string, NSObject>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithDataOptionsCompletionHandler(data: NSData, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, NSObject>): MTLTexture;
+	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, any>): MTLTexture;
 
-	newTextureWithMDLTextureOptionsCompletionHandler(texture: MDLTexture, options: NSDictionary<string, NSObject>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithMDLTextureOptionsCompletionHandler(texture: MDLTexture, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, NSObject>): MTLTexture;
+	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, any>): MTLTexture;
 
-	newTextureWithNameScaleFactorBundleOptionsCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, NSObject>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
+	newTextureWithNameScaleFactorBundleOptionsCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, NSObject>): MTLTexture;
+	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>): MTLTexture;
 
-	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL>, options: NSDictionary<string, NSObject>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
+	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL>, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
 
-	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL>, options: NSDictionary<string, NSObject>): NSArray<MTLTexture>;
+	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL>, options: NSDictionary<string, any>): NSArray<MTLTexture>;
 
-	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string>, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, NSObject>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
+	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string>, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
 }
 
 declare var MTKTextureLoaderCubeLayoutVertical: string;

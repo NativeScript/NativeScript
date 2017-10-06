@@ -840,6 +840,8 @@ declare const enum CFISO8601DateFormatOptions {
 
 	kCFISO8601DateFormatWithColonSeparatorInTimeZone = 1024,
 
+	kCFISO8601DateFormatWithFractionalSeconds = 2048,
+
 	kCFISO8601DateFormatWithFullDate = 275,
 
 	kCFISO8601DateFormatWithFullTime = 1632,
@@ -2784,6 +2786,8 @@ declare var kCFErrorFilePathKey: string;
 
 declare var kCFErrorLocalizedDescriptionKey: string;
 
+declare var kCFErrorLocalizedFailureKey: string;
+
 declare var kCFErrorLocalizedFailureReasonKey: string;
 
 declare var kCFErrorLocalizedRecoverySuggestionKey: string;
@@ -3254,6 +3258,10 @@ declare var kCFURLUbiquitousItemPercentUploadedKey: string;
 
 declare var kCFURLUbiquitousItemUploadingErrorKey: string;
 
+declare var kCFURLVolumeAvailableCapacityForImportantUsageKey: string;
+
+declare var kCFURLVolumeAvailableCapacityForOpportunisticUsageKey: string;
+
 declare var kCFURLVolumeAvailableCapacityKey: string;
 
 declare var kCFURLVolumeCreationDateKey: string;
@@ -3290,6 +3298,8 @@ declare var kCFURLVolumeNameKey: string;
 
 declare var kCFURLVolumeResourceCountKey: string;
 
+declare var kCFURLVolumeSupportsAccessPermissionsKey: string;
+
 declare var kCFURLVolumeSupportsAdvisoryFileLockingKey: string;
 
 declare var kCFURLVolumeSupportsCasePreservedNamesKey: string;
@@ -3305,6 +3315,8 @@ declare var kCFURLVolumeSupportsExtendedSecurityKey: string;
 declare var kCFURLVolumeSupportsFileCloningKey: string;
 
 declare var kCFURLVolumeSupportsHardLinksKey: string;
+
+declare var kCFURLVolumeSupportsImmutableFilesKey: string;
 
 declare var kCFURLVolumeSupportsJournalingKey: string;
 
