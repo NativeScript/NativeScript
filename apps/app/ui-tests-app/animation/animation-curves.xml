@@ -1,0 +1,19 @@
+<Page>
+    <AbsoluteLayout>
+        <GridLayout top="0" left="0" width="100%" rows="64, 64" columns="*,*,*">
+            <Button row="0" col="0" text="easeIn" tap="easeAnimate"/>
+            <Button row="0" col="1" text="easeOut" tap="easeAnimate"/>
+            <Button row="0" col="2" text="easeInOut" tap="easeAnimate"/>
+
+            <Button row="1" col="0" text="spring" tap="easeAnimate"/>
+            <Button row="1" col="1" text="linear" tap="easeAnimate"/>
+            <Button row="1" col="2" text="ease" tap="easeAnimate"/>
+        </GridLayout>
+
+        <Label top="200" left="48" height="256" width="256"
+               borderColor="purple" borderWidth="1"/>
+        <Label top="200" left="48" height="64" width="256" fontSize="42" id="target"
+               backgroundColor="purple" color="white"
+               textAlignment="center" verticalAlignment="center" text="easeIn"/>
+    </AbsoluteLayout>
+</Page>

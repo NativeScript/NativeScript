@@ -15,4 +15,3 @@ export function animateHeight(args) {
         });
     toggle = !toggle;
 }
-

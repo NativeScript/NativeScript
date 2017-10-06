@@ -11,6 +11,7 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
+    examples.set("animation-curves", "animation/animation-curves");
     examples.set("height-basic", "animation/height-basic");
     examples.set("layout-stack-height", "animation/layout-stack-height");
     examples.set("effect-summary-details", "animation/effect-summary-details");
