@@ -55,6 +55,16 @@ export function setDOM(newDOM) {
     dom = newDOM;
 }
 
+var css;
+
+export function getCSS(): any {
+    return css;
+}
+
+export function setCSS(newCSS) {
+    css = newCSS;
+}
+
 export namespace NetworkAgent {
     export interface Request {
         url: string;

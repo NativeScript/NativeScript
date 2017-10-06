@@ -1302,5 +1302,10 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
     for (var prop of cssPropertyNames) {
         result.push([prop, style[prop]]);
     }
+
+    result.push(["top", "auto"]);
+    result.push(["left", "auto"]);
+    result.push(["bottom", "auto"]);
+    result.push(["right", "auto"]);
     return result;
 }
