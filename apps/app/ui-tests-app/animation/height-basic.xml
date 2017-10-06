@@ -1,6 +1,5 @@
 <Page>
     <AbsoluteLayout>
-        <GridLayout top="0" left="0" width="290" id="test-element" automationText="test-element"/>
         <Label originX="0" originY="0" top="0" left="0"
                height="128" fontSize="64px" color="white"
                textAlignment="center"

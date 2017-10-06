@@ -1,19 +1,16 @@
 <Page>
-    <GridLayout rows="50, *">
-        <GridLayout width="290" id="test-element" automationText="test-element" />
-        <StackLayout row="1" verticalAlignment="top">
-            <Label backgroundColor="darkblue" originY="0"
-                   tap="tapLabel"
-                   height="64" fontSize="32" color="lightblue" textAlignment="center"
-                   text="Click here"/>
-            <Label backgroundColor="darkgreen" originY="0"
-                   tap="tapLabel"
-                   height="64" fontSize="32" color="lightgreen" textAlignment="center"
-                   text="Or here"/>
-            <Label backgroundColor="darkred" originY="0"
-                   tap="tapLabel"
-                   height="64" fontSize="32" color="red" textAlignment="center"
-                   text="But NOT here"/>
-        </StackLayout>
-    </GridLayout>
+    <StackLayout row="1" verticalAlignment="top">
+        <Label backgroundColor="darkblue" originY="0"
+               tap="tapLabel"
+               height="64" fontSize="32" color="skyblue" textAlignment="center"
+               text="Click here"/>
+        <Label backgroundColor="darkgreen" originY="0"
+               tap="tapLabel"
+               height="64" fontSize="32" color="lime" textAlignment="center"
+               text="Or here"/>
+        <Label backgroundColor="darkred" originY="0"
+               tap="tapLabel"
+               height="64" fontSize="32" color="pink" textAlignment="center"
+               text="But NOT here"/>
+    </StackLayout>
 </Page>
