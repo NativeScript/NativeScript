@@ -14,7 +14,7 @@ import {
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { ios as iosView } from "../ui/core/view";
+import { ios as iosView, ViewBase } from "../ui/core/view";
 import { Frame, View, NavigationEntry, loadViewFromEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
 import * as utils from "../utils/utils";
@@ -48,6 +48,7 @@ class IOSApplication implements IOSApplicationDefinition {
     private _currentOrientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
+    private _rootView: ViewBase;
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -110,6 +111,7 @@ class IOSApplication implements IOSApplicationDefinition {
         notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: getCssFileName() });
 
         const rootView = createRootView(args.root);
+        this._rootView = rootView;
         const controller = getViewController(rootView);
         this._window.rootViewController = controller;
         this._window.makeKeyAndVisible();
@@ -235,12 +237,12 @@ export function getNativeApplication(): UIApplication {
 }
 
 function getViewController(view: View): UIViewController {
-    let viewController = view.viewController || view.ios;
+    let viewController: UIViewController = view.viewController || view.ios;
     if (viewController instanceof UIViewController) {
         return viewController;
     } else if (view.ios instanceof UIView) {
         viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view));
-        viewController.view = view.ios;
+        viewController.view.addSubview(view.ios);
         return viewController;
     } else {
         throw new Error("Root should be either UIViewController or UIView");

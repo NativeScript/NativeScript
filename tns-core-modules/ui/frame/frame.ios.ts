@@ -241,6 +241,19 @@ export class Frame extends FrameBase {
         FrameBase.defaultTransition = value;
     }
 
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
+        const widthAndState = View.resolveSizeAndState(width, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(height, height, heightMode, 0);
+
+        this.setMeasuredDimension(widthAndState, heightAndState);
+    }
+
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         //
     }

@@ -126,14 +126,24 @@ function updateItemIconPosition(tabBarItem: UITabBarItem): void {
 
 export class TabViewItem extends TabViewItemBase {
     private __controller: UIViewController;
-    public setViewController(controller: UIViewController) {
+    private _setNeedsLayoutOnSuperview: boolean;
+    public setViewController(controller: UIViewController, nativeView: UIView) {
         this.__controller = controller;
-        this.setNativeView(controller.view);
+        this.setNativeView(nativeView);
+        this._setNeedsLayoutOnSuperview = controller.view !== nativeView;
+    }
+
+    public requestLayout(): void {
+        super.requestLayout();
+        if (this._setNeedsLayoutOnSuperview) {
+            this.nativeViewProtected.superview.setNeedsLayout();
+        }
     }
 
     public disposeNativeView() {
         this.__controller = undefined;
         this.setNativeView(undefined);
+        this._setNeedsLayoutOnSuperview = false;
     }
 
     public _update() {
@@ -207,6 +217,19 @@ export class TabView extends TabViewBase {
         //
     }
 
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
+        const widthAndState = View.resolveSizeAndState(width, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(height, height, heightMode, 0);
+
+        this.setMeasuredDimension(widthAndState, heightAndState);
+    }  
+
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
         if (traceEnabled()) {
@@ -262,17 +285,21 @@ export class TabView extends TabViewBase {
         let newController: UIViewController = item.view ? item.view.viewController : null;
 
         if (newController) {
+            item.setViewController(newController, newController.view);
             return newController;
         }
 
         if (item.view.ios instanceof UIViewController) {
             newController = item.view.ios;
+            item.setViewController(newController, newController.view);
         } else if (item.view.ios && item.view.ios.controller instanceof UIViewController) {
             newController = item.view.ios.controller;
+            item.setViewController(newController, newController.view);
         } else {
             newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view));
-            newController.view = item.view.nativeViewProtected;
+            newController.view.addSubview(item.view.nativeViewProtected);
             item.view.viewController = newController;
+            item.setViewController(newController, item.view.nativeViewProtected);
         }
 
         return newController;
@@ -291,8 +318,6 @@ export class TabView extends TabViewBase {
         for (let i = 0; i < length; i++) {
             const item = items[i];
             const controller = this.getViewController(item);
-            item.setViewController(controller);
-
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
             if (!icon) {

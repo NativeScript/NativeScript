@@ -1,5 +1,6 @@
 ﻿import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { Page, layout, View, EventData } from "tns-core-modules/ui/page";
+import { ios as iosView } from "tns-core-modules/ui/core/view";
 import { Label } from "tns-core-modules/ui/label";
 import { topmost } from "tns-core-modules/ui/frame";
 import * as uiUtils from "tns-core-modules/ui/utils";
@@ -72,6 +73,11 @@ function getHeight(view: View): number {
     return bounds.bottom - bounds.top;
 }
 
+function getNativeHeight(view: View): number {
+    const bounds = view.nativeViewProtected.frame;
+    return layout.toDevicePixels(bounds.size.height);
+}
+
 export function test_correct_layout_scrollable_content_false() {
     const page = new Page();
     (<any>page).scrollableContent = false;
@@ -82,6 +88,7 @@ export function test_correct_layout_scrollable_content_false() {
     const tabItem = new TabViewItem();
     tabItem.title = "Item";
     const lbl = new Label();
+    (<any>lbl).scrollableContent = false;
     tabItem.view = lbl;
     tabView.items = [tabItem];
 
@@ -94,24 +101,28 @@ export function test_correct_layout_scrollable_content_false() {
     const screenHeight = layout.toDevicePixels(UIScreen.mainScreen.bounds.size.height);
 
     let pageHeight = getHeight(page);
-    let expectedPageHeight = screenHeight - statusBarHeight;
-    TKUnit.assertEqual(pageHeight, expectedPageHeight, "page.height !== screenHeight - statusBar");
+    let expectedPageHeight = screenHeight;
+    TKUnit.assertEqual(pageHeight, expectedPageHeight, "page.height !== screenHeight");
 
     let contentHeight = getHeight(lbl);
+    let contentNativeHeight = getNativeHeight(lbl);
     let expectedLabelHeight = screenHeight - statusBarHeight - tabBarHeight;
     TKUnit.assertEqual(contentHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBar - tabBar");
+    TKUnit.assertEqual(contentNativeHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBar - tabBar");
 
     page.actionBarHidden = false;
     TKUnit.waitUntilReady(() => page.isLayoutValid);
 
     pageHeight = getHeight(page);
     const navBarHeight = uiUtils.ios.getActualHeight(page.frame.ios.controller.navigationBar);
-    expectedPageHeight = screenHeight - statusBarHeight - navBarHeight;
-    TKUnit.assertEqual(pageHeight, expectedPageHeight, "page.height !== screenHeight - statusBar - navBarHeight");
+    expectedPageHeight = screenHeight;
+    TKUnit.assertEqual(pageHeight, expectedPageHeight, "page.height !== screenHeight");
 
     contentHeight = getHeight(lbl);
+    contentNativeHeight = getNativeHeight(lbl);
     expectedLabelHeight = screenHeight - statusBarHeight - tabBarHeight - navBarHeight;
     TKUnit.assertEqual(contentHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBarHeight - tabBarHeight - navBarHeight");
+    TKUnit.assertEqual(contentNativeHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBarHeight - tabBarHeight - navBarHeight");
 }
 
 export function test_correct_layout_scrollable_content_true() {
@@ -137,12 +148,12 @@ export function test_correct_layout_scrollable_content_true() {
     const screenHeight = layout.toDevicePixels(UIScreen.mainScreen.bounds.size.height);
 
     let pageHeight = getHeight(page);
-    let expectedPageHeight = screenHeight - statusBarHeight;
-    TKUnit.assertEqual(pageHeight, expectedPageHeight, "page.height !== screenHeight - statusBar");
+    let expectedPageHeight = screenHeight;
+    TKUnit.assertEqual(pageHeight, expectedPageHeight, "page.height !== screenHeight");
 
     let contentHeight = getHeight(lbl);
     let expectedLabelHeight = screenHeight - statusBarHeight;
-    TKUnit.assertEqual(contentHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBar - tabBar");
+    TKUnit.assertEqual(contentHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBar");
 
     page.actionBarHidden = false;
     TKUnit.waitUntilReady(() => page.isLayoutValid);

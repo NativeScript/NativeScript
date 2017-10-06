@@ -75,7 +75,6 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
-
         const owner = this._owner.get();
         if (!owner) {
             return;
@@ -251,6 +250,13 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
+    public viewWillLayoutSubviews(): void {
+        super.viewWillLayoutSubviews();
+
+        const owner = this._owner.get();
+        iosView.updateConstraints(this, owner);
+    }
+
     public viewDidLayoutSubviews(): void {
         super.viewDidLayoutSubviews();
 
@@ -261,8 +267,8 @@ class UIViewControllerImpl extends UIViewController {
 
 const whiteColor = new Color("white").ios;
 export class Page extends PageBase {
-    public viewController: UIViewControllerImpl;
     nativeViewProtected: UIView;
+    viewController: UIViewControllerImpl;
 
     private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
@@ -274,6 +280,8 @@ export class Page extends PageBase {
     constructor() {
         super();
         const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+        const view = UIView.alloc().initWithFrame(getter(UIScreen, UIScreen.mainScreen).bounds);
+        controller.view.addSubview(view);
         this.viewController = this._ios = controller;
         this.nativeViewProtected = controller.view;
         this.nativeViewProtected.backgroundColor = whiteColor;
@@ -295,12 +303,6 @@ export class Page extends PageBase {
         //
     }
 
-    public _onContentChanged(oldView: View, newView: View) {
-        super._onContentChanged(oldView, newView);
-        this._removeNativeView(oldView);
-        this._addNativeView(newView);
-    }
-
     @profile
     public onLoaded() {
         // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
@@ -315,40 +317,6 @@ export class Page extends PageBase {
         // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
         if (this._enableLoadedEvents) {
             super.onUnloaded();
-        }
-    }
-
-    private _addNativeView(view: View) {
-        if (view) {
-            if (traceEnabled()) {
-                traceWrite("Native: Adding " + view + " to " + this, traceCategories.ViewHierarchy);
-            }
-            if (view.ios instanceof UIView) {
-                this._ios.view.addSubview(view.ios);
-            } else {
-                const viewController = view.ios instanceof UIViewController ? view.ios : view.viewController;
-                if (viewController) {
-                    this._ios.addChildViewController(view.ios);
-                    this._ios.view.addSubview(view.ios.view);
-                }
-            }
-        }
-    }
-
-    private _removeNativeView(view: View) {
-        if (view) {
-            if (traceEnabled()) {
-                traceWrite("Native: Removing " + view + " from " + this, traceCategories.ViewHierarchy);
-            }
-            if (view.ios instanceof UIView) {
-                view.ios.removeFromSuperview();
-            } else {
-                const viewController = view.ios instanceof UIViewController ? view.ios : view.viewController;
-                if (viewController) {
-                    view.ios.removeFromParentViewController();
-                    view.ios.view.removeFromSuperview();
-                }
-            }
         }
     }
 
@@ -418,23 +386,6 @@ export class Page extends PageBase {
         }
     }
 
-    public _updateEffectiveLayoutValues(parent: View): void {
-        super._updateEffectiveLayoutValues(parent);
-
-        // Patch vertical margins to respect status bar height
-        if (!this.backgroundSpanUnderStatusBar) {
-            const style = this.style;
-
-            const parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
-            const parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec) - uiUtils.ios.getStatusBarHeight();
-            const parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
-            const parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-
-            this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
-            this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
-        }
-    }
-
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -447,9 +398,7 @@ export class Page extends PageBase {
             View.measureChild(this, this.actionBar, widthMeasureSpec, layout.makeMeasureSpec(height, layout.AT_MOST));
         }
 
-        const heightSpec = layout.makeMeasureSpec(height, heightMode);
-
-        const result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightSpec);
+        const result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
 
         const measureWidth = Math.max(result.measuredWidth, this.effectiveMinWidth);
         const measureHeight = Math.max(result.measuredHeight, this.effectiveMinHeight);
@@ -465,30 +414,58 @@ export class Page extends PageBase {
         View.layoutChild(this, this.layoutView, 0, top, right - left, bottom);
     }
 
-    public _addViewToNativeVisualTree(view: View): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
         // ActionBar is handled by the UINavigationController
-        if (view === this.actionBar) {
+        if (child === this.actionBar) {
+            return true;
+        }
+        
+        // Don't add modal pages our visual tree.
+        if (child !== this.content) {
             return true;
         }
 
-        return super._addViewToNativeVisualTree(view);
+        const nativeParent = this.nativeViewProtected.subviews[0];
+        const nativeChild = child.nativeViewProtected;
+
+        const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;
+        if (viewController) {
+            this.viewController.addChildViewController(viewController);
+        }
+
+        if (nativeParent && nativeChild) {
+            if (typeof atIndex !== "number" || atIndex >= nativeParent.subviews.count) {
+                nativeParent.addSubview(nativeChild);
+            } else {
+                nativeParent.insertSubviewAtIndex(nativeChild, atIndex);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
-    public _removeViewFromNativeVisualTree(view: View): void {
+    public _removeViewFromNativeVisualTree(child: View): void {
         // ActionBar is handled by the UINavigationController
-        if (view === this.actionBar) {
+        if (child === this.actionBar) {
             return;
         }
 
-        super._removeViewFromNativeVisualTree(view);
+        const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;
+        if (viewController) {
+            viewController.removeFromParentViewController();
+        }
+
+        super._removeViewFromNativeVisualTree(child);
     }
 
     [actionBarHiddenProperty.setNative](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
-        if (this.isLoaded) {
-            // Update nav-bar visibility with disabled animations
-            this.updateActionBar(true);
-        }
+        invalidateTopmostController(this.viewController);
+
+        // Update nav-bar visibility with disabled animations
+        this.updateActionBar(true);
     }
 
     [statusBarStyleProperty.getDefault](): UIBarStyle {
@@ -503,6 +480,34 @@ export class Page extends PageBase {
             } else {
                 navigationBar.barStyle = value;
             }
+        }
+    }
+}
+
+function invalidateTopmostController(controller: UIViewController): void {
+    if (!controller) {
+        return;
+    }
+
+    controller.view.setNeedsLayout();
+
+    const presentedViewController = controller.presentedViewController;
+    if (presentedViewController) {
+        return invalidateTopmostController(presentedViewController);
+    }
+
+    const childControllers = controller.childViewControllers;
+    let size = controller.childViewControllers.count;
+    while (size > 0) {
+        const childController = childControllers[--size];
+        if (childController instanceof UITabBarController) {
+            invalidateTopmostController(childController.selectedViewController);
+        } else if (childController instanceof UINavigationController) {
+            invalidateTopmostController(childController.topViewController);
+        } else if (childController instanceof UISplitViewController) {
+            invalidateTopmostController(childController.viewControllers.lastObject);
+        } else {
+            invalidateTopmostController(childController);
         }
     }
 }

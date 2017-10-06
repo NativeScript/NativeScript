@@ -43,11 +43,7 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
     }
 
     get _childrenCount(): number {
-        if (this._content) {
-            return 1;
-        }
-
-        return 0;
+        return this._content ? 1 : 0;
     }
 
     public _onContentChanged(oldView: View, newView: View) {

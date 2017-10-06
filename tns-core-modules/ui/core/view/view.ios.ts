@@ -1,5 +1,6 @@
 ﻿// Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
+import { ViewBase } from "../view-base";
 
 import { ios as iosBackground, Background } from "../../styling/background";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
@@ -10,6 +11,7 @@ import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories
 } from "./view-common";
+
 import {
     Visibility,
     visibilityProperty, opacityProperty,
@@ -18,6 +20,7 @@ import {
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
 import { profile } from "../../../profiling";
+import { ios as iosUtils } from "../../../utils/utils";
 
 export * from "./view-common";
 
@@ -38,10 +41,6 @@ export class View extends ViewCommon {
      *  - `drawn` - the view background has been property drawn, on subsequent layouts it may need to be redrawn if the background depends on the view's size.
      */
     _nativeBackgroundState: "unset" | "invalid" | "drawn";
-
-    // get nativeView(): UIView {
-    //     return this.ios;
-    // }
 
     public _addViewCore(view: ViewCommon, atIndex?: number) {
         super._addViewCore(view, atIndex);
@@ -67,13 +66,11 @@ export class View extends ViewCommon {
 
         const parent = <View>this.parent;
         if (parent) {
-            if (!parent.isLayoutRequested) {
-                parent.requestLayout();
-            }
+            parent.requestLayout();
         }
 
         const nativeView = this.nativeViewProtected;
-        if (nativeView && this.isLoaded) {
+        if (nativeView) {
             nativeView.setNeedsLayout();
         }
     }
@@ -82,7 +79,6 @@ export class View extends ViewCommon {
         let measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         let forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
         if (forceLayout || measureSpecsChanged) {
-
             // first clears the measured dimension flag
             this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
@@ -100,7 +96,7 @@ export class View extends ViewCommon {
 
     @profile
     public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
-        let { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+        const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         if (setFrame) {
             this.layoutNativeView(left, top, right, bottom);
         }
@@ -110,14 +106,17 @@ export class View extends ViewCommon {
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
         }
 
+        this.updateBackground(sizeChanged);
+        this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
+    }
+
+    private updateBackground(sizeChanged: boolean): void {
         if (sizeChanged) {
             this._onSizeChanged();
         } else if (this._nativeBackgroundState === "invalid") {
-            let background = this.style.backgroundInternal;
+            const background = this.style.backgroundInternal;
             this._redrawNativeBackground(background);
         }
-
-        this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
     }
 
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
@@ -163,7 +162,7 @@ export class View extends ViewCommon {
             this._cachedFrame = frame;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                let transform = nativeView.transform;
+                const transform = nativeView.transform;
                 nativeView.transform = CGAffineTransformIdentity;
                 nativeView.frame = frame;
                 nativeView.transform = transform;
@@ -171,7 +170,8 @@ export class View extends ViewCommon {
             else {
                 nativeView.frame = frame;
             }
-            let boundsOrigin = nativeView.bounds.origin;
+
+            const boundsOrigin = nativeView.bounds.origin;
             nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
         }
     }
@@ -184,6 +184,22 @@ export class View extends ViewCommon {
         const nativeView = this.nativeViewProtected;
         const frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
         this._setNativeViewFrame(nativeView, frame);
+    }
+
+    public _setLayoutFlags(left: number, top: number, right: number, bottom: number): void {
+        const width = right - left;
+        const height = bottom - top;
+        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+        this._setCurrentMeasureSpecs(widthSpec, heightSpec);
+        this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
+        this.setMeasuredDimension(width, height);
+        
+        const { sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+        this.updateBackground(sizeChanged);
+        this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
+        // NOTE: if there is transformation this frame will be incorrect.
+        this._cachedFrame = this.nativeViewProtected.frame;
     }
 
     public focus(): boolean {
@@ -199,7 +215,7 @@ export class View extends ViewCommon {
             return undefined;
         }
 
-        let pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
+        const pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
         return {
             x: pointInWindow.x,
             y: pointInWindow.y
@@ -211,8 +227,8 @@ export class View extends ViewCommon {
             return undefined;
         }
 
-        let pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
-        let pointOnScreen = this.nativeViewProtected.window.convertPointToWindow(pointInWindow, null);
+        const pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
+        const pointOnScreen = this.nativeViewProtected.window.convertPointToWindow(pointInWindow, null);
         return {
             x: pointOnScreen.x,
             y: pointOnScreen.y
@@ -226,8 +242,8 @@ export class View extends ViewCommon {
             return undefined;
         }
 
-        let myPointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
-        let otherPointInWindow = otherView.nativeViewProtected.convertPointToView(otherView.nativeViewProtected.bounds.origin, null);
+        const myPointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
+        const otherPointInWindow = otherView.nativeViewProtected.convertPointToView(otherView.nativeViewProtected.bounds.origin, null);
         return {
             x: myPointInWindow.x - otherPointInWindow.x,
             y: myPointInWindow.y - otherPointInWindow.y
@@ -256,15 +272,15 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-        let scaleX = this.scaleX || 1e-6;
-        let scaleY = this.scaleY || 1e-6;
-        let rotate = this.rotate || 0;
+        const scaleX = this.scaleX || 1e-6;
+        const scaleY = this.scaleY || 1e-6;
+        const rotate = this.rotate || 0;
         let newTransform = CGAffineTransformIdentity;
         newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
         newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
         if (!CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, newTransform)) {
-            let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+            const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
@@ -277,7 +293,7 @@ export class View extends ViewCommon {
     }
 
     public updateOriginPoint(originX: number, originY: number) {
-        let newPoint = CGPointMake(originX, originY);
+        const newPoint = CGPointMake(originX, originY);
         this.nativeViewProtected.layer.anchorPoint = newPoint;
         if (this._cachedFrame) {
             this._setNativeViewFrame(this.nativeViewProtected, this._cachedFrame);
@@ -300,11 +316,11 @@ export class View extends ViewCommon {
     }
 
     [isEnabledProperty.getDefault](): boolean {
-        let nativeView = this.nativeViewProtected;
+        const nativeView = this.nativeViewProtected;
         return nativeView instanceof UIControl ? nativeView.enabled : true;
     }
     [isEnabledProperty.setNative](value: boolean) {
-        let nativeView = this.nativeViewProtected;
+        const nativeView = this.nativeViewProtected;
         if (nativeView instanceof UIControl) {
             nativeView.enabled = value;
         }
@@ -446,7 +462,7 @@ export class View extends ViewCommon {
     }
 
     _setNativeClipToBounds() {
-        let backgroundInternal = this.style.backgroundInternal;
+        const backgroundInternal = this.style.backgroundInternal;
         this.nativeViewProtected.clipsToBounds =
             this.nativeViewProtected instanceof UIScrollView ||
             backgroundInternal.hasBorderWidth() ||
@@ -461,7 +477,7 @@ export class CustomLayoutView extends View {
 
     constructor() {
         super();
-        this.nativeViewProtected = UIView.new();
+        this.nativeViewProtected = UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -494,23 +510,36 @@ export class CustomLayoutView extends View {
             child.nativeViewProtected.removeFromSuperview();
         }
     }
+
+    _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
+        const nativeView = this.nativeViewProtected;
+        if (nativeView && !this.isCollapsed) {
+            const frame = nativeView.frame;
+            const origin = frame.origin;
+            const size = frame.size;
+            return {
+                left: layout.toDevicePixels(origin.x),
+                top: layout.toDevicePixels(origin.y),
+                right: layout.toDevicePixels(origin.x + size.width),
+                bottom: layout.toDevicePixels(origin.y + size.height)
+            };
+        } else {
+            return { left: 0, top: 0, right: 0, bottom: 0 };
+        }
+    }
 }
 
 function isScrollable(controller: UIViewController, owner: View): boolean {
     let scrollable = (<any>owner).scrollableContent;
     if (scrollable === undefined) {
-        if (controller.childViewControllers.count > 0) {
-            scrollable = true;
-        } else {
-            let view = controller.view;
-            while (view) {
-                if (view instanceof UIScrollView) {
-                    scrollable = true;
-                    break;
-                }
-
-                view = view.subviews.count > 0 ? view.subviews[0] : null;
+        let view = controller.view;
+        while (view) {
+            if (view instanceof UIScrollView) {
+                scrollable = true;
+                break;
             }
+
+            view = view.subviews.count > 0 ? view.subviews[0] : null;
         }
     }
 
@@ -530,66 +559,157 @@ function getStatusBarHeight(controller: UIViewController): number {
     return shouldReturnStatusBarHeight ? uiUtils.ios.getStatusBarHeight(controller) : 0;
 }
 
+const majorVersion = iosUtils.MajorVersion;
+
+interface ExtendedController extends UIViewController {
+    scrollable: boolean;
+    navBarHidden: boolean;
+    hasChildControllers: boolean;
+
+    safeAreaLeft: NSLayoutConstraint;
+    safeAreaTop: NSLayoutConstraint;
+    safeAreaRight: NSLayoutConstraint;
+    safeAreaBottom: NSLayoutConstraint;
+    fullscreenTop: NSLayoutConstraint;
+    fullscreenBottom: NSLayoutConstraint;
+    activeConstraints: NSLayoutConstraint[];
+}
+
 export namespace ios {
-    export function layoutView(controller: UIViewController, owner: View): void {
-        const scrollableContent = isScrollable(controller, owner);
+    function constrainView(controller: UIViewController, owner: View): void {
+        const root = controller.view;
+        const view = root.subviews[0];
+        const extendedController = <ExtendedController>controller;
+
+        if (!extendedController.safeAreaTop) {
+            view.translatesAutoresizingMaskIntoConstraints = false;
+            if (majorVersion > 10) {
+                const safeArea = root.safeAreaLayoutGuide;
+                extendedController.safeAreaTop = view.topAnchor.constraintEqualToAnchor(safeArea.topAnchor);
+                extendedController.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
+                extendedController.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(safeArea.bottomAnchor);
+                extendedController.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
+                extendedController.safeAreaLeft = view.leftAnchor.constraintEqualToAnchor(safeArea.leftAnchor);
+                extendedController.safeAreaRight = view.rightAnchor.constraintEqualToAnchor(safeArea.rightAnchor);
+            } else {
+                extendedController.safeAreaTop = view.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor);
+                extendedController.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
+                extendedController.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor);
+                extendedController.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
+                extendedController.safeAreaLeft = view.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor);
+                extendedController.safeAreaRight = view.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor);
+            }
+        }
+
         const navController = controller.navigationController;
-        const navBarVisible = navController && !navController.navigationBarHidden;
-        const navBarTranslucent = navController ? navController.navigationBar.translucent : false;
+        const navBarHidden = navController ? navController.navigationBarHidden : true;
+        const scrollable = (owner && isScrollable(controller, owner));
+        const hasChildControllers = controller.childViewControllers.count > 0;
+        const constraints = [
+            hasChildControllers || scrollable ? extendedController.fullscreenBottom : extendedController.safeAreaBottom,
+            extendedController.safeAreaLeft,
+            extendedController.safeAreaRight
+        ];
 
-        let navBarHeight = navBarVisible ? uiUtils.ios.getActualHeight(navController.navigationBar) : 0;
-        let statusBarHeight = getStatusBarHeight(controller);
-
-        const edgesForExtendedLayout = controller.edgesForExtendedLayout;
-        const extendedLayoutIncludesOpaqueBars = controller.extendedLayoutIncludesOpaqueBars;
-        const layoutExtendsOnTop = (edgesForExtendedLayout & UIRectEdge.Top) === UIRectEdge.Top;
-        if (!layoutExtendsOnTop
-            || (!extendedLayoutIncludesOpaqueBars && !navBarTranslucent && navBarVisible)
-            || (scrollableContent && navBarVisible)) {
-            navBarHeight = 0;
-            statusBarHeight = 0;
+        if (hasChildControllers) {
+            // If not inner most extend to fullscreen
+            constraints.push(extendedController.fullscreenTop);
+        } else if (!scrollable) {
+            // If not scrollable dock under safe area
+            constraints.push(extendedController.safeAreaTop);
+        } else if (navBarHidden) {
+            // If scrollable but no navigation bar dock under safe area
+            constraints.push(extendedController.safeAreaTop);
+        } else {
+            // If scrollable and navigation bar extend to fullscreen
+            constraints.push(extendedController.fullscreenTop);
         }
 
-        const tabBarController = controller.tabBarController;
-        const layoutExtendsOnBottom = (edgesForExtendedLayout & UIRectEdge.Bottom) === UIRectEdge.Bottom;
+        const activeConstraints = extendedController.activeConstraints;
+        if (activeConstraints) {
+            NSLayoutConstraint.deactivateConstraints(<any>activeConstraints);
+        }
+        NSLayoutConstraint.activateConstraints(<any>constraints);
 
-        let tabBarHeight = 0;
-        const tabBarVisible = tabBarController && !tabBarController.tabBar.hidden;
-        const tabBarTranslucent = tabBarController ? tabBarController.tabBar.translucent : false;
+        extendedController.scrollable = scrollable;
+        extendedController.navBarHidden = navBarHidden;
+        extendedController.hasChildControllers = hasChildControllers;
+        extendedController.activeConstraints = constraints;
+    }
 
-        // If tabBar is visible and we don't have scrollableContent and layout
-        // goes under tabBar we need to reduce available height with tabBar height
-        if (tabBarVisible && !scrollableContent && layoutExtendsOnBottom && (tabBarTranslucent || extendedLayoutIncludesOpaqueBars)) {
-            tabBarHeight = tabBarController.tabBar.frame.size.height;
+    export function updateConstraints(controller: UIViewController, owner: View): void {
+        const extendedController = <ExtendedController>controller;
+        const navController = controller.navigationController;
+        const navBarHidden = navController ? navController.navigationBarHidden : true;
+        const scrollable = (owner && isScrollable(controller, owner));
+        const hasChildControllers = controller.childViewControllers.count > 0;
+
+        if (extendedController.scrollable !== scrollable 
+            || extendedController.navBarHidden !== navBarHidden
+            || extendedController.hasChildControllers !== hasChildControllers) {
+            constrainView(extendedController, owner);
+        }
+    }
+
+    export function layoutView(controller: UIViewController, owner: View): void {
+        // If we are not last controller - don't 
+        if (controller.childViewControllers.count > 0) {// || controller.view !== owner.nativeView.superview) {
+            return;
         }
 
-        const size = controller.view.bounds.size;
+        const frame = controller.beingPresented ? owner.nativeView.superview.frame : controller.view.subviews[0].bounds;
+        const origin = frame.origin;
+        const size = frame.size;
         const width = layout.toDevicePixels(size.width);
-        const height = layout.toDevicePixels(size.height - tabBarHeight);
+        const height = layout.toDevicePixels(size.height);
 
         const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
-        const heightSpec = layout.makeMeasureSpec(height - statusBarHeight - navBarHeight, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
 
-        owner.measure(widthSpec, heightSpec);
+        View.measureChild(null, owner, widthSpec, heightSpec);
+        const left = layout.toDevicePixels(origin.x);
+        const top = layout.toDevicePixels(origin.y);
+        View.layoutChild(null, owner, left, top, width + left, height + top, false);
 
-        // Page.nativeView.frame is never set by our layout...
-        owner.layout(0, statusBarHeight + navBarHeight, width, height, false);
+        layoutParent(owner.parent);
+    }
+
+    function layoutParent(view: ViewBase): void {
+        if (!view) {
+            return;
+        }
+
+        if (view instanceof View) {
+            const frame = view.nativeViewProtected.frame;
+            const origin = frame.origin;
+            const size = frame.size;
+            const left = layout.toDevicePixels(origin.x);
+            const top = layout.toDevicePixels(origin.y);
+            const width = layout.toDevicePixels(size.width);
+            const height = layout.toDevicePixels(size.height);
+            view._setLayoutFlags(left, top, width + left, height + top);
+        }
+
+        layoutParent(view.parent);
     }
 
     export class UILayoutViewController extends UIViewController {
         public owner: WeakRef<View>;
-        
+
         public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
             const controller = <UILayoutViewController>UILayoutViewController.new();
             controller.owner = owner;
             return controller;
         }
 
+        public viewWillLayoutSubviews(): void {
+            super.viewWillLayoutSubviews();
+            updateConstraints(this, this.owner.get())
+        }
+
         public viewDidLayoutSubviews(): void {
             super.viewDidLayoutSubviews();
-
-            const owner = this.owner.get();
-            layoutView(this, owner);
+            layoutView(this, this.owner.get());
         }
     }
 }

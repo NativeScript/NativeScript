@@ -356,11 +356,9 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, s
     }
 
     if (Application.ios) {
-        // const waitTime = 1 / 10000;
         const timeoutMs = timeoutSec * 1000;
         let totalWaitTime = 0;
         while (true) {
-            // const nsDate = <any>NSDate.dateWithTimeIntervalSinceNow(waitTime);
             const begin = time();
             const currentRunLoop = utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop);
             currentRunLoop.limitDateForMode(currentRunLoop.currentMode);

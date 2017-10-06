@@ -1,26 +1,26 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import * as app from "tns-core-modules/application";
-import * as button from "tns-core-modules/ui/button";
-import * as testModule from "../../ui-test";
+import { Button } from "tns-core-modules/ui/button";
+import { Page, isIOS } from "tns-core-modules/ui/page";
+import { UITest } from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
 import { Page } from "tns-core-modules/ui/page";
 import * as frame from "tns-core-modules/ui/frame";
 import * as helper from "../helper";
 
 // >> article-require-scrollview-module
-import * as scrollViewModule from "tns-core-modules/ui/scroll-view";
+import { ScrollView, ScrollEventData } from "tns-core-modules/ui/scroll-view";
 // << article-require-scrollview-module
 
-class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
+class ScrollLayoutTest extends UITest<ScrollView> {
 
-    public create(): scrollViewModule.ScrollView {
-        let scrollView = new scrollViewModule.ScrollView();
+    public create(): ScrollView {
+        const scrollView = new ScrollView();
         scrollView.orientation = "vertical";
 
         scrollView.width = { value: 200, unit: "px" };
         scrollView.height = { value: 300, unit: "px" };
 
-        let btn = new button.Button();
+        const btn = new Button();
         btn.text = "test";
         btn.width = { value: 500, unit: "px" };
         btn.height = { value: 500, unit: "px" };
@@ -31,13 +31,13 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_snippets() {
         // >> article-creating-scrollview
-        var scrollView = new scrollViewModule.ScrollView();
+        const scrollView = new ScrollView();
         // << article-creating-scrollview
         TKUnit.assertTrue(scrollView !== null, "ScrollView should be created.");
     }
 
     public test_default_TNS_values() {
-        let scroll = new scrollViewModule.ScrollView();
+        const scroll = new ScrollView();
         TKUnit.assertEqual(scroll.orientation, "vertical", "Default this.testView.orientation");
         TKUnit.assertEqual(scroll.verticalOffset, 0, "Default this.testView.verticalOffset");
         TKUnit.assertEqual(scroll.horizontalOffset, 0, "Default this.testView.horizontalOffset");
@@ -46,22 +46,20 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     public test_vertical_oriantation_creates_correct_native_view() {
         this.testView.orientation = "vertical";
 
-        if (app.android) {
-            TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.VerticalScrollView, "android property should be instanceof org.nativescript.widgets.VerticalScrollView");
-        }
-        else if (app.ios) {
+        if (isIOS) {
             TKUnit.assert(this.testView.ios instanceof UIScrollView, "ios property is UIScrollView");
+        } else {
+            TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.VerticalScrollView, "android property should be instanceof org.nativescript.widgets.VerticalScrollView");
         }
     }
 
     public test_horizontal_oriantation_creates_correct_native_view() {
         this.testView.orientation = "horizontal";
 
-        if (app.android) {
-            TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.HorizontalScrollView, "android property should be instanceof org.nativescript.widgets.HorizontalScrollView");
-        }
-        else if (app.ios) {
+        if (isIOS) {
             TKUnit.assert(this.testView.ios instanceof UIScrollView, "ios property is UIScrollView");
+        } else  {
+            TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.HorizontalScrollView, "android property should be instanceof org.nativescript.widgets.HorizontalScrollView");
         }
     }
 
@@ -102,28 +100,18 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollToVerticalOffset_no_animation() {
+        TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
         this.waitUntilTestElementLayoutIsValid();
 
-        // NOTE: when automaticallyAdjustsScrollViewInsets is true (which is the default value)
-        // ScrollView verticalOffset is 20.
-        // TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
         this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset");
     }
 
     public test_scrollToVerticalOffset_with_animation() {
+        TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
         this.waitUntilTestElementLayoutIsValid();
 
-        // NOTE: when automaticallyAdjustsScrollViewInsets is true (which is the default value)
-        // ScrollView verticalOffset is 20.
-        // TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
         this.testView.scrollToVerticalOffset(layoutHelper.dp(100), true);
-
-        // No synchronous change.
-        // NOTE: when automaticallyAdjustsScrollViewInsets is true (which is the default value)
-        // ScrollView verticalOffset is 20.
-        // TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
-
         TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.9); });
 
         // The scrolling animation should be finished by now
@@ -158,17 +146,15 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     public test_scrollView_persistsState_vertical() {
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
-        TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset before navigation");
+        const expected = layoutHelper.dp(100);
+        this.testView.scrollToVerticalOffset(expected, false);
+        // TKUnit.assertAreClose(this.testView.verticalOffset, expected, 0.1, "this.testView.verticalOffset before navigation");
 
         helper.navigateWithHistory(() => new Page());
         helper.goBack();
 
-        // Wait for the page to reload.
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1); });
-
         // Check verticalOffset after navigation
-        TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset after navigation");
+        TKUnit.assertAreClose(this.testView.verticalOffset, expected, 0.1, "this.testView.verticalOffset after navigation");
     }
 
     public test_scrollView_persistsState_horizontal() {
@@ -178,16 +164,17 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
 
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset before navigation");
+
         helper.navigateWithHistory(() => new Page());
         helper.goBack();
 
-        // Check verticalOffset after navigation
+        // Check horizontalOffset after navigation
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset after navigation");
     }
 
     public test_scrollView_vertical_raised_scroll_event() {
         var scrollY: number;
-        this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
+        this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
             scrollY = args.scrollY;
         });
 
@@ -202,7 +189,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.orientation = "horizontal";
 
         var scrollX: number;
-        this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
+        this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
             scrollX = args.scrollX;
         });
 
@@ -217,7 +204,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         var scrollY: number;
-        this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
+        this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
             scrollY = args.scrollY;
         });
 
@@ -232,7 +219,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         var scrollX: number;
-        this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
+        this.testView.on(ScrollView.scrollEvent, (args: ScrollEventData) => {
             scrollX = args.scrollX;
         });
 
@@ -249,7 +236,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollBarIndicatorVisible = true;
         this.waitUntilTestElementLayoutIsValid();
 
-        if (app.ios) {
+        if (isIOS) {
             TKUnit.assertEqual(this.testView.ios.showsHorizontalScrollIndicator, true);
         } else {
             TKUnit.assertEqual(this.testView.android.isHorizontalScrollBarEnabled(), true);
@@ -258,7 +245,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollBarIndicatorVisible = false;
         this.waitUntilTestElementLayoutIsValid();
 
-        if (app.ios) {
+        if (isIOS) {
             TKUnit.assertEqual(this.testView.ios.showsHorizontalScrollIndicator, false);
         } else {
             TKUnit.assertEqual(this.testView.android.isHorizontalScrollBarEnabled(), false);
@@ -270,7 +257,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollBarIndicatorVisible = true;
         this.waitUntilTestElementLayoutIsValid();
 
-        if (app.ios) {
+        if (isIOS) {
             TKUnit.assertEqual(this.testView.ios.showsVerticalScrollIndicator, true);
         } else {
             TKUnit.assertEqual(this.testView.android.isVerticalScrollBarEnabled(), true);
@@ -279,7 +266,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollBarIndicatorVisible = false;
         this.waitUntilTestElementLayoutIsValid();
 
-        if (app.ios) {
+        if (isIOS) {
             TKUnit.assertEqual(this.testView.ios.showsVerticalScrollIndicator, false);
         } else {
             TKUnit.assertEqual(this.testView.android.isVerticalScrollBarEnabled(), false);

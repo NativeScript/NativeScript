@@ -479,7 +479,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return curState | newState;
     }
 
-    public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number): void {
+    public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame: boolean = true): void {
         if (!child || child.isCollapsed) {
             return;
         }
@@ -563,7 +563,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             traceWrite(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, traceCategories.Layout);
         }
 
-        child.layout(childLeft, childTop, childRight, childBottom);
+        child.layout(childLeft, childTop, childRight, childBottom, setFrame);
     }
 
     public static measureChild(parent: ViewCommon, child: ViewCommon, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
@@ -571,17 +571,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let measureHeight = 0;
 
         if (child && !child.isCollapsed) {
-            child._updateEffectiveLayoutValues(parent);
 
-            let style = child.style;
-            let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
-            let verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
+            const widthSpec = parent ? parent._currentWidthMeasureSpec : widthMeasureSpec;
+            const heightSpec = parent ? parent._currentHeightMeasureSpec : heightMeasureSpec;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
+            const width = layout.getMeasureSpecSize(widthSpec);
+            const widthMode = layout.getMeasureSpecMode(widthSpec);
+    
+            const height = layout.getMeasureSpecSize(heightSpec);
+            const heightMode = layout.getMeasureSpecMode(heightSpec);
+
+            child._updateEffectiveLayoutValues(width, widthMode, height, heightMode);
+
+            const style = child.style;
+            const horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
+            const verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
+
+            const childWidthMeasureSpec = ViewCommon.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
+            const childHeightMeasureSpec = ViewCommon.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
 
             if (traceEnabled()) {
-                traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
+                traceWrite(`${child.parent} :measureChild: ${child} ${layout.measureSpecToString(childWidthMeasureSpec)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`, traceCategories.Layout);
             }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -752,26 +762,24 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         throw new Error("The View._setValue is obsolete. There is a new property system.");
     }
 
-    _updateEffectiveLayoutValues(parent: ViewDefinition): void {
+    _updateEffectiveLayoutValues(
+        parentWidthMeasureSize: number,
+        parentWidthMeasureMode: number,
+        parentHeightMeasureSize: number,
+        parentHeightMeasureMode: number): void {
         const style = this.style;
 
-        let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
-        let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
-        let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
-        let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
+        const availableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
 
-        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth);
-        this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
-        this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
+        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, availableWidth);
+        this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, availableWidth);
+        this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, availableWidth);
 
-        let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
-        let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
-        let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
-        let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+        const availableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
 
-        this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
-        this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
-        this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
+        this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, availableHeight);
+        this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, availableHeight);
+        this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, availableHeight);
     }
 
     public _setNativeClipToBounds() {
