@@ -524,7 +524,11 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _updateEffectiveLayoutValues(parent: View): void;
+    _updateEffectiveLayoutValues(
+        parentWidthMeasureSize: number,
+        parentWidthMeasureMode: number,
+        parentHeightMeasureSize: number,
+        parentHeightMeasureMode: number): void
     /**
      * @private
      */
@@ -641,6 +645,7 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 
 export namespace ios {
+    export function updateConstraints(controller: UIViewController, owner: View): void;
     export function layoutView(controller: UIViewController, owner: View): void;
     export class UILayoutViewController extends UIViewController {
         public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;

@@ -205,8 +205,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _measureHorizontal(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const widthMode = getMeasureSpecMode(widthMeasureSpec);
         const widthSize = getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = getMeasureSpecMode(widthMeasureSpec);
+        const heightSize = getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = getMeasureSpecMode(heightMeasureSpec);
+
         let childState = 0;
 
         this._flexLines.length = 0;
@@ -231,7 +234,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     continue;
                 }
 
-                child._updateEffectiveLayoutValues(this);
+                child._updateEffectiveLayoutValues(widthSize, widthMode, heightSize, heightMode);
                 let lp = child; // child.style;
                 if (FlexboxLayout.getAlignSelf(child) === "stretch") {
                     flexLine._indicesAlignSelfStretch.push(i);
@@ -321,8 +324,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _measureVertical(widthMeasureSpec, heightMeasureSpec): void {
-        let heightMode = getMeasureSpecMode(heightMeasureSpec);
-        let heightSize = getMeasureSpecSize(heightMeasureSpec);
+        const widthSize = getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = getMeasureSpecMode(widthMeasureSpec);
+        const heightSize = getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = getMeasureSpecMode(heightMeasureSpec);
         let childState = 0;
 
         this._flexLines.length = 0;
@@ -346,7 +351,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 continue;
             }
 
-            child._updateEffectiveLayoutValues(this);
+            child._updateEffectiveLayoutValues(widthSize, widthMode, heightSize, heightMode);
             const lp = child; // .style;
             if (FlexboxLayout.getAlignSelf(child) === "stretch") {
                 flexLine._indicesAlignSelfStretch.push(i);

@@ -1,5 +1,8 @@
 ﻿import { ScrollEventData } from ".";
 import { View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
+// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
+// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
+import * as uiUtils from "tns-core-modules/ui/utils";
 
 export * from "./scroll-view-common";
 
@@ -143,16 +146,41 @@ export class ScrollView extends ScrollViewBase {
         const width = (right - left);
         const height = (bottom - top);
 
-        if (this.orientation === "horizontal") {
-            View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height);
+        let verticalInset: number;
+        const nativeView = this.nativeViewProtected;
+        const inset = nativeView.adjustedContentInset;
+        // Prior iOS 11
+        if (inset === undefined) {
+            verticalInset = -layout.toDevicePixels(nativeView.contentOffset.y);
+            verticalInset += getTabBarHeight(this);
         } else {
-            View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
+            verticalInset = layout.toDevicePixels(inset.bottom + inset.top);
+        }
+
+        if (this.orientation === "horizontal") {
+            View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height - verticalInset);
+        } else {
+            View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height - verticalInset));
         }
     }
 
     public _onOrientationChanged() {
         this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);   
     }
+}
+
+function getTabBarHeight(scrollView: ScrollView): number {
+    let parent = scrollView.parent;
+    while (parent) {
+        const controller = parent.viewController;
+        if (controller instanceof UITabBarController) {
+            return uiUtils.ios.getActualHeight(controller.tabBar);
+        }
+
+        parent = parent.parent;
+    }
+
+    return 0;
 }
 
 ScrollView.prototype.recycleNativeView = "auto";

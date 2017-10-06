@@ -246,7 +246,7 @@ function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
         button.performClick();
     }
     else {
-        const tableView = <UITableView>tabView.ios.viewControllers[0].view;
+        const tableView = <UITableView>tabView.ios.selectedViewController.view.subviews[0];
         const cell = <UITableViewCell>tableView.cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0));
         const btn = <UIButton>cell.contentView.subviews[0];
         btn.sendActionsForControlEvents(UIControlEvents.TouchUpInside);
