@@ -575,8 +575,8 @@ export function test_percent_margin_support() {
     const parentWidth = parentBounds.right - parentBounds.left;
     const parentHeight = parentBounds.bottom - parentBounds.top;
 
-    const marginLeft = Math.round(parentWidth * 0.1);
-    const marginTop = Math.round(parentHeight * 0.1);
+    const marginLeft = isIOS ? Math.round(parentWidth * 0.1) : Math.floor(parentWidth * 0.1);
+    const marginTop = isIOS ? Math.round(parentHeight * 0.1) : Math.floor(parentHeight * 0.1);
 
     let bounds = stackLayout._getCurrentLayoutBounds();
     TKUnit.assertEqual(Math.round(bounds.left), marginLeft, "Stack LEFT position incorrect");
