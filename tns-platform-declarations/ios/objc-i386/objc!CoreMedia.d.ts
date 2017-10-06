@@ -629,6 +629,8 @@ declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData
 
 declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<string>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
+declare function CMVideoFormatDescriptionCreateFromHEVCParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<string>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+
 declare function CMVideoFormatDescriptionGetCleanAperture(videoDesc: any, originIsAtTopLeft: boolean): CGRect;
 
 declare function CMVideoFormatDescriptionGetDimensions(videoDesc: any): CMVideoDimensions;
@@ -636,6 +638,8 @@ declare function CMVideoFormatDescriptionGetDimensions(videoDesc: any): CMVideoD
 declare function CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers(): NSArray<any>;
 
 declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<string>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
+
+declare function CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<string>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMVideoFormatDescriptionGetPresentationDimensions(videoDesc: any, usePixelAspectRatio: boolean, useCleanAperture: boolean): CGSize;
 
@@ -809,6 +813,8 @@ declare var kCMFormatDescriptionExtension_CleanAperture: string;
 
 declare var kCMFormatDescriptionExtension_ColorPrimaries: string;
 
+declare var kCMFormatDescriptionExtension_ContentLightLevelInfo: string;
+
 declare var kCMFormatDescriptionExtension_Depth: string;
 
 declare var kCMFormatDescriptionExtension_FieldCount: string;
@@ -822,6 +828,8 @@ declare var kCMFormatDescriptionExtension_FullRangeVideo: string;
 declare var kCMFormatDescriptionExtension_GammaLevel: string;
 
 declare var kCMFormatDescriptionExtension_ICCProfile: string;
+
+declare var kCMFormatDescriptionExtension_MasteringDisplayColorVolume: string;
 
 declare var kCMFormatDescriptionExtension_OriginalCompressionSettings: string;
 
@@ -879,9 +887,13 @@ declare var kCMFormatDescriptionKey_PixelAspectRatioVerticalSpacing: string;
 
 declare var kCMFormatDescriptionTransferFunction_ITU_R_2020: string;
 
+declare var kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG: string;
+
 declare var kCMFormatDescriptionTransferFunction_ITU_R_709_2: string;
 
 declare var kCMFormatDescriptionTransferFunction_SMPTE_240M_1995: string;
+
+declare var kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ: string;
 
 declare var kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1: string;
 
@@ -896,6 +908,20 @@ declare var kCMFormatDescriptionYCbCrMatrix_ITU_R_601_4: string;
 declare var kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2: string;
 
 declare var kCMFormatDescriptionYCbCrMatrix_SMPTE_240M_1995: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_ConstraintIndicatorFlags: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_LevelIndex: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_ProfileCompatibilityFlags: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_ProfileIndex: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_ProfileSpace: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_TemporalLevel: string;
+
+declare var kCMHEVCTemporalLevelInfoKey_TierFlag: string;
 
 declare var kCMImageDescriptionFlavor_3GPFamily: string;
 
@@ -1187,6 +1213,14 @@ declare var kCMSampleAttachmentKey_DoNotDisplay: string;
 
 declare var kCMSampleAttachmentKey_EarlierDisplayTimesAllowed: string;
 
+declare var kCMSampleAttachmentKey_HEVCStepwiseTemporalSubLayerAccess: string;
+
+declare var kCMSampleAttachmentKey_HEVCSyncSampleNALUnitType: string;
+
+declare var kCMSampleAttachmentKey_HEVCTemporalLevelInfo: string;
+
+declare var kCMSampleAttachmentKey_HEVCTemporalSubLayerAccess: string;
+
 declare var kCMSampleAttachmentKey_HasRedundantCoding: string;
 
 declare var kCMSampleAttachmentKey_IsDependedOnByOthers: string;
@@ -1194,6 +1228,8 @@ declare var kCMSampleAttachmentKey_IsDependedOnByOthers: string;
 declare var kCMSampleAttachmentKey_NotSync: string;
 
 declare var kCMSampleAttachmentKey_PartialSync: string;
+
+declare var kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix: string;
 
 declare var kCMSampleBufferAttachmentKey_DisplayEmptyMediaImmediately: string;
 

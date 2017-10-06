@@ -93,6 +93,8 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 
 	static new(): PKAddPaymentPassRequestConfiguration; // inherited from NSObject
 
+	cardDetails: NSArray<PKLabeledValue>;
+
 	cardholderName: string;
 
 	readonly encryptionScheme: string;
@@ -104,6 +106,8 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 	primaryAccountIdentifier: string;
 
 	primaryAccountSuffix: string;
+
+	requiresFelicaSecureElement: boolean;
 
 	constructor(o: { encryptionScheme: string; });
 
@@ -181,9 +185,34 @@ declare class PKContact extends NSObject {
 	supplementarySubLocality: string;
 }
 
+declare var PKContactFieldEmailAddress: string;
+
+declare var PKContactFieldName: string;
+
+declare var PKContactFieldPhoneNumber: string;
+
+declare var PKContactFieldPhoneticName: string;
+
+declare var PKContactFieldPostalAddress: string;
+
 declare var PKEncryptionSchemeECC_V2: string;
 
 declare var PKEncryptionSchemeRSA_V2: string;
+
+declare class PKLabeledValue extends NSObject {
+
+	static alloc(): PKLabeledValue; // inherited from NSObject
+
+	static new(): PKLabeledValue; // inherited from NSObject
+
+	readonly label: string;
+
+	readonly value: string;
+
+	constructor(o: { label: string; value: string; });
+
+	initWithLabelValue(label: string, value: string): this;
+}
 
 declare const enum PKMerchantCapability {
 
@@ -282,6 +311,8 @@ declare class PKPassLibrary extends NSObject {
 	activatePaymentPassWithActivationDataCompletion(paymentPass: PKPaymentPass, activationData: NSData, completion: (p1: boolean, p2: NSError) => void): void;
 
 	addPassesWithCompletionHandler(passes: NSArray<PKPass>, completion: (p1: PKPassLibraryAddPassesStatus) => void): void;
+
+	canAddFelicaPass(): boolean;
 
 	canAddPaymentPassWithPrimaryAccountIdentifier(primaryAccountIdentifier: string): boolean;
 
@@ -382,15 +413,23 @@ declare class PKPaymentAuthorizationController extends NSObject {
 
 interface PKPaymentAuthorizationControllerDelegate extends NSObjectProtocol {
 
-	paymentAuthorizationControllerDidAuthorizePaymentCompletion(controller: PKPaymentAuthorizationController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationStatus) => void): void;
+	paymentAuthorizationControllerDidAuthorizePaymentCompletion?(controller: PKPaymentAuthorizationController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationStatus) => void): void;
+
+	paymentAuthorizationControllerDidAuthorizePaymentHandler?(controller: PKPaymentAuthorizationController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationResult) => void): void;
 
 	paymentAuthorizationControllerDidFinish(controller: PKPaymentAuthorizationController): void;
 
 	paymentAuthorizationControllerDidSelectPaymentMethodCompletion?(controller: PKPaymentAuthorizationController, paymentMethod: PKPaymentMethod, completion: (p1: NSArray<PKPaymentSummaryItem>) => void): void;
 
+	paymentAuthorizationControllerDidSelectPaymentMethodHandler?(controller: PKPaymentAuthorizationController, paymentMethod: PKPaymentMethod, completion: (p1: PKPaymentRequestPaymentMethodUpdate) => void): void;
+
 	paymentAuthorizationControllerDidSelectShippingContactCompletion?(controller: PKPaymentAuthorizationController, contact: PKContact, completion: (p1: PKPaymentAuthorizationStatus, p2: NSArray<PKShippingMethod>, p3: NSArray<PKPaymentSummaryItem>) => void): void;
 
+	paymentAuthorizationControllerDidSelectShippingContactHandler?(controller: PKPaymentAuthorizationController, contact: PKContact, completion: (p1: PKPaymentRequestShippingContactUpdate) => void): void;
+
 	paymentAuthorizationControllerDidSelectShippingMethodCompletion?(controller: PKPaymentAuthorizationController, shippingMethod: PKShippingMethod, completion: (p1: PKPaymentAuthorizationStatus, p2: NSArray<PKPaymentSummaryItem>) => void): void;
+
+	paymentAuthorizationControllerDidSelectShippingMethodHandler?(controller: PKPaymentAuthorizationController, shippingMethod: PKShippingMethod, completion: (p1: PKPaymentRequestShippingMethodUpdate) => void): void;
 
 	paymentAuthorizationControllerWillAuthorizePayment?(controller: PKPaymentAuthorizationController): void;
 }
@@ -398,6 +437,21 @@ declare var PKPaymentAuthorizationControllerDelegate: {
 
 	prototype: PKPaymentAuthorizationControllerDelegate;
 };
+
+declare class PKPaymentAuthorizationResult extends NSObject {
+
+	static alloc(): PKPaymentAuthorizationResult; // inherited from NSObject
+
+	static new(): PKPaymentAuthorizationResult; // inherited from NSObject
+
+	errors: NSArray<NSError>;
+
+	status: PKPaymentAuthorizationStatus;
+
+	constructor(o: { status: PKPaymentAuthorizationStatus; errors: NSArray<NSError>; });
+
+	initWithStatusErrors(status: PKPaymentAuthorizationStatus, errors: NSArray<NSError>): this;
+}
 
 declare const enum PKPaymentAuthorizationStatus {
 
@@ -439,17 +493,25 @@ declare class PKPaymentAuthorizationViewController extends UIViewController {
 
 interface PKPaymentAuthorizationViewControllerDelegate extends NSObjectProtocol {
 
-	paymentAuthorizationViewControllerDidAuthorizePaymentCompletion(controller: PKPaymentAuthorizationViewController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationStatus) => void): void;
+	paymentAuthorizationViewControllerDidAuthorizePaymentCompletion?(controller: PKPaymentAuthorizationViewController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationStatus) => void): void;
+
+	paymentAuthorizationViewControllerDidAuthorizePaymentHandler?(controller: PKPaymentAuthorizationViewController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationResult) => void): void;
 
 	paymentAuthorizationViewControllerDidFinish(controller: PKPaymentAuthorizationViewController): void;
 
 	paymentAuthorizationViewControllerDidSelectPaymentMethodCompletion?(controller: PKPaymentAuthorizationViewController, paymentMethod: PKPaymentMethod, completion: (p1: NSArray<PKPaymentSummaryItem>) => void): void;
 
+	paymentAuthorizationViewControllerDidSelectPaymentMethodHandler?(controller: PKPaymentAuthorizationViewController, paymentMethod: PKPaymentMethod, completion: (p1: PKPaymentRequestPaymentMethodUpdate) => void): void;
+
 	paymentAuthorizationViewControllerDidSelectShippingAddressCompletion?(controller: PKPaymentAuthorizationViewController, address: any, completion: (p1: PKPaymentAuthorizationStatus, p2: NSArray<PKShippingMethod>, p3: NSArray<PKPaymentSummaryItem>) => void): void;
 
 	paymentAuthorizationViewControllerDidSelectShippingContactCompletion?(controller: PKPaymentAuthorizationViewController, contact: PKContact, completion: (p1: PKPaymentAuthorizationStatus, p2: NSArray<PKShippingMethod>, p3: NSArray<PKPaymentSummaryItem>) => void): void;
 
+	paymentAuthorizationViewControllerDidSelectShippingContactHandler?(controller: PKPaymentAuthorizationViewController, contact: PKContact, completion: (p1: PKPaymentRequestShippingContactUpdate) => void): void;
+
 	paymentAuthorizationViewControllerDidSelectShippingMethodCompletion?(controller: PKPaymentAuthorizationViewController, shippingMethod: PKShippingMethod, completion: (p1: PKPaymentAuthorizationStatus, p2: NSArray<PKPaymentSummaryItem>) => void): void;
+
+	paymentAuthorizationViewControllerDidSelectShippingMethodHandler?(controller: PKPaymentAuthorizationViewController, shippingMethod: PKShippingMethod, completion: (p1: PKPaymentRequestShippingMethodUpdate) => void): void;
 
 	paymentAuthorizationViewControllerWillAuthorizePayment?(controller: PKPaymentAuthorizationViewController): void;
 }
@@ -502,8 +564,27 @@ declare const enum PKPaymentButtonType {
 
 	SetUp = 2,
 
-	InStore = 3
+	InStore = 3,
+
+	Donate = 4
 }
+
+declare const enum PKPaymentErrorCode {
+
+	UnknownError = -1,
+
+	ShippingContactInvalidError = 1,
+
+	BillingContactInvalidError = 2,
+
+	ShippingAddressUnserviceableError = 3
+}
+
+declare var PKPaymentErrorContactFieldUserInfoKey: string;
+
+declare var PKPaymentErrorDomain: string;
+
+declare var PKPaymentErrorPostalAddressUserInfoKey: string;
 
 declare class PKPaymentMethod extends NSObject {
 
@@ -535,15 +616,27 @@ declare const enum PKPaymentMethodType {
 
 declare var PKPaymentNetworkAmex: string;
 
+declare var PKPaymentNetworkCarteBancaire: string;
+
+declare var PKPaymentNetworkCarteBancaires: string;
+
 declare var PKPaymentNetworkChinaUnionPay: string;
 
 declare var PKPaymentNetworkDiscover: string;
 
+declare var PKPaymentNetworkIDCredit: string;
+
 declare var PKPaymentNetworkInterac: string;
+
+declare var PKPaymentNetworkJCB: string;
 
 declare var PKPaymentNetworkMasterCard: string;
 
 declare var PKPaymentNetworkPrivateLabel: string;
+
+declare var PKPaymentNetworkQuicPay: string;
+
+declare var PKPaymentNetworkSuica: string;
 
 declare var PKPaymentNetworkVisa: string;
 
@@ -585,6 +678,14 @@ declare class PKPaymentRequest extends NSObject {
 
 	static new(): PKPaymentRequest; // inherited from NSObject
 
+	static paymentBillingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string): NSError;
+
+	static paymentContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string): NSError;
+
+	static paymentShippingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string): NSError;
+
+	static paymentShippingAddressUnserviceableErrorWithLocalizedDescription(localizedDescription: string): NSError;
+
 	applicationData: NSData;
 
 	billingAddress: any;
@@ -603,7 +704,11 @@ declare class PKPaymentRequest extends NSObject {
 
 	requiredBillingAddressFields: PKAddressField;
 
+	requiredBillingContactFields: NSSet<string>;
+
 	requiredShippingAddressFields: PKAddressField;
+
+	requiredShippingContactFields: NSSet<string>;
 
 	shippingAddress: any;
 
@@ -613,7 +718,53 @@ declare class PKPaymentRequest extends NSObject {
 
 	shippingType: PKShippingType;
 
+	supportedCountries: NSSet<string>;
+
 	supportedNetworks: NSArray<string>;
+}
+
+declare class PKPaymentRequestPaymentMethodUpdate extends PKPaymentRequestUpdate {
+
+	static alloc(): PKPaymentRequestPaymentMethodUpdate; // inherited from NSObject
+
+	static new(): PKPaymentRequestPaymentMethodUpdate; // inherited from NSObject
+}
+
+declare class PKPaymentRequestShippingContactUpdate extends PKPaymentRequestUpdate {
+
+	static alloc(): PKPaymentRequestShippingContactUpdate; // inherited from NSObject
+
+	static new(): PKPaymentRequestShippingContactUpdate; // inherited from NSObject
+
+	errors: NSArray<NSError>;
+
+	shippingMethods: NSArray<PKShippingMethod>;
+
+	constructor(o: { errors: NSArray<NSError>; paymentSummaryItems: NSArray<PKPaymentSummaryItem>; shippingMethods: NSArray<PKShippingMethod>; });
+
+	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError>, paymentSummaryItems: NSArray<PKPaymentSummaryItem>, shippingMethods: NSArray<PKShippingMethod>): this;
+}
+
+declare class PKPaymentRequestShippingMethodUpdate extends PKPaymentRequestUpdate {
+
+	static alloc(): PKPaymentRequestShippingMethodUpdate; // inherited from NSObject
+
+	static new(): PKPaymentRequestShippingMethodUpdate; // inherited from NSObject
+}
+
+declare class PKPaymentRequestUpdate extends NSObject {
+
+	static alloc(): PKPaymentRequestUpdate; // inherited from NSObject
+
+	static new(): PKPaymentRequestUpdate; // inherited from NSObject
+
+	paymentSummaryItems: NSArray<PKPaymentSummaryItem>;
+
+	status: PKPaymentAuthorizationStatus;
+
+	constructor(o: { paymentSummaryItems: NSArray<PKPaymentSummaryItem>; });
+
+	initWithPaymentSummaryItems(paymentSummaryItems: NSArray<PKPaymentSummaryItem>): this;
 }
 
 declare class PKPaymentSummaryItem extends NSObject {
@@ -681,4 +832,25 @@ declare const enum PKShippingType {
 	StorePickup = 2,
 
 	ServicePickup = 3
+}
+
+declare class PKSuicaPassProperties extends NSObject {
+
+	static alloc(): PKSuicaPassProperties; // inherited from NSObject
+
+	static new(): PKSuicaPassProperties; // inherited from NSObject
+
+	static passPropertiesForPass(pass: PKPass): PKSuicaPassProperties;
+
+	readonly blacklisted: boolean;
+
+	readonly greenCarTicketUsed: boolean;
+
+	readonly inShinkansenStation: boolean;
+
+	readonly inStation: boolean;
+
+	readonly transitBalance: NSDecimalNumber;
+
+	readonly transitBalanceCurrencyCode: string;
 }

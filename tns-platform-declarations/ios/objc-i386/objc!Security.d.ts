@@ -32,6 +32,8 @@ declare const enum SSLConnectionType {
 
 declare function SSLContextGetTypeID(): number;
 
+declare function SSLCopyALPNProtocols(context: any, protocols: interop.Pointer | interop.Reference<NSArray<any>>): number;
+
 declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any>): number;
@@ -94,6 +96,10 @@ declare const enum SSLProtocol {
 
 	kDTLSProtocol1 = 9,
 
+	kTLSProtocol13 = 10,
+
+	kTLSProtocolMaxSupported = 999,
+
 	kSSLProtocol2 = 1,
 
 	kSSLProtocol3Only = 3,
@@ -132,7 +138,9 @@ declare const enum SSLSessionOption {
 
 	kSSLSessionOptionBreakOnClientHello = 7,
 
-	kSSLSessionOptionAllowRenegotiation = 8
+	kSSLSessionOptionAllowRenegotiation = 8,
+
+	kSSLSessionOptionEnableSessionTickets = 9
 }
 
 declare const enum SSLSessionState {
@@ -148,6 +156,8 @@ declare const enum SSLSessionState {
 	kSSLAborted = 4
 }
 
+declare function SSLSetALPNProtocols(context: any, protocols: NSArray<any>): number;
+
 declare function SSLSetCertificate(context: any, certRefs: NSArray<any>): number;
 
 declare function SSLSetClientSideAuthenticate(context: any, auth: SSLAuthenticate): number;
@@ -160,9 +170,13 @@ declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Pointer | i
 
 declare function SSLSetEncryptionCertificate(context: any, certRefs: NSArray<any>): number;
 
+declare function SSLSetError(context: any, status: number): number;
+
 declare function SSLSetIOFuncs(context: any, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>): number;
 
 declare function SSLSetMaxDatagramRecordSize(dtlsContext: any, maxSize: number): number;
+
+declare function SSLSetOCSPResponse(context: any, response: NSData): number;
 
 declare function SSLSetPeerDomainName(context: any, peerName: string, peerNameLen: number): number;
 
@@ -175,6 +189,8 @@ declare function SSLSetProtocolVersionMin(context: any, minVersion: SSLProtocol)
 declare function SSLSetSessionConfig(context: any, config: string): number;
 
 declare function SSLSetSessionOption(context: any, option: SSLSessionOption, value: boolean): number;
+
+declare function SSLSetSessionTicketsEnabled(context: any, enabled: boolean): number;
 
 declare function SSLWrite(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
@@ -273,7 +289,21 @@ declare function SecAccessControlGetTypeID(): number;
 
 declare function SecAddSharedWebCredential(fqdn: string, account: string, password: string, completionHandler: (p1: NSError) => void): void;
 
+declare function SecCertificateCopyCommonName(certificate: any, commonName: interop.Pointer | interop.Reference<string>): number;
+
 declare function SecCertificateCopyData(certificate: any): NSData;
+
+declare function SecCertificateCopyEmailAddresses(certificate: any, emailAddresses: interop.Pointer | interop.Reference<NSArray<any>>): number;
+
+declare function SecCertificateCopyNormalizedIssuerSequence(certificate: any): NSData;
+
+declare function SecCertificateCopyNormalizedSubjectSequence(certificate: any): NSData;
+
+declare function SecCertificateCopyPublicKey(certificate: any): any;
+
+declare function SecCertificateCopySerialNumber(certificate: any): NSData;
+
+declare function SecCertificateCopySerialNumberData(certificate: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
 declare function SecCertificateCopySubjectSummary(certificate: any): string;
 
@@ -385,7 +415,7 @@ declare function SecPolicyCreateWithProperties(policyIdentifier: any, properties
 
 declare function SecPolicyGetTypeID(): number;
 
-declare function SecRandomCopyBytes(rnd: interop.Pointer | interop.Reference<any>, count: number, bytes: string): number;
+declare function SecRandomCopyBytes(rnd: interop.Pointer | interop.Reference<any>, count: number, bytes: interop.Pointer | interop.Reference<any>): number;
 
 declare function SecRequestSharedWebCredential(fqdn: string, account: string, completionHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -451,6 +481,16 @@ declare function SecTrustSetOCSPResponse(trust: any, responseData: any): number;
 declare function SecTrustSetPolicies(trust: any, policies: any): number;
 
 declare function SecTrustSetVerifyDate(trust: any, verifyDate: Date): number;
+
+declare const TLS_AES_128_CCM_8_SHA256: number;
+
+declare const TLS_AES_128_CCM_SHA256: number;
+
+declare const TLS_AES_128_GCM_SHA256: number;
+
+declare const TLS_AES_256_GCM_SHA384: number;
+
+declare const TLS_CHACHA20_POLY1305_SHA256: number;
 
 declare const TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA: number;
 
@@ -560,6 +600,8 @@ declare const TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384: number;
 
 declare const TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: number;
 
+declare const TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256: number;
+
 declare const TLS_ECDHE_ECDSA_WITH_NULL_SHA: number;
 
 declare const TLS_ECDHE_ECDSA_WITH_RC4_128_SHA: number;
@@ -577,6 +619,8 @@ declare const TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA: number;
 declare const TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384: number;
 
 declare const TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384: number;
+
+declare const TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256: number;
 
 declare const TLS_ECDHE_RSA_WITH_NULL_SHA: number;
 
@@ -804,43 +848,765 @@ declare const errSSLWouldBlock: number;
 
 declare const errSSLXCertChainInvalid: number;
 
+declare const errSecACLAddFailed: number;
+
+declare const errSecACLChangeFailed: number;
+
+declare const errSecACLDeleteFailed: number;
+
+declare const errSecACLNotSimple: number;
+
+declare const errSecACLReplaceFailed: number;
+
+declare const errSecAddinLoadFailed: number;
+
+declare const errSecAddinUnloadFailed: number;
+
+declare const errSecAlgorithmMismatch: number;
+
 declare const errSecAllocate: number;
+
+declare const errSecAlreadyLoggedIn: number;
+
+declare const errSecAppleAddAppACLSubject: number;
+
+declare const errSecAppleInvalidKeyEndDate: number;
+
+declare const errSecAppleInvalidKeyStartDate: number;
+
+declare const errSecApplePublicKeyIncomplete: number;
+
+declare const errSecAppleSSLv2Rollback: number;
+
+declare const errSecAppleSignatureMismatch: number;
+
+declare const errSecAttachHandleBusy: number;
+
+declare const errSecAttributeNotInContext: number;
 
 declare const errSecAuthFailed: number;
 
 declare const errSecBadReq: number;
 
+declare const errSecBlockSizeMismatch: number;
+
+declare const errSecBufferTooSmall: number;
+
+declare const errSecCRLAlreadySigned: number;
+
+declare const errSecCRLBadURI: number;
+
+declare const errSecCRLExpired: number;
+
+declare const errSecCRLNotFound: number;
+
+declare const errSecCRLNotTrusted: number;
+
+declare const errSecCRLNotValidYet: number;
+
+declare const errSecCRLPolicyFailed: number;
+
+declare const errSecCRLServerDown: number;
+
+declare const errSecCallbackFailed: number;
+
+declare const errSecCertificateCannotOperate: number;
+
+declare const errSecCertificateExpired: number;
+
+declare const errSecCertificateNotValidYet: number;
+
+declare const errSecCertificateRevoked: number;
+
+declare const errSecCertificateSuspended: number;
+
+declare const errSecCodeSigningBadCertChainLength: number;
+
+declare const errSecCodeSigningBadPathLengthConstraint: number;
+
+declare const errSecCodeSigningDevelopment: number;
+
+declare const errSecCodeSigningNoBasicConstraints: number;
+
+declare const errSecCodeSigningNoExtendedKeyUsage: number;
+
+declare const errSecConversionError: number;
+
+declare const errSecCoreFoundationUnknown: number;
+
+declare const errSecCreateChainFailed: number;
+
+declare const errSecDataNotAvailable: number;
+
+declare const errSecDataNotModifiable: number;
+
+declare const errSecDataTooLarge: number;
+
+declare const errSecDatabaseLocked: number;
+
+declare const errSecDatastoreIsOpen: number;
+
 declare const errSecDecode: number;
+
+declare const errSecDeviceError: number;
+
+declare const errSecDeviceFailed: number;
+
+declare const errSecDeviceReset: number;
+
+declare const errSecDeviceVerifyFailed: number;
+
+declare const errSecDiskFull: number;
+
+declare const errSecDskFull: number;
+
+declare const errSecDuplicateCallback: number;
 
 declare const errSecDuplicateItem: number;
 
+declare const errSecDuplicateKeychain: number;
+
+declare const errSecEMMLoadFailed: number;
+
+declare const errSecEMMUnloadFailed: number;
+
+declare const errSecEndOfData: number;
+
+declare const errSecEventNotificationCallbackNotFound: number;
+
+declare const errSecExtendedKeyUsageNotCritical: number;
+
+declare const errSecFieldSpecifiedMultiple: number;
+
+declare const errSecFileTooBig: number;
+
+declare const errSecFunctionFailed: number;
+
+declare const errSecFunctionIntegrityFail: number;
+
+declare const errSecHostNameMismatch: number;
+
+declare const errSecIDPFailure: number;
+
 declare const errSecIO: number;
+
+declare const errSecInDarkWake: number;
+
+declare const errSecIncompatibleDatabaseBlob: number;
+
+declare const errSecIncompatibleFieldFormat: number;
+
+declare const errSecIncompatibleKeyBlob: number;
+
+declare const errSecIncompatibleVersion: number;
+
+declare const errSecIncompleteCertRevocationCheck: number;
+
+declare const errSecInputLengthError: number;
+
+declare const errSecInsufficientClientID: number;
+
+declare const errSecInsufficientCredentials: number;
 
 declare const errSecInteractionNotAllowed: number;
 
+declare const errSecInteractionRequired: number;
+
 declare const errSecInternalComponent: number;
+
+declare const errSecInternalError: number;
+
+declare const errSecInvaldCRLAuthority: number;
+
+declare const errSecInvalidACL: number;
+
+declare const errSecInvalidAccessCredentials: number;
+
+declare const errSecInvalidAccessRequest: number;
+
+declare const errSecInvalidAction: number;
+
+declare const errSecInvalidAddinFunctionTable: number;
+
+declare const errSecInvalidAlgorithm: number;
+
+declare const errSecInvalidAlgorithmParms: number;
+
+declare const errSecInvalidAttributeAccessCredentials: number;
+
+declare const errSecInvalidAttributeBase: number;
+
+declare const errSecInvalidAttributeBlockSize: number;
+
+declare const errSecInvalidAttributeDLDBHandle: number;
+
+declare const errSecInvalidAttributeEffectiveBits: number;
+
+declare const errSecInvalidAttributeEndDate: number;
+
+declare const errSecInvalidAttributeInitVector: number;
+
+declare const errSecInvalidAttributeIterationCount: number;
+
+declare const errSecInvalidAttributeKey: number;
+
+declare const errSecInvalidAttributeKeyLength: number;
+
+declare const errSecInvalidAttributeKeyType: number;
+
+declare const errSecInvalidAttributeLabel: number;
+
+declare const errSecInvalidAttributeMode: number;
+
+declare const errSecInvalidAttributeOutputSize: number;
+
+declare const errSecInvalidAttributePadding: number;
+
+declare const errSecInvalidAttributePassphrase: number;
+
+declare const errSecInvalidAttributePrime: number;
+
+declare const errSecInvalidAttributePrivateKeyFormat: number;
+
+declare const errSecInvalidAttributePublicKeyFormat: number;
+
+declare const errSecInvalidAttributeRandom: number;
+
+declare const errSecInvalidAttributeRounds: number;
+
+declare const errSecInvalidAttributeSalt: number;
+
+declare const errSecInvalidAttributeSeed: number;
+
+declare const errSecInvalidAttributeStartDate: number;
+
+declare const errSecInvalidAttributeSubprime: number;
+
+declare const errSecInvalidAttributeSymmetricKeyFormat: number;
+
+declare const errSecInvalidAttributeVersion: number;
+
+declare const errSecInvalidAttributeWrappedKeyFormat: number;
+
+declare const errSecInvalidAuthority: number;
+
+declare const errSecInvalidAuthorityKeyID: number;
+
+declare const errSecInvalidBaseACLs: number;
+
+declare const errSecInvalidBundleInfo: number;
+
+declare const errSecInvalidCRL: number;
+
+declare const errSecInvalidCRLEncoding: number;
+
+declare const errSecInvalidCRLGroup: number;
+
+declare const errSecInvalidCRLIndex: number;
+
+declare const errSecInvalidCRLType: number;
+
+declare const errSecInvalidCallback: number;
+
+declare const errSecInvalidCertAuthority: number;
+
+declare const errSecInvalidCertificateGroup: number;
+
+declare const errSecInvalidCertificateRef: number;
+
+declare const errSecInvalidContext: number;
+
+declare const errSecInvalidDBList: number;
+
+declare const errSecInvalidDBLocation: number;
+
+declare const errSecInvalidData: number;
+
+declare const errSecInvalidDatabaseBlob: number;
+
+declare const errSecInvalidDigestAlgorithm: number;
+
+declare const errSecInvalidEncoding: number;
+
+declare const errSecInvalidExtendedKeyUsage: number;
+
+declare const errSecInvalidFormType: number;
+
+declare const errSecInvalidGUID: number;
+
+declare const errSecInvalidHandle: number;
+
+declare const errSecInvalidHandleUsage: number;
+
+declare const errSecInvalidID: number;
+
+declare const errSecInvalidIDLinkage: number;
+
+declare const errSecInvalidIdentifier: number;
+
+declare const errSecInvalidIndex: number;
+
+declare const errSecInvalidIndexInfo: number;
+
+declare const errSecInvalidInputVector: number;
+
+declare const errSecInvalidItemRef: number;
+
+declare const errSecInvalidKeyAttributeMask: number;
+
+declare const errSecInvalidKeyBlob: number;
+
+declare const errSecInvalidKeyFormat: number;
+
+declare const errSecInvalidKeyHierarchy: number;
+
+declare const errSecInvalidKeyLabel: number;
+
+declare const errSecInvalidKeyRef: number;
+
+declare const errSecInvalidKeyUsageForPolicy: number;
+
+declare const errSecInvalidKeyUsageMask: number;
+
+declare const errSecInvalidKeychain: number;
+
+declare const errSecInvalidLoginName: number;
+
+declare const errSecInvalidModifyMode: number;
+
+declare const errSecInvalidName: number;
+
+declare const errSecInvalidNetworkAddress: number;
+
+declare const errSecInvalidNewOwner: number;
+
+declare const errSecInvalidNumberOfFields: number;
+
+declare const errSecInvalidOutputVector: number;
+
+declare const errSecInvalidOwnerEdit: number;
+
+declare const errSecInvalidPVC: number;
+
+declare const errSecInvalidParsingModule: number;
+
+declare const errSecInvalidPassthroughID: number;
+
+declare const errSecInvalidPasswordRef: number;
+
+declare const errSecInvalidPointer: number;
+
+declare const errSecInvalidPolicyIdentifiers: number;
+
+declare const errSecInvalidPrefsDomain: number;
+
+declare const errSecInvalidQuery: number;
+
+declare const errSecInvalidReason: number;
+
+declare const errSecInvalidRecord: number;
+
+declare const errSecInvalidRequestInputs: number;
+
+declare const errSecInvalidRequestor: number;
+
+declare const errSecInvalidResponseVector: number;
+
+declare const errSecInvalidRoot: number;
+
+declare const errSecInvalidSampleValue: number;
+
+declare const errSecInvalidScope: number;
+
+declare const errSecInvalidSearchRef: number;
+
+declare const errSecInvalidServiceMask: number;
+
+declare const errSecInvalidSignature: number;
+
+declare const errSecInvalidStopOnPolicy: number;
+
+declare const errSecInvalidSubServiceID: number;
+
+declare const errSecInvalidSubjectKeyID: number;
+
+declare const errSecInvalidSubjectName: number;
+
+declare const errSecInvalidTimeString: number;
+
+declare const errSecInvalidTrustSetting: number;
+
+declare const errSecInvalidTrustSettings: number;
+
+declare const errSecInvalidTuple: number;
+
+declare const errSecInvalidTupleCredendtials: number;
+
+declare const errSecInvalidTupleGroup: number;
+
+declare const errSecInvalidValidityPeriod: number;
+
+declare const errSecInvalidValue: number;
 
 declare const errSecItemNotFound: number;
 
+declare const errSecKeyBlobTypeIncorrect: number;
+
+declare const errSecKeyHeaderInconsistent: number;
+
+declare const errSecKeyIsSensitive: number;
+
+declare const errSecKeySizeNotAllowed: number;
+
+declare const errSecKeyUsageIncorrect: number;
+
+declare const errSecLibraryReferenceNotFound: number;
+
+declare const errSecMDSError: number;
+
+declare const errSecMemoryError: number;
+
+declare const errSecMissingAlgorithmParms: number;
+
+declare const errSecMissingAttributeAccessCredentials: number;
+
+declare const errSecMissingAttributeBase: number;
+
+declare const errSecMissingAttributeBlockSize: number;
+
+declare const errSecMissingAttributeDLDBHandle: number;
+
+declare const errSecMissingAttributeEffectiveBits: number;
+
+declare const errSecMissingAttributeEndDate: number;
+
+declare const errSecMissingAttributeInitVector: number;
+
+declare const errSecMissingAttributeIterationCount: number;
+
+declare const errSecMissingAttributeKey: number;
+
+declare const errSecMissingAttributeKeyLength: number;
+
+declare const errSecMissingAttributeKeyType: number;
+
+declare const errSecMissingAttributeLabel: number;
+
+declare const errSecMissingAttributeMode: number;
+
+declare const errSecMissingAttributeOutputSize: number;
+
+declare const errSecMissingAttributePadding: number;
+
+declare const errSecMissingAttributePassphrase: number;
+
+declare const errSecMissingAttributePrime: number;
+
+declare const errSecMissingAttributePrivateKeyFormat: number;
+
+declare const errSecMissingAttributePublicKeyFormat: number;
+
+declare const errSecMissingAttributeRandom: number;
+
+declare const errSecMissingAttributeRounds: number;
+
+declare const errSecMissingAttributeSalt: number;
+
+declare const errSecMissingAttributeSeed: number;
+
+declare const errSecMissingAttributeStartDate: number;
+
+declare const errSecMissingAttributeSubprime: number;
+
+declare const errSecMissingAttributeSymmetricKeyFormat: number;
+
+declare const errSecMissingAttributeVersion: number;
+
+declare const errSecMissingAttributeWrappedKeyFormat: number;
+
+declare const errSecMissingEntitlement: number;
+
+declare const errSecMissingRequiredExtension: number;
+
+declare const errSecMissingValue: number;
+
+declare const errSecMobileMeCSRVerifyFailure: number;
+
+declare const errSecMobileMeFailedConsistencyCheck: number;
+
+declare const errSecMobileMeNoRequestPending: number;
+
+declare const errSecMobileMeRequestAlreadyPending: number;
+
+declare const errSecMobileMeRequestQueued: number;
+
+declare const errSecMobileMeRequestRedirected: number;
+
+declare const errSecMobileMeServerAlreadyExists: number;
+
+declare const errSecMobileMeServerError: number;
+
+declare const errSecMobileMeServerNotAvailable: number;
+
+declare const errSecMobileMeServerServiceErr: number;
+
+declare const errSecModuleManagerInitializeFailed: number;
+
+declare const errSecModuleManagerNotFound: number;
+
+declare const errSecModuleManifestVerifyFailed: number;
+
+declare const errSecModuleNotLoaded: number;
+
+declare const errSecMultiplePrivKeys: number;
+
+declare const errSecMultipleValuesUnsupported: number;
+
+declare const errSecNetworkFailure: number;
+
+declare const errSecNoAccessForItem: number;
+
+declare const errSecNoBasicConstraints: number;
+
+declare const errSecNoBasicConstraintsCA: number;
+
+declare const errSecNoCertificateModule: number;
+
+declare const errSecNoDefaultAuthority: number;
+
+declare const errSecNoDefaultKeychain: number;
+
+declare const errSecNoFieldValues: number;
+
+declare const errSecNoPolicyModule: number;
+
+declare const errSecNoStorageModule: number;
+
+declare const errSecNoSuchAttr: number;
+
+declare const errSecNoSuchClass: number;
+
+declare const errSecNoSuchKeychain: number;
+
+declare const errSecNoTrustSettings: number;
+
 declare const errSecNotAvailable: number;
+
+declare const errSecNotInitialized: number;
+
+declare const errSecNotLoggedIn: number;
+
+declare const errSecNotSigner: number;
+
+declare const errSecNotTrusted: number;
+
+declare const errSecOCSPBadRequest: number;
+
+declare const errSecOCSPBadResponse: number;
+
+declare const errSecOCSPNoSigner: number;
+
+declare const errSecOCSPNotTrustedToAnchor: number;
+
+declare const errSecOCSPResponderInternalError: number;
+
+declare const errSecOCSPResponderMalformedReq: number;
+
+declare const errSecOCSPResponderSignatureRequired: number;
+
+declare const errSecOCSPResponderTryLater: number;
+
+declare const errSecOCSPResponderUnauthorized: number;
+
+declare const errSecOCSPResponseNonceMismatch: number;
+
+declare const errSecOCSPSignatureError: number;
+
+declare const errSecOCSPStatusUnrecognized: number;
+
+declare const errSecOCSPUnavailable: number;
 
 declare const errSecOpWr: number;
 
+declare const errSecOutputLengthError: number;
+
+declare const errSecPVCAlreadyConfigured: number;
+
+declare const errSecPVCReferentNotFound: number;
+
 declare const errSecParam: number;
+
+declare const errSecPassphraseRequired: number;
+
+declare const errSecPathLengthConstraintExceeded: number;
+
+declare const errSecPkcs12VerifyFailure: number;
+
+declare const errSecPolicyNotFound: number;
+
+declare const errSecPrivilegeNotGranted: number;
+
+declare const errSecPrivilegeNotSupported: number;
+
+declare const errSecPublicKeyInconsistent: number;
+
+declare const errSecQuerySizeUnknown: number;
+
+declare const errSecQuotaExceeded: number;
+
+declare const errSecReadOnly: number;
+
+declare const errSecReadOnlyAttr: number;
+
+declare const errSecRecordModified: number;
+
+declare const errSecRejectedForm: number;
+
+declare const errSecRequestDescriptor: number;
+
+declare const errSecRequestLost: number;
+
+declare const errSecRequestRejected: number;
+
+declare const errSecResourceSignBadCertChainLength: number;
+
+declare const errSecResourceSignBadExtKeyUsage: number;
+
+declare const errSecSMIMEBadExtendedKeyUsage: number;
+
+declare const errSecSMIMEBadKeyUsage: number;
+
+declare const errSecSMIMEEmailAddressesNotFound: number;
+
+declare const errSecSMIMEKeyUsageNotCritical: number;
+
+declare const errSecSMIMENoEmailAddress: number;
+
+declare const errSecSMIMESubjAltNameNotCritical: number;
+
+declare const errSecSSLBadExtendedKeyUsage: number;
+
+declare const errSecSelfCheckFailed: number;
+
+declare const errSecServiceNotAvailable: number;
+
+declare const errSecSigningTimeMissing: number;
+
+declare const errSecStagedOperationInProgress: number;
+
+declare const errSecStagedOperationNotStarted: number;
 
 declare const errSecSuccess: number;
 
+declare const errSecTagNotFound: number;
+
+declare const errSecTimestampAddInfoNotAvailable: number;
+
+declare const errSecTimestampBadAlg: number;
+
+declare const errSecTimestampBadDataFormat: number;
+
+declare const errSecTimestampBadRequest: number;
+
+declare const errSecTimestampInvalid: number;
+
+declare const errSecTimestampMissing: number;
+
+declare const errSecTimestampNotTrusted: number;
+
+declare const errSecTimestampRejection: number;
+
+declare const errSecTimestampRevocationNotification: number;
+
+declare const errSecTimestampRevocationWarning: number;
+
+declare const errSecTimestampServiceNotAvailable: number;
+
+declare const errSecTimestampSystemFailure: number;
+
+declare const errSecTimestampTimeNotAvailable: number;
+
+declare const errSecTimestampUnacceptedExtension: number;
+
+declare const errSecTimestampUnacceptedPolicy: number;
+
+declare const errSecTimestampWaiting: number;
+
+declare const errSecTrustNotAvailable: number;
+
+declare const errSecTrustSettingDeny: number;
+
 declare const errSecUnimplemented: number;
+
+declare const errSecUnknownCRLExtension: number;
+
+declare const errSecUnknownCertExtension: number;
+
+declare const errSecUnknownCriticalExtensionFlag: number;
+
+declare const errSecUnknownFormat: number;
+
+declare const errSecUnknownQualifiedCertStatement: number;
+
+declare const errSecUnknownTag: number;
+
+declare const errSecUnsupportedAddressType: number;
+
+declare const errSecUnsupportedFieldFormat: number;
+
+declare const errSecUnsupportedFormat: number;
+
+declare const errSecUnsupportedIndexInfo: number;
+
+declare const errSecUnsupportedKeyAttributeMask: number;
+
+declare const errSecUnsupportedKeyFormat: number;
+
+declare const errSecUnsupportedKeyLabel: number;
+
+declare const errSecUnsupportedKeySize: number;
+
+declare const errSecUnsupportedKeyUsageMask: number;
+
+declare const errSecUnsupportedLocality: number;
+
+declare const errSecUnsupportedNumAttributes: number;
+
+declare const errSecUnsupportedNumIndexes: number;
+
+declare const errSecUnsupportedNumRecordTypes: number;
+
+declare const errSecUnsupportedNumSelectionPreds: number;
+
+declare const errSecUnsupportedOperator: number;
+
+declare const errSecUnsupportedQueryLimits: number;
+
+declare const errSecUnsupportedService: number;
+
+declare const errSecUnsupportedVectorOfBuffers: number;
 
 declare const errSecUserCanceled: number;
 
+declare const errSecVerificationFailure: number;
+
+declare const errSecVerifyActionFailed: number;
+
 declare const errSecVerifyFailed: number;
+
+declare const errSecWrPerm: number;
+
+declare const errSecWrongSecVersion: number;
+
+declare var kSSLSessionConfig_3DES_fallback: string;
 
 declare var kSSLSessionConfig_ATSv1: string;
 
 declare var kSSLSessionConfig_ATSv1_noPFS: string;
 
 declare var kSSLSessionConfig_RC4_fallback: string;
+
+declare var kSSLSessionConfig_TLSv1_3DES_fallback: string;
 
 declare var kSSLSessionConfig_TLSv1_RC4_fallback: string;
 
@@ -932,11 +1698,15 @@ declare var kSecAttrEffectiveKeySize: string;
 
 declare var kSecAttrGeneric: string;
 
+declare var kSecAttrIsExtractable: string;
+
 declare var kSecAttrIsInvisible: string;
 
 declare var kSecAttrIsNegative: string;
 
 declare var kSecAttrIsPermanent: string;
+
+declare var kSecAttrIsSensitive: string;
 
 declare var kSecAttrIssuer: string;
 
@@ -963,6 +1733,10 @@ declare var kSecAttrLabel: string;
 declare var kSecAttrModificationDate: string;
 
 declare var kSecAttrPath: string;
+
+declare var kSecAttrPersistantReference: string;
+
+declare var kSecAttrPersistentReference: string;
 
 declare var kSecAttrPort: string;
 
@@ -1128,6 +1902,14 @@ declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA512: any;
 
 declare var kSecKeyAlgorithmECDSASignatureRFC4754: any;
 
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA224AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA256AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA384AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA512AESGCM: any;
+
 declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA1AESGCM: any;
 
 declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA224AESGCM: any;
@@ -1137,6 +1919,14 @@ declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA256AESGCM: any;
 declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA384AESGCM: any;
 
 declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA512AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA224AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA256AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA384AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA512AESGCM: any;
 
 declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA1AESGCM: any;
 
@@ -1184,6 +1974,16 @@ declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384: any;
 
 declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512: any;
 
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA1: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA224: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA256: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA384: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA512: any;
+
 declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA1: any;
 
 declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA224: any;
@@ -1193,6 +1993,16 @@ declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA256: any;
 declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA384: any;
 
 declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA512: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA1: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA224: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA256: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA384: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA512: any;
 
 declare var kSecKeyAlgorithmRSASignatureRaw: any;
 

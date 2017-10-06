@@ -18,6 +18,8 @@ declare const enum SKCloudServiceCapability {
 
 	MusicCatalogPlayback = 1,
 
+	MusicCatalogSubscriptionEligible = 2,
+
 	AddToCloudMusicLibrary = 256
 }
 
@@ -33,8 +35,54 @@ declare class SKCloudServiceController extends NSObject {
 
 	requestCapabilitiesWithCompletionHandler(completionHandler: (p1: SKCloudServiceCapability, p2: NSError) => void): void;
 
+	requestPersonalizationTokenForClientTokenWithCompletionHandler(clientToken: string, completionHandler: (p1: string, p2: NSError) => void): void;
+
+	requestStorefrontCountryCodeWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
+
 	requestStorefrontIdentifierWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
+
+	requestUserTokenForDeveloperTokenCompletionHandler(developerToken: string, completionHandler: (p1: string, p2: NSError) => void): void;
 }
+
+declare var SKCloudServiceSetupActionSubscribe: string;
+
+declare var SKCloudServiceSetupMessageIdentifierAddMusic: string;
+
+declare var SKCloudServiceSetupMessageIdentifierConnect: string;
+
+declare var SKCloudServiceSetupMessageIdentifierJoin: string;
+
+declare var SKCloudServiceSetupMessageIdentifierPlayMusic: string;
+
+declare var SKCloudServiceSetupOptionsActionKey: string;
+
+declare var SKCloudServiceSetupOptionsAffiliateTokenKey: string;
+
+declare var SKCloudServiceSetupOptionsCampaignTokenKey: string;
+
+declare var SKCloudServiceSetupOptionsITunesItemIdentifierKey: string;
+
+declare var SKCloudServiceSetupOptionsMessageIdentifierKey: string;
+
+declare class SKCloudServiceSetupViewController extends UIViewController {
+
+	static alloc(): SKCloudServiceSetupViewController; // inherited from NSObject
+
+	static new(): SKCloudServiceSetupViewController; // inherited from NSObject
+
+	delegate: SKCloudServiceSetupViewControllerDelegate;
+
+	loadWithOptionsCompletionHandler(options: NSDictionary<string, any>, completionHandler: (p1: boolean, p2: NSError) => void): void;
+}
+
+interface SKCloudServiceSetupViewControllerDelegate extends NSObjectProtocol {
+
+	cloudServiceSetupViewControllerDidDismiss?(cloudServiceSetupViewController: SKCloudServiceSetupViewController): void;
+}
+declare var SKCloudServiceSetupViewControllerDelegate: {
+
+	prototype: SKCloudServiceSetupViewControllerDelegate;
+};
 
 declare class SKDownload extends NSObject {
 
@@ -94,7 +142,9 @@ declare const enum SKErrorCode {
 
 	CloudServicePermissionDenied = 6,
 
-	CloudServiceNetworkConnectionFailed = 7
+	CloudServiceNetworkConnectionFailed = 7,
+
+	CloudServiceRevoked = 8
 }
 
 declare var SKErrorDomain: string;
@@ -207,6 +257,8 @@ interface SKPaymentTransactionObserver extends NSObjectProtocol {
 
 	paymentQueueRestoreCompletedTransactionsFinished?(queue: SKPaymentQueue): void;
 
+	paymentQueueShouldAddStorePaymentForProduct?(queue: SKPaymentQueue, payment: SKPayment, product: SKProduct): boolean;
+
 	paymentQueueUpdatedDownloads?(queue: SKPaymentQueue, downloads: NSArray<SKDownload>): void;
 
 	paymentQueueUpdatedTransactions(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction>): void;
@@ -250,6 +302,32 @@ declare class SKProduct extends NSObject {
 	readonly priceLocale: NSLocale;
 
 	readonly productIdentifier: string;
+}
+
+declare class SKProductStorePromotionController extends NSObject {
+
+	static alloc(): SKProductStorePromotionController; // inherited from NSObject
+
+	static defaultController(): SKProductStorePromotionController;
+
+	static new(): SKProductStorePromotionController; // inherited from NSObject
+
+	fetchStorePromotionOrderWithCompletionHandler(completionHandler: (p1: NSArray<SKProduct>, p2: NSError) => void): void;
+
+	fetchStorePromotionVisibilityForProductCompletionHandler(product: SKProduct, completionHandler: (p1: SKProductStorePromotionVisibility, p2: NSError) => void): void;
+
+	updateStorePromotionOrderCompletionHandler(storePromotionOrder: NSArray<SKProduct>, completionHandler: (p1: NSError) => void): void;
+
+	updateStorePromotionVisibilityForProductCompletionHandler(promotionVisibility: SKProductStorePromotionVisibility, product: SKProduct, completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum SKProductStorePromotionVisibility {
+
+	Default = 0,
+
+	Show = 1,
+
+	Hide = 2
 }
 
 declare class SKProductsRequest extends SKRequest {
@@ -336,6 +414,8 @@ declare var SKStoreProductParameterCampaignToken: string;
 
 declare var SKStoreProductParameterITunesItemIdentifier: string;
 
+declare var SKStoreProductParameterProductIdentifier: string;
+
 declare var SKStoreProductParameterProviderToken: string;
 
 declare class SKStoreProductViewController extends UIViewController {
@@ -357,6 +437,17 @@ declare var SKStoreProductViewControllerDelegate: {
 
 	prototype: SKStoreProductViewControllerDelegate;
 };
+
+declare class SKStoreReviewController extends NSObject {
+
+	static alloc(): SKStoreReviewController; // inherited from NSObject
+
+	static new(): SKStoreReviewController; // inherited from NSObject
+
+	static requestReview(): void;
+}
+
+declare var SKStorefrontCountryCodeDidChangeNotification: string;
 
 declare var SKStorefrontIdentifierDidChangeNotification: string;
 

@@ -5,6 +5,12 @@ interface BNNSActivation {
 	function: BNNSActivationFunction;
 	alpha: number;
 	beta: number;
+	iscale: number;
+	ioffset: number;
+	ishift: number;
+	iscale_per_channel: interop.Pointer | interop.Reference<number>;
+	ioffset_per_channel: interop.Pointer | interop.Reference<number>;
+	ishift_per_channel: interop.Pointer | interop.Reference<number>;
 }
 declare var BNNSActivation: interop.StructType<BNNSActivation>;
 
@@ -22,7 +28,17 @@ declare const enum BNNSActivationFunction {
 
 	ScaledTanh = 5,
 
-	Abs = 6
+	Abs = 6,
+
+	Linear = 7,
+
+	Clamp = 8,
+
+	IntegerLinearSaturate = 9,
+
+	IntegerLinearSaturatePerChannel = 10,
+
+	Softmax = 11
 }
 
 interface BNNSConvolutionLayerParameters {
@@ -56,6 +72,14 @@ declare const enum BNNSDataType {
 
 	Int32 = 131104,
 
+	UIntBit = 262144,
+
+	UInt8 = 262152,
+
+	UInt16 = 262160,
+
+	UInt32 = 262176,
+
 	IndexedBit = 524288,
 
 	Indexed8 = 524296
@@ -70,6 +94,8 @@ declare function BNNSFilterCreateConvolutionLayer(in_desc: interop.Pointer | int
 declare function BNNSFilterCreateFullyConnectedLayer(in_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSFullyConnectedLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSFilterCreatePoolingLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSPoolingLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateVectorActivationLayer(in_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, activation: interop.Pointer | interop.Reference<BNNSActivation>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSFilterDestroy(filter: interop.Pointer | interop.Reference<any>): void;
 
@@ -209,6 +235,36 @@ interface DSPSplitComplex {
 }
 declare var DSPSplitComplex: interop.StructType<DSPSplitComplex>;
 
+interface DenseMatrix_Double {
+	rowCount: number;
+	columnCount: number;
+	columnStride: number;
+	attributes: SparseAttributes_t;
+	data: interop.Pointer | interop.Reference<number>;
+}
+declare var DenseMatrix_Double: interop.StructType<DenseMatrix_Double>;
+
+interface DenseMatrix_Float {
+	rowCount: number;
+	columnCount: number;
+	columnStride: number;
+	attributes: SparseAttributes_t;
+	data: interop.Pointer | interop.Reference<number>;
+}
+declare var DenseMatrix_Float: interop.StructType<DenseMatrix_Float>;
+
+interface DenseVector_Double {
+	count: number;
+	data: interop.Pointer | interop.Reference<number>;
+}
+declare var DenseVector_Double: interop.StructType<DenseVector_Double>;
+
+interface DenseVector_Float {
+	count: number;
+	data: interop.Pointer | interop.Reference<number>;
+}
+declare var DenseVector_Float: interop.StructType<DenseVector_Float>;
+
 declare const FFT_FORWARD: number;
 
 declare const FFT_INVERSE: number;
@@ -219,14 +275,532 @@ declare const FFT_RADIX3: number;
 
 declare const FFT_RADIX5: number;
 
-interface OS_la_object extends NSObjectProtocol {
-}
-declare var OS_la_object: {
-
-	prototype: OS_la_object;
-};
-
 declare function SetBLASParamErrorProc(__ErrorProc: interop.FunctionReference<(p1: string, p2: string, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>): void;
+
+interface SparseAttributes_t {
+	transpose: boolean;
+	triangle: SparseTriangle_t;
+	kind: SparseKind_t;
+	_reserved: number;
+	_allocatedBySparse: boolean;
+}
+declare var SparseAttributes_t: interop.StructType<SparseAttributes_t>;
+
+interface SparseCGOptions {
+	reportError: interop.FunctionReference<(p1: string) => void>;
+	maxIterations: number;
+	atol: number;
+	rtol: number;
+	reportStatus: interop.FunctionReference<(p1: string) => void>;
+}
+declare var SparseCGOptions: interop.StructType<SparseCGOptions>;
+
+declare function SparseCleanup(Opaque: SparseOpaqueSymbolicFactorization): void;
+
+declare function SparseCleanupFunction(Opaque: SparseOpaqueFactorization_Double): void;
+
+declare function SparseCleanupFunction2(Opaque: SparseOpaqueFactorization_Float): void;
+
+declare function SparseCleanupFunction3(Opaque: SparseOpaqueSubfactor_Double): void;
+
+declare function SparseCleanupFunction4(Opaque: SparseOpaqueSubfactor_Float): void;
+
+declare function SparseCleanupFunction5(Matrix: SparseMatrix_Double): void;
+
+declare function SparseCleanupFunction6(Matrix: SparseMatrix_Float): void;
+
+declare function SparseCleanupFunction7(Opaque: SparseOpaquePreconditioner_Double): void;
+
+declare function SparseCleanupFunction8(Opaque: SparseOpaquePreconditioner_Float): void;
+
+declare const enum SparseControl_t {
+
+	DefaultControl = 0
+}
+
+declare function SparseConvertFromCoordinate(rowCount: number, columnCount: number, blockCount: number, blockSize: number, attributes: SparseAttributes_t, row: interop.Pointer | interop.Reference<number>, column: interop.Pointer | interop.Reference<number>, data: interop.Pointer | interop.Reference<number>): SparseMatrix_Double;
+
+declare function SparseConvertFromCoordinateFunction(rowCount: number, columnCount: number, blockCount: number, blockSize: number, attributes: SparseAttributes_t, row: interop.Pointer | interop.Reference<number>, column: interop.Pointer | interop.Reference<number>, data: interop.Pointer | interop.Reference<number>): SparseMatrix_Float;
+
+declare function SparseConvertFromCoordinateFunction2(rowCount: number, columnCount: number, blockCount: number, blockSize: number, attributes: SparseAttributes_t, row: interop.Pointer | interop.Reference<number>, column: interop.Pointer | interop.Reference<number>, data: interop.Pointer | interop.Reference<number>, storage: interop.Pointer | interop.Reference<any>, workspace: interop.Pointer | interop.Reference<any>): SparseMatrix_Double;
+
+declare function SparseConvertFromCoordinateFunction3(rowCount: number, columnCount: number, blockCount: number, blockSize: number, attributes: SparseAttributes_t, row: interop.Pointer | interop.Reference<number>, column: interop.Pointer | interop.Reference<number>, data: interop.Pointer | interop.Reference<number>, storage: interop.Pointer | interop.Reference<any>, workspace: interop.Pointer | interop.Reference<any>): SparseMatrix_Float;
+
+declare function SparseConvertFromOpaque(matrix: interop.Pointer | interop.Reference<any>): SparseMatrix_Double;
+
+declare function SparseConvertFromOpaqueFunction(matrix: interop.Pointer | interop.Reference<any>): SparseMatrix_Float;
+
+declare function SparseCreatePreconditioner(type: SparsePreconditioner_t, A: SparseMatrix_Double): SparseOpaquePreconditioner_Double;
+
+declare function SparseCreatePreconditionerFunction(type: SparsePreconditioner_t, A: SparseMatrix_Float): SparseOpaquePreconditioner_Float;
+
+declare function SparseCreateSubfactor(subfactor: SparseSubfactor_t, Factor: SparseOpaqueFactorization_Double): SparseOpaqueSubfactor_Double;
+
+declare function SparseCreateSubfactorFunction(subfactor: SparseSubfactor_t, Factor: SparseOpaqueFactorization_Float): SparseOpaqueSubfactor_Float;
+
+declare function SparseFactor(type: SparseFactorization_t, Matrix: SparseMatrix_Double): SparseOpaqueFactorization_Double;
+
+declare function SparseFactorFunction(type: SparseFactorization_t, Matrix: SparseMatrix_Float): SparseOpaqueFactorization_Float;
+
+declare function SparseFactorFunction10(type: SparseFactorization_t, Matrix: SparseMatrixStructure): SparseOpaqueSymbolicFactorization;
+
+declare function SparseFactorFunction11(type: SparseFactorization_t, Matrix: SparseMatrixStructure, sfoptions: SparseSymbolicFactorOptions): SparseOpaqueSymbolicFactorization;
+
+declare function SparseFactorFunction2(type: SparseFactorization_t, Matrix: SparseMatrix_Double, sfoptions: SparseSymbolicFactorOptions, nfoptions: SparseNumericFactorOptions): SparseOpaqueFactorization_Double;
+
+declare function SparseFactorFunction3(type: SparseFactorization_t, Matrix: SparseMatrix_Float, sfoptions: SparseSymbolicFactorOptions, nfoptions: SparseNumericFactorOptions): SparseOpaqueFactorization_Float;
+
+declare function SparseFactorFunction4(SymbolicFactor: SparseOpaqueSymbolicFactorization, Matrix: SparseMatrix_Double): SparseOpaqueFactorization_Double;
+
+declare function SparseFactorFunction5(SymbolicFactor: SparseOpaqueSymbolicFactorization, Matrix: SparseMatrix_Float): SparseOpaqueFactorization_Float;
+
+declare function SparseFactorFunction6(SymbolicFactor: SparseOpaqueSymbolicFactorization, Matrix: SparseMatrix_Double, nfoptions: SparseNumericFactorOptions): SparseOpaqueFactorization_Double;
+
+declare function SparseFactorFunction7(SymbolicFactor: SparseOpaqueSymbolicFactorization, Matrix: SparseMatrix_Float, nfoptions: SparseNumericFactorOptions): SparseOpaqueFactorization_Float;
+
+declare function SparseFactorFunction8(SymbolicFactor: SparseOpaqueSymbolicFactorization, Matrix: SparseMatrix_Double, nfoptions: SparseNumericFactorOptions, factorStorage: interop.Pointer | interop.Reference<any>, workspace: interop.Pointer | interop.Reference<any>): SparseOpaqueFactorization_Double;
+
+declare function SparseFactorFunction9(SymbolicFactor: SparseOpaqueSymbolicFactorization, Matrix: SparseMatrix_Float, nfoptions: SparseNumericFactorOptions, factorStorage: interop.Pointer | interop.Reference<any>, workspace: interop.Pointer | interop.Reference<any>): SparseOpaqueFactorization_Float;
+
+declare const enum SparseFactorization_t {
+
+	Cholesky = 0,
+
+	LDLT = 1,
+
+	LDLTUnpivoted = 2,
+
+	LDLTSBK = 3,
+
+	LDLTTPP = 4,
+
+	QR = 40,
+
+	CholeskyAtA = 41
+}
+
+interface SparseGMRESOptions {
+	reportError: interop.FunctionReference<(p1: string) => void>;
+	variant: SparseGMRESVariant_t;
+	nvec: number;
+	maxIterations: number;
+	atol: number;
+	rtol: number;
+	reportStatus: interop.FunctionReference<(p1: string) => void>;
+}
+declare var SparseGMRESOptions: interop.StructType<SparseGMRESOptions>;
+
+declare const enum SparseGMRESVariant_t {
+
+	VariantDQGMRES = 0,
+
+	VariantGMRES = 1,
+
+	VariantFGMRES = 2
+}
+
+declare function SparseGetTranspose(Matrix: SparseMatrix_Double): SparseMatrix_Double;
+
+declare function SparseGetTransposeFunction(Matrix: SparseMatrix_Float): SparseMatrix_Float;
+
+declare function SparseGetTransposeFunction2(Factor: SparseOpaqueFactorization_Double): SparseOpaqueFactorization_Double;
+
+declare function SparseGetTransposeFunction3(Factor: SparseOpaqueFactorization_Float): SparseOpaqueFactorization_Float;
+
+declare function SparseGetTransposeFunction4(Subfactor: SparseOpaqueSubfactor_Double): SparseOpaqueSubfactor_Double;
+
+declare function SparseGetTransposeFunction5(Subfactor: SparseOpaqueSubfactor_Float): SparseOpaqueSubfactor_Float;
+
+declare const enum SparseIterativeStatus_t {
+
+	Converged = 0,
+
+	MaxIterations = 1,
+
+	ParameterError = -1,
+
+	IllConditioned = -2,
+
+	InternalError = -99
+}
+
+declare const enum SparseKind_t {
+
+	Ordinary = 0,
+
+	Triangular = 1,
+
+	UnitTriangular = 2,
+
+	Symmetric = 3
+}
+
+declare const enum SparseLSMRConvergenceTest_t {
+
+	TDefault = 0,
+
+	TFongSaunders = 1
+}
+
+interface SparseLSMROptions {
+	reportError: interop.FunctionReference<(p1: string) => void>;
+	lambda: number;
+	nvec: number;
+	convergenceTest: SparseLSMRConvergenceTest_t;
+	atol: number;
+	rtol: number;
+	btol: number;
+	conditionLimit: number;
+	maxIterations: number;
+	reportStatus: interop.FunctionReference<(p1: string) => void>;
+}
+declare var SparseLSMROptions: interop.StructType<SparseLSMROptions>;
+
+interface SparseMatrixStructure {
+	rowCount: number;
+	columnCount: number;
+	columnStarts: interop.Pointer | interop.Reference<number>;
+	rowIndices: interop.Pointer | interop.Reference<number>;
+	attributes: SparseAttributes_t;
+	blockSize: number;
+}
+declare var SparseMatrixStructure: interop.StructType<SparseMatrixStructure>;
+
+interface SparseMatrix_Double {
+	structure: SparseMatrixStructure;
+	data: interop.Pointer | interop.Reference<number>;
+}
+declare var SparseMatrix_Double: interop.StructType<SparseMatrix_Double>;
+
+interface SparseMatrix_Float {
+	structure: SparseMatrixStructure;
+	data: interop.Pointer | interop.Reference<number>;
+}
+declare var SparseMatrix_Float: interop.StructType<SparseMatrix_Float>;
+
+declare function SparseMultiply(A: SparseMatrix_Double, X: DenseMatrix_Double, Y: DenseMatrix_Double): void;
+
+declare function SparseMultiplyAdd(A: SparseMatrix_Double, X: DenseMatrix_Double, Y: DenseMatrix_Double): void;
+
+declare function SparseMultiplyAddFunction(A: SparseMatrix_Float, X: DenseMatrix_Float, Y: DenseMatrix_Float): void;
+
+declare function SparseMultiplyAddFunction2(alpha: number, A: SparseMatrix_Double, X: DenseMatrix_Double, Y: DenseMatrix_Double): void;
+
+declare function SparseMultiplyAddFunction3(alpha: number, A: SparseMatrix_Float, X: DenseMatrix_Float, Y: DenseMatrix_Float): void;
+
+declare function SparseMultiplyAddFunction4(A: SparseMatrix_Double, x: DenseVector_Double, y: DenseVector_Double): void;
+
+declare function SparseMultiplyAddFunction5(A: SparseMatrix_Float, x: DenseVector_Float, y: DenseVector_Float): void;
+
+declare function SparseMultiplyAddFunction6(alpha: number, A: SparseMatrix_Double, x: DenseVector_Double, y: DenseVector_Double): void;
+
+declare function SparseMultiplyAddFunction7(alpha: number, A: SparseMatrix_Float, x: DenseVector_Float, y: DenseVector_Float): void;
+
+declare function SparseMultiplyFunction(A: SparseMatrix_Float, X: DenseMatrix_Float, Y: DenseMatrix_Float): void;
+
+declare function SparseMultiplyFunction10(Subfactor: SparseOpaqueSubfactor_Double, X: DenseMatrix_Double, Y: DenseMatrix_Double): void;
+
+declare function SparseMultiplyFunction11(Subfactor: SparseOpaqueSubfactor_Float, X: DenseMatrix_Float, Y: DenseMatrix_Float): void;
+
+declare function SparseMultiplyFunction12(Subfactor: SparseOpaqueSubfactor_Double, XY: DenseMatrix_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction13(Subfactor: SparseOpaqueSubfactor_Float, XY: DenseMatrix_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction14(Subfactor: SparseOpaqueSubfactor_Double, X: DenseMatrix_Double, Y: DenseMatrix_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction15(Subfactor: SparseOpaqueSubfactor_Float, X: DenseMatrix_Float, Y: DenseMatrix_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction16(Subfactor: SparseOpaqueSubfactor_Double, xy: DenseVector_Double): void;
+
+declare function SparseMultiplyFunction17(Subfactor: SparseOpaqueSubfactor_Float, xy: DenseVector_Float): void;
+
+declare function SparseMultiplyFunction18(Subfactor: SparseOpaqueSubfactor_Double, x: DenseVector_Double, y: DenseVector_Double): void;
+
+declare function SparseMultiplyFunction19(Subfactor: SparseOpaqueSubfactor_Float, x: DenseVector_Float, y: DenseVector_Float): void;
+
+declare function SparseMultiplyFunction2(alpha: number, A: SparseMatrix_Double, X: DenseMatrix_Double, Y: DenseMatrix_Double): void;
+
+declare function SparseMultiplyFunction20(Subfactor: SparseOpaqueSubfactor_Double, xy: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction21(Subfactor: SparseOpaqueSubfactor_Float, xy: DenseVector_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction22(Subfactor: SparseOpaqueSubfactor_Double, x: DenseVector_Double, y: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction23(Subfactor: SparseOpaqueSubfactor_Float, x: DenseVector_Float, y: DenseVector_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseMultiplyFunction3(alpha: number, A: SparseMatrix_Float, X: DenseMatrix_Float, Y: DenseMatrix_Float): void;
+
+declare function SparseMultiplyFunction4(A: SparseMatrix_Double, x: DenseVector_Double, y: DenseVector_Double): void;
+
+declare function SparseMultiplyFunction5(A: SparseMatrix_Float, x: DenseVector_Float, y: DenseVector_Float): void;
+
+declare function SparseMultiplyFunction6(alpha: number, A: SparseMatrix_Double, x: DenseVector_Double, y: DenseVector_Double): void;
+
+declare function SparseMultiplyFunction7(alpha: number, A: SparseMatrix_Float, x: DenseVector_Float, y: DenseVector_Float): void;
+
+declare function SparseMultiplyFunction8(Subfactor: SparseOpaqueSubfactor_Double, XY: DenseMatrix_Double): void;
+
+declare function SparseMultiplyFunction9(Subfactor: SparseOpaqueSubfactor_Float, XY: DenseMatrix_Float): void;
+
+interface SparseNumericFactorOptions {
+	control: SparseControl_t;
+	scalingMethod: SparseScaling_t;
+	scaling: interop.Pointer | interop.Reference<any>;
+	pivotTolerance: number;
+	zeroTolerance: number;
+}
+declare var SparseNumericFactorOptions: interop.StructType<SparseNumericFactorOptions>;
+
+interface SparseOpaqueFactorization_Double {
+	status: SparseStatus_t;
+	attributes: SparseAttributes_t;
+	symbolicFactorization: SparseOpaqueSymbolicFactorization;
+	userFactorStorage: boolean;
+	numericFactorization: interop.Pointer | interop.Reference<any>;
+	solveWorkspaceRequiredStatic: number;
+	solveWorkspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueFactorization_Double: interop.StructType<SparseOpaqueFactorization_Double>;
+
+interface SparseOpaqueFactorization_Float {
+	status: SparseStatus_t;
+	attributes: SparseAttributes_t;
+	symbolicFactorization: SparseOpaqueSymbolicFactorization;
+	userFactorStorage: boolean;
+	numericFactorization: interop.Pointer | interop.Reference<any>;
+	solveWorkspaceRequiredStatic: number;
+	solveWorkspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueFactorization_Float: interop.StructType<SparseOpaqueFactorization_Float>;
+
+interface SparseOpaquePreconditioner_Double {
+	type: SparsePreconditioner_t;
+	mem: interop.Pointer | interop.Reference<any>;
+	apply: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: CBLAS_TRANSPOSE, p3: DenseMatrix_Double, p4: DenseMatrix_Double) => void>;
+}
+declare var SparseOpaquePreconditioner_Double: interop.StructType<SparseOpaquePreconditioner_Double>;
+
+interface SparseOpaquePreconditioner_Float {
+	type: SparsePreconditioner_t;
+	mem: interop.Pointer | interop.Reference<any>;
+	apply: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: CBLAS_TRANSPOSE, p3: DenseMatrix_Float, p4: DenseMatrix_Float) => void>;
+}
+declare var SparseOpaquePreconditioner_Float: interop.StructType<SparseOpaquePreconditioner_Float>;
+
+interface SparseOpaqueSubfactor_Double {
+	attributes: SparseAttributes_t;
+	contents: SparseSubfactor_t;
+	factor: SparseOpaqueFactorization_Double;
+	workspaceRequiredStatic: number;
+	workspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueSubfactor_Double: interop.StructType<SparseOpaqueSubfactor_Double>;
+
+interface SparseOpaqueSubfactor_Float {
+	attributes: SparseAttributes_t;
+	contents: SparseSubfactor_t;
+	factor: SparseOpaqueFactorization_Float;
+	workspaceRequiredStatic: number;
+	workspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueSubfactor_Float: interop.StructType<SparseOpaqueSubfactor_Float>;
+
+interface SparseOpaqueSymbolicFactorization {
+	status: SparseStatus_t;
+	rowCount: number;
+	columnCount: number;
+	attributes: SparseAttributes_t;
+	blockSize: number;
+	type: SparseFactorization_t;
+	factorization: interop.Pointer | interop.Reference<any>;
+	workspaceSize_Float: number;
+	workspaceSize_Double: number;
+	factorSize_Float: number;
+	factorSize_Double: number;
+}
+declare var SparseOpaqueSymbolicFactorization: interop.StructType<SparseOpaqueSymbolicFactorization>;
+
+declare const enum SparseOrder_t {
+
+	Default = 0,
+
+	User = 1,
+
+	AMD = 2,
+
+	Metis = 3,
+
+	COLAMD = 4
+}
+
+declare const enum SparsePreconditioner_t {
+
+	None = 0,
+
+	User = 1,
+
+	Diagonal = 2,
+
+	DiagScaling = 3
+}
+
+declare function SparseRefactor(Matrix: SparseMatrix_Double, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Double>): void;
+
+declare function SparseRefactorFunction(Matrix: SparseMatrix_Float, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Float>): void;
+
+declare function SparseRefactorFunction2(Matrix: SparseMatrix_Double, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Double>, nfoptions: SparseNumericFactorOptions): void;
+
+declare function SparseRefactorFunction3(Matrix: SparseMatrix_Float, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Float>, nfoptions: SparseNumericFactorOptions): void;
+
+declare function SparseRefactorFunction4(Matrix: SparseMatrix_Double, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Double>, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseRefactorFunction5(Matrix: SparseMatrix_Float, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Float>, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseRefactorFunction6(Matrix: SparseMatrix_Double, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Double>, nfoptions: SparseNumericFactorOptions, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseRefactorFunction7(Matrix: SparseMatrix_Float, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Float>, nfoptions: SparseNumericFactorOptions, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseRetain(SymbolicFactor: SparseOpaqueSymbolicFactorization): SparseOpaqueSymbolicFactorization;
+
+declare function SparseRetainFunction(NumericFactor: SparseOpaqueFactorization_Double): SparseOpaqueFactorization_Double;
+
+declare function SparseRetainFunction2(NumericFactor: SparseOpaqueFactorization_Float): SparseOpaqueFactorization_Float;
+
+declare function SparseRetainFunction3(NumericFactor: SparseOpaqueSubfactor_Double): SparseOpaqueSubfactor_Double;
+
+declare function SparseRetainFunction4(NumericFactor: SparseOpaqueSubfactor_Float): SparseOpaqueSubfactor_Float;
+
+declare const enum SparseScaling_t {
+
+	Default = 0,
+
+	User = 1,
+
+	EquilibriationInf = 2
+}
+
+declare function SparseSolve(Factored: SparseOpaqueFactorization_Double, XB: DenseMatrix_Double): void;
+
+declare function SparseSolveFunction(Factored: SparseOpaqueFactorization_Float, XB: DenseMatrix_Float): void;
+
+declare function SparseSolveFunction10(Factored: SparseOpaqueFactorization_Double, b: DenseVector_Double, x: DenseVector_Double): void;
+
+declare function SparseSolveFunction11(Factored: SparseOpaqueFactorization_Float, b: DenseVector_Float, x: DenseVector_Float): void;
+
+declare function SparseSolveFunction12(Factored: SparseOpaqueFactorization_Double, xb: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction13(Factored: SparseOpaqueFactorization_Float, xb: DenseVector_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction14(Factored: SparseOpaqueFactorization_Double, x: DenseVector_Double, b: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction15(Factored: SparseOpaqueFactorization_Float, x: DenseVector_Float, b: DenseVector_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction16(Subfactor: SparseOpaqueSubfactor_Double, XB: DenseMatrix_Double): void;
+
+declare function SparseSolveFunction17(Subfactor: SparseOpaqueSubfactor_Float, XB: DenseMatrix_Float): void;
+
+declare function SparseSolveFunction18(Subfactor: SparseOpaqueSubfactor_Double, B: DenseMatrix_Double, X: DenseMatrix_Double): void;
+
+declare function SparseSolveFunction19(Subfactor: SparseOpaqueSubfactor_Float, B: DenseMatrix_Float, X: DenseMatrix_Float): void;
+
+declare function SparseSolveFunction2(Factored: SparseOpaqueFactorization_Double, B: DenseMatrix_Double, X: DenseMatrix_Double): void;
+
+declare function SparseSolveFunction20(Subfactor: SparseOpaqueSubfactor_Double, XB: DenseMatrix_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction21(Subfactor: SparseOpaqueSubfactor_Float, XB: DenseMatrix_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction22(Subfactor: SparseOpaqueSubfactor_Double, B: DenseMatrix_Double, X: DenseMatrix_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction23(Subfactor: SparseOpaqueSubfactor_Float, B: DenseMatrix_Float, X: DenseMatrix_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction24(Subfactor: SparseOpaqueSubfactor_Double, xb: DenseVector_Double): void;
+
+declare function SparseSolveFunction25(Subfactor: SparseOpaqueSubfactor_Float, xb: DenseVector_Float): void;
+
+declare function SparseSolveFunction26(Subfactor: SparseOpaqueSubfactor_Double, b: DenseVector_Double, x: DenseVector_Double): void;
+
+declare function SparseSolveFunction27(Subfactor: SparseOpaqueSubfactor_Float, b: DenseVector_Float, x: DenseVector_Float): void;
+
+declare function SparseSolveFunction28(Subfactor: SparseOpaqueSubfactor_Double, xb: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction29(Subfactor: SparseOpaqueSubfactor_Double, xb: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction3(Factored: SparseOpaqueFactorization_Float, B: DenseMatrix_Float, X: DenseMatrix_Float): void;
+
+declare function SparseSolveFunction30(Subfactor: SparseOpaqueSubfactor_Double, b: DenseVector_Double, x: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction31(Subfactor: SparseOpaqueSubfactor_Float, b: DenseVector_Float, x: DenseVector_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction4(Factored: SparseOpaqueFactorization_Double, XB: DenseMatrix_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction5(Factored: SparseOpaqueFactorization_Float, XB: DenseMatrix_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction6(Factored: SparseOpaqueFactorization_Double, X: DenseMatrix_Double, B: DenseMatrix_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction7(Factored: SparseOpaqueFactorization_Float, X: DenseMatrix_Float, B: DenseMatrix_Float, workspace: interop.Pointer | interop.Reference<any>): void;
+
+declare function SparseSolveFunction8(Factored: SparseOpaqueFactorization_Double, xb: DenseVector_Double): void;
+
+declare function SparseSolveFunction9(Factored: SparseOpaqueFactorization_Float, xb: DenseVector_Float): void;
+
+declare const enum SparseStatus_t {
+
+	StatusOK = 0,
+
+	FactorizationFailed = -1,
+
+	MatrixIsSingular = -2,
+
+	InternalError = -3,
+
+	ParameterError = -4,
+
+	StatusReleased = -2147483647
+}
+
+declare const enum SparseSubfactor_t {
+
+	Invalid = 0,
+
+	P = 1,
+
+	S = 2,
+
+	L = 3,
+
+	D = 4,
+
+	PLPS = 5,
+
+	Q = 6,
+
+	R = 7,
+
+	RP = 8
+}
+
+interface SparseSymbolicFactorOptions {
+	control: SparseControl_t;
+	orderMethod: SparseOrder_t;
+	order: interop.Pointer | interop.Reference<number>;
+	ignoreRowsAndColumns: interop.Pointer | interop.Reference<number>;
+	malloc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>;
+	free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	reportError: interop.FunctionReference<(p1: string) => void>;
+}
+declare var SparseSymbolicFactorOptions: interop.StructType<SparseSymbolicFactorOptions>;
+
+declare const enum SparseTriangle_t {
+
+	UpperTriangle = 0,
+
+	LowerTriangle = 1
+}
+
+interface _SparseIterativeMethodBaseOptions {
+	reportError: interop.FunctionReference<(p1: string) => void>;
+}
+declare var _SparseIterativeMethodBaseOptions: interop.StructType<_SparseIterativeMethodBaseOptions>;
 
 interface __CLPK_complex {
 	r: number;
@@ -2432,90 +3006,6 @@ declare var kvImage_YpCbCrToARGBMatrix_ITU_R_601_4: interop.Pointer | interop.Re
 
 declare var kvImage_YpCbCrToARGBMatrix_ITU_R_709_2: interop.Pointer | interop.Reference<vImage_YpCbCrToARGBMatrix>;
 
-declare function la_add_attributes(object: NSObject, attributes: number): void;
-
-declare function la_diagonal_matrix_from_vector(vector: NSObject, matrix_diagonal: number): NSObject;
-
-declare function la_difference(obj_left: NSObject, obj_right: NSObject): NSObject;
-
-declare function la_elementwise_product(obj_left: NSObject, obj_right: NSObject): NSObject;
-
-declare function la_identity_matrix(matrix_size: number, scalar_type: number, attributes: number): NSObject;
-
-declare function la_inner_product(vector_left: NSObject, vector_right: NSObject): NSObject;
-
-declare function la_matrix_cols(matrix: NSObject): number;
-
-declare function la_matrix_from_double_buffer(buffer: interop.Pointer | interop.Reference<number>, matrix_rows: number, matrix_cols: number, matrix_row_stride: number, matrix_hint: number, attributes: number): NSObject;
-
-declare function la_matrix_from_double_buffer_nocopy(buffer: interop.Pointer | interop.Reference<number>, matrix_rows: number, matrix_cols: number, matrix_row_stride: number, matrix_hint: number, deallocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, attributes: number): NSObject;
-
-declare function la_matrix_from_float_buffer(buffer: interop.Pointer | interop.Reference<number>, matrix_rows: number, matrix_cols: number, matrix_row_stride: number, matrix_hint: number, attributes: number): NSObject;
-
-declare function la_matrix_from_float_buffer_nocopy(buffer: interop.Pointer | interop.Reference<number>, matrix_rows: number, matrix_cols: number, matrix_row_stride: number, matrix_hint: number, deallocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, attributes: number): NSObject;
-
-declare function la_matrix_from_splat(splat: NSObject, matrix_rows: number, matrix_cols: number): NSObject;
-
-declare function la_matrix_product(matrix_left: NSObject, matrix_right: NSObject): NSObject;
-
-declare function la_matrix_rows(matrix: NSObject): number;
-
-declare function la_matrix_slice(matrix: NSObject, matrix_first_row: number, matrix_first_col: number, matrix_row_stride: number, matrix_col_stride: number, slice_rows: number, slice_cols: number): NSObject;
-
-declare function la_matrix_to_double_buffer(buffer: interop.Pointer | interop.Reference<number>, buffer_row_stride: number, matrix: NSObject): number;
-
-declare function la_matrix_to_float_buffer(buffer: interop.Pointer | interop.Reference<number>, buffer_row_stride: number, matrix: NSObject): number;
-
-declare function la_norm_as_double(vector: NSObject, vector_norm: number): number;
-
-declare function la_norm_as_float(vector: NSObject, vector_norm: number): number;
-
-declare function la_normalized_vector(vector: NSObject, vector_norm: number): NSObject;
-
-declare function la_outer_product(vector_left: NSObject, vector_right: NSObject): NSObject;
-
-declare function la_release(object: NSObject): void;
-
-declare function la_remove_attributes(object: NSObject, attributes: number): void;
-
-declare function la_retain(object: NSObject): NSObject;
-
-declare function la_scale_with_double(matrix: NSObject, scalar: number): NSObject;
-
-declare function la_scale_with_float(matrix: NSObject, scalar: number): NSObject;
-
-declare function la_solve(matrix_system: NSObject, obj_rhs: NSObject): NSObject;
-
-declare function la_splat_from_double(scalar_value: number, attributes: number): NSObject;
-
-declare function la_splat_from_float(scalar_value: number, attributes: number): NSObject;
-
-declare function la_splat_from_matrix_element(matrix: NSObject, matrix_row: number, matrix_col: number): NSObject;
-
-declare function la_splat_from_vector_element(vector: NSObject, vector_index: number): NSObject;
-
-declare function la_status(object: NSObject): number;
-
-declare function la_sum(obj_left: NSObject, obj_right: NSObject): NSObject;
-
-declare function la_transpose(matrix: NSObject): NSObject;
-
-declare function la_vector_from_matrix_col(matrix: NSObject, matrix_col: number): NSObject;
-
-declare function la_vector_from_matrix_diagonal(matrix: NSObject, matrix_diagonal: number): NSObject;
-
-declare function la_vector_from_matrix_row(matrix: NSObject, matrix_row: number): NSObject;
-
-declare function la_vector_from_splat(splat: NSObject, vector_length: number): NSObject;
-
-declare function la_vector_length(vector: NSObject): number;
-
-declare function la_vector_slice(vector: NSObject, vector_first: number, vector_stride: number, slice_length: number): NSObject;
-
-declare function la_vector_to_double_buffer(buffer: interop.Pointer | interop.Reference<number>, buffer_stride: number, vector: NSObject): number;
-
-declare function la_vector_to_float_buffer(buffer: interop.Pointer | interop.Reference<number>, buffer_stride: number, vector: NSObject): number;
-
 declare function lsamen_(__n: interop.Pointer | interop.Reference<number>, __ca: string, __cb: string): number;
 
 declare function mmul(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number, __P: number): void;
@@ -2525,32 +3015,6 @@ declare function mmulD(__A: interop.Pointer | interop.Reference<number>, __IA: n
 declare function mtrans(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number): void;
 
 declare function mtransD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number): void;
-
-declare function quadrature_integrate(__f: interop.Pointer | interop.Reference<quadrature_integrate_function>, __a: number, __b: number, options: interop.Pointer | interop.Reference<quadrature_integrate_options>, status: interop.Pointer | interop.Reference<quadrature_status>, abs_error: interop.Pointer | interop.Reference<number>, workspace_size: number, workspace: interop.Pointer | interop.Reference<any>): number;
-
-interface quadrature_integrate_function {
-	fun: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>;
-	fun_arg: interop.Pointer | interop.Reference<any>;
-}
-declare var quadrature_integrate_function: interop.StructType<quadrature_integrate_function>;
-
-interface quadrature_integrate_options {
-	integrator: quadrature_integrator;
-	abs_tolerance: number;
-	rel_tolerance: number;
-	qag_points_per_interval: number;
-	max_intervals: number;
-}
-declare var quadrature_integrate_options: interop.StructType<quadrature_integrate_options>;
-
-declare const enum quadrature_integrator {
-
-	QUADRATURE_INTEGRATE_QNG = 0,
-
-	QUADRATURE_INTEGRATE_QAG = 1,
-
-	QUADRATURE_INTEGRATE_QAGS = 2
-}
 
 declare const enum quadrature_status {
 

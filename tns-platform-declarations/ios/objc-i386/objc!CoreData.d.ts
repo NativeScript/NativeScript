@@ -118,6 +118,10 @@ declare const enum NSAttributeType {
 
 	BinaryDataAttributeType = 1000,
 
+	UUIDAttributeType = 1100,
+
+	URIAttributeType = 1200,
+
 	TransformableAttributeType = 1800,
 
 	ObjectIDAttributeType = 2000
@@ -211,6 +215,10 @@ declare class NSBatchUpdateResult extends NSPersistentStoreResult {
 	readonly resultType: NSBatchUpdateRequestResultType;
 }
 
+declare var NSBinaryStoreInsecureDecodingCompatibilityOption: string;
+
+declare var NSBinaryStoreSecureDecodingClasses: string;
+
 declare var NSBinaryStoreType: string;
 
 declare class NSConstraintConflict extends NSObject {
@@ -235,6 +243,29 @@ declare class NSConstraintConflict extends NSObject {
 
 	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string>, databaseObject: NSManagedObject, databaseSnapshot: NSDictionary<any, any>, conflictingObjects: NSArray<NSManagedObject>, conflictingSnapshots: NSArray<any>): this;
 }
+
+declare class NSCoreDataCoreSpotlightDelegate extends NSObject {
+
+	static alloc(): NSCoreDataCoreSpotlightDelegate; // inherited from NSObject
+
+	static new(): NSCoreDataCoreSpotlightDelegate; // inherited from NSObject
+
+	constructor(o: { forStoreWithDescription: NSPersistentStoreDescription; model: NSManagedObjectModel; });
+
+	attributeSetForObject(object: NSManagedObject): CSSearchableItemAttributeSet;
+
+	domainIdentifier(): string;
+
+	indexName(): string;
+
+	initForStoreWithDescriptionModel(description: NSPersistentStoreDescription, model: NSManagedObjectModel): this;
+
+	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
+
+	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string>, acknowledgementHandler: () => void): void;
+}
+
+declare var NSCoreDataCoreSpotlightExporter: string;
 
 declare const NSCoreDataError: number;
 
@@ -270,6 +301,10 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 	readonly attributesByName: NSDictionary<string, NSAttributeDescription>;
 
 	compoundIndexes: NSArray<NSArray<any>>;
+
+	coreSpotlightDisplayNameExpression: NSExpression;
+
+	indexes: NSArray<NSFetchIndexDescription>;
 
 	managedObjectClassName: string;
 
@@ -396,6 +431,65 @@ declare class NSExpressionDescription extends NSPropertyDescription {
 }
 
 declare const NSExternalRecordImportError: number;
+
+declare class NSFetchIndexDescription extends NSObject implements NSCoding {
+
+	static alloc(): NSFetchIndexDescription; // inherited from NSObject
+
+	static new(): NSFetchIndexDescription; // inherited from NSObject
+
+	elements: NSArray<NSFetchIndexElementDescription>;
+
+	readonly entity: NSEntityDescription;
+
+	name: string;
+
+	partialIndexPredicate: NSPredicate;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription>; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription>): this;
+}
+
+declare class NSFetchIndexElementDescription extends NSObject implements NSCoding {
+
+	static alloc(): NSFetchIndexElementDescription; // inherited from NSObject
+
+	static new(): NSFetchIndexElementDescription; // inherited from NSObject
+
+	ascending: boolean;
+
+	collationType: NSFetchIndexElementType;
+
+	readonly indexDescription: NSFetchIndexDescription;
+
+	readonly property: NSPropertyDescription;
+
+	readonly propertyName: string;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { property: NSPropertyDescription; collationType: NSFetchIndexElementType; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithPropertyCollationType(property: NSPropertyDescription, collationType: NSFetchIndexElementType): this;
+}
+
+declare const enum NSFetchIndexElementType {
+
+	Binary = 0,
+
+	RTree = 1
+}
 
 declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implements NSCoding {
 
@@ -794,6 +888,8 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 	shouldDeleteInaccessibleFaults: boolean;
 
 	stalenessInterval: number;
+
+	transactionAuthor: string;
 
 	undoManager: NSUndoManager;
 
@@ -1204,6 +1300,135 @@ declare class NSPersistentContainer extends NSObject {
 	performBackgroundTask(block: (p1: NSManagedObjectContext) => void): void;
 }
 
+declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
+
+	static alloc(): NSPersistentHistoryChange; // inherited from NSObject
+
+	static new(): NSPersistentHistoryChange; // inherited from NSObject
+
+	readonly changeID: number;
+
+	readonly changeType: NSPersistentHistoryChangeType;
+
+	readonly changedObjectID: NSManagedObjectID;
+
+	readonly tombstone: NSDictionary<any, any>;
+
+	readonly transaction: NSPersistentHistoryTransaction;
+
+	readonly updatedProperties: NSSet<NSPropertyDescription>;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest {
+
+	static alloc(): NSPersistentHistoryChangeRequest; // inherited from NSObject
+
+	static deleteHistoryBeforeDate(date: Date): NSPersistentHistoryChangeRequest;
+
+	static deleteHistoryBeforeToken(token: NSPersistentHistoryToken): NSPersistentHistoryChangeRequest;
+
+	static deleteHistoryBeforeTransaction(transaction: NSPersistentHistoryTransaction): NSPersistentHistoryChangeRequest;
+
+	static fetchHistoryAfterDate(date: Date): NSPersistentHistoryChangeRequest;
+
+	static fetchHistoryAfterToken(token: NSPersistentHistoryToken): NSPersistentHistoryChangeRequest;
+
+	static fetchHistoryAfterTransaction(transaction: NSPersistentHistoryTransaction): NSPersistentHistoryChangeRequest;
+
+	static new(): NSPersistentHistoryChangeRequest; // inherited from NSObject
+
+	resultType: NSPersistentHistoryResultType;
+
+	readonly token: NSPersistentHistoryToken;
+}
+
+declare const enum NSPersistentHistoryChangeType {
+
+	Insert = 0,
+
+	Update = 1,
+
+	Delete = 2
+}
+
+declare class NSPersistentHistoryResult extends NSPersistentStoreResult {
+
+	static alloc(): NSPersistentHistoryResult; // inherited from NSObject
+
+	static new(): NSPersistentHistoryResult; // inherited from NSObject
+
+	readonly result: any;
+
+	readonly resultType: NSPersistentHistoryResultType;
+}
+
+declare const enum NSPersistentHistoryResultType {
+
+	StatusOnly = 0,
+
+	ObjectIDs = 1,
+
+	Count = 2,
+
+	TransactionsOnly = 3,
+
+	ChangesOnly = 4,
+
+	TransactionsAndChanges = 5
+}
+
+declare class NSPersistentHistoryToken extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSPersistentHistoryToken; // inherited from NSObject
+
+	static new(): NSPersistentHistoryToken; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare const NSPersistentHistoryTokenExpiredError: number;
+
+declare var NSPersistentHistoryTrackingKey: string;
+
+declare class NSPersistentHistoryTransaction extends NSObject implements NSCopying {
+
+	static alloc(): NSPersistentHistoryTransaction; // inherited from NSObject
+
+	static new(): NSPersistentHistoryTransaction; // inherited from NSObject
+
+	readonly author: string;
+
+	readonly bundleID: string;
+
+	readonly changes: NSArray<NSPersistentHistoryChange>;
+
+	readonly contextName: string;
+
+	readonly processID: string;
+
+	readonly storeID: string;
+
+	readonly timestamp: Date;
+
+	readonly token: NSPersistentHistoryToken;
+
+	readonly transactionNumber: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	objectIDNotification(): NSNotification;
+}
+
 declare class NSPersistentStore extends NSObject {
 
 	static alloc(): NSPersistentStore; // inherited from NSObject
@@ -1219,6 +1444,8 @@ declare class NSPersistentStore extends NSObject {
 	URL: NSURL;
 
 	readonly configurationName: string;
+
+	readonly coreSpotlightExporter: NSCoreDataCoreSpotlightDelegate;
 
 	identifier: string;
 
@@ -1520,7 +1747,7 @@ declare class NSPropertyMapping extends NSObject {
 	valueExpression: NSExpression;
 }
 
-declare class NSQueryGenerationToken extends NSObject implements NSCopying {
+declare class NSQueryGenerationToken extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSQueryGenerationToken; // inherited from NSObject
 
@@ -1528,7 +1755,15 @@ declare class NSQueryGenerationToken extends NSObject implements NSCopying {
 
 	static readonly currentQueryGenerationToken: NSQueryGenerationToken;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare var NSReadOnlyPersistentStoreOption: string;
@@ -1625,6 +1860,8 @@ declare const NSValidationDateTooLateError: number;
 declare const NSValidationDateTooSoonError: number;
 
 declare const NSValidationInvalidDateError: number;
+
+declare const NSValidationInvalidURIError: number;
 
 declare var NSValidationKeyErrorKey: string;
 

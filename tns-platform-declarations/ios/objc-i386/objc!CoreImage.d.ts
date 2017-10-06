@@ -1,13 +1,142 @@
 
+declare class CIAztecCodeDescriptor extends CIBarcodeDescriptor {
+
+	static alloc(): CIAztecCodeDescriptor; // inherited from NSObject
+
+	static descriptorWithPayloadIsCompactLayerCountDataCodewordCount(errorCorrectedPayload: NSData, isCompact: boolean, layerCount: number, dataCodewordCount: number): CIAztecCodeDescriptor;
+
+	static new(): CIAztecCodeDescriptor; // inherited from NSObject
+
+	readonly dataCodewordCount: number;
+
+	readonly errorCorrectedPayload: NSData;
+
+	readonly isCompact: boolean;
+
+	readonly layerCount: number;
+
+	constructor(o: { payload: NSData; isCompact: boolean; layerCount: number; dataCodewordCount: number; });
+
+	initWithPayloadIsCompactLayerCountDataCodewordCount(errorCorrectedPayload: NSData, isCompact: boolean, layerCount: number, dataCodewordCount: number): this;
+}
+
+declare class CIBarcodeDescriptor extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CIBarcodeDescriptor; // inherited from NSObject
+
+	static new(): CIBarcodeDescriptor; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class CIBlendKernel extends CIColorKernel {
+
+	static alloc(): CIBlendKernel; // inherited from NSObject
+
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIBlendKernel; // inherited from CIKernel
+
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIBlendKernel; // inherited from CIKernel
+
+	static kernelWithString(string: string): CIBlendKernel; // inherited from CIKernel
+
+	static new(): CIBlendKernel; // inherited from NSObject
+
+	static readonly clear: CIBlendKernel;
+
+	static readonly color: CIBlendKernel;
+
+	static readonly colorBurn: CIBlendKernel;
+
+	static readonly colorDodge: CIBlendKernel;
+
+	static readonly componentAdd: CIBlendKernel;
+
+	static readonly componentMax: CIBlendKernel;
+
+	static readonly componentMin: CIBlendKernel;
+
+	static readonly componentMultiply: CIBlendKernel;
+
+	static readonly darken: CIBlendKernel;
+
+	static readonly darkerColor: CIBlendKernel;
+
+	static readonly destination: CIBlendKernel;
+
+	static readonly destinationAtop: CIBlendKernel;
+
+	static readonly destinationIn: CIBlendKernel;
+
+	static readonly destinationOut: CIBlendKernel;
+
+	static readonly destinationOver: CIBlendKernel;
+
+	static readonly difference: CIBlendKernel;
+
+	static readonly divide: CIBlendKernel;
+
+	static readonly exclusion: CIBlendKernel;
+
+	static readonly exclusiveOr: CIBlendKernel;
+
+	static readonly hardLight: CIBlendKernel;
+
+	static readonly hardMix: CIBlendKernel;
+
+	static readonly hue: CIBlendKernel;
+
+	static readonly lighten: CIBlendKernel;
+
+	static readonly lighterColor: CIBlendKernel;
+
+	static readonly linearBurn: CIBlendKernel;
+
+	static readonly linearDodge: CIBlendKernel;
+
+	static readonly linearLight: CIBlendKernel;
+
+	static readonly luminosity: CIBlendKernel;
+
+	static readonly multiply: CIBlendKernel;
+
+	static readonly overlay: CIBlendKernel;
+
+	static readonly pinLight: CIBlendKernel;
+
+	static readonly saturation: CIBlendKernel;
+
+	static readonly screen: CIBlendKernel;
+
+	static readonly softLight: CIBlendKernel;
+
+	static readonly source: CIBlendKernel;
+
+	static readonly sourceAtop: CIBlendKernel;
+
+	static readonly sourceIn: CIBlendKernel;
+
+	static readonly sourceOut: CIBlendKernel;
+
+	static readonly sourceOver: CIBlendKernel;
+
+	static readonly subtract: CIBlendKernel;
+
+	static readonly vividLight: CIBlendKernel;
+
+	applyWithForegroundBackground(foreground: CIImage, background: CIImage): CIImage;
+}
+
 declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIColor; // inherited from NSObject
-
-	static blackColor(): CIColor;
-
-	static blueColor(): CIColor;
-
-	static clearColor(): CIColor;
 
 	static colorWithCGColor(c: any): CIColor;
 
@@ -21,21 +150,7 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static colorWithString(representation: string): CIColor;
 
-	static cyanColor(): CIColor;
-
-	static grayColor(): CIColor;
-
-	static greenColor(): CIColor;
-
-	static magentaColor(): CIColor;
-
 	static new(): CIColor; // inherited from NSObject
-
-	static redColor(): CIColor;
-
-	static whiteColor(): CIColor;
-
-	static yellowColor(): CIColor;
 
 	readonly alpha: number;
 
@@ -52,6 +167,26 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 	readonly red: number;
 
 	readonly stringRepresentation: string;
+
+	static readonly blackColor: CIColor;
+
+	static readonly blueColor: CIColor;
+
+	static readonly clearColor: CIColor;
+
+	static readonly cyanColor: CIColor;
+
+	static readonly grayColor: CIColor;
+
+	static readonly greenColor: CIColor;
+
+	static readonly magentaColor: CIColor;
+
+	static readonly redColor: CIColor;
+
+	static readonly whiteColor: CIColor;
+
+	static readonly yellowColor: CIColor;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -92,6 +227,10 @@ declare class CIColorKernel extends CIKernel {
 
 	static alloc(): CIColorKernel; // inherited from NSObject
 
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIColorKernel; // inherited from CIKernel
+
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIColorKernel; // inherited from CIKernel
+
 	static kernelWithString(string: string): CIColorKernel; // inherited from CIKernel
 
 	static new(): CIColorKernel; // inherited from NSObject
@@ -125,7 +264,11 @@ declare class CIContext extends NSObject {
 
 	constructor(o: { options: NSDictionary<string, any>; });
 
+	HEIFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
+
 	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<any, any>): NSData;
+
+	PNGRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
 
 	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
 
@@ -147,6 +290,8 @@ declare class CIContext extends NSObject {
 
 	outputImageMaximumSize(): CGSize;
 
+	prepareRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint): boolean;
+
 	renderToBitmapRowBytesBoundsFormatColorSpace(image: CIImage, data: interop.Pointer | interop.Reference<any>, rowBytes: number, bounds: CGRect, format: number, colorSpace: any): void;
 
 	renderToCVPixelBuffer(image: CIImage, buffer: any): void;
@@ -155,9 +300,55 @@ declare class CIContext extends NSObject {
 
 	renderToMTLTextureCommandBufferBoundsColorSpace(image: CIImage, texture: MTLTexture, commandBuffer: MTLCommandBuffer, bounds: CGRect, colorSpace: any): void;
 
+	startTaskToClearError(destination: CIRenderDestination): CIRenderTask;
+
+	startTaskToRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint): CIRenderTask;
+
+	startTaskToRenderToDestinationError(image: CIImage, destination: CIRenderDestination): CIRenderTask;
+
+	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
+
 	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<any, any>): boolean;
 
+	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
+
 	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
+}
+
+declare class CIDataMatrixCodeDescriptor extends CIBarcodeDescriptor {
+
+	static alloc(): CIDataMatrixCodeDescriptor; // inherited from NSObject
+
+	static descriptorWithPayloadRowCountColumnCountEccVersion(errorCorrectedPayload: NSData, rowCount: number, columnCount: number, eccVersion: CIDataMatrixCodeECCVersion): CIDataMatrixCodeDescriptor;
+
+	static new(): CIDataMatrixCodeDescriptor; // inherited from NSObject
+
+	readonly columnCount: number;
+
+	readonly eccVersion: CIDataMatrixCodeECCVersion;
+
+	readonly errorCorrectedPayload: NSData;
+
+	readonly rowCount: number;
+
+	constructor(o: { payload: NSData; rowCount: number; columnCount: number; eccVersion: CIDataMatrixCodeECCVersion; });
+
+	initWithPayloadRowCountColumnCountEccVersion(errorCorrectedPayload: NSData, rowCount: number, columnCount: number, eccVersion: CIDataMatrixCodeECCVersion): this;
+}
+
+declare const enum CIDataMatrixCodeECCVersion {
+
+	Version000 = 0,
+
+	Version050 = 50,
+
+	Version080 = 80,
+
+	Version100 = 100,
+
+	Version140 = 140,
+
+	Version200 = 200
 }
 
 declare class CIDetector extends NSObject {
@@ -404,6 +595,8 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly colorSpace: any;
 
+	readonly depthData: AVDepthData;
+
 	readonly extent: CGRect;
 
 	readonly pixelBuffer: any;
@@ -458,6 +651,10 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
+	imageByApplyingCGOrientation(orientation: CGImagePropertyOrientation): CIImage;
+
+	imageByApplyingFilter(filterName: string): CIImage;
+
 	imageByApplyingFilterWithInputParameters(filterName: string, params: NSDictionary<string, any>): CIImage;
 
 	imageByApplyingGaussianBlurWithSigma(sigma: number): CIImage;
@@ -480,11 +677,17 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	imageByPremultiplyingAlpha(): CIImage;
 
+	imageBySamplingLinear(): CIImage;
+
+	imageBySamplingNearest(): CIImage;
+
 	imageBySettingAlphaOneInExtent(extent: CGRect): CIImage;
 
 	imageBySettingProperties(properties: NSDictionary<any, any>): CIImage;
 
 	imageByUnpremultiplyingAlpha(): CIImage;
+
+	imageTransformForCGOrientation(orientation: CGImagePropertyOrientation): CGAffineTransform;
 
 	imageTransformForOrientation(orientation: number): CGAffineTransform;
 
@@ -593,6 +796,8 @@ declare class CIImageProcessorKernel extends NSObject {
 
 	static readonly outputFormat: number;
 
+	static readonly outputIsOpaque: boolean;
+
 	static readonly synchronizeInputs: boolean;
 }
 
@@ -621,6 +826,10 @@ declare class CIKernel extends NSObject {
 
 	static alloc(): CIKernel; // inherited from NSObject
 
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIKernel;
+
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIKernel;
+
 	static kernelWithString(string: string): CIKernel;
 
 	static kernelsWithString(string: string): NSArray<CIKernel>;
@@ -634,7 +843,60 @@ declare class CIKernel extends NSObject {
 	setROISelector(method: string): void;
 }
 
-declare class CIQRCodeFeature extends CIFeature {
+declare class CIPDF417CodeDescriptor extends CIBarcodeDescriptor {
+
+	static alloc(): CIPDF417CodeDescriptor; // inherited from NSObject
+
+	static descriptorWithPayloadIsCompactRowCountColumnCount(errorCorrectedPayload: NSData, isCompact: boolean, rowCount: number, columnCount: number): CIPDF417CodeDescriptor;
+
+	static new(): CIPDF417CodeDescriptor; // inherited from NSObject
+
+	readonly columnCount: number;
+
+	readonly errorCorrectedPayload: NSData;
+
+	readonly isCompact: boolean;
+
+	readonly rowCount: number;
+
+	constructor(o: { payload: NSData; isCompact: boolean; rowCount: number; columnCount: number; });
+
+	initWithPayloadIsCompactRowCountColumnCount(errorCorrectedPayload: NSData, isCompact: boolean, rowCount: number, columnCount: number): this;
+}
+
+declare class CIQRCodeDescriptor extends CIBarcodeDescriptor {
+
+	static alloc(): CIQRCodeDescriptor; // inherited from NSObject
+
+	static descriptorWithPayloadSymbolVersionMaskPatternErrorCorrectionLevel(errorCorrectedPayload: NSData, symbolVersion: number, maskPattern: number, errorCorrectionLevel: CIQRCodeErrorCorrectionLevel): CIQRCodeDescriptor;
+
+	static new(): CIQRCodeDescriptor; // inherited from NSObject
+
+	readonly errorCorrectedPayload: NSData;
+
+	readonly errorCorrectionLevel: CIQRCodeErrorCorrectionLevel;
+
+	readonly maskPattern: number;
+
+	readonly symbolVersion: number;
+
+	constructor(o: { payload: NSData; symbolVersion: number; maskPattern: number; errorCorrectionLevel: CIQRCodeErrorCorrectionLevel; });
+
+	initWithPayloadSymbolVersionMaskPatternErrorCorrectionLevel(errorCorrectedPayload: NSData, symbolVersion: number, maskPattern: number, errorCorrectionLevel: CIQRCodeErrorCorrectionLevel): this;
+}
+
+declare const enum CIQRCodeErrorCorrectionLevel {
+
+	L = 76,
+
+	M = 77,
+
+	Q = 81,
+
+	H = 72
+}
+
+declare class CIQRCodeFeature extends CIFeature implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIQRCodeFeature; // inherited from NSObject
 
@@ -646,9 +908,21 @@ declare class CIQRCodeFeature extends CIFeature {
 
 	readonly messageString: string;
 
+	readonly symbolDescriptor: CIQRCodeDescriptor;
+
 	readonly topLeft: CGPoint;
 
 	readonly topRight: CGPoint;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class CIRectangleFeature extends CIFeature {
@@ -664,6 +938,82 @@ declare class CIRectangleFeature extends CIFeature {
 	readonly topLeft: CGPoint;
 
 	readonly topRight: CGPoint;
+}
+
+declare class CIRenderDestination extends NSObject {
+
+	static alloc(): CIRenderDestination; // inherited from NSObject
+
+	static new(): CIRenderDestination; // inherited from NSObject
+
+	alphaMode: CIRenderDestinationAlphaMode;
+
+	blendKernel: CIBlendKernel;
+
+	blendsInDestinationColorSpace: boolean;
+
+	clamped: boolean;
+
+	colorSpace: any;
+
+	dithered: boolean;
+
+	flipped: boolean;
+
+	readonly height: number;
+
+	readonly width: number;
+
+	constructor(o: { bitmapData: interop.Pointer | interop.Reference<any>; width: number; height: number; bytesPerRow: number; format: number; });
+
+	constructor(o: { GLTexture: number; target: number; width: number; height: number; });
+
+	constructor(o: { MTLTexture: MTLTexture; commandBuffer: MTLCommandBuffer; });
+
+	constructor(o: { pixelBuffer: any; });
+
+	constructor(o: { width: number; height: number; pixelFormat: MTLPixelFormat; commandBuffer: MTLCommandBuffer; mtlTextureProvider: () => MTLTexture; });
+
+	initWithBitmapDataWidthHeightBytesPerRowFormat(data: interop.Pointer | interop.Reference<any>, width: number, height: number, bytesPerRow: number, format: number): this;
+
+	initWithGLTextureTargetWidthHeight(texture: number, target: number, width: number, height: number): this;
+
+	initWithMTLTextureCommandBuffer(texture: MTLTexture, commandBuffer: MTLCommandBuffer): this;
+
+	initWithPixelBuffer(pixelBuffer: any): this;
+
+	initWithWidthHeightPixelFormatCommandBufferMtlTextureProvider(width: number, height: number, pixelFormat: MTLPixelFormat, commandBuffer: MTLCommandBuffer, block: () => MTLTexture): this;
+}
+
+declare const enum CIRenderDestinationAlphaMode {
+
+	None = 0,
+
+	Premultiplied = 1,
+
+	Unpremultiplied = 2
+}
+
+declare class CIRenderInfo extends NSObject {
+
+	static alloc(): CIRenderInfo; // inherited from NSObject
+
+	static new(): CIRenderInfo; // inherited from NSObject
+
+	readonly kernelExecutionTime: number;
+
+	readonly passCount: number;
+
+	readonly pixelsProcessed: number;
+}
+
+declare class CIRenderTask extends NSObject {
+
+	static alloc(): CIRenderTask; // inherited from NSObject
+
+	static new(): CIRenderTask; // inherited from NSObject
+
+	waitUntilCompletedAndReturnError(): CIRenderInfo;
 }
 
 declare class CISampler extends NSObject implements NSCopying {
@@ -804,6 +1154,10 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 declare class CIWarpKernel extends CIKernel {
 
 	static alloc(): CIWarpKernel; // inherited from NSObject
+
+	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIWarpKernel; // inherited from CIKernel
+
+	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIWarpKernel; // inherited from CIKernel
 
 	static kernelWithString(string: string): CIWarpKernel; // inherited from CIKernel
 
@@ -952,6 +1306,22 @@ declare var kCIFormatAh: number;
 
 declare var kCIFormatBGRA8: number;
 
+declare var kCIFormatL16: number;
+
+declare var kCIFormatL8: number;
+
+declare var kCIFormatLA16: number;
+
+declare var kCIFormatLA8: number;
+
+declare var kCIFormatLAf: number;
+
+declare var kCIFormatLAh: number;
+
+declare var kCIFormatLf: number;
+
+declare var kCIFormatLh: number;
+
 declare var kCIFormatR16: number;
 
 declare var kCIFormatR8: number;
@@ -959,6 +1329,8 @@ declare var kCIFormatR8: number;
 declare var kCIFormatRG16: number;
 
 declare var kCIFormatRG8: number;
+
+declare var kCIFormatRGBA16: number;
 
 declare var kCIFormatRGBA8: number;
 
@@ -974,6 +1346,8 @@ declare var kCIFormatRf: number;
 
 declare var kCIFormatRh: number;
 
+declare var kCIImageApplyOrientationProperty: string;
+
 declare var kCIImageAutoAdjustCrop: string;
 
 declare var kCIImageAutoAdjustEnhance: string;
@@ -984,13 +1358,25 @@ declare var kCIImageAutoAdjustLevel: string;
 
 declare var kCIImageAutoAdjustRedEye: string;
 
+declare var kCIImageAuxiliaryDepth: string;
+
+declare var kCIImageAuxiliaryDisparity: string;
+
 declare var kCIImageColorSpace: string;
+
+declare var kCIImageNearestSampling: string;
 
 declare var kCIImageProperties: string;
 
 declare var kCIImageProviderTileSize: string;
 
 declare var kCIImageProviderUserInfo: string;
+
+declare var kCIImageRepresentationAVDepthData: string;
+
+declare var kCIImageRepresentationDepthImage: string;
+
+declare var kCIImageRepresentationDisparityImage: string;
 
 declare var kCIInputAllowDraftModeKey: string;
 
@@ -1020,7 +1406,11 @@ declare var kCIInputContrastKey: string;
 
 declare var kCIInputDecoderVersionKey: string;
 
+declare var kCIInputDepthImageKey: string;
+
 declare var kCIInputDisableGamutMapKey: string;
+
+declare var kCIInputDisparityImageKey: string;
 
 declare var kCIInputEVKey: string;
 
@@ -1047,6 +1437,8 @@ declare var kCIInputLinearSpaceFilter: string;
 declare var kCIInputLuminanceNoiseReductionAmountKey: string;
 
 declare var kCIInputMaskImageKey: string;
+
+declare var kCIInputMoireAmountKey: string;
 
 declare var kCIInputNeutralChromaticityXKey: string;
 

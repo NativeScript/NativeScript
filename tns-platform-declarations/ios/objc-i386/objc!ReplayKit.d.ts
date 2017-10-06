@@ -5,6 +5,8 @@ declare class RPBroadcastActivityViewController extends UIViewController {
 
 	static loadBroadcastActivityViewControllerWithHandler(handler: (p1: RPBroadcastActivityViewController, p2: NSError) => void): void;
 
+	static loadBroadcastActivityViewControllerWithPreferredExtensionHandler(preferredExtension: string, handler: (p1: RPBroadcastActivityViewController, p2: NSError) => void): void;
+
 	static new(): RPBroadcastActivityViewController; // inherited from NSObject
 
 	delegate: RPBroadcastActivityViewControllerDelegate;
@@ -69,6 +71,8 @@ interface RPBroadcastControllerDelegate extends NSObjectProtocol {
 
 	broadcastControllerDidFinishWithError?(broadcastController: RPBroadcastController, error: NSError): void;
 
+	broadcastControllerDidUpdateBroadcastURL?(broadcastController: RPBroadcastController, broadcastURL: NSURL): void;
+
 	broadcastControllerDidUpdateServiceInfo?(broadcastController: RPBroadcastController, serviceInfo: NSDictionary<string, NSObject>): void;
 }
 declare var RPBroadcastControllerDelegate: {
@@ -118,6 +122,8 @@ declare class RPBroadcastHandler extends NSObject implements NSExtensionRequestH
 
 	self(): this;
 
+	updateBroadcastURL(broadcastURL: NSURL): void;
+
 	updateServiceInfo(serviceInfo: NSDictionary<string, NSObject>): void;
 }
 
@@ -146,7 +152,16 @@ declare class RPBroadcastSampleHandler extends RPBroadcastHandler {
 
 	broadcastStartedWithSetupInfo(setupInfo: NSDictionary<string, NSObject>): void;
 
+	finishBroadcastWithError(error: NSError): void;
+
 	processSampleBufferWithType(sampleBuffer: any, sampleBufferType: RPSampleBufferType): void;
+}
+
+declare const enum RPCameraPosition {
+
+	Front = 1,
+
+	Back = 2
 }
 
 declare class RPPreviewViewController extends UIViewController {
@@ -196,7 +211,15 @@ declare const enum RPRecordingErrorCode {
 
 	BroadcastInvalidSession = -5808,
 
-	SystemDormancy = -5809
+	SystemDormancy = -5809,
+
+	Entitlements = -5810,
+
+	ActivePhoneCall = -5811,
+
+	FailedToSave = -5812,
+
+	CarPlay = -5813
 }
 
 declare var RPRecordingErrorDomain: string;
@@ -222,6 +245,8 @@ declare class RPScreenRecorder extends NSObject {
 
 	cameraEnabled: boolean;
 
+	cameraPosition: RPCameraPosition;
+
 	readonly cameraPreviewView: UIView;
 
 	delegate: RPScreenRecorderDelegate;
@@ -232,9 +257,13 @@ declare class RPScreenRecorder extends NSObject {
 
 	discardRecordingWithHandler(handler: () => void): void;
 
+	startCaptureWithHandlerCompletionHandler(captureHandler: (p1: any, p2: RPSampleBufferType, p3: NSError) => void, completionHandler: (p1: NSError) => void): void;
+
 	startRecordingWithHandler(handler: (p1: NSError) => void): void;
 
 	startRecordingWithMicrophoneEnabledHandler(microphoneEnabled: boolean, handler: (p1: NSError) => void): void;
+
+	stopCaptureWithHandler(handler: (p1: NSError) => void): void;
 
 	stopRecordingWithHandler(handler: (p1: RPPreviewViewController, p2: NSError) => void): void;
 }
@@ -244,6 +273,8 @@ interface RPScreenRecorderDelegate extends NSObjectProtocol {
 	screenRecorderDidChangeAvailability?(screenRecorder: RPScreenRecorder): void;
 
 	screenRecorderDidStopRecordingWithErrorPreviewViewController?(screenRecorder: RPScreenRecorder, error: NSError, previewViewController: RPPreviewViewController): void;
+
+	screenRecorderDidStopRecordingWithPreviewViewControllerError?(screenRecorder: RPScreenRecorder, previewViewController: RPPreviewViewController, error: NSError): void;
 }
 declare var RPScreenRecorderDelegate: {
 

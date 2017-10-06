@@ -418,7 +418,7 @@ declare class JSValue extends NSObject {
 
 declare function JSValueCreateJSONString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, indent: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function JSValueGetType(ctx: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): JSType;
+declare function JSValueGetType(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): JSType;
 
 declare function JSValueGetTypedArrayType(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSTypedArrayType;
 

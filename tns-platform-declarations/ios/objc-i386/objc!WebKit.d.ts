@@ -42,6 +42,34 @@ declare class WKBackForwardListItem extends NSObject {
 	readonly title: string;
 }
 
+declare class WKContentRuleList extends NSObject {
+
+	static alloc(): WKContentRuleList; // inherited from NSObject
+
+	static new(): WKContentRuleList; // inherited from NSObject
+
+	readonly identifier: string;
+}
+
+declare class WKContentRuleListStore extends NSObject {
+
+	static alloc(): WKContentRuleListStore; // inherited from NSObject
+
+	static defaultStore(): WKContentRuleListStore;
+
+	static new(): WKContentRuleListStore; // inherited from NSObject
+
+	static storeWithURL(url: NSURL): WKContentRuleListStore;
+
+	compileContentRuleListForIdentifierEncodedContentRuleListCompletionHandler(identifier: string, encodedContentRuleList: string, completionHandler: (p1: WKContentRuleList, p2: NSError) => void): void;
+
+	getAvailableContentRuleListIdentifiers(completionHandler: (p1: NSArray<string>) => void): void;
+
+	lookUpContentRuleListForIdentifierCompletionHandler(identifier: string, completionHandler: (p1: WKContentRuleList, p2: NSError) => void): void;
+
+	removeContentRuleListForIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
+}
+
 declare const enum WKDataDetectorTypes {
 
 	None = 0,
@@ -75,7 +103,15 @@ declare const enum WKErrorCode {
 
 	JavaScriptExceptionOccurred = 4,
 
-	JavaScriptResultTypeIsUnsupported = 5
+	JavaScriptResultTypeIsUnsupported = 5,
+
+	ContentRuleListStoreCompileFailed = 6,
+
+	ContentRuleListStoreLookUpFailed = 7,
+
+	ContentRuleListStoreRemoveFailed = 8,
+
+	ContentRuleListStoreVersionMismatch = 9
 }
 
 declare var WKErrorDomain: string;
@@ -92,8 +128,36 @@ declare class WKFrameInfo extends NSObject implements NSCopying {
 
 	readonly securityOrigin: WKSecurityOrigin;
 
+	readonly webView: WKWebView;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
+
+declare class WKHTTPCookieStore extends NSObject {
+
+	static alloc(): WKHTTPCookieStore; // inherited from NSObject
+
+	static new(): WKHTTPCookieStore; // inherited from NSObject
+
+	addObserver(observer: WKHTTPCookieStoreObserver): void;
+
+	deleteCookieCompletionHandler(cookie: NSHTTPCookie, completionHandler: () => void): void;
+
+	getAllCookies(completionHandler: (p1: NSArray<NSHTTPCookie>) => void): void;
+
+	removeObserver(observer: WKHTTPCookieStoreObserver): void;
+
+	setCookieCompletionHandler(cookie: NSHTTPCookie, completionHandler: () => void): void;
+}
+
+interface WKHTTPCookieStoreObserver extends NSObjectProtocol {
+
+	cookiesDidChangeInCookieStore?(cookieStore: WKHTTPCookieStore): void;
+}
+declare var WKHTTPCookieStoreObserver: {
+
+	prototype: WKHTTPCookieStoreObserver;
+};
 
 declare class WKNavigation extends NSObject {
 
@@ -313,6 +377,34 @@ declare var WKUIDelegate: {
 	prototype: WKUIDelegate;
 };
 
+interface WKURLSchemeHandler extends NSObjectProtocol {
+
+	webViewStartURLSchemeTask(webView: WKWebView, urlSchemeTask: WKURLSchemeTask): void;
+
+	webViewStopURLSchemeTask(webView: WKWebView, urlSchemeTask: WKURLSchemeTask): void;
+}
+declare var WKURLSchemeHandler: {
+
+	prototype: WKURLSchemeHandler;
+};
+
+interface WKURLSchemeTask extends NSObjectProtocol {
+
+	request: NSURLRequest;
+
+	didFailWithError(error: NSError): void;
+
+	didFinish(): void;
+
+	didReceiveData(data: NSData): void;
+
+	didReceiveResponse(response: NSURLResponse): void;
+}
+declare var WKURLSchemeTask: {
+
+	prototype: WKURLSchemeTask;
+};
+
 declare class WKUserContentController extends NSObject implements NSCoding {
 
 	static alloc(): WKUserContentController; // inherited from NSObject
@@ -323,6 +415,8 @@ declare class WKUserContentController extends NSObject implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	addContentRuleList(contentRuleList: WKContentRuleList): void;
+
 	addScriptMessageHandlerName(scriptMessageHandler: WKScriptMessageHandler, name: string): void;
 
 	addUserScript(userScript: WKUserScript): void;
@@ -331,7 +425,11 @@ declare class WKUserContentController extends NSObject implements NSCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
+	removeAllContentRuleLists(): void;
+
 	removeAllUserScripts(): void;
+
+	removeContentRuleList(contentRuleList: WKContentRuleList): void;
 
 	removeScriptMessageHandlerForName(name: string): void;
 }
@@ -377,6 +475,8 @@ declare class WKWebView extends UIView {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): WKWebView; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): WKWebView; // inherited from UIAppearance
+
+	static handlesURLScheme(urlScheme: string): boolean;
 
 	static new(): WKWebView; // inherited from NSObject
 
@@ -486,6 +586,10 @@ declare class WKWebViewConfiguration extends NSObject implements NSCoding, NSCop
 	encodeWithCoder(aCoder: NSCoder): void;
 
 	initWithCoder(aDecoder: NSCoder): this;
+
+	setURLSchemeHandlerForURLScheme(urlSchemeHandler: WKURLSchemeHandler, urlScheme: string): void;
+
+	urlSchemeHandlerForURLScheme(urlScheme: string): WKURLSchemeHandler;
 }
 
 declare class WKWebsiteDataRecord extends NSObject {
@@ -510,6 +614,8 @@ declare class WKWebsiteDataStore extends NSObject implements NSCoding {
 	static new(): WKWebsiteDataStore; // inherited from NSObject
 
 	static nonPersistentDataStore(): WKWebsiteDataStore;
+
+	readonly httpCookieStore: WKHTTPCookieStore;
 
 	readonly persistent: boolean;
 

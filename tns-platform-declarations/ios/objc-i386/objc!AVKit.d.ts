@@ -72,6 +72,10 @@ declare class AVPlayerViewController extends UIViewController {
 
 	delegate: AVPlayerViewControllerDelegate;
 
+	entersFullScreenWhenPlaybackBegins: boolean;
+
+	exitsFullScreenWhenPlaybackEnds: boolean;
+
 	player: AVPlayer;
 
 	readonly readyForDisplay: boolean;
@@ -108,4 +112,38 @@ interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
 declare var AVPlayerViewControllerDelegate: {
 
 	prototype: AVPlayerViewControllerDelegate;
+};
+
+declare class AVRoutePickerView extends UIView {
+
+	static alloc(): AVRoutePickerView; // inherited from NSObject
+
+	static appearance(): AVRoutePickerView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): AVRoutePickerView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): AVRoutePickerView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): AVRoutePickerView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): AVRoutePickerView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): AVRoutePickerView; // inherited from UIAppearance
+
+	static new(): AVRoutePickerView; // inherited from NSObject
+
+	activeTintColor: UIColor;
+
+	delegate: AVRoutePickerViewDelegate;
+}
+
+interface AVRoutePickerViewDelegate extends NSObjectProtocol {
+
+	routePickerViewDidEndPresentingRoutes?(routePickerView: AVRoutePickerView): void;
+
+	routePickerViewWillBeginPresentingRoutes?(routePickerView: AVRoutePickerView): void;
+}
+declare var AVRoutePickerViewDelegate: {
+
+	prototype: AVRoutePickerViewDelegate;
 };

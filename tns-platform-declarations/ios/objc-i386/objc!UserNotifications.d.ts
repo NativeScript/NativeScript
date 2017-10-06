@@ -198,11 +198,15 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 
 	static alloc(): UNNotificationCategory; // inherited from NSObject
 
+	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderOptions(identifier: string, actions: NSArray<UNNotificationAction>, intentIdentifiers: NSArray<string>, hiddenPreviewsBodyPlaceholder: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
+
 	static categoryWithIdentifierActionsIntentIdentifiersOptions(identifier: string, actions: NSArray<UNNotificationAction>, intentIdentifiers: NSArray<string>, options: UNNotificationCategoryOptions): UNNotificationCategory;
 
 	static new(): UNNotificationCategory; // inherited from NSObject
 
 	readonly actions: NSArray<UNNotificationAction>;
+
+	readonly hiddenPreviewsBodyPlaceholder: string;
 
 	readonly identifier: string;
 
@@ -221,13 +225,17 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare const enum UNNotificationCategoryOptions {
+declare var UNNotificationCategoryOptionNone: UNNotificationCategoryOptions;
 
-	None = 0,
+declare const enum UNNotificationCategoryOptions {
 
 	CustomDismissAction = 1,
 
-	AllowInCarPlay = 2
+	AllowInCarPlay = 2,
+
+	HiddenPreviewsShowTitle = 4,
+
+	HiddenPreviewsShowSubtitle = 8
 }
 
 declare class UNNotificationContent extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
@@ -370,6 +378,8 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	readonly notificationCenterSetting: UNNotificationSetting;
 
+	readonly showPreviewsSetting: UNShowPreviewsSetting;
+
 	readonly soundSetting: UNNotificationSetting;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -428,6 +438,15 @@ declare class UNPushNotificationTrigger extends UNNotificationTrigger {
 	static alloc(): UNPushNotificationTrigger; // inherited from NSObject
 
 	static new(): UNPushNotificationTrigger; // inherited from NSObject
+}
+
+declare const enum UNShowPreviewsSetting {
+
+	Always = 0,
+
+	WhenAuthenticated = 1,
+
+	Never = 2
 }
 
 declare class UNTextInputNotificationAction extends UNNotificationAction {

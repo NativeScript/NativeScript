@@ -80,13 +80,13 @@ declare class ADClient extends NSObject {
 
 	static sharedClient(): ADClient;
 
-	addClientToSegmentsReplaceExisting(segmentIdentifiers: NSArray<any>, replaceExisting: boolean): void;
+	addClientToSegmentsReplaceExisting(segmentIdentifiers: NSArray<string>, replaceExisting: boolean): void;
 
 	determineAppInstallationAttributionWithCompletionHandler(completionHandler: (p1: boolean) => void): void;
 
 	lookupAdConversionDetails(completionHandler: (p1: Date, p2: Date) => void): void;
 
-	requestAttributionDetailsWithBlock(completionHandler: (p1: NSDictionary<any, any>, p2: NSError) => void): void;
+	requestAttributionDetailsWithBlock(completionHandler: (p1: NSDictionary<string, NSObject>, p2: NSError) => void): void;
 }
 
 declare const enum ADClientError {
@@ -116,7 +116,11 @@ declare const enum ADError {
 
 	AdUnloaded = 7,
 
-	AssetLoadFailure = 8
+	AssetLoadFailure = 8,
+
+	AdResponseValidateFailure = 9,
+
+	AdAssetLoadPending = 10
 }
 
 declare var ADErrorDomain: string;

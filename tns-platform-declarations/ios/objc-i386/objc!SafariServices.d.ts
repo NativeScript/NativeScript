@@ -1,4 +1,26 @@
 
+declare const enum SFAuthenticationError {
+
+	CanceledLogin = 1
+}
+
+declare var SFAuthenticationErrorDomain: string;
+
+declare class SFAuthenticationSession extends NSObject {
+
+	static alloc(): SFAuthenticationSession; // inherited from NSObject
+
+	static new(): SFAuthenticationSession; // inherited from NSObject
+
+	constructor(o: { URL: NSURL; callbackURLScheme: string; completionHandler: (p1: NSURL, p2: NSError) => void; });
+
+	cancel(): void;
+
+	initWithURLCallbackURLSchemeCompletionHandler(URL: NSURL, callbackURLScheme: string, completionHandler: (p1: NSURL, p2: NSError) => void): this;
+
+	start(): boolean;
+}
+
 declare const enum SFContentBlockerErrorCode {
 
 	NoExtensionFound = 1,
@@ -47,7 +69,11 @@ declare class SFSafariViewController extends UIViewController {
 
 	static new(): SFSafariViewController; // inherited from NSObject
 
+	readonly configuration: SFSafariViewControllerConfiguration;
+
 	delegate: SFSafariViewControllerDelegate;
+
+	dismissButtonStyle: SFSafariViewControllerDismissButtonStyle;
 
 	preferredBarTintColor: UIColor;
 
@@ -55,11 +81,28 @@ declare class SFSafariViewController extends UIViewController {
 
 	constructor(o: { URL: NSURL; });
 
+	constructor(o: { URL: NSURL; configuration: SFSafariViewControllerConfiguration; });
+
 	constructor(o: { URL: NSURL; entersReaderIfAvailable: boolean; });
 
 	initWithURL(URL: NSURL): this;
 
+	initWithURLConfiguration(URL: NSURL, configuration: SFSafariViewControllerConfiguration): this;
+
 	initWithURLEntersReaderIfAvailable(URL: NSURL, entersReaderIfAvailable: boolean): this;
+}
+
+declare class SFSafariViewControllerConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): SFSafariViewControllerConfiguration; // inherited from NSObject
+
+	static new(): SFSafariViewControllerConfiguration; // inherited from NSObject
+
+	barCollapsingEnabled: boolean;
+
+	entersReaderIfAvailable: boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {
@@ -69,11 +112,24 @@ interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 	safariViewControllerDidCompleteInitialLoad?(controller: SFSafariViewController, didLoadSuccessfully: boolean): void;
 
 	safariViewControllerDidFinish?(controller: SFSafariViewController): void;
+
+	safariViewControllerExcludedActivityTypesForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<string>;
+
+	safariViewControllerInitialLoadDidRedirectToURL?(controller: SFSafariViewController, URL: NSURL): void;
 }
 declare var SFSafariViewControllerDelegate: {
 
 	prototype: SFSafariViewControllerDelegate;
 };
+
+declare const enum SFSafariViewControllerDismissButtonStyle {
+
+	Done = 0,
+
+	Close = 1,
+
+	Cancel = 2
+}
 
 declare class SSReadingList extends NSObject {
 

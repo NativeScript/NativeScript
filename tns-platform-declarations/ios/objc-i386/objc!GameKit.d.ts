@@ -1007,9 +1007,12 @@ declare var GKPeerPickerControllerDelegate: {
 	prototype: GKPeerPickerControllerDelegate;
 };
 
-declare const GKPhotoSizeNormal: number;
+declare const enum GKPhotoSize {
 
-declare const GKPhotoSizeSmall: number;
+	Small = 0,
+
+	Normal = 1
+}
 
 declare class GKPlayer extends GKBasePlayer {
 
@@ -1027,7 +1030,7 @@ declare class GKPlayer extends GKBasePlayer {
 
 	readonly isFriend: boolean;
 
-	loadPhotoForSizeWithCompletionHandler(size: number, completionHandler: (p1: UIImage, p2: NSError) => void): void;
+	loadPhotoForSizeWithCompletionHandler(size: GKPhotoSize, completionHandler: (p1: UIImage, p2: NSError) => void): void;
 }
 
 declare var GKPlayerAuthenticationDidChangeNotificationName: string;

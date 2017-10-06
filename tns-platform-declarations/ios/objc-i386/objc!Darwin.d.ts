@@ -6,14 +6,6 @@ declare const enum ACTION {
 	ENTER = 1
 }
 
-declare var COLORS: number;
-
-declare function COLOR_PAIR(p1: number): number;
-
-declare var COLOR_PAIRS: number;
-
-declare var COLS: number;
-
 interface DBM {
 	__opaque: interop.Reference<number>;
 }
@@ -26,7 +18,7 @@ interface DIR {
 	__dd_buf: string;
 	__dd_len: number;
 	__dd_seek: number;
-	__dd_rewind: number;
+	__padding: number;
 	__dd_flags: number;
 	__dd_lock: _opaque_pthread_mutex_t;
 	__dd_td: interop.Pointer | interop.Reference<any>;
@@ -46,8 +38,6 @@ interface ENTRY {
 	data: interop.Pointer | interop.Reference<any>;
 }
 declare var ENTRY: interop.StructType<ENTRY>;
-
-declare var ESCDELAY: number;
 
 interface FILE {
 	_p: string;
@@ -114,17 +104,6 @@ declare var Float96: interop.StructType<Float96>;
 declare var KERNEL_AUDIT_TOKEN: audit_token_t;
 
 declare var KERNEL_SECURITY_TOKEN: security_token_t;
-
-declare var LINES: number;
-
-interface MEVENT {
-	id: number;
-	x: number;
-	y: number;
-	z: number;
-	bstate: number;
-}
-declare var MEVENT: interop.StructType<MEVENT>;
 
 declare var NDR_record: NDR_record_t;
 
@@ -251,8 +230,6 @@ declare function OSSpinLockUnlock(__lock: interop.Pointer | interop.Reference<nu
 
 declare const OSUnknownByteOrder: number;
 
-declare function PAIR_NUMBER(p1: number): number;
-
 interface Point {
 	v: number;
 	h: number;
@@ -272,22 +249,6 @@ interface Rect {
 	right: number;
 }
 declare var Rect: interop.StructType<Rect>;
-
-declare const SOCKINFO_GENERIC: number;
-
-declare const SOCKINFO_IN: number;
-
-declare const SOCKINFO_KERN_CTL: number;
-
-declare const SOCKINFO_KERN_EVENT: number;
-
-declare const SOCKINFO_NDRV: number;
-
-declare const SOCKINFO_TCP: number;
-
-declare const SOCKINFO_UN: number;
-
-declare var TABSIZE: number;
 
 interface TimeRecord {
 	value: wide;
@@ -486,13 +447,6 @@ interface __Reply__exception_raise_t {
 	RetCode: number;
 }
 declare var __Reply__exception_raise_t: interop.StructType<__Reply__exception_raise_t>;
-
-interface __Reply__get_dp_control_port_t {
-	Head: mach_msg_header_t;
-	msgh_body: mach_msg_body_t;
-	contorl_port: mach_msg_port_descriptor_t;
-}
-declare var __Reply__get_dp_control_port_t: interop.StructType<__Reply__get_dp_control_port_t>;
 
 interface __Reply__host_check_multiuser_mode_t {
 	Head: mach_msg_header_t;
@@ -778,17 +732,6 @@ interface __Reply__host_virtual_physical_table_info_t {
 	infoCnt: number;
 }
 declare var __Reply__host_virtual_physical_table_info_t: interop.StructType<__Reply__host_virtual_physical_table_info_t>;
-
-interface __Reply__host_zone_info_t {
-	Head: mach_msg_header_t;
-	msgh_body: mach_msg_body_t;
-	names: mach_msg_ool_descriptor_t;
-	info: mach_msg_ool_descriptor_t;
-	NDR: NDR_record_t;
-	namesCnt: number;
-	infoCnt: number;
-}
-declare var __Reply__host_zone_info_t: interop.StructType<__Reply__host_zone_info_t>;
 
 interface __Reply__kext_request_t {
 	Head: mach_msg_header_t;
@@ -1428,13 +1371,6 @@ interface __Reply__semaphore_destroy_t {
 }
 declare var __Reply__semaphore_destroy_t: interop.StructType<__Reply__semaphore_destroy_t>;
 
-interface __Reply__set_dp_control_port_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__set_dp_control_port_t: interop.StructType<__Reply__set_dp_control_port_t>;
-
 interface __Reply__task_assign_default_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -1532,6 +1468,15 @@ interface __Reply__task_info_t {
 	task_info_out: interop.Reference<number>;
 }
 declare var __Reply__task_info_t: interop.StructType<__Reply__task_info_t>;
+
+interface __Reply__task_inspect_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	info_outCnt: number;
+	info_out: interop.Reference<number>;
+}
+declare var __Reply__task_inspect_t: interop.StructType<__Reply__task_inspect_t>;
 
 interface __Reply__task_map_corpse_info_64_t {
 	Head: mach_msg_header_t;
@@ -2311,11 +2256,6 @@ interface __Request__exception_raise_t {
 }
 declare var __Request__exception_raise_t: interop.StructType<__Request__exception_raise_t>;
 
-interface __Request__get_dp_control_port_t {
-	Head: mach_msg_header_t;
-}
-declare var __Request__get_dp_control_port_t: interop.StructType<__Request__get_dp_control_port_t>;
-
 interface __Request__host_check_multiuser_mode_t {
 	Head: mach_msg_header_t;
 }
@@ -2574,11 +2514,6 @@ interface __Request__host_virtual_physical_table_info_t {
 	Head: mach_msg_header_t;
 }
 declare var __Request__host_virtual_physical_table_info_t: interop.StructType<__Request__host_virtual_physical_table_info_t>;
-
-interface __Request__host_zone_info_t {
-	Head: mach_msg_header_t;
-}
-declare var __Request__host_zone_info_t: interop.StructType<__Request__host_zone_info_t>;
 
 interface __Request__kext_request_t {
 	Head: mach_msg_header_t;
@@ -3181,13 +3116,6 @@ interface __Request__semaphore_destroy_t {
 }
 declare var __Request__semaphore_destroy_t: interop.StructType<__Request__semaphore_destroy_t>;
 
-interface __Request__set_dp_control_port_t {
-	Head: mach_msg_header_t;
-	msgh_body: mach_msg_body_t;
-	control_port: mach_msg_port_descriptor_t;
-}
-declare var __Request__set_dp_control_port_t: interop.StructType<__Request__set_dp_control_port_t>;
-
 interface __Request__task_assign_default_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -3270,6 +3198,14 @@ interface __Request__task_info_t {
 	task_info_outCnt: number;
 }
 declare var __Request__task_info_t: interop.StructType<__Request__task_info_t>;
+
+interface __Request__task_inspect_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	flavor: number;
+	info_outCnt: number;
+}
+declare var __Request__task_inspect_t: interop.StructType<__Request__task_inspect_t>;
 
 interface __Request__task_map_corpse_info_64_t {
 	Head: mach_msg_header_t;
@@ -4168,8 +4104,6 @@ declare var _c_locale: interop.Pointer | interop.Reference<any>;
 
 declare function _exit(p1: number): void;
 
-declare var _gmonparam: gmonparam;
-
 declare function _host_page_size(host: number, out_page_size: interop.Pointer | interop.Reference<number>): number;
 
 declare function _kernelrpc_mach_port_allocate_trap(target: number, right: number, name: interop.Pointer | interop.Reference<number>): number;
@@ -4209,8 +4143,6 @@ declare function _kernelrpc_mach_vm_purgable_control_trap(target: number, addres
 declare var _libiconv_version: number;
 
 declare function _longjmp(p1: interop.Reference<number>, p2: number): void;
-
-declare function _nc_tracebits(): string;
 
 interface _opaque_pthread_attr_t {
 	__sig: number;
@@ -4278,21 +4210,9 @@ interface _pcred {
 }
 declare var _pcred: interop.StructType<_pcred>;
 
+declare function _pthread_mutex_enable_legacy_mode(): void;
+
 declare function _setjmp(p1: interop.Reference<number>): number;
-
-declare function _traceattr(p1: number): string;
-
-declare function _traceattr2(p1: number, p2: number): string;
-
-declare function _tracechar(p1: number): string;
-
-declare function _tracechtype(p1: number): string;
-
-declare function _tracechtype2(p1: number, p2: number): string;
-
-declare function _tracedump(p1: string, p2: interop.Pointer | interop.Reference<any>): void;
-
-declare function _tracemouse(p1: interop.Pointer | interop.Reference<MEVENT>): string;
 
 interface _ucred {
 	cr_ref: number;
@@ -4322,21 +4242,6 @@ declare var accessx_descriptor: interop.StructType<accessx_descriptor>;
 declare function accessx_np(p1: interop.Pointer | interop.Reference<accessx_descriptor>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: number): number;
 
 declare function acct(p1: string): number;
-
-interface acctStruct {
-	ac_comm: interop.Reference<number>;
-	ac_utime: number;
-	ac_stime: number;
-	ac_etime: number;
-	ac_btime: number;
-	ac_uid: number;
-	ac_gid: number;
-	ac_mem: number;
-	ac_io: number;
-	ac_tty: number;
-	ac_flag: number;
-}
-declare var acctStruct: interop.StructType<acctStruct>;
 
 declare function acl_add_flag_np(flagset_d: interop.Pointer | interop.Reference<any>, flag: acl_flag_t): number;
 
@@ -4537,21 +4442,11 @@ declare function acoshl(p1: number): number;
 
 declare function acosl(p1: number): number;
 
-declare var acs_map: interop.Reference<number>;
-
 declare function act_get_state(target_act: number, flavor: number, old_state: interop.Pointer | interop.Reference<number>, old_stateCnt: interop.Pointer | interop.Reference<number>): number;
 
 declare function act_set_state(target_act: number, flavor: number, new_state: interop.Pointer | interop.Reference<number>, new_stateCnt: number): number;
 
 declare function add_profil(p1: string, p2: number, p3: number, p4: number): number;
-
-declare function addch(p1: number): number;
-
-declare function addchnstr(p1: interop.Pointer | interop.Reference<number>, p2: number): number;
-
-declare function addchstr(p1: interop.Pointer | interop.Reference<number>): number;
-
-declare function addnstr(p1: string, p2: number): number;
 
 declare function addr2ascii(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: string): string;
 
@@ -4567,8 +4462,6 @@ interface addrinfo {
 }
 declare var addrinfo: interop.StructType<addrinfo>;
 
-declare function addstr(p1: string): number;
-
 declare function adjtime(p1: interop.Pointer | interop.Reference<timeval>, p2: interop.Pointer | interop.Reference<timeval>): number;
 
 declare function alarm(p1: number): number;
@@ -4578,17 +4471,6 @@ declare function alloca(p1: number): interop.Pointer | interop.Reference<any>;
 declare const alphaStage: number;
 
 declare function alphasort(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<dirent>>): number;
-
-interface appletalk_fdinfo {
-	pfi: proc_fileinfo;
-	appletalkinfo: appletalk_info;
-}
-declare var appletalk_fdinfo: interop.StructType<appletalk_fdinfo>;
-
-interface appletalk_info {
-	atalk_stat: vinfo_stat;
-}
-declare var appletalk_info: interop.StructType<appletalk_info>;
 
 declare function arc4random(): number;
 
@@ -4617,8 +4499,6 @@ declare function asinhf(p1: number): number;
 declare function asinhl(p1: number): number;
 
 declare function asinl(p1: number): number;
-
-declare function assume_default_colors(p1: number, p2: number): number;
 
 declare function atan(p1: number): number;
 
@@ -4654,14 +4534,6 @@ declare function atomic_signal_fence(p1: memory_order): void;
 
 declare function atomic_thread_fence(p1: memory_order): void;
 
-declare function attr_get(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>): number;
-
-declare function attr_off(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function attr_on(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function attr_set(p1: number, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
-
 interface attribute_set_t {
 	commonattr: number;
 	volattr: number;
@@ -4682,98 +4554,11 @@ interface attrlist {
 }
 declare var attrlist: interop.StructType<attrlist>;
 
-declare function attroff(p1: number): number;
-
-declare function attron(p1: number): number;
-
 interface attrreference_t {
 	attr_dataoffset: number;
 	attr_length: number;
 }
 declare var attrreference_t: interop.StructType<attrreference_t>;
-
-declare function attrset(p1: number): number;
-
-interface au_arb_t {
-	howtopr: number;
-	bu: number;
-	uc: number;
-	data: string;
-}
-declare var au_arb_t: interop.StructType<au_arb_t>;
-
-interface au_arg32_t {
-	no: number;
-	val: number;
-	len: number;
-	text: string;
-}
-declare var au_arg32_t: interop.StructType<au_arg32_t>;
-
-interface au_arg64_t {
-	no: number;
-	val: number;
-	len: number;
-	text: string;
-}
-declare var au_arg64_t: interop.StructType<au_arg64_t>;
-
-interface au_attr32_t {
-	mode: number;
-	uid: number;
-	gid: number;
-	fsid: number;
-	nid: number;
-	dev: number;
-}
-declare var au_attr32_t: interop.StructType<au_attr32_t>;
-
-interface au_attr64_t {
-	mode: number;
-	uid: number;
-	gid: number;
-	fsid: number;
-	nid: number;
-	dev: number;
-}
-declare var au_attr64_t: interop.StructType<au_attr64_t>;
-
-declare function au_bsm_to_domain(bsm_domain: number, local_domainp: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_domainFunction(bsm_domain: number, local_domainp: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_errno(bsm_error: number, errorp: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_errnoFunction(bsm_error: number, errorp: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_fcntl_cmd(bsm_fcntl_cmd: number, local_fcntl_cmdp: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_fcntl_cmdFunction(bsm_fcntl_cmd: number, local_fcntl_cmdp: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_socket_type(bsm_socket_type: number, local_socket_typep: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_bsm_to_socket_typeFunction(bsm_socket_type: number, local_socket_typep: interop.Pointer | interop.Reference<number>): number;
-
-interface au_class_ent_t {
-	ac_name: string;
-	ac_class: number;
-	ac_desc: string;
-}
-declare var au_class_ent_t: interop.StructType<au_class_ent_t>;
-
-declare function au_close(d: number, keep: number, event: number): number;
-
-declare function au_close_buffer(d: number, event: number, buffer: string, buflen: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_close_token(tok: interop.Pointer | interop.Reference<any>, buffer: string, buflen: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_domain_to_bsm(local_domain: number): number;
-
-declare function au_domain_to_bsmFunction(local_domain: number): number;
-
-declare function au_errno_to_bsm(local_errno: number): number;
-
-declare function au_errno_to_bsmFunction(local_errno: number): number;
 
 interface au_evclass_map_t {
 	ec_number: number;
@@ -4781,245 +4566,17 @@ interface au_evclass_map_t {
 }
 declare var au_evclass_map_t: interop.StructType<au_evclass_map_t>;
 
-interface au_event_ent_t {
-	ae_number: number;
-	ae_name: string;
-	ae_desc: string;
-	ae_class: number;
-}
-declare var au_event_ent_t: interop.StructType<au_event_ent_t>;
-
-interface au_execarg_t {
-	count: number;
-	text: interop.Reference<string>;
-}
-declare var au_execarg_t: interop.StructType<au_execarg_t>;
-
-interface au_execenv_t {
-	count: number;
-	text: interop.Reference<string>;
-}
-declare var au_execenv_t: interop.StructType<au_execenv_t>;
-
-interface au_exit_t {
-	status: number;
-	ret: number;
-}
-declare var au_exit_t: interop.StructType<au_exit_t>;
-
-declare function au_fcntl_cmd_to_bsm(local_fcntl_command: number): number;
-
-declare function au_fcntl_cmd_to_bsmFunction(local_fcntl_command: number): number;
-
-interface au_file_t {
-	s: number;
-	ms: number;
-	len: number;
-	name: string;
-}
-declare var au_file_t: interop.StructType<au_file_t>;
-
-declare function au_free_token(tok: interop.Pointer | interop.Reference<any>): void;
-
 interface au_fstat_t {
 	af_filesz: number;
 	af_currsz: number;
 }
 declare var au_fstat_t: interop.StructType<au_fstat_t>;
 
-declare function au_get_state(): number;
-
-interface au_groups_t {
-	no: number;
-	list: interop.Reference<number>;
-}
-declare var au_groups_t: interop.StructType<au_groups_t>;
-
-interface au_header32_ex_t {
-	size: number;
-	version: number;
-	e_type: number;
-	e_mod: number;
-	ad_type: number;
-	addr: interop.Reference<number>;
-	s: number;
-	ms: number;
-}
-declare var au_header32_ex_t: interop.StructType<au_header32_ex_t>;
-
-interface au_header32_t {
-	size: number;
-	version: number;
-	e_type: number;
-	e_mod: number;
-	s: number;
-	ms: number;
-}
-declare var au_header32_t: interop.StructType<au_header32_t>;
-
-interface au_header64_ex_t {
-	size: number;
-	version: number;
-	e_type: number;
-	e_mod: number;
-	ad_type: number;
-	addr: interop.Reference<number>;
-	s: number;
-	ms: number;
-}
-declare var au_header64_ex_t: interop.StructType<au_header64_ex_t>;
-
-interface au_header64_t {
-	size: number;
-	version: number;
-	e_type: number;
-	e_mod: number;
-	s: number;
-	ms: number;
-}
-declare var au_header64_t: interop.StructType<au_header64_t>;
-
-interface au_inaddr_ex_t {
-	type: number;
-	addr: interop.Reference<number>;
-}
-declare var au_inaddr_ex_t: interop.StructType<au_inaddr_ex_t>;
-
-interface au_inaddr_t {
-	addr: number;
-}
-declare var au_inaddr_t: interop.StructType<au_inaddr_t>;
-
-interface au_invalid_t {
-	length: number;
-	data: string;
-}
-declare var au_invalid_t: interop.StructType<au_invalid_t>;
-
-interface au_ip_t {
-	version: number;
-	tos: number;
-	len: number;
-	id: number;
-	offset: number;
-	ttl: number;
-	prot: number;
-	chksm: number;
-	src: number;
-	dest: number;
-}
-declare var au_ip_t: interop.StructType<au_ip_t>;
-
-interface au_ipc_t {
-	type: number;
-	id: number;
-}
-declare var au_ipc_t: interop.StructType<au_ipc_t>;
-
-interface au_ipcperm_t {
-	uid: number;
-	gid: number;
-	puid: number;
-	pgid: number;
-	mode: number;
-	seq: number;
-	key: number;
-}
-declare var au_ipcperm_t: interop.StructType<au_ipcperm_t>;
-
-interface au_iport_t {
-	port: number;
-}
-declare var au_iport_t: interop.StructType<au_iport_t>;
-
-interface au_kevent_t {
-	ident: number;
-	filter: number;
-	flags: number;
-	fflags: number;
-	data: number;
-}
-declare var au_kevent_t: interop.StructType<au_kevent_t>;
-
 interface au_mask_t {
 	am_success: number;
 	am_failure: number;
 }
 declare var au_mask_t: interop.StructType<au_mask_t>;
-
-declare function au_notify_initialize(): number;
-
-declare function au_notify_terminate(): number;
-
-interface au_opaque_t {
-	size: number;
-	data: string;
-}
-declare var au_opaque_t: interop.StructType<au_opaque_t>;
-
-declare function au_open(): number;
-
-interface au_path_t {
-	len: number;
-	path: string;
-}
-declare var au_path_t: interop.StructType<au_path_t>;
-
-declare function au_poltostr(policy: number, maxsize: number, buf: string): number;
-
-declare function au_preselect(event: number, mask_p: interop.Pointer | interop.Reference<au_mask_t>, sorf: number, flag: number): number;
-
-declare function au_print_xml_footer(outfp: interop.Pointer | interop.Reference<FILE>): void;
-
-declare function au_print_xml_header(outfp: interop.Pointer | interop.Reference<FILE>): void;
-
-interface au_proc32_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tid32_t;
-}
-declare var au_proc32_t: interop.StructType<au_proc32_t>;
-
-interface au_proc32ex_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tidaddr32_t;
-}
-declare var au_proc32ex_t: interop.StructType<au_proc32ex_t>;
-
-interface au_proc64_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tid64_t;
-}
-declare var au_proc64_t: interop.StructType<au_proc64_t>;
-
-interface au_proc64ex_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tidaddr64_t;
-}
-declare var au_proc64ex_t: interop.StructType<au_proc64ex_t>;
 
 interface au_qctrl_t {
 	aq_hiwater: number;
@@ -5030,76 +4587,11 @@ interface au_qctrl_t {
 }
 declare var au_qctrl_t: interop.StructType<au_qctrl_t>;
 
-declare function au_read_rec(fp: interop.Pointer | interop.Reference<FILE>, buf: interop.Pointer | interop.Reference<string>): number;
-
-interface au_ret32_t {
-	status: number;
-	ret: number;
-}
-declare var au_ret32_t: interop.StructType<au_ret32_t>;
-
-interface au_ret64_t {
-	err: number;
-	val: number;
-}
-declare var au_ret64_t: interop.StructType<au_ret64_t>;
-
-interface au_seq_t {
-	seqno: number;
-}
-declare var au_seq_t: interop.StructType<au_seq_t>;
-
 interface au_session_t {
 	as_aia_p: interop.Pointer | interop.Reference<auditinfo_addr_t>;
 	as_mask: au_mask_t;
 }
 declare var au_session_t: interop.StructType<au_session_t>;
-
-declare function au_sflagstostr(flags: number, maxsize: number, buf: string): number;
-
-interface au_socket_ex32_t {
-	domain: number;
-	type: number;
-	atype: number;
-	l_port: number;
-	l_addr: interop.Reference<number>;
-	r_port: number;
-	r_addr: interop.Reference<number>;
-}
-declare var au_socket_ex32_t: interop.StructType<au_socket_ex32_t>;
-
-interface au_socket_t {
-	type: number;
-	l_port: number;
-	l_addr: number;
-	r_port: number;
-	r_addr: number;
-}
-declare var au_socket_t: interop.StructType<au_socket_t>;
-
-declare function au_socket_type_to_bsm(local_socket_type: number): number;
-
-declare function au_socket_type_to_bsmFunction(local_socket_type: number): number;
-
-interface au_socketinet32_t {
-	family: number;
-	port: number;
-	addr: number;
-}
-declare var au_socketinet32_t: interop.StructType<au_socketinet32_t>;
-
-interface au_socketinet_ex32_t {
-	family: number;
-	port: number;
-	addr: interop.Reference<number>;
-}
-declare var au_socketinet_ex32_t: interop.StructType<au_socketinet_ex32_t>;
-
-interface au_socketunix_t {
-	family: number;
-	path: interop.Reference<number>;
-}
-declare var au_socketunix_t: interop.StructType<au_socketunix_t>;
 
 interface au_stat_t {
 	as_version: number;
@@ -5119,78 +4611,6 @@ interface au_stat_t {
 }
 declare var au_stat_t: interop.StructType<au_stat_t>;
 
-declare function au_strerror(bsm_error: number): string;
-
-declare function au_strtopol(polstr: string, policy: interop.Pointer | interop.Reference<number>): number;
-
-declare function au_strtosflags(sflagsstr: string, flags: interop.Pointer | interop.Reference<number>): number;
-
-interface au_subject32_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tid32_t;
-}
-declare var au_subject32_t: interop.StructType<au_subject32_t>;
-
-interface au_subject32ex_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tidaddr32_t;
-}
-declare var au_subject32ex_t: interop.StructType<au_subject32ex_t>;
-
-interface au_subject64_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tid64_t;
-}
-declare var au_subject64_t: interop.StructType<au_subject64_t>;
-
-interface au_subject64ex_t {
-	auid: number;
-	euid: number;
-	egid: number;
-	ruid: number;
-	rgid: number;
-	pid: number;
-	sid: number;
-	tid: au_tidaddr64_t;
-}
-declare var au_subject64ex_t: interop.StructType<au_subject64ex_t>;
-
-interface au_text_t {
-	len: number;
-	text: string;
-}
-declare var au_text_t: interop.StructType<au_text_t>;
-
-interface au_tid32_t {
-	port: number;
-	addr: number;
-}
-declare var au_tid32_t: interop.StructType<au_tid32_t>;
-
-interface au_tid64_t {
-	port: number;
-	addr: number;
-}
-declare var au_tid64_t: interop.StructType<au_tid64_t>;
-
 interface au_tid_addr_t {
 	at_port: number;
 	at_type: number;
@@ -5204,176 +4624,7 @@ interface au_tid_t {
 }
 declare var au_tid_t: interop.StructType<au_tid_t>;
 
-interface au_tidaddr32_t {
-	port: number;
-	type: number;
-	addr: interop.Reference<number>;
-}
-declare var au_tidaddr32_t: interop.StructType<au_tidaddr32_t>;
-
-interface au_tidaddr64_t {
-	port: number;
-	type: number;
-	addr: interop.Reference<number>;
-}
-declare var au_tidaddr64_t: interop.StructType<au_tidaddr64_t>;
-
-declare function au_to_arg(n: number, text: string, v: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_arg32(n: number, text: string, v: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_arg64(n: number, text: string, v: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_data(unit_print: number, unit_type: number, unit_count: number, p: string): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_exec_args(argv: interop.Pointer | interop.Reference<string>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_exec_env(envp: interop.Pointer | interop.Reference<string>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_exit(retval: number, err: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_file(file: string, tm: timeval): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_groups(groups: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header(rec_size: number, e_type: number, e_mod: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header32(rec_size: number, e_type: number, e_mod: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header32_ex(rec_size: number, e_type: number, e_mod: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header32_ex_tm(rec_size: number, e_type: number, e_mod: number, tm: timeval, aia: interop.Pointer | interop.Reference<auditinfo_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header32_tm(rec_size: number, e_type: number, e_mod: number, tm: timeval): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header64(rec_size: number, e_type: number, e_mod: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header64_tm(rec_size: number, e_type: number, e_mod: number, tm: timeval): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_header_ex(rec_size: number, e_type: number, e_mod: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_in_addr(internet_addr: interop.Pointer | interop.Reference<in_addr>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_ip(ip: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_ipc(type: number, id: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_ipc_perm(perm: interop.Pointer | interop.Reference<ipc_perm>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_iport(iport: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_kevent(kev: interop.Pointer | interop.Reference<keventStruct>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_me(): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_newgroups(n: number, groups: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_opaque(data: string, bytes: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_path(path: string): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_process(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_process32(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_process32_ex(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_process64(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_process64_ex(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_process_ex(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_return(status: number, ret: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_return32(status: number, ret: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_return64(status: number, ret: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_seq(audit_count: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_sock_inet(so: interop.Pointer | interop.Reference<sockaddr_in>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_sock_inet32(so: interop.Pointer | interop.Reference<sockaddr_in>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_sock_unix(so: interop.Pointer | interop.Reference<sockaddr_un>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_socket_ex(so_domain: number, so_type: number, sa_local: interop.Pointer | interop.Reference<sockaddr>, sa_remote: interop.Pointer | interop.Reference<sockaddr>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_subject(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_subject32(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_subject32_ex(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_subject64(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_subject64_ex(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_subject_ex(auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_addr_t>): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_text(text: string): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_trailer(rec_size: number): interop.Pointer | interop.Reference<any>;
-
-declare function au_to_zonename(zonename: string): interop.Pointer | interop.Reference<any>;
-
-interface au_trailer_t {
-	magic: number;
-	count: number;
-}
-declare var au_trailer_t: interop.StructType<au_trailer_t>;
-
-interface au_user_ent_t {
-	au_name: string;
-	au_always: au_mask_t;
-	au_never: au_mask_t;
-}
-declare var au_user_ent_t: interop.StructType<au_user_ent_t>;
-
-declare function au_user_mask(username: string, mask_p: interop.Pointer | interop.Reference<au_mask_t>): number;
-
-declare function au_write(d: number, m: interop.Pointer | interop.Reference<any>): number;
-
-interface au_zonename_t {
-	len: number;
-	zonename: string;
-}
-declare var au_zonename_t: interop.StructType<au_zonename_t>;
-
 declare function audit(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function audit_get_car(path: string, sz: number): number;
-
-declare function audit_get_class(evc_map: interop.Pointer | interop.Reference<au_evclass_map_t>, sz: number): number;
-
-declare function audit_get_cond(cond: interop.Pointer | interop.Reference<number>): number;
-
-declare function audit_get_cwd(path: string, sz: number): number;
-
-declare function audit_get_fsize(fstat: interop.Pointer | interop.Reference<au_fstat_t>, sz: number): number;
-
-declare function audit_get_kaudit(aia: interop.Pointer | interop.Reference<auditinfo_addr_t>, sz: number): number;
-
-declare function audit_get_kmask(kmask: interop.Pointer | interop.Reference<au_mask_t>, sz: number): number;
-
-declare function audit_get_pinfo(api: interop.Pointer | interop.Reference<auditpinfo_t>, sz: number): number;
-
-declare function audit_get_pinfo_addr(apia: interop.Pointer | interop.Reference<auditpinfo_addr_t>, sz: number): number;
-
-declare function audit_get_policy(policy: interop.Pointer | interop.Reference<number>): number;
-
-declare function audit_get_qctrl(qctrl: interop.Pointer | interop.Reference<au_qctrl_t>, sz: number): number;
-
-declare function audit_get_sflags(flags: interop.Pointer | interop.Reference<number>): number;
-
-declare function audit_get_sflags_mask(which: string, mask: interop.Pointer | interop.Reference<number>): number;
-
-declare function audit_get_sinfo_addr(aia: interop.Pointer | interop.Reference<auditinfo_addr_t>, sz: number): number;
-
-declare function audit_get_stat(stats: interop.Pointer | interop.Reference<au_stat_t>, sz: number): number;
-
-declare function audit_send_trigger(trigger: interop.Pointer | interop.Reference<number>): number;
 
 declare function audit_session_join(port: number): number;
 
@@ -5381,48 +4632,10 @@ declare function audit_session_port(asid: number, portname: interop.Pointer | in
 
 declare function audit_session_self(): number;
 
-declare function audit_set_class(evc_map: interop.Pointer | interop.Reference<au_evclass_map_t>, sz: number): number;
-
-declare function audit_set_cond(cond: interop.Pointer | interop.Reference<number>): number;
-
-declare function audit_set_fsize(fstat: interop.Pointer | interop.Reference<au_fstat_t>, sz: number): number;
-
-declare function audit_set_kaudit(aia: interop.Pointer | interop.Reference<auditinfo_addr_t>, sz: number): number;
-
-declare function audit_set_kmask(kmask: interop.Pointer | interop.Reference<au_mask_t>, sz: number): number;
-
-declare function audit_set_pmask(api: interop.Pointer | interop.Reference<auditpinfo_t>, sz: number): number;
-
-declare function audit_set_policy(policy: interop.Pointer | interop.Reference<number>): number;
-
-declare function audit_set_qctrl(qctrl: interop.Pointer | interop.Reference<au_qctrl_t>, sz: number): number;
-
-declare function audit_set_sflags(flags: number): number;
-
-declare function audit_set_sflags_mask(which: string, mask: number): number;
-
-declare function audit_set_stat(stats: interop.Pointer | interop.Reference<au_stat_t>, sz: number): number;
-
-declare function audit_set_terminal_id(tid: interop.Pointer | interop.Reference<au_tid_t>): number;
-
 interface audit_token_t {
 	val: interop.Reference<number>;
 }
 declare var audit_token_t: interop.StructType<audit_token_t>;
-
-declare function audit_token_to_au32(atoken: audit_token_t, auidp: interop.Pointer | interop.Reference<number>, euidp: interop.Pointer | interop.Reference<number>, egidp: interop.Pointer | interop.Reference<number>, ruidp: interop.Pointer | interop.Reference<number>, rgidp: interop.Pointer | interop.Reference<number>, pidp: interop.Pointer | interop.Reference<number>, asidp: interop.Pointer | interop.Reference<number>, tidp: interop.Pointer | interop.Reference<au_tid_t>): void;
-
-declare function audit_write(event_code: number, subject: interop.Pointer | interop.Reference<any>, misctok: interop.Pointer | interop.Reference<any>, retval: number, errcode: number): number;
-
-declare function audit_write_failure(event_code: number, errmsg: string, errret: number, auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): number;
-
-declare function audit_write_failure_na(event_code: number, errmsg: string, errret: number, euid: number, egid: number, pid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): number;
-
-declare function audit_write_failure_self(event_code: number, errmsg: string, errret: number): number;
-
-declare function audit_write_success(event_code: number, misctok: interop.Pointer | interop.Reference<any>, auid: number, euid: number, egid: number, ruid: number, rgid: number, pid: number, sid: number, tid: interop.Pointer | interop.Reference<au_tid_t>): number;
-
-declare function audit_write_success_self(event_code: number, misctok: interop.Pointer | interop.Reference<any>): number;
 
 declare function auditctl(p1: string): number;
 
@@ -5470,13 +4683,9 @@ declare function basename(p1: string): string;
 
 declare function basename_r(p1: string, p2: string): string;
 
-declare function baudrate(): number;
-
 declare function bcmp(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
 
 declare function bcopy(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number): void;
-
-declare function beep(): number;
 
 declare const betaStage: number;
 
@@ -5486,17 +4695,9 @@ declare function bindresvport(p1: number, p2: interop.Pointer | interop.Referenc
 
 declare function bindresvport_sa(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>): number;
 
-declare function bkgd(p1: number): number;
-
-declare function bkgdset(p1: number): void;
-
 declare const bold: number;
 
 declare var bootstrap_port: number;
-
-declare function border(p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): number;
-
-declare function box(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
 
 declare function brk(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -5508,177 +4709,15 @@ declare function bsearch_b(__key: interop.Pointer | interop.Reference<any>, __ba
 
 declare function btowc(p1: number): number;
 
-declare function buf_alloc(vp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_attr(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_bawrite(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_bdwrite(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_biodone(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_biowait(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_blkno(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_bread(vp: interop.Pointer | interop.Reference<any>, blkno: number, size: number, cred: interop.Pointer | interop.Reference<ucred>, bpp: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
-
-declare function buf_breadn(vp: interop.Pointer | interop.Reference<any>, blkno: number, size: number, rablks: interop.Pointer | interop.Reference<number>, rasizes: interop.Pointer | interop.Reference<number>, nrablks: number, cred: interop.Pointer | interop.Reference<ucred>, bpp: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
-
-declare function buf_brelse(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_bwrite(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_callback(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_clear(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_clear_redundancy_flags(bp: interop.Pointer | interop.Reference<any>, flags: number): void;
-
-declare function buf_clearflags(bp: interop.Pointer | interop.Reference<any>, flags: number): void;
-
-declare function buf_clone(bp: interop.Pointer | interop.Reference<any>, io_offset: number, io_size: number, iodone: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, arg: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_count(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_create_shadow(bp: interop.Pointer | interop.Reference<any>, force_copy: number, external_storage: number, iodone: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, arg: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_dataptr(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_device(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_dirtyend(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_dirtyoff(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_drvdata(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_error(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_flags(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_flushdirtyblks(vp: interop.Pointer | interop.Reference<any>, wait: number, flags: number, msg: string): void;
-
-declare function buf_free(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_fromcache(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_fsprivate(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_fua(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_getblk(vp: interop.Pointer | interop.Reference<any>, blkno: number, size: number, slpflag: number, slptimeo: number, operation: number): interop.Pointer | interop.Reference<any>;
-
-declare function buf_geteblk(size: number): interop.Pointer | interop.Reference<any>;
-
-declare function buf_invalblkno(vp: interop.Pointer | interop.Reference<any>, lblkno: number, flags: number): number;
-
-declare function buf_invalidateblks(vp: interop.Pointer | interop.Reference<any>, flags: number, slpflag: number, slptimeo: number): number;
-
-declare function buf_iterate(vp: interop.Pointer | interop.Reference<any>, callout: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>, flags: number, arg: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_lblkno(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_map(bp: interop.Pointer | interop.Reference<any>, io_addr: interop.Pointer | interop.Reference<string>): number;
-
-declare function buf_markaged(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_markclean(p1: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_markdelayed(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_markeintr(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_markfua(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_markinvalid(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_markstatic(bp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_meta_bread(vp: interop.Pointer | interop.Reference<any>, blkno: number, size: number, cred: interop.Pointer | interop.Reference<ucred>, bpp: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
-
-declare function buf_meta_breadn(vp: interop.Pointer | interop.Reference<any>, blkno: number, size: number, rablks: interop.Pointer | interop.Reference<number>, rasizes: interop.Pointer | interop.Reference<number>, nrablks: number, cred: interop.Pointer | interop.Reference<ucred>, bpp: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
-
-declare function buf_proc(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_rcred(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<ucred>;
-
-declare function buf_redundancy_flags(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_reset(bp: interop.Pointer | interop.Reference<any>, flags: number): void;
-
-declare function buf_resid(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_set_redundancy_flags(bp: interop.Pointer | interop.Reference<any>, flags: number): void;
-
-declare function buf_setblkno(bp: interop.Pointer | interop.Reference<any>, blkno: number): void;
-
-declare function buf_setcallback(bp: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, transaction: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_setcount(bp: interop.Pointer | interop.Reference<any>, bcount: number): void;
-
-declare function buf_setdataptr(bp: interop.Pointer | interop.Reference<any>, data: number): void;
-
-declare function buf_setdevice(bp: interop.Pointer | interop.Reference<any>, vp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_setdirtyend(bp: interop.Pointer | interop.Reference<any>, p2: number): void;
-
-declare function buf_setdirtyoff(bp: interop.Pointer | interop.Reference<any>, p2: number): void;
-
-declare function buf_setdrvdata(bp: interop.Pointer | interop.Reference<any>, drvdata: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_seterror(bp: interop.Pointer | interop.Reference<any>, p2: number): void;
-
-declare function buf_setflags(bp: interop.Pointer | interop.Reference<any>, flags: number): void;
-
-declare function buf_setfsprivate(bp: interop.Pointer | interop.Reference<any>, fsprivate: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_setlblkno(bp: interop.Pointer | interop.Reference<any>, lblkno: number): void;
-
-declare function buf_setresid(bp: interop.Pointer | interop.Reference<any>, resid: number): void;
-
-declare function buf_setsize(bp: interop.Pointer | interop.Reference<any>, p2: number): void;
-
-declare function buf_setupl(bp: interop.Pointer | interop.Reference<any>, upl: number, offset: number): number;
-
-declare function buf_setvnode(bp: interop.Pointer | interop.Reference<any>, vp: interop.Pointer | interop.Reference<any>): void;
-
-declare function buf_shadow(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_size(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_static(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_strategy(devvp: interop.Pointer | interop.Reference<any>, ap: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_unmap(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_upl(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_uploffset(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_valid(bp: interop.Pointer | interop.Reference<any>): number;
-
-declare function buf_vnode(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function buf_wcred(bp: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<ucred>;
-
 declare function bzero(p1: interop.Pointer | interop.Reference<any>, p2: number): void;
 
 declare function calloc(__count: number, __size: number): interop.Pointer | interop.Reference<any>;
-
-declare function can_change_color(): boolean;
-
-declare function cannot_audit(p1: number): number;
 
 declare function catclose(p1: interop.Pointer | interop.Reference<__nl_cat_d>): number;
 
 declare function catgets(p1: interop.Pointer | interop.Reference<__nl_cat_d>, p2: number, p3: number, p4: string): string;
 
 declare function catopen(p1: string, p2: number): interop.Pointer | interop.Reference<__nl_cat_d>;
-
-declare function cbreak(): number;
 
 declare function cbrt(p1: number): number;
 
@@ -5728,8 +4767,6 @@ declare function chdir(p1: string): number;
 
 declare function chflags(p1: string, p2: number): number;
 
-declare function chgat(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
-
 declare function chmod(p1: string, p2: number): number;
 
 declare function chmodx_np(p1: string, p2: interop.Pointer | interop.Reference<any>): number;
@@ -5738,11 +4775,7 @@ declare function chown(p1: string, p2: number, p3: number): number;
 
 declare function chroot(p1: string): number;
 
-declare function clear(): number;
-
 declare function clearerr(p1: interop.Pointer | interop.Reference<FILE>): void;
-
-declare function clearok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
 
 declare function clock(): number;
 
@@ -5800,15 +4833,15 @@ interface clockinfo {
 }
 declare var clockinfo: interop.StructType<clockinfo>;
 
+declare function clonefile(p1: string, p2: string, p3: number): number;
+
+declare function clonefileat(p1: number, p2: string, p3: number, p4: string, p5: number): number;
+
 declare function close(p1: number): number;
 
 declare function closedir(p1: interop.Pointer | interop.Reference<DIR>): number;
 
 declare function closelog(): void;
-
-declare function clrtobot(): number;
-
-declare function clrtoeol(): number;
 
 interface cmsghdr {
 	cmsg_len: number;
@@ -5816,10 +4849,6 @@ interface cmsghdr {
 	cmsg_type: number;
 }
 declare var cmsghdr: interop.StructType<cmsghdr>;
-
-declare function color_content(p1: number, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): number;
-
-declare function color_set(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
 
 declare const condense: number;
 
@@ -5845,8 +4874,6 @@ declare function copysignf(p1: number, p2: number): number;
 
 declare function copysignl(p1: number, p2: number): number;
 
-declare function copywin(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number): number;
-
 declare function cos(p1: number): number;
 
 declare function cosf(p1: number): number;
@@ -5871,29 +4898,11 @@ declare function ctime(p1: interop.Pointer | interop.Reference<number>): string;
 
 declare function ctime_r(p1: interop.Pointer | interop.Reference<number>, p2: string): string;
 
-interface ctl_event_data {
-	ctl_id: number;
-	ctl_unit: number;
-}
-declare var ctl_event_data: interop.StructType<ctl_event_data>;
-
-interface ctl_info {
-	ctl_id: number;
-	ctl_name: interop.Reference<number>;
-}
-declare var ctl_info: interop.StructType<ctl_info>;
-
 interface ctlname {
 	ctl_name: string;
 	ctl_type: number;
 }
 declare var ctlname: interop.StructType<ctlname>;
-
-declare function curs_set(p1: number): number;
-
-declare var curscr: interop.Pointer | interop.Reference<any>;
-
-declare function curses_version(): string;
 
 declare function daemon(p1: number, p2: number): number;
 
@@ -5926,24 +4935,6 @@ declare function dbm_nextkey(p1: interop.Pointer | interop.Reference<DBM>): datu
 declare function dbm_open(p1: string, p2: number, p3: number): interop.Pointer | interop.Reference<DBM>;
 
 declare function dbm_store(p1: interop.Pointer | interop.Reference<DBM>, p2: datum, p3: datum, p4: number): number;
-
-declare function def_prog_mode(): number;
-
-declare function def_shell_mode(): number;
-
-declare function define_key(p1: string, p2: number): number;
-
-declare function delay_output(p1: number): number;
-
-declare function delch(): number;
-
-declare function deleteln(): number;
-
-declare function delscreen(p1: interop.Pointer | interop.Reference<any>): void;
-
-declare function delwin(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function derwin(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number): interop.Pointer | interop.Reference<any>;
 
 declare const developStage: number;
 
@@ -5985,74 +4976,6 @@ interface div_t {
 }
 declare var div_t: interop.StructType<div_t>;
 
-interface dk_corestorage_info_t {
-	flags: number;
-	hotfile_size: number;
-	hibernate_minsize: number;
-	swapfile_pinning: number;
-	padding: interop.Reference<number>;
-}
-declare var dk_corestorage_info_t: interop.StructType<dk_corestorage_info_t>;
-
-interface dk_extent_t {
-	offset: number;
-	length: number;
-}
-declare var dk_extent_t: interop.StructType<dk_extent_t>;
-
-interface dk_firmware_path_t {
-	path: interop.Reference<number>;
-}
-declare var dk_firmware_path_t: interop.StructType<dk_firmware_path_t>;
-
-interface dk_format_capacities_t {
-	capacities: interop.Pointer | interop.Reference<dk_format_capacity_t>;
-	capacitiesCount: number;
-	reserved0064: interop.Reference<number>;
-}
-declare var dk_format_capacities_t: interop.StructType<dk_format_capacities_t>;
-
-interface dk_format_capacity_t {
-	blockCount: number;
-	blockSize: number;
-	reserved0096: interop.Reference<number>;
-}
-declare var dk_format_capacity_t: interop.StructType<dk_format_capacity_t>;
-
-interface dk_provision_extent_t {
-	offset: number;
-	length: number;
-	provisionType: number;
-	reserved: interop.Reference<number>;
-}
-declare var dk_provision_extent_t: interop.StructType<dk_provision_extent_t>;
-
-interface dk_provision_status_t {
-	offset: number;
-	length: number;
-	options: number;
-	reserved: number;
-	extentsCount: number;
-	extents: interop.Pointer | interop.Reference<dk_provision_extent_t>;
-}
-declare var dk_provision_status_t: interop.StructType<dk_provision_status_t>;
-
-interface dk_synchronize_t {
-	offset: number;
-	length: number;
-	options: number;
-	reserved0160: interop.Reference<number>;
-}
-declare var dk_synchronize_t: interop.StructType<dk_synchronize_t>;
-
-interface dk_unmap_t {
-	extents: interop.Pointer | interop.Reference<dk_extent_t>;
-	extentsCount: number;
-	options: number;
-	reserved0096: interop.Reference<number>;
-}
-declare var dk_unmap_t: interop.StructType<dk_unmap_t>;
-
 declare function dladdr(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<Dl_info>): number;
 
 declare function dlclose(__handle: interop.Pointer | interop.Reference<any>): number;
@@ -6064,8 +4987,6 @@ declare function dlopen(__path: string, __mode: number): interop.Pointer | inter
 declare function dlopen_preflight(__path: string): boolean;
 
 declare function dlsym(__handle: interop.Pointer | interop.Reference<any>, __symbol: string): interop.Pointer | interop.Reference<any>;
-
-declare function doupdate(): number;
 
 interface dqblk {
 	dqb_bhardlimit: number;
@@ -6105,27 +5026,13 @@ declare function dup2(p1: number, p2: number): number;
 
 declare function duplocale(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function dupwin(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
 declare const eNoteExitReparentedDeprecated: number;
 
 declare const eNoteReapDeprecated: number;
 
-declare function echo(): number;
-
-declare function echochar(p1: number): number;
-
 declare function ecvt(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): string;
 
 declare function encrypt(p1: string, p2: number): void;
-
-declare function endac(): void;
-
-declare function endauclass(): void;
-
-declare function endauevent(): void;
-
-declare function endauuser(): void;
 
 declare function endgrent(): void;
 
@@ -6148,8 +5055,6 @@ declare function endusershell(): void;
 declare function endutxent(): void;
 
 declare function endutxent_wtmp(): void;
-
-declare function endwin(): number;
 
 interface eproc {
 	e_paddr: interop.Pointer | interop.Reference<any>;
@@ -6176,10 +5081,6 @@ declare var eproc: interop.StructType<eproc>;
 
 declare function erand48(p1: interop.Reference<number>): number;
 
-declare function erase(): number;
-
-declare function erasechar(): number;
-
 declare function erf(p1: number): number;
 
 declare function erfc(p1: number): number;
@@ -6199,17 +5100,6 @@ declare function err_set_exit_b(p1: (p1: number) => void): void;
 declare function err_set_file(p1: interop.Pointer | interop.Reference<any>): void;
 
 declare function etap_trace_thread(target_act: number, trace_status: number): number;
-
-interface eventreq {
-	er_type: number;
-	er_handle: number;
-	er_data: interop.Pointer | interop.Reference<any>;
-	er_rcnt: number;
-	er_wcnt: number;
-	er_ecnt: number;
-	er_eventbits: number;
-}
-declare var eventreq: interop.StructType<eventreq>;
 
 interface exception {
 	type: number;
@@ -6293,6 +5183,8 @@ declare function fchmodx_np(p1: number, p2: interop.Pointer | interop.Reference<
 declare function fchown(p1: number, p2: number, p3: number): number;
 
 declare function fchownat(p1: number, p2: string, p3: number, p4: number, p5: number): number;
+
+declare function fclonefileat(p1: number, p2: number, p3: string, p4: number): number;
 
 declare function fclose(p1: interop.Pointer | interop.Reference<FILE>): number;
 
@@ -6433,11 +5325,7 @@ declare function filesec_set_property(p1: interop.Pointer | interop.Reference<an
 
 declare function filesec_unset_property(p1: interop.Pointer | interop.Reference<any>, p2: filesec_property_t): number;
 
-declare function filter(): void;
-
 declare const finalStage: number;
-
-declare function flash(): number;
 
 declare function flistxattr(fd: number, namebuff: string, size: number, options: number): number;
 
@@ -6472,8 +5360,6 @@ declare function flsl(p1: number): number;
 
 declare function flsll(p1: number): number;
 
-declare function flushinp(): number;
-
 declare function fma(p1: number, p2: number, p3: number): number;
 
 declare function fmaf(p1: number, p2: number, p3: number): number;
@@ -6486,6 +5372,8 @@ declare function fmaxf(p1: number, p2: number): number;
 
 declare function fmaxl(p1: number, p2: number): number;
 
+declare function fmemopen(__buf: interop.Pointer | interop.Reference<any>, __size: number, __mode: string): interop.Pointer | interop.Reference<FILE>;
+
 declare function fmin(p1: number, p2: number): number;
 
 declare function fminf(p1: number, p2: number): number;
@@ -6497,6 +5385,8 @@ declare function fmod(p1: number, p2: number): number;
 declare function fmodf(p1: number, p2: number): number;
 
 declare function fmodl(p1: number, p2: number): number;
+
+declare function fmount(p1: string, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
 
 declare function fmtcheck(p1: string, p2: string): string;
 
@@ -6513,6 +5403,14 @@ declare function forkpty(p1: interop.Pointer | interop.Reference<number>, p2: st
 declare function fparseln(p1: interop.Pointer | interop.Reference<FILE>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Reference<number>, p5: number): string;
 
 declare function fpathconf(p1: number, p2: number): number;
+
+interface fpunchhole_t {
+	fp_flags: number;
+	reserved: number;
+	fp_offset: number;
+	fp_length: number;
+}
+declare var fpunchhole_t: interop.StructType<fpunchhole_t>;
 
 declare function fpurge(p1: interop.Pointer | interop.Reference<FILE>): number;
 
@@ -6531,6 +5429,10 @@ declare function free(p1: interop.Pointer | interop.Reference<any>): void;
 declare function freeaddrinfo(p1: interop.Pointer | interop.Reference<addrinfo>): void;
 
 declare function freehostent(p1: interop.Pointer | interop.Reference<hostent>): void;
+
+declare function freeifaddrs(p1: interop.Pointer | interop.Reference<ifaddrs>): void;
+
+declare function freeifmaddrs(p1: interop.Pointer | interop.Reference<ifmaddrs>): void;
 
 declare function freelocale(p1: interop.Pointer | interop.Reference<any>): number;
 
@@ -6619,6 +5521,12 @@ declare function ftime(p1: interop.Pointer | interop.Reference<timeb>): number;
 
 declare function ftok(p1: string, p2: number): number;
 
+interface ftrimactivefile_t {
+	fta_offset: number;
+	fta_length: number;
+}
+declare var ftrimactivefile_t: interop.StructType<ftrimactivefile_t>;
+
 declare function ftruncate(p1: number, p2: number): number;
 
 declare function ftrylockfile(p1: interop.Pointer | interop.Reference<FILE>): number;
@@ -6628,6 +5536,8 @@ declare function ftw(p1: string, p2: interop.FunctionReference<(p1: string, p2: 
 declare function funlockfile(p1: interop.Pointer | interop.Reference<FILE>): void;
 
 declare function funopen(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number) => number>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<FILE>;
+
+declare function futimens(__fd: number, __times: interop.Reference<timespec>): number;
 
 declare function futimes(p1: number, p2: interop.Pointer | interop.Reference<timeval>): number;
 
@@ -6639,26 +5549,6 @@ declare function gai_strerror(p1: number): string;
 
 declare function gcvt(p1: number, p2: number, p3: string): string;
 
-declare function get_dp_control_port(host: number, contorl_port: interop.Pointer | interop.Reference<number>): number;
-
-declare function getacdir(name: string, len: number): number;
-
-declare function getacexpire(andflg: interop.Pointer | interop.Reference<number>, age: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>): number;
-
-declare function getacfilesz(size_val: interop.Pointer | interop.Reference<number>): number;
-
-declare function getacflg(auditstr: string, len: number): number;
-
-declare function getachost(auditstr: string, len: number): number;
-
-declare function getacmin(min_val: interop.Pointer | interop.Reference<number>): number;
-
-declare function getacna(auditstr: string, len: number): number;
-
-declare function getacpol(auditstr: string, len: number): number;
-
-declare function getacsflagsmask(which: string, auditstr: string, len: number): number;
-
 declare function getaddrinfo(p1: string, p2: string, p3: interop.Pointer | interop.Reference<addrinfo>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<addrinfo>>): number;
 
 declare function getattrlist(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number): number;
@@ -6667,59 +5557,11 @@ declare function getattrlistat(p1: number, p2: string, p3: interop.Pointer | int
 
 declare function getattrlistbulk(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number): number;
 
-declare function getattrs(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function getauclassent(): interop.Pointer | interop.Reference<au_class_ent_t>;
-
-declare function getauclassent_r(class_int: interop.Pointer | interop.Reference<au_class_ent_t>): interop.Pointer | interop.Reference<au_class_ent_t>;
-
-declare function getauclassnam(name: string): interop.Pointer | interop.Reference<au_class_ent_t>;
-
-declare function getauclassnam_r(class_int: interop.Pointer | interop.Reference<au_class_ent_t>, name: string): interop.Pointer | interop.Reference<au_class_ent_t>;
-
-declare function getauclassnum(class_number: number): interop.Pointer | interop.Reference<au_class_ent_t>;
-
-declare function getauclassnum_r(class_int: interop.Pointer | interop.Reference<au_class_ent_t>, class_number: number): interop.Pointer | interop.Reference<au_class_ent_t>;
-
 declare function getaudit(p1: interop.Pointer | interop.Reference<auditinfo_t>): number;
 
 declare function getaudit_addr(p1: interop.Pointer | interop.Reference<auditinfo_addr_t>, p2: number): number;
 
-declare function getauditflagsbin(auditstr: string, masks: interop.Pointer | interop.Reference<au_mask_t>): number;
-
-declare function getauditflagschar(auditstr: string, masks: interop.Pointer | interop.Reference<au_mask_t>, verbose: number): number;
-
-declare function getauevent(): interop.Pointer | interop.Reference<au_event_ent_t>;
-
-declare function getauevent_r(e: interop.Pointer | interop.Reference<au_event_ent_t>): interop.Pointer | interop.Reference<au_event_ent_t>;
-
-declare function getauevnam(name: string): interop.Pointer | interop.Reference<au_event_ent_t>;
-
-declare function getauevnam_r(e: interop.Pointer | interop.Reference<au_event_ent_t>, name: string): interop.Pointer | interop.Reference<au_event_ent_t>;
-
-declare function getauevnonam(event_name: string): interop.Pointer | interop.Reference<number>;
-
-declare function getauevnonam_r(ev: interop.Pointer | interop.Reference<number>, event_name: string): interop.Pointer | interop.Reference<number>;
-
-declare function getauevnum(event_number: number): interop.Pointer | interop.Reference<au_event_ent_t>;
-
-declare function getauevnum_r(e: interop.Pointer | interop.Reference<au_event_ent_t>, event_number: number): interop.Pointer | interop.Reference<au_event_ent_t>;
-
 declare function getauid(p1: interop.Pointer | interop.Reference<number>): number;
-
-declare function getauuserent(): interop.Pointer | interop.Reference<au_user_ent_t>;
-
-declare function getauuserent_r(u: interop.Pointer | interop.Reference<au_user_ent_t>): interop.Pointer | interop.Reference<au_user_ent_t>;
-
-declare function getauusernam(name: string): interop.Pointer | interop.Reference<au_user_ent_t>;
-
-declare function getauusernam_r(u: interop.Pointer | interop.Reference<au_user_ent_t>, name: string): interop.Pointer | interop.Reference<au_user_ent_t>;
-
-declare function getbegx(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function getbegy(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function getbkgd(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function getbsize(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>): string;
 
@@ -6727,15 +5569,9 @@ declare function getc(p1: interop.Pointer | interop.Reference<FILE>): number;
 
 declare function getc_unlocked(p1: interop.Pointer | interop.Reference<FILE>): number;
 
-declare function getch(): number;
-
 declare function getchar(): number;
 
 declare function getchar_unlocked(): number;
-
-declare function getcurx(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function getcury(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function getcwd(p1: string, p2: number): string;
 
@@ -6758,8 +5594,6 @@ declare function getegid(): number;
 declare function getenv(p1: string): string;
 
 declare function geteuid(): number;
-
-declare function getfauditflags(usremask: interop.Pointer | interop.Reference<au_mask_t>, usrdmask: interop.Pointer | interop.Reference<au_mask_t>, lastmask: interop.Pointer | interop.Reference<au_mask_t>): number;
 
 declare function getfh(p1: string, p2: interop.Pointer | interop.Reference<fhandle_t>): number;
 
@@ -6797,6 +5631,10 @@ declare function gethostid(): number;
 
 declare function gethostname(p1: string, p2: number): number;
 
+declare function getifaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifaddrs>>): number;
+
+declare function getifmaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifmaddrs>>): number;
+
 declare function getiopolicy_np(p1: number, p2: number): number;
 
 declare function getipnodebyaddr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<hostent>;
@@ -6819,15 +5657,11 @@ declare function getlogin(): string;
 
 declare function getlogin_r(p1: string, p2: number): number;
 
-declare function getmaxx(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function getmaxy(p1: interop.Pointer | interop.Reference<any>): number;
-
 declare function getmntinfo(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<statfsStruct>>, p2: number): number;
 
-declare function getmode(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
+declare function getmntinfo_r_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<statfsStruct>>, p2: number): number;
 
-declare function getmouse(p1: interop.Pointer | interop.Reference<MEVENT>): number;
+declare function getmode(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
 
 declare function getnameinfo(p1: interop.Pointer | interop.Reference<sockaddr>, p2: number, p3: string, p4: number, p5: string, p6: number, p7: number): number;
 
@@ -6839,8 +5673,6 @@ declare function getnetent(): interop.Pointer | interop.Reference<netent>;
 
 declare function getnetgrent(p1: interop.Pointer | interop.Reference<string>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<string>): number;
 
-declare function getnstr(p1: string, p2: number): number;
-
 declare function getopt(p1: number, p2: interop.Reference<string>, p3: string): number;
 
 declare function getoptFunction(p1: number, p2: interop.Reference<string>, p3: string): number;
@@ -6850,10 +5682,6 @@ declare function getopt_long(p1: number, p2: interop.Pointer | interop.Reference
 declare function getopt_long_only(p1: number, p2: interop.Pointer | interop.Reference<string>, p3: string, p4: interop.Pointer | interop.Reference<option>, p5: interop.Pointer | interop.Reference<number>): number;
 
 declare function getpagesize(): number;
-
-declare function getparx(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function getpary(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function getpass(p1: string): string;
 
@@ -6921,8 +5749,6 @@ declare function getsockopt(p1: number, p2: number, p3: number, p4: interop.Poin
 
 declare function getsourcefilter(p1: number, p2: number, p3: interop.Pointer | interop.Reference<sockaddr>, p4: number, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<number>, p7: interop.Pointer | interop.Reference<sockaddr_storage>): number;
 
-declare function getstr(p1: string): number;
-
 declare function getsubopt(p1: interop.Pointer | interop.Reference<string>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<string>): number;
 
 declare function getsuboptFunction(p1: interop.Pointer | interop.Reference<string>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<string>): number;
@@ -6953,51 +5779,7 @@ declare function getwd(p1: string): string;
 
 declare function getwgroups_np(p1: interop.Pointer | interop.Reference<number>, p2: interop.Reference<number>): number;
 
-declare function getwin(p1: interop.Pointer | interop.Reference<FILE>): interop.Pointer | interop.Reference<any>;
-
 declare function getxattr(path: string, name: string, value: interop.Pointer | interop.Reference<any>, size: number, position: number, options: number): number;
-
-interface gmon_data_t {
-	type: number;
-	size: number;
-}
-declare var gmon_data_t: interop.StructType<gmon_data_t>;
-
-interface gmonhdr {
-	lpc: number;
-	hpc: number;
-	ncnt: number;
-	version: number;
-	profrate: number;
-	spare: interop.Reference<number>;
-}
-declare var gmonhdr: interop.StructType<gmonhdr>;
-
-interface gmonhdr_64 {
-	lpc: number;
-	hpc: number;
-	ncnt: number;
-	version: number;
-	profrate: number;
-	spare: interop.Reference<number>;
-}
-declare var gmonhdr_64: interop.StructType<gmonhdr_64>;
-
-interface gmonparam {
-	state: number;
-	kcount: interop.Pointer | interop.Reference<number>;
-	kcountsize: number;
-	froms: interop.Pointer | interop.Reference<number>;
-	fromssize: number;
-	tos: interop.Pointer | interop.Reference<tostruct>;
-	tossize: number;
-	tolimit: number;
-	lowpc: number;
-	highpc: number;
-	textsize: number;
-	hashfraction: number;
-}
-declare var gmonparam: interop.StructType<gmonparam>;
 
 declare function gmtime(p1: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<tm>;
 
@@ -7043,16 +5825,6 @@ declare var guid_t: interop.StructType<guid_t>;
 
 declare var h_errno: number;
 
-declare function halfdelay(p1: number): number;
-
-declare function has_colors(): boolean;
-
-declare function has_ic(): boolean;
-
-declare function has_il(): boolean;
-
-declare function has_key(p1: number): number;
-
 interface hash_info_bucket_t {
 	hib_count: number;
 }
@@ -7067,8 +5839,6 @@ declare function heapsort(__base: interop.Pointer | interop.Reference<any>, __ne
 declare function heapsort_b(__base: interop.Pointer | interop.Reference<any>, __nel: number, __width: number, __compar: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number): number;
 
 declare function herror(p1: string): void;
-
-declare function hline(p1: number, p2: number): number;
 
 interface host_basic_info_data_t {
 	max_cpus: number;
@@ -7193,8 +5963,6 @@ declare function host_swap_exception_ports(host_priv: number, exception_mask: nu
 
 declare function host_virtual_physical_table_info(host: number, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<hash_info_bucket_t>>, infoCnt: interop.Pointer | interop.Reference<number>): number;
 
-declare function host_zone_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<zone_name_t>>, namesCnt: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<zone_info_t>>, infoCnt: interop.Pointer | interop.Reference<number>): number;
-
 interface hostent {
 	h_name: string;
 	h_aliases: interop.Pointer | interop.Reference<string>;
@@ -7241,10 +6009,6 @@ declare function iconv_open(p1: string, p2: string): interop.Pointer | interop.R
 declare function iconvctl(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
 
 declare function iconvlist(p1: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<any>) => number>, p2: interop.Pointer | interop.Reference<any>): void;
-
-declare function idcok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): void;
-
-declare function idlok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
 
 declare const enum idtype_t {
 
@@ -7375,6 +6139,17 @@ interface ifa_msghdr {
 }
 declare var ifa_msghdr: interop.StructType<ifa_msghdr>;
 
+interface ifaddrs {
+	ifa_next: interop.Pointer | interop.Reference<ifaddrs>;
+	ifa_name: string;
+	ifa_flags: number;
+	ifa_addr: interop.Pointer | interop.Reference<sockaddr>;
+	ifa_netmask: interop.Pointer | interop.Reference<sockaddr>;
+	ifa_dstaddr: interop.Pointer | interop.Reference<sockaddr>;
+	ifa_data: interop.Pointer | interop.Reference<any>;
+}
+declare var ifaddrs: interop.StructType<ifaddrs>;
+
 interface ifaliasreq {
 	ifra_name: interop.Reference<number>;
 	ifra_addr: sockaddr;
@@ -7419,11 +6194,13 @@ interface ifma_msghdr2 {
 }
 declare var ifma_msghdr2: interop.StructType<ifma_msghdr2>;
 
-interface ifmedia_description {
-	ifmt_word: number;
-	ifmt_string: string;
+interface ifmaddrs {
+	ifma_next: interop.Pointer | interop.Reference<ifmaddrs>;
+	ifma_name: interop.Pointer | interop.Reference<sockaddr>;
+	ifma_addr: interop.Pointer | interop.Reference<sockaddr>;
+	ifma_lladdr: interop.Pointer | interop.Reference<sockaddr>;
 }
-declare var ifmedia_description: interop.StructType<ifmedia_description>;
+declare var ifmaddrs: interop.StructType<ifmaddrs>;
 
 interface ifmediareq {
 	ifm_name: interop.Reference<number>;
@@ -7467,14 +6244,6 @@ interface imaxdiv_t {
 }
 declare var imaxdiv_t: interop.StructType<imaxdiv_t>;
 
-declare function immedok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): void;
-
-interface in4in6_addr {
-	i46a_pad32: interop.Reference<number>;
-	i46a_addr4: in_addr;
-}
-declare var in4in6_addr: interop.StructType<in4in6_addr>;
-
 interface in_addr {
 	s_addr: number;
 }
@@ -7486,12 +6255,6 @@ interface in_pktinfo {
 	ipi_addr: in_addr;
 }
 declare var in_pktinfo: interop.StructType<in_pktinfo>;
-
-declare function inch(): number;
-
-declare function inchnstr(p1: interop.Pointer | interop.Reference<number>, p2: number): number;
-
-declare function inchstr(p1: interop.Pointer | interop.Reference<number>): number;
 
 declare function index(p1: string, p2: number): string;
 
@@ -7523,35 +6286,13 @@ declare function inet_ntop(p1: number, p2: interop.Pointer | interop.Reference<a
 
 declare function inet_pton(p1: number, p2: string, p3: interop.Pointer | interop.Reference<any>): number;
 
-declare function init_color(p1: number, p2: number, p3: number, p4: number): number;
-
-declare function init_pair(p1: number, p2: number, p3: number): number;
-
 declare function initgroups(p1: string, p2: number): number;
-
-declare function initscr(): interop.Pointer | interop.Reference<any>;
 
 declare function initstate(p1: number, p2: string, p3: number): string;
 
 declare function innetgr(p1: string, p2: string, p3: string, p4: string): number;
 
-declare function innstr(p1: string, p2: number): number;
-
-declare function insch(p1: number): number;
-
-declare function insdelln(p1: number): number;
-
-declare function insertln(): number;
-
-declare function insnstr(p1: string, p2: number): number;
-
 declare function insque(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): void;
-
-declare function insstr(p1: string): number;
-
-declare function instr(p1: string): number;
-
-declare function intrflush(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
 
 interface io_stat_entry {
 	count: number;
@@ -7652,35 +6393,7 @@ declare function iruserok(p1: number, p2: number, p3: string, p4: string): numbe
 
 declare function iruserok_sa(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string, p5: string): number;
 
-declare function is_cleared(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_idcok(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_idlok(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_immedok(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_keypad(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_leaveok(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_linetouched(p1: interop.Pointer | interop.Reference<any>, p2: number): boolean;
-
-declare function is_nodelay(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_notimeout(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_scrollok(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_syncok(p1: interop.Pointer | interop.Reference<any>): boolean;
-
-declare function is_term_resized(p1: number, p2: number): boolean;
-
-declare function is_wintouched(p1: interop.Pointer | interop.Reference<any>): boolean;
-
 declare function isatty(p1: number): number;
-
-declare function isendwin(): boolean;
 
 declare function issetugid(): number;
 
@@ -7699,32 +6412,6 @@ declare function j1(p1: number): number;
 declare function jn(p1: number, p2: number): number;
 
 declare function jrand48(p1: interop.Reference<number>): number;
-
-declare const kAUBadParamErr: number;
-
-declare const kAUCloseErr: number;
-
-declare const kAULastErr: number;
-
-declare const kAUMakeReturnTokErr: number;
-
-declare const kAUMakeSubjectTokErr: number;
-
-declare const kAUMakeTextTokErr: number;
-
-declare const kAUNoErr: number;
-
-declare const kAUOpenErr: number;
-
-declare const kAUStatErr: number;
-
-declare const kAUSysctlErr: number;
-
-declare const kAUWriteCallerTokErr: number;
-
-declare const kAUWriteReturnTokErr: number;
-
-declare const kAUWriteSubjectTokErr: number;
 
 declare const kNilOptions: number;
 
@@ -7789,24 +6476,6 @@ declare function kdebug_signpost_end(code: number, arg1: number, arg2: number, a
 
 declare function kdebug_signpost_start(code: number, arg1: number, arg2: number, arg3: number, arg4: number): number;
 
-interface kern_ctl_info {
-	kcsi_id: number;
-	kcsi_reg_unit: number;
-	kcsi_flags: number;
-	kcsi_recvbufsize: number;
-	kcsi_sendbufsize: number;
-	kcsi_unit: number;
-	kcsi_name: interop.Reference<number>;
-}
-declare var kern_ctl_info: interop.StructType<kern_ctl_info>;
-
-interface kern_event_info {
-	kesi_vendor_code_filter: number;
-	kesi_class_filter: number;
-	kesi_subclass_filter: number;
-}
-declare var kern_event_info: interop.StructType<kern_event_info>;
-
 interface kernel_resource_sizes_data_t {
 	task: number;
 	thread: number;
@@ -7850,19 +6519,7 @@ declare var keventStruct: interop.StructType<keventStruct>;
 
 declare function kext_request(host_priv: number, user_log_flags: number, request_data: number, request_dataCnt: number, response_data: interop.Pointer | interop.Reference<number>, response_dataCnt: interop.Pointer | interop.Reference<number>, log_data: interop.Pointer | interop.Reference<number>, log_dataCnt: interop.Pointer | interop.Reference<number>, op_result: interop.Pointer | interop.Reference<number>): number;
 
-declare function key_defined(p1: string): number;
-
-declare function keybound(p1: number, p2: number): string;
-
-declare function keyname(p1: number): string;
-
-declare function keyok(p1: number, p2: boolean): number;
-
-declare function keypad(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
 declare function kill(p1: number, p2: number): number;
-
-declare function killchar(): number;
 
 declare function killpg(p1: number, p2: number): number;
 
@@ -7935,19 +6592,6 @@ declare var kmod_reference_t: interop.StructType<kmod_reference_t>;
 
 declare function kqueue(): number;
 
-interface kqueue_fdinfo {
-	pfi: proc_fileinfo;
-	kqueueinfo: kqueue_info;
-}
-declare var kqueue_fdinfo: interop.StructType<kqueue_fdinfo>;
-
-interface kqueue_info {
-	kq_stat: vinfo_stat;
-	kq_state: number;
-	rfu_1: number;
-}
-declare var kqueue_info: interop.StructType<kqueue_info>;
-
 declare function l64a(p1: number): string;
 
 declare function labs(p1: number): number;
@@ -8009,8 +6653,6 @@ interface ldiv_t {
 }
 declare var ldiv_t: interop.StructType<ldiv_t>;
 
-declare function leaveok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
 declare function lfind(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: number, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
 
 declare function lgamma(p1: number): number;
@@ -8028,6 +6670,10 @@ interface linger {
 declare var linger: interop.StructType<linger>;
 
 declare function link(p1: string, p2: string): number;
+
+declare function link_addr(p1: string, p2: interop.Pointer | interop.Reference<sockaddr_dl>): void;
+
+declare function link_ntoa(p1: interop.Pointer | interop.Reference<sockaddr_dl>): string;
 
 declare function linkat(p1: number, p2: string, p3: number, p4: string, p5: number): number;
 
@@ -8164,8 +6810,6 @@ declare function longjmp(p1: interop.Reference<number>, p2: number): void;
 
 declare function longjmperror(): void;
 
-declare function longname(): string;
-
 declare function lrand48(): number;
 
 declare function lrint(p1: number): number;
@@ -8198,12 +6842,19 @@ declare function mach_continuous_approximate_time(): number;
 
 declare function mach_continuous_time(): number;
 
+interface mach_core_details {
+	gzip_offset: number;
+	gzip_length: number;
+	core_name: interop.Reference<number>;
+}
+declare var mach_core_details: interop.StructType<mach_core_details>;
+
 interface mach_core_fileheader {
 	signature: number;
 	log_offset: number;
 	log_length: number;
-	gzip_offset: number;
-	gzip_length: number;
+	num_files: number;
+	files: interop.Reference<mach_core_details>;
 }
 declare var mach_core_fileheader: interop.StructType<mach_core_fileheader>;
 
@@ -8238,7 +6889,13 @@ interface mach_memory_info_t {
 	free: number;
 	largest: number;
 	collectable_bytes: number;
+	mapped: number;
+	peak: number;
+	tag: number;
+	zone: number;
+	_resvA: interop.Reference<number>;
 	_resv: interop.Reference<number>;
+	name: interop.Reference<number>;
 }
 declare var mach_memory_info_t: interop.StructType<mach_memory_info_t>;
 
@@ -8794,69 +7451,11 @@ declare function malloc_zone_unregister(zone: interop.Pointer | interop.Referenc
 
 declare function malloc_zone_valloc(zone: interop.Pointer | interop.Reference<malloc_zone_t>, size: number): interop.Pointer | interop.Reference<any>;
 
-declare function map_fd(fd: number, offset: number, addr: interop.Pointer | interop.Reference<number>, find_space: number, numbytes: number): number;
-
-declare var master_device_port: number;
-
-interface mb_class_stat_t {
-	mbcl_cname: interop.Reference<number>;
-	mbcl_size: number;
-	mbcl_total: number;
-	mbcl_active: number;
-	mbcl_infree: number;
-	mbcl_slab_cnt: number;
-	mbcl_alloc_cnt: number;
-	mbcl_free_cnt: number;
-	mbcl_notified: number;
-	mbcl_purge_cnt: number;
-	mbcl_fail_cnt: number;
-	mbcl_ctotal: number;
-	mbcl_release_cnt: number;
-	mbcl_mc_state: number;
-	mbcl_mc_cached: number;
-	mbcl_mc_waiter_cnt: number;
-	mbcl_mc_wretry_cnt: number;
-	mbcl_mc_nwretry_cnt: number;
-	mbcl_peak_reported: number;
-	mbcl_reserved: interop.Reference<number>;
-}
-declare var mb_class_stat_t: interop.StructType<mb_class_stat_t>;
-
-interface mb_stat_t {
-	mbs_cnt: number;
-	mbs_class: interop.Reference<mb_class_stat_t>;
-}
-declare var mb_stat_t: interop.StructType<mb_stat_t>;
-
 declare function mblen(__s: string, __n: number): number;
-
-interface mbstat {
-	m_mbufs: number;
-	m_clusters: number;
-	m_spare: number;
-	m_clfree: number;
-	m_drops: number;
-	m_wait: number;
-	m_drain: number;
-	m_mtypes: interop.Reference<number>;
-	m_mcfail: number;
-	m_mpfail: number;
-	m_msize: number;
-	m_mclbytes: number;
-	m_minclsize: number;
-	m_mlen: number;
-	m_mhlen: number;
-	m_bigclusters: number;
-	m_bigclfree: number;
-	m_bigmclbytes: number;
-}
-declare var mbstat: interop.StructType<mbstat>;
 
 declare function mbstowcs(p1: interop.Pointer | interop.Reference<number>, p2: string, p3: number): number;
 
 declare function mbtowc(p1: interop.Pointer | interop.Reference<number>, p2: string, p3: number): number;
-
-declare function mcprint(p1: string, p2: number): number;
 
 declare function memccpy(__dst: interop.Pointer | interop.Reference<any>, __src: interop.Pointer | interop.Reference<any>, __c: number, __n: number): interop.Pointer | interop.Reference<any>;
 
@@ -8922,8 +7521,6 @@ declare function mergesort(__base: interop.Pointer | interop.Reference<any>, __n
 
 declare function mergesort_b(__base: interop.Pointer | interop.Reference<any>, __nel: number, __width: number, __compar: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number): number;
 
-declare function meta(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
 declare function mig_allocate(p1: interop.Pointer | interop.Reference<number>, p2: number): void;
 
 declare function mig_dealloc_reply_port(reply_port: number): void;
@@ -8970,8 +7567,6 @@ declare function mincore(p1: interop.Pointer | interop.Reference<any>, p2: numbe
 
 declare function minherit(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
 
-declare function minphys(bp: interop.Pointer | interop.Reference<any>): number;
-
 declare function mkdir(p1: string, p2: number): number;
 
 declare function mkdirat(p1: number, p2: string, p3: number): number;
@@ -8979,6 +7574,8 @@ declare function mkdirat(p1: number, p2: string, p3: number): number;
 declare function mkdirx_np(p1: string, p2: interop.Pointer | interop.Reference<any>): number;
 
 declare function mkdtemp(p1: string): string;
+
+declare function mkdtempat_np(dfd: number, path: string): string;
 
 declare function mkfifo(p1: string, p2: number): number;
 
@@ -8992,6 +7589,8 @@ declare function mkostemp(path: string, oflags: number): number;
 
 declare function mkostemps(path: string, slen: number, oflags: number): number;
 
+declare function mkostempsat_np(dfd: number, path: string, slen: number, oflags: number): number;
+
 declare function mkpath_np(path: string, omode: number): number;
 
 declare function mkpathat_np(dfd: number, path: string, omode: number): number;
@@ -9003,6 +7602,8 @@ declare function mkstempFunction(p1: string): number;
 declare function mkstemp_dprotected_np(path: string, dpclass: number, dpflags: number): number;
 
 declare function mkstemps(p1: string, p2: number): number;
+
+declare function mkstempsat_np(dfd: number, path: string, slen: number): number;
 
 declare function mktemp(p1: string): string;
 
@@ -9022,17 +7623,7 @@ declare function modff(p1: number, p2: interop.Pointer | interop.Reference<numbe
 
 declare function modfl(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
 
-declare function modwatch(p1: interop.Pointer | interop.Reference<eventreq>, p2: number): number;
-
 declare function mount(p1: string, p2: string, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
-
-declare function mouse_trafo(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: boolean): boolean;
-
-declare function mouseinterval(p1: number): number;
-
-declare function mousemask(p1: number, p2: interop.Pointer | interop.Reference<number>): number;
-
-declare function move(p1: number, p2: number): number;
 
 declare function mprotect(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
 
@@ -9051,15 +7642,6 @@ interface msg_labels_t {
 	sender: number;
 }
 declare var msg_labels_t: interop.StructType<msg_labels_t>;
-
-interface msgbuf {
-	msg_magic: number;
-	msg_size: number;
-	msg_bufx: number;
-	msg_bufr: number;
-	msg_bufc: string;
-}
-declare var msgbuf: interop.StructType<msgbuf>;
 
 declare function msgctl(p1: number, p2: number, p3: interop.Pointer | interop.Reference<__msqid_ds_new>): number;
 
@@ -9109,92 +7691,6 @@ declare function munlockall(): number;
 
 declare function munmap(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
 
-declare function mvaddch(p1: number, p2: number, p3: number): number;
-
-declare function mvaddchnstr(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: number): number;
-
-declare function mvaddchstr(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
-
-declare function mvaddnstr(p1: number, p2: number, p3: string, p4: number): number;
-
-declare function mvaddstr(p1: number, p2: number, p3: string): number;
-
-declare function mvchgat(p1: number, p2: number, p3: number, p4: number, p5: number, p6: interop.Pointer | interop.Reference<any>): number;
-
-declare function mvcur(p1: number, p2: number, p3: number, p4: number): number;
-
-declare function mvdelch(p1: number, p2: number): number;
-
-declare function mvderwin(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function mvgetch(p1: number, p2: number): number;
-
-declare function mvgetnstr(p1: number, p2: number, p3: string, p4: number): number;
-
-declare function mvgetstr(p1: number, p2: number, p3: string): number;
-
-declare function mvhline(p1: number, p2: number, p3: number, p4: number): number;
-
-declare function mvinch(p1: number, p2: number): number;
-
-declare function mvinchnstr(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: number): number;
-
-declare function mvinchstr(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
-
-declare function mvinnstr(p1: number, p2: number, p3: string, p4: number): number;
-
-declare function mvinsch(p1: number, p2: number, p3: number): number;
-
-declare function mvinsnstr(p1: number, p2: number, p3: string, p4: number): number;
-
-declare function mvinsstr(p1: number, p2: number, p3: string): number;
-
-declare function mvinstr(p1: number, p2: number, p3: string): number;
-
-declare function mvvline(p1: number, p2: number, p3: number, p4: number): number;
-
-declare function mvwaddch(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number): number;
-
-declare function mvwaddchnstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>, p5: number): number;
-
-declare function mvwaddchstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>): number;
-
-declare function mvwaddnstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string, p5: number): number;
-
-declare function mvwaddstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string): number;
-
-declare function mvwchgat(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number, p6: number, p7: interop.Pointer | interop.Reference<any>): number;
-
-declare function mvwdelch(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function mvwgetch(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function mvwgetnstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string, p5: number): number;
-
-declare function mvwgetstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string): number;
-
-declare function mvwhline(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number): number;
-
-declare function mvwin(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function mvwinch(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function mvwinchnstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>, p5: number): number;
-
-declare function mvwinchstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<number>): number;
-
-declare function mvwinnstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string, p5: number): number;
-
-declare function mvwinsch(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number): number;
-
-declare function mvwinsnstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string, p5: number): number;
-
-declare function mvwinsstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string): number;
-
-declare function mvwinstr(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: string): number;
-
-declare function mvwvline(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number): number;
-
 interface mymsg {
 	mtype: number;
 	mtext: interop.Reference<number>;
@@ -9208,15 +7704,6 @@ declare function nanf(p1: string): number;
 declare function nanl(p1: string): number;
 
 declare function nanosleep(__rqtp: interop.Pointer | interop.Reference<timespec>, __rmtp: interop.Pointer | interop.Reference<timespec>): number;
-
-declare function napms(p1: number): number;
-
-interface ndrv_info {
-	ndrvsi_if_family: number;
-	ndrvsi_if_unit: number;
-	ndrvsi_if_name: interop.Reference<number>;
-}
-declare var ndrv_info: interop.StructType<ndrv_info>;
 
 declare function nearbyint(p1: number): number;
 
@@ -9248,23 +7735,7 @@ interface netfs_status {
 }
 declare var netfs_status: interop.StructType<netfs_status>;
 
-interface network_port_t {
-	np_receiver: number;
-	np_owner: number;
-	np_puid: np_uid_t;
-	np_sid: np_uid_t;
-}
-declare var network_port_t: interop.StructType<network_port_t>;
-
 declare function newlocale(p1: number, p2: string, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function newpad(p1: number, p2: number): interop.Pointer | interop.Reference<any>;
-
-declare var newscr: interop.Pointer | interop.Reference<any>;
-
-declare function newterm(p1: string, p2: interop.Pointer | interop.Reference<FILE>, p3: interop.Pointer | interop.Reference<FILE>): interop.Pointer | interop.Reference<any>;
-
-declare function newwin(p1: number, p2: number, p3: number, p4: number): interop.Pointer | interop.Reference<any>;
 
 declare function nextafter(p1: number, p2: number): number;
 
@@ -9286,35 +7757,11 @@ declare function nftw(p1: string, p2: interop.FunctionReference<(p1: string, p2:
 
 declare function nice(p1: number): number;
 
-declare function nl(): number;
-
 declare function nl_langinfo(p1: number): string;
 
 declare const noErr: number;
 
-declare function nocbreak(): number;
-
-declare function nodelay(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
-declare function noecho(): number;
-
-declare function nofilter(): void;
-
-declare function nonl(): number;
-
-declare function noqiflush(): void;
-
-declare function noraw(): number;
-
 declare const normal: number;
-
-declare function notimeout(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
-interface np_uid_t {
-	np_uid_high: number;
-	np_uid_low: number;
-}
-declare var np_uid_t: interop.StructType<np_uid_t>;
 
 declare function nrand48(p1: interop.Reference<number>): number;
 
@@ -9326,24 +7773,9 @@ interface ntsid_t {
 }
 declare var ntsid_t: interop.StructType<ntsid_t>;
 
-interface ombstat {
-	m_mbufs: number;
-	m_clusters: number;
-	m_spare: number;
-	m_clfree: number;
-	m_drops: number;
-	m_wait: number;
-	m_drain: number;
-	m_mtypes: interop.Reference<number>;
-	m_mcfail: number;
-	m_mpfail: number;
-	m_msize: number;
-	m_mclbytes: number;
-	m_minclsize: number;
-	m_mlen: number;
-	m_mhlen: number;
-}
-declare var ombstat: interop.StructType<ombstat>;
+declare function open_memstream(__bufp: interop.Pointer | interop.Reference<string>, __sizep: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<FILE>;
+
+declare function open_wmemstream(__bufp: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, __sizep: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<FILE>;
 
 declare function opendev(p1: string, p2: number, p3: number, p4: interop.Pointer | interop.Reference<string>): number;
 
@@ -9415,12 +7847,6 @@ declare var ostat: interop.StructType<ostat>;
 
 declare const outline: number;
 
-declare function overlay(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function overwrite(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function pair_content(p1: number, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): number;
-
 declare function panic_init(p1: number): void;
 
 interface passwd {
@@ -9443,51 +7869,15 @@ declare function pause(): number;
 
 declare function pclose(p1: interop.Pointer | interop.Reference<FILE>): number;
 
-declare function pechochar(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
 declare function perror(p1: string): void;
 
 declare function pfctlinput(p1: number, p2: interop.Pointer | interop.Reference<sockaddr>): void;
-
-declare function physio(f_strategy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, bp: interop.Pointer | interop.Reference<any>, dev: number, flags: number, f_minphys: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, uio: interop.Pointer | interop.Reference<any>, blocksize: number): number;
 
 declare function pid_for_task(t: number, x: interop.Pointer | interop.Reference<number>): number;
 
 declare function pidlock(p1: string, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: string): number;
 
 declare function pipe(p1: interop.Reference<number>): number;
-
-interface pipe_fdinfo {
-	pfi: proc_fileinfo;
-	pipeinfo: pipe_info;
-}
-declare var pipe_fdinfo: interop.StructType<pipe_fdinfo>;
-
-interface pipe_info {
-	pipe_stat: vinfo_stat;
-	pipe_handle: number;
-	pipe_peerhandle: number;
-	pipe_status: number;
-	rfu_1: number;
-}
-declare var pipe_info: interop.StructType<pipe_info>;
-
-interface pipebuf {
-	cnt: number;
-	in: number;
-	out: number;
-	size: number;
-	buffer: string;
-}
-declare var pipebuf: interop.StructType<pipebuf>;
-
-interface plimit {
-	pl_rlimit: interop.Reference<rlimit>;
-	pl_refcnt: number;
-}
-declare var plimit: interop.StructType<plimit>;
-
-declare function pnoutrefresh(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): number;
 
 interface policy_bases {
 	ts: policy_timeshare_base;
@@ -9627,6 +8017,8 @@ declare function posix_spawn_file_actions_init(p1: interop.Pointer | interop.Ref
 
 declare function posix_spawnattr_destroy(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+declare function posix_spawnattr_get_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __qos_class: interop.Pointer | interop.Reference<qos_class_t>): number;
+
 declare function posix_spawnattr_getbinpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): number;
 
 declare function posix_spawnattr_getflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
@@ -9638,6 +8030,8 @@ declare function posix_spawnattr_getsigdefault(p1: interop.Pointer | interop.Ref
 declare function posix_spawnattr_getsigmask(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
 
 declare function posix_spawnattr_init(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function posix_spawnattr_set_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __qos_class: qos_class_t): number;
 
 declare function posix_spawnattr_setauditsessionport_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
 
@@ -9665,188 +8059,11 @@ declare function powl(p1: number, p2: number): number;
 
 declare function pread(__fd: number, __buf: interop.Pointer | interop.Reference<any>, __nbyte: number, __offset: number): number;
 
-declare function prefresh(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): number;
-
-interface proc_bsdinfo {
-	pbi_flags: number;
-	pbi_status: number;
-	pbi_xstatus: number;
-	pbi_pid: number;
-	pbi_ppid: number;
-	pbi_uid: number;
-	pbi_gid: number;
-	pbi_ruid: number;
-	pbi_rgid: number;
-	pbi_svuid: number;
-	pbi_svgid: number;
-	rfu_1: number;
-	pbi_comm: interop.Reference<number>;
-	pbi_name: interop.Reference<number>;
-	pbi_nfiles: number;
-	pbi_pgid: number;
-	pbi_pjobc: number;
-	e_tdev: number;
-	e_tpgid: number;
-	pbi_nice: number;
-	pbi_start_tvsec: number;
-	pbi_start_tvusec: number;
-}
-declare var proc_bsdinfo: interop.StructType<proc_bsdinfo>;
-
-interface proc_bsdshortinfo {
-	pbsi_pid: number;
-	pbsi_ppid: number;
-	pbsi_pgid: number;
-	pbsi_status: number;
-	pbsi_comm: interop.Reference<number>;
-	pbsi_flags: number;
-	pbsi_uid: number;
-	pbsi_gid: number;
-	pbsi_ruid: number;
-	pbsi_rgid: number;
-	pbsi_svuid: number;
-	pbsi_svgid: number;
-	pbsi_rfu: number;
-}
-declare var proc_bsdshortinfo: interop.StructType<proc_bsdshortinfo>;
-
-interface proc_exitreasonbasicinfo {
-	beri_namespace: number;
-	beri_code: number;
-	beri_flags: number;
-	beri_reason_buf_size: number;
-}
-declare var proc_exitreasonbasicinfo: interop.StructType<proc_exitreasonbasicinfo>;
-
-interface proc_exitreasoninfo {
-	eri_namespace: number;
-	eri_code: number;
-	eri_flags: number;
-	eri_reason_buf_size: number;
-	eri_kcd_buf: number;
-}
-declare var proc_exitreasoninfo: interop.StructType<proc_exitreasoninfo>;
-
-interface proc_fdinfo {
-	proc_fd: number;
-	proc_fdtype: number;
-}
-declare var proc_fdinfo: interop.StructType<proc_fdinfo>;
-
-interface proc_fileinfo {
-	fi_openflags: number;
-	fi_status: number;
-	fi_offset: number;
-	fi_type: number;
-	fi_guardflags: number;
-}
-declare var proc_fileinfo: interop.StructType<proc_fileinfo>;
-
-interface proc_fileportinfo {
-	proc_fileport: number;
-	proc_fdtype: number;
-}
-declare var proc_fileportinfo: interop.StructType<proc_fileportinfo>;
-
-interface proc_regioninfo {
-	pri_protection: number;
-	pri_max_protection: number;
-	pri_inheritance: number;
-	pri_flags: number;
-	pri_offset: number;
-	pri_behavior: number;
-	pri_user_wired_count: number;
-	pri_user_tag: number;
-	pri_pages_resident: number;
-	pri_pages_shared_now_private: number;
-	pri_pages_swapped_out: number;
-	pri_pages_dirtied: number;
-	pri_ref_count: number;
-	pri_shadow_depth: number;
-	pri_share_mode: number;
-	pri_private_pages_resident: number;
-	pri_shared_pages_resident: number;
-	pri_obj_id: number;
-	pri_depth: number;
-	pri_address: number;
-	pri_size: number;
-}
-declare var proc_regioninfo: interop.StructType<proc_regioninfo>;
-
-interface proc_regionwithpathinfo {
-	prp_prinfo: proc_regioninfo;
-	prp_vip: vnode_info_path;
-}
-declare var proc_regionwithpathinfo: interop.StructType<proc_regionwithpathinfo>;
-
 interface proc_rlimit_control_wakeupmon {
 	wm_flags: number;
 	wm_rate: number;
 }
 declare var proc_rlimit_control_wakeupmon: interop.StructType<proc_rlimit_control_wakeupmon>;
-
-interface proc_taskallinfo {
-	pbsd: proc_bsdinfo;
-	ptinfo: proc_taskinfo;
-}
-declare var proc_taskallinfo: interop.StructType<proc_taskallinfo>;
-
-interface proc_taskinfo {
-	pti_virtual_size: number;
-	pti_resident_size: number;
-	pti_total_user: number;
-	pti_total_system: number;
-	pti_threads_user: number;
-	pti_threads_system: number;
-	pti_policy: number;
-	pti_faults: number;
-	pti_pageins: number;
-	pti_cow_faults: number;
-	pti_messages_sent: number;
-	pti_messages_received: number;
-	pti_syscalls_mach: number;
-	pti_syscalls_unix: number;
-	pti_csw: number;
-	pti_threadnum: number;
-	pti_numrunning: number;
-	pti_priority: number;
-}
-declare var proc_taskinfo: interop.StructType<proc_taskinfo>;
-
-interface proc_threadinfo {
-	pth_user_time: number;
-	pth_system_time: number;
-	pth_cpu_usage: number;
-	pth_policy: number;
-	pth_run_state: number;
-	pth_flags: number;
-	pth_sleep_time: number;
-	pth_curpri: number;
-	pth_priority: number;
-	pth_maxpriority: number;
-	pth_name: interop.Reference<number>;
-}
-declare var proc_threadinfo: interop.StructType<proc_threadinfo>;
-
-interface proc_threadwithpathinfo {
-	pt: proc_threadinfo;
-	pvip: vnode_info_path;
-}
-declare var proc_threadwithpathinfo: interop.StructType<proc_threadwithpathinfo>;
-
-interface proc_vnodepathinfo {
-	pvi_cdir: vnode_info_path;
-	pvi_rdir: vnode_info_path;
-}
-declare var proc_vnodepathinfo: interop.StructType<proc_vnodepathinfo>;
-
-interface proc_workqueueinfo {
-	pwq_nthreads: number;
-	pwq_runthreads: number;
-	pwq_blockedthreads: number;
-	pwq_state: number;
-}
-declare var proc_workqueueinfo: interop.StructType<proc_workqueueinfo>;
 
 declare function processor_assign(processor: number, new_set: number, wait: number): number;
 
@@ -9923,58 +8140,6 @@ declare var protoent: interop.StructType<protoent>;
 
 declare function pselect(p1: number, p2: interop.Pointer | interop.Reference<fd_set>, p3: interop.Pointer | interop.Reference<fd_set>, p4: interop.Pointer | interop.Reference<fd_set>, p5: interop.Pointer | interop.Reference<timespec>, p6: interop.Pointer | interop.Reference<number>): number;
 
-interface psem_fdinfo {
-	pfi: proc_fileinfo;
-	pseminfo: psem_info;
-}
-declare var psem_fdinfo: interop.StructType<psem_fdinfo>;
-
-interface psem_info {
-	psem_stat: vinfo_stat;
-	psem_name: interop.Reference<number>;
-}
-declare var psem_info: interop.StructType<psem_info>;
-
-interface pseminfo {
-	psem_flags: number;
-	psem_usecount: number;
-	psem_mode: number;
-	psem_uid: number;
-	psem_gid: number;
-	psem_name: interop.Reference<number>;
-	psem_semobject: interop.Pointer | interop.Reference<any>;
-	psem_label: interop.Pointer | interop.Reference<any>;
-	psem_creator_pid: number;
-	psem_creator_uniqueid: number;
-}
-declare var pseminfo: interop.StructType<pseminfo>;
-
-interface pshm_fdinfo {
-	pfi: proc_fileinfo;
-	pshminfo: pshm_info;
-}
-declare var pshm_fdinfo: interop.StructType<pshm_fdinfo>;
-
-interface pshm_info {
-	pshm_stat: vinfo_stat;
-	pshm_mappaddr: number;
-	pshm_name: interop.Reference<number>;
-}
-declare var pshm_info: interop.StructType<pshm_info>;
-
-interface pshminfo {
-	pshm_flags: number;
-	pshm_usecount: number;
-	pshm_length: number;
-	pshm_mode: number;
-	pshm_uid: number;
-	pshm_gid: number;
-	pshm_name: interop.Reference<number>;
-	pshm_memobject: interop.Pointer | interop.Reference<any>;
-	pshm_label: interop.Pointer | interop.Reference<any>;
-}
-declare var pshminfo: interop.StructType<pshminfo>;
-
 declare function psignal(p1: number, p2: string): void;
 
 declare function psort(__base: interop.Pointer | interop.Reference<any>, __nel: number, __width: number, __compar: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): void;
@@ -9982,14 +8147,6 @@ declare function psort(__base: interop.Pointer | interop.Reference<any>, __nel: 
 declare function psort_b(__base: interop.Pointer | interop.Reference<any>, __nel: number, __width: number, __compar: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number): void;
 
 declare function psort_r(__base: interop.Pointer | interop.Reference<any>, __nel: number, __width: number, p4: interop.Pointer | interop.Reference<any>, __compar: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => number>): void;
-
-interface pstats {
-	p_ru: rusage;
-	p_cru: rusage;
-	p_prof: uprof;
-	ps_start: number;
-}
-declare var pstats: interop.StructType<pstats>;
 
 declare function pthread_atfork(p1: interop.FunctionReference<() => void>, p2: interop.FunctionReference<() => void>, p3: interop.FunctionReference<() => void>): number;
 
@@ -10213,8 +8370,6 @@ declare function putchar_unlocked(p1: number): number;
 
 declare function putenv(p1: string): number;
 
-declare function putp(p1: string): number;
-
 declare function puts(p1: string): number;
 
 declare function pututxline(p1: interop.Pointer | interop.Reference<utmpx>): interop.Pointer | interop.Reference<utmpx>;
@@ -10225,18 +8380,7 @@ declare function putwc(p1: number, p2: interop.Pointer | interop.Reference<FILE>
 
 declare function putwchar(p1: number): number;
 
-declare function putwin(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<FILE>): number;
-
 declare function pwrite(__fd: number, __buf: interop.Pointer | interop.Reference<any>, __nbyte: number, __offset: number): number;
-
-interface qelem {
-	q_forw: interop.Pointer | interop.Reference<qelem>;
-	q_back: interop.Pointer | interop.Reference<qelem>;
-	q_data: string;
-}
-declare var qelem: interop.StructType<qelem>;
-
-declare function qiflush(): void;
 
 declare function qos_class_main(): qos_class_t;
 
@@ -10282,38 +8426,6 @@ declare function rand(): number;
 declare function rand_r(p1: interop.Pointer | interop.Reference<number>): number;
 
 declare function random(): number;
-
-declare function raw(): number;
-
-interface rawarc {
-	raw_frompc: number;
-	raw_selfpc: number;
-	raw_count: number;
-}
-declare var rawarc: interop.StructType<rawarc>;
-
-interface rawarc_64 {
-	raw_frompc: number;
-	raw_selfpc: number;
-	raw_count: number;
-}
-declare var rawarc_64: interop.StructType<rawarc_64>;
-
-interface rawarc_order {
-	raw_frompc: number;
-	raw_selfpc: number;
-	raw_count: number;
-	raw_order: number;
-}
-declare var rawarc_order: interop.StructType<rawarc_order>;
-
-interface rawarc_order_64 {
-	raw_frompc: number;
-	raw_selfpc: number;
-	raw_count: number;
-	raw_order: number;
-}
-declare var rawarc_order_64: interop.StructType<rawarc_order_64>;
 
 interface rb_node_t {
 	opaque: interop.Reference<interop.Pointer | interop.Reference<any>>;
@@ -10381,10 +8493,6 @@ declare function recvfrom(p1: number, p2: interop.Pointer | interop.Reference<an
 
 declare function recvmsg(p1: number, p2: interop.Pointer | interop.Reference<msghdr>, p3: number): number;
 
-declare function redrawwin(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function refresh(): number;
-
 declare function regcomp(p1: interop.Pointer | interop.Reference<regex_t>, p2: string, p3: number): number;
 
 declare function regerror(p1: number, p2: interop.Pointer | interop.Reference<regex_t>, p3: string, p4: number): number;
@@ -10439,16 +8547,6 @@ declare function remquol(p1: number, p2: number, p3: interop.Pointer | interop.R
 
 declare function rename(__old: string, __new: string): number;
 
-declare function reset_prog_mode(): number;
-
-declare function reset_shell_mode(): number;
-
-declare function resetty(): number;
-
-declare function resize_term(p1: number, p2: number): number;
-
-declare function resizeterm(p1: number, p2: number): number;
-
 declare function revoke(p1: string): number;
 
 declare function rewind(p1: interop.Pointer | interop.Reference<FILE>): void;
@@ -10462,8 +8560,6 @@ declare function rint(p1: number): number;
 declare function rintf(p1: number): number;
 
 declare function rintl(p1: number): number;
-
-declare function ripoffline(p1: number, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>): number;
 
 interface rlimit {
 	rlim_cur: number;
@@ -10541,68 +8637,6 @@ interface rslvmulti_req {
 }
 declare var rslvmulti_req: interop.StructType<rslvmulti_req>;
 
-interface rt_addrinfo {
-	rti_addrs: number;
-	rti_info: interop.Reference<interop.Pointer | interop.Reference<sockaddr>>;
-}
-declare var rt_addrinfo: interop.StructType<rt_addrinfo>;
-
-interface rt_metrics {
-	rmx_locks: number;
-	rmx_mtu: number;
-	rmx_hopcount: number;
-	rmx_expire: number;
-	rmx_recvpipe: number;
-	rmx_sendpipe: number;
-	rmx_ssthresh: number;
-	rmx_rtt: number;
-	rmx_rttvar: number;
-	rmx_pksent: number;
-	rmx_filler: interop.Reference<number>;
-}
-declare var rt_metrics: interop.StructType<rt_metrics>;
-
-interface rt_msghdr {
-	rtm_msglen: number;
-	rtm_version: number;
-	rtm_type: number;
-	rtm_index: number;
-	rtm_flags: number;
-	rtm_addrs: number;
-	rtm_pid: number;
-	rtm_seq: number;
-	rtm_errno: number;
-	rtm_use: number;
-	rtm_inits: number;
-	rtm_rmx: rt_metrics;
-}
-declare var rt_msghdr: interop.StructType<rt_msghdr>;
-
-interface rt_msghdr2 {
-	rtm_msglen: number;
-	rtm_version: number;
-	rtm_type: number;
-	rtm_index: number;
-	rtm_flags: number;
-	rtm_addrs: number;
-	rtm_refcnt: number;
-	rtm_parentflags: number;
-	rtm_reserved: number;
-	rtm_use: number;
-	rtm_inits: number;
-	rtm_rmx: rt_metrics;
-}
-declare var rt_msghdr2: interop.StructType<rt_msghdr2>;
-
-interface rtstat {
-	rts_badredirect: number;
-	rts_dynamic: number;
-	rts_newgateway: number;
-	rts_unreach: number;
-	rts_wildcard: number;
-}
-declare var rtstat: interop.StructType<rtstat>;
-
 interface rusage {
 	ru_utime: timeval;
 	ru_stime: timeval;
@@ -10652,6 +8686,13 @@ interface rusage_info_current {
 	ri_cpu_time_qos_user_interactive: number;
 	ri_billed_system_time: number;
 	ri_serviced_system_time: number;
+	ri_logical_writes: number;
+	ri_lifetime_max_phys_footprint: number;
+	ri_instructions: number;
+	ri_cycles: number;
+	ri_billed_energy: number;
+	ri_serviced_energy: number;
+	ri_unused: interop.Reference<number>;
 }
 declare var rusage_info_current: interop.StructType<rusage_info_current>;
 
@@ -10714,6 +8755,38 @@ interface rusage_info_v2 {
 }
 declare var rusage_info_v2: interop.StructType<rusage_info_v2>;
 
+interface rusage_info_v3 {
+	ri_uuid: interop.Reference<number>;
+	ri_user_time: number;
+	ri_system_time: number;
+	ri_pkg_idle_wkups: number;
+	ri_interrupt_wkups: number;
+	ri_pageins: number;
+	ri_wired_size: number;
+	ri_resident_size: number;
+	ri_phys_footprint: number;
+	ri_proc_start_abstime: number;
+	ri_proc_exit_abstime: number;
+	ri_child_user_time: number;
+	ri_child_system_time: number;
+	ri_child_pkg_idle_wkups: number;
+	ri_child_interrupt_wkups: number;
+	ri_child_pageins: number;
+	ri_child_elapsed_abstime: number;
+	ri_diskio_bytesread: number;
+	ri_diskio_byteswritten: number;
+	ri_cpu_time_qos_default: number;
+	ri_cpu_time_qos_maintenance: number;
+	ri_cpu_time_qos_background: number;
+	ri_cpu_time_qos_utility: number;
+	ri_cpu_time_qos_legacy: number;
+	ri_cpu_time_qos_user_initiated: number;
+	ri_cpu_time_qos_user_interactive: number;
+	ri_billed_system_time: number;
+	ri_serviced_system_time: number;
+}
+declare var rusage_info_v3: interop.StructType<rusage_info_v3>;
+
 declare function ruserok(p1: string, p2: number, p3: string, p4: string): number;
 
 interface sa_endpoints_t {
@@ -10727,48 +8800,7 @@ declare var sa_endpoints_t: interop.StructType<sa_endpoints_t>;
 
 declare function safe_gets(p1: string, p2: string, p3: number): void;
 
-declare function savetty(): number;
-
 declare function sbrk(p1: number): interop.Pointer | interop.Reference<any>;
-
-interface sbuf {
-	s_buf: string;
-	s_unused: interop.Pointer | interop.Reference<any>;
-	s_size: number;
-	s_len: number;
-	s_flags: number;
-}
-declare var sbuf: interop.StructType<sbuf>;
-
-declare function sbuf_bcat(p1: interop.Pointer | interop.Reference<sbuf>, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
-
-declare function sbuf_bcpy(p1: interop.Pointer | interop.Reference<sbuf>, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
-
-declare function sbuf_cat(p1: interop.Pointer | interop.Reference<sbuf>, p2: string): number;
-
-declare function sbuf_clear(p1: interop.Pointer | interop.Reference<sbuf>): void;
-
-declare function sbuf_cpy(p1: interop.Pointer | interop.Reference<sbuf>, p2: string): number;
-
-declare function sbuf_data(p1: interop.Pointer | interop.Reference<sbuf>): string;
-
-declare function sbuf_delete(p1: interop.Pointer | interop.Reference<sbuf>): void;
-
-declare function sbuf_done(p1: interop.Pointer | interop.Reference<sbuf>): number;
-
-declare function sbuf_finish(p1: interop.Pointer | interop.Reference<sbuf>): void;
-
-declare function sbuf_len(p1: interop.Pointer | interop.Reference<sbuf>): number;
-
-declare function sbuf_new(p1: interop.Pointer | interop.Reference<sbuf>, p2: string, p3: number, p4: number): interop.Pointer | interop.Reference<sbuf>;
-
-declare function sbuf_overflowed(p1: interop.Pointer | interop.Reference<sbuf>): number;
-
-declare function sbuf_putc(p1: interop.Pointer | interop.Reference<sbuf>, p2: number): number;
-
-declare function sbuf_setpos(p1: interop.Pointer | interop.Reference<sbuf>, p2: number): number;
-
-declare function sbuf_trim(p1: interop.Pointer | interop.Reference<sbuf>): number;
 
 declare function scalb(p1: number, p2: number): number;
 
@@ -10800,20 +8832,6 @@ declare var sched_param: interop.StructType<sched_param>;
 
 declare function sched_yield(): number;
 
-declare function scr_dump(p1: string): number;
-
-declare function scr_init(p1: string): number;
-
-declare function scr_restore(p1: string): number;
-
-declare function scr_set(p1: string): number;
-
-declare function scrl(p1: number): number;
-
-declare function scroll(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function scrollok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
 declare function searchfs(p1: string, p2: interop.Pointer | interop.Reference<fssearchblock>, p3: interop.Pointer | interop.Reference<number>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<searchstate>): number;
 
 interface searchstate {
@@ -10831,8 +8849,6 @@ declare var security_token_t: interop.StructType<security_token_t>;
 declare function seed48(p1: interop.Reference<number>): interop.Pointer | interop.Reference<number>;
 
 declare function seekdir(p1: interop.Pointer | interop.Reference<DIR>, p2: number): void;
-
-declare function select(p1: number, p2: interop.Pointer | interop.Reference<fd_set>, p3: interop.Pointer | interop.Reference<fd_set>, p4: interop.Pointer | interop.Reference<fd_set>, p5: interop.Pointer | interop.Reference<timeval>): number;
 
 interface sem {
 	semval: number;
@@ -10903,29 +8919,15 @@ interface servent {
 }
 declare var servent: interop.StructType<servent>;
 
-declare function set_dp_control_port(host: number, control_port: number): number;
-
-declare function set_escdelay(p1: number): number;
-
-declare function set_tabsize(p1: number): number;
-
-declare function set_term(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function setac(): void;
-
 declare function setattrlist(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number): number;
 
-declare function setauclass(): void;
+declare function setattrlistat(p1: number, p2: string, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: number, p6: number): number;
 
 declare function setaudit(p1: interop.Pointer | interop.Reference<auditinfo_t>): number;
 
 declare function setaudit_addr(p1: interop.Pointer | interop.Reference<auditinfo_addr_t>, p2: number): number;
 
-declare function setauevent(): void;
-
 declare function setauid(p1: interop.Pointer | interop.Reference<number>): number;
-
-declare function setauuser(): void;
 
 declare function setbuf(p1: interop.Pointer | interop.Reference<FILE>, p2: string): void;
 
@@ -11006,8 +9008,6 @@ declare function setrlimit(p1: number, p2: interop.Pointer | interop.Reference<r
 declare function setrpcent(stayopen: number): void;
 
 declare function setruid(p1: number): number;
-
-declare function setscrreg(p1: number, p2: number): number;
 
 declare function setservent(p1: number): void;
 
@@ -11132,38 +9132,6 @@ declare function sinl(p1: number): number;
 
 declare function sleep(p1: number): number;
 
-declare function slk_attr(): number;
-
-declare function slk_attr_off(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function slk_attr_on(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
-
-declare function slk_attr_set(p1: number, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
-
-declare function slk_attroff(p1: number): number;
-
-declare function slk_attron(p1: number): number;
-
-declare function slk_attrset(p1: number): number;
-
-declare function slk_clear(): number;
-
-declare function slk_color(p1: number): number;
-
-declare function slk_init(p1: number): number;
-
-declare function slk_label(p1: number): string;
-
-declare function slk_noutrefresh(): number;
-
-declare function slk_refresh(): number;
-
-declare function slk_restore(): number;
-
-declare function slk_set(p1: number, p2: string, p3: number): number;
-
-declare function slk_touch(): number;
-
 declare function slot_name(p1: number, p2: number, p3: interop.Pointer | interop.Reference<string>, p4: interop.Pointer | interop.Reference<string>): void;
 
 interface so_np_extensions {
@@ -11179,15 +9147,17 @@ interface sockaddr {
 }
 declare var sockaddr: interop.StructType<sockaddr>;
 
-interface sockaddr_ctl {
-	sc_len: number;
-	sc_family: number;
-	ss_sysaddr: number;
-	sc_id: number;
-	sc_unit: number;
-	sc_reserved: interop.Reference<number>;
+interface sockaddr_dl {
+	sdl_len: number;
+	sdl_family: number;
+	sdl_index: number;
+	sdl_type: number;
+	sdl_nlen: number;
+	sdl_alen: number;
+	sdl_slen: number;
+	sdl_data: interop.Reference<number>;
 }
-declare var sockaddr_ctl: interop.StructType<sockaddr_ctl>;
+declare var sockaddr_dl: interop.StructType<sockaddr_dl>;
 
 interface sockaddr_in {
 	sin_len: number;
@@ -11207,14 +9177,6 @@ interface sockaddr_storage {
 }
 declare var sockaddr_storage: interop.StructType<sockaddr_storage>;
 
-interface sockaddr_sys {
-	ss_len: number;
-	ss_family: number;
-	ss_sysaddr: number;
-	ss_reserved: interop.Reference<number>;
-}
-declare var sockaddr_sys: interop.StructType<sockaddr_sys>;
-
 interface sockaddr_un {
 	sun_len: number;
 	sun_family: number;
@@ -11223,17 +9185,6 @@ interface sockaddr_un {
 declare var sockaddr_un: interop.StructType<sockaddr_un>;
 
 declare function sockatmark(p1: number): number;
-
-interface sockbuf_info {
-	sbi_cc: number;
-	sbi_hiwat: number;
-	sbi_mbcnt: number;
-	sbi_mbmax: number;
-	sbi_lowat: number;
-	sbi_flags: number;
-	sbi_timeo: number;
-}
-declare var sockbuf_info: interop.StructType<sockbuf_info>;
 
 declare function socket(p1: number, p2: number, p3: number): number;
 
@@ -11244,12 +9195,6 @@ interface sockproto {
 	sp_protocol: number;
 }
 declare var sockproto: interop.StructType<sockproto>;
-
-interface speedtab {
-	sp_speed: number;
-	sp_code: number;
-}
-declare var speedtab: interop.StructType<speedtab>;
 
 declare function sqrt(p1: number): number;
 
@@ -11275,12 +9220,6 @@ interface stack_t {
 	ss_flags: number;
 }
 declare var stack_t: interop.StructType<stack_t>;
-
-declare function standend(): number;
-
-declare function standout(): number;
-
-declare function start_color(): number;
 
 declare function stat(p1: string, p2: interop.Pointer | interop.Reference<statStruct>): number;
 
@@ -11346,8 +9285,6 @@ interface statvfsStruct {
 declare var statvfsStruct: interop.StructType<statvfsStruct>;
 
 declare function statx_np(p1: string, p2: interop.Pointer | interop.Reference<statStruct>, p3: interop.Pointer | interop.Reference<any>): number;
-
-declare var stdscr: interop.Pointer | interop.Reference<any>;
 
 declare function stpcpy(__dst: string, __src: string): string;
 
@@ -11447,10 +9384,6 @@ declare var suboptarg: string;
 
 declare var suboptargVar: string;
 
-declare function subpad(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number): interop.Pointer | interop.Reference<any>;
-
-declare function subwin(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number): interop.Pointer | interop.Reference<any>;
-
 declare function swab(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number): void;
 
 declare function swabFunction(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number): void;
@@ -11469,8 +9402,6 @@ declare function sync(): void;
 
 declare function sync_volume_np(p1: string, p2: number): number;
 
-declare function syncok(p1: interop.Pointer | interop.Reference<any>, p2: boolean): number;
-
 declare var sys_errlist: interop.Reference<string>;
 
 declare var sys_nerr: number;
@@ -11486,8 +9417,6 @@ declare function sysctl(p1: interop.Pointer | interop.Reference<number>, p2: num
 declare function sysctlbyname(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<any>, p5: number): number;
 
 declare function sysctlnametomib(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): number;
-
-declare function system(p1: string): number;
 
 declare function tan(p1: number): number;
 
@@ -11606,6 +9535,8 @@ declare function task_get_state(task: number, flavor: number, old_state: interop
 
 declare function task_info(target_task: number, flavor: number, task_info_out: interop.Pointer | interop.Reference<number>, task_info_outCnt: interop.Pointer | interop.Reference<number>): number;
 
+declare function task_inspect(task: number, flavor: number, info_out: interop.Pointer | interop.Reference<number>, info_outCnt: interop.Pointer | interop.Reference<number>): number;
+
 interface task_kernelmemory_info_data_t {
 	total_palloc: number;
 	total_pfree: number;
@@ -11656,6 +9587,8 @@ declare var task_power_info_data_t: interop.StructType<task_power_info_data_t>;
 interface task_power_info_v2_data_t {
 	cpu_energy: task_power_info_data_t;
 	gpu_energy: gpu_energy_data;
+	task_ptime: number;
+	task_pset_switches: number;
 }
 declare var task_power_info_v2_data_t: interop.StructType<task_power_info_v2_data_t>;
 
@@ -11857,6 +9790,7 @@ interface tcp_connection_info {
 	tcpi_tfo_heuristics_disable: number;
 	tcpi_tfo_send_blackhole: number;
 	tcpi_tfo_recv_blackhole: number;
+	tcpi_tfo_onebyte_proxy: number;
 	__pad2: number;
 	tcpi_txpackets: number;
 	tcpi_txbytes: number;
@@ -11864,6 +9798,7 @@ interface tcp_connection_info {
 	tcpi_rxpackets: number;
 	tcpi_rxbytes: number;
 	tcpi_rxoutoforderbytes: number;
+	tcpi_txretransmitpackets: number;
 }
 declare var tcp_connection_info: interop.StructType<tcp_connection_info>;
 
@@ -11893,8 +9828,6 @@ declare function telldir(p1: interop.Pointer | interop.Reference<DIR>): number;
 
 declare function tempnam(__dir: string, __prefix: string): string;
 
-declare function termattrs(): number;
-
 interface termios {
 	c_iflag: number;
 	c_oflag: number;
@@ -11905,8 +9838,6 @@ interface termios {
 	c_ospeed: number;
 }
 declare var termios: interop.StructType<termios>;
-
-declare function termname(): string;
 
 declare function tfind(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>): interop.Pointer | interop.Reference<any>;
 
@@ -12051,12 +9982,6 @@ declare var thread_time_constraint_policy_data_t: interop.StructType<thread_time
 
 declare function thread_wire(host_priv: number, thread: number, wired: number): number;
 
-declare function tigetflag(p1: string): number;
-
-declare function tigetnum(p1: string): number;
-
-declare function tigetstr(p1: string): string;
-
 declare function time(p1: interop.Pointer | interop.Reference<number>): number;
 
 declare function time2posix(p1: number): number;
@@ -12078,8 +10003,6 @@ declare var timeb: interop.StructType<timeb>;
 declare function timegm(p1: interop.Pointer | interop.Reference<tm>): number;
 
 declare function timelocal(p1: interop.Pointer | interop.Reference<tm>): number;
-
-declare function timeout(p1: number): void;
 
 declare function times(p1: interop.Pointer | interop.Reference<tms>): number;
 
@@ -12115,6 +10038,8 @@ interface timezoneStruct {
 }
 declare var timezoneStruct: interop.StructType<timezoneStruct>;
 
+declare function timingsafe_bcmp(__b1: interop.Pointer | interop.Reference<any>, __b2: interop.Pointer | interop.Reference<any>, __len: number): number;
+
 interface tm {
 	tm_sec: number;
 	tm_min: number;
@@ -12142,29 +10067,7 @@ interface tms {
 }
 declare var tms: interop.StructType<tms>;
 
-interface tostruct {
-	selfpc: number;
-	count: number;
-	link: number;
-	order: number;
-}
-declare var tostruct: interop.StructType<tostruct>;
-
-interface tostruct_64 {
-	selfpc: number;
-	count: number;
-	link: number;
-	order: number;
-}
-declare var tostruct_64: interop.StructType<tostruct_64>;
-
-declare function touchline(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function touchwin(p1: interop.Pointer | interop.Reference<any>): number;
-
 declare function towctrans(p1: number, p2: number): number;
-
-declare function trace(p1: number): void;
 
 declare function trunc(p1: number): number;
 
@@ -12196,13 +10099,9 @@ declare var ttysize: interop.StructType<ttysize>;
 
 declare function ttyslot(): number;
 
-declare var ttytype: interop.Reference<number>;
-
 declare function ttyunlock(p1: string): number;
 
 declare function twalk(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: VISIT, p3: number) => void>): void;
-
-declare function typeahead(p1: number): number;
 
 declare var tzname: interop.Reference<string>;
 
@@ -12232,17 +10131,11 @@ declare function umask(p1: number): number;
 
 declare function uname(p1: interop.Pointer | interop.Reference<utsname>): number;
 
-declare function unctrl(p1: number): string;
-
 declare function undelete(p1: string): number;
 
 declare const underline: number;
 
 declare function ungetc(p1: number, p2: interop.Pointer | interop.Reference<FILE>): number;
-
-declare function ungetch(p1: number): number;
-
-declare function ungetmouse(p1: interop.Pointer | interop.Reference<MEVENT>): number;
 
 declare function ungetwc(p1: number, p2: interop.Pointer | interop.Reference<FILE>): number;
 
@@ -12256,44 +10149,13 @@ declare function unmount(p1: string, p2: number): number;
 
 declare function unsetenv(p1: string): number;
 
-declare function untouchwin(p1: interop.Pointer | interop.Reference<any>): number;
-
 declare function unwhiteout(p1: string): number;
 
-interface uprof {
-	pr_next: interop.Pointer | interop.Reference<uprof>;
-	pr_base: string;
-	pr_size: number;
-	pr_off: number;
-	pr_scale: number;
-	pr_addr: number;
-	pr_ticks: number;
-}
-declare var uprof: interop.StructType<uprof>;
-
-declare function use_default_colors(): number;
-
-declare function use_env(p1: boolean): void;
-
-declare function use_extended_names(p1: boolean): number;
-
-declare function use_legacy_coding(p1: number): number;
-
-declare function use_screen(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>, p3: interop.Pointer | interop.Reference<any>): number;
-
-declare function use_window(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => number>, p3: interop.Pointer | interop.Reference<any>): number;
-
 declare function uselocale(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-interface user {
-}
-declare var user: interop.StructType<user>;
 
 declare function user_from_uid(p1: number, p2: number): string;
 
 declare function usleep(p1: number): number;
-
-declare function usrctl(flags: number): number;
 
 interface utimbuf {
 	actime: number;
@@ -12302,6 +10164,8 @@ interface utimbuf {
 declare var utimbuf: interop.StructType<utimbuf>;
 
 declare function utime(p1: string, p2: interop.Pointer | interop.Reference<utimbuf>): number;
+
+declare function utimensat(__fd: number, __path: string, __times: interop.Reference<timespec>, __flag: number): number;
 
 declare function utimes(p1: string, p2: interop.Pointer | interop.Reference<timeval>): number;
 
@@ -12407,37 +10271,6 @@ interface vfsstatfs {
 	f_reserved: interop.Reference<interop.Pointer | interop.Reference<any>>;
 }
 declare var vfsstatfs: interop.StructType<vfsstatfs>;
-
-declare function vidattr(p1: number): number;
-
-declare function vidputs(p1: number, p2: interop.FunctionReference<(p1: number) => number>): number;
-
-interface vinfo_stat {
-	vst_dev: number;
-	vst_mode: number;
-	vst_nlink: number;
-	vst_ino: number;
-	vst_uid: number;
-	vst_gid: number;
-	vst_atime: number;
-	vst_atimensec: number;
-	vst_mtime: number;
-	vst_mtimensec: number;
-	vst_ctime: number;
-	vst_ctimensec: number;
-	vst_birthtime: number;
-	vst_birthtimensec: number;
-	vst_size: number;
-	vst_blocks: number;
-	vst_blksize: number;
-	vst_flags: number;
-	vst_gen: number;
-	vst_rdev: number;
-	vst_qspare: interop.Reference<number>;
-}
-declare var vinfo_stat: interop.StructType<vinfo_stat>;
-
-declare function vline(p1: number, p2: number): number;
 
 declare function vm_allocate(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, flags: number): number;
 
@@ -12748,32 +10581,6 @@ interface vmspace {
 }
 declare var vmspace: interop.StructType<vmspace>;
 
-interface vnode_fdinfo {
-	pfi: proc_fileinfo;
-	pvi: vnode_info;
-}
-declare var vnode_fdinfo: interop.StructType<vnode_fdinfo>;
-
-interface vnode_fdinfowithpath {
-	pfi: proc_fileinfo;
-	pvip: vnode_info_path;
-}
-declare var vnode_fdinfowithpath: interop.StructType<vnode_fdinfowithpath>;
-
-interface vnode_info {
-	vi_stat: vinfo_stat;
-	vi_type: number;
-	vi_pad: number;
-	vi_fsid: fsid_t;
-}
-declare var vnode_info: interop.StructType<vnode_info>;
-
-interface vnode_info_path {
-	vip_vi: vnode_info;
-	vip_path: interop.Reference<number>;
-}
-declare var vnode_info_path: interop.StructType<vnode_info_path>;
-
 interface vol_attributes_attr_t {
 	validattr: attribute_set_t;
 	nativeattr: attribute_set_t;
@@ -12794,57 +10601,13 @@ declare function voucher_mach_msg_revert(state: interop.Pointer | interop.Refere
 
 declare function voucher_mach_msg_set(msg: interop.Pointer | interop.Reference<mach_msg_header_t>): number;
 
-declare function waddch(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function waddchnstr(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: number): number;
-
-declare function waddchstr(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>): number;
-
-declare function waddnstr(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number): number;
-
-declare function waddstr(p1: interop.Pointer | interop.Reference<any>, p2: string): number;
-
 declare function wait(p1: interop.Pointer | interop.Reference<number>): number;
 
 declare function wait3(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: interop.Pointer | interop.Reference<rusage>): number;
 
 declare function wait4(p1: number, p2: interop.Pointer | interop.Reference<number>, p3: number, p4: interop.Pointer | interop.Reference<rusage>): number;
 
-declare function waitevent(p1: interop.Pointer | interop.Reference<eventreq>, p2: interop.Pointer | interop.Reference<timeval>): number;
-
 declare function waitpid(p1: number, p2: interop.Pointer | interop.Reference<number>, p3: number): number;
-
-declare function watchevent(p1: interop.Pointer | interop.Reference<eventreq>, p2: number): number;
-
-declare function wattr_get(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<any>): number;
-
-declare function wattr_off(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
-
-declare function wattr_on(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
-
-declare function wattr_set(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
-
-declare function wattroff(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function wattron(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function wattrset(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function wbkgd(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function wbkgdset(p1: interop.Pointer | interop.Reference<any>, p2: number): void;
-
-declare function wborder(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number): number;
-
-declare function wchgat(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: interop.Pointer | interop.Reference<any>): number;
-
-declare function wclear(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wclrtobot(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wclrtoeol(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wcolor_set(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
 
 declare function wcpcpy(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
 
@@ -12926,51 +10689,13 @@ declare function wctrans(p1: string): number;
 
 declare function wctype(p1: string): number;
 
-declare function wcursyncup(p1: interop.Pointer | interop.Reference<any>): void;
-
 declare function wcwidth(p1: number): number;
-
-declare function wdelch(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wdeleteln(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wechochar(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function wenclose(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): boolean;
-
-declare function werase(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wgetch(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wgetnstr(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number): number;
-
-declare function wgetparent(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function wgetscrreg(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): number;
-
-declare function wgetstr(p1: interop.Pointer | interop.Reference<any>, p2: string): number;
-
-declare function whline(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
 
 interface wide {
 	lo: number;
 	hi: number;
 }
 declare var wide: interop.StructType<wide>;
-
-declare function winch(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function winchnstr(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: number): number;
-
-declare function winchstr(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>): number;
-
-declare function winnstr(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number): number;
-
-declare function winsch(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function winsdelln(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function winsertln(p1: interop.Pointer | interop.Reference<any>): number;
 
 interface winsize {
 	ws_row: number;
@@ -12979,12 +10704,6 @@ interface winsize {
 	ws_ypixel: number;
 }
 declare var winsize: interop.StructType<winsize>;
-
-declare function winsnstr(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number): number;
-
-declare function winsstr(p1: interop.Pointer | interop.Reference<any>, p2: string): number;
-
-declare function winstr(p1: interop.Pointer | interop.Reference<any>, p2: string): number;
 
 declare function wmemchr(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: number): interop.Pointer | interop.Reference<number>;
 
@@ -12996,12 +10715,6 @@ declare function wmemmove(p1: interop.Pointer | interop.Reference<number>, p2: i
 
 declare function wmemset(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: number): interop.Pointer | interop.Reference<number>;
 
-declare function wmouse_trafo(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: boolean): boolean;
-
-declare function wmove(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function wnoutrefresh(p1: interop.Pointer | interop.Reference<any>): number;
-
 interface wordexp_t {
 	we_wordc: number;
 	we_wordv: interop.Pointer | interop.Reference<string>;
@@ -13009,35 +10722,11 @@ interface wordexp_t {
 }
 declare var wordexp_t: interop.StructType<wordexp_t>;
 
-declare function wredrawln(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function wrefresh(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wresize(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
 declare function write(__fd: number, __buf: interop.Pointer | interop.Reference<any>, __nbyte: number): number;
 
 declare function writev(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number): number;
 
-declare function wscrl(p1: interop.Pointer | interop.Reference<any>, p2: number): number;
-
-declare function wsetscrreg(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
-
-declare function wstandend(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wstandout(p1: interop.Pointer | interop.Reference<any>): number;
-
-declare function wsyncdown(p1: interop.Pointer | interop.Reference<any>): void;
-
-declare function wsyncup(p1: interop.Pointer | interop.Reference<any>): void;
-
-declare function wtimeout(p1: interop.Pointer | interop.Reference<any>, p2: number): void;
-
 declare function wtmpxname(p1: string): number;
-
-declare function wtouchln(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number): number;
-
-declare function wvline(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
 
 declare function xattr_flags_from_name(p1: string): number;
 
@@ -13048,63 +10737,6 @@ declare function xattr_name_with_flags(p1: string, p2: number): string;
 declare function xattr_name_without_flags(p1: string): string;
 
 declare function xattr_preserve_for_intent(p1: string, p2: number): number;
-
-interface xsockbuf {
-	sb_cc: number;
-	sb_hiwat: number;
-	sb_mbcnt: number;
-	sb_mbmax: number;
-	sb_lowat: number;
-	sb_flags: number;
-	sb_timeo: number;
-}
-declare var xsockbuf: interop.StructType<xsockbuf>;
-
-interface xsocket {
-	xso_len: number;
-	xso_so: interop.Pointer | interop.Reference<any>;
-	so_type: number;
-	so_options: number;
-	so_linger: number;
-	so_state: number;
-	so_pcb: string;
-	xso_protocol: number;
-	xso_family: number;
-	so_qlen: number;
-	so_incqlen: number;
-	so_qlimit: number;
-	so_timeo: number;
-	so_error: number;
-	so_pgid: number;
-	so_oobmark: number;
-	so_rcv: xsockbuf;
-	so_snd: xsockbuf;
-	so_uid: number;
-}
-declare var xsocket: interop.StructType<xsocket>;
-
-interface xsocket64 {
-	xso_len: number;
-	xso_so: number;
-	so_type: number;
-	so_options: number;
-	so_linger: number;
-	so_state: number;
-	so_pcb: number;
-	xso_protocol: number;
-	xso_family: number;
-	so_qlen: number;
-	so_incqlen: number;
-	so_qlimit: number;
-	so_timeo: number;
-	so_error: number;
-	so_pgid: number;
-	so_oobmark: number;
-	so_rcv: xsockbuf;
-	so_snd: xsockbuf;
-	so_uid: number;
-}
-declare var xsocket64: interop.StructType<xsocket64>;
 
 interface xsw_usage {
 	xsu_total: number;
@@ -13122,14 +10754,6 @@ interface xucred {
 	cr_groups: interop.Reference<number>;
 }
 declare var xucred: interop.StructType<xucred>;
-
-interface xunpgen {
-	xug_len: number;
-	xug_count: number;
-	xug_gen: number;
-	xug_sogen: number;
-}
-declare var xunpgen: interop.StructType<xunpgen>;
 
 declare function y0(p1: number): number;
 

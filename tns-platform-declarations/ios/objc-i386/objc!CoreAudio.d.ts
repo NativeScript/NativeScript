@@ -8,7 +8,7 @@ declare var _AudioBuffer: interop.StructType<_AudioBuffer>;
 
 interface AudioBufferList {
 	mNumberBuffers: number;
-	mBuffers: interop.Reference<any /*AudioBuffer*/>;
+	mBuffers: interop.Reference<_AudioBuffer>;
 }
 declare var AudioBufferList: interop.StructType<AudioBufferList>;
 
@@ -295,6 +295,42 @@ declare const kAudioChannelLabel_Discrete_9: number;
 
 declare const kAudioChannelLabel_ForeignLanguage: number;
 
+declare const kAudioChannelLabel_HOA_ACN: number;
+
+declare const kAudioChannelLabel_HOA_ACN_0: number;
+
+declare const kAudioChannelLabel_HOA_ACN_1: number;
+
+declare const kAudioChannelLabel_HOA_ACN_10: number;
+
+declare const kAudioChannelLabel_HOA_ACN_11: number;
+
+declare const kAudioChannelLabel_HOA_ACN_12: number;
+
+declare const kAudioChannelLabel_HOA_ACN_13: number;
+
+declare const kAudioChannelLabel_HOA_ACN_14: number;
+
+declare const kAudioChannelLabel_HOA_ACN_15: number;
+
+declare const kAudioChannelLabel_HOA_ACN_2: number;
+
+declare const kAudioChannelLabel_HOA_ACN_3: number;
+
+declare const kAudioChannelLabel_HOA_ACN_4: number;
+
+declare const kAudioChannelLabel_HOA_ACN_5: number;
+
+declare const kAudioChannelLabel_HOA_ACN_6: number;
+
+declare const kAudioChannelLabel_HOA_ACN_65024: number;
+
+declare const kAudioChannelLabel_HOA_ACN_7: number;
+
+declare const kAudioChannelLabel_HOA_ACN_8: number;
+
+declare const kAudioChannelLabel_HOA_ACN_9: number;
+
 declare const kAudioChannelLabel_Haptic: number;
 
 declare const kAudioChannelLabel_HeadphonesLeft: number;
@@ -535,6 +571,10 @@ declare const kAudioChannelLayoutTag_EAC_7_0_A: number;
 
 declare const kAudioChannelLayoutTag_Emagic_Default_7_1: number;
 
+declare const kAudioChannelLayoutTag_HOA_ACN_N3D: number;
+
+declare const kAudioChannelLayoutTag_HOA_ACN_SN3D: number;
+
 declare const kAudioChannelLayoutTag_Hexagonal: number;
 
 declare const kAudioChannelLayoutTag_ITU_1_0: number;
@@ -643,6 +683,8 @@ declare const kAudioFormatDVIIntelIMA: number;
 
 declare const kAudioFormatEnhancedAC3: number;
 
+declare const kAudioFormatFLAC: number;
+
 declare const kAudioFormatFlagIsAlignedHigh: number;
 
 declare const kAudioFormatFlagIsBigEndian: number;
@@ -704,6 +746,8 @@ declare const kAudioFormatMPEGLayer2: number;
 declare const kAudioFormatMPEGLayer3: number;
 
 declare const kAudioFormatMicrosoftGSM: number;
+
+declare const kAudioFormatOpus: number;
 
 declare const kAudioFormatParameterValueStream: number;
 

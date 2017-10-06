@@ -38,6 +38,8 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	static arrayWithContentsOfURL<ObjectType>(url: NSURL): NSArray<ObjectType>;
 
+	static arrayWithContentsOfURLError<ObjectType>(url: NSURL): NSArray<ObjectType>;
+
 	static arrayWithObject<ObjectType>(anObject: ObjectType): NSArray<ObjectType>;
 
 	static arrayWithObjects<ObjectType>(firstObj: ObjectType): NSArray<ObjectType>;
@@ -77,6 +79,8 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { contentsOfFile: string; });
+
+	constructor(o: { contentsOfURL: NSURL; });
 
 	constructor(o: { contentsOfURL: NSURL; });
 
@@ -152,6 +156,8 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	initWithContentsOfURL(url: NSURL): this;
 
+	initWithContentsOfURLError(url: NSURL): this;
+
 	initWithObjects(firstObj: ObjectType): this;
 
 	initWithObjectsCount(objects: interop.Reference<ObjectType>, cnt: number): this;
@@ -219,6 +225,8 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	writeToFileAtomically(path: string, useAuxiliaryFile: boolean): boolean;
 
 	writeToURLAtomically(url: NSURL, atomically: boolean): boolean;
+
+	writeToURLError(url: NSURL): boolean;
 }
 
 declare class NSAssertionHandler extends NSObject {
@@ -232,19 +240,41 @@ declare class NSAssertionHandler extends NSObject {
 
 declare var NSAssertionHandlerKey: string;
 
-declare class NSAttributedString extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
+declare class NSAttributedString extends NSObject implements NSCopying, NSItemProviderReading, NSItemProviderWriting, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): NSAttributedString; // inherited from NSObject
 
 	static attributedStringWithAttachment(attachment: NSTextAttachment): NSAttributedString;
 
+	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
 	static new(): NSAttributedString; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSAttributedString;
 
 	readonly length: number;
 
 	readonly string: string;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly readableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderReading
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	static readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
 
 	constructor(o: { attributedString: NSAttributedString; });
 
@@ -271,6 +301,10 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSMutabl
 	attributesAtIndexLongestEffectiveRangeInRange(location: number, range: interop.Pointer | interop.Reference<NSRange>, rangeLimit: NSRange): NSDictionary<string, any>;
 
 	boundingRectWithSizeOptionsContext(size: CGSize, options: NSStringDrawingOptions, context: NSStringDrawingContext): CGRect;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	containsAttachmentsInRange(range: NSRange): boolean;
 
@@ -306,9 +340,31 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSMutabl
 
 	initWithURLOptionsDocumentAttributesError(url: NSURL, options: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>): this;
 
+	isEqual(object: any): boolean;
+
 	isEqualToAttributedString(other: NSAttributedString): boolean;
 
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 
 	size(): CGSize;
 }
@@ -1144,6 +1200,8 @@ declare class NSCoder extends NSObject {
 
 	decodeDataObject(): NSData;
 
+	decodeDirectionalEdgeInsetsForKey(key: string): NSDirectionalEdgeInsets;
+
 	decodeDoubleForKey(key: string): number;
 
 	decodeFloatForKey(key: string): number;
@@ -1180,9 +1238,11 @@ declare class NSCoder extends NSObject {
 
 	decodeValueOfObjCTypeAt(type: string, data: interop.Pointer | interop.Reference<any>): void;
 
+	decodeValueOfObjCTypeAtSize(type: string, data: interop.Pointer | interop.Reference<any>, size: number): void;
+
 	encodeArrayOfObjCTypeCountAt(type: string, count: number, array: interop.Pointer | interop.Reference<any>): void;
 
-	encodeBoolForKey(boolv: boolean, key: string): void;
+	encodeBoolForKey(value: boolean, key: string): void;
 
 	encodeBycopyObject(anObject: any): void;
 
@@ -1190,7 +1250,7 @@ declare class NSCoder extends NSObject {
 
 	encodeBytesLength(byteaddr: interop.Pointer | interop.Reference<any>, length: number): void;
 
-	encodeBytesLengthForKey(bytesp: string, lenv: number, key: string): void;
+	encodeBytesLengthForKey(bytes: string, length: number, key: string): void;
 
 	encodeCGAffineTransformForKey(transform: CGAffineTransform, key: string): void;
 
@@ -1210,25 +1270,27 @@ declare class NSCoder extends NSObject {
 
 	encodeConditionalObject(object: any): void;
 
-	encodeConditionalObjectForKey(objv: any, key: string): void;
+	encodeConditionalObjectForKey(object: any, key: string): void;
 
 	encodeDataObject(data: NSData): void;
 
-	encodeDoubleForKey(realv: number, key: string): void;
+	encodeDirectionalEdgeInsetsForKey(insets: NSDirectionalEdgeInsets, key: string): void;
 
-	encodeFloatForKey(realv: number, key: string): void;
+	encodeDoubleForKey(value: number, key: string): void;
 
-	encodeInt32ForKey(intv: number, key: string): void;
+	encodeFloatForKey(value: number, key: string): void;
 
-	encodeInt64ForKey(intv: number, key: string): void;
+	encodeInt32ForKey(value: number, key: string): void;
 
-	encodeIntForKey(intv: number, key: string): void;
+	encodeInt64ForKey(value: number, key: string): void;
 
-	encodeIntegerForKey(intv: number, key: string): void;
+	encodeIntForKey(value: number, key: string): void;
+
+	encodeIntegerForKey(value: number, key: string): void;
 
 	encodeObject(object: any): void;
 
-	encodeObjectForKey(objv: any, key: string): void;
+	encodeObjectForKey(object: any, key: string): void;
 
 	encodeRootObject(rootObject: any): void;
 
@@ -1250,6 +1312,8 @@ declare class NSCoder extends NSObject {
 declare const NSCoderErrorMaximum: number;
 
 declare const NSCoderErrorMinimum: number;
+
+declare const NSCoderInvalidValueError: number;
 
 declare const NSCoderReadCorruptError: number;
 
@@ -1411,6 +1475,8 @@ declare class NSConstantString extends NSSimpleCString {
 	static alloc(): NSConstantString; // inherited from NSObject
 
 	static new(): NSConstantString; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSConstantString; // inherited from NSItemProviderReading
 
 	static string(): NSConstantString; // inherited from NSString
 
@@ -1898,6 +1964,8 @@ declare class NSDateComponentsFormatter extends NSFormatter {
 
 	maximumUnitCount: number;
 
+	referenceDate: Date;
+
 	unitsStyle: NSDateComponentsFormatterUnitsStyle;
 
 	zeroFormattingBehavior: NSDateComponentsFormatterZeroFormattingBehavior;
@@ -2131,6 +2199,8 @@ declare function NSDeallocateMemoryPages(ptr: interop.Pointer | interop.Referenc
 
 declare function NSDeallocateObject(object: any): void;
 
+declare var NSDebugDescriptionErrorKey: string;
+
 interface NSDecimal {
 	_exponent: number;
 	_length: number;
@@ -2249,9 +2319,9 @@ declare class NSDecimalNumberHandler extends NSObject implements NSCoding, NSDec
 
 	static decimalNumberHandlerWithRoundingModeScaleRaiseOnExactnessRaiseOnOverflowRaiseOnUnderflowRaiseOnDivideByZero(roundingMode: NSRoundingMode, scale: number, exact: boolean, overflow: boolean, underflow: boolean, divideByZero: boolean): NSDecimalNumberHandler;
 
-	static defaultDecimalNumberHandler(): NSDecimalNumberHandler;
-
 	static new(): NSDecimalNumberHandler; // inherited from NSObject
+
+	static readonly defaultDecimalNumberHandler: NSDecimalNumberHandler;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2297,7 +2367,7 @@ declare var NSDefaultRunLoopMode: string;
 
 declare var NSDestinationInvalidException: string;
 
-declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCopying, NSFastEnumeration, NSFetchRequestResult, NSMutableCopying, NSSecureCoding {
+declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCopying, NSFastEnumeration, NSFastEnumeration, NSFetchRequestResult, NSMutableCopying, NSSecureCoding {
 
 	static alloc<KeyType, ObjectType>(): NSDictionary<KeyType, ObjectType>; // inherited from NSObject
 
@@ -2307,19 +2377,21 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	static dictionaryWithContentsOfURL<KeyType, ObjectType>(url: NSURL): NSDictionary<KeyType, ObjectType>;
 
+	static dictionaryWithContentsOfURLError<KeyType, ObjectType>(url: NSURL): NSDictionary<string, ObjectType>;
+
 	static dictionaryWithDictionary<KeyType, ObjectType>(dict: NSDictionary<KeyType, ObjectType>): NSDictionary<KeyType, ObjectType>;
 
-	static dictionaryWithObjectForKey<KeyType, ObjectType>(object: ObjectType, key: any): NSDictionary<KeyType, ObjectType>;
+	static dictionaryWithObjectForKey<KeyType, ObjectType>(object: ObjectType, key: KeyType): NSDictionary<KeyType, ObjectType>;
 
 	static dictionaryWithObjectsAndKeys<KeyType, ObjectType>(firstObject: any): NSDictionary<KeyType, ObjectType>;
 
-	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType>, keys: NSArray<any>): NSDictionary<KeyType, ObjectType>;
+	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType>, keys: NSArray<KeyType>): NSDictionary<KeyType, ObjectType>;
 
-	static dictionaryWithObjectsForKeysCount<KeyType, ObjectType>(objects: interop.Reference<ObjectType>, keys: interop.Reference<any>, cnt: number): NSDictionary<KeyType, ObjectType>;
+	static dictionaryWithObjectsForKeysCount<KeyType, ObjectType>(objects: interop.Reference<ObjectType>, keys: interop.Reference<KeyType>, cnt: number): NSDictionary<KeyType, ObjectType>;
 
 	static new<KeyType, ObjectType>(): NSDictionary<KeyType, ObjectType>; // inherited from NSObject
 
-	static sharedKeySetForKeys(keys: NSArray<any>): any;
+	static sharedKeySetForKeys<KeyType>(keys: NSArray<KeyType>): any;
 
 	readonly allKeys: NSArray<KeyType>;
 
@@ -2350,15 +2422,17 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	constructor(o: { contentsOfURL: NSURL; });
 
+	constructor(o: { contentsOfURL: NSURL; });
+
 	constructor(o: { dictionary: NSDictionary<KeyType, ObjectType>; });
 
 	constructor(o: { dictionary: NSDictionary<KeyType, ObjectType>; copyItems: boolean; });
 
 	constructor(o: { objectsAndKeys: any; });
 
-	constructor(o: { objects: NSArray<ObjectType>; forKeys: NSArray<any>; });
+	constructor(o: { objects: NSArray<ObjectType>; forKeys: NSArray<KeyType>; });
 
-	constructor(o: { objects: interop.Reference<ObjectType>; forKeys: interop.Reference<any>; count: number; });
+	constructor(o: { objects: interop.Reference<ObjectType>; forKeys: interop.Reference<KeyType>; count: number; });
 
 	allKeysForObject(anObject: ObjectType): NSArray<KeyType>;
 
@@ -2420,15 +2494,17 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	initWithContentsOfURL(url: NSURL): this;
 
+	initWithContentsOfURLError(url: NSURL): this;
+
 	initWithDictionary(otherDictionary: NSDictionary<KeyType, ObjectType>): this;
 
 	initWithDictionaryCopyItems(otherDictionary: NSDictionary<KeyType, ObjectType>, flag: boolean): this;
 
 	initWithObjectsAndKeys(firstObject: any): this;
 
-	initWithObjectsForKeys(objects: NSArray<ObjectType>, keys: NSArray<any>): this;
+	initWithObjectsForKeys(objects: NSArray<ObjectType>, keys: NSArray<KeyType>): this;
 
-	initWithObjectsForKeysCount(objects: interop.Reference<ObjectType>, keys: interop.Reference<any>, cnt: number): this;
+	initWithObjectsForKeysCount(objects: interop.Reference<ObjectType>, keys: interop.Reference<KeyType>, cnt: number): this;
 
 	isEqual(object: any): boolean;
 
@@ -2477,6 +2553,8 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	writeToFileAtomically(path: string, useAuxiliaryFile: boolean): boolean;
 
 	writeToURLAtomically(url: NSURL, atomically: boolean): boolean;
+
+	writeToURLError(url: NSURL): boolean;
 }
 
 declare var NSDidBecomeSingleThreadedNotification: string;
@@ -2606,7 +2684,11 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSError; // inherited from NSObject
 
-	static errorWithDomainCodeUserInfo(domain: string, code: number, dict: NSDictionary<any, any>): NSError;
+	static errorWithDomainCodeUserInfo(domain: string, code: number, dict: NSDictionary<string, any>): NSError;
+
+	static fileProviderErrorForCollisionWithItem(existingItem: NSFileProviderItem): NSError;
+
+	static fileProviderErrorForNonExistentItemWithIdentifier(itemIdentifier: string): NSError;
 
 	static new(): NSError; // inherited from NSObject
 
@@ -2630,13 +2712,13 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly recoveryAttempter: any;
 
-	readonly userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<string, any>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { domain: string; code: number; userInfo: NSDictionary<any, any>; });
+	constructor(o: { domain: string; code: number; userInfo: NSDictionary<string, any>; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2644,7 +2726,7 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithDomainCodeUserInfo(domain: string, code: number, dict: NSDictionary<any, any>): this;
+	initWithDomainCodeUserInfo(domain: string, code: number, dict: NSDictionary<string, any>): this;
 }
 
 declare var NSErrorFailingURLStringKey: string;
@@ -2700,11 +2782,11 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static alloc(): NSExpression; // inherited from NSObject
 
-	static expressionForAggregate(subexpressions: NSArray<any>): NSExpression;
+	static expressionForAggregate(subexpressions: NSArray<NSExpression>): NSExpression;
 
 	static expressionForAnyKey(): NSExpression;
 
-	static expressionForBlockArguments(block: (p1: any, p2: NSArray<any>, p3: NSMutableDictionary<any, any>) => any, _arguments: NSArray<NSExpression>): NSExpression;
+	static expressionForBlockArguments(block: (p1: any, p2: NSArray<NSExpression>, p3: NSMutableDictionary<any, any>) => any, _arguments: NSArray<NSExpression>): NSExpression;
 
 	static expressionForConditionalTrueExpressionFalseExpression(predicate: NSPredicate, trueExpression: NSExpression, falseExpression: NSExpression): NSExpression;
 
@@ -2722,7 +2804,7 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static expressionForMinusSetWith(left: NSExpression, right: NSExpression): NSExpression;
 
-	static expressionForSubqueryUsingIteratorVariablePredicate(expression: NSExpression, variable: string, predicate: any): NSExpression;
+	static expressionForSubqueryUsingIteratorVariablePredicate(expression: NSExpression, variable: string, predicate: NSPredicate): NSExpression;
 
 	static expressionForUnionSetWith(left: NSExpression, right: NSExpression): NSExpression;
 
@@ -2738,7 +2820,7 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly constantValue: any;
 
-	readonly expressionBlock: (p1: any, p2: NSArray<any>, p3: NSMutableDictionary<any, any>) => any;
+	readonly expressionBlock: (p1: any, p2: NSArray<NSExpression>, p3: NSMutableDictionary<any, any>) => any;
 
 	readonly expressionType: NSExpressionType;
 
@@ -2829,6 +2911,10 @@ declare class NSExtensionContext extends NSObject {
 	completeRequestReturningItemsCompletionHandler(items: NSArray<any>, completionHandler: (p1: boolean) => void): void;
 
 	completeRequestWithBroadcastURLBroadcastConfigurationSetupInfo(broadcastURL: NSURL, broadcastConfiguration: RPBroadcastConfiguration, setupInfo: NSDictionary<string, NSObject>): void;
+
+	completeRequestWithBroadcastURLSetupInfo(broadcastURL: NSURL, setupInfo: NSDictionary<string, NSObject>): void;
+
+	interfaceParametersDescription(): string;
 
 	loadBroadcastingApplicationInfoWithCompletion(handler: (p1: string, p2: string, p3: UIImage) => void): void;
 
@@ -2960,6 +3046,8 @@ declare class NSFileCoordinator extends NSObject {
 	coordinateWritingItemAtURLOptionsWritingItemAtURLOptionsErrorByAccessor(url1: NSURL, options1: NSFileCoordinatorWritingOptions, url2: NSURL, options2: NSFileCoordinatorWritingOptions, outError: interop.Pointer | interop.Reference<NSError>, writer: (p1: NSURL, p2: NSURL) => void): void;
 
 	initWithFilePresenter(filePresenterOrNil: NSFilePresenter): this;
+
+	itemAtURLDidChangeUbiquityAttributes(url: NSURL, attributes: NSSet<string>): void;
 
 	itemAtURLDidMoveToURL(oldURL: NSURL, newURL: NSURL): void;
 
@@ -3199,6 +3287,8 @@ declare class NSFileManager extends NSObject {
 
 	fileSystemRepresentationWithPath(path: string): string;
 
+	getFileProviderServicesForItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSDictionary<string, NSFileProviderService>, p2: NSError) => void): void;
+
 	getRelationshipOfDirectoryAtURLToItemAtURLError(outRelationship: interop.Pointer | interop.Reference<NSURLRelationship>, directoryURL: NSURL, otherURL: NSURL): boolean;
 
 	getRelationshipOfDirectoryInDomainToItemAtURLError(outRelationship: interop.Pointer | interop.Reference<NSURLRelationship>, directory: NSSearchPathDirectory, domainMask: NSSearchPathDomainMask, url: NSURL): boolean;
@@ -3242,6 +3332,8 @@ declare class NSFileManager extends NSObject {
 	subpathsAtPath(path: string): NSArray<string>;
 
 	subpathsOfDirectoryAtPathError(path: string): NSArray<string>;
+
+	trashItemAtURLResultingItemURLError(url: NSURL, outResultingURL: interop.Pointer | interop.Reference<NSURL>): boolean;
 }
 
 interface NSFileManagerDelegate extends NSObjectProtocol {
@@ -3304,6 +3396,8 @@ declare var NSFilePosixPermissions: string;
 
 interface NSFilePresenter extends NSObjectProtocol {
 
+	observedPresentedItemUbiquityAttributes?: NSSet<string>;
+
 	presentedItemOperationQueue: NSOperationQueue;
 
 	presentedItemURL: NSURL;
@@ -3313,6 +3407,8 @@ interface NSFilePresenter extends NSObjectProtocol {
 	accommodatePresentedSubitemDeletionAtURLCompletionHandler?(url: NSURL, completionHandler: (p1: NSError) => void): void;
 
 	presentedItemDidChange?(): void;
+
+	presentedItemDidChangeUbiquityAttributes?(attributes: NSSet<string>): void;
 
 	presentedItemDidGainVersion?(version: NSFileVersion): void;
 
@@ -3354,6 +3450,17 @@ declare var NSFileProtectionCompleteUntilFirstUserAuthentication: string;
 declare var NSFileProtectionKey: string;
 
 declare var NSFileProtectionNone: string;
+
+declare class NSFileProviderService extends NSObject {
+
+	static alloc(): NSFileProviderService; // inherited from NSObject
+
+	static new(): NSFileProviderService; // inherited from NSObject
+
+	readonly name: string;
+
+	getFileProviderConnectionWithCompletionHandler(completionHandler: (p1: NSXPCConnection, p2: NSError) => void): void;
+}
 
 declare const NSFileReadCorruptFileError: number;
 
@@ -3451,6 +3558,8 @@ declare class NSFileVersion extends NSObject {
 	readonly localizedNameOfSavingComputer: string;
 
 	readonly modificationDate: Date;
+
+	readonly originatorNameComponents: NSPersonNameComponents;
 
 	readonly persistentIdentifier: NSCoding;
 
@@ -3875,6 +3984,8 @@ declare const enum NSISO8601DateFormatOptions {
 
 	WithColonSeparatorInTimeZone = 1024,
 
+	WithFractionalSeconds = 2048,
+
 	WithFullDate = 275,
 
 	WithFullTime = 1632,
@@ -4170,27 +4281,61 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 
 	static new(): NSItemProvider; // inherited from NSObject
 
+	preferredPresentationSize: CGSize;
+
+	preferredPresentationStyle: UIPreferredPresentationStyle;
+
 	previewImageHandler: (p1: (p1: NSSecureCoding, p2: NSError) => void, p2: typeof NSObject, p3: NSDictionary<any, any>) => void;
 
-	readonly registeredTypeIdentifiers: NSArray<any>;
+	readonly registeredTypeIdentifiers: NSArray<string>;
+
+	suggestedName: string;
+
+	teamData: NSData;
 
 	constructor(o: { contentsOfURL: NSURL; });
 
 	constructor(o: { item: NSSecureCoding; typeIdentifier: string; });
 
+	constructor(o: { object: NSItemProviderWriting; });
+
+	canLoadObjectOfClass(aClass: typeof NSObject): boolean;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	hasItemConformingToTypeIdentifier(typeIdentifier: string): boolean;
+
+	hasRepresentationConformingToTypeIdentifierFileOptions(typeIdentifier: string, fileOptions: NSItemProviderFileOptions): boolean;
 
 	initWithContentsOfURL(fileURL: NSURL): this;
 
 	initWithItemTypeIdentifier(item: NSSecureCoding, typeIdentifier: string): this;
 
+	initWithObject(object: NSItemProviderWriting): this;
+
+	loadDataRepresentationForTypeIdentifierCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
+	loadFileRepresentationForTypeIdentifierCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSURL, p2: NSError) => void): NSProgress;
+
+	loadInPlaceFileRepresentationForTypeIdentifierCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSURL, p2: boolean, p3: NSError) => void): NSProgress;
+
 	loadItemForTypeIdentifierOptionsCompletionHandler(typeIdentifier: string, options: NSDictionary<any, any>, completionHandler: (p1: NSSecureCoding, p2: NSError) => void): void;
+
+	loadObjectOfClassCompletionHandler(aClass: typeof NSObject, completionHandler: (p1: NSItemProviderReading, p2: NSError) => void): NSProgress;
 
 	loadPreviewImageWithOptionsCompletionHandler(options: NSDictionary<any, any>, completionHandler: (p1: NSSecureCoding, p2: NSError) => void): void;
 
+	registerDataRepresentationForTypeIdentifierVisibilityLoadHandler(typeIdentifier: string, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSData, p2: NSError) => void) => NSProgress): void;
+
+	registerFileRepresentationForTypeIdentifierFileOptionsVisibilityLoadHandler(typeIdentifier: string, fileOptions: NSItemProviderFileOptions, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSURL, p2: boolean, p3: NSError) => void) => NSProgress): void;
+
 	registerItemForTypeIdentifierLoadHandler(typeIdentifier: string, loadHandler: (p1: (p1: NSSecureCoding, p2: NSError) => void, p2: typeof NSObject, p3: NSDictionary<any, any>) => void): void;
+
+	registerObjectOfClassVisibilityLoadHandler(aClass: typeof NSObject, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSItemProviderWriting, p2: NSError) => void) => NSProgress): void;
+
+	registerObjectVisibility(object: NSItemProviderWriting, visibility: NSItemProviderRepresentationVisibility): void;
+
+	registeredTypeIdentifiersWithFileOptions(fileOptions: NSItemProviderFileOptions): NSArray<string>;
 }
 
 declare const enum NSItemProviderErrorCode {
@@ -4206,7 +4351,47 @@ declare const enum NSItemProviderErrorCode {
 
 declare var NSItemProviderErrorDomain: string;
 
+declare const enum NSItemProviderFileOptions {
+
+	OpenInPlace = 1
+}
+
 declare var NSItemProviderPreferredImageSizeKey: string;
+
+interface NSItemProviderReading extends NSObjectProtocol {
+}
+declare var NSItemProviderReading: {
+
+	prototype: NSItemProviderReading;
+
+	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSItemProviderReading;
+};
+
+declare const enum NSItemProviderRepresentationVisibility {
+
+	All = 0,
+
+	Team = 1,
+
+	Group = 2,
+
+	OwnProcess = 3
+}
+
+interface NSItemProviderWriting extends NSObjectProtocol {
+
+	writableTypeIdentifiersForItemProvider?: NSArray<string>;
+
+	itemProviderVisibilityForRepresentationWithTypeIdentifier?(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+}
+declare var NSItemProviderWriting: {
+
+	prototype: NSItemProviderWriting;
+
+	itemProviderVisibilityForRepresentationWithTypeIdentifier?(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+};
 
 declare const enum NSJSONReadingOptions {
 
@@ -4236,7 +4421,9 @@ declare class NSJSONSerialization extends NSObject {
 
 declare const enum NSJSONWritingOptions {
 
-	PrettyPrinted = 1
+	PrettyPrinted = 1,
+
+	SortedKeys = 2
 }
 
 declare var NSJapaneseCalendar: string;
@@ -4514,7 +4701,19 @@ declare class NSLinguisticTagger extends NSObject {
 
 	static availableTagSchemesForLanguage(language: string): NSArray<string>;
 
+	static availableTagSchemesForUnitLanguage(unit: NSLinguisticTaggerUnit, language: string): NSArray<string>;
+
+	static dominantLanguageForString(string: string): string;
+
+	static enumerateTagsForStringRangeUnitSchemeOptionsOrthographyUsingBlock(string: string, range: NSRange, unit: NSLinguisticTaggerUnit, scheme: string, options: NSLinguisticTaggerOptions, orthography: NSOrthography, block: (p1: string, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
 	static new(): NSLinguisticTagger; // inherited from NSObject
+
+	static tagForStringAtIndexUnitSchemeOrthographyTokenRange(string: string, charIndex: number, unit: NSLinguisticTaggerUnit, scheme: string, orthography: NSOrthography, tokenRange: interop.Pointer | interop.Reference<NSRange>): string;
+
+	static tagsForStringRangeUnitSchemeOptionsOrthographyTokenRanges(string: string, range: NSRange, unit: NSLinguisticTaggerUnit, scheme: string, options: NSLinguisticTaggerOptions, orthography: NSOrthography, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
+
+	readonly dominantLanguage: string;
 
 	string: string;
 
@@ -4523,6 +4722,8 @@ declare class NSLinguisticTagger extends NSObject {
 	constructor(o: { tagSchemes: NSArray<string>; options: number; });
 
 	enumerateTagsInRangeSchemeOptionsUsingBlock(range: NSRange, tagScheme: string, opts: NSLinguisticTaggerOptions, block: (p1: string, p2: NSRange, p3: NSRange, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	enumerateTagsInRangeUnitSchemeOptionsUsingBlock(range: NSRange, unit: NSLinguisticTaggerUnit, scheme: string, options: NSLinguisticTaggerOptions, block: (p1: string, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	initWithTagSchemesOptions(tagSchemes: NSArray<string>, opts: number): this;
 
@@ -4536,9 +4737,15 @@ declare class NSLinguisticTagger extends NSObject {
 
 	stringEditedInRangeChangeInLength(newRange: NSRange, delta: number): void;
 
-	tagAtIndexSchemeTokenRangeSentenceRange(charIndex: number, tagScheme: string, tokenRange: interop.Pointer | interop.Reference<NSRange>, sentenceRange: interop.Pointer | interop.Reference<NSRange>): string;
+	tagAtIndexSchemeTokenRangeSentenceRange(charIndex: number, scheme: string, tokenRange: interop.Pointer | interop.Reference<NSRange>, sentenceRange: interop.Pointer | interop.Reference<NSRange>): string;
+
+	tagAtIndexUnitSchemeTokenRange(charIndex: number, unit: NSLinguisticTaggerUnit, scheme: string, tokenRange: interop.Pointer | interop.Reference<NSRange>): string;
 
 	tagsInRangeSchemeOptionsTokenRanges(range: NSRange, tagScheme: string, opts: NSLinguisticTaggerOptions, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
+
+	tagsInRangeUnitSchemeOptionsTokenRanges(range: NSRange, unit: NSLinguisticTaggerUnit, scheme: string, options: NSLinguisticTaggerOptions, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
+
+	tokenRangeAtIndexUnit(charIndex: number, unit: NSLinguisticTaggerUnit): NSRange;
 }
 
 declare const enum NSLinguisticTaggerOptions {
@@ -4552,6 +4759,17 @@ declare const enum NSLinguisticTaggerOptions {
 	OmitOther = 8,
 
 	JoinNames = 16
+}
+
+declare const enum NSLinguisticTaggerUnit {
+
+	Word = 0,
+
+	Sentence = 1,
+
+	Paragraph = 2,
+
+	Document = 3
 }
 
 declare var NSLoadedClasses: string;
@@ -4723,6 +4941,8 @@ declare var NSLocaleUsesMetricSystem: string;
 declare var NSLocaleVariantCode: string;
 
 declare var NSLocalizedDescriptionKey: string;
+
+declare var NSLocalizedFailureErrorKey: string;
 
 declare var NSLocalizedFailureReasonErrorKey: string;
 
@@ -5190,6 +5410,8 @@ declare var NSMetadataUbiquitousItemIsDownloadingKey: string;
 
 declare var NSMetadataUbiquitousItemIsExternalDocumentKey: string;
 
+declare var NSMetadataUbiquitousItemIsSharedKey: string;
+
 declare var NSMetadataUbiquitousItemIsUploadedKey: string;
 
 declare var NSMetadataUbiquitousItemIsUploadingKey: string;
@@ -5201,6 +5423,22 @@ declare var NSMetadataUbiquitousItemPercentUploadedKey: string;
 declare var NSMetadataUbiquitousItemURLInLocalContainerKey: string;
 
 declare var NSMetadataUbiquitousItemUploadingErrorKey: string;
+
+declare var NSMetadataUbiquitousSharedItemCurrentUserPermissionsKey: string;
+
+declare var NSMetadataUbiquitousSharedItemCurrentUserRoleKey: string;
+
+declare var NSMetadataUbiquitousSharedItemMostRecentEditorNameComponentsKey: string;
+
+declare var NSMetadataUbiquitousSharedItemOwnerNameComponentsKey: string;
+
+declare var NSMetadataUbiquitousSharedItemPermissionsReadOnly: string;
+
+declare var NSMetadataUbiquitousSharedItemPermissionsReadWrite: string;
+
+declare var NSMetadataUbiquitousSharedItemRoleOwner: string;
+
+declare var NSMetadataUbiquitousSharedItemRoleParticipant: string;
 
 declare class NSMethodSignature extends NSObject {
 
@@ -5313,6 +5551,8 @@ declare class NSMutableAttributedString extends NSAttributedString {
 	static alloc(): NSMutableAttributedString; // inherited from NSObject
 
 	static new(): NSMutableAttributedString; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSMutableAttributedString; // inherited from NSItemProviderReading
 
 	readonly mutableString: NSMutableString;
 
@@ -5460,13 +5700,13 @@ declare class NSMutableDictionary<KeyType, ObjectType> extends NSDictionary<KeyT
 
 	static dictionaryWithDictionary<KeyType, ObjectType>(dict: NSDictionary<KeyType, ObjectType>): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
-	static dictionaryWithObjectForKey<KeyType, ObjectType>(object: ObjectType, key: any): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
+	static dictionaryWithObjectForKey<KeyType, ObjectType>(object: ObjectType, key: KeyType): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
 	static dictionaryWithObjectsAndKeys<KeyType, ObjectType>(firstObject: any): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
-	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType>, keys: NSArray<any>): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
+	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType>, keys: NSArray<KeyType>): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
-	static dictionaryWithObjectsForKeysCount<KeyType, ObjectType>(objects: interop.Reference<ObjectType>, keys: interop.Reference<any>, cnt: number): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
+	static dictionaryWithObjectsForKeysCount<KeyType, ObjectType>(objects: interop.Reference<ObjectType>, keys: interop.Reference<KeyType>, cnt: number): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
 	static dictionaryWithSharedKeySet<KeyType, ObjectType>(keyset: any): NSMutableDictionary<KeyType, ObjectType>;
 
@@ -5486,9 +5726,9 @@ declare class NSMutableDictionary<KeyType, ObjectType> extends NSDictionary<KeyT
 
 	setDictionary(otherDictionary: NSDictionary<KeyType, ObjectType>): void;
 
-	setObjectForKey(anObject: ObjectType, aKey: any): void;
+	setObjectForKey(anObject: ObjectType, aKey: KeyType): void;
 
-	setObjectForKeyedSubscript(obj: ObjectType, key: any): void;
+	setObjectForKeyedSubscript(obj: ObjectType, key: KeyType): void;
 
 	setValueForKey(value: ObjectType, key: string): void;
 }
@@ -5661,6 +5901,8 @@ declare class NSMutableString extends NSString {
 	static alloc(): NSMutableString; // inherited from NSObject
 
 	static new(): NSMutableString; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSMutableString; // inherited from NSItemProviderReading
 
 	static string(): NSMutableString; // inherited from NSString
 
@@ -6644,6 +6886,8 @@ declare class NSOrthography extends NSObject implements NSCopying, NSSecureCodin
 
 	static alloc(): NSOrthography; // inherited from NSObject
 
+	static defaultOrthographyForLanguage(language: string): NSOrthography;
+
 	static new(): NSOrthography; // inherited from NSObject
 
 	static orthographyWithDominantScriptLanguageMap(script: string, map: NSDictionary<string, NSArray<string>>): NSOrthography;
@@ -7080,6 +7324,8 @@ declare class NSProcessInfo extends NSObject {
 
 	readonly systemUptime: number;
 
+	readonly thermalState: NSProcessInfoThermalState;
+
 	static readonly processInfo: NSProcessInfo;
 
 	beginActivityWithOptionsReason(options: NSActivityOptions, reason: string): NSObjectProtocol;
@@ -7098,6 +7344,19 @@ declare class NSProcessInfo extends NSObject {
 }
 
 declare var NSProcessInfoPowerStateDidChangeNotification: string;
+
+declare const enum NSProcessInfoThermalState {
+
+	Nominal = 0,
+
+	Fair = 1,
+
+	Serious = 2,
+
+	Critical = 3
+}
+
+declare var NSProcessInfoThermalStateDidChangeNotification: string;
 
 declare class NSProgress extends NSObject {
 
@@ -7121,6 +7380,18 @@ declare class NSProgress extends NSObject {
 
 	completedUnitCount: number;
 
+	estimatedTimeRemaining: number;
+
+	fileCompletedCount: number;
+
+	fileOperationKind: string;
+
+	fileTotalCount: number;
+
+	fileURL: NSURL;
+
+	readonly finished: boolean;
+
 	readonly fractionCompleted: number;
 
 	readonly indeterminate: boolean;
@@ -7139,11 +7410,13 @@ declare class NSProgress extends NSObject {
 
 	resumingHandler: () => void;
 
+	throughput: number;
+
 	totalUnitCount: number;
 
 	readonly userInfo: NSDictionary<string, any>;
 
-	constructor(o: { parent: NSProgress; userInfo: NSDictionary<any, any>; });
+	constructor(o: { parent: NSProgress; userInfo: NSDictionary<string, any>; });
 
 	addChildWithPendingUnitCount(child: NSProgress, inUnitCount: number): void;
 
@@ -7151,9 +7424,11 @@ declare class NSProgress extends NSObject {
 
 	cancel(): void;
 
-	initWithParentUserInfo(parentProgressOrNil: NSProgress, userInfoOrNil: NSDictionary<any, any>): this;
+	initWithParentUserInfo(parentProgressOrNil: NSProgress, userInfoOrNil: NSDictionary<string, any>): this;
 
 	pause(): void;
+
+	performAsCurrentWithPendingUnitCountUsingBlock(unitCount: number, work: () => void): void;
 
 	resignCurrent(): void;
 
@@ -7760,6 +8035,8 @@ declare class NSSimpleCString extends NSString {
 
 	static new(): NSSimpleCString; // inherited from NSObject
 
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSSimpleCString; // inherited from NSItemProviderReading
+
 	static string(): NSSimpleCString; // inherited from NSString
 
 	static stringWithCStringEncoding(cString: string, enc: number): NSSimpleCString; // inherited from NSString
@@ -7994,15 +8271,19 @@ declare const enum NSStreamStatus {
 	Error = 7
 }
 
-declare class NSString extends NSObject implements CKRecordValue, CNKeyDescriptor, NSCopying, NSMutableCopying, NSSecureCoding {
+declare class NSString extends NSObject implements CKRecordValue, CNKeyDescriptor, NSCopying, NSItemProviderReading, NSItemProviderWriting, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): NSString; // inherited from NSObject
+
+	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	static localizedNameOfStringEncoding(encoding: number): string;
 
 	static localizedUserNotificationStringForKeyArguments(key: string, _arguments: NSArray<any>): string;
 
 	static new(): NSString; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSString;
 
 	static pathWithComponents(components: NSArray<string>): string;
 
@@ -8112,9 +8393,15 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
+	readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
+
 	readonly  // inherited from NSObjectProtocol
 
+	static readonly readableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderReading
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	static readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
 
 	constructor(o: { bytes: interop.Pointer | interop.Reference<any>; length: number; encoding: number; });
 
@@ -8220,7 +8507,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	enumerateLinesUsingBlock(block: (p1: string, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateLinguisticTagsInRangeSchemeOptionsOrthographyUsingBlock(range: NSRange, tagScheme: string, opts: NSLinguisticTaggerOptions, orthography: NSOrthography, block: (p1: string, p2: NSRange, p3: NSRange, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
+	enumerateLinguisticTagsInRangeSchemeOptionsOrthographyUsingBlock(range: NSRange, scheme: string, options: NSLinguisticTaggerOptions, orthography: NSOrthography, block: (p1: string, p2: NSRange, p3: NSRange, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	enumerateSubstringsInRangeOptionsUsingBlock(range: NSRange, opts: NSStringEnumerationOptions, block: (p1: string, p2: NSRange, p3: NSRange, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
@@ -8292,11 +8579,15 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
 	lengthOfBytesUsingEncoding(enc: number): number;
 
 	lineRangeForRange(range: NSRange): NSRange;
 
-	linguisticTagsInRangeSchemeOptionsOrthographyTokenRanges(range: NSRange, tagScheme: string, opts: NSLinguisticTaggerOptions, orthography: NSOrthography, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
+	linguisticTagsInRangeSchemeOptionsOrthographyTokenRanges(range: NSRange, scheme: string, options: NSLinguisticTaggerOptions, orthography: NSOrthography, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
+
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
 
 	localizedCaseInsensitiveCompare(string: string): NSComparisonResult;
 
@@ -8638,6 +8929,8 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	rangeAtIndex(idx: number): NSRange;
 
+	rangeWithName(name: string): NSRange;
+
 	resultByAdjustingRangesWithOffset(offset: number): NSTextCheckingResult;
 }
 
@@ -8876,7 +9169,7 @@ declare class NSTimer extends NSObject {
 	invalidate(): void;
 }
 
-declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPreviewItem {
+declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading, NSItemProviderWriting, NSSecureCoding, QLPreviewItem {
 
 	static URLByResolvingAliasFileAtURLOptionsError(url: NSURL, options: NSURLBookmarkResolutionOptions): NSURL;
 
@@ -8906,7 +9199,11 @@ declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPre
 
 	static fileURLWithPathRelativeToURL(path: string, baseURL: NSURL): NSURL;
 
+	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
 	static new(): NSURL; // inherited from NSObject
+
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSURL;
 
 	static resourceValuesForKeysFromBookmarkData(keys: NSArray<string>, bookmarkData: NSData): NSDictionary<string, any>;
 
@@ -8982,9 +9279,15 @@ declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPre
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
+	readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
+
 	readonly  // inherited from NSObjectProtocol
 
+	static readonly readableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderReading
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	static readonly writableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderWriting
 
 	constructor(o: { absoluteURLWithDataRepresentation: NSData; relativeToURL: NSURL; });
 
@@ -9069,6 +9372,10 @@ declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPre
 	isKindOfClass(aClass: typeof NSObject): boolean;
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
+	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
 
 	performSelector(aSelector: string): any;
 
@@ -9272,6 +9579,8 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 	percentEncodedPath: string;
 
 	percentEncodedQuery: string;
+
+	percentEncodedQueryItems: NSArray<NSURLQueryItem>;
 
 	percentEncodedUser: string;
 
@@ -9588,6 +9897,8 @@ declare var NSURLErrorFailingURLStringErrorKey: string;
 declare const NSURLErrorFileDoesNotExist: number;
 
 declare const NSURLErrorFileIsDirectory: number;
+
+declare const NSURLErrorFileOutsideSafeArea: number;
 
 declare const NSURLErrorHTTPTooManyRedirects: number;
 
@@ -10124,6 +10435,8 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	readonly identifier: string;
 
+	multipathServiceType: NSURLSessionMultipathServiceType;
+
 	networkServiceType: NSURLRequestNetworkServiceType;
 
 	protocolClasses: NSArray<typeof NSObject>;
@@ -10139,6 +10452,8 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 	timeoutIntervalForRequest: number;
 
 	timeoutIntervalForResource: number;
+
+	waitsForConnectivity: boolean;
 
 	static readonly defaultSessionConfiguration: NSURLSessionConfiguration;
 
@@ -10169,6 +10484,15 @@ declare class NSURLSessionDataTask extends NSURLSessionTask {
 	static alloc(): NSURLSessionDataTask; // inherited from NSObject
 
 	static new(): NSURLSessionDataTask; // inherited from NSObject
+}
+
+declare const enum NSURLSessionDelayedRequestDisposition {
+
+	ContinueLoading = 0,
+
+	UseNewRequest = 1,
+
+	Cancel = 2
 }
 
 interface NSURLSessionDelegate extends NSObjectProtocol {
@@ -10207,6 +10531,17 @@ declare class NSURLSessionDownloadTask extends NSURLSessionTask {
 }
 
 declare var NSURLSessionDownloadTaskResumeData: string;
+
+declare const enum NSURLSessionMultipathServiceType {
+
+	None = 0,
+
+	Handover = 1,
+
+	Interactive = 2,
+
+	Aggregate = 3
+}
 
 declare const enum NSURLSessionResponseDisposition {
 
@@ -10255,11 +10590,15 @@ declare class NSURLSessionStreamTask extends NSURLSessionTask {
 	writeDataTimeoutCompletionHandler(data: NSData, timeout: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class NSURLSessionTask extends NSObject implements NSCopying {
+declare class NSURLSessionTask extends NSObject implements NSCopying, NSProgressReporting {
 
 	static alloc(): NSURLSessionTask; // inherited from NSObject
 
 	static new(): NSURLSessionTask; // inherited from NSObject
+
+	countOfBytesClientExpectsToReceive: number;
+
+	countOfBytesClientExpectsToSend: number;
 
 	readonly countOfBytesExpectedToReceive: number;
 
@@ -10270,6 +10609,8 @@ declare class NSURLSessionTask extends NSObject implements NSCopying {
 	readonly countOfBytesSent: number;
 
 	readonly currentRequest: NSURLRequest;
+
+	earliestBeginDate: Date;
 
 	readonly error: NSError;
 
@@ -10285,11 +10626,47 @@ declare class NSURLSessionTask extends NSObject implements NSCopying {
 
 	readonly taskIdentifier: number;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly progress: NSProgress; // inherited from NSProgressReporting
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
 	cancel(): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
 	resume(): void;
+
+	retainCount(): number;
+
+	self(): this;
 
 	suspend(): void;
 }
@@ -10304,7 +10681,11 @@ interface NSURLSessionTaskDelegate extends NSURLSessionDelegate {
 
 	URLSessionTaskDidSendBodyDataTotalBytesSentTotalBytesExpectedToSend?(session: NSURLSession, task: NSURLSessionTask, bytesSent: number, totalBytesSent: number, totalBytesExpectedToSend: number): void;
 
+	URLSessionTaskIsWaitingForConnectivity?(session: NSURLSession, task: NSURLSessionTask): void;
+
 	URLSessionTaskNeedNewBodyStream?(session: NSURLSession, task: NSURLSessionTask, completionHandler: (p1: NSInputStream) => void): void;
+
+	URLSessionTaskWillBeginDelayedRequestCompletionHandler?(session: NSURLSession, task: NSURLSessionTask, request: NSURLRequest, completionHandler: (p1: NSURLSessionDelayedRequestDisposition, p2: NSURLRequest) => void): void;
 
 	URLSessionTaskWillPerformHTTPRedirectionNewRequestCompletionHandler?(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse, request: NSURLRequest, completionHandler: (p1: NSURLRequest) => void): void;
 }
@@ -10432,6 +10813,8 @@ declare var NSURLUbiquitousItemIsDownloadedKey: string;
 
 declare var NSURLUbiquitousItemIsDownloadingKey: string;
 
+declare var NSURLUbiquitousItemIsSharedKey: string;
+
 declare var NSURLUbiquitousItemIsUploadedKey: string;
 
 declare var NSURLUbiquitousItemIsUploadingKey: string;
@@ -10441,6 +10824,26 @@ declare var NSURLUbiquitousItemPercentDownloadedKey: string;
 declare var NSURLUbiquitousItemPercentUploadedKey: string;
 
 declare var NSURLUbiquitousItemUploadingErrorKey: string;
+
+declare var NSURLUbiquitousSharedItemCurrentUserPermissionsKey: string;
+
+declare var NSURLUbiquitousSharedItemCurrentUserRoleKey: string;
+
+declare var NSURLUbiquitousSharedItemMostRecentEditorNameComponentsKey: string;
+
+declare var NSURLUbiquitousSharedItemOwnerNameComponentsKey: string;
+
+declare var NSURLUbiquitousSharedItemPermissionsReadOnly: string;
+
+declare var NSURLUbiquitousSharedItemPermissionsReadWrite: string;
+
+declare var NSURLUbiquitousSharedItemRoleOwner: string;
+
+declare var NSURLUbiquitousSharedItemRoleParticipant: string;
+
+declare var NSURLVolumeAvailableCapacityForImportantUsageKey: string;
+
+declare var NSURLVolumeAvailableCapacityForOpportunisticUsageKey: string;
 
 declare var NSURLVolumeAvailableCapacityKey: string;
 
@@ -10478,6 +10881,8 @@ declare var NSURLVolumeNameKey: string;
 
 declare var NSURLVolumeResourceCountKey: string;
 
+declare var NSURLVolumeSupportsAccessPermissionsKey: string;
+
 declare var NSURLVolumeSupportsAdvisoryFileLockingKey: string;
 
 declare var NSURLVolumeSupportsCasePreservedNamesKey: string;
@@ -10493,6 +10898,8 @@ declare var NSURLVolumeSupportsExtendedSecurityKey: string;
 declare var NSURLVolumeSupportsFileCloningKey: string;
 
 declare var NSURLVolumeSupportsHardLinksKey: string;
+
+declare var NSURLVolumeSupportsImmutableFilesKey: string;
 
 declare var NSURLVolumeSupportsJournalingKey: string;
 
@@ -10579,11 +10986,11 @@ declare class NSUbiquitousKeyValueStore extends NSObject {
 
 	static alloc(): NSUbiquitousKeyValueStore; // inherited from NSObject
 
-	static defaultStore(): NSUbiquitousKeyValueStore;
-
 	static new(): NSUbiquitousKeyValueStore; // inherited from NSObject
 
 	readonly dictionaryRepresentation: NSDictionary<string, any>;
+
+	static readonly defaultStore: NSUbiquitousKeyValueStore;
 
 	arrayForKey(aKey: string): NSArray<any>;
 
@@ -11517,6 +11924,8 @@ declare class NSUserActivity extends NSObject {
 
 	expirationDate: Date;
 
+	externalMediaContentIdentifier: string;
+
 	readonly interaction: INInteraction;
 
 	keywords: NSSet<string>;
@@ -11524,6 +11933,8 @@ declare class NSUserActivity extends NSObject {
 	mapItem: MKMapItem;
 
 	needsSave: boolean;
+
+	referrerURL: NSURL;
 
 	requiredUserInfoKeys: NSSet<string>;
 
@@ -11700,6 +12111,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	static valueWithCMTimeRange(timeRange: CMTimeRange): NSValue;
 
+	static valueWithDirectionalEdgeInsets(insets: NSDirectionalEdgeInsets): NSValue;
+
 	static valueWithMKCoordinate(coordinate: CLLocationCoordinate2D): NSValue;
 
 	static valueWithMKCoordinateSpan(span: MKCoordinateSpan): NSValue;
@@ -11754,6 +12167,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly UIOffsetValue: UIOffset;
 
+	readonly directionalEdgeInsetsValue: NSDirectionalEdgeInsets;
+
 	readonly nonretainedObjectValue: any;
 
 	readonly objCType: string;
@@ -11773,6 +12188,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 	encodeWithCoder(aCoder: NSCoder): void;
 
 	getValue(value: interop.Pointer | interop.Reference<any>): void;
+
+	getValueSize(value: interop.Pointer | interop.Reference<any>, size: number): void;
 
 	initWithBytesObjCType(value: interop.Pointer | interop.Reference<any>, type: string): this;
 
@@ -12121,6 +12538,51 @@ declare const enum NSXMLParserExternalEntityResolvingPolicy {
 	ResolveExternalEntitiesAlways = 3
 }
 
+declare class NSXPCConnection extends NSObject implements NSXPCProxyCreating {
+
+	static alloc(): NSXPCConnection; // inherited from NSObject
+
+	static new(): NSXPCConnection; // inherited from NSObject
+
+	readonly auditSessionIdentifier: number;
+
+	readonly effectiveGroupIdentifier: number;
+
+	readonly effectiveUserIdentifier: number;
+
+	readonly endpoint: NSXPCListenerEndpoint;
+
+	exportedInterface: NSXPCInterface;
+
+	exportedObject: any;
+
+	interruptionHandler: () => void;
+
+	invalidationHandler: () => void;
+
+	readonly processIdentifier: number;
+
+	remoteObjectInterface: NSXPCInterface;
+
+	readonly remoteObjectProxy: any;
+
+	readonly serviceName: string;
+
+	constructor(o: { listenerEndpoint: NSXPCListenerEndpoint; });
+
+	initWithListenerEndpoint(endpoint: NSXPCListenerEndpoint): this;
+
+	invalidate(): void;
+
+	remoteObjectProxyWithErrorHandler(handler: (p1: NSError) => void): any;
+
+	resume(): void;
+
+	suspend(): void;
+
+	synchronousRemoteObjectProxyWithErrorHandler(handler: (p1: NSError) => void): any;
+}
+
 declare const NSXPCConnectionErrorMaximum: number;
 
 declare const NSXPCConnectionErrorMinimum: number;
@@ -12129,7 +12591,89 @@ declare const NSXPCConnectionInterrupted: number;
 
 declare const NSXPCConnectionInvalid: number;
 
+declare const enum NSXPCConnectionOptions {
+
+	Privileged = 4096
+}
+
 declare const NSXPCConnectionReplyInvalid: number;
+
+declare class NSXPCInterface extends NSObject {
+
+	static alloc(): NSXPCInterface; // inherited from NSObject
+
+	static interfaceWithProtocol(protocol: any /* Protocol */): NSXPCInterface;
+
+	static new(): NSXPCInterface; // inherited from NSObject
+
+	protocol: any /* Protocol */;
+
+	classesForSelectorArgumentIndexOfReply(sel: string, arg: number, ofReply: boolean): NSSet<typeof NSObject>;
+
+	interfaceForSelectorArgumentIndexOfReply(sel: string, arg: number, ofReply: boolean): NSXPCInterface;
+
+	setClassesForSelectorArgumentIndexOfReply(classes: NSSet<typeof NSObject>, sel: string, arg: number, ofReply: boolean): void;
+
+	setInterfaceForSelectorArgumentIndexOfReply(ifc: NSXPCInterface, sel: string, arg: number, ofReply: boolean): void;
+}
+
+declare class NSXPCListener extends NSObject {
+
+	static alloc(): NSXPCListener; // inherited from NSObject
+
+	static anonymousListener(): NSXPCListener;
+
+	static new(): NSXPCListener; // inherited from NSObject
+
+	static serviceListener(): NSXPCListener;
+
+	delegate: NSXPCListenerDelegate;
+
+	readonly endpoint: NSXPCListenerEndpoint;
+
+	invalidate(): void;
+
+	resume(): void;
+
+	suspend(): void;
+}
+
+interface NSXPCListenerDelegate extends NSObjectProtocol {
+
+	listenerShouldAcceptNewConnection?(listener: NSXPCListener, newConnection: NSXPCConnection): boolean;
+}
+declare var NSXPCListenerDelegate: {
+
+	prototype: NSXPCListenerDelegate;
+};
+
+declare class NSXPCListenerEndpoint extends NSObject implements NSSecureCoding {
+
+	static alloc(): NSXPCListenerEndpoint; // inherited from NSObject
+
+	static new(): NSXPCListenerEndpoint; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+interface NSXPCProxyCreating {
+
+	remoteObjectProxy: any;
+
+	remoteObjectProxyWithErrorHandler(handler: (p1: NSError) => void): any;
+
+	synchronousRemoteObjectProxyWithErrorHandler?(handler: (p1: NSError) => void): any;
+}
+declare var NSXPCProxyCreating: {
+
+	prototype: NSXPCProxyCreating;
+};
 
 declare function NSZoneCalloc(zone: interop.Pointer | interop.Reference<any>, numElems: number, byteSize: number): interop.Pointer | interop.Reference<any>;
 

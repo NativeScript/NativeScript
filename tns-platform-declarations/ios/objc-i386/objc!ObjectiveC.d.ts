@@ -55,9 +55,21 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityActivationPoint: CGPoint;
 
+	accessibilityAttributedHint: NSAttributedString;
+
+	accessibilityAttributedLabel: NSAttributedString;
+
+	accessibilityAttributedValue: NSAttributedString;
+
+	accessibilityContainerType: UIAccessibilityContainerType;
+
 	accessibilityCustomActions: NSArray<UIAccessibilityCustomAction>;
 
 	accessibilityCustomRotors: NSArray<UIAccessibilityCustomRotor>;
+
+	accessibilityDragSourceDescriptors: NSArray<UIAccessibilityLocationDescriptor>;
+
+	accessibilityDropPointDescriptors: NSArray<UIAccessibilityLocationDescriptor>;
 
 	accessibilityElements: NSArray<any>;
 
@@ -319,22 +331,11 @@ declare const OBJC_GENERATIONAL_COLLECTION: number;
 
 declare const OBJC_RATIO_COLLECTION: number;
 
-declare const OBJC_SYNC_NOT_INITIALIZED: number;
-
 declare const OBJC_SYNC_NOT_OWNING_THREAD_ERROR: number;
 
 declare const OBJC_SYNC_SUCCESS: number;
 
-declare const OBJC_SYNC_TIMED_OUT: number;
-
 declare const OBJC_WAIT_UNTIL_DONE: number;
-
-declare class Protocol extends NSObject {
-
-	static alloc(): Protocol; // inherited from NSObject
-
-	static new(): Protocol; // inherited from NSObject
-}
 
 declare function _objc_flush_caches(cls: typeof NSObject): void;
 
@@ -560,11 +561,7 @@ declare function object_getClass(obj: any): typeof NSObject;
 
 declare function object_getClassName(obj: any): string;
 
-declare function object_getClassNameFunction(obj: any): string;
-
 declare function object_getIndexedIvars(obj: any): interop.Pointer | interop.Reference<any>;
-
-declare function object_getIndexedIvarsFunction(obj: any): interop.Pointer | interop.Reference<any>;
 
 declare function object_getInstanceVariable(obj: any, name: string, outValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
@@ -598,7 +595,7 @@ declare function protocol_addProtocol(proto: any /* Protocol */, addition: any /
 
 declare function protocol_conformsToProtocol(proto: any /* Protocol */, other: any /* Protocol */): boolean;
 
-declare function protocol_copyMethodDescriptionList(p: any /* Protocol */, isRequiredMethod: boolean, isInstanceMethod: boolean, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_method_description>;
+declare function protocol_copyMethodDescriptionList(proto: any /* Protocol */, isRequiredMethod: boolean, isInstanceMethod: boolean, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_method_description>;
 
 declare function protocol_copyPropertyList(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
@@ -606,9 +603,9 @@ declare function protocol_copyPropertyList2(proto: any /* Protocol */, outCount:
 
 declare function protocol_copyProtocolList(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any /* Protocol */>;
 
-declare function protocol_getMethodDescription(p: any /* Protocol */, aSel: string, isRequiredMethod: boolean, isInstanceMethod: boolean): objc_method_description;
+declare function protocol_getMethodDescription(proto: any /* Protocol */, aSel: string, isRequiredMethod: boolean, isInstanceMethod: boolean): objc_method_description;
 
-declare function protocol_getName(p: any /* Protocol */): string;
+declare function protocol_getName(proto: any /* Protocol */): string;
 
 declare function protocol_getProperty(proto: any /* Protocol */, name: string, isRequiredProperty: boolean, isInstanceProperty: boolean): interop.Pointer | interop.Reference<any>;
 
@@ -619,8 +616,6 @@ declare function sel_getName(sel: string): string;
 declare function sel_getNameFunction(sel: string): string;
 
 declare function sel_getUid(str: string): string;
-
-declare function sel_getUidFunction(str: string): string;
 
 declare function sel_isEqual(lhs: string, rhs: string): boolean;
 

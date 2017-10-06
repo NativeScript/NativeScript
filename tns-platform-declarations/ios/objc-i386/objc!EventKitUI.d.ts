@@ -120,3 +120,5 @@ declare var EKEventViewDelegate: {
 
 	prototype: EKEventViewDelegate;
 };
+
+declare function EventKitUIBundle(): NSBundle;

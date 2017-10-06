@@ -134,7 +134,11 @@ declare const enum MPErrorCode {
 
 	NotFound = 4,
 
-	NotSupported = 5
+	NotSupported = 5,
+
+	Cancelled = 6,
+
+	RequestTimedOut = 7
 }
 
 declare var MPErrorDomain: string;
@@ -293,6 +297,8 @@ declare class MPMediaItem extends MPMediaEntity {
 
 	readonly playbackDuration: number;
 
+	readonly playbackStoreID: string;
+
 	readonly podcastPersistentID: number;
 
 	readonly podcastTitle: string;
@@ -411,6 +417,8 @@ declare var MPMediaItemPropertyPersistentID: string;
 declare var MPMediaItemPropertyPlayCount: string;
 
 declare var MPMediaItemPropertyPlaybackDuration: string;
+
+declare var MPMediaItemPropertyPlaybackStoreID: string;
 
 declare var MPMediaItemPropertyPodcastPersistentID: string;
 
@@ -1090,17 +1098,20 @@ declare const enum MPMusicPlaybackState {
 	SeekingBackward = 5
 }
 
+declare class MPMusicPlayerApplicationController extends MPMusicPlayerController {
+
+	static alloc(): MPMusicPlayerApplicationController; // inherited from NSObject
+
+	static new(): MPMusicPlayerApplicationController; // inherited from NSObject
+
+	performQueueTransactionCompletionHandler(queueTransaction: (p1: MPMusicPlayerControllerMutableQueue) => void, completionHandler: (p1: MPMusicPlayerControllerQueue, p2: NSError) => void): void;
+}
+
 declare class MPMusicPlayerController extends NSObject implements MPMediaPlayback {
 
 	static alloc(): MPMusicPlayerController; // inherited from NSObject
 
-	static applicationMusicPlayer(): MPMusicPlayerController;
-
-	static iPodMusicPlayer(): MPMusicPlayerController;
-
 	static new(): MPMusicPlayerController; // inherited from NSObject
-
-	static systemMusicPlayer(): MPMusicPlayerController;
 
 	readonly indexOfNowPlayingItem: number;
 
@@ -1114,11 +1125,21 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	volume: number;
 
+	static readonly applicationMusicPlayer: MPMusicPlayerController;
+
+	static readonly applicationQueuePlayer: MPMusicPlayerApplicationController;
+
+	static readonly iPodMusicPlayer: MPMusicPlayerController;
+
+	static readonly systemMusicPlayer: MPMusicPlayerController;
+
 	currentPlaybackRate: number; // inherited from MPMediaPlayback
 
 	currentPlaybackTime: number; // inherited from MPMediaPlayback
 
 	readonly isPreparedToPlay: boolean; // inherited from MPMediaPlayback
+
+	appendQueueDescriptor(descriptor: MPMusicPlayerQueueDescriptor): void;
 
 	beginGeneratingPlaybackNotifications(): void;
 
@@ -1136,6 +1157,12 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	prepareToPlay(): void;
 
+	prepareToPlayWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	prependQueueDescriptor(descriptor: MPMusicPlayerQueueDescriptor): void;
+
+	setQueueWithDescriptor(descriptor: MPMusicPlayerQueueDescriptor): void;
+
 	setQueueWithItemCollection(itemCollection: MPMediaItemCollection): void;
 
 	setQueueWithQuery(query: MPMediaQuery): void;
@@ -1151,11 +1178,132 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 	stop(): void;
 }
 
+declare class MPMusicPlayerControllerMutableQueue extends MPMusicPlayerControllerQueue {
+
+	static alloc(): MPMusicPlayerControllerMutableQueue; // inherited from NSObject
+
+	static new(): MPMusicPlayerControllerMutableQueue; // inherited from NSObject
+
+	insertQueueDescriptorAfterItem(queueDescriptor: MPMusicPlayerQueueDescriptor, afterItem: MPMediaItem): void;
+
+	removeItem(item: MPMediaItem): void;
+}
+
 declare var MPMusicPlayerControllerNowPlayingItemDidChangeNotification: string;
 
 declare var MPMusicPlayerControllerPlaybackStateDidChangeNotification: string;
 
+declare class MPMusicPlayerControllerQueue extends NSObject {
+
+	static alloc(): MPMusicPlayerControllerQueue; // inherited from NSObject
+
+	static new(): MPMusicPlayerControllerQueue; // inherited from NSObject
+
+	readonly items: NSArray<MPMediaItem>;
+}
+
+declare var MPMusicPlayerControllerQueueDidChangeNotification: string;
+
 declare var MPMusicPlayerControllerVolumeDidChangeNotification: string;
+
+declare class MPMusicPlayerMediaItemQueueDescriptor extends MPMusicPlayerQueueDescriptor {
+
+	static alloc(): MPMusicPlayerMediaItemQueueDescriptor; // inherited from NSObject
+
+	static new(): MPMusicPlayerMediaItemQueueDescriptor; // inherited from NSObject
+
+	readonly itemCollection: MPMediaItemCollection;
+
+	readonly query: MPMediaQuery;
+
+	startItem: MPMediaItem;
+
+	constructor(o: { itemCollection: MPMediaItemCollection; });
+
+	constructor(o: { query: MPMediaQuery; });
+
+	initWithItemCollection(itemCollection: MPMediaItemCollection): this;
+
+	initWithQuery(query: MPMediaQuery): this;
+
+	setEndTimeForItem(endTime: number, mediaItem: MPMediaItem): void;
+
+	setStartTimeForItem(startTime: number, mediaItem: MPMediaItem): void;
+}
+
+declare class MPMusicPlayerPlayParameters extends NSObject implements NSSecureCoding {
+
+	static alloc(): MPMusicPlayerPlayParameters; // inherited from NSObject
+
+	static new(): MPMusicPlayerPlayParameters; // inherited from NSObject
+
+	readonly dictionary: NSDictionary<string, any>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { dictionary: NSDictionary<string, any>; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDictionary(dictionary: NSDictionary<string, any>): this;
+}
+
+declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQueueDescriptor {
+
+	static alloc(): MPMusicPlayerPlayParametersQueueDescriptor; // inherited from NSObject
+
+	static new(): MPMusicPlayerPlayParametersQueueDescriptor; // inherited from NSObject
+
+	playParametersQueue: NSArray<MPMusicPlayerPlayParameters>;
+
+	startItemPlayParameters: MPMusicPlayerPlayParameters;
+
+	constructor(o: { playParametersQueue: NSArray<MPMusicPlayerPlayParameters>; });
+
+	initWithPlayParametersQueue(playParametersQueue: NSArray<MPMusicPlayerPlayParameters>): this;
+
+	setEndTimeForItemWithPlayParameters(endTime: number, playParameters: MPMusicPlayerPlayParameters): void;
+
+	setStartTimeForItemWithPlayParameters(startTime: number, playParameters: MPMusicPlayerPlayParameters): void;
+}
+
+declare class MPMusicPlayerQueueDescriptor extends NSObject implements NSSecureCoding {
+
+	static alloc(): MPMusicPlayerQueueDescriptor; // inherited from NSObject
+
+	static new(): MPMusicPlayerQueueDescriptor; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescriptor {
+
+	static alloc(): MPMusicPlayerStoreQueueDescriptor; // inherited from NSObject
+
+	static new(): MPMusicPlayerStoreQueueDescriptor; // inherited from NSObject
+
+	startItemID: string;
+
+	storeIDs: NSArray<string>;
+
+	constructor(o: { storeIDs: NSArray<string>; });
+
+	initWithStoreIDs(storeIDs: NSArray<string>): this;
+
+	setEndTimeForItemWithStoreID(endTime: number, storeID: string): void;
+
+	setStartTimeForItemWithStoreID(startTime: number, storeID: string): void;
+}
 
 declare const enum MPMusicRepeatMode {
 
@@ -1188,6 +1336,8 @@ declare class MPNowPlayingInfoCenter extends NSObject {
 	static new(): MPNowPlayingInfoCenter; // inherited from NSObject
 
 	nowPlayingInfo: NSDictionary<string, any>;
+
+	playbackState: MPNowPlayingPlaybackState;
 }
 
 declare var MPNowPlayingInfoCollectionIdentifier: string;
@@ -1250,6 +1400,8 @@ declare const enum MPNowPlayingInfoMediaType {
 	Video = 2
 }
 
+declare var MPNowPlayingInfoPropertyAssetURL: string;
+
 declare var MPNowPlayingInfoPropertyAvailableLanguageOptions: string;
 
 declare var MPNowPlayingInfoPropertyChapterCount: string;
@@ -1277,6 +1429,21 @@ declare var MPNowPlayingInfoPropertyPlaybackQueueCount: string;
 declare var MPNowPlayingInfoPropertyPlaybackQueueIndex: string;
 
 declare var MPNowPlayingInfoPropertyPlaybackRate: string;
+
+declare var MPNowPlayingInfoPropertyServiceIdentifier: string;
+
+declare const enum MPNowPlayingPlaybackState {
+
+	Unknown = 0,
+
+	Playing = 1,
+
+	Paused = 2,
+
+	Stopped = 3,
+
+	Interrupted = 4
+}
 
 interface MPPlayableContentDataSource extends NSObjectProtocol {
 
@@ -1455,6 +1622,8 @@ declare const enum MPRemoteCommandHandlerStatus {
 
 	NoActionableNowPlayingItem = 110,
 
+	DeviceNotFound = 120,
+
 	CommandFailed = 200
 }
 
@@ -1509,6 +1678,15 @@ declare class MPSkipIntervalCommandEvent extends MPRemoteCommandEvent {
 
 	readonly interval: number;
 }
+
+interface MPSystemMusicPlayerController extends NSObjectProtocol {
+
+	openToPlayQueueDescriptor(queueDescriptor: MPMusicPlayerQueueDescriptor): void;
+}
+declare var MPSystemMusicPlayerController: {
+
+	prototype: MPSystemMusicPlayerController;
+};
 
 declare class MPTimedMetadata extends NSObject {
 

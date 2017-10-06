@@ -42,8 +42,6 @@ declare class WCSession extends NSObject {
 
 	static alloc(): WCSession; // inherited from NSObject
 
-	static defaultSession(): WCSession;
-
 	static isSupported(): boolean;
 
 	static new(): WCSession; // inherited from NSObject
@@ -73,6 +71,8 @@ declare class WCSession extends NSObject {
 	readonly watchAppInstalled: boolean;
 
 	readonly watchDirectoryURL: NSURL;
+
+	static readonly defaultSession: WCSession;
 
 	activateSession(): void;
 

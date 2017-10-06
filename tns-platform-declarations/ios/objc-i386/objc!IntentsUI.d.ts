@@ -8,7 +8,9 @@ declare const enum INUIHostedViewContext {
 
 interface INUIHostedViewControlling extends NSObjectProtocol {
 
-	configureWithInteractionContextCompletion(interaction: INInteraction, context: INUIHostedViewContext, completion: (p1: CGSize) => void): void;
+	configureViewForParametersOfInteractionInteractiveBehaviorContextCompletion?(parameters: NSSet<INParameter>, interaction: INInteraction, interactiveBehavior: INUIInteractiveBehavior, context: INUIHostedViewContext, completion: (p1: boolean, p2: NSSet<INParameter>, p3: CGSize) => void): void;
+
+	configureWithInteractionContextCompletion?(interaction: INInteraction, context: INUIHostedViewContext, completion: (p1: CGSize) => void): void;
 }
 declare var INUIHostedViewControlling: {
 
@@ -27,6 +29,17 @@ declare var INUIHostedViewSiriProviding: {
 
 	prototype: INUIHostedViewSiriProviding;
 };
+
+declare const enum INUIInteractiveBehavior {
+
+	None = 0,
+
+	NextView = 1,
+
+	Launch = 2,
+
+	GenericAction = 3
+}
 
 declare var IntentsUIVersionNumber: number;
 

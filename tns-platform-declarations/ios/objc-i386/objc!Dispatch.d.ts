@@ -69,6 +69,8 @@ declare var _dispatch_source_type_data_add: void;
 
 declare var _dispatch_source_type_data_or: void;
 
+declare var _dispatch_source_type_data_replace: void;
+
 declare var _dispatch_source_type_mach_recv: void;
 
 declare var _dispatch_source_type_mach_send: void;
@@ -213,7 +215,7 @@ declare function dispatch_io_set_low_water(channel: NSObject, low_water: number)
 
 declare function dispatch_io_write(channel: NSObject, offset: number, data: NSObject, queue: NSObject, io_handler: (p1: boolean, p2: NSObject, p3: number) => void): void;
 
-declare function dispatch_main(): void;
+declare function dispatch_main(): never;
 
 declare function dispatch_once(predicate: interop.Pointer | interop.Reference<number>, block: () => void): void;
 

@@ -19,6 +19,8 @@ declare class CMAltimeter extends NSObject {
 
 	static alloc(): CMAltimeter; // inherited from NSObject
 
+	static authorizationStatus(): CMAuthorizationStatus;
+
 	static isRelativeAltitudeAvailable(): boolean;
 
 	static new(): CMAltimeter; // inherited from NSObject
@@ -79,6 +81,17 @@ declare const enum CMAttitudeReferenceFrame {
 	XTrueNorthZVertical = 8
 }
 
+declare const enum CMAuthorizationStatus {
+
+	NotDetermined = 0,
+
+	Restricted = 1,
+
+	Denied = 2,
+
+	Authorized = 3
+}
+
 interface CMCalibratedMagneticField {
 	field: CMMagneticField;
 	accuracy: CMMagneticFieldCalibrationAccuracy;
@@ -94,6 +107,8 @@ declare class CMDeviceMotion extends CMLogItem {
 	readonly attitude: CMAttitude;
 
 	readonly gravity: CMAcceleration;
+
+	readonly heading: number;
 
 	readonly magneticField: CMCalibratedMagneticField;
 
@@ -222,6 +237,8 @@ declare class CMMotionActivityManager extends NSObject {
 
 	static alloc(): CMMotionActivityManager; // inherited from NSObject
 
+	static authorizationStatus(): CMAuthorizationStatus;
+
 	static isActivityAvailable(): boolean;
 
 	static new(): CMMotionActivityManager; // inherited from NSObject
@@ -309,6 +326,8 @@ declare class CMMotionManager extends NSObject {
 declare class CMPedometer extends NSObject {
 
 	static alloc(): CMPedometer; // inherited from NSObject
+
+	static authorizationStatus(): CMAuthorizationStatus;
 
 	static isCadenceAvailable(): boolean;
 
@@ -448,6 +467,8 @@ declare class CMSensorDataList extends NSObject implements NSFastEnumeration {
 declare class CMSensorRecorder extends NSObject {
 
 	static alloc(): CMSensorRecorder; // inherited from NSObject
+
+	static authorizationStatus(): CMAuthorizationStatus;
 
 	static isAccelerometerRecordingAvailable(): boolean;
 

@@ -185,7 +185,15 @@ declare class CLGeocoder extends NSObject {
 
 	geocodeAddressStringInRegionCompletionHandler(addressString: string, region: CLRegion, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
 
+	geocodeAddressStringInRegionPreferredLocaleCompletionHandler(addressString: string, region: CLRegion, locale: NSLocale, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
+
+	geocodePostalAddressCompletionHandler(postalAddress: CNPostalAddress, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
+
+	geocodePostalAddressPreferredLocaleCompletionHandler(postalAddress: CNPostalAddress, locale: NSLocale, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
+
 	reverseGeocodeLocationCompletionHandler(location: CLLocation, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
+
+	reverseGeocodeLocationPreferredLocaleCompletionHandler(location: CLLocation, locale: NSLocale, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
 }
 
 declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
@@ -370,6 +378,8 @@ declare class CLLocationManager extends NSObject {
 
 	readonly rangedRegions: NSSet<CLRegion>;
 
+	showsBackgroundLocationIndicator: boolean;
+
 	allowDeferredLocationUpdatesUntilTraveledTimeout(distance: number, timeout: number): void;
 
 	disallowDeferredLocationUpdates(): void;
@@ -479,6 +489,8 @@ declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding 
 	readonly name: string;
 
 	readonly ocean: string;
+
+	readonly postalAddress: CNPostalAddress;
 
 	readonly postalCode: string;
 

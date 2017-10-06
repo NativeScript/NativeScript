@@ -215,6 +215,8 @@ declare function CGColorSpaceCreateLab(whitePoint: interop.Reference<number>, bl
 
 declare function CGColorSpaceCreatePattern(baseSpace: any): any;
 
+declare function CGColorSpaceCreateWithICCData(data: any): any;
+
 declare function CGColorSpaceCreateWithICCProfile(data: NSData): any;
 
 declare function CGColorSpaceCreateWithName(name: string): any;
@@ -228,6 +230,8 @@ declare function CGColorSpaceGetColorTable(space: any, table: string): void;
 declare function CGColorSpaceGetColorTableCount(space: any): number;
 
 declare function CGColorSpaceGetModel(space: any): CGColorSpaceModel;
+
+declare function CGColorSpaceGetName(space: any): string;
 
 declare function CGColorSpaceGetNumberOfComponents(space: any): number;
 
@@ -379,6 +383,8 @@ declare function CGContextPathContainsPoint(c: any, point: CGPoint, mode: CGPath
 declare function CGContextRelease(c: any): void;
 
 declare function CGContextReplacePathWithStrokedPath(c: any): void;
+
+declare function CGContextResetClip(c: any): void;
 
 declare function CGContextRestoreGState(c: any): void;
 
@@ -540,6 +546,8 @@ interface CGDataProviderDirectCallbacks {
 	releaseInfo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var CGDataProviderDirectCallbacks: interop.StructType<CGDataProviderDirectCallbacks>;
+
+declare function CGDataProviderGetInfo(provider: any): interop.Pointer | interop.Reference<any>;
 
 declare function CGDataProviderGetTypeID(): number;
 
@@ -814,6 +822,25 @@ declare const enum CGLineJoin {
 	kCGLineJoinBevel = 2
 }
 
+declare const enum CGPDFAccessPermissions {
+
+	kCGPDFAllowsLowQualityPrinting = 1,
+
+	kCGPDFAllowsHighQualityPrinting = 2,
+
+	kCGPDFAllowsDocumentChanges = 4,
+
+	kCGPDFAllowsDocumentAssembly = 8,
+
+	kCGPDFAllowsContentCopying = 16,
+
+	kCGPDFAllowsContentAccessibility = 32,
+
+	kCGPDFAllowsCommenting = 64,
+
+	kCGPDFAllowsFormFieldEntry = 128
+}
+
 declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any>, index: number, value: string): boolean;
@@ -877,6 +904,8 @@ declare function CGPDFContextEndPage(context: any): void;
 
 declare function CGPDFContextSetDestinationForRect(context: any, name: string, rect: CGRect): void;
 
+declare function CGPDFContextSetOutline(context: any, outline: NSDictionary<any, any>): void;
+
 declare function CGPDFContextSetURLForRect(context: any, url: NSURL, rect: CGRect): void;
 
 declare const enum CGPDFDataFormat {
@@ -918,6 +947,8 @@ declare function CGPDFDocumentCreateWithProvider(provider: any): any;
 
 declare function CGPDFDocumentCreateWithURL(url: NSURL): any;
 
+declare function CGPDFDocumentGetAccessPermissions(document: any): CGPDFAccessPermissions;
+
 declare function CGPDFDocumentGetCatalog(document: any): interop.Pointer | interop.Reference<any>;
 
 declare function CGPDFDocumentGetID(document: any): interop.Pointer | interop.Reference<any>;
@@ -925,6 +956,8 @@ declare function CGPDFDocumentGetID(document: any): interop.Pointer | interop.Re
 declare function CGPDFDocumentGetInfo(document: any): interop.Pointer | interop.Reference<any>;
 
 declare function CGPDFDocumentGetNumberOfPages(document: any): number;
+
+declare function CGPDFDocumentGetOutline(document: any): NSDictionary<any, any>;
 
 declare function CGPDFDocumentGetPage(document: any, pageNumber: number): any;
 
@@ -1058,6 +1091,8 @@ declare function CGPathAddRelativeArc(path: any, matrix: interop.Pointer | inter
 declare function CGPathAddRoundedRect(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>, rect: CGRect, cornerWidth: number, cornerHeight: number): void;
 
 declare function CGPathApply(path: any, info: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<CGPathElement>) => void>): void;
+
+declare function CGPathApplyWithBlock(path: any, block: (p1: interop.Pointer | interop.Reference<CGPathElement>) => void): void;
 
 declare function CGPathCloseSubpath(path: any): void;
 
@@ -1316,6 +1351,8 @@ declare function CGVectorMake(dx: number, dy: number): CGVector;
 
 declare var kCGColorConversionBlackPointCompensation: string;
 
+declare var kCGColorConversionTRCSize: string;
+
 declare var kCGColorSpaceACESCGLinear: string;
 
 declare var kCGColorSpaceAdobeRGB1998: string;
@@ -1337,6 +1374,8 @@ declare var kCGColorSpaceGenericCMYK: string;
 declare var kCGColorSpaceGenericGray: string;
 
 declare var kCGColorSpaceGenericGrayGamma2_2: string;
+
+declare var kCGColorSpaceGenericLab: string;
 
 declare var kCGColorSpaceGenericRGB: string;
 
@@ -1370,6 +1409,8 @@ declare var kCGFontVariationAxisName: string;
 
 declare var kCGGlyphMax: number;
 
+declare var kCGPDFContextAccessPermissions: string;
+
 declare var kCGPDFContextAllowsCopying: string;
 
 declare var kCGPDFContextAllowsPrinting: string;
@@ -1399,3 +1440,11 @@ declare var kCGPDFContextTitle: string;
 declare var kCGPDFContextTrimBox: string;
 
 declare var kCGPDFContextUserPassword: string;
+
+declare var kCGPDFOutlineChildren: string;
+
+declare var kCGPDFOutlineDestination: string;
+
+declare var kCGPDFOutlineDestinationRect: string;
+
+declare var kCGPDFOutlineTitle: string;

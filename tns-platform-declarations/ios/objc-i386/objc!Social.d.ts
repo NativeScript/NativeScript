@@ -67,6 +67,8 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	retainCount(): number;
 
+	scrollViewDidChangeAdjustedContentInset(scrollView: UIScrollView): void;
+
 	scrollViewDidEndDecelerating(scrollView: UIScrollView): void;
 
 	scrollViewDidEndDraggingWillDecelerate(scrollView: UIScrollView, decelerate: boolean): void;
@@ -202,6 +204,8 @@ declare const enum SLRequestMethod {
 }
 
 declare var SLServiceTypeFacebook: string;
+
+declare var SLServiceTypeLinkedIn: string;
 
 declare var SLServiceTypeSinaWeibo: string;
 

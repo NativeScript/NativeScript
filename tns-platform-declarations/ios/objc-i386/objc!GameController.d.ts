@@ -326,6 +326,8 @@ declare class GCMotion extends NSObject {
 
 	readonly gravity: GCAcceleration;
 
+	readonly hasAttitudeAndRotationRate: boolean;
+
 	readonly rotationRate: GCRotationRate;
 
 	readonly userAcceleration: GCAcceleration;

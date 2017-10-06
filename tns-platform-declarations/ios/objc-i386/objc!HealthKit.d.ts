@@ -106,6 +106,13 @@ declare class HKBiologicalSexObject extends NSObject implements NSCopying, NSSec
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
+declare const enum HKBloodGlucoseMealTime {
+
+	Preprandial = 1,
+
+	Postprandial = 2
+}
+
 declare const enum HKBloodType {
 
 	NotSet = 0,
@@ -365,6 +372,8 @@ declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 
 	readonly UUID: NSUUID;
 
+	readonly metadata: NSDictionary<string, any>;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -584,6 +593,15 @@ declare class HKHealthStore extends NSObject {
 	wheelchairUseWithError(): HKWheelchairUseObject;
 }
 
+declare const enum HKHeartRateMotionContext {
+
+	NotSet = 0,
+
+	Sedentary = 1,
+
+	Active = 2
+}
+
 declare const enum HKHeartRateSensorLocation {
 
 	Other = 0,
@@ -600,6 +618,15 @@ declare const enum HKHeartRateSensorLocation {
 
 	Foot = 6
 }
+
+declare const enum HKInsulinDeliveryReason {
+
+	Basal = 1,
+
+	Bolus = 2
+}
+
+declare var HKMetadataKeyBloodGlucoseMealTime: string;
 
 declare var HKMetadataKeyBodyTemperatureSensorLocation: string;
 
@@ -619,9 +646,13 @@ declare var HKMetadataKeyFoodType: string;
 
 declare var HKMetadataKeyGroupFitness: string;
 
+declare var HKMetadataKeyHeartRateMotionContext: string;
+
 declare var HKMetadataKeyHeartRateSensorLocation: string;
 
 declare var HKMetadataKeyIndoorWorkout: string;
+
+declare var HKMetadataKeyInsulinDeliveryReason: string;
 
 declare var HKMetadataKeyLapLength: string;
 
@@ -637,11 +668,17 @@ declare var HKMetadataKeySwimmingLocationType: string;
 
 declare var HKMetadataKeySwimmingStrokeStyle: string;
 
+declare var HKMetadataKeySyncIdentifier: string;
+
+declare var HKMetadataKeySyncVersion: string;
+
 declare var HKMetadataKeyTimeZone: string;
 
 declare var HKMetadataKeyUDIDeviceIdentifier: string;
 
 declare var HKMetadataKeyUDIProductionIdentifier: string;
+
+declare var HKMetadataKeyVO2MaxTestType: string;
 
 declare var HKMetadataKeyWasTakenInLab: string;
 
@@ -729,6 +766,8 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	static quantityTypeForIdentifier(identifier: string): HKQuantityType;
 
+	static seriesTypeForIdentifier(identifier: string): HKSeriesType;
+
 	static workoutType(): HKWorkoutType;
 
 	readonly identifier: string;
@@ -792,6 +831,8 @@ declare var HKPredicateKeyPathWorkoutDuration: string;
 declare var HKPredicateKeyPathWorkoutTotalDistance: string;
 
 declare var HKPredicateKeyPathWorkoutTotalEnergyBurned: string;
+
+declare var HKPredicateKeyPathWorkoutTotalFlightsClimbed: string;
 
 declare var HKPredicateKeyPathWorkoutTotalSwimmingStrokeCount: string;
 
@@ -977,9 +1018,13 @@ declare var HKQuantityTypeIdentifierForcedVitalCapacity: string;
 
 declare var HKQuantityTypeIdentifierHeartRate: string;
 
+declare var HKQuantityTypeIdentifierHeartRateVariabilitySDNN: string;
+
 declare var HKQuantityTypeIdentifierHeight: string;
 
 declare var HKQuantityTypeIdentifierInhalerUsage: string;
+
+declare var HKQuantityTypeIdentifierInsulinDelivery: string;
 
 declare var HKQuantityTypeIdentifierLeanBodyMass: string;
 
@@ -997,11 +1042,19 @@ declare var HKQuantityTypeIdentifierPushCount: string;
 
 declare var HKQuantityTypeIdentifierRespiratoryRate: string;
 
+declare var HKQuantityTypeIdentifierRestingHeartRate: string;
+
 declare var HKQuantityTypeIdentifierStepCount: string;
 
 declare var HKQuantityTypeIdentifierSwimmingStrokeCount: string;
 
 declare var HKQuantityTypeIdentifierUVExposure: string;
+
+declare var HKQuantityTypeIdentifierVO2Max: string;
+
+declare var HKQuantityTypeIdentifierWaistCircumference: string;
+
+declare var HKQuantityTypeIdentifierWalkingHeartRateAverage: string;
 
 declare class HKQuery extends NSObject {
 
@@ -1048,6 +1101,8 @@ declare class HKQuery extends NSObject {
 	static predicateForWorkoutsWithOperatorTypeTotalDistance(operatorType: NSPredicateOperatorType, totalDistance: HKQuantity): NSPredicate;
 
 	static predicateForWorkoutsWithOperatorTypeTotalEnergyBurned(operatorType: NSPredicateOperatorType, totalEnergyBurned: HKQuantity): NSPredicate;
+
+	static predicateForWorkoutsWithOperatorTypeTotalFlightsClimbed(operatorType: NSPredicateOperatorType, totalFlightsClimbed: HKQuantity): NSPredicate;
 
 	static predicateForWorkoutsWithOperatorTypeTotalSwimmingStrokeCount(operatorType: NSPredicateOperatorType, totalSwimmingStrokeCount: HKQuantity): NSPredicate;
 
@@ -1127,6 +1182,41 @@ declare class HKSampleType extends HKObjectType {
 	static new(): HKSampleType; // inherited from NSObject
 }
 
+declare class HKSeriesBuilder extends NSObject implements NSSecureCoding {
+
+	static alloc(): HKSeriesBuilder; // inherited from NSObject
+
+	static new(): HKSeriesBuilder; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	discard(): void;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class HKSeriesSample extends HKSample {
+
+	static alloc(): HKSeriesSample; // inherited from NSObject
+
+	static new(): HKSeriesSample; // inherited from NSObject
+
+	readonly count: number;
+}
+
+declare class HKSeriesType extends HKSampleType {
+
+	static alloc(): HKSeriesType; // inherited from NSObject
+
+	static new(): HKSeriesType; // inherited from NSObject
+
+	static workoutRouteType(): HKSeriesType;
+}
+
 declare class HKSource extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKSource; // inherited from NSObject
@@ -1167,6 +1257,10 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): HKSourceRevision; // inherited from NSObject
 
+	readonly operatingSystemVersion: NSOperatingSystemVersion;
+
+	readonly productType: string;
+
 	readonly source: HKSource;
 
 	readonly version: string;
@@ -1177,6 +1271,8 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { source: HKSource; version: string; });
 
+	constructor(o: { source: HKSource; version: string; productType: string; operatingSystemVersion: NSOperatingSystemVersion; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(aCoder: NSCoder): void;
@@ -1184,7 +1280,15 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithSourceVersion(source: HKSource, version: string): this;
+
+	initWithSourceVersionProductTypeOperatingSystemVersion(source: HKSource, version: string, productType: string, operatingSystemVersion: NSOperatingSystemVersion): this;
 }
+
+declare var HKSourceRevisionAnyOperatingSystem: NSOperatingSystemVersion;
+
+declare var HKSourceRevisionAnyProductType: string;
+
+declare var HKSourceRevisionAnyVersion: string;
 
 declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -1342,6 +1446,8 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static inchUnit(): HKUnit;
 
+	static internationalUnit(): HKUnit;
+
 	static jouleUnit(): HKUnit;
 
 	static jouleUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
@@ -1349,6 +1455,8 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 	static kelvinUnit(): HKUnit;
 
 	static kilocalorieUnit(): HKUnit;
+
+	static largeCalorieUnit(): HKUnit;
 
 	static lengthFormatterUnitFromUnit(unit: HKUnit): NSLengthFormatterUnit;
 
@@ -1395,6 +1503,8 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 	static siemenUnit(): HKUnit;
 
 	static siemenUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
+
+	static smallCalorieUnit(): HKUnit;
 
 	static stoneUnit(): HKUnit;
 
@@ -1443,6 +1553,15 @@ declare const enum HKUpdateFrequency {
 }
 
 declare var HKUserPreferencesDidChangeNotification: string;
+
+declare const enum HKVO2MaxTestType {
+
+	MaxExercise = 1,
+
+	PredictionSubMaxExercise = 2,
+
+	PredictionNonExercise = 3
+}
 
 declare const enum HKWeatherCondition {
 
@@ -1547,6 +1666,8 @@ declare class HKWorkout extends HKSample {
 
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent>, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, metadata: NSDictionary<string, any>): HKWorkout;
 
+	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalFlightsClimbedDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent>, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalFlightsClimbed: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
+
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalSwimmingStrokeCountDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent>, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalSwimmingStrokeCount: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
 
 	readonly duration: number;
@@ -1554,6 +1675,8 @@ declare class HKWorkout extends HKSample {
 	readonly totalDistance: HKQuantity;
 
 	readonly totalEnergyBurned: HKQuantity;
+
+	readonly totalFlightsClimbed: HKQuantity;
 
 	readonly totalSwimmingStrokeCount: HKQuantity;
 
@@ -1706,6 +1829,12 @@ declare const enum HKWorkoutActivityType {
 
 	WheelchairRunPace = 71,
 
+	TaiChi = 72,
+
+	MixedCardio = 73,
+
+	HandCycling = 74,
+
 	Other = 3000
 }
 
@@ -1742,9 +1871,13 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 
 	static workoutEventWithTypeDate(type: HKWorkoutEventType, date: Date): HKWorkoutEvent;
 
+	static workoutEventWithTypeDateIntervalMetadata(type: HKWorkoutEventType, dateInterval: NSDateInterval, metadata: NSDictionary<string, any>): HKWorkoutEvent;
+
 	static workoutEventWithTypeDateMetadata(type: HKWorkoutEventType, date: Date, metadata: NSDictionary<string, any>): HKWorkoutEvent;
 
 	readonly date: Date;
+
+	readonly dateInterval: NSDateInterval;
 
 	readonly metadata: NSDictionary<string, any>;
 
@@ -1773,8 +1906,47 @@ declare const enum HKWorkoutEventType {
 
 	MotionPaused = 5,
 
-	MotionResumed = 6
+	MotionResumed = 6,
+
+	Segment = 7,
+
+	PauseOrResumeRequest = 8
 }
+
+declare class HKWorkoutRoute extends HKSeriesSample {
+
+	static alloc(): HKWorkoutRoute; // inherited from NSObject
+
+	static new(): HKWorkoutRoute; // inherited from NSObject
+}
+
+declare class HKWorkoutRouteBuilder extends HKSeriesBuilder {
+
+	static alloc(): HKWorkoutRouteBuilder; // inherited from NSObject
+
+	static new(): HKWorkoutRouteBuilder; // inherited from NSObject
+
+	constructor(o: { healthStore: HKHealthStore; device: HKDevice; });
+
+	finishRouteWithWorkoutMetadataCompletion(workout: HKWorkout, metadata: NSDictionary<string, any>, completion: (p1: HKWorkoutRoute, p2: NSError) => void): void;
+
+	initWithHealthStoreDevice(healthStore: HKHealthStore, device: HKDevice): this;
+
+	insertRouteDataCompletion(routeData: NSArray<CLLocation>, completion: (p1: boolean, p2: NSError) => void): void;
+}
+
+declare class HKWorkoutRouteQuery extends HKQuery {
+
+	static alloc(): HKWorkoutRouteQuery; // inherited from NSObject
+
+	static new(): HKWorkoutRouteQuery; // inherited from NSObject
+
+	constructor(o: { route: HKWorkoutRoute; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void; });
+
+	initWithRouteDataHandler(workoutRoute: HKWorkoutRoute, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void): this;
+}
+
+declare var HKWorkoutRouteTypeIdentifier: string;
 
 declare const enum HKWorkoutSessionLocationType {
 
@@ -1790,6 +1962,8 @@ declare var HKWorkoutSortIdentifierDuration: string;
 declare var HKWorkoutSortIdentifierTotalDistance: string;
 
 declare var HKWorkoutSortIdentifierTotalEnergyBurned: string;
+
+declare var HKWorkoutSortIdentifierTotalFlightsClimbed: string;
 
 declare var HKWorkoutSortIdentifierTotalSwimmingStrokeCount: string;
 

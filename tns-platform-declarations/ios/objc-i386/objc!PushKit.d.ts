@@ -42,9 +42,11 @@ interface PKPushRegistryDelegate extends NSObjectProtocol {
 
 	pushRegistryDidInvalidatePushTokenForType?(registry: PKPushRegistry, type: string): void;
 
-	pushRegistryDidReceiveIncomingPushWithPayloadForType(registry: PKPushRegistry, payload: PKPushPayload, type: string): void;
+	pushRegistryDidReceiveIncomingPushWithPayloadForType?(registry: PKPushRegistry, payload: PKPushPayload, type: string): void;
 
-	pushRegistryDidUpdatePushCredentialsForType(registry: PKPushRegistry, credentials: PKPushCredentials, type: string): void;
+	pushRegistryDidReceiveIncomingPushWithPayloadForTypeWithCompletionHandler?(registry: PKPushRegistry, payload: PKPushPayload, type: string, completion: () => void): void;
+
+	pushRegistryDidUpdatePushCredentialsForType(registry: PKPushRegistry, pushCredentials: PKPushCredentials, type: string): void;
 }
 declare var PKPushRegistryDelegate: {
 
@@ -52,5 +54,7 @@ declare var PKPushRegistryDelegate: {
 };
 
 declare var PKPushTypeComplication: string;
+
+declare var PKPushTypeFileProvider: string;
 
 declare var PKPushTypeVoIP: string;

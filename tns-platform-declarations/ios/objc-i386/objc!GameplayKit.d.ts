@@ -322,7 +322,11 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	constructor(o: { examples: NSArray<NSArray<NSObjectProtocol>>; actions: NSArray<NSObjectProtocol>; attributes: NSArray<NSObjectProtocol>; });
 
+	constructor(o: { URL: NSURL; error: NSError; });
+
 	encodeWithCoder(aCoder: NSCoder): void;
+
+	exportToURLError(url: NSURL, error: NSError): boolean;
 
 	findActionForAnswers(answers: NSDictionary<NSObjectProtocol, NSObjectProtocol>): NSObjectProtocol;
 
@@ -331,6 +335,8 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithExamplesActionsAttributes(examples: NSArray<NSArray<NSObjectProtocol>>, actions: NSArray<NSObjectProtocol>, attributes: NSArray<NSObjectProtocol>): this;
+
+	initWithURLError(url: NSURL, error: NSError): this;
 }
 
 declare class GKEntity extends NSObject implements NSCoding, NSCopying {
@@ -1134,6 +1140,59 @@ declare class GKRuleSystem extends NSObject {
 	retractFactGrade(fact: NSObjectProtocol, grade: number): void;
 }
 
+declare class GKSCNNodeComponent extends GKComponent implements GKAgentDelegate {
+
+	static alloc(): GKSCNNodeComponent; // inherited from NSObject
+
+	static componentWithNode(node: SCNNode): GKSCNNodeComponent;
+
+	static new(): GKSCNNodeComponent; // inherited from NSObject
+
+	readonly node: SCNNode;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { node: SCNNode; });
+
+	agentDidUpdate(agent: GKAgent): void;
+
+	agentWillUpdate(agent: GKAgent): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithNode(node: SCNNode): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 declare class GKSKNodeComponent extends GKComponent implements GKAgentDelegate {
 
 	static alloc(): GKSKNodeComponent; // inherited from NSObject
@@ -1194,6 +1253,8 @@ declare class GKScene extends NSObject implements NSCoding, NSCopying {
 	static new(): GKScene; // inherited from NSObject
 
 	static sceneWithFileNamed(filename: string): GKScene;
+
+	static sceneWithFileNamedRootNode(filename: string, rootNode: GKSceneRootNodeType): GKScene;
 
 	readonly entities: NSArray<GKEntity>;
 

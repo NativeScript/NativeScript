@@ -24,6 +24,10 @@ declare function CVBufferSetAttachment(buffer: any, key: string, value: any, att
 
 declare function CVBufferSetAttachments(buffer: any, theAttachments: NSDictionary<any, any>, attachmentMode: CVAttachmentMode): void;
 
+declare function CVColorPrimariesGetIntegerCodePointForString(colorPrimariesString: string): number;
+
+declare function CVColorPrimariesGetStringForIntegerCodePoint(colorPrimariesCodePoint: number): interop.Unmanaged<string>;
+
 interface CVFillExtendedPixelsCallBackData {
 	version: number;
 	fillCallBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => boolean>;
@@ -36,6 +40,8 @@ declare function CVGetCurrentHostTime(): number;
 declare function CVGetHostClockFrequency(): number;
 
 declare function CVGetHostClockMinimumTimeDelta(): number;
+
+declare function CVImageBufferCreateColorSpaceFromAttachments(attachments: NSDictionary<any, any>): interop.Unmanaged<any>;
 
 declare function CVImageBufferGetCleanRect(imageBuffer: any): CGRect;
 
@@ -252,6 +258,14 @@ declare const enum CVTimeStampFlags {
 	kCVTimeStampIsInterlaced = 196608
 }
 
+declare function CVTransferFunctionGetIntegerCodePointForString(transferFunctionString: string): number;
+
+declare function CVTransferFunctionGetStringForIntegerCodePoint(transferFunctionCodePoint: number): interop.Unmanaged<string>;
+
+declare function CVYCbCrMatrixGetIntegerCodePointForString(yCbCrMatrixString: string): number;
+
+declare function CVYCbCrMatrixGetStringForIntegerCodePoint(yCbCrMatrixCodePoint: number): interop.Unmanaged<string>;
+
 declare var kCVBufferMovieTimeKey: string;
 
 declare var kCVBufferNonPropagatedAttachmentsKey: string;
@@ -318,6 +332,8 @@ declare var kCVImageBufferColorPrimaries_P3_D65: string;
 
 declare var kCVImageBufferColorPrimaries_SMPTE_C: string;
 
+declare var kCVImageBufferContentLightLevelInfoKey: string;
+
 declare var kCVImageBufferDisplayDimensionsKey: string;
 
 declare var kCVImageBufferDisplayHeightKey: string;
@@ -340,6 +356,8 @@ declare var kCVImageBufferGammaLevelKey: string;
 
 declare var kCVImageBufferICCProfileKey: string;
 
+declare var kCVImageBufferMasteringDisplayColorVolumeKey: string;
+
 declare var kCVImageBufferPixelAspectRatioHorizontalSpacingKey: string;
 
 declare var kCVImageBufferPixelAspectRatioKey: string;
@@ -352,13 +370,19 @@ declare var kCVImageBufferTransferFunctionKey: string;
 
 declare var kCVImageBufferTransferFunction_ITU_R_2020: string;
 
+declare var kCVImageBufferTransferFunction_ITU_R_2100_HLG: string;
+
 declare var kCVImageBufferTransferFunction_ITU_R_709_2: string;
 
 declare var kCVImageBufferTransferFunction_SMPTE_240M_1995: string;
 
+declare var kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ: string;
+
 declare var kCVImageBufferTransferFunction_SMPTE_ST_428_1: string;
 
 declare var kCVImageBufferTransferFunction_UseGamma: string;
+
+declare var kCVImageBufferTransferFunction_sRGB: string;
 
 declare var kCVImageBufferYCbCrMatrixKey: string;
 
@@ -528,6 +552,10 @@ declare const kCVPixelFormatType_32BGRA: number;
 
 declare const kCVPixelFormatType_32RGBA: number;
 
+declare const kCVPixelFormatType_420YpCbCr10BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange: number;
+
 declare const kCVPixelFormatType_420YpCbCr8BiPlanarFullRange: number;
 
 declare const kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange: number;
@@ -537,6 +565,10 @@ declare const kCVPixelFormatType_420YpCbCr8Planar: number;
 declare const kCVPixelFormatType_420YpCbCr8PlanarFullRange: number;
 
 declare const kCVPixelFormatType_422YpCbCr10: number;
+
+declare const kCVPixelFormatType_422YpCbCr10BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange: number;
 
 declare const kCVPixelFormatType_422YpCbCr16: number;
 
@@ -558,6 +590,10 @@ declare const kCVPixelFormatType_4444YpCbCrA8R: number;
 
 declare const kCVPixelFormatType_444YpCbCr10: number;
 
+declare const kCVPixelFormatType_444YpCbCr10BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_444YpCbCr10BiPlanarVideoRange: number;
+
 declare const kCVPixelFormatType_444YpCbCr8: number;
 
 declare const kCVPixelFormatType_48RGB: number;
@@ -573,6 +609,16 @@ declare const kCVPixelFormatType_64RGBAHalf: number;
 declare const kCVPixelFormatType_8Indexed: number;
 
 declare const kCVPixelFormatType_8IndexedGray_WhiteIsZero: number;
+
+declare const kCVPixelFormatType_ARGB2101010LEPacked: number;
+
+declare const kCVPixelFormatType_DepthFloat16: number;
+
+declare const kCVPixelFormatType_DepthFloat32: number;
+
+declare const kCVPixelFormatType_DisparityFloat16: number;
+
+declare const kCVPixelFormatType_DisparityFloat32: number;
 
 declare const kCVPixelFormatType_OneComponent16Half: number;
 
