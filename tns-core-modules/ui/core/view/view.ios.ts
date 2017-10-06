@@ -194,7 +194,7 @@ export class View extends ViewCommon {
         this._setCurrentMeasureSpecs(widthSpec, heightSpec);
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
         this.setMeasuredDimension(width, height);
-        
+
         const { sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.updateBackground(sizeChanged);
         this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
@@ -532,31 +532,21 @@ export class CustomLayoutView extends View {
 function isScrollable(controller: UIViewController, owner: View): boolean {
     let scrollable = (<any>owner).scrollableContent;
     if (scrollable === undefined) {
-        let view = controller.view;
-        while (view) {
-            if (view instanceof UIScrollView) {
-                scrollable = true;
-                break;
+        let view: UIView = controller.view.subviews.count > 0 ? controller.view.subviews[0] : null;
+        if (!(controller instanceof ios.UILayoutViewController)) {
+            // Propbably we are PageViewController. Consider different cases
+            if (view && view.subviews.count > 0) {
+                // Take page content.
+                view = view.subviews[0];
             }
+        }
 
-            view = view.subviews.count > 0 ? view.subviews[0] : null;
+        if (view instanceof UIScrollView) {
+            scrollable = true;
         }
     }
 
     return scrollable === true || scrollable === "true";;
-}
-
-function getStatusBarHeight(controller: UIViewController): number {
-    let shouldReturnStatusBarHeight = false;
-    if (controller.presentingViewController) {
-        if (CGRectEqualToRect(controller.view.frame, controller.view.window.bounds)) {
-            shouldReturnStatusBarHeight = true;
-        }
-    } else {
-        shouldReturnStatusBarHeight = true;
-    }
-
-    return shouldReturnStatusBarHeight ? uiUtils.ios.getStatusBarHeight(controller) : 0;
 }
 
 const majorVersion = iosUtils.MajorVersion;
@@ -576,65 +566,60 @@ interface ExtendedController extends UIViewController {
 }
 
 export namespace ios {
-    function constrainView(controller: UIViewController, owner: View): void {
+    function constrainView(controller: ExtendedController, owner: View): void {
         const root = controller.view;
         const view = root.subviews[0];
-        const extendedController = <ExtendedController>controller;
 
-        if (!extendedController.safeAreaTop) {
+        if (!controller.safeAreaTop) {
             view.translatesAutoresizingMaskIntoConstraints = false;
             if (majorVersion > 10) {
                 const safeArea = root.safeAreaLayoutGuide;
-                extendedController.safeAreaTop = view.topAnchor.constraintEqualToAnchor(safeArea.topAnchor);
-                extendedController.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
-                extendedController.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(safeArea.bottomAnchor);
-                extendedController.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
-                extendedController.safeAreaLeft = view.leftAnchor.constraintEqualToAnchor(safeArea.leftAnchor);
-                extendedController.safeAreaRight = view.rightAnchor.constraintEqualToAnchor(safeArea.rightAnchor);
+                controller.safeAreaTop = view.topAnchor.constraintEqualToAnchor(safeArea.topAnchor);
+                controller.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
+                controller.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(safeArea.bottomAnchor);
+                controller.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
+                controller.safeAreaLeft = view.leftAnchor.constraintEqualToAnchor(safeArea.leftAnchor);
+                controller.safeAreaRight = view.rightAnchor.constraintEqualToAnchor(safeArea.rightAnchor);
             } else {
-                extendedController.safeAreaTop = view.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor);
-                extendedController.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
-                extendedController.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor);
-                extendedController.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
-                extendedController.safeAreaLeft = view.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor);
-                extendedController.safeAreaRight = view.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor);
+                controller.safeAreaTop = view.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor);
+                controller.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
+                controller.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor);
+                controller.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
+                controller.safeAreaLeft = view.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor);
+                controller.safeAreaRight = view.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor);
             }
         }
 
-        const navController = controller.navigationController;
-        const navBarHidden = navController ? navController.navigationBarHidden : true;
-        const scrollable = (owner && isScrollable(controller, owner));
-        const hasChildControllers = controller.childViewControllers.count > 0;
+        const navBarHidden = controller.navBarHidden;
+        const scrollable = controller.scrollable;;
+        const hasChildControllers = controller.hasChildControllers;
         const constraints = [
-            hasChildControllers || scrollable ? extendedController.fullscreenBottom : extendedController.safeAreaBottom,
-            extendedController.safeAreaLeft,
-            extendedController.safeAreaRight
+            hasChildControllers || scrollable ? controller.fullscreenBottom : controller.safeAreaBottom,
+            controller.safeAreaLeft,
+            controller.safeAreaRight
         ];
 
         if (hasChildControllers) {
             // If not inner most extend to fullscreen
-            constraints.push(extendedController.fullscreenTop);
+            constraints.push(controller.fullscreenTop);
         } else if (!scrollable) {
             // If not scrollable dock under safe area
-            constraints.push(extendedController.safeAreaTop);
+            constraints.push(controller.safeAreaTop);
         } else if (navBarHidden) {
             // If scrollable but no navigation bar dock under safe area
-            constraints.push(extendedController.safeAreaTop);
+            constraints.push(controller.safeAreaTop);
         } else {
             // If scrollable and navigation bar extend to fullscreen
-            constraints.push(extendedController.fullscreenTop);
+            constraints.push(controller.fullscreenTop);
         }
 
-        const activeConstraints = extendedController.activeConstraints;
+        const activeConstraints = controller.activeConstraints;
         if (activeConstraints) {
             NSLayoutConstraint.deactivateConstraints(<any>activeConstraints);
         }
-        NSLayoutConstraint.activateConstraints(<any>constraints);
 
-        extendedController.scrollable = scrollable;
-        extendedController.navBarHidden = navBarHidden;
-        extendedController.hasChildControllers = hasChildControllers;
-        extendedController.activeConstraints = constraints;
+        NSLayoutConstraint.activateConstraints(<any>constraints);
+        controller.activeConstraints = constraints;
     }
 
     export function updateConstraints(controller: UIViewController, owner: View): void {
@@ -644,16 +629,19 @@ export namespace ios {
         const scrollable = (owner && isScrollable(controller, owner));
         const hasChildControllers = controller.childViewControllers.count > 0;
 
-        if (extendedController.scrollable !== scrollable 
+        if (extendedController.scrollable !== scrollable
             || extendedController.navBarHidden !== navBarHidden
             || extendedController.hasChildControllers !== hasChildControllers) {
+                extendedController.scrollable = scrollable;
+                extendedController.navBarHidden = navBarHidden;
+                extendedController.hasChildControllers = hasChildControllers;
             constrainView(extendedController, owner);
         }
     }
 
     export function layoutView(controller: UIViewController, owner: View): void {
-        // If we are not last controller - don't 
-        if (controller.childViewControllers.count > 0) {// || controller.view !== owner.nativeView.superview) {
+        // If we are not most inner controller - don't layout
+        if (controller.childViewControllers.count > 0) {
             return;
         }
 
