@@ -49,7 +49,7 @@ export function theFinalFrontier(args) {
 
     let statusBar = 0;
     if(isIOS) {
-        const ios = require('tns-core-modules/ui/utils');
+        const {ios} = require('tns-core-modules/ui/utils');
         statusBar = ios.getStatusBarHeight();
     }
 
