@@ -6,18 +6,21 @@ import * as devToolsElements from "./devtools-elements";
 
 declare var __inspectorSendEvent;
 
-// temp patch
-global.__inspector = global.__inspector || {};
-var inspector: devToolsElements.Inspector = global.__inspector;
+import { attachCSSInspectorCommandCallbacks } from "./devtools-elements";
 
 @inspectorCommands.DomainDispatcher("CSS")
 export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDomainDispatcher {
 
     private _enabled: boolean;
     public events: inspectorCommandTypes.CSSDomain.CSSFrontend;
+    public commands: any;
 
     constructor() {
         this.events = new inspectorCommands.CSSDomain.CSSFrontend();
+
+        this.commands = {};
+
+        attachCSSInspectorCommandCallbacks(this.commands);
     }
 
     get enabled(): boolean {
@@ -44,15 +47,15 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
     }
 
     getMatchedStylesForNode(params: inspectorCommandTypes.CSSDomain.GetMatchedStylesForNodeMethodArguments): { inlineStyle?: inspectorCommandTypes.CSSDomain.CSSStyle, attributesStyle?: inspectorCommandTypes.CSSDomain.CSSStyle, matchedCSSRules?: inspectorCommandTypes.CSSDomain.RuleMatch[], pseudoElements?: inspectorCommandTypes.CSSDomain.PseudoElementMatches[], inherited?: inspectorCommandTypes.CSSDomain.InheritedStyleEntry[], cssKeyframesRules?: inspectorCommandTypes.CSSDomain.CSSKeyframesRule[] } {
-        return { };
+        return {};
     }
     // Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by <code>nodeId</code>.
     getInlineStylesForNode(params: inspectorCommandTypes.CSSDomain.GetInlineStylesForNodeMethodArguments): { inlineStyle?: inspectorCommandTypes.CSSDomain.CSSStyle, attributesStyle?: inspectorCommandTypes.CSSDomain.CSSStyle } {
-        return { };
+        return {};
     }
     // Returns the computed style for a DOM node identified by <code>nodeId</code>.
     getComputedStyleForNode(params: inspectorCommandTypes.CSSDomain.GetComputedStyleForNodeMethodArguments): { computedStyle: inspectorCommandTypes.CSSDomain.CSSComputedStyleProperty[] } {
-        return { computedStyle: JSON.parse(inspector.getComputedStylesForNode(params.nodeId)) };
+        return { computedStyle: this.commands.getComputedStylesForNode(params.nodeId) };
     }
     // Requests information about platform fonts which we used to render child TextNodes in the given node.
     getPlatformFontsForNode(params: inspectorCommandTypes.CSSDomain.GetPlatformFontsForNodeMethodArguments): { fonts: inspectorCommandTypes.CSSDomain.PlatformFontUsage[] } {

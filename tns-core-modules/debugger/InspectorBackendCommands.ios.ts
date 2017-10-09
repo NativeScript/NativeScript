@@ -1437,7 +1437,7 @@ export class DOMFrontend {
 		 __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeCountUpdated", "params": { "nodeId": nodeId, "childNodeCount": childNodeCount } } )); 
 	}
 	// Mirrors <code>DOMNodeInserted</code> event.
-	childNodeInserted(parentNodeId: NodeId, previousNodeId: NodeId, node: Node): void { 
+	childNodeInserted(parentNodeId: NodeId, previousNodeId: NodeId, node: Node): void {
 		 __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeInserted", "params": { "parentNodeId": parentNodeId, "previousNodeId": previousNodeId, "node": node } } )); 
 	}
 	// Mirrors <code>DOMNodeRemoved</code> event.

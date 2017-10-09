@@ -22,6 +22,12 @@ let navDepth = -1;
 let fragmentId = -1;
 let activityInitialized: boolean;
 
+if (global && global.__inspector) {
+    const devtools = require("tns-core-modules/debugger/devtools-elements");
+    devtools.attachDOMInspectorEventCallbacks(global.__inspector);
+    devtools.attachDOMInspectorCommandCallbacks(global.__inspector);
+}
+
 export class Frame extends FrameBase {
     private _android: AndroidFrame;
     private _delayedNavigationEntry: BackstackEntry;
