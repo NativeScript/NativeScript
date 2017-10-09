@@ -443,81 +443,48 @@ export class Animation extends AnimationBase {
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
-            case Properties.height:
-                heightProperty._initDefaultNativeValue(style);
+            case Properties.width:
+            case Properties.height: {
+
+                const isVertical: boolean = propertyAnimation.property === 'height';
+                const extentProperty = isVertical ? heightProperty : widthProperty;
+
+                extentProperty._initDefaultNativeValue(style);
                 nativeArray = Array.create("float", 2);
                 let toValue = propertyAnimation.value;
                 let parent = propertyAnimation.target.parent as View;
                 if (!parent) {
-                    throw new Error('cannot animate height on root view');
+                    throw new Error(`cannot animate ${propertyAnimation.property} on root view`);
                 }
-                const parentHeight: number = parent.getMeasuredHeight();
-                toValue = PercentLength.toDevicePixels(toValue, parentHeight, parentHeight) / platform.screen.mainScreen.scale;
-                let fromValue = originalValue1 = nativeView.getHeight() / platform.screen.mainScreen.scale;
-                nativeArray[0] = fromValue;
+                const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
+                toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / platform.screen.mainScreen.scale;
+                const nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
+                const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
+                originalValue1 = nativeHeight / platform.screen.mainScreen.scale;
+                nativeArray[0] = originalValue1;
                 nativeArray[1] = toValue;
-                let heightAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
-                heightAnimator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                let extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
+                extentAnimator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
                     onAnimationUpdate(animator: android.animation.ValueAnimator) {
-                        let argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
-                        propertyAnimation.target.style[setLocal ? heightProperty.name : heightProperty.keyframe] = argb;
+                        const argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
+                        propertyAnimation.target.style[setLocal ? extentProperty.name : extentProperty.keyframe] = argb;
                     }
                 }));
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[setLocal ? heightProperty.name : heightProperty.keyframe] = propertyAnimation.value;
+                    propertyAnimation.target.style[targetStyle] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    if (setLocal) {
-                        propertyAnimation.target.style[heightProperty.name] = originalValue1;
-                    } else {
-                        propertyAnimation.target.style[heightProperty.keyframe] = originalValue1;
-                    }
-
+                    propertyAnimation.target.style[targetStyle] = originalValue1;
                     if (propertyAnimation.target.nativeViewProtected) {
-                        propertyAnimation.target[heightProperty.setNative](propertyAnimation.target.style.height);
+                        const setter = propertyAnimation.target[extentProperty.setNative];
+                        setter(propertyAnimation.target.style[propertyAnimation.property]);
                     }
                 }));
-                animators.push(heightAnimator);
+                animators.push(extentAnimator);
                 break;
-
-            case Properties.width:
-                widthProperty._initDefaultNativeValue(style);
-                nativeArray = Array.create("float", 2);
-                let toWidthValue = propertyAnimation.value;
-                let widthParent = propertyAnimation.target.parent as View;
-                if (!widthParent) {
-                    throw new Error('cannot animate width on root view');
-                }
-                const parentWidth: number = widthParent.getMeasuredWidth();
-                toWidthValue = PercentLength.toDevicePixels(toWidthValue, parentWidth, parentWidth) / platform.screen.mainScreen.scale;
-                originalValue1 = nativeArray[0] = nativeView.getWidth() / platform.screen.mainScreen.scale;
-                nativeArray[1] = toWidthValue;
-                let widthAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
-                widthAnimator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
-                    onAnimationUpdate(animator: android.animation.ValueAnimator) {
-                        let argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
-                        propertyAnimation.target.style[setLocal ? widthProperty.name : widthProperty.keyframe] = argb;
-                    }
-                }));
-                propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[setLocal ? widthProperty.name : widthProperty.keyframe] = propertyAnimation.value;
-                }));
-                propertyResetCallbacks.push(checkAnimation(() => {
-                    if (setLocal) {
-                        propertyAnimation.target.style[widthProperty.name] = originalValue1;
-                    } else {
-                        propertyAnimation.target.style[widthProperty.keyframe] = originalValue1;
-                    }
-
-                    if (propertyAnimation.target.nativeViewProtected) {
-                        propertyAnimation.target[widthProperty.setNative](propertyAnimation.target.style.width);
-                    }
-                }));
-                animators.push(widthAnimator);
-                break;
-
+            }
             default:
-                throw new Error("Cannot animate " + propertyAnimation.property);
+                throw new Error(`Animating property '${propertyAnimation.property}' is unsupported`);
         }
 
         for (let i = 0, length = animators.length; i < length; i++) {
