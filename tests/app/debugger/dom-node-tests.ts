@@ -10,11 +10,7 @@ import { textProperty } from "tns-core-modules/ui/text-base";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 
-import { getDOM } from "tns-core-modules/debugger/debugger";
-
 let originalInspectorGlobal: InspectorCommands & InspectorEvents;
-let originalInspectorEvents: InspectorEvents;
-let originalInspectorCommands: InspectorCommands;
 
 let currentInspector: InspectorCommands & InspectorEvents;
 function getTestInspector(): InspectorCommands & InspectorEvents {
@@ -37,6 +33,23 @@ function getTestInspector(): InspectorCommands & InspectorEvents {
     return inspector;
 }
 
+function getIOSDOMInspector() {
+    return {
+        events: {
+            childNodeInserted(parentId: number, lastId: number, node: DOMNode): void { return; },
+            childNodeRemoved(parentId: number, nodeId: number): void { return; },
+            attributeModified(nodeId: number, attrName: string, attrValue: string): void { return; },
+            attributeRemoved(nodeId: number, attrName: string): void { return; }
+        },
+        commands: {
+            getDocument(): any { return {}; },
+            removeNode(nodeId: number): void { /* */ },
+            getComputedStylesForNode(nodeId: number): any { return []; },
+            setAttributeAsText(nodeId: number, text: string, name: string): void { /* */ }
+        }
+    }
+}
+
 export function setUp(): void {
     // TODO: Pete : fix temporary workaround
     if (global.android) {
@@ -44,11 +57,9 @@ export function setUp(): void {
         currentInspector = getTestInspector();
         global.__inspector = currentInspector;
     } else {
-        let domInspector = getDOM();
+        let domInspector = getIOSDOMInspector();
 
         // TODO: Pete : fix temporary workaround
-        originalInspectorEvents = domInspector.events;
-        originalInspectorCommands = domInspector.commands;
         currentInspector = getTestInspector();
         domInspector.events = currentInspector;
     }
@@ -58,11 +69,6 @@ export function tearDown(): void {
     // TODO: Pete : fix temporary workaround
     if (global.android) {
         global.__inspector = originalInspectorGlobal;
-    } else {
-        let domInspector = getDOM();
-
-        domInspector.events = originalInspectorEvents;
-        domInspector.commands = originalInspectorCommands;
     }
 }
 
