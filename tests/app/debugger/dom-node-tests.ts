@@ -150,7 +150,7 @@ export function test_childNodeInserted_at_index_in_dom_node() {
     let called = false;
     currentInspector.childNodeInserted = (parentId, lastNodeId, node: any) => {
         assertEqual(lastNodeId, btn1._domId, "Child inserted at index 1's previous sibling does not match.");
-        assertEqual(JSON.parse(node).nodeId, lbl._domId, "Child id doesn't match");
+        assertEqual(node.toObject().nodeId, lbl._domId, "Child id doesn't match");
         called = true;
     }
 
