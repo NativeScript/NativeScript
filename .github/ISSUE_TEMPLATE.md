@@ -27,6 +27,7 @@ iOS/Android/Both
 project)
 
 ### Please tell us how to recreate the issue in as much detail as possible.
+The best approach would be to get your code running in the [NativeScript Playground](https://play.nativescript.org) and share the link with us, along with any additional details or steps to reproduce needed for examining the issue there. 
 
 ### Is there code involved? If so, please share the minimal amount of code needed to recreate the problem.
 
