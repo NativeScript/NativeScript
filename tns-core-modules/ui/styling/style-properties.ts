@@ -113,6 +113,7 @@ export namespace PercentLength {
                 if (percentIndex !== (stringValue.length - 1) || percentIndex === 0) {
                     value = Number.NaN;
                 } else {
+                    // Normalize result to values between -1 and 1
                     value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
                 }
 
