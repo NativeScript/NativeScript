@@ -9,7 +9,7 @@ import {
 } from "../styling/style-properties";
 
 import { ios } from "../../utils/utils";
-import * as platform from "tns-core-modules/platform";
+import * as platform from "../../platform";
 
 export * from "./animation-common";
 

@@ -1,15 +1,16 @@
 ﻿// Definitions.
 import {
+    CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
+    AnimationPromise as AnimationPromiseDefinition,
     Animation as AnimationBaseDefinition,
     AnimationDefinition,
-    AnimationPromise as AnimationPromiseDefinition,
-    CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
     Pair
 } from ".";
 import { View } from "../core/view";
+
 // Types.
 import { Color } from "../../color";
-import { categories as traceCategories, isEnabled as traceEnabled, write as traceWrite } from "../../trace";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
 import { PercentLength } from "../styling/style-properties";
 
 export { Color, traceEnabled, traceWrite, traceCategories };
