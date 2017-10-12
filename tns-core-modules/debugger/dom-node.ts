@@ -3,7 +3,7 @@ import { PercentLength } from "../ui/styling/style-properties";
 import { ViewBase } from "../ui/core/view";
 import { Color } from "../color";
 import { CSSComputedStyleProperty } from "./css-agent";
-import { Inspector } from "./devtools-elements";
+import { InspectorEvents } from "./devtools-elements";
 
 const registeredDomNodes = {};
 const ELEMENT_NODE_TYPE = 1;
@@ -19,6 +19,12 @@ const propertyBlacklist = [
     "effectiveBorderLeftWidth",
     "effectiveMinWidth",
     "effectiveMinHeight",
+    "effectiveWidth",
+    "effectiveHeight",
+    "effectiveMarginLeft",
+    "effectiveMarginTop",
+    "effectiveMarginRight",
+    "effectiveMarginBottom",
     "nodeName",
     "nodeType",
     "decodeWidth",
@@ -30,10 +36,15 @@ const propertyBlacklist = [
     "nativeView"
 ];
 
-function notifyInspector(callback: (inspector: Inspector) => void) {
-    const ins = (<any>global).__inspector;
-    if (ins) {
-        callback(ins);
+let inspectorFrontendInstance: any;
+
+export function registerInspectorEvents(inspector: InspectorEvents) {
+    inspectorFrontendInstance = inspector;
+}
+
+function notifyInspector(callback: (inspector: InspectorEvents) => void) {
+    if (inspectorFrontendInstance) {
+        callback(inspectorFrontendInstance);
     }
 }
 
@@ -141,7 +152,7 @@ export class DOMNode {
             const index = !!previousChild ? previousChild._domId : 0;
 
             childView.ensureDomNode();
-            ins.childNodeInserted(this.nodeId, index, childView.domNode.toJSON());
+            ins.childNodeInserted(this.nodeId, index, childView.domNode);
         });
     }
 
@@ -187,11 +198,7 @@ export class DOMNode {
         this.viewRef.clear();
     }
 
-    public toJSON() {
-        return JSON.stringify(this.toObject());
-    }
-
-    private toObject() {
+    public toObject() {
         return {
             nodeId: this.nodeId,
             nodeType: this.nodeType,

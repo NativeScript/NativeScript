@@ -1,7 +1,7 @@
 import { assert, assertEqual } from "../TKUnit";
 import { DOMNode } from "tns-core-modules/debugger/dom-node";
-import { attachInspectorCallbacks } from "tns-core-modules/debugger/devtools-elements";
-import { Inspector } from "tns-core-modules/debugger/devtools-elements";
+import { attachDOMInspectorCommandCallbacks, attachCSSInspectorCommandCallbacks, attachDOMInspectorEventCallbacks } from "tns-core-modules/debugger/devtools-elements";
+import { InspectorCommands, InspectorEvents } from "tns-core-modules/debugger/devtools-elements";
 import { unsetValue } from "tns-core-modules/ui/core/properties";
 import { Button } from "tns-core-modules/ui/button";
 import { Slider } from "tns-core-modules/ui/slider";
@@ -9,35 +9,64 @@ import { Label } from "tns-core-modules/ui/label";
 import { textProperty } from "tns-core-modules/ui/text-base";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { isAndroid } from "tns-core-modules/platform/platform";
 
-let originalInspectorGlobal: Inspector;
-let currentInspector: Inspector;
-function getTestInspector(): Inspector {
+let originalInspectorGlobal: InspectorCommands & InspectorEvents;
+
+let currentInspector: InspectorCommands & InspectorEvents;
+function getTestInspector(): InspectorCommands & InspectorEvents {
     let inspector = {
-        getDocument(): string { return ""; },
+        getDocument(): any { return {}; },
         removeNode(nodeId: number): void { /* */ },
-        getComputedStylesForNode(nodeId: number): string { return ""; },
-        setAttributeAsText(nodeId: number, text: string, name: string): void { /* */},
+        getComputedStylesForNode(nodeId: number): any { return []; },
+        setAttributeAsText(nodeId: number, text: string, name: string): void { /* */ },
 
-        childNodeInserted(parentId: number, lastId: number, nodeStr: string): void { /* to be replaced */ },
+        childNodeInserted(parentId: number, lastId: number, node: string | DOMNode): void { /* to be replaced */ },
         childNodeRemoved(parentId: number, nodeId: number): void { /* to be replaced */ },
         attributeModified(nodeId: number, attrName: string, attrValue: string) { /* to be replaced */ },
         attributeRemoved(nodeId: number, attrName: string) { /* to be replaced */ }
     }
 
-    attachInspectorCallbacks(inspector);
+    attachDOMInspectorCommandCallbacks(inspector);
+    attachDOMInspectorEventCallbacks(inspector);
+    attachCSSInspectorCommandCallbacks(inspector);
 
     return inspector;
 }
 
+function getIOSDOMInspector() {
+    return {
+        events: {
+            childNodeInserted(parentId: number, lastId: number, node: DOMNode): void { return; },
+            childNodeRemoved(parentId: number, nodeId: number): void { return; },
+            attributeModified(nodeId: number, attrName: string, attrValue: string): void { return; },
+            attributeRemoved(nodeId: number, attrName: string): void { return; }
+        },
+        commands: {
+            getDocument(): any { return {}; },
+            removeNode(nodeId: number): void { /* */ },
+            getComputedStylesForNode(nodeId: number): any { return []; },
+            setAttributeAsText(nodeId: number, text: string, name: string): void { /* */ }
+        }
+    }
+}
+
 export function setUp(): void {
-    originalInspectorGlobal = global.__inspector;
-    currentInspector = getTestInspector();
-    global.__inspector = currentInspector;
+    if (isAndroid) {
+        originalInspectorGlobal = global.__inspector;
+        currentInspector = getTestInspector();
+        global.__inspector = currentInspector;
+    } else {
+        let domInspector = getIOSDOMInspector();
+        currentInspector = getTestInspector();
+        domInspector.events = currentInspector;
+    }
 }
 
 export function tearDown(): void {
-    global.__inspector = originalInspectorGlobal;
+    if (isAndroid) {
+        global.__inspector = originalInspectorGlobal;
+    }
 }
 
 function assertAttribute(domNode: DOMNode, name: string, value: any) {
@@ -95,7 +124,7 @@ export function test_childNodeInserted_in_dom_node() {
     btn1.text = "button1";
     stack.addChild(btn1);
 
-    assert(childNodeInsertedCalled, "global.__inspector.childNodeInserted not called.");
+    assert(childNodeInsertedCalled, "global inspector childNodeInserted not called.");
     assertEqual(actualParentId, expectedParentId);
 }
 
@@ -122,9 +151,9 @@ export function test_childNodeInserted_at_index_in_dom_node() {
     lbl.text = "label me this";
 
     let called = false;
-    currentInspector.childNodeInserted = (parentId, lastNodeId, node) => {
+    currentInspector.childNodeInserted = (parentId, lastNodeId, node: any) => {
         assertEqual(lastNodeId, btn1._domId, "Child inserted at index 1's previous sibling does not match.");
-        assertEqual(JSON.parse(node).nodeId, lbl._domId, "Child id doesn't match");
+        assertEqual(node.toObject().nodeId, lbl._domId, "Child id doesn't match");
         called = true;
     }
 
@@ -157,7 +186,7 @@ export function test_childNodeRemoved_in_dom_node() {
     stack.removeChild(btn1);
     console.log("btn2: " + btn2);
 
-    assert(childNodeRemovedCalled, "global.__inspector.childNodeRemoved not called.");
+    assert(childNodeRemovedCalled, "global inspector childNodeRemoved not called.");
     assertEqual(actualRemovedNodeId, expectedRemovedNodeId);
 }
 
