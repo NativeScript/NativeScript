@@ -1,0 +1,4 @@
+--require unit-tests/aliases.ts
+--ui mocha-typescript
+--require source-map-support/register
+--recursive unit-tests
