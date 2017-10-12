@@ -132,7 +132,7 @@ export function install() {
         registerOnGlobalContext("fetch", "fetch");
 
         // check whether the 'android' namespace is exposed
-        // if positive - the current device is an Android 
+        // if positive - the current device is an Android
         // so a custom implementation of the global 'console' object is attached.
         // otherwise do nothing on iOS - the NS runtime provides a native 'console' functionality.
         if ((<any>global).android) {
