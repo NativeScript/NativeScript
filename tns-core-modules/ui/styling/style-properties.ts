@@ -1,28 +1,31 @@
 // Types
-import {Transformation, TransformationValue, TransformFunctionsInfo} from '../animation/animation';
+import {
+    Transformation,
+    TransformationValue,
+    TransformFunctionsInfo,
+} from "../animation/animation";
 
-import {dip, percent, px} from '../core/view';
+import { dip, px, percent } from "../core/view";
 
-import {Color} from '../../color';
-import {Font, FontStyle, FontWeight, parseFont} from './font';
-import {hasDuplicates, layout} from '../../utils/utils';
-import {Background} from './background';
-import {isIOS} from '../../platform';
+import { Color } from "../../color";
+import { Font, parseFont, FontStyle, FontWeight } from "./font";
+import { layout } from "../../utils/utils";
+import { Background } from "./background";
+import { isIOS } from "../../platform";
 
-import {Style} from './style';
+import { Style } from "./style";
+
+import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
+
+import { hasDuplicates } from "../../utils/utils";
+import { radiansToDegrees } from "../../utils/number-utils";
 
 import {
-    CssAnimationProperty,
-    CssProperty,
-    InheritedCssProperty,
-    makeParser,
-    makeValidator,
-    ShorthandProperty,
-    unsetValue
-} from '../core/properties';
-import {radiansToDegrees} from '../../utils/number-utils';
-
-import {decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d} from '../../matrix';
+    decompose2DTransformMatrix,
+    getTransformMatrix,
+    matrixArrayToCssMatrix,
+    multiplyAffine2d,
+} from "../../matrix";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };

@@ -1,36 +1,17 @@
 ﻿// Definitions.
-import {AnimationDefinition} from '.';
-import {View} from '../core/view';
+import { AnimationDefinition } from ".";
+import { View } from "../core/view";
 
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
-    AnimationBase,
-    AnimationPromise,
-    Color,
-    CubicBezierAnimationCurve,
-    Properties,
-    PropertyAnimation,
-    traceCategories,
-    traceEnabled,
-    traceWrite
-} from './animation-common';
-import {
-    backgroundColorProperty,
-    heightProperty,
-    opacityProperty,
-    PercentLength,
-    rotateProperty,
-    scaleXProperty,
-    scaleYProperty,
-    translateXProperty,
-    translateYProperty,
-    widthProperty
-} from '../styling/style-properties';
+    opacityProperty, backgroundColorProperty, rotateProperty,
+    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
+    heightProperty, widthProperty, PercentLength
+} from "../styling/style-properties";
 
-import {layout} from '../../utils/utils';
-import lazy from '../../utils/lazy';
-
+import { layout } from "../../utils/utils";
+import lazy from "../../utils/lazy";
 import * as platform from '../../platform';
-
 export * from "./animation-common";
 
 interface AnimationDefinitionInternal extends AnimationDefinition {

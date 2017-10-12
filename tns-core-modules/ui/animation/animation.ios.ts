@@ -1,31 +1,15 @@
-import {AnimationDefinition} from '.';
-import {View} from '../core/view';
+import { AnimationDefinition } from ".";
+import { View } from "../core/view";
 
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
-    AnimationBase,
-    AnimationPromise,
-    CubicBezierAnimationCurve,
-    Properties,
-    PropertyAnimation,
-    traceCategories,
-    traceEnabled,
-    traceWrite
-} from './animation-common';
-import {
-    backgroundColorProperty,
-    heightProperty,
-    opacityProperty,
-    PercentLength,
-    rotateProperty,
-    scaleXProperty,
-    scaleYProperty,
-    translateXProperty,
-    translateYProperty,
-    widthProperty
-} from '../styling/style-properties';
+    opacityProperty, backgroundColorProperty, rotateProperty,
+    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
+    heightProperty, widthProperty, PercentLength
+} from "../styling/style-properties";
 
-import {ios} from '../../utils/utils';
-import * as platform from '../../platform';
+import { ios } from "../../utils/utils";
+import * as platform from "tns-core-modules/platform";
 
 export * from "./animation-common";
 

@@ -6,11 +6,11 @@ import {
     CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
     Pair
 } from ".";
-import {View} from "../core/view";
+import { View } from "../core/view";
 // Types.
-import {Color} from "../../color";
-import {categories as traceCategories, isEnabled as traceEnabled, write as traceWrite} from "../../trace";
-import {PercentLength} from "../styling/style-properties";
+import { Color } from "../../color";
+import { categories as traceCategories, isEnabled as traceEnabled, write as traceWrite } from "../../trace";
+import { PercentLength } from "../styling/style-properties";
 
 export { Color, traceEnabled, traceWrite, traceCategories };
 export { AnimationPromise } from ".";

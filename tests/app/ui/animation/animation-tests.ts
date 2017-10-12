@@ -421,13 +421,13 @@ export function test_AnimateExtent_Should_ResolvePercentageStrings(done) {
         ['-100%', '-200px'],
     ];
     pairs.forEach((pair) => {
-        // assert along Y axis
+        const input = PercentLength.parse(pair[0]);
+        const expected = PercentLength.parse(pair[1]);
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('height', PercentLength.parse(pair[0]), PercentLength.parse(pair[1]));
+            return animateExtentAndAssertExpected('height', input, expected);
         });
-        // assert along X axis
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('width', PercentLength.parse(pair[0]), PercentLength.parse(pair[1]));
+            return animateExtentAndAssertExpected('width', input, expected);
         });
     });
     promise.then(() => done()).catch(done);
@@ -440,7 +440,6 @@ export function test_AnimateExtent_Should_AcceptStringPixelValues(done) {
         ['50px', 50]
     ];
     pairs.forEach((pair) => {
-        // assert along Y axis
         const input = PercentLength.parse(pair[0]);
         const expected = {
             unit: 'px',
@@ -449,7 +448,6 @@ export function test_AnimateExtent_Should_AcceptStringPixelValues(done) {
         promise = promise.then(() => {
             return animateExtentAndAssertExpected('height', input, expected);
         });
-        // assert along X axis
         promise = promise.then(() => {
             return animateExtentAndAssertExpected('width', input, expected);
         });
@@ -462,11 +460,9 @@ export function test_AnimateExtent_Should_AcceptNumberValuesAsDip(done) {
     const inputs: any[] = [200, 150, 100, 50, 0];
     inputs.forEach((value) => {
         const parsed = PercentLength.parse(value);
-        // assert along Y axis
         promise = promise.then(() => {
             return animateExtentAndAssertExpected('height', parsed, parsed);
         });
-        // assert along X axis
         promise = promise.then(() => {
             return animateExtentAndAssertExpected('width', parsed, parsed);
         });
@@ -474,34 +470,14 @@ export function test_AnimateExtent_Should_AcceptNumberValuesAsDip(done) {
     promise.then(() => done()).catch(done);
 }
 
-export function test_AnimateHeight_ShouldThrow_IfCannotParsePercentLength() {
-    const label = new Label();
-    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
-        TKUnit.assertThrows(() => {
-            label.animate({height: '-frog%'});
-        }, "Invalid percent string should throw");
-    });
-}
-
-export function test_AnimateWidth(done) {
-    let label = prepareTest();
-
-    label.animate({width: 123, duration: 5})
-        .then(() => {
-            TKUnit.assertEqual(label.width, 123, "label.width");
-            assertIOSNativeTransformIsCorrect(label);
-            done();
-        })
-        .catch((e) => {
-            done(e);
-        });
-}
-
-export function test_AnimateWidth_ShouldThrow_IfCannotParsePercentLength() {
+export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
     const label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({width: '-frog%'});
+        }, "Invalid percent string should throw");
+        TKUnit.assertThrows(() => {
+            label.animate({height: '-frog%'});
         }, "Invalid percent string should throw");
     });
 }
