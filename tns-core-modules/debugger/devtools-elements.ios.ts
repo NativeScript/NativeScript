@@ -5,7 +5,7 @@ import { registerInspectorEvents, DOMNode } from "./dom-node";
 export function attachDOMInspectorEventCallbacks(DOMDomainFrontend: InspectorEvents) {
     registerInspectorEvents(DOMDomainFrontend);
 
-        const originalChildNodeInserted: (parentId: number, lastId: number, node: string | DOMNode) => void = DOMDomainFrontend.childNodeInserted;
+    const originalChildNodeInserted: (parentId: number, lastId: number, node: string | DOMNode) => void = DOMDomainFrontend.childNodeInserted;
 
     DOMDomainFrontend.childNodeInserted = (parentId: number, lastId: number, node: DOMNode) => {
         originalChildNodeInserted(parentId, lastId, node.toObject());

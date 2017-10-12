@@ -9,6 +9,7 @@ import { Label } from "tns-core-modules/ui/label";
 import { textProperty } from "tns-core-modules/ui/text-base";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { isAndroid } from "tns-core-modules/platform/platform";
 
 let originalInspectorGlobal: InspectorCommands & InspectorEvents;
 
@@ -51,23 +52,19 @@ function getIOSDOMInspector() {
 }
 
 export function setUp(): void {
-    // TODO: Pete : fix temporary workaround
-    if (global.android) {
+    if (isAndroid) {
         originalInspectorGlobal = global.__inspector;
         currentInspector = getTestInspector();
         global.__inspector = currentInspector;
     } else {
         let domInspector = getIOSDOMInspector();
-
-        // TODO: Pete : fix temporary workaround
         currentInspector = getTestInspector();
         domInspector.events = currentInspector;
     }
 }
 
 export function tearDown(): void {
-    // TODO: Pete : fix temporary workaround
-    if (global.android) {
+    if (isAndroid) {
         global.__inspector = originalInspectorGlobal;
     }
 }

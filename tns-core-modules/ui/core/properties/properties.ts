@@ -1303,6 +1303,7 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
         result.push([prop, style[prop]]);
     }
 
+    // Add these to enable box model in chrome-devtools styles tab
     result.push(["top", "auto"]);
     result.push(["left", "auto"]);
     result.push(["bottom", "auto"]);
