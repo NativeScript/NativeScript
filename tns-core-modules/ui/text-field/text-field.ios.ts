@@ -172,13 +172,7 @@ export class TextField extends TextFieldBase {
         return this.nativeViewProtected.placeholder;
     }
     [hintProperty.setNative](value: string) {
-        let stringValue;
-        if (value === null || value === void 0) {
-            stringValue = "";
-        } else {
-            stringValue = value + "";
-        }
-        this.nativeViewProtected.placeholder = stringValue;
+        this._updateAttributedPlaceholder();
     }
 
     [secureProperty.getDefault](): boolean {
@@ -209,18 +203,29 @@ export class TextField extends TextFieldBase {
         return null;
     }
     [placeholderColorProperty.setNative](value: UIColor | Color) {
-        let nativeView = this.nativeViewProtected;
-        let colorAttibutes = NSMutableDictionary.new<string, any>();
-        colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
-        let stringValue;
-        if (nativeView.placeholder === null || nativeView.placeholder === void 0) {
+        this._updateAttributedPlaceholder();
+    }
+
+    _updateAttributedPlaceholder(): void {
+        let stringValue = this.hint;
+        if (stringValue === null || stringValue === void 0) {
+            stringValue = "";
+        } else {
+            stringValue = stringValue + "";
+        }
+        if (stringValue === "") {
             // we do not use empty string since initWithStringAttributes does not return proper value and
             // nativeView.attributedPlaceholder will be null
             stringValue = " ";
-        } else {
-            stringValue = nativeView.placeholder + "";
         }
-        nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, colorAttibutes);
+        if (placeholderColorProperty.isSet(this.style)) {
+            const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, <any>{
+                [NSForegroundColorAttributeName]: this.style.placeholderColor.ios
+            });
+            this.nativeViewProtected.attributedPlaceholder = attributedPlaceholder;
+        } else {
+            this.nativeViewProtected.placeholder = stringValue;
+        }
     }
 
     [paddingTopProperty.getDefault](): Length {
