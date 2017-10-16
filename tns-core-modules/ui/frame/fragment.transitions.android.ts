@@ -106,10 +106,10 @@ export function _setAndroidFragmentTransitions(
     const currentEntry = currentFragment ? getFragmentCallbacks(currentFragment).entry : null;
     let currentFragmentNeedsDifferentAnimation = false;
     if (currentEntry) {
-        updateCurrentFragmentTransitions(currentEntry);
+        _updateTransitions(currentEntry);
         if (currentEntry.transitionName !== name
             || currentEntry.transition !== transition) {
-            clearTransitions(currentEntry, true);
+            clearExitAndReenterTransitions(currentEntry, true);
             currentFragmentNeedsDifferentAnimation = true;
         }
     }
@@ -179,40 +179,39 @@ export function _setAndroidFragmentTransitions(
 export function _onFragmentCreateAnimator(fragment: android.app.Fragment, nextAnim: number): android.animation.Animator {
     const entry = getFragmentCallbacks(fragment).entry;
     switch (nextAnim) {
-        case enterFakeResourceId:
+        case AnimationType.enterFakeResourceId:
             return entry.enterAnimator;
-        case exitFakeResourceId:
+        case AnimationType.exitFakeResourceId:
             return entry.exitAnimator;
-        case popEnterFakeResourceId:
+        case AnimationType.popEnterFakeResourceId:
             return entry.popEnterAnimator;
-        case popExitFakeResourceId:
+        case AnimationType.popExitFakeResourceId:
             return entry.popExitAnimator;
     }
 
     return null;
 }
 
-export function _updateAnimations(entry: ExpandedEntry): void {
-    const newFragment = entry.fragment;
-
+export function _updateTransitions(entry: ExpandedEntry): void {
+    const fragment = entry.fragment;
     const enterTransitionListener = entry.enterTransitionListener;
     if (enterTransitionListener) {
-        newFragment.setEnterTransition(enterTransitionListener.transition);
+        fragment.setEnterTransition(enterTransitionListener.transition);
     }
 
     const exitTransitionListener = entry.exitTransitionListener;
     if (exitTransitionListener) {
-        newFragment.setExitTransition(exitTransitionListener.transition);
+        fragment.setExitTransition(exitTransitionListener.transition);
     }
 
     const reenterTransitionListener = entry.reenterTransitionListener;
     if (reenterTransitionListener) {
-        newFragment.setReenterTransition(reenterTransitionListener.transition);
+        fragment.setReenterTransition(reenterTransitionListener.transition);
     }
 
     const returnTransitionListener = entry.returnTransitionListener;
     if (returnTransitionListener) {
-        newFragment.setReturnTransition(returnTransitionListener.transition);
+        fragment.setReturnTransition(returnTransitionListener.transition);
     }
 }
 
@@ -244,29 +243,6 @@ export function _reverseTransitions(previousEntry: ExpandedEntry, currentEntry: 
 
 function getFragmentCallbacks(fragment: android.app.Fragment): FragmentCallbacks {
     return fragment[CALLBACKS] as FragmentCallbacks;
-}
-
-function updateCurrentFragmentTransitions(entry: ExpandedEntry): void {
-    const fragment = entry.fragment;
-    const enterTransitionListener = entry.enterTransitionListener;
-    if (enterTransitionListener) {
-        fragment.setEnterTransition(enterTransitionListener.transition);
-    }
-
-    const exitTransitionListener = entry.exitTransitionListener;
-    if (exitTransitionListener) {
-        fragment.setExitTransition(exitTransitionListener.transition);
-    }
-
-    const reenterTransitionListener = entry.reenterTransitionListener;
-    if (reenterTransitionListener) {
-        fragment.setReenterTransition(reenterTransitionListener.transition);
-    }
-
-    const returnTransitionListener = entry.returnTransitionListener;
-    if (returnTransitionListener) {
-        fragment.setReturnTransition(returnTransitionListener.transition);
-    }
 }
 
 // Transition listener can't be static because
@@ -385,7 +361,7 @@ function clearAnimationListener(animator: ExpandedAnimator, listener: android.an
     animator.entry = null;
 }
 
-function clearTransitions(entry: ExpandedEntry, removeListener: boolean): void {
+function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: boolean): void {
     if (sdkVersion() >= 21) {
         const fragment: android.app.Fragment = entry.fragment;
         const exitListener = entry.exitTransitionListener;
@@ -436,7 +412,7 @@ export function _clearEntry(entry: ExpandedEntry): void {
 }
 
 function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
-    clearTransitions(entry, removeListener);
+    clearExitAndReenterTransitions(entry, removeListener);
 
     if (sdkVersion() >= 21) {
         const fragment: android.app.Fragment = entry.fragment;

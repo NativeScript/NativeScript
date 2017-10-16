@@ -34,7 +34,7 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
  * Called once fragment is recreated after it was destroyed.
  * Reapply animations and transitions from entry to fragment if any.
  */
-export function _updateAnimations(entry: BackstackEntry): void;
+export function _updateTransitions(entry: BackstackEntry): void;
 /**
  * @private
  * Called once fragment is going to reappear from backstack.

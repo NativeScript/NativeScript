@@ -10,7 +10,7 @@ import { FrameBase, application, NavigationContext, stack, goBack, View, Observa
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
 import {
     _setAndroidFragmentTransitions, _onFragmentCreateAnimator,
-    _updateAnimations, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
+    _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
 import { profile } from "../../profiling";
@@ -184,7 +184,7 @@ export class Frame extends FrameBase {
             // This entry fragment was destroyed by app suspend.
             // We need to recreate its animations and then reverse it.
             backstackEntry.fragment = this.createFragment(backstackEntry, backstackEntry.fragmentTag);
-            _updateAnimations(backstackEntry);
+            _updateTransitions(backstackEntry);
         }
 
         const transitionReversed = _reverseTransitions(backstackEntry, this._currentEntry);
@@ -476,7 +476,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         callbacks.frame = frame;
         callbacks.entry = entry;
         entry.fragment = fragment;
-        _updateAnimations(entry);
+        _updateTransitions(entry);
     } else {
         throw new Error(`Could not find a page for ${fragmentTag}.`);
     }
@@ -629,8 +629,9 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onDestroy(fragment: android.app.Fragment, superFunc: Function): void {
-        const entry = this.entry;
-        const page = entry.resolvedPage;
+        if (traceEnabled()) {
+            traceWrite(`${fragment}.onDestroy()`, traceCategories.NativeLifecycle);
+        }
         superFunc.call(fragment);
     }
 

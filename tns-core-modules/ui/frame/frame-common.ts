@@ -218,16 +218,11 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             return;
         }
 
-        if (!backstackEntry) {
-            backstackEntry = this._backStack.pop();
-        } else {
+        if (backstackEntry) {
             const backIndex = this._backStack.indexOf(backstackEntry);
             if (backIndex < 0) {
                 return;
             }
-
-            const removed = this._backStack.splice(backIndex);
-            this._removeBackstackEntries(removed);
         }
 
         const navigationContext: NavigationContext = {
@@ -411,9 +406,19 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     @profile
     private performGoBack(navigationContext: NavigationContext) {
-        const navContext = navigationContext.entry;
-        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
-        this._goBackCore(navContext);
+        let backstackEntry = navigationContext.entry;
+        if (!backstackEntry) {
+            backstackEntry = this._backStack.pop();
+            navigationContext.entry = backstackEntry;
+        } else {
+            const index = this._backStack.indexOf(backstackEntry);
+            const removed = this._backStack.splice(index + 1);
+            this._backStack.pop();
+            this._removeBackstackEntries(removed);
+        }
+       
+        this._onNavigatingTo(backstackEntry, true);
+        this._goBackCore(backstackEntry);
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
