@@ -1,4 +1,4 @@
 {
 	"name": "tns-samples-apps",
-	"main": "navigation-app/app.js"
+	"main": "ui-tests-app/app.js"
 }
