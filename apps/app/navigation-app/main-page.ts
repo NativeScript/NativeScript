@@ -22,7 +22,6 @@ export function navClearTrans() {
     topmost().navigate(e)
 }
 
-
 export function navWithTransition() {
     const e: NavigationEntry = {
         transition: {
@@ -54,7 +53,14 @@ export function navigatedTo(args: NavigatedData) {
 }
 
 export function navigatingTo(args: NavigatedData) {
-    (<any>args.object).page.backgroundColor = colors[(i++) % 3];
+    if (!args.isBackNavigation) {
+        (<any>args.object).page.backgroundColor = colors[(i++) % 3];
+        const array = new Array();
+        for (let i = 0; i < 50; i++) {
+            array[i] = i;
+        }
+        (<any>args.object).page.bindingContext = array;
+    }
     console.log(`navigatingTo ${args.object.toString()}  isBack: ${args.isBackNavigation}`)
 }
 

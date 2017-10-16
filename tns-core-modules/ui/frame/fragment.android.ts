@@ -46,7 +46,12 @@ class FragmentClass extends android.app.Fragment {
     }
 
     public toString(): string {
-        return this._callbacks.toStringOverride(this, super.toString);
+        const callbacks = this._callbacks;
+        if (callbacks) {
+            return callbacks.toStringOverride(this, super.toString);
+        } else {
+            super.toString();
+        }
     }
 }
 

@@ -3,11 +3,11 @@
     navigatingFrom="navigatingFrom" 
     navigatedTo="navigatedTo" 
     navigatedFrom="navigatedFrom">
-
-    <StackLayout class="p-20">
-        <Button text="Nav" tap="nav" class="btn btn-primary btn-active"/>
-        <Button text="navClearTrans" tap="navClearTrans" class="btn btn-primary btn-active"/>
-        <Button text="Nav Transition" tap="navWithTransition" class="btn btn-primary btn-active"/>
-        <Button text="Nav Clear" tap="navWithClear" class="btn btn-primary btn-active"/>
+    <StackLayout>
+        <Button text="Nav" tap="nav" />
+        <Button text="Clear history Trans" tap="navClearTrans" />
+        <Button text="Nav Transition" tap="navWithTransition" />
+        <Button text="Nav Clear" tap="navWithClear" />
+        <ListView items="{{ $value }}" />
     </StackLayout>
 </Page>

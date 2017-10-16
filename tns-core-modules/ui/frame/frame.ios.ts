@@ -82,6 +82,7 @@ export class Frame extends FrameBase {
 
         let clearHistory = backstackEntry.entry.clearHistory;
         if (clearHistory) {
+            this._clearBackStack();
             navDepth = -1;
         }
         navDepth++;
@@ -126,7 +127,7 @@ export class Frame extends FrameBase {
         // We should clear the entire history.
         if (clearHistory) {
             viewController.navigationItem.hidesBackButton = true;
-            let newControllers = NSMutableArray.alloc().initWithCapacity(1);
+            const newControllers = NSMutableArray.alloc().initWithCapacity(1);
             newControllers.addObject(viewController);
 
             // Mark all previous ViewControllers as cleared

@@ -136,6 +136,14 @@ export class Frame extends View {
      * @private
      */
     _findEntryForTag(fragmentTag: string): BackstackEntry;
+    /**
+     * @private
+     */
+    _clearBackStack(): void;
+    /**
+     * @private
+     */
+    _isBack?: boolean;
     //@endprivate
 
     /**
@@ -284,6 +292,14 @@ export interface BackstackEntry {
      * @private
      */
     fragmentTag: string;
+    /**
+     * @private
+     */
+    fragment?: any;
+    /**
+     * @private
+     */
+    viewSavedState?: any;
     //@endprivate
 }
 
