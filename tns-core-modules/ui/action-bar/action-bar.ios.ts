@@ -73,6 +73,28 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
+    public get _getActualSize(): { width: number, height: number } {
+        const navBar = this.ios;
+        if (!navBar) {
+            return { width: 0, height: 0 };
+        }
+        
+        const frame = navBar.frame;
+        const size = frame.size;
+        const width = layout.toDevicePixels(size.width);
+        const height = layout.toDevicePixels(size.height);
+        return { width, height };
+    }
+
+    public layoutInternal(): void {
+        const { width, height } = this._getActualSize;
+        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+
+        this.measure(widthSpec, heightSpec);
+        this.layout(0, 0, width, height, false);
+    }
+
     public update() {
         const page = this.page;
         // Page should be attached to frame to update the action bar.
@@ -80,10 +102,14 @@ export class ActionBar extends ActionBarBase {
             return;
         }
 
-        let viewController = (<UIViewController>page.ios);
-        let navigationItem: UINavigationItem = viewController.navigationItem;
-        let navController = <UINavigationController>page.frame.ios.controller;
-        let navigationBar = navController ? navController.navigationBar : null;
+        if (!this.isLayoutValid) {
+            this.layoutInternal();
+        }
+
+        const viewController = (<UIViewController>page.ios);
+        const navigationItem: UINavigationItem = viewController.navigationItem;
+        const navController = <UINavigationController>page.frame.ios.controller;
+        const navigationBar = navController ? navController.navigationBar : null;
         let previousController: UIViewController;
 
         // Set Title
@@ -242,48 +268,32 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let navBarWidth = 0;
-        let navBarHeight = 0;
-
-        const frame = this.page.frame;
-        if (frame) {
-            let navBar: UIView = frame.ios.controller.navigationBar;
-            if (!navBar.hidden) {
-                const desiredSize = layout.measureNativeView(navBar, width, widthMode, height, heightMode);
-                navBarWidth = desiredSize.width;
-                navBarHeight = desiredSize.height;
-            }
-        }
-
-        this._navigationBarHeight = navBarHeight;
         if (this.titleView) {
             View.measureChild(this, this.titleView,
                 layout.makeMeasureSpec(width, layout.AT_MOST),
-                layout.makeMeasureSpec(navBarHeight, layout.AT_MOST));
+                layout.makeMeasureSpec(height, layout.AT_MOST));
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView) {
                 View.measureChild(this, actionItem.actionView,
                     layout.makeMeasureSpec(width, layout.AT_MOST),
-                    layout.makeMeasureSpec(navBarHeight, layout.AT_MOST));
+                    layout.makeMeasureSpec(height, layout.AT_MOST));
             }
         });
 
         // We ignore our width/height, minWidth/minHeight dimensions because it is against Apple policy to change height of NavigationBar.
-        this.setMeasuredDimension(navBarWidth, navBarHeight);
+        this.setMeasuredDimension(width, height);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
+        View.layoutChild(this, this.titleView, 0, 0, right - left, bottom - top);
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView && actionItem.actionView.ios) {
                 let measuredWidth = actionItem.actionView.getMeasuredWidth();
@@ -293,20 +303,11 @@ export class ActionBar extends ActionBarBase {
         });
 
         super.onLayout(left, top, right, bottom);
-        let navigationBar = this.ios;
-        if (navigationBar) {
-            navigationBar.setNeedsLayout();
-        }
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number) {
         return;
     }
-
-    // public _shouldApplyStyleHandlers() {
-    //     let topFrame = frameModule.topmost();
-    //     return !!topFrame;
-    // }
 
     private get navBar(): UINavigationBar {
         const page = this.page;
@@ -352,7 +353,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     [flatProperty.setNative](value: boolean) { // tslint:disable-line
-        let navBar = this.navBar;
+        const navBar = this.navBar;
         if (navBar) {
             this.updateFlatness(navBar);
         }

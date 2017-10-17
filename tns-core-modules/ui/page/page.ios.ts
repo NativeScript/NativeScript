@@ -394,8 +394,10 @@ export class Page extends PageBase {
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
-            // Measure ActionBar with the full height.
-            View.measureChild(this, this.actionBar, widthMeasureSpec, layout.makeMeasureSpec(height, layout.AT_MOST));
+            const { width, height } = this.actionBar._getActualSize;
+            const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+            const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+            View.measureChild(this, this.actionBar, widthSpec, heightSpec);
         }
 
         const result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
@@ -410,7 +412,8 @@ export class Page extends PageBase {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
+        const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
+        View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
         View.layoutChild(this, this.layoutView, 0, top, right - left, bottom);
     }
 
