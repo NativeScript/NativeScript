@@ -223,7 +223,12 @@ function ensureListViewAdapterClass() {
         }
 
         public getItemId(i: number) {
-            return long(i);
+            let item = this.getItem(i);
+            let id = i;
+            if (this.owner && item && this.owner.items) {
+                id = this.owner.itemIdGenerator(item, i, this.owner.items);
+            }
+            return long(id);
         }
 
         public hasStableIds(): boolean {
