@@ -173,7 +173,7 @@ export const resolvePageFromEntry = profile("resolvePageFromEntry", (entry: Navi
         }
 
         if (!page) {
-            throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
+            throw new Error("Failed to load page XML file for module: " + entry.moduleName);
         }
     }
 
