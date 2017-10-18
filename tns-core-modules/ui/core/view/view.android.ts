@@ -460,7 +460,11 @@ export class View extends ViewCommon {
         if (drawable) {
             const constantState = drawable.getConstantState();
             if (constantState) {
-                return constantState.newDrawable(nativeView.getResources());
+                try {
+                    return constantState.newDrawable(nativeView.getResources());
+                } catch (e) {
+                    return drawable;
+                }
             } else {
                 return drawable;
             }
