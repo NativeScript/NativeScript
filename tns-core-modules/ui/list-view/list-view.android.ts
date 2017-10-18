@@ -216,7 +216,7 @@ function ensureListViewAdapterClass() {
         public getItem(i: number) {
             if (this.owner && this.owner.items && i < this.owner.items.length) {
                 let getItem = (<ItemsSource>this.owner.items).getItem;
-                return getItem ? getItem(i) : this.owner.items[i];
+                return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
             }
 
             return null;
