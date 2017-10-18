@@ -78,6 +78,8 @@ export abstract class ImageBase extends View implements ImageDefinition {
                 fromUrl(value).then((r) => {
                     if (this["_url"] === value) {
                         this.imageSource = r;
+                        // Clone the backgroundStyle to correct (now invalid?) background state.
+                        this.style.backgroundInternal = this.style.backgroundInternal.clone();
                         this.isLoading = false;
                     }
                 });

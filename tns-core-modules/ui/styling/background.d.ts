@@ -46,6 +46,7 @@ export class Background {
     public withClipPath(value: string): Background;
 
     public isEmpty(): boolean;
+    public clone(): Background;
 
     public static equals(value1: Background, value2: Background): boolean;
 
