@@ -227,19 +227,21 @@ export class View extends ViewCommon {
     }
 
     private _onSizeChanged(): void {
-        let nativeView = this.nativeViewProtected;
+        const nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return;
         }
 
-        let background = this.style.backgroundInternal;
-        const backgroundDependsOnSize = background.image || !background.hasUniformBorder();
+        const background = this.style.backgroundInternal;
+        const backgroundDependsOnSize = background.image 
+            || !background.hasUniformBorder()
+            || background.hasBorderRadius();
 
         if (this._nativeBackgroundState === "invalid" || (this._nativeBackgroundState === "drawn" && backgroundDependsOnSize)) {
             this._redrawNativeBackground(background);
         }
 
-        let clipPath = this.style.clipPath;
+        const clipPath = this.style.clipPath;
         if (clipPath !== "" && this[clipPathProperty.setNative]) {
             this[clipPathProperty.setNative](clipPath);
         }
