@@ -1,0 +1,4 @@
+--require unit-tests/runtime.js
+--ui mocha-typescript
+--require source-map-support/register
+--recursive unit-tests

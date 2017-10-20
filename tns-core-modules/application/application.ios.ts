@@ -1,8 +1,14 @@
-﻿import { iOSApplication as IOSApplicationDefinition, LaunchEventData, ApplicationEventData, OrientationChangedEventData } from ".";
+﻿import {
+    iOSApplication as IOSApplicationDefinition,
+    LaunchEventData,
+    ApplicationEventData,
+    OrientationChangedEventData,
+    LoadAppCSSEventData
+} from ".";
 
 import {
     notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync, displayedEvent
+    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -117,6 +123,7 @@ class IOSApplication implements IOSApplicationDefinition {
         };
 
         notify(args);
+        notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: getCssFileName() });
 
         let rootView = createRootView(args.root);
         this._window.content = rootView;

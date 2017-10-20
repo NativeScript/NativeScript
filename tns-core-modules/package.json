@@ -10,6 +10,7 @@
   "files": [
     "**/*.d.ts",
     "**/*.js",
+    "**/package.json",
     "!android17.d.ts",
     "!ios.d.ts",
     "!bin/",

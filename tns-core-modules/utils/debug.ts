@@ -1,4 +1,5 @@
 import { knownFolders } from "../file-system"
+import { isAndroid } from "../platform"
 
 export var debug = true;
 
@@ -43,5 +44,25 @@ export class Source {
     
     public static set(object: any, src: Source) {
         object[Source._source] = src;
+    }
+}
+
+export class ScopeError extends Error {
+    constructor(inner: Error, message?: string) {
+        let formattedMessage;
+        if (message && inner.message) {
+            formattedMessage = message + "\n > " + inner.message.replace("\n", "\n  ");
+        } else {
+            formattedMessage = message || inner.message || undefined;
+        }
+        super(formattedMessage);
+        this.stack = isAndroid ? "Error: " + this.message + "\n" + inner.stack.substr(inner.stack.indexOf("\n") + 1) : inner.stack;
+        this.message = formattedMessage;
+    }
+}
+
+export class SourceError extends ScopeError {
+    constructor(child: Error, source: Source, message?: string) {
+        super(child, message ? message + " @" + source + "" : source + "");
     }
 }

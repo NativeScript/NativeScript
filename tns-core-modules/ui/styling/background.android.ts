@@ -3,7 +3,7 @@ import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX }
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
 import * as application from "../../application";
-import { profile } from "tns-core-modules/profiling";
+import { profile } from "../../profiling";
 export * from "./background-common"
 
 interface AndroidView {

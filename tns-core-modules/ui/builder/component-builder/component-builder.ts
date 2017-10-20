@@ -7,7 +7,7 @@ import { isEventOrGesture } from "../../core/bindable";
 import { File, path, knownFolders } from "../../../file-system";
 import { getBindingOptions, bindingConstants } from "../binding-builder";
 import { resolveFileName } from "../../../file-system/file-name-resolver";
-import { profile } from "tns-core-modules/profiling";
+import { profile } from "../../../profiling";
 import * as debugModule from "../../../utils/debug";
 import * as platform from "../../../platform";
 

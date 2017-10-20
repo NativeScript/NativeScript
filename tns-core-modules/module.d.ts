@@ -1,11 +1,32 @@
 declare var global: NodeJS.Global;
 
+interface ModuleResolver {
+    /**
+     * A function used to resolve the exports for a module.
+     * @param uri The name of the module to be resolved. 
+     */
+    (uri: string): any;
+}
+
 //Augment the NodeJS global type with our own extensions
 declare namespace NodeJS {
     interface Global {
         android?: any;
         require(id: string): any;
         registerModule(name: string, loader: ((name: string) => any)): void;
+        /**
+         * The NativeScript XML builder, style-scope, application modules use various resources such as:
+         * app.css, page.xml files and modules during the application life-cycle.
+         * The moduleResolvers can be used to provide additional mechanisms to locate such resources.
+         * For example:
+         * ```
+         * global.moduleResolvers.unshift(uri => uri === "main-page" ? require("main-page") : null);
+         * ```
+         * More advanced scenarios will allow for specific bundlers to integrate their module resolving mechanisms.
+         * When adding resolvers at the start of the array, avoid throwing and return null instead so subsequent resolvers may try to resolve the resource.
+         * By default the only member of the array is global.require, as last resort - if it fails to find a module it will throw.
+         */
+        readonly moduleResolvers: ModuleResolver[];
         loadModule(name: string): any;
         moduleExists(name: string): boolean;
         moduleMerge(sourceExports: any, destExports: any): void;

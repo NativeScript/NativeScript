@@ -35,6 +35,7 @@ export class Style extends Observable implements StyleDefinition {
     public tintColor: Color;
     public placeholderColor: Color;
 
+    public background: string | Color;
     public backgroundColor: Color;
     public backgroundImage: string;
     public backgroundRepeat: BackgroundRepeat;

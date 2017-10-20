@@ -19,20 +19,11 @@ function ensurePlatform() {
     }
 }
 
-// we are defining these as private variables within the IO scope and will use them to access the corresponding properties for each FSEntity instance.
-// this allows us to encapsulate (hide) the explicit property setters and force the users go through the exposed APIs to receive FSEntity instances.
-var nameProperty = "_name";
-var pathProperty = "_path";
-var isKnownProperty = "_isKnown";
-var fileLockedProperty = "_locked";
-var extensionProperty = "_extension";
-var lastModifiedProperty = "_lastModified";
-
 var createFile = function (info: { path: string; name: string; extension: string }) {
     var file = new File();
-    file[pathProperty] = info.path;
-    file[nameProperty] = info.name;
-    file[extensionProperty] = info.extension;
+    file._path = info.path;
+    file._name = info.name;
+    file._extension = info.extension;
 
     return file;
 };
@@ -50,13 +41,20 @@ var createFolder = function (info: { path: string; name: string; }) {
 
     var folder = new Folder();
 
-    folder[pathProperty] = info.path;
-    folder[nameProperty] = info.name;
+    folder._path = info.path;
+    folder._name = info.name;
 
     return folder;
 };
 
 export class FileSystemEntity {
+    _path: string;
+    _name: string;
+    _extension: string;
+    _locked: boolean;
+    _lastModified: Date;
+    _isKnown: boolean;
+
     get parent(): Folder {
         var onError = function (error) {
             throw error;
@@ -86,7 +84,7 @@ export class FileSystemEntity {
     }
 
     public removeSync(onError?: (error: any) => any): void {
-        if (this[isKnownProperty]) {
+        if (this._isKnown) {
             if (onError) {
                 onError({ message: "Cannot delete known folder." });
             }
@@ -120,7 +118,7 @@ export class FileSystemEntity {
     }
 
     public renameSync(newName: string, onError?: (error: any) => any): void {
-        if (this[isKnownProperty]) {
+        if (this._isKnown) {
             if (onError) {
                 onError(new Error("Cannot rename known folder."));
             }
@@ -149,26 +147,26 @@ export class FileSystemEntity {
         }
 
         fileAccess.rename(this.path, newPath, localError);
-        this[pathProperty] = newPath;
-        this[nameProperty] = newName;
+        this._path = newPath;
+        this._name = newName;
 
         if (this instanceof File) {
-            this[extensionProperty] = fileAccess.getFileExtension(newPath);
+            this._extension = fileAccess.getFileExtension(newPath);
         }
     }
 
     get name(): string {
-        return this[nameProperty];
+        return this._name;
     }
 
     get path(): string {
-        return this[pathProperty];
+        return this._path;
     }
 
     get lastModified(): Date {
-        var value = this[lastModifiedProperty];
-        if (!this[lastModifiedProperty]) {
-            value = this[lastModifiedProperty] = getFileAccess().getLastModified(this.path);
+        var value = this._lastModified;
+        if (!this._lastModified) {
+            value = this._lastModified = getFileAccess().getLastModified(this.path);
         }
 
         return value;
@@ -194,22 +192,22 @@ export class File extends FileSystemEntity {
     }
 
     get extension(): string {
-        return this[extensionProperty];
+        return this._extension;
     }
 
     get isLocked(): boolean {
         // !! is a boolean conversion/cast, handling undefined as well
-        return !!this[fileLockedProperty];
+        return !!this._locked;
     }
 
     public readSync(onError?: (error: any) => any): any {
         this.checkAccess();
 
-        this[fileLockedProperty] = true;
+        this._locked = true;
 
         var that = this;
         var localError = (error) => {
-            that[fileLockedProperty] = false;
+            that._locked = false;
             if (onError) {
                 onError(error);
             }
@@ -217,7 +215,7 @@ export class File extends FileSystemEntity {
 
         var content = getFileAccess().read(this.path, localError);
 
-        this[fileLockedProperty] = false;
+        this._locked = false;
 
         return content;
 
@@ -227,11 +225,11 @@ export class File extends FileSystemEntity {
         this.checkAccess();
 
         try {
-            this[fileLockedProperty] = true;
+            this._locked = true;
 
             var that = this;
             var localError = function (error) {
-                that[fileLockedProperty] = false;
+                that._locked = false;
                 if (onError) {
                     onError(error);
                 }
@@ -239,7 +237,7 @@ export class File extends FileSystemEntity {
 
             getFileAccess().write(this.path, content, localError);
         } finally {
-            this[fileLockedProperty] = false;
+            this._locked = false;
         }
     }
 
@@ -262,18 +260,18 @@ export class File extends FileSystemEntity {
     public readTextSync(onError?: (error: any) => any, encoding?: string): string {
         this.checkAccess();
 
-        this[fileLockedProperty] = true;
+        this._locked = true;
 
         var that = this;
         var localError = (error) => {
-            that[fileLockedProperty] = false;
+            that._locked = false;
             if (onError) {
                 onError(error);
             }
         };
 
         var content = getFileAccess().readText(this.path, localError, encoding);
-        this[fileLockedProperty] = false;
+        this._locked = false;
 
         return content;
     }
@@ -297,11 +295,11 @@ export class File extends FileSystemEntity {
         this.checkAccess();
 
         try {
-            this[fileLockedProperty] = true;
+            this._locked = true;
 
             var that = this;
             var localError = function (error) {
-                that[fileLockedProperty] = false;
+                that._locked = false;
                 if (onError) {
                     onError(error);
                 }
@@ -310,7 +308,7 @@ export class File extends FileSystemEntity {
             // TODO: Asyncronous
             getFileAccess().writeText(this.path, content, localError, encoding);
         } finally {
-            this[fileLockedProperty] = false;
+            this._locked = false;
         }
     }
 
@@ -370,7 +368,7 @@ export class Folder extends FileSystemEntity {
     }
 
     get isKnown(): boolean {
-        return this[isKnownProperty];
+        return this._isKnown;
     }
 
     public getFile(name: string): File {
@@ -473,8 +471,8 @@ export module knownFolders {
         if (!_documents) {
             var path = getFileAccess().getDocumentsFolderPath();
             _documents = new Folder();
-            _documents[pathProperty] = path;
-            _documents[isKnownProperty] = true;
+            _documents._path = path;
+            _documents._isKnown = true;
         }
 
         return _documents;
@@ -484,8 +482,8 @@ export module knownFolders {
         if (!_temp) {
             var path = getFileAccess().getTempFolderPath();
             _temp = new Folder();
-            _temp[pathProperty] = path;
-            _temp[isKnownProperty] = true;
+            _temp._path = path;
+            _temp._isKnown = true;
         }
 
         return _temp;
@@ -495,8 +493,8 @@ export module knownFolders {
         if (!_app) {
             var path = getFileAccess().getCurrentAppPath();
             _app = new Folder();
-            _app[pathProperty] = path;
-            _app[isKnownProperty] = true;
+            _app._path = path;
+            _app._isKnown = true;
         }
 
         return _app;
@@ -518,8 +516,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _library = existingFolderInfo.folder;
-                    _library[pathProperty] = existingFolderInfo.path;
-                    _library[isKnownProperty] = true;
+                    _library._path = existingFolderInfo.path;
+                    _library._isKnown = true;
                 }
             }
 
@@ -534,8 +532,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _developer = existingFolderInfo.folder;
-                    _developer[pathProperty] = existingFolderInfo.path;
-                    _developer[isKnownProperty] = true;
+                    _developer._path = existingFolderInfo.path;
+                    _developer._isKnown = true;
                 }
             }
 
@@ -550,8 +548,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _desktop = existingFolderInfo.folder;
-                    _desktop[pathProperty] = existingFolderInfo.path;
-                    _desktop[isKnownProperty] = true;
+                    _desktop._path = existingFolderInfo.path;
+                    _desktop._isKnown = true;
                 }
             }
 
@@ -566,8 +564,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _downloads = existingFolderInfo.folder;
-                    _downloads[pathProperty] = existingFolderInfo.path;
-                    _downloads[isKnownProperty] = true;
+                    _downloads._path = existingFolderInfo.path;
+                    _downloads._isKnown = true;
                 }
             }
 
@@ -582,8 +580,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _movies = existingFolderInfo.folder;
-                    _movies[pathProperty] = existingFolderInfo.path;
-                    _movies[isKnownProperty] = true;
+                    _movies._path = existingFolderInfo.path;
+                    _movies._isKnown = true;
                 }
             }
 
@@ -598,8 +596,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _music = existingFolderInfo.folder;
-                    _music[pathProperty] = existingFolderInfo.path;
-                    _music[isKnownProperty] = true;
+                    _music._path = existingFolderInfo.path;
+                    _music._isKnown = true;
                 }
             }
 
@@ -614,8 +612,8 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _pictures = existingFolderInfo.folder;
-                    _pictures[pathProperty] = existingFolderInfo.path;
-                    _pictures[isKnownProperty] = true;
+                    _pictures._path = existingFolderInfo.path;
+                    _pictures._isKnown = true;
                 }
             }
 
@@ -630,15 +628,15 @@ export module knownFolders {
 
                 if (existingFolderInfo) {
                     _sharedPublic = existingFolderInfo.folder;
-                    _sharedPublic[pathProperty] = existingFolderInfo.path;
-                    _sharedPublic[isKnownProperty] = true;
+                    _sharedPublic._path = existingFolderInfo.path;
+                    _sharedPublic._isKnown = true;
                 }
             }
 
             return _sharedPublic;
         };
 
-        function getExistingFolderInfo(pathDirectory: NSSearchPathDirectory): { folder: Folder; path: string } {
+        function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): { folder: Folder; path: string } {
             var fileAccess = (<any>getFileAccess());
             var folderPath = fileAccess.getKnownPath(pathDirectory);
             var folderInfo = fileAccess.getExistingFolder(folderPath);

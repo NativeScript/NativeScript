@@ -1,7 +1,7 @@
 ﻿import { Font as FontDefinition, ParsedFont } from "./font";
 import { makeValidator, makeParser } from "../core/properties";
 
-export abstract class FontBase implements FontDefinition {
+export abstract class Font implements FontDefinition {
     public static default = undefined;
 
     get isItalic(): boolean {
@@ -23,14 +23,14 @@ export abstract class FontBase implements FontDefinition {
         public readonly fontWeight: FontWeight) {
     }
 
-    public abstract getAndroidTypeface(): android.graphics.Typeface;
-    public abstract getUIFont(defaultFont: UIFont): UIFont;
-    public abstract withFontFamily(family: string): FontBase;
-    public abstract withFontStyle(style: string): FontBase;
-    public abstract withFontWeight(weight: string): FontBase;
-    public abstract withFontSize(size: number): FontBase;
+    public abstract getAndroidTypeface(): any /* android.graphics.Typeface */;
+    public abstract getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
+    public abstract withFontFamily(family: string): Font;
+    public abstract withFontStyle(style: string): Font;
+    public abstract withFontWeight(weight: string): Font;
+    public abstract withFontSize(size: number): Font;
 
-    public static equals(value1: FontBase, value2: FontBase): boolean {
+    public static equals(value1: Font, value2: Font): boolean {
         // both values are falsy
         if (!value1 && !value2) {
             return true;

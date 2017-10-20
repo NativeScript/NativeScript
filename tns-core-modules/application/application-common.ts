@@ -17,7 +17,7 @@ export function hasLaunched(): boolean {
 
 export { Observable };
 
-import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from ".";
+import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData, LoadAppCSSEventData } from ".";
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -64,6 +64,10 @@ export function setCssFileName(cssFileName: string) {
 
 export function getCssFileName(): string {
     return cssFile;
+}
+
+export function loadAppCss(): void {
+    events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
 }
 
 export function addCss(cssText: string): void {

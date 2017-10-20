@@ -3,6 +3,8 @@ import * as common from "./image-asset-common";
 global.moduleMerge(common, exports);
 
 export class ImageAsset extends common.ImageAsset {
+    private _ios: PHAsset;
+
     constructor(asset: PHAsset | UIImage) {
         super();
         if (asset instanceof UIImage) {
@@ -11,6 +13,14 @@ export class ImageAsset extends common.ImageAsset {
         else {
             this.ios = asset;
         }
+    }
+
+    get ios(): PHAsset {
+        return this._ios;
+    }
+
+    set ios(value: PHAsset) {
+        this._ios = value;
     }
 
     public getImageAsync(callback: (image, error) => void) {

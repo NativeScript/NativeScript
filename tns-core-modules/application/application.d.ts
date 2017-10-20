@@ -141,6 +141,14 @@ export function setCssFileName(cssFile: string): void;
  */
 export function getCssFileName(): string;
 
+/**
+ * Loads immediately the app.css.
+ * By default the app.css file is loaded shortly after "loaded".
+ * For the Android snapshot the CSS can be parsed during the snapshot generation,
+ * as the CSS does not depend on runtime APIs, and loadAppCss will be called explicitly.
+ */
+export function loadAppCss();
+
 export function addCss(cssText: string): void;
 
 /**
@@ -553,3 +561,7 @@ export function getNativeApplication(): any;
  * Indicates if the application is allready launched. See also the `application.on("launch", handler)` event.
  */
 export function hasLaunched(): boolean;
+
+export interface LoadAppCSSEventData extends EventData {
+    cssFile: string;
+}

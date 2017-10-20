@@ -4,9 +4,19 @@ import * as common from "./image-asset-common";
 global.moduleMerge(common, exports);
 
 export class ImageAsset extends common.ImageAsset {
+    private _android: string; //file name of the image
+
     constructor(asset: string) {
         super();
         this.android = asset;
+    }
+
+    get android(): string {
+        return this._android;
+    }
+
+    set android(value: string) {
+        this._android = value;
     }
 
     public getImageAsync(callback: (image, error) => void) {

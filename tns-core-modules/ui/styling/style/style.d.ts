@@ -62,6 +62,7 @@ export class Style extends Observable {
     public tintColor: Color;
     public placeholderColor: Color;
 
+    public background: string | Color;
     public backgroundColor: Color;
     public backgroundImage: string;
     public backgroundRepeat: BackgroundRepeat;

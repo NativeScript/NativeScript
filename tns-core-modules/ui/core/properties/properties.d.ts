@@ -32,7 +32,7 @@ export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<
 export interface ShorthandPropertyOptions<P> {
     readonly name: string,
     readonly cssName: string;
-    readonly converter: (value: string | P) => [CssProperty<any, any>, any][],
+    readonly converter: (value: string | P) => [CssProperty<any, any> | CssAnimationProperty<any, any>, any][],
     readonly getter: (this: Style) => string | P
 }
 

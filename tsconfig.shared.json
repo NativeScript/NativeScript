@@ -16,6 +16,14 @@
         "lib": [
             "es6", "dom"
         ],
-        "types": []
+        "types": [
+            "node",
+            "chai",
+            "mocha"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "tns-core-modules/*": ["tns-core-modules/*"]
+        }
     }
 }

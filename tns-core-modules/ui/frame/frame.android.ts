@@ -715,6 +715,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     private notifyLaunch(intent: android.content.Intent, savedInstanceState: android.os.Bundle): View {
         const launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: application.android, android: intent, savedInstanceState };
         application.notify(launchArgs);
+        application.notify(<application.LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: application.getCssFileName() });
         return launchArgs.root;
     }
 
