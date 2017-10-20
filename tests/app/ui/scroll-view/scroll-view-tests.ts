@@ -5,6 +5,7 @@ import * as testModule from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
 import { Page } from "tns-core-modules/ui/page";
 import * as frame from "tns-core-modules/ui/frame";
+import * as helper from "../helper";
 
 // >> article-require-scrollview-module
 import * as scrollViewModule from "tns-core-modules/ui/scroll-view";
@@ -154,15 +155,8 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset before navigation");
 
-        let page = new Page();
-        let createFunc = () => {
-            return page;
-        };
-
-        let entry: frame.NavigationEntry = { create: createFunc, animated: false };
-        frame.topmost().navigate(entry);
-        TKUnit.waitUntilReady(() => page.isLayoutValid);
-        frame.topmost().goBack();
+        helper.navigateWithHistory(() => new Page());
+        helper.goBack();
 
         // Wait for the page to reload.
         TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1); });
@@ -178,19 +172,8 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
 
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset before navigation");
-
-        let page = new Page();
-        let createFunc = () => {
-            return page;
-        };
-
-        let entry: frame.NavigationEntry = { create: createFunc, animated: false };
-        frame.topmost().navigate(entry);
-        TKUnit.waitUntilReady(() => page.isLayoutValid);
-        frame.topmost().goBack();
-
-        // Wait for the page to reload.
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1); });
+        helper.navigateWithHistory(() => new Page());
+        helper.goBack();
 
         // Check verticalOffset after navigation
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset after navigation");

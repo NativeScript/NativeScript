@@ -152,14 +152,16 @@ export function getClearCurrentPage(): Page {
     return page;
 }
 
-export function waitUntilNavigatedFrom(oldPage: Page) {
+export function waitUntilNavigatedFrom(action: Function) {
+    const currentPage = frame.topmost().currentPage;
     let completed = false;
     function navigatedFrom(args) {
         args.object.page.off("navigatedFrom", navigatedFrom);
         completed = true;
     }
 
-    oldPage.on("navigatedFrom", navigatedFrom);
+    currentPage.on("navigatedFrom", navigatedFrom);
+    action();
     TKUnit.waitUntilReady(() => completed);
 }
 
@@ -168,22 +170,18 @@ export function waitUntilLayoutReady(view: View): void {
 }
 
 export function navigateWithEntry(entry: frame.NavigationEntry): Page {
-    let page = frame.resolvePageFromEntry(entry);
+    const page = frame.resolvePageFromEntry(entry);
     entry.moduleName = null;
     entry.create = function () {
         return page;
     };
 
-    let currentPage = getCurrentPage();
-    frame.topmost().navigate(entry);
-    waitUntilNavigatedFrom(currentPage);
+    waitUntilNavigatedFrom(() => frame.topmost().navigate(entry));
     return page;
 }
 
 export function goBack() {
-    let currentPage = getCurrentPage();
-    frame.topmost().goBack();
-    waitUntilNavigatedFrom(currentPage);
+    waitUntilNavigatedFrom(() => frame.topmost().goBack());
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {

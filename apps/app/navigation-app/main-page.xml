@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
+    navigatingTo="navigatingTo" 
+    navigatingFrom="navigatingFrom" 
+    navigatedTo="navigatedTo" 
+    navigatedFrom="navigatedFrom">
+    <StackLayout>
+        <Button text="Nav" tap="nav" />
+        <Button text="Clear history Trans" tap="navClearTrans" />
+        <Button text="Nav Transition" tap="navWithTransition" />
+        <Button text="Nav Clear" tap="navWithClear" />
+        <ListView items="{{ $value }}" />
+    </StackLayout>
+</Page>
