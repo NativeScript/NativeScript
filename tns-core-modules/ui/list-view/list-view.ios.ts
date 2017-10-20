@@ -8,6 +8,7 @@ import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { ios } from "../../utils/utils";
 import { profile } from "../../profiling";
+import { device } from "../../platform";
 
 export * from "./list-view-common";
 
@@ -204,6 +205,17 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
     }
 }
 
+// TODO: Remove this declaration when 'tns-platform-declarations' is update with iOS 11 declarations
+declare const enum UIScrollViewContentInsetAdjustmentBehavior {
+	Automatic = 0,
+
+	ScrollableAxes = 1,
+
+	Never = 2,
+
+	Always = 3
+}
+
 export class ListView extends ListViewBase {
     public _ios: UITableView;
     private _dataSource;
@@ -222,6 +234,11 @@ export class ListView extends ListViewBase {
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
         this._ios.rowHeight = UITableViewAutomaticDimension;
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
+        if (parseInt(device.sdkVersion) >= 11) {
+            // TODO: Remove the cast to 'any' when 'tns-platform-declarations' is update with iOS 11 declarations
+            (<any>this._ios).contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+        }
+        
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, View>();
