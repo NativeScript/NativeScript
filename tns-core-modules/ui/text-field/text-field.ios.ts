@@ -218,14 +218,12 @@ export class TextField extends TextFieldBase {
             // nativeView.attributedPlaceholder will be null
             stringValue = " ";
         }
-        if (placeholderColorProperty.isSet(this.style)) {
-            const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, <any>{
-                [NSForegroundColorAttributeName]: this.style.placeholderColor.ios
-            });
-            this.nativeViewProtected.attributedPlaceholder = attributedPlaceholder;
-        } else {
-            this.nativeViewProtected.placeholder = stringValue;
+        const attributes: any = {};
+        if (this.style.placeholderColor) {
+            attributes[NSForegroundColorAttributeName] = this.style.placeholderColor.ios;
         }
+        const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, attributes);
+        this.nativeViewProtected.attributedPlaceholder = attributedPlaceholder;
     }
 
     [paddingTopProperty.getDefault](): Length {
