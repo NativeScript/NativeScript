@@ -1,4 +1,6 @@
-﻿import * as application from "tns-core-modules/application";
+﻿console.log("####### ------ APP MODULES START ")
+
+import * as application from "tns-core-modules/application";
 import * as trace from "tns-core-modules/trace";
 trace.enable();
 trace.setCategories(trace.categories.concat(

@@ -1,9 +1,8 @@
-import { getSetProperties, getComputedCssValues } from "../ui/core/properties";
-import { PercentLength } from "../ui/styling/style-properties";
-import { ViewBase } from "../ui/core/view";
-import { Color } from "../color";
 import { CSSComputedStyleProperty } from "./css-agent";
 import { InspectorEvents } from "./devtools-elements";
+
+// Needed for typings only
+import { ViewBase } from "../ui/core/view";
 
 const registeredDomNodes = {};
 const ELEMENT_NODE_TYPE = 1;
@@ -36,12 +35,19 @@ const propertyBlacklist = [
     "nativeView"
 ];
 
-let inspectorFrontendInstance: any;
+function lazy<T>(action: () => T): () => T {
+    let _value: T;
+    return () => _value || (_value = action());
+}
+const percentLengthToStringLazy = lazy<(length) => string>(() => require("../ui/styling/style-properties").PercentLength.convertToString);
+const getSetPropertiesLazy = lazy<(view: ViewBase) => [string, any][]>(() => require("../ui/core/properties").getSetProperties);
+const getComputedCssValuesLazy = lazy<(view: ViewBase) => [string, any][]>(() => require("../ui/core/properties").getComputedCssValues);
 
 export function registerInspectorEvents(inspector: InspectorEvents) {
     inspectorFrontendInstance = inspector;
 }
 
+let inspectorFrontendInstance: any;
 function notifyInspector(callback: (inspector: InspectorEvents) => void) {
     if (inspectorFrontendInstance) {
         callback(inspectorFrontendInstance);
@@ -51,10 +57,8 @@ function notifyInspector(callback: (inspector: InspectorEvents) => void) {
 function valueToString(value: any): string {
     if (typeof value === "undefined" || value === null) {
         return "";
-    } else if (value instanceof Color) {
-        return value.toString();
     } else if (typeof value === "object" && value.unit) {
-        return PercentLength.convertToString(value);
+        return percentLengthToStringLazy()(value);
     } else {
         return value + "";
     }
@@ -112,7 +116,7 @@ export class DOMNode {
 
     public loadAttributes() {
         this.attributes = [];
-        getSetProperties(this.viewRef.get())
+        getSetPropertiesLazy()(this.viewRef.get())
             .filter(propertyFilter)
             .forEach(pair => this.attributes.push(pair[0], pair[1] + ""));
 
@@ -182,7 +186,7 @@ export class DOMNode {
             return [];
         }
 
-        const result = getComputedCssValues(view)
+        const result = getComputedCssValuesLazy()(view)
             .filter(pair => pair[0][0] !== "_")
             .map((pair) => {
                 return {
