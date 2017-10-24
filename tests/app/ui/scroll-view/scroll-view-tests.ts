@@ -57,7 +57,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 
         if (isIOS) {
             TKUnit.assert(this.testView.ios instanceof UIScrollView, "ios property is UIScrollView");
-        } else  {
+        } else {
             TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.HorizontalScrollView, "android property should be instanceof org.nativescript.widgets.HorizontalScrollView");
         }
     }
@@ -145,30 +145,34 @@ class ScrollLayoutTest extends UITest<ScrollView> {
     public test_scrollView_persistsState_vertical() {
         this.waitUntilTestElementLayoutIsValid();
 
-        const expected = layoutHelper.dp(100);
-        this.testView.scrollToVerticalOffset(expected, false);
-        // TKUnit.assertAreClose(this.testView.verticalOffset, expected, 0.1, "this.testView.verticalOffset before navigation");
+        this.testView.scrollToVerticalOffset(90, false);
+        this.waitUntilTestElementLayoutIsValid();
+
+        const offset = Math.floor(this.testView.verticalOffset);
+        // assert we did scroll;
+        TKUnit.assertTrue(offset > 22, "this.testView.verticalOffset before navigation should be >22");
 
         helper.navigateWithHistory(() => new Page());
         helper.goBack();
 
         // Check verticalOffset after navigation
-        TKUnit.assertAreClose(this.testView.verticalOffset, expected, 0.1, "this.testView.verticalOffset after navigation");
+        TKUnit.assertEqual(Math.floor(this.testView.verticalOffset), offset, "this.testView.verticalOffset after navigation");
     }
 
     public test_scrollView_persistsState_horizontal() {
         this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
-
-        TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset before navigation");
+        this.testView.scrollToHorizontalOffset(100, false);
+        const offset = this.testView.horizontalOffset;
+        // assert we did scroll;
+        TKUnit.assertTrue(offset > 22, "this.testView.horizontalOffset before navigation should be >22");
 
         helper.navigateWithHistory(() => new Page());
         helper.goBack();
 
         // Check horizontalOffset after navigation
-        TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset after navigation");
+        TKUnit.assertEqual(this.testView.horizontalOffset, 100, "this.testView.horizontalOffset after navigation");
     }
 
     public test_scrollView_vertical_raised_scroll_event() {
