@@ -148,6 +148,7 @@ export function fromBase64(source: string): ImageSource;
 export function fromNativeSource(source: any): ImageSource;
 
 /**
+ * Deprecated. Use http.getImage(url: string) instead.
 * Downloads the image from the provided Url and creates a new ImageSource instance from it.
 * @param url The link to the remote image object. This operation will download and decode the image.
 */

@@ -28,7 +28,7 @@ import {
     messageType as traceMessageType,
 } from "../../trace";
 import { File, knownFolders, path } from "../../file-system";
-import * as application from "../../application";
+import * as applicationCommon from "../../application/application-common";
 import { profile } from "../../profiling";
 
 import * as kam from "../animation/keyframe-animation";
@@ -216,7 +216,7 @@ class CSSSource {
     }
 }
 
-const onCssChanged = profile('"style-scope".onCssChanged', (args: application.CssChangedEventData) => {
+const onCssChanged = profile('"style-scope".onCssChanged', (args: applicationCommon.CssChangedEventData) => {
     if (args.cssText) {
         const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
         if (parsed) {
@@ -228,8 +228,8 @@ const onCssChanged = profile('"style-scope".onCssChanged', (args: application.Cs
     }
 });
 
-function onLiveSync(args: application.CssChangedEventData): void {
-    loadCss(application.getCssFileName());
+function onLiveSync(args: applicationCommon.CssChangedEventData): void {
+    loadCss(applicationCommon.getCssFileName());
 }
 
 const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
@@ -244,18 +244,18 @@ const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
     }
 });
 
-application.on("cssChanged", onCssChanged);
-application.on("livesync", onLiveSync);
+applicationCommon.on("cssChanged", onCssChanged);
+applicationCommon.on("livesync", onLiveSync);
 
-export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: application.LoadAppCSSEventData) => {
+export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: applicationCommon.LoadAppCSSEventData) => {
     loadCss(args.cssFile);
-    application.off("loadAppCss", loadAppCSS);
+    applicationCommon.off("loadAppCss", loadAppCSS);
 });
 
-if (application.hasLaunched()) {
-    loadAppCSS({ eventName: "loadAppCss", object: <any>application, cssFile: application.getCssFileName() });
+if (applicationCommon.hasLaunched()) {
+    loadAppCSS({ eventName: "loadAppCss", object: <any>applicationCommon, cssFile: applicationCommon.getCssFileName() });
 } else {
-    application.on("loadAppCss", loadAppCSS);
+    applicationCommon.on("loadAppCss", loadAppCSS);
 }
 
 export class CssState {

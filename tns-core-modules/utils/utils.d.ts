@@ -233,7 +233,20 @@ export module ios {
      * Opens file with associated application.
      * @param filePath The file path.
      */
-    export function openFile(filePath: string): boolean
+    export function openFile(filePath: string): boolean;
+
+    /**
+     * Joins an array of file paths.
+     * @param paths An array of paths.
+     * Returns the joined path.
+     */
+    export function joinPaths(...paths: string[]): string;
+
+    /**
+     * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
+     * iOS - this folder is read-only and contains the app and all its resources.
+     */
+    export function getCurrentAppPath(): string;
 }
 
 /**

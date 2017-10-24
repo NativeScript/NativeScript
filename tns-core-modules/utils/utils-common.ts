@@ -31,7 +31,6 @@ export function convertString(value: any): any {
 }
 
 export module layout {
-
     const MODE_SHIFT = 30;
     const MODE_MASK = 0x3 << MODE_SHIFT;
 
@@ -48,11 +47,8 @@ export module layout {
         switch (mode) {
             case layout.EXACTLY:
                 return "Exact";
-
             case layout.AT_MOST:
-
                 return "AtMost";
-
             default:
                 return "Unspecified";
         }
@@ -67,22 +63,16 @@ export module layout {
     }
 
     export function measureSpecToString(measureSpec: number): string {
-        let mode = getMeasureSpecMode(measureSpec);
-        let size = getMeasureSpecSize(measureSpec);
+        const mode = getMeasureSpecMode(measureSpec);
+        const size = getMeasureSpecSize(measureSpec);
 
         let text = "MeasureSpec: ";
-
         if (mode === UNSPECIFIED) {
             text += "UNSPECIFIED ";
-        }
-        else if (mode === EXACTLY) {
+        } else if (mode === EXACTLY) {
             text += "EXACTLY ";
-        }
-        else if (mode === AT_MOST) {
+        } else if (mode === AT_MOST) {
             text += "AT_MOST ";
-        }
-        else {
-            text += mode + " ";
         }
 
         text += size;
@@ -126,9 +116,9 @@ export function mergeSort(arr, compareFunc) {
         return arr;
     }
 
-    let middle = arr.length / 2;
-    let left = arr.slice(0, middle);
-    let right = arr.slice(middle, arr.length);
+    const middle = arr.length / 2;
+    const left = arr.slice(0, middle);
+    const right = arr.slice(middle, arr.length);
 
     return merge(mergeSort(left, compareFunc), mergeSort(right, compareFunc), compareFunc);
 }

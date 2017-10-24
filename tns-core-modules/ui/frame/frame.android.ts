@@ -6,7 +6,8 @@ import {
 import { Page } from "../page";
 
 // Types.
-import { FrameBase, application, NavigationContext, stack, goBack, View, Observable, traceEnabled, traceWrite, traceCategories } from "./frame-common";
+import * as application from "../../application";
+import { FrameBase, NavigationContext, stack, goBack, View, Observable, traceEnabled, traceWrite, traceCategories } from "./frame-common";
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
 import {
     _setAndroidFragmentTransitions, _onFragmentCreateAnimator,

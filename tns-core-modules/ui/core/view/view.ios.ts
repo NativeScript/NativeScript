@@ -1,11 +1,12 @@
 ﻿// Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
 
-import { ios, Background } from "../../styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories
 } from "./view-common";
+
+import { ios, Background } from "../../styling/background";
 import {
     Visibility,
     visibilityProperty, opacityProperty,

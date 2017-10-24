@@ -7,33 +7,9 @@ import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, tra
 import { resolveFileName } from "../../file-system/file-name-resolver";
 import { knownFolders, path } from "../../file-system";
 import { parse, loadPage } from "../builder";
-import * as application from "../../application";
 import { profile } from "../../profiling";
 
-export { application };
-
 export * from "../core/view";
-
-function onLivesync(args: EventData): void {
-    // give time to allow fileNameResolver & css to reload.
-    setTimeout(() => {
-        let g = <any>global;
-        // Close the error page if available and remove the reference from global context.
-        if (g.errorPage) {
-            g.errorPage.closeModal();
-            g.errorPage = undefined;
-        }
-
-        try {
-            g.__onLiveSyncCore();
-        } catch (ex) {
-            // Show the error as modal page, save reference to the page in global context.
-            g.errorPage = parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
-            g.errorPage.showModal();
-        }
-    });
-}
-application.on("livesync", onLivesync);
 
 let frameStack: Array<FrameBase> = [];
 

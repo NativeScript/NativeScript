@@ -1,4 +1,4 @@
-import * as image from "../image-source";
+import { ImageSource } from "../image-source";
 import * as httpRequest from "./http-request";
 
 global.moduleMerge(httpRequest, exports);
@@ -31,7 +31,7 @@ export function getJSON<T>(arg: any): Promise<T> {
     });
 }
 
-export function getImage(arg: any): Promise<image.ImageSource> {
+export function getImage(arg: any): Promise<ImageSource> {
     return httpRequest
         .request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
         .then(responce => responce.content.toImage());

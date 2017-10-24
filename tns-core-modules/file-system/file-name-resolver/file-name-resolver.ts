@@ -2,7 +2,7 @@ import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from 
 import { screen, device } from "../../platform";
 import { path as fsPath, Folder, File } from "../file-system";
 import * as trace from "../../trace";
-import * as appModule from "../../application";
+import * as appCommonModule from "../../application/application-common";
 
 const MIN_WH: string = "minWH";
 const MIN_W: string = "minW";
@@ -234,5 +234,5 @@ export function resolveFileName(path: string, ext: string): string {
     return resolverInstance.resolveFileName(path, ext);
 }
 
-appModule.on("cssChanged", args => resolverInstance = undefined);
-appModule.on("livesync", args => resolverInstance && resolverInstance.clearCache());
+appCommonModule.on("cssChanged", args => resolverInstance = undefined);
+appCommonModule.on("livesync", args => resolverInstance && resolverInstance.clearCache());

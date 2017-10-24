@@ -1,11 +1,12 @@
 // Definitions.
 import { View as ViewDefinition, Point, Size, Color, dip } from ".";
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories
 } from "../view-base";
+
+import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 import {
     observe as gestureObserve,
