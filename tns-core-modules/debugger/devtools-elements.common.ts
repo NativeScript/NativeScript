@@ -1,7 +1,19 @@
-import { unsetValue } from "../ui/core/properties";
-import { ViewBase } from "../ui/core/view-base";
-import { topmost } from "../ui/frame";
 import { getNodeById } from "./dom-node";
+
+// Needed for typings only
+import { ViewBase } from "../ui/core/view-base";
+
+// Use lazy requires for core modules
+const frameTopmost = () => { return require("../ui/frame").topmost(); };
+
+let unsetValue;
+function unsetViewValue(view, name) {
+    if (!unsetValue) {
+        unsetValue = require("../ui/core/properties").unsetValue;
+    }
+    
+    view[name] = unsetValue;
+}
 
 function getViewById(nodeId: number): ViewBase {
     const node = getNodeById(nodeId);
@@ -14,13 +26,17 @@ function getViewById(nodeId: number): ViewBase {
 }
 
 export function getDocument() {
-    const topMostFrame = topmost();
-    topMostFrame.ensureDomNode();
-
+    const topMostFrame = frameTopmost();
+    try {
+        topMostFrame.ensureDomNode();
+        
+    } catch (e) {
+        console.log("ERROR in getDocument(): " + e);
+    }
     return topMostFrame.domNode.toObject();
 }
 
-export function getComputedStylesForNode(nodeId): Array<{ name: string, value: string}> {
+export function getComputedStylesForNode(nodeId): Array<{ name: string, value: string }> {
     const view = getViewById(nodeId);
     if (view) {
         return view.domNode.getComputedProperties();
@@ -60,7 +76,7 @@ export function setAttributeAsText(nodeId, text, name) {
 
                 // if attr name is being replaced with another
                 if (name !== attrName && hasOriginalAttribute) {
-                    view[name] = unsetValue;
+                    unsetViewValue(view, name);
                     view[attrName] = attrValue;
                 } else {
                     view[hasOriginalAttribute ? name : attrName] = attrValue;
@@ -68,7 +84,7 @@ export function setAttributeAsText(nodeId, text, name) {
             }
         } else {
             // delete attribute
-            view[name] = unsetValue;
+            unsetViewValue(view, name);
         }
 
         view.domNode.loadAttributes();
