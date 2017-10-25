@@ -241,7 +241,7 @@ function getViewController(view: View): UIViewController {
     if (viewController instanceof UIViewController) {
         return viewController;
     } else if (view.ios instanceof UIView) {
-        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view));
+        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
         viewController.view.addSubview(view.ios);
         return viewController;
     } else {
