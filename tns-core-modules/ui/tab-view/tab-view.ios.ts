@@ -296,7 +296,7 @@ export class TabView extends TabViewBase {
             newController = item.view.ios.controller;
             item.setViewController(newController, newController.view);
         } else {
-            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view));
+            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
             newController.view.addSubview(item.view.nativeViewProtected);
             item.view.viewController = newController;
             item.setViewController(newController, item.view.nativeViewProtected);
