@@ -188,8 +188,13 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         const frame = owner.frame;
-        // Skip navigation events if we are hiding because we are about to show modal page.
+        // Skip navigation events if we are hiding because we are about to show modal page
+        // or because we are in tab and another controller is selected.
+        const tab = this.tabBarController;
         if (!owner._presentedViewController && frame && frame.currentPage === owner) {
+            const willSelectViewController = tab && (<any>tab)._willSelectViewController;
+            if (!willSelectViewController 
+                || willSelectViewController === tab.selectedViewController) {
             let isBack = isBackNavigationFrom(this, owner);
             owner.onNavigatingFrom(isBack);
         }
@@ -222,8 +227,16 @@ class UIViewControllerImpl extends UIViewController {
         const frame = page.frame;
         // We are not modal page, have frame with backstack and navigation queue is empty and currentPage is closed
         // then pop our backstack.
+        // If we are in frame wich is in tab and tab.selectedControler is not the frame
+        // skip navigation.
+        const tab = this.tabBarController;
+        const fireNavigationEvents = !tab
+            || tab.selectedViewController === this.navigationController;
+
         if (!modalParent && frame && frame.backStack.length > 0 && frame.navigationQueueIsEmpty() && frame.currentPage === page) {
-            (<any>frame)._backStack.pop();
+            if (fireNavigationEvents) {
+                (<any>frame)._backStack.pop();
+            }
         }
 
         page._enableLoadedEvents = true;
@@ -244,7 +257,7 @@ class UIViewControllerImpl extends UIViewController {
 
         page._enableLoadedEvents = false;
 
-        if (!modalParent) {
+        if (!modalParent && fireNavigationEvents) {
             // Last raise onNavigatedFrom event if we are not modally shown.
             page.onNavigatedFrom(isBack);
         }
@@ -422,7 +435,7 @@ export class Page extends PageBase {
         if (child === this.actionBar) {
             return true;
         }
-        
+
         // Don't add modal pages our visual tree.
         if (child !== this.content) {
             return true;

@@ -59,6 +59,8 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
             owner._handleTwoNavigationBars(backToMoreWillBeVisible);
         }
 
+        (<any>tabBarController)._willSelectViewController = viewController;
+
         return true;
     }
 
@@ -71,6 +73,8 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
         if (owner) {
             owner._onViewControllerShown(viewController);
         }
+
+        (<any>tabBarController)._willSelectViewController = undefined;
     }
 }
 
