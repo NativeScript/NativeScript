@@ -45,7 +45,7 @@ declare class LAContext extends NSObject {
 
 	touchIDAuthenticationAllowableReuseDuration: number;
 
-	canEvaluatePolicyError(policy: LAPolicy, error : NSError): boolean;
+	canEvaluatePolicyError(policy: LAPolicy, error: NSError): boolean;
 
 	evaluateAccessControlOperationLocalizedReasonReply(accessControl: any, operation: LAAccessControlOperation, localizedReason: string, reply: (p1: boolean, p2: NSError) => void): void;
 
