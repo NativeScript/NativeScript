@@ -16,6 +16,7 @@ Cross Platform Modules Changelog
 - [(# 4767)](https://github.com/NativeScript/NativeScript/pull/4767) [(# 4721)](https://github.com/NativeScript/NativeScript/pull/4721) [(# 4715)](https://github.com/NativeScript/NativeScript/pull/4715) CSS related optimizations
 - [(# 4930)](https://github.com/NativeScript/NativeScript/pull/4930) Chrome DevTools Elements tab support
 - [(# 4922)](https://github.com/NativeScript/NativeScript/pull/4922) Update platform declarations to iOS 11
+- [(# 3076)](https://github.com/NativeScript/nativescript-cli/issues/3076) Setup scripts now support Silent Install mode
 
 
 ## 3.2.0 (2017, September 07)
