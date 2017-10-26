@@ -193,10 +193,11 @@ class UIViewControllerImpl extends UIViewController {
         const tab = this.tabBarController;
         if (!owner._presentedViewController && frame && frame.currentPage === owner) {
             const willSelectViewController = tab && (<any>tab)._willSelectViewController;
-            if (!willSelectViewController 
+            if (!willSelectViewController
                 || willSelectViewController === tab.selectedViewController) {
-            let isBack = isBackNavigationFrom(this, owner);
-            owner.onNavigatingFrom(isBack);
+                let isBack = isBackNavigationFrom(this, owner);
+                owner.onNavigatingFrom(isBack);
+            }
         }
 
         //https://github.com/NativeScript/NativeScript/issues/1201
