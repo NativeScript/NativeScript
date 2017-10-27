@@ -1,15 +1,23 @@
-﻿import { LayoutBaseCommon, clipToBoundsProperty } from "./layout-base-common";
+﻿import { LayoutBaseCommon, clipToBoundsProperty, View } from "./layout-base-common";
 
 export * from "./layout-base-common";
 
 export class LayoutBase extends LayoutBaseCommon {
     nativeViewProtected: UIView;
     
-    [clipToBoundsProperty.getDefault](): boolean {
-        return false;
+    public addChild(child: View): void {
+        super.addChild(child);
+        this.requestLayout();
     }
-    [clipToBoundsProperty.setNative](value: boolean) {
-        this._setNativeClipToBounds();
+
+    public insertChild(child: View, atIndex: number): void {
+        super.insertChild(child, atIndex);
+        this.requestLayout();
+    }
+
+    public removeChild(child: View): void {
+        super.removeChild(child);
+        this.requestLayout();
     }
 
     _setNativeClipToBounds() {
@@ -18,5 +26,12 @@ export class LayoutBase extends LayoutBaseCommon {
         } else {
             super._setNativeClipToBounds();
         }
+    }
+    
+    [clipToBoundsProperty.getDefault](): boolean {
+        return false;
+    }
+    [clipToBoundsProperty.setNative](value: boolean) {
+        this._setNativeClipToBounds();
     }
 }

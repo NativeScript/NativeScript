@@ -252,28 +252,6 @@ export class Frame extends FrameBase {
     public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
         //
     }
-
-    _handleHigherInCallStatusBarIfNeeded() {
-        let statusBarHeight = uiUtils.ios.getStatusBarHeight();
-        if (!this._ios ||
-            !this._ios.controller ||
-            !this._ios.controller.navigationBar ||
-            this._ios.controller.navigationBar.hidden ||
-            utils.layout.toDevicePixels(this._ios.controller.navigationBar.frame.origin.y) === statusBarHeight) {
-            return;
-        }
-
-        if (traceEnabled()) {
-            traceWrite(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, traceCategories.Layout);
-        }
-
-        this._ios.controller.navigationBar.removeConstraints((<any>this)._ios.controller.navigationBar.constraints);
-        this._ios.controller.navigationBar.frame = CGRectMake(
-            this._ios.controller.navigationBar.frame.origin.x,
-            utils.layout.toDeviceIndependentPixels(statusBarHeight),
-            this._ios.controller.navigationBar.frame.size.width,
-            this._ios.controller.navigationBar.frame.size.height);
-    }
 }
 
 let transitionDelegates = new Array<TransitionDelegate>();
