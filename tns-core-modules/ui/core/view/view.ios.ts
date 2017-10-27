@@ -42,16 +42,6 @@ export class View extends ViewCommon {
      */
     _nativeBackgroundState: "unset" | "invalid" | "drawn";
 
-    public _addViewCore(view: ViewCommon, atIndex?: number) {
-        super._addViewCore(view, atIndex);
-        this.requestLayout();
-    }
-
-    public _removeViewCore(view: ViewCommon) {
-        super._removeViewCore(view);
-        this.requestLayout();
-    }
-
     get isLayoutRequired(): boolean {
         return (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
     }
@@ -257,7 +247,7 @@ export class View extends ViewCommon {
         }
 
         const background = this.style.backgroundInternal;
-        const backgroundDependsOnSize = background.image 
+        const backgroundDependsOnSize = background.image
             || !background.hasUniformBorder()
             || background.hasBorderRadius();
 
@@ -632,9 +622,9 @@ export namespace ios {
         if (extendedController.scrollable !== scrollable
             || extendedController.navBarHidden !== navBarHidden
             || extendedController.hasChildControllers !== hasChildControllers) {
-                extendedController.scrollable = scrollable;
-                extendedController.navBarHidden = navBarHidden;
-                extendedController.hasChildControllers = hasChildControllers;
+            extendedController.scrollable = scrollable;
+            extendedController.navBarHidden = navBarHidden;
+            extendedController.hasChildControllers = hasChildControllers;
             constrainView(extendedController, owner);
         }
     }
@@ -645,7 +635,7 @@ export namespace ios {
             return;
         }
 
-        const frame = controller.beingPresented ? owner.nativeView.superview.frame : controller.view.subviews[0].bounds;
+        const frame = controller.view.subviews[0].bounds;
         const origin = frame.origin;
         const size = frame.size;
         const width = layout.toDevicePixels(size.width);

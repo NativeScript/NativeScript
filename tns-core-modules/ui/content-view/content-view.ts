@@ -22,6 +22,9 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         }
 
         this._onContentChanged(oldView, value);
+        if (oldView !== value) {
+            this.requestLayout();
+        }
     }
 
     get layoutView(): View {
