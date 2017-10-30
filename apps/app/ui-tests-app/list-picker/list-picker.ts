@@ -1,4 +1,3 @@
-import { ios } from "tns-core-modules/application/application";
 import { ListPicker } from "tns-core-modules/ui/list-picker";
 import { Page } from "tns-core-modules/ui/page";
 
