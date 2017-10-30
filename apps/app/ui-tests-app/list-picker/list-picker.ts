@@ -7,8 +7,8 @@ export function loaded(args) {
     for (var i = 0; i < 100; i++) {
         items.push("name" + i);
     }
-    // args.object.bindingContext = { items: items };
-    let target = (<Page>args.object.page).getViewById<ListPicker>("target");
+    
+    const target = (<Page>args.object.page).getViewById<ListPicker>("target");
     target.items = items;
     target.selectedIndex = 3;
 }
