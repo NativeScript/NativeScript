@@ -1,4 +1,4 @@
-﻿import { TextFieldBase, secureProperty, whiteSpaceProperty, WhiteSpace } from "./text-field-common";
+﻿import { TextFieldBase, secureProperty, whiteSpaceProperty, WhiteSpace, keyboardTypeProperty } from "./text-field-common";
 
 export * from "./text-field-common";
 
@@ -14,13 +14,22 @@ export class TextField extends TextFieldBase {
         this.notify({ eventName: TextField.returnPressEvent, object: this })
     }
 
-    [secureProperty.setNative](value: boolean) {
+    [secureProperty.setNative]() {
+        this.setSecureAndKeyboardType();
+    }
+
+    [keyboardTypeProperty.setNative]() {
+        this.setSecureAndKeyboardType();
+    }
+
+    setSecureAndKeyboardType(): void {
+
         let inputType: number;
 
         // Password variations are supported only for Text and Number classes.
-        if (value) {
+        if (this.secure) {
             if (this.keyboardType === "number") {
-                inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
             } else {
                 inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
             }
