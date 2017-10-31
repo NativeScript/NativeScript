@@ -1,5 +1,5 @@
 <Page loaded="loaded">
 	<StackLayout>
-		<ListPicker items="{{ items }}" style="color: deeppink; background-color:lightskyblue" />
+		<ListPicker id="target" items="{{ items }}" style="color: deeppink; background-color:lightskyblue" />
 	</StackLayout>
 </Page>
