@@ -317,6 +317,32 @@ export var testSetSecure = function () {
     });
 }
 
+export var testSetSecureAndKeyboardTypeNumber = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        textField.secure = true;
+        textField.keyboardType = "number";
+
+        var expectedValue = true;
+        var actualValue = textFieldTestsNative.getNativeSecure(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testSetKeyboardTypeNumberAndSecure = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        textField.keyboardType = "number";
+        textField.secure = true;
+
+        var expectedValue = true;
+        var actualValue = textFieldTestsNative.getNativeSecure(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
 export var testBindSecureDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];

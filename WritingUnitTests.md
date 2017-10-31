@@ -48,7 +48,7 @@ allTests["HTTP"] = httpTests;
 ## Writing Test Module
 The test modules are actually TypeScript modules which export unit tests and hooks as functions following this convention:
 
-* All exported functions which with a `test` prefix are unit-tests.
+* All exported functions with a `test` prefix are unit-tests.
 * The `setUpModule()` hook is called once - before all the tests in the module.
 * The `setUp()` hook is called before each tests.
 * The `tearDown()` hook called after each tests.
