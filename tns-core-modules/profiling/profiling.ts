@@ -7,6 +7,14 @@ export function uptime() {
     return global.android ? (<any>org).nativescript.Process.getUpTime() : (<any>global).__tns_uptime();
 }
 
+export function log(message: string): void {
+    if ((<any>global).__nslog) {
+        (<any>global).__nslog("CONSOLE LOG: " + message);
+    } else {
+        console.log(message);
+    }
+}
+
 interface TimerInfo extends TimerInfoDefinition {
     totalTime: number;
     lastTime?: number;

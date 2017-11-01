@@ -128,3 +128,8 @@ export declare function stopCPUProfile(name: string): void;
  * Gets the uptime of the current process in milliseconds.
  */
 export function uptime(): number;
+
+/**
+ * Logs important messages. Contrary to console.log's behavior, the profiling log should output even for release builds.
+ */
+export function log(message: string): void;
