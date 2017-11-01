@@ -8,8 +8,6 @@
 
 #include "TNSProcess.h"
 
-#import <Foundation/Foundation.h>
-
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -25,4 +23,8 @@ double __tns_uptime() {
     gettimeofday(&current, NULL);
 
     return (double)(current.tv_sec - proc.kp_proc.p_starttime.tv_sec) * 1000.0 + (double)(current.tv_usec - proc.kp_proc.p_starttime.tv_usec) / 1000.0;
+}
+
+void __nslog(NSString* message) {
+    NSLog(@"%@", message);
 }
