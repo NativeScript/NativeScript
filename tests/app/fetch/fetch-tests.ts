@@ -102,7 +102,7 @@ export var test_fetch_response_headers = function (done) {
 export var test_fetch_headers_sent = function (done) {
     fetch("https://httpbin.org/get", {
         method: "GET",
-        headers: { "Content-Type": "application/json" }
+        headers: new Headers({ "Content-Type": "application/json" }),
     }).then(function (response) {
         var result = response.headers;
         TKUnit.assert(result.get("Content-Type") === "application/json", "Headers not sent/received properly! Actual result is: " + result);
@@ -117,7 +117,7 @@ export var test_fetch_post_form_data = function (done) {
 
     fetch("https://httpbin.org/post", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: new Headers({ "Content-Type": "application/x-www-form-urlencoded" }),
         body: data
     }).then(r => {
         return r.formData();
@@ -131,7 +131,7 @@ export var test_fetch_post_json = function (done) {
     // >> fetch-post-json
     fetch("https://httpbin.org/post", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: new Headers({ "Content-Type": "application/json" }),
         body: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(r => { return r.json(); }).then(function (r) {
         // >> (hide)
