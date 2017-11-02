@@ -142,7 +142,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
             break;
         } else {
             const fontAttributes = {
-                [UIFontDescriptorFamilyAttribute]: fontFamily,
+                [UIFontDescriptorFamilyAttribute]: NSString.stringWithString(fontFamily).mutableCopy(),
                 [UIFontDescriptorTraitsAttribute]: fontDescriptorTraits
             };
 
