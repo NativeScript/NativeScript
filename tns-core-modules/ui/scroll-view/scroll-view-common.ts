@@ -21,7 +21,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     }
 
     public removeEventListener(arg: string, callback: any, thisArg?: any) {
-        super.addEventListener(arg, callback, thisArg);
+        super.removeEventListener(arg, callback, thisArg);
 
         if (arg === ScrollViewBase.scrollEvent) {
             this._scrollChangeCount--;
