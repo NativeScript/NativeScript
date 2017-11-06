@@ -437,10 +437,10 @@ export class Page extends PageBase {
             return true;
         }
 
-        // Don't add modal pages our visual tree.
-        if (child !== this.content) {
-            return true;
-        }
+        // // Don't add modal pages our visual tree.
+        // if (child !== this.content) {
+        //     return true;
+        // }
 
         const nativeParent = this.nativeViewProtected.subviews[0];
         const nativeChild = child.nativeViewProtected;
