@@ -172,7 +172,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
         helper.goBack();
 
         // Check horizontalOffset after navigation
-        TKUnit.assertEqual(this.testView.horizontalOffset, 100, "this.testView.horizontalOffset after navigation");
+        TKUnit.assertEqual(this.testView.horizontalOffset, offset, "this.testView.horizontalOffset after navigation");
     }
 
     public test_scrollView_vertical_raised_scroll_event() {
