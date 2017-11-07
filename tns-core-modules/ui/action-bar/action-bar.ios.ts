@@ -1,8 +1,12 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, flatProperty, layout, Color } from "./action-bar-common";
 import { ImageSource, fromFileOrResource } from "../../image-source";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./action-bar-common";
+
+const majorVersion = iosUtils.MajorVersion;
+const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 class TapBarItemHandlerImpl extends NSObject {
     private _owner: WeakRef<ActionItemDefinition>;
@@ -46,12 +50,12 @@ export class NavigationButton extends ActionItem {
 export class ActionBar extends ActionBarBase {
 
     get ios(): UIView {
-        let page = this.page;
+        const page = this.page;
         if (!page || !page.parent) {
             return;
         }
 
-        let viewController = (<UIViewController>page.ios);
+        const viewController = (<UIViewController>page.ios);
         if (viewController.navigationController !== null) {
             return viewController.navigationController.navigationBar;
         }
@@ -100,10 +104,6 @@ export class ActionBar extends ActionBarBase {
         // Page should be attached to frame to update the action bar.
         if (!page || !page.parent) {
             return;
-        }
-
-        if (!this.isLayoutValid) {
-            this.layoutInternal();
         }
 
         const viewController = (<UIViewController>page.ios);
@@ -169,6 +169,10 @@ export class ActionBar extends ActionBarBase {
 
         // the 'flat' property may have changed in between pages
         this.updateFlatness(navigationBar);
+
+        if (!this.isLayoutValid) {
+            this.layoutInternal();
+        }
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
@@ -275,16 +279,13 @@ export class ActionBar extends ActionBarBase {
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         if (this.titleView) {
-            View.measureChild(this, this.titleView,
-                layout.makeMeasureSpec(width, layout.AT_MOST),
-                layout.makeMeasureSpec(height, layout.AT_MOST));
+            View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
-            if (actionItem.actionView) {
-                View.measureChild(this, actionItem.actionView,
-                    layout.makeMeasureSpec(width, layout.AT_MOST),
-                    layout.makeMeasureSpec(height, layout.AT_MOST));
+            const actionView = actionItem.actionView;
+            if (actionView) {
+                View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
             }
         });
 
@@ -293,12 +294,24 @@ export class ActionBar extends ActionBarBase {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        View.layoutChild(this, this.titleView, 0, 0, right - left, bottom - top);
+        const titleView = this.titleView;
+        if (titleView) {
+            if (majorVersion > 10) {
+                // On iOS 11 titleView is wrapped in another view that is centered with constraints.
+                View.layoutChild(this, titleView, 0, 0, titleView.getMeasuredWidth(), titleView.getMeasuredHeight());
+            } else {
+                // On iOS <11 titleView is direct child of UINavigationBar so we give it full width and leave
+                // the layout to center it.
+                View.layoutChild(this, titleView, 0, 0, right - left, bottom - top);
+            }
+        }
+
         this.actionItems.getItems().forEach((actionItem) => {
-            if (actionItem.actionView && actionItem.actionView.ios) {
-                let measuredWidth = actionItem.actionView.getMeasuredWidth();
-                let measuredHeight = actionItem.actionView.getMeasuredHeight();
-                View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
+            const actionView = actionItem.actionView;
+            if (actionView && actionView.ios) {
+                const measuredWidth = actionView.getMeasuredWidth();
+                const measuredHeight = actionView.getMeasuredHeight();
+                View.layoutChild(this, actionView, 0, 0, measuredWidth, measuredHeight);
             }
         });
 
