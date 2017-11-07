@@ -447,6 +447,10 @@ export class Page extends PageBase {
 
         const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;
         if (viewController) {
+            if (this.viewController.presentedViewController === viewController) {
+                return true;
+            }
+            
             this.viewController.addChildViewController(viewController);
         }
 
