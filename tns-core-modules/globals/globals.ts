@@ -70,6 +70,18 @@ global.registerModule("ui/dialogs", () => require("ui/dialogs"));
 global.registerModule("xhr", () => require("xhr"));
 global.registerModule("fetch", () => require("fetch"));
 
+(<any>global).System = {
+    import(path) {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(global.require(path));
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+}
+
 const __tnsGlobalMergedModules = new Map<string, boolean>();
 
 function registerOnGlobalContext(name: string, module: string): void {
