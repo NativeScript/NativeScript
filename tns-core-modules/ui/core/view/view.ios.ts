@@ -468,6 +468,10 @@ export class CustomLayoutView extends View {
         this.nativeViewProtected = UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
     }
 
+    get ios(): UIView {
+        return this.nativeViewProtected;
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
     }
