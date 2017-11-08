@@ -43,6 +43,7 @@ function initializeNativeClasses(): void {
             }
 
             this[SEARCHTEXT] = newText;
+            this[QUERY] = undefined;
             return true;
         }
 
