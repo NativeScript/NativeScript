@@ -681,10 +681,10 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_columns_widths() {
-        this.testView.width = { value: 400, unit: "px" };
-        this.testView.height = { value: 600, unit: "px" };
+        this.testView.width = { value: 300, unit: "px" };
+        this.testView.height = { value: 400, unit: "px" };
 
-        let grid = new GridLayout();
+        const grid = new GridLayout();
         this.testView.addChild(grid);
         grid.horizontalAlignment = "left";
         grid.verticalAlignment = "top";
@@ -697,23 +697,23 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         grid.addRow(new ItemSpec(layoutHelper.dp(100), "pixel"));
         grid.addRow(new ItemSpec(2, "star"));
 
-        let btn = new Button();
-        btn.width = { value: 300, unit: "px" };
-        btn.height = { value: 500, unit: "px" };
+        const btn = new Button();
+        btn.width = { value: 200, unit: "px" };
+        btn.height = { value: 300, unit: "px" };
         grid.addChild(btn);
         GridLayout.setColumnSpan(btn, 3);
         GridLayout.setRowSpan(btn, 3);
         this.waitUntilTestElementLayoutIsValid();
 
         var cols = grid.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dp(67), DELTA, "Column[0] actual length should be 67");
+        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dp(33), DELTA, "Column[0] actual length should be 67");
         TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dp(100), DELTA, "Column[1] actual length should be 100");
-        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dp(133), DELTA, "Column[2] actual length should be 133");
+        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dp(67), DELTA, "Column[2] actual length should be 133");
 
         var rows = grid.getRows();
-        TKUnit.assertAreClose(rows[0].actualLength, layoutHelper.dp(133), DELTA, "Row[0] actual length should be 133");
+        TKUnit.assertAreClose(rows[0].actualLength, layoutHelper.dp(67), DELTA, "Row[0] actual length should be 133");
         TKUnit.assertAreClose(rows[1].actualLength, layoutHelper.dp(100), DELTA, "Row[1] actual length should be 100");
-        TKUnit.assertAreClose(rows[2].actualLength, layoutHelper.dp(267), DELTA, "Row[2] actual length should be 267");
+        TKUnit.assertAreClose(rows[2].actualLength, layoutHelper.dp(133), DELTA, "Row[2] actual length should be 267");
     }
 }
 

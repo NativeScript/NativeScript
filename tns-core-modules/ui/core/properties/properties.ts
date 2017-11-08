@@ -122,6 +122,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (wrapped || changed) {
+                if (affectsLayout) {
+                    this.requestLayout();
+                }
+                
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -162,10 +166,6 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
                 if (this.hasListeners(eventName)) {
                     this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
-                }
-
-                if (affectsLayout) {
-                    this.requestLayout();
                 }
 
                 if (this.domNode) {

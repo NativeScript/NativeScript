@@ -139,6 +139,11 @@ export abstract class ViewBase extends Observable {
 
     public ios: any;
     public android: any;
+    
+    /**
+     * returns the native UIViewController.
+     */
+    public viewController: any;
 
     /**
      * read-only. If you want to set out-of-band the nativeView use the setNativeView method.

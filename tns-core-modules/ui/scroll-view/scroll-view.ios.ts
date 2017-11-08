@@ -1,5 +1,8 @@
 ﻿import { ScrollEventData } from ".";
 import { View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
+// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
+// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
+import * as uiUtils from "tns-core-modules/ui/utils";
 
 export * from "./scroll-view-common";
 
@@ -92,10 +95,6 @@ export class ScrollView extends ScrollViewBase {
         this.updateScrollBarVisibility(value);   
     }
 
-    get ios(): UIView {
-        return this.nativeViewProtected;
-    }
-
     public scrollToVerticalOffset(value: number, animated: boolean) {
         if (this.orientation === "vertical") {
             const bounds = this.nativeViewProtected.bounds.size;
@@ -118,27 +117,23 @@ export class ScrollView extends ScrollViewBase {
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        const density = layout.getDisplayDensity();
         const child = this.layoutView;
-        if (!child) {
-            this._contentMeasuredWidth = this.effectiveMinWidth * density;
-            this._contentMeasuredHeight = this.effectiveMinHeight * density;
-        }
-        else {
+        this._contentMeasuredWidth = this.effectiveMinWidth;
+        this._contentMeasuredHeight = this.effectiveMinHeight;
+        if (child) {
             let childSize: { measuredWidth: number; measuredHeight: number };
             if (this.orientation === "vertical") {
                 childSize = View.measureChild(this, child, widthMeasureSpec, layout.makeMeasureSpec(0, layout.UNSPECIFIED));
-            }
-            else {
+            } else {
                 childSize = View.measureChild(this, child, layout.makeMeasureSpec(0, layout.UNSPECIFIED), heightMeasureSpec);
             }
 
-            let w = layout.toDeviceIndependentPixels(childSize.measuredWidth);
-            let h = layout.toDeviceIndependentPixels(childSize.measuredHeight);
+            const w = layout.toDeviceIndependentPixels(childSize.measuredWidth);
+            const h = layout.toDeviceIndependentPixels(childSize.measuredHeight);
             this.nativeViewProtected.contentSize = CGSizeMake(w, h);
 
-            this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth * density);
-            this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight * density);
+            this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth);
+            this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight);
         }
 
         const widthAndState = View.resolveSizeAndState(this._contentMeasuredWidth, width, widthMode, 0);
@@ -148,21 +143,44 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-
         const width = (right - left);
         const height = (bottom - top);
 
-        if (this.orientation === "horizontal") {
-            View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height);
+        let verticalInset: number;
+        const nativeView = this.nativeViewProtected;
+        const inset = nativeView.adjustedContentInset;
+        // Prior iOS 11
+        if (inset === undefined) {
+            verticalInset = -layout.toDevicePixels(nativeView.contentOffset.y);
+            verticalInset += getTabBarHeight(this);
+        } else {
+            verticalInset = layout.toDevicePixels(inset.bottom + inset.top);
         }
-        else {
-            View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
+
+        if (this.orientation === "horizontal") {
+            View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height - verticalInset);
+        } else {
+            View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height - verticalInset));
         }
     }
 
     public _onOrientationChanged() {
         this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);   
     }
+}
+
+function getTabBarHeight(scrollView: ScrollView): number {
+    let parent = scrollView.parent;
+    while (parent) {
+        const controller = parent.viewController;
+        if (controller instanceof UITabBarController) {
+            return uiUtils.ios.getActualHeight(controller.tabBar);
+        }
+
+        parent = parent.parent;
+    }
+
+    return 0;
 }
 
 ScrollView.prototype.recycleNativeView = "auto";

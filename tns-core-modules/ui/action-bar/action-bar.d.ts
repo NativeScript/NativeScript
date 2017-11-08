@@ -51,6 +51,10 @@ export class ActionBar extends View {
      * @private
      */
     _isEmpty(): boolean;
+    /**
+     * @private
+     */
+    _getActualSize?: { width: number, height: number };
     //@endprivate
 }
 

@@ -14,7 +14,8 @@ import {
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { Frame, View, NavigationEntry } from "../ui/frame";
+import { ios as iosView, ViewBase } from "../ui/core/view";
+import { Frame, View, NavigationEntry, loadViewFromEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
 import * as utils from "../utils/utils";
 
@@ -23,26 +24,6 @@ class Responder extends UIResponder {
 }
 
 let displayedOnce = false;
-
-class Window extends UIWindow {
-    public content;
-
-    initWithFrame(frame: CGRect): this {
-        const window = <this>super.initWithFrame(frame);
-        if (window) {
-            window.autoresizingMask = UIViewAutoresizing.None;
-        }
-        return window;
-    }
-
-    public layoutSubviews(): void {
-        if (utils.ios.MajorVersion < 9) {
-            ios._layoutRootView(this.content, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
-        } else {
-            ios._layoutRootView(this.content, this.frame);
-        }
-    }
-}
 
 class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
@@ -63,12 +44,11 @@ class NotificationObserver extends NSObject {
 }
 
 class IOSApplication implements IOSApplicationDefinition {
-    public rootController: any;
-
     private _delegate: typeof UIApplicationDelegate;
     private _currentOrientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
-    private _window: Window;
+    private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
+    private _rootView: ViewBase;
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -80,11 +60,15 @@ class IOSApplication implements IOSApplicationDefinition {
         this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange.bind(this));
     }
 
+    get rootController(): UIViewController {
+        return this._window.rootViewController;
+    }
+
     get nativeApp(): UIApplication {
         return utils.ios.getter(UIApplication, UIApplication.sharedApplication);
     }
 
-    get window(): Window {
+    get window(): UIWindow {
         return this._window;
     }
 
@@ -113,7 +97,8 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     private didFinishLaunchingWithOptions(notification: NSNotification) {
-        this._window = <Window>Window.alloc().initWithFrame(utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+        this._window = UIWindow.alloc().initWithFrame(utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+        // TODO: Expose Window module so that it can we styled from XML & CSS
         this._window.backgroundColor = utils.ios.getter(UIColor, UIColor.whiteColor);
 
         const args: LaunchEventData = {
@@ -125,30 +110,16 @@ class IOSApplication implements IOSApplicationDefinition {
         notify(args);
         notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: getCssFileName() });
 
-        let rootView = createRootView(args.root);
-        this._window.content = rootView;
-
-        if (rootView instanceof Frame) {
-            this.rootController = this._window.rootViewController = rootView.ios.controller;
-        }
-        else if (rootView.ios instanceof UIViewController) {
-            this.rootController = this._window.rootViewController = rootView.ios;
-        }
-        else if (rootView.ios instanceof UIView) {
-            let newController = UIViewController.new();
-            newController.view.addSubview(rootView.ios);
-            this.rootController = newController;
-        }
-        else {
-            throw new Error("Root should be either UIViewController or UIView");
-        }
-
+        const rootView = createRootView(args.root);
+        this._rootView = rootView;
+        const controller = getViewController(rootView);
+        this._window.rootViewController = controller;
         this._window.makeKeyAndVisible();
     }
 
     private didBecomeActive(notification: NSNotification) {
-        let ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
-        let object = this;
+        const ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
+        const object = this;
         notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
         if (!displayedOnce) {
             notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
@@ -206,20 +177,20 @@ setApplication(iosApp);
 let mainEntry: NavigationEntry;
 function createRootView(v?: View) {
     let rootView = v;
-    let frame: Frame;
-    let main: string | NavigationEntry;
     if (!rootView) {
         // try to navigate to the mainEntry (if specified)
-        main = mainEntry;
-        if (main) {
-            frame = new Frame();
-            frame.navigate(main);
+        if (mainEntry) {
+            if (createRootFrame) {
+                const frame = new Frame();
+                rootView = frame;
+                frame.navigate(mainEntry);
+            } else {
+                rootView = loadViewFromEntry(mainEntry);
+            }
         } else {
             // TODO: Throw an exception?
             throw new Error("A Frame must be used to navigate to a Page.");
         }
-
-        rootView = frame;
     }
 
     rootView._setupAsRootView({});
@@ -230,6 +201,8 @@ export function getMainEntry() {
     return mainEntry;
 }
 
+// NOTE: for backwards compatibility. Remove for 4.0.0.
+let createRootFrame = true;
 let started: boolean = false;
 export function start(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
@@ -239,23 +212,41 @@ export function start(entry?: string | NavigationEntry) {
         // Normal NativeScript app will need UIApplicationMain. 
         UIApplicationMain(0, null, null, iosApp && iosApp.delegate ? NSStringFromClass(<any>iosApp.delegate) : NSStringFromClass(Responder));
     } else {
-        let rootView = createRootView();
+        const rootView = createRootView();
         if (rootView) {
             // Attach to the existing iOS app
-            var window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
+            const window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
             if (window) {
-                var rootController = window.rootViewController;
+                const rootController = window.rootViewController;
                 if (rootController) {
-                    rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, true, null);
-                    ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+                    const controller = getViewController(rootView);
+                    rootController.presentViewControllerAnimatedCompletion(controller, true, null);
                 }
             }
         }
     }
 }
 
+export function run(entry?: string | NavigationEntry) {
+    createRootFrame = false;
+    start(entry);
+}
+
 export function getNativeApplication(): UIApplication {
     return iosApp.nativeApp;
+}
+
+function getViewController(view: View): UIViewController {
+    let viewController: UIViewController = view.viewController || view.ios;
+    if (viewController instanceof UIViewController) {
+        return viewController;
+    } else if (view.ios instanceof UIView) {
+        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
+        viewController.view.addSubview(view.ios);
+        return viewController;
+    } else {
+        throw new Error("Root should be either UIViewController or UIView");
+    }
 }
 
 global.__onLiveSync = function () {

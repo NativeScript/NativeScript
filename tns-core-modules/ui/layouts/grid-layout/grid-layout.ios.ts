@@ -384,24 +384,18 @@ class MeasureHelper {
     }
 
     public setInfinityWidth(value: boolean): void {
-        if (this.infinityWidth !== value) {
-            this.infinityWidth = value;
-
-            for (let i = 0, size = this.columns.length; i < size; i++) {
-                let columnGroup: ItemGroup = this.columns[i];
-                columnGroup.setIsLengthInfinity(value);
-            }
+        this.infinityWidth = value;
+        for (let i = 0, size = this.columns.length; i < size; i++) {
+            let columnGroup: ItemGroup = this.columns[i];
+            columnGroup.setIsLengthInfinity(value);
         }
     }
 
     public setInfinityHeight(value: boolean): void {
-        if (this.infinityHeight !== value) {
-            this.infinityHeight = value;
-
-            for (let i = 0, size = this.rows.length; i < size; i++) {
-                let rowGroup: ItemGroup = this.rows[i];
-                rowGroup.setIsLengthInfinity(value);
-            }
+        this.infinityHeight = value;
+        for (let i = 0, size = this.rows.length; i < size; i++) {
+            let rowGroup: ItemGroup = this.rows[i];
+            rowGroup.setIsLengthInfinity(value);
         }
     }
 

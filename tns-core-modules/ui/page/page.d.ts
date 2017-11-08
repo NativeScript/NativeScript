@@ -224,6 +224,10 @@ export class Page extends ContentView {
      * @private
      */
     public _fragmentTag: string;
+    /**
+     * @private
+     */
+    public _frame: Frame;
 
     /**
      * A method called before navigating to the page.

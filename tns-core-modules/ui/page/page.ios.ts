@@ -1,5 +1,10 @@
-﻿import {
-    PageBase, View, layout,
+﻿// Definitions.
+import { Frame } from "../frame";
+
+// Types.
+import { ios as iosView } from "../core/view";
+import {
+    PageBase, View, ViewBase, layout,
     actionBarHiddenProperty, statusBarStyleProperty,
     traceEnabled, traceWrite, traceCategories, PercentLength, Color
 } from "./page-common";
@@ -19,16 +24,15 @@ const ENTRY = "_entry";
 const DELEGATE = "_delegate";
 
 function isBackNavigationTo(page: Page, entry): boolean {
-    let frame = page.frame;
+    const frame = page.frame;
     if (!frame) {
         return false;
     }
 
     if (frame.navigationQueueIsEmpty()) {
         return true;
-    }
-    else {
-        let navigationQueue = (<any>frame)._navigationQueue;
+    } else {
+        const navigationQueue = (<any>frame)._navigationQueue;
         for (let i = 0; i < navigationQueue.length; i++) {
             if (navigationQueue[i].entry === entry) {
                 return navigationQueue[i].isBackNavigation;
@@ -62,163 +66,90 @@ class UIViewControllerImpl extends UIViewController {
 
     public isBackstackSkipped: boolean;
     public isBackstackCleared: boolean;
-    public shown: boolean;
 
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
-        let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
+        const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
         controller._owner = owner;
-        controller.automaticallyAdjustsScrollViewInsets = false;
-        controller.shown = false;
         return controller;
-    }
-
-    public viewDidLayoutSubviews() {
-        let owner = this._owner.get();
-        if (!owner) {
-            return;
-        }
-
-        if (traceEnabled()) {
-            traceWrite(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, traceCategories.ViewHierarchy);
-        }
-
-        if (!owner.isLoaded) {
-            return;
-        }
-
-        const modalParent = owner._modalParent;
-        if (modalParent) {
-            // if inside horizontally compact environment - fullScreen will be forced
-            let isFullScreen = !owner._UIModalPresentationFormSheet ||
-                (modalParent.nativeViewProtected.traitCollection.horizontalSizeClass === UIUserInterfaceSizeClass.Compact);
-
-            let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
-            let size = frame.size;
-            let width = layout.toDevicePixels(size.width);
-            let height = layout.toDevicePixels(size.height);
-            let mode: number = layout.EXACTLY;
-
-            let superViewRotationRadians;
-            if (this.view.superview) {
-                let transform = this.view.superview.transform;
-                superViewRotationRadians = atan2f(transform.b, transform.a);
-            }
-
-            let bottom = height;
-            let statusBarHeight = uiUtils.ios.getStatusBarHeight();
-            let statusBarVisible = !getter(UIApplication, UIApplication.sharedApplication).statusBarHidden;
-            let backgroundSpanUnderStatusBar = owner.backgroundSpanUnderStatusBar;
-            if (statusBarVisible && !backgroundSpanUnderStatusBar) {
-                height -= statusBarHeight;
-            }
-
-            let widthSpec = layout.makeMeasureSpec(width, mode);
-            let heightSpec = layout.makeMeasureSpec(height, mode);
-
-            View.measureChild(modalParent, owner, widthSpec, heightSpec);
-            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || !isFullScreen) ? 0 : statusBarHeight;
-            View.layoutChild(modalParent, owner, 0, top, width, bottom);
-
-            if (traceEnabled()) {
-                traceWrite(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), traceCategories.Layout);
-            }
-        }
-        else {
-            if (!iosApp.window) {
-                uiUtils.ios._layoutRootView(owner, getter(UIScreen, UIScreen.mainScreen).bounds);
-            }
-            owner._updateLayout();
-        }
     }
 
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
-        this.shown = false;
-        let page = this._owner.get();
-
-        if (traceEnabled) {
-            traceWrite(page + " viewWillAppear", traceCategories.Navigation);
-        }
-
-        if (!page) {
+        const owner = this._owner.get();
+        if (!owner) {
             return;
         }
 
         const frame = this.navigationController ? (<any>this.navigationController).owner : null;
         const newEntry = this[ENTRY];
-        const modalParent = page._modalParent;
+        const modalParent = owner._modalParent;
 
         // Don't raise event if currentPage was showing modal page.
-        if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
-            let isBack = isBackNavigationTo(page, newEntry);
-            page.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
+        if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {
+            const isBack = isBackNavigationTo(owner, newEntry);
+            owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
 
-        page._enableLoadedEvents = true;
+        owner._enableLoadedEvents = true;
 
         // Add page to frame if showing modal page.
+        // TODO: This needs refactoring. 
         if (modalParent) {
-            modalParent.frame._addView(page);
+            modalParent._addView(owner);
         }
 
         if (frame) {
-            if (!page.parent) {
+            if (!owner.parent) {
                 if (!frame._currentEntry) {
                     frame._currentEntry = newEntry;
                 } else {
                     frame._navigateToEntry = newEntry;
                 }
 
-                frame._addView(page);
-                frame.remeasureFrame();
-            } else if (page.parent !== frame) {
+                owner._frame = frame;
+                frame._addView(owner);
+            } else if (owner.parent !== frame) {
                 throw new Error("Page is already shown on another frame.");
             }
 
-            page.actionBar.update();
+            owner.actionBar.update();
         }
 
         //https://github.com/NativeScript/NativeScript/issues/1201
-        page._viewWillDisappear = false;
+        owner._viewWillDisappear = false;
 
         // Pages in backstack are unloaded so raise loaded here.
-        if (!page.isLoaded) {
-            page.onLoaded();
+        if (!owner.isLoaded) {
+            owner.onLoaded();
         }
 
-        page._enableLoadedEvents = false;
+        owner._enableLoadedEvents = false;
     }
 
     public viewDidAppear(animated: boolean): void {
         super.viewDidAppear(animated);
-        this.shown = true;
-        let page = this._owner.get();
-        if (traceEnabled()) {
-            traceWrite(page + " viewDidAppear", traceCategories.Navigation);
-        }
-        if (!page) {
+
+        const owner = this._owner.get();
+        if (!owner) {
             return;
         }
 
         //https://github.com/NativeScript/NativeScript/issues/1201
-        page._viewWillDisappear = false;
+        owner._viewWillDisappear = false;
 
-        let frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const frame = this.navigationController ? (<any>this.navigationController).owner : null;
         // Skip navigation events if modal page is shown.
-        if (!page._presentedViewController && frame) {
-            let newEntry = this[ENTRY];
-            let isBack = isBackNavigationTo(page, newEntry);
+        if (!owner._presentedViewController && frame) {
+            const newEntry = this[ENTRY];
+            let isBack = isBackNavigationTo(owner, newEntry);
             // We are on the current page which happens when navigation is canceled so isBack should be false.
-            if (frame.currentPage === page && frame._navigationQueue.length === 0) {
+            if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
                 isBack = false;
             }
 
             frame._navigateToEntry = null;
             frame._currentEntry = newEntry;
-            frame.remeasureFrame();
-            frame._updateActionBar(page);
-
-            page.onNavigatedTo(isBack);
+            owner.onNavigatedTo(isBack);
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
@@ -226,57 +157,57 @@ class UIViewControllerImpl extends UIViewController {
             // Workaround for disabled backswipe on second custom native transition
             if (frame.canGoBack()) {
                 this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
-                this.navigationController.interactivePopGestureRecognizer.enabled = page.enableSwipeBackNavigation;
+                this.navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
             } else {
                 this.navigationController.interactivePopGestureRecognizer.enabled = false;
             }
 
-            frame._processNavigationQueue(page);
+            frame._processNavigationQueue(owner);
         }
 
         if (!this.presentedViewController) {
             // clear presented viewController here only if no presented controller.
             // this is needed because in iOS9 the order of events could be - willAppear, willDisappear, didAppear.
             // If we clean it when we have viewController then once presented VC is dismissed then
-            page._presentedViewController = null;
+            owner._presentedViewController = null;
         }
-    };
+    }
 
     public viewWillDisappear(animated: boolean): void {
         super.viewWillDisappear(animated);
 
-        let page = this._owner.get();
-        if (traceEnabled()) {
-            traceWrite(page + " viewWillDisappear", traceCategories.Navigation);
-        }
-        if (!page) {
+        const owner = this._owner.get();
+        if (!owner) {
             return;
         }
 
         // Cache presentedViewController if any. We don't want to raise
         // navigation events in case of presenting view controller.
-        if (!page._presentedViewController) {
-            page._presentedViewController = this.presentedViewController;
+        if (!owner._presentedViewController) {
+            owner._presentedViewController = this.presentedViewController;
         }
 
-        const frame = page.frame;
-        // Skip navigation events if we are hiding because we are about to show modal page.
-        if (!page._presentedViewController && frame && frame.currentPage === page) {
-            let isBack = isBackNavigationFrom(this, page);
-            page.onNavigatingFrom(isBack);
+        const frame = owner.frame;
+        // Skip navigation events if we are hiding because we are about to show modal page
+        // or because we are in tab and another controller is selected.
+        const tab = this.tabBarController;
+        if (!owner._presentedViewController && frame && frame.currentPage === owner) {
+            const willSelectViewController = tab && (<any>tab)._willSelectViewController;
+            if (!willSelectViewController
+                || willSelectViewController === tab.selectedViewController) {
+                let isBack = isBackNavigationFrom(this, owner);
+                owner.onNavigatingFrom(isBack);
+            }
         }
 
         //https://github.com/NativeScript/NativeScript/issues/1201
-        page._viewWillDisappear = true;
+        owner._viewWillDisappear = true;
     }
 
     public viewDidDisappear(animated: boolean): void {
         super.viewDidDisappear(animated);
 
         const page = this._owner.get();
-        if (traceEnabled()) {
-            traceWrite(page + " viewDidDisappear", traceCategories.Navigation);
-        }
         // Exit if no page or page is hiding because it shows another page modally.
         if (!page || page.modal || page._presentedViewController) {
             return;
@@ -288,27 +219,36 @@ class UIViewControllerImpl extends UIViewController {
 
         // Clear up after modal page has closed.
         if (modalParent) {
-            modalParent.frame._removeView(page);
+            modalParent._removeView(page);
             modalParent._modal = undefined;
         }
 
         // Manually pop backStack when Back button is pressed or navigating back with edge swipe.
         // Don't pop if we are hiding modally shown page.
-        let frame = page.frame;
+        const frame = page.frame;
         // We are not modal page, have frame with backstack and navigation queue is empty and currentPage is closed
         // then pop our backstack.
+        // If we are in frame wich is in tab and tab.selectedControler is not the frame
+        // skip navigation.
+        const tab = this.tabBarController;
+        const fireNavigationEvents = !tab
+            || tab.selectedViewController === this.navigationController;
+
         if (!modalParent && frame && frame.backStack.length > 0 && frame.navigationQueueIsEmpty() && frame.currentPage === page) {
-            (<any>frame)._backStack.pop();
+            if (fireNavigationEvents) {
+                (<any>frame)._backStack.pop();
+            }
         }
 
         page._enableLoadedEvents = true;
 
         // Remove from parent if page was in frame and we navigated back.
         // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
-        let isBack = isBackNavigationFrom(this, page);
+        const isBack = isBackNavigationFrom(this, page);
         if (isBack) {
             // Remove parent when navigating back.
             frame._removeView(page);
+            page._frame = null;
         }
 
         // Forward navigation does not remove page from frame so we raise unloaded manually.
@@ -318,15 +258,31 @@ class UIViewControllerImpl extends UIViewController {
 
         page._enableLoadedEvents = false;
 
-        if (!modalParent) {
+        if (!modalParent && fireNavigationEvents) {
             // Last raise onNavigatedFrom event if we are not modally shown.
             page.onNavigatedFrom(isBack);
         }
     }
+
+    public viewWillLayoutSubviews(): void {
+        super.viewWillLayoutSubviews();
+
+        const owner = this._owner.get();
+        iosView.updateConstraints(this, owner);
+    }
+
+    public viewDidLayoutSubviews(): void {
+        super.viewDidLayoutSubviews();
+
+        const owner = this._owner.get();
+        iosView.layoutView(this, owner);
+    }
 }
 
+const whiteColor = new Color("white").ios;
 export class Page extends PageBase {
     nativeViewProtected: UIView;
+    viewController: UIViewControllerImpl;
 
     private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
@@ -337,22 +293,28 @@ export class Page extends PageBase {
 
     constructor() {
         super();
-        this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-        this.nativeViewProtected = this._ios.view;
-        this.nativeViewProtected.backgroundColor = new Color("white").ios;
+        const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+        const view = UIView.alloc().initWithFrame(getter(UIScreen, UIScreen.mainScreen).bounds);
+        controller.view.addSubview(view);
+        this.viewController = this._ios = controller;
+        this.nativeViewProtected = controller.view;
+        this.nativeViewProtected.backgroundColor = whiteColor;
     }
 
-    public requestLayout(): void {
-        super.requestLayout();
-        if ((!this.parent || this._modalParent) && this.ios && this.nativeViewProtected) {
-            this.nativeViewProtected.setNeedsLayout();
-        }
+    get ios(): UIViewController {
+        return this._ios;
     }
 
-    public _onContentChanged(oldView: View, newView: View) {
-        super._onContentChanged(oldView, newView);
-        this._removeNativeView(oldView);
-        this._addNativeView(newView);
+    get frame(): Frame {
+        return this._frame;
+    }
+
+    public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+        //
+    }
+
+    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+        //
     }
 
     @profile
@@ -372,38 +334,6 @@ export class Page extends PageBase {
         }
     }
 
-    private _addNativeView(view: View) {
-        if (view) {
-            if (traceEnabled()) {
-                traceWrite("Native: Adding " + view + " to " + this, traceCategories.ViewHierarchy);
-            }
-            if (view.ios instanceof UIView) {
-                this._ios.view.addSubview(view.ios);
-            } else if (view.ios instanceof UIViewController) {
-                this._ios.addChildViewController(view.ios);
-                this._ios.view.addSubview(view.ios.view);
-            }
-        }
-    }
-
-    private _removeNativeView(view: View) {
-        if (view) {
-            if (traceEnabled()) {
-                traceWrite("Native: Removing " + view + " from " + this, traceCategories.ViewHierarchy);
-            }
-            if (view.ios instanceof UIView) {
-                (<UIView>view.ios).removeFromSuperview();
-            } else if (view.ios instanceof UIViewController) {
-                (<UIViewController>view.ios).removeFromParentViewController();
-                (<UIViewController>view.ios).view.removeFromSuperview();
-            }
-        }
-    }
-
-    get ios(): UIViewController {
-        return this._ios;
-    }
-
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         super._showNativeModalView(parent, context, closeCallback, fullscreen);
         this._modalParent = parent;
@@ -414,20 +344,18 @@ export class Page extends PageBase {
 
         if (fullscreen) {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
-        }
-        else {
+        } else {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
             this._UIModalPresentationFormSheet = true;
         }
 
-        super._raiseShowingModallyEvent();
+        this._raiseShowingModallyEvent();
 
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, true, null);
-        let transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
+        const transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
-        }
-        else {
+        } else {
             // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
             // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
             // Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
@@ -456,10 +384,10 @@ export class Page extends PageBase {
     public _updateStatusBarStyle(value?: string) {
         const frame = this.frame;
         if (this.frame && value) {
-            let navigationController = frame.ios.controller;
-            let navigationBar = navigationController.navigationBar;
+            const navigationController: UINavigationController = frame.ios.controller;
+            const navigationBar = navigationController.navigationBar;
 
-            navigationBar.barStyle = value === "dark" ? 1 : 0;
+            navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
         }
     }
 
@@ -472,139 +400,135 @@ export class Page extends PageBase {
         }
     }
 
-    public _updateEffectiveLayoutValues(parent: View): void {
-        super._updateEffectiveLayoutValues(parent);
-
-        // Patch vertical margins to respect status bar height
-        if (!this.backgroundSpanUnderStatusBar) {
-            const style = this.style;
-
-            let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
-            let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec) - uiUtils.ios.getStatusBarHeight();
-            let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
-            let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-
-            this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
-            this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
-        }
-    }
-
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
-        let actionBarWidth: number = 0;
-        let actionBarHeight: number = 0;
-
-        // If background span under statusbar reduce available height for page content.
-        let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
-
-        // If this page is inside nested frame - don't substract statusBarHeight again.
-        if (this.frame && this.frame.parent) {
-            statusBarHeight = 0;
-        }
-
-        // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === "Tablet") {
-            statusBarHeight = 0;
-        }
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
-            // Measure ActionBar with the full height.
-            let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, layout.makeMeasureSpec(height, layout.AT_MOST));
-            actionBarWidth = actionBarSize.measuredWidth;
-            actionBarHeight = actionBarSize.measuredHeight;
+            const { width, height } = this.actionBar._getActualSize;
+            const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+            const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+            View.measureChild(this, this.actionBar, widthSpec, heightSpec);
         }
 
-        let heightSpec = layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
+        const result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
 
-        // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
-        let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightSpec);
+        const measureWidth = Math.max(result.measuredWidth, this.effectiveMinWidth);
+        const measureHeight = Math.max(result.measuredHeight, this.effectiveMinHeight);
 
-        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.effectiveMinWidth);
-        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.effectiveMinHeight);
-
-        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
-
-        let navigationBarHeight: number = 0;
-        if (this.frame && this.frame._getNavBarVisible(this)) {
-            navigationBarHeight = this.actionBar.getMeasuredHeight();
-        }
-
-        // Navigation bar height should be ignored when it is visible and not translucent
-        if (this.frame && this.frame.ios &&
-            this.frame.ios.controller.navigationBar &&
-            !this.frame.ios.controller.navigationBar.translucent &&
-            !this._ios.shown) {
-            navigationBarHeight = 0;
-        }
-
-        let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
-
-        // If this page is inside nested frame - don't substract statusBarHeight again.
-        if (this.frame && this.frame.parent) {
-            statusBarHeight = 0;
-        }
-
-        // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === "Tablet") {
-            statusBarHeight = 0;
-        }
-
-        View.layoutChild(this, this.layoutView, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
+        const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
+        View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+        View.layoutChild(this, this.layoutView, 0, top, right - left, bottom);
     }
 
-    public _addViewToNativeVisualTree(view: View): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
         // ActionBar is handled by the UINavigationController
-        if (view === this.actionBar) {
+        if (child === this.actionBar) {
             return true;
         }
 
-        return super._addViewToNativeVisualTree(view);
+        // // Don't add modal pages our visual tree.
+        // if (child !== this.content) {
+        //     return true;
+        // }
+
+        const nativeParent = this.nativeViewProtected.subviews[0];
+        const nativeChild = child.nativeViewProtected;
+
+        const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;
+        if (viewController) {
+            if (this.viewController.presentedViewController === viewController) {
+                return true;
+            }
+            
+            this.viewController.addChildViewController(viewController);
+        }
+
+        if (nativeParent && nativeChild) {
+            if (typeof atIndex !== "number" || atIndex >= nativeParent.subviews.count) {
+                nativeParent.addSubview(nativeChild);
+            } else {
+                nativeParent.insertSubviewAtIndex(nativeChild, atIndex);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
-    public _removeViewFromNativeVisualTree(view: View): void {
+    public _removeViewFromNativeVisualTree(child: View): void {
         // ActionBar is handled by the UINavigationController
-        if (view === this.actionBar) {
+        if (child === this.actionBar) {
             return;
         }
 
-        super._removeViewFromNativeVisualTree(view);
+        const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;
+        if (viewController) {
+            viewController.removeFromParentViewController();
+        }
+
+        super._removeViewFromNativeVisualTree(child);
     }
 
-    [actionBarHiddenProperty.getDefault](): boolean {
-        return undefined;
-    }
     [actionBarHiddenProperty.setNative](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
-        if (this.isLoaded) {
-            // Update nav-bar visibility with disabled animations
-            this.updateActionBar(true);
-        }
+        invalidateTopmostController(this.viewController);
+
+        // Update nav-bar visibility with disabled animations
+        this.updateActionBar(true);
     }
 
     [statusBarStyleProperty.getDefault](): UIBarStyle {
         return UIBarStyle.Default;
     }
     [statusBarStyleProperty.setNative](value: string | UIBarStyle) {
-        let frame = this.frame;
+        const frame = this.frame;
         if (frame) {
-            let navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
+            const navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
             if (typeof value === "string") {
                 navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
             } else {
                 navigationBar.barStyle = value;
             }
+        }
+    }
+}
+
+function invalidateTopmostController(controller: UIViewController): void {
+    if (!controller) {
+        return;
+    }
+
+    controller.view.setNeedsLayout();
+
+    const presentedViewController = controller.presentedViewController;
+    if (presentedViewController) {
+        return invalidateTopmostController(presentedViewController);
+    }
+
+    const childControllers = controller.childViewControllers;
+    let size = controller.childViewControllers.count;
+    while (size > 0) {
+        const childController = childControllers[--size];
+        if (childController instanceof UITabBarController) {
+            invalidateTopmostController(childController.selectedViewController);
+        } else if (childController instanceof UINavigationController) {
+            invalidateTopmostController(childController.topViewController);
+        } else if (childController instanceof UISplitViewController) {
+            invalidateTopmostController(childController.viewControllers.lastObject);
+        } else {
+            invalidateTopmostController(childController);
         }
     }
 }
