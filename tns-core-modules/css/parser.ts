@@ -47,6 +47,7 @@ export interface VerticalAlignWithOffset {
 export interface BackgroundPosition {
     readonly x: HorizontalAlign | HorizontalAlignWithOffset;
     readonly y: VerticalAlign | VerticalAlignWithOffset;
+    text?: string;
 }
 
 const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*/gy;
@@ -623,6 +624,7 @@ export function parseBackground(text: string, start: number = 0): Parsed<Backgro
         }
         const position = parseBackgroundPosition(text, end, keyword);
         if (position) {
+            position.value.text = text.substring(position.start, position.end);
             value.position = position.value;
             end = position.end;
 
