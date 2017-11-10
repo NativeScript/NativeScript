@@ -4,7 +4,7 @@ import { Page } from "../page";
 import { profile } from "../../profiling";
 
 //Types.
-import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
+import { FrameBase, View, topmost, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
@@ -19,6 +19,39 @@ const TRANSITION = "_transition";
 const DELEGATE = "_delegate";
 
 let navDepth = -1;
+
+class NotificationObserver2 extends NSObject {
+    private _onReceiveCallback: (notification: NSNotification) => void;
+
+    public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver2 {
+        const observer = <NotificationObserver2>super.new();
+        observer._onReceiveCallback = onReceiveCallback;
+        return observer;
+    }
+
+    public onReceive(notification: NSNotification): void {
+        this._onReceiveCallback(notification);
+    }
+
+    public static ObjCExposedMethods = {
+        "onReceive": { returns: interop.types.void, params: [NSNotification] }
+    };
+}
+
+const observer = NotificationObserver2.initWithCallback(handleNotification);
+const notificationCenter = utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter);
+notificationCenter.addObserverSelectorNameObject(observer, "onReceive", UIApplicationDidChangeStatusBarFrameNotification, null);
+
+function handleNotification(notification: NSNotification): void {
+    // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
+    const frame = topmost() as Frame;
+    if (frame) {
+        frame._handleHigherInCallStatusBarIfNeeded();
+        if (frame.currentPage) {
+            frame.currentPage.requestLayout();
+        }
+    }
+}
 
 export class Frame extends FrameBase {
     private _ios: iOSFrame;
@@ -37,18 +70,6 @@ export class Frame extends FrameBase {
         super();
         this._ios = new iOSFrame(this);
         this.nativeViewProtected = this._ios.controller.view;
-
-        // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
-        let frameRef = new WeakRef(this);
-        application.ios.addNotificationObserver(UIApplicationDidChangeStatusBarFrameNotification, (notification: NSNotification) => {
-            let frame = frameRef.get();
-            if (frame) {
-                frame._handleHigherInCallStatusBarIfNeeded();
-                if (frame.currentPage) {
-                    frame.currentPage.requestLayout();
-                }
-            }
-        });
     }
 
     @profile

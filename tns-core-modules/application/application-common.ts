@@ -19,6 +19,8 @@ export { Observable };
 
 import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData, LoadAppCSSEventData } from ".";
 
+export { UnhandledErrorEventData, CssChangedEventData, LoadAppCSSEventData };
+
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
 export const displayedEvent = "displayed";
@@ -54,7 +56,11 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
 }
 
 export function livesync() {
-    events.notify(<EventData>{ eventName: "livesync", object: app });  
+    events.notify(<EventData>{ eventName: "livesync", object: app });
+    const liveSyncCore = global.__onLiveSyncCore;
+    if (liveSyncCore) {
+        liveSyncCore();
+    }
 }
 
 export function setCssFileName(cssFileName: string) {

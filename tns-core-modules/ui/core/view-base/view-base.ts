@@ -6,13 +6,12 @@ import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../la
 import { KeyframeAnimation } from "../../animation/keyframe-animation";
 
 // Types.
-import { Source } from "../../../utils/debug";
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
+import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
-import { DOMNode } from "../../../debugger/dom-node";
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";
@@ -26,6 +25,16 @@ export * from "../bindable";
 export * from "../properties";
 
 import * as ssm from "../../styling/style-scope";
+
+// import { DOMNode } from "../../../debugger/dom-node";
+import * as dnm from "../../../debugger/dom-node";
+let domNodeModule: typeof dnm;
+
+function ensuredomNodeModule(): void {
+    if (!domNodeModule) {
+        domNodeModule = require("../../../debugger/dom-node");
+    }
+}
 
 let styleScopeModule: typeof ssm;
 function ensureStyleScopeModule() {
@@ -142,7 +151,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _visualState: string;
     private __nativeView: any;
     // private _disableNativeViewRecycling: boolean;
-    public domNode: DOMNode;
+    public domNode: dnm.DOMNode;
 
     public recycleNativeView: "always" | "never" | "auto";
     public bindingContext: any;
@@ -271,7 +280,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     public ensureDomNode() {
         if (!this.domNode) {
-            this.domNode = new DOMNode(this);
+            ensuredomNodeModule();
+            this.domNode = new domNodeModule.DOMNode(this);
         }
     }
 

@@ -38,6 +38,7 @@ declare namespace NodeJS {
         __inspector?: any;
         __extends: any;
         __onLiveSync: () => void;
+        __onLiveSyncCore: () => void;
         __onUncaughtError: (error: NativeScriptError) => void;
         TNS_WEBPACK?: boolean;
         __requireOverride?: (name: string, dir: string) => any;

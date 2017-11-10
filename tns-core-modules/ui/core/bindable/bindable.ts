@@ -9,7 +9,7 @@ import { escapeRegexSymbols } from "../../../utils/utils";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet, messageType as traceMessageType } from "../../../trace";
 import * as types from "../../../utils/types";
 
-import * as application from "../../../application";
+import * as applicationCommon from "../../../application/application-common";
 import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
 export {
@@ -357,7 +357,7 @@ export class Binding {
                 let context = this.source && this.source.get && this.source.get() || global;
                 let model = {};
                 let addedProps = [];
-                const resources = application.getResources();
+                const resources = applicationCommon.getResources();
                 for (let prop in resources) {
                     if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
                         context[prop] = resources[prop];

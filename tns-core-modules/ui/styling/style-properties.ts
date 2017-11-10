@@ -1,4 +1,8 @@
 // Types
+import { unsetValue, Style, 
+    CssProperty, CssAnimationProperty, 
+    ShorthandProperty, InheritedCssProperty,
+    makeValidator, makeParser } from "../core/properties";
 import {
     Transformation,
     TransformationValue,
@@ -9,15 +13,10 @@ import { dip, px, percent } from "../core/view";
 
 import { Color } from "../../color";
 import { Font, parseFont, FontStyle, FontWeight } from "../../ui/styling/font";
-import { layout } from "../../utils/utils";
+import { layout, hasDuplicates } from "../../utils/utils";
 import { Background } from "../../ui/styling/background";
 import { isIOS } from "../../platform";
 
-import { Style } from "./style";
-
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
-
-import { hasDuplicates } from "../../utils/utils";
 import { radiansToDegrees } from "../../utils/number-utils";
 
 import {

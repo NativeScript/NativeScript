@@ -72,9 +72,9 @@ export module ios {
     }
 
     export function isLandscape(): boolean {
-        var device = getter(UIDevice, UIDevice.currentDevice);
-        var statusBarOrientation = getter(UIApplication, UIApplication.sharedApplication).statusBarOrientation;
-        var isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
+        const device = getter(UIDevice, UIDevice.currentDevice);
+        const statusBarOrientation = getter(UIApplication, UIApplication.sharedApplication).statusBarOrientation;
+        const isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
         return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
     }
 
@@ -82,10 +82,10 @@ export module ios {
 
     export function openFile(filePath: string): boolean {
         try {
-            var fs: typeof fsModule = require("file-system");
-            var path = filePath.replace("~", fs.knownFolders.currentApp().path)
+            const appPath = getCurrentAppPath();
+            const path = filePath.replace("~", appPath)
 
-            var controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
+            const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
             controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
             return controller.presentPreviewAnimated(true);
         }
@@ -93,6 +93,28 @@ export module ios {
             traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
         }
         return false;
+    }
+
+    export function getCurrentAppPath(): string {
+        const currentDir = __dirname;
+        const tnsModulesIndex = currentDir.indexOf("/tns_modules");
+
+        // Module not hosted in ~/tns_modules when bundled. Use current dir.
+        let appPath = currentDir;
+        if (tnsModulesIndex !== -1) {
+            // Strip part after tns_modules to obtain app root
+            appPath = currentDir.substring(0, tnsModulesIndex);
+        }
+        
+        return appPath;
+    }
+
+    export function joinPaths(...paths: string[]): string {
+        if (!paths || paths.length === 0) {
+            return "";
+        }
+
+        return NSString.stringWithString(NSString.pathWithComponents(<any>paths)).stringByStandardizingPath;
     }
 }
 
@@ -118,8 +140,8 @@ class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UI
     public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 
     public getViewController(): UIViewController {
-        var frame = require("ui/frame");
-        return frame.topmost().currentPage.ios;
+        const app = ios.getter(UIApplication, UIApplication.sharedApplication);
+        return app.keyWindow.rootViewController;
     }
 
     public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
