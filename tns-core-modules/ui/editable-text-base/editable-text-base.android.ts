@@ -117,7 +117,8 @@ function initializeEditTextListeners(): void {
             }
 
             // If action is ACTION_NEXT then do not close keyboard
-            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
+            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT
+                || actionId === android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS) {
                 owner._onReturnPress();
             }
 
