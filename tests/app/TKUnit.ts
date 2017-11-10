@@ -114,17 +114,17 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
         duration = time() - testStartTime;
         testInfo.duration = duration;
         if (isDone) {
-            write(`--- [${testInfo.testName}] OK, duration: ${duration}`, trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, trace.messageType.info);
             testInfo.isPassed = true;
             runTests(testsQueue, recursiveIndex + 1);
         } else if (error) {
-            write(`--- [${testInfo.testName}] FAILED: ${error.message}, duration: ${duration}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${error.message}, duration: ${duration.toFixed(2)}`, trace.messageType.error);
            testInfo.errorMessage = error.message;
             runTests(testsQueue, recursiveIndex + 1);
         } else {
             const testEndTime = time();
             if (testEndTime - testStartTime > timeout) {
-                write(`--- [${testInfo.testName}] TIMEOUT, duration: ${duration}`, trace.messageType.error);
+                write(`--- [${testInfo.testName}] TIMEOUT, duration: ${duration.toFixed(2)}`, trace.messageType.error);
                 testInfo.errorMessage = "Test timeout.";
                 runTests(testsQueue, recursiveIndex + 1);
             } else {

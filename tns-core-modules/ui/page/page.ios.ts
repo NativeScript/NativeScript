@@ -102,8 +102,6 @@ class UIViewControllerImpl extends UIViewController {
             if (!owner.parent) {
                 if (!frame._currentEntry) {
                     frame._currentEntry = newEntry;
-                } else {
-                    frame._navigateToEntry = newEntry;
                 }
 
                 owner._frame = frame;
@@ -142,14 +140,19 @@ class UIViewControllerImpl extends UIViewController {
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
             const newEntry = this[ENTRY];
-            let isBack = isBackNavigationTo(owner, newEntry);
+            
+            let isBack: boolean;
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
                 isBack = false;
+            } else {
+                isBack = isBackNavigationTo(owner, newEntry);
             }
 
-            frame._navigateToEntry = null;
-            frame._currentEntry = newEntry;
+            if (!isBack) {
+                frame._updateBackstack(newEntry);
+            }
+            frame.setCurrent(newEntry);
             owner.onNavigatedTo(isBack);
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.

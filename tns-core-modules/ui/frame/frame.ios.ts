@@ -50,7 +50,6 @@ export class Frame extends FrameBase {
 
         let clearHistory = backstackEntry.entry.clearHistory;
         if (clearHistory) {
-            this._clearBackStack();
             navDepth = -1;
         }
         navDepth++;

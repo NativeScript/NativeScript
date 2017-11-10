@@ -89,6 +89,9 @@ export class Frame extends FrameBase {
 
     public setCurrent(entry: BackstackEntry): void {
         if (this._currentEntry !== entry) {
+            if (!this._isBack) {
+                this._updateBackstack(entry);
+            }
             this.changeCurrentPage(entry);
         }
 
@@ -172,7 +175,6 @@ export class Frame extends FrameBase {
         _setAndroidFragmentTransitions(animated, navigationTransition, currentFragment, newFragment, transaction, manager);
         if (clearHistory) {
             destroyPages(this.backStack, true);
-            this._clearBackStack();
         }
 
         if (currentFragment && animated && !navigationTransition) {

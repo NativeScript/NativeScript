@@ -139,7 +139,7 @@ export class Frame extends View {
     /**
      * @private
      */
-    _clearBackStack(): void;
+    _updateBackstack(entry: BackstackEntry): void;
     /**
      * @private
      */
