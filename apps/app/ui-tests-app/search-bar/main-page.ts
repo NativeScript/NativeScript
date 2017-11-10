@@ -13,5 +13,6 @@ export function loadExamples() {
     const examples = new Map<string, string>();
      examples.set("issue-4147", "search-bar/issue-4147");
      examples.set("search-bar", "search-bar/search-bar");
+     examples.set("issue-5039","search-bar/issue-5039");
     return examples;
 }

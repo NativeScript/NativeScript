@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+    <StackLayout>
+        <SearchBar id="searchBar" hint="Search" submit="{{ onSubmit }}" clear="{{ clearSearch }}" />
+        <ListView items="{{ items }}">
+            <ListView.itemTemplate>
+                <Label text="{{ $value }}" />
+            </ListView.itemTemplate>
+        </ListView>
+    </StackLayout>
+</Page>
