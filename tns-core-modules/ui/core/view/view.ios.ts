@@ -11,6 +11,7 @@ import { ios as iosBackground, Background } from "../../styling/background";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
 import * as uiUtils from "tns-core-modules/ui/utils";
+import { ios as iosUtils } from "../../../utils/utils";
 import {
     Visibility,
     visibilityProperty, opacityProperty,

@@ -434,7 +434,7 @@ export class Page extends PageBase {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
-        View.layoutChild(this, this.layoutView, 0, top, right - left, bottom);
+        View.layoutChild(this, this.layoutView, 0, 0, right - left, bottom - top);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
