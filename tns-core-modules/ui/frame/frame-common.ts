@@ -415,7 +415,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         if (backstackEntry && backstackEntry.resolvedPage) {
-          backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
+            backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
         }
     }
 

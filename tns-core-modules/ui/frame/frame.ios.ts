@@ -200,18 +200,21 @@ export class Frame extends FrameBase {
     public _goBackCore(backstackEntry: BackstackEntry) {
         super._goBackCore(backstackEntry);
 
-        navDepth = backstackEntry[NAV_DEPTH];
+        if (backstackEntry) {
+          navDepth = backstackEntry[NAV_DEPTH];
 
-        if (!this._shouldSkipNativePop) {
-            let controller = backstackEntry.resolvedPage.ios;
-            let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
+          if (!this._shouldSkipNativePop) {
+              let controller = backstackEntry.resolvedPage.ios;
+              let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
-            this._updateActionBar(backstackEntry.resolvedPage);
-            if (traceEnabled()) {
-                traceWrite(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
-            }
-            this._ios.controller.popToViewControllerAnimated(controller, animated);
+              this._updateActionBar(backstackEntry.resolvedPage);
+              if (traceEnabled()) {
+                  traceWrite(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+              }
+              this._ios.controller.popToViewControllerAnimated(controller, animated);
+          }
         }
+
     }
 
     public _updateActionBar(page?: Page, disableNavBarAnimation: boolean = false): void {

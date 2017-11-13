@@ -173,29 +173,32 @@ export class Frame extends FrameBase {
 
     public _goBackCore(backstackEntry: BackstackEntry) {
         super._goBackCore(backstackEntry);
-        navDepth = backstackEntry.navDepth;
 
-        const activity = this._android.activity;
-        const manager = activity.getFragmentManager();
-        const transaction = manager.beginTransaction();
+        if (backstackEntry) {
+            navDepth = backstackEntry.navDepth;
 
-        if (!backstackEntry.fragment) {
-            // Happens on newer API levels. On older all fragments
-            // are recreated once activity is created.
-            // This entry fragment was destroyed by app suspend.
-            // We need to recreate its animations and then reverse it.
-            backstackEntry.fragment = this.createFragment(backstackEntry, backstackEntry.fragmentTag);
-            _updateTransitions(backstackEntry);
+            const activity = this._android.activity;
+            const manager = activity.getFragmentManager();
+            const transaction = manager.beginTransaction();
+
+            if (!backstackEntry.fragment) {
+                // Happens on newer API levels. On older all fragments
+                // are recreated once activity is created.
+                // This entry fragment was destroyed by app suspend.
+                // We need to recreate its animations and then reverse it.
+                backstackEntry.fragment = this.createFragment(backstackEntry, backstackEntry.fragmentTag);
+                _updateTransitions(backstackEntry);
+            }
+
+            const transitionReversed = _reverseTransitions(backstackEntry, this._currentEntry);
+            if (!transitionReversed) {
+                // If transition were not reversed then use animations.
+                transaction.setCustomAnimations(AnimationType.popEnterFakeResourceId, AnimationType.popExitFakeResourceId, AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
+            }
+
+            transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+            transaction.commit();
         }
-
-        const transitionReversed = _reverseTransitions(backstackEntry, this._currentEntry);
-        if (!transitionReversed) {
-            // If transition were not reversed then use animations.
-            transaction.setCustomAnimations(AnimationType.popEnterFakeResourceId, AnimationType.popExitFakeResourceId, AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
-        }
-
-        transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
-        transaction.commit();
     }
 
     public _removeBackstackEntries(removed: BackstackEntry[]): void {
