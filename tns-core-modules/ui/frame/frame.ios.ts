@@ -38,9 +38,9 @@ class NotificationObserver2 extends NSObject {
     };
 }
 
-const observer = NotificationObserver2.initWithCallback(handleNotification);
+export const __observer = NotificationObserver2.initWithCallback(handleNotification);
 const notificationCenter = utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter);
-notificationCenter.addObserverSelectorNameObject(observer, "onReceive", UIApplicationDidChangeStatusBarFrameNotification, null);
+notificationCenter.addObserverSelectorNameObject(__observer, "onReceive", UIApplicationDidChangeStatusBarFrameNotification, null);
 
 function handleNotification(notification: NSNotification): void {
     // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
