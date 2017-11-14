@@ -38,7 +38,7 @@ class NotificationObserver2 extends NSObject {
     };
 }
 
-const observer = NotificationObserver2.initWithCallback(handleNotification);
+export observer = NotificationObserver2.initWithCallback(handleNotification);
 const notificationCenter = utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter);
 notificationCenter.addObserverSelectorNameObject(observer, "onReceive", UIApplicationDidChangeStatusBarFrameNotification, null);
 
