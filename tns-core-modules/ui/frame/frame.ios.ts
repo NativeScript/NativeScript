@@ -21,16 +21,8 @@ const DELEGATE = "_delegate";
 let navDepth = -1;
 
 class NotificationObserver2 extends NSObject {
-    private _onReceiveCallback: (notification: NSNotification) => void;
-
-    public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver2 {
-        const observer = <NotificationObserver2>super.new();
-        observer._onReceiveCallback = onReceiveCallback;
-        return observer;
-    }
-
     public onReceive(notification: NSNotification): void {
-        this._onReceiveCallback(notification);
+        handleNotification(notification);
     }
 
     public static ObjCExposedMethods = {
@@ -38,7 +30,7 @@ class NotificationObserver2 extends NSObject {
     };
 }
 
-const observer = NotificationObserver2.initWithCallback(handleNotification);
+const observer = NotificationObserver2.new();
 const notificationCenter = utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter);
 notificationCenter.addObserverSelectorNameObject(observer, "onReceive", UIApplicationDidChangeStatusBarFrameNotification, null);
 
