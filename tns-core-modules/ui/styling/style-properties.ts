@@ -26,6 +26,8 @@ import {
     multiplyAffine2d,
 } from "../../matrix";
 
+import * as parser from "../../css/parser";
+
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
 export type LengthPercentUnit = { readonly unit: "%", readonly value: percent };
@@ -544,6 +546,15 @@ function convertTransformValue(property: string, stringValue: string)
 }
 
 // Background properties.
+const backgroundProperty = new ShorthandProperty<Style, string | Color>({
+    name: "background", cssName: "background",
+    getter: function (this: Style) {
+        return `${this.backgroundColor} ${this.backgroundImage} ${this.backgroundRepeat} ${this.backgroundPosition}`;
+    },
+    converter: convertToBackgrounds
+});
+backgroundProperty.register(Style);
+
 export const backgroundInternalProperty = new CssProperty<Style, Background>({
     name: "backgroundInternal",
     cssName: "_backgroundInternal",
@@ -602,6 +613,30 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
     }
 });
 backgroundPositionProperty.register(Style);
+
+function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>, any][] {
+    if (typeof value === "string") {
+        const backgrounds = parser.parseBackground(value).value;
+        const backgroundColor = backgrounds.color ? new Color(backgrounds.color) : unsetValue;
+        const backgroundImage = backgrounds.image || unsetValue;
+        const backgroundRepeat = backgrounds.repeat || unsetValue;
+        const backgroundPosition = backgrounds.position ? backgrounds.position.text : unsetValue;
+
+        return [
+            [backgroundColorProperty, backgroundColor],
+            [backgroundImageProperty, backgroundImage],
+            [backgroundRepeatProperty, backgroundRepeat],
+            [backgroundPositionProperty, backgroundPosition]
+        ];
+    } else {
+        return [
+            [backgroundColorProperty, unsetValue],
+            [backgroundImageProperty, unsetValue],
+            [backgroundRepeatProperty, unsetValue],
+            [backgroundPositionProperty, unsetValue]
+        ];
+    }
+}
 
 function parseBorderColor(value: string): { top: Color, right: Color, bottom: Color, left: Color } {
     let result: { top: Color, right: Color, bottom: Color, left: Color } = { top: undefined, right: undefined, bottom: undefined, left: undefined };

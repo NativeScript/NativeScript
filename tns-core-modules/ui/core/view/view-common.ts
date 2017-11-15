@@ -254,6 +254,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.color = value;
     }
 
+    get background(): string {
+        return this.style.background;
+    }
+    set background(value: string) {
+        this.style.background = value;
+    }
+
     get backgroundColor(): Color {
         return this.style.backgroundColor;
     }
