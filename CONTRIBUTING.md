@@ -9,7 +9,7 @@ Here are some guides on how to do that:
  - [Submitting a PR](#pr)
 
 ##  <a name="coc"></a> Code of Conduct
-Help us keep a healthy and open community. We expect all participants in this project to adhere to the the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
+Help us keep a healthy and open community. We expect all participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
 
 
 ## <a name="bugs"></a> Reporting Bugs
