@@ -168,7 +168,7 @@ export class Frame extends FrameBase {
         }
 
         transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
@@ -197,7 +197,7 @@ export class Frame extends FrameBase {
             }
 
             transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
-            transaction.commit();
+            transaction.commitAllowingStateLoss();
         }
     }
 
