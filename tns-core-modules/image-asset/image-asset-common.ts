@@ -43,14 +43,8 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number, height: number }, options: definition.ImageAssetOptions): { width: number, height: number } {
-    let reqWidth = platform.screen.mainScreen.widthDIPs;
-    let reqHeight = platform.screen.mainScreen.heightDIPs;
-    if (options && options.width) {
-        reqWidth = (options.width > 0 && options.width < reqWidth) ? options.width : reqWidth;
-    }
-    if (options && options.height) {
-        reqHeight = (options.height > 0 && options.height < reqHeight) ? options.height : reqHeight;
-    }
+    var reqWidth = options.width || src.width;
+    var reqHeight = options.height || src.height;
 
     if (options && options.keepAspectRatio) {
         let safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
