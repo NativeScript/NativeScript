@@ -466,7 +466,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         const property = this;
 
         function setLocalValue(this: T, value: U): void {
-            const reset = value === unsetValue;
+            const reset = shouldResetCssProperty(value);
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
@@ -534,7 +534,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         }
 
         function setCssValue(this: T, value: U): void {
-            const reset = value === unsetValue;
+            const reset = shouldResetCssProperty(value);
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -721,8 +721,9 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
+                    const reset = shouldResetCssProperty(boxedValue);
 
-                    if (boxedValue === unsetValue) {
+                    if (reset) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
                             // Fallback to lower value source.
@@ -856,7 +857,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const property = this;
 
         const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
-            const reset = boxedValue === unsetValue;
+            const reset = shouldResetCssProperty(boxedValue);
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
             if (reset) {
                 // If we want to reset cssValue and we have localValue - return;
@@ -1048,6 +1049,9 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         Object.defineProperty(cls.prototype.PropertyBag, this.cssLocalName, this.propertyBagDescriptor);
     }
 }
+
+const shouldResetCssProperty = value =>
+    value === unsetValue || value === "";
 
 function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: InheritedProperty<any, any>, value: any }> {
     const array = new Array<{ property: InheritedProperty<any, any>, value: any }>();
