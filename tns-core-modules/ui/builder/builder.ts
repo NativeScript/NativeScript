@@ -82,13 +82,13 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
 
     if (xmlFilePath) {
         // Custom components with XML
-        var jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
 
         var subExports = context;
         if (global.moduleExists(moduleName)) {
             // Component has registered code module.
             subExports = global.loadModule(moduleName);
         } else {
+            var jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
             if (jsFilePath) {
                 // Component has code file.
                 subExports = global.loadModule(jsFilePath)

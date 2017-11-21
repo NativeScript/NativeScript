@@ -11,6 +11,8 @@ import { profile } from "../../../profiling";
 import * as debugModule from "../../../utils/debug";
 import * as platform from "../../../platform";
 
+import * as filesystem from "../../../file-system";
+
 const UI_PATH = "ui/";
 const MODULES = {
     "TabViewItem": "ui/tab-view",
@@ -119,6 +121,13 @@ const applyComponentCss = profile("applyComponentCss", (instance: View, moduleNa
 
     if (typeof (<any>instance).addCssFile === "function") {//instance instanceof Page) {
         if (moduleNamePath && !cssApplied) {
+
+            const appPath = filesystem.knownFolders.currentApp().path;
+            const cssPathRelativeToApp = (moduleNamePath.startsWith(appPath) ? "./" + moduleNamePath.substr(appPath.length + 1) : moduleNamePath) + ".css";
+            if (global.moduleExists(cssPathRelativeToApp)) {
+                (<any>instance).addCssFile(cssPathRelativeToApp);
+            }
+
             let cssFilePath = resolveFileName(moduleNamePath, "css");
             if (cssFilePath) {
                 (<any>instance).addCssFile(cssFilePath);
