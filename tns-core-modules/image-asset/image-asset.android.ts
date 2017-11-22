@@ -22,6 +22,7 @@ export class ImageAsset extends common.ImageAsset {
     public getImageAsync(callback: (image, error) => void) {
         let bitmapOptions = new android.graphics.BitmapFactory.Options();
         bitmapOptions.inJustDecodeBounds = true;
+        // read only the file size
         let bitmap = android.graphics.BitmapFactory.decodeFile(this.android, bitmapOptions);
         let sourceSize = {
             width: bitmapOptions.outWidth,
@@ -34,14 +35,47 @@ export class ImageAsset extends common.ImageAsset {
         let finalBitmapOptions = new android.graphics.BitmapFactory.Options();
         finalBitmapOptions.inSampleSize = sampleSize;
         try {
+            // read as minimum bitmap as possible (slightly bigger than the requested size)
             bitmap = android.graphics.BitmapFactory.decodeFile(this.android, finalBitmapOptions);
-            callback(bitmap, null);
+
+            // scale to exact size
+            const scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.width, requestedSize.height, true);
+            bitmap.recycle();
+
+            const rotationAngle = calculateAngleFromFile(this.android);
+            const matrix = new android.graphics.Matrix();
+            matrix.postRotate(rotationAngle);
+            const rotatedBitmap = android.graphics.Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+            scaledBitmap.recycle();
+
+            callback(rotatedBitmap, null);
         }
         catch (ex) {
             callback(null, ex);
         }
     }
 }
+
+var calculateAngleFromFile = function (filename: string) {
+    let rotationAngle = 0;
+    const ei = new android.media.ExifInterface(filename);
+    const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+
+    switch (orientation) {
+        case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+            rotationAngle = 90;
+            break;
+        case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+            rotationAngle = 180;
+            break;
+        case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+            rotationAngle = 270;
+            break;
+    }
+
+    return rotationAngle;
+}
+
 
 var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeight) {
     let sampleSize = 1;

@@ -44,7 +44,6 @@ export class ImageSource implements ImageSourceDefinition {
         return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
-                    this.setRotationAngleFromFile(asset.android);
                     this.setNativeSource(image);
                     resolve(this);
                 }
