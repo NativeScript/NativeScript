@@ -49,7 +49,7 @@ export function setBoolean(key: string, value: boolean): void {
     common.ensureValidValue(value, "boolean");
     var editor = sharedPreferences.edit();
     editor.putBoolean(key, value);
-    editor.commit();
+    editor.apply();
 }
 
 export function setString(key: string, value: string): void {
@@ -57,7 +57,7 @@ export function setString(key: string, value: string): void {
     common.ensureValidValue(value, "string");
     var editor = sharedPreferences.edit();
     editor.putString(key, value);
-    editor.commit();
+    editor.apply();
 }
 
 export function setNumber(key: string, value: number): void {
@@ -65,17 +65,21 @@ export function setNumber(key: string, value: number): void {
     common.ensureValidValue(value, "number");
     var editor = sharedPreferences.edit();
     editor.putFloat(key, float(value));
-    editor.commit();
+    editor.apply();
 }
 
 export function remove(key: string): void {
     verify(key);
     var editor = sharedPreferences.edit();
     editor.remove(key);
-    editor.commit();
+    editor.apply();
 }
 
 export function clear(): void {
     ensureSharedPreferences();
-    sharedPreferences.edit().clear().commit();
+    sharedPreferences.edit().clear().apply();
+}
+
+export var flush = function (): void {
+    sharedPreferences.edit().commit();
 }

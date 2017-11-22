@@ -61,3 +61,8 @@ export function remove(key: string): void;
  * Removes all values.
  */
 export function clear(): void;
+
+/**
+ * Flush all changes to disk synchronously.
+ */
+export function flush(): void;
