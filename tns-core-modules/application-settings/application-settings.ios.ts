@@ -62,6 +62,6 @@ export var clear = function (): void {
     userDefaults.removePersistentDomainForName(utils.ios.getter(NSBundle, NSBundle.mainBundle).bundleIdentifier);
 }
 
-export var flush = function (): void {
-    userDefaults.synchronize();
+export var flush = function (): boolean {
+    return userDefaults.synchronize();
 }

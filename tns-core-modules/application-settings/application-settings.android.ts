@@ -1,7 +1,7 @@
 ﻿import * as common from "./application-settings-common";
 import { getNativeApplication } from "../application";
 
-var sharedPreferences;
+var sharedPreferences: android.content.ISharedPreferences;
 function ensureSharedPreferences() {
     if (!sharedPreferences) {
         sharedPreferences = (<android.app.Application>getNativeApplication()).getApplicationContext().getSharedPreferences("prefs.db", 0);
@@ -80,6 +80,6 @@ export function clear(): void {
     sharedPreferences.edit().clear().apply();
 }
 
-export var flush = function (): void {
-    sharedPreferences.edit().commit();
+export var flush = function (): boolean {
+    return sharedPreferences.edit().commit();
 }

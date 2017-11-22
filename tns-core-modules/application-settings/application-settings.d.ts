@@ -64,5 +64,6 @@ export function clear(): void;
 
 /**
  * Flush all changes to disk synchronously.
+ * @return {boolean} flag indicating if changes were saved successfully to disk.
  */
-export function flush(): void;
+export function flush(): boolean;
