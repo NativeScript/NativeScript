@@ -466,7 +466,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         const property = this;
 
         function setLocalValue(this: T, value: U): void {
-            const reset = value === unsetValue || value === "";
+            const reset = value === unsetValue ||
+                typeof value === "string" && value === "";
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
@@ -534,7 +535,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         }
 
         function setCssValue(this: T, value: U): void {
-            const reset = value === unsetValue || value === "";
+            const reset = value === unsetValue ||
+                typeof value === "string" && value === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -721,8 +723,9 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
-                    const reset = boxedValue === unsetValue || boxedValue === "";
-
+                    const reset = boxedValue === unsetValue ||
+                        typeof boxedValue === "string" && boxedValue === "";
+        
                     if (reset) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
