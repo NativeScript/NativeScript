@@ -465,18 +465,17 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
         const property = this;
 
-        function setLocalValue(this: T, value: U): void {
-            const reset = value === unsetValue ||
-                typeof value === "string" && value === "";
+        function setLocalValue(this: T, newValue: U | string): void {
+            const reset = newValue === unsetValue || newValue === "";
+            let value: U;
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
-            }
-            else {
+            } else {
                 this[sourceKey] = ValueSource.Local;
-                if (valueConverter && typeof value === "string") {
-                    value = valueConverter(value);
-                }
+                value = (valueConverter && typeof newValue === "string") ?
+                    valueConverter(newValue) :
+                    <U>newValue;
             }
 
             const oldValue: U = key in this ? this[key] : defaultValue;
@@ -534,9 +533,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             }
         }
 
-        function setCssValue(this: T, value: U): void {
-            const reset = value === unsetValue ||
-                typeof value === "string" && value === "";
+        function setCssValue(this: T, newValue: U | string): void {
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -544,6 +541,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
+            const reset = newValue === unsetValue || newValue === "";
+            let value: U;
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
@@ -718,13 +717,12 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
             return {
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
-                set(this: T, boxedValue: U) {
+                set(this: T, boxedValue: U | string) {
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
-                    const reset = boxedValue === unsetValue ||
-                        typeof boxedValue === "string" && boxedValue === "";
+                    const reset = boxedValue === unsetValue || boxedValue === "";
         
                     if (reset) {
                         this[symbol] = unsetValue;
