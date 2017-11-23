@@ -547,8 +547,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 value = defaultValue;
                 delete this[sourceKey];
             } else {
-                if (valueConverter && typeof value === "string") {
-                    value = valueConverter(value);
+                if (valueConverter && typeof newValue === "string") {
+                    value = valueConverter(newValue);
                 }
                 this[sourceKey] = ValueSource.Css;
             }
