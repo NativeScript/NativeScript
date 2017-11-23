@@ -35,9 +35,9 @@ export class WebView extends View {
     android: any /* android.webkit.WebView */;
 
     /**
-     * Gets the native [UIWebView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/) that represents the user interface for this component. Valid only when running on iOS.
+     * Gets the native [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview/) that represents the user interface for this component. Valid only when running on iOS.
      */
-    ios: any /* UIWebView */;
+    ios: any /* WKWebView */;
 
     /**
      * Gets or sets the url, local file path or HTML string.

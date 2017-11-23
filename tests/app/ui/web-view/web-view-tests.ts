@@ -57,17 +57,16 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             // >> (hide)
             let actual;
             let expectedTitle = 'MyTitle';
-            let expectedHtml = '<span style="color:red">TestÖ</span>';
 
             if (webView.ios) {
-                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
+                actual = webView.ios.title;
             } else if (webView.android) {
                 actual = webView.android.getTitle();
             }
 
             try {
                 TKUnit.assertNull(args.error, args.error);
-                TKUnit.assertEqual(actual, webView.ios ? expectedHtml : expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
+                TKUnit.assertEqual(actual, expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
                 done(null);
             }
             catch (e) {
@@ -93,17 +92,16 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
             let actual;
             let expectedTitle = 'MyTitle';
-            let expectedHtml = '<span style="color:red">TestÖ with Spaces</span>';
 
             if (webView.ios) {
-                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
+                actual = webView.ios.title;
             } else if (webView.android) {
                 actual = webView.android.getTitle();
             }
 
             try {
                 TKUnit.assertNull(args.error, args.error);
-                TKUnit.assertEqual(actual, webView.ios ? expectedHtml : expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
+                TKUnit.assertEqual(actual, expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
                 done(null);
             }
             catch (e) {
@@ -129,14 +127,12 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             // >> (hide)
 
             let actual;
-            let expected;
+            const expected = 'MyTitle';
 
             if (webView.ios) {
-                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
-                expected = '<span style="color:red">TestÖ</span>';
+                actual = webView.ios.title;
             } else if (webView.android) {
                 actual = webView.android.getTitle();
-                expected = 'MyTitle';
             }
 
             try {
