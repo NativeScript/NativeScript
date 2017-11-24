@@ -3,7 +3,6 @@ import { profile } from "../../profiling";
 
 export * from "./web-view-common";
 
-
 class WKNavigationDelegateImpl extends NSObject
     implements WKNavigationDelegate {
     public static ObjCProtocols = [WKNavigationDelegate];
@@ -13,7 +12,6 @@ class WKNavigationDelegateImpl extends NSObject
         return handler;
     }
     private _owner: WeakRef<WebView>;
-
 
     public webViewDecidePolicyForNavigationActionDecisionHandler(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: any): void {
         const owner = this._owner.get();
@@ -81,7 +79,6 @@ class WKNavigationDelegateImpl extends NSObject
     }
 
 }
-
 
 export class WebView extends WebViewBase {
     private _ios: WKWebView;
