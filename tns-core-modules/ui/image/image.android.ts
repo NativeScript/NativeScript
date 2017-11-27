@@ -82,12 +82,25 @@ export class Image extends ImageBase {
         }
 
         if (!value) {
-            imageView.setUri(null, 0, 0, false, true);
+            imageView.setUri(null, 0, 0, false, false, true);
             return;
         }
 
-        const async = this.loadMode === ASYNC;
+        let decodeWidth = this.decodeWidth;
+        let decodeHeight = this.decodeHeight;
+        let keepAspectRatio = this._calculateKeepAspectRatio();
+        if (value instanceof ImageAsset) {
+            if (value.options) {
+                decodeWidth = decodeWidth || value.options.width;
+                decodeHeight = decodeHeight || value.options.height;
+                keepAspectRatio = !!value.options.keepAspectRatio;
+            }
 
+            // handle assets as file paths natively
+            value = value.android;
+        }
+
+        const async = this.loadMode === ASYNC;
         if (typeof value === "string" || value instanceof String) {
             value = value.trim();
             this.isLoading = true;
@@ -97,22 +110,26 @@ export class Image extends ImageBase {
                 super._createImageSourceFromSrc(value);
             } else if (isFileOrResourcePath(value)) {
                 if (value.indexOf(RESOURCE_PREFIX) === 0) {
-                    imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async);
+                    imageView.setUri(value, decodeWidth, decodeHeight, keepAspectRatio, this.useCache, async);
                 } else {
                     let fileName = value;
                     if (fileName.indexOf("~/") === 0) {
                         fileName = knownFolders.currentApp().path + "/" + fileName.replace("~/", "");
                     }
 
-                    imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async);
+                    imageView.setUri(FILE_PREFIX + fileName, decodeWidth, decodeHeight, keepAspectRatio, this.useCache, async);
                 }
             } else {
                 // For backwards compatibility http always use async loading.
-                imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true);
+                imageView.setUri(value, decodeWidth, decodeHeight, keepAspectRatio, this.useCache, true);
             }
         } else {
             super._createImageSourceFromSrc(value);
         }
+    }
+
+    private _calculateKeepAspectRatio(): boolean {
+        return this.stretch === "fill" ? false : true;
     }
 
     [stretchProperty.getDefault](): "aspectFit" {

@@ -348,6 +348,7 @@
                 setRotationAngle(angle: number): void;
 
                 setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean): void;
+                setUri(uri: string, decodeWidth: number, decodeHeight: number, keepAspectRatio: boolean, useCache: boolean, async: boolean): void;
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
