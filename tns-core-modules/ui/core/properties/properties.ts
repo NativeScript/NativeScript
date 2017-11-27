@@ -465,17 +465,17 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
         const property = this;
 
-        function setLocalValue(this: T, value: U): void {
-            const reset = value === unsetValue;
+        function setLocalValue(this: T, newValue: U | string): void {
+            const reset = newValue === unsetValue || newValue === "";
+            let value: U;
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
-            }
-            else {
+            } else {
                 this[sourceKey] = ValueSource.Local;
-                if (valueConverter && typeof value === "string") {
-                    value = valueConverter(value);
-                }
+                value = (valueConverter && typeof newValue === "string") ?
+                    valueConverter(newValue) :
+                    <U>newValue;
             }
 
             const oldValue: U = key in this ? this[key] : defaultValue;
@@ -533,8 +533,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             }
         }
 
-        function setCssValue(this: T, value: U): void {
-            const reset = value === unsetValue;
+        function setCssValue(this: T, newValue: U | string): void {
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -542,13 +541,15 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
+            const reset = newValue === unsetValue || newValue === "";
+            let value: U;
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
             } else {
-                if (valueConverter && typeof value === "string") {
-                    value = valueConverter(value);
-                }
+                value = valueConverter && typeof newValue === "string" ?
+                    valueConverter(newValue) :
+                    <U>newValue;
                 this[sourceKey] = ValueSource.Css;
             }
 
@@ -716,13 +717,14 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
             return {
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
-                set(this: T, boxedValue: U) {
+                set(this: T, boxedValue: U | string) {
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
-
-                    if (boxedValue === unsetValue) {
+                    const reset = boxedValue === unsetValue || boxedValue === "";
+        
+                    if (reset) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
                             // Fallback to lower value source.
@@ -856,7 +858,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const property = this;
 
         const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
-            const reset = boxedValue === unsetValue;
+            const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
             if (reset) {
                 // If we want to reset cssValue and we have localValue - return;
