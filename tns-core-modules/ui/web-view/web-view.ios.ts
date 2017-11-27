@@ -1,6 +1,6 @@
 import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
 import { profile } from "../../profiling";
-
+import { layout } from "../core/view";
 export * from "./web-view-common";
 
 class WKNavigationDelegateImpl extends NSObject
@@ -56,6 +56,9 @@ class WKNavigationDelegateImpl extends NSObject
         }
         const owner = this._owner.get();
         if (owner) {
+           webView.evaluateJavaScriptCompletionHandler("document.body.height",(val,err)=>{
+               console.log(val);
+           });
             let src = owner.src;
             if (webView.URL) {
                 src = webView.URL.absoluteString;
@@ -86,15 +89,21 @@ export class WebView extends WebViewBase {
 
     constructor() {
         super();
-        this.nativeViewProtected = this._ios = new WKWebView({
-            frame: CGRectZero,
-            configuration: WKWebViewConfiguration.new()
-        });
+        const configuration = WKWebViewConfiguration.new();
         this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
-        this._ios.configuration.preferences.setValueForKey(
+        const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
+        const wkUScript = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScript,WKUserScriptInjectionTime.AtDocumentEnd,true);
+        const wkUController = WKUserContentController.new();
+        wkUController.addUserScript(wkUScript);
+        configuration.userContentController = wkUController;
+        configuration.preferences.setValueForKey(
             true,
             'allowFileAccessFromFileURLs'
         );
+        this.nativeViewProtected = this._ios = new WKWebView({
+            frame: CGRectZero,
+            configuration:configuration
+        });
     }
 
     @profile
