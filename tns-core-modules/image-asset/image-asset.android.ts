@@ -37,18 +37,20 @@ export class ImageAsset extends common.ImageAsset {
         try {
             // read as minimum bitmap as possible (slightly bigger than the requested size)
             bitmap = android.graphics.BitmapFactory.decodeFile(this.android, finalBitmapOptions);
-
-            // scale to exact size
-            const scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.width, requestedSize.height, true);
-            bitmap.recycle();
+            
+            if (requestedSize.width != bitmap.getWidth() || requestedSize.height != bitmap.getHeight()) {
+                // scale to exact size
+                bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.width, requestedSize.height, true);
+            }
 
             const rotationAngle = calculateAngleFromFile(this.android);
-            const matrix = new android.graphics.Matrix();
-            matrix.postRotate(rotationAngle);
-            const rotatedBitmap = android.graphics.Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
-            scaledBitmap.recycle();
+            if (rotationAngle != 0) {
+                const matrix = new android.graphics.Matrix();
+                matrix.postRotate(rotationAngle);
+                bitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            }
 
-            callback(rotatedBitmap, null);
+            callback(bitmap, null);
         }
         catch (ex) {
             callback(null, ex);
@@ -90,5 +92,16 @@ var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeig
             sampleSize *= 2;
         }
     }
+
+    var totalPixels = (imageWidth / sampleSize) * (imageHeight / sampleSize);
+
+    // Anything more than 2x the requested pixels we'll sample down further
+    var totalReqPixelsCap = reqWidth * reqHeight * 2;
+
+    while (totalPixels > totalReqPixelsCap) {
+        sampleSize *= 2;
+        totalPixels = (imageWidth / sampleSize) * (imageHeight / sampleSize);
+    }
+
     return sampleSize;
 }
