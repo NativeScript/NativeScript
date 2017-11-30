@@ -38,13 +38,13 @@ export class ImageAsset extends common.ImageAsset {
             // read as minimum bitmap as possible (slightly bigger than the requested size)
             bitmap = android.graphics.BitmapFactory.decodeFile(this.android, finalBitmapOptions);
             
-            if (requestedSize.width != bitmap.getWidth() || requestedSize.height != bitmap.getHeight()) {
+            if (requestedSize.width !== bitmap.getWidth() || requestedSize.height !== bitmap.getHeight()) {
                 // scale to exact size
                 bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.width, requestedSize.height, true);
             }
 
             const rotationAngle = calculateAngleFromFile(this.android);
-            if (rotationAngle != 0) {
+            if (rotationAngle !== 0) {
                 const matrix = new android.graphics.Matrix();
                 matrix.postRotate(rotationAngle);
                 bitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
@@ -77,7 +77,6 @@ var calculateAngleFromFile = function (filename: string) {
 
     return rotationAngle;
 }
-
 
 var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeight) {
     let sampleSize = 1;
