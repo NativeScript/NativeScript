@@ -91,8 +91,8 @@ export class Image extends ImageBase {
         let keepAspectRatio = this._calculateKeepAspectRatio();
         if (value instanceof ImageAsset) {
             if (value.options) {
-                decodeWidth = decodeWidth || value.options.width;
-                decodeHeight = decodeHeight || value.options.height;
+                decodeWidth = value.options.width || decodeWidth;
+                decodeHeight = value.options.height || decodeHeight;
                 keepAspectRatio = !!value.options.keepAspectRatio;
             }
 
