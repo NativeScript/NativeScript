@@ -829,6 +829,10 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
         return this.properties[name];
     }
 
+    public static _getPropertyNames(): string[] {
+        return Object.keys(CssAnimationProperty.properties);
+    }
+
     public isSet(instance: T): boolean {
         return instance[this.source] !== ValueSource.Default;
     }
