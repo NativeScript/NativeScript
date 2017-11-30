@@ -17,6 +17,7 @@ export * from "./application-common";
 import { Frame, View, NavigationEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
 import * as utils from "../utils/utils";
+import { profile } from "../profiling";
 
 class Responder extends UIResponder {
     //
@@ -35,6 +36,7 @@ class Window extends UIWindow {
         return window;
     }
 
+    @profile
     public layoutSubviews(): void {
         if (utils.ios.MajorVersion < 9) {
             ios._layoutRootView(this.content, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
@@ -112,6 +114,7 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
+    @profile
     private didFinishLaunchingWithOptions(notification: NSNotification) {
         this._window = <Window>Window.alloc().initWithFrame(utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
         this._window.backgroundColor = utils.ios.getter(UIColor, UIColor.whiteColor);
@@ -146,6 +149,7 @@ class IOSApplication implements IOSApplicationDefinition {
         this._window.makeKeyAndVisible();
     }
 
+    @profile
     private didBecomeActive(notification: NSNotification) {
         let ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
         let object = this;
