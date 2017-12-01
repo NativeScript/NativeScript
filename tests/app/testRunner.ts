@@ -282,7 +282,8 @@ function printRunTestStats() {
     let finalMessage = `\n` +
         `=== ALL TESTS COMPLETE ===\n` +
         `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` +
-        `DURATION: ${totalTime} ms\n`;
+        `DURATION: ${totalTime} ms\n` + 
+        `=== END OF TESTS ===\n`;
 
     TKUnit.write(finalMessage, messageType.info);
 
