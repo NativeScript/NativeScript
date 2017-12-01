@@ -1,5 +1,6 @@
 import * as platform from "../platform";
 import * as common from "./image-asset-common";
+import { path as fsPath, knownFolders } from "../file-system";
 
 global.moduleMerge(common, exports);
 
@@ -8,7 +9,11 @@ export class ImageAsset extends common.ImageAsset {
 
     constructor(asset: string) {
         super();
-        this.android = asset;
+        let fileName = typeof asset === "string" ? asset.trim() : "";
+        if (fileName.indexOf("~/") === 0) {
+            fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+        }
+        this.android = fileName;
     }
 
     get android(): string {
@@ -35,22 +40,29 @@ export class ImageAsset extends common.ImageAsset {
         let finalBitmapOptions = new android.graphics.BitmapFactory.Options();
         finalBitmapOptions.inSampleSize = sampleSize;
         try {
+            let error = null;
             // read as minimum bitmap as possible (slightly bigger than the requested size)
             bitmap = android.graphics.BitmapFactory.decodeFile(this.android, finalBitmapOptions);
             
-            if (requestedSize.width !== bitmap.getWidth() || requestedSize.height !== bitmap.getHeight()) {
-                // scale to exact size
-                bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.width, requestedSize.height, true);
+            if (bitmap) {
+                if (requestedSize.width !== bitmap.getWidth() || requestedSize.height !== bitmap.getHeight()) {
+                    // scale to exact size
+                    bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.width, requestedSize.height, true);
+                }
+
+                const rotationAngle = calculateAngleFromFile(this.android);
+                if (rotationAngle !== 0) {
+                    const matrix = new android.graphics.Matrix();
+                    matrix.postRotate(rotationAngle);
+                    bitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                }
             }
 
-            const rotationAngle = calculateAngleFromFile(this.android);
-            if (rotationAngle !== 0) {
-                const matrix = new android.graphics.Matrix();
-                matrix.postRotate(rotationAngle);
-                bitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            if (!bitmap) {
+                error = "Asset '" + this.android + "' cannot be found.";
             }
 
-            callback(bitmap, null);
+            callback(bitmap, error);
         }
         catch (ex) {
             callback(null, ex);
