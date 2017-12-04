@@ -96,6 +96,7 @@ describe("css", () => {
                     image: "smiley.gif",
                     repeat: "no-repeat",
                     position: {
+                        text: "top 50% left 100% ",
                         x: { align: "left", offset: { value: 1, unit: "%" }},
                         y: { align: "top", offset: { value: 0.5, unit: "%" }}
                     }
@@ -105,6 +106,7 @@ describe("css", () => {
                     image: "smiley.gif",
                     repeat: "no-repeat",
                     position: {
+                        text: "top 50% left 100% ",
                         x: { align: "left", offset: { value: 1, unit: "%" }},
                         y: { align: "top", offset: { value: 0.5, unit: "%" }}
                     },

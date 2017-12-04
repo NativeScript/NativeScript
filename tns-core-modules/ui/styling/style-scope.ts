@@ -508,7 +508,7 @@ export class StyleScope {
         }
 
         this._reset();
-        let parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromFile(cssFileName, this._keyframes);
+        let parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
         this._css = this._css + parsedCssSelectors.source;
         this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors.selectors); 
         this._localCssSelectorVersion++;

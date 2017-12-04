@@ -15,6 +15,20 @@ declare namespace NodeJS {
         require(id: string): any;
         registerModule(name: string, loader: ((name: string) => any)): void;
         /**
+         * Register all modules from a webpack context.
+         * The context is one created using the following webpack utility:
+         * https://webpack.github.io/docs/context.html
+         * 
+         * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
+         * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
+         * ```
+         * { ".ts": ".js" }
+         * ```
+         * Will resolve lookups for .js to the .ts file.
+         * By default scss, and ts files are mapped.
+         */
+        registerWebpackModules(context: { keys(): string[], (key: string): any }, extensionMap?: { [originalFileExtension: string]: string });
+        /**
          * The NativeScript XML builder, style-scope, application modules use various resources such as:
          * app.css, page.xml files and modules during the application life-cycle.
          * The moduleResolvers can be used to provide additional mechanisms to locate such resources.

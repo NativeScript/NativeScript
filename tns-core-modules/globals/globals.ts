@@ -34,6 +34,31 @@ global.registerModule = function(name: string, loader: ModuleLoader): void {
     modules.set(name, loader);
 }
 
+interface Context {
+    keys(): string[];
+    (key: string): any;
+}
+interface ExtensionMap {
+    [originalFileExtension: string]: string;
+}
+
+const defaultExtensionMap = { ".js": ".js", ".ts": ".js", ".css": ".css", ".scss": ".css", ".xml": ".xml" };
+global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
+    context.keys().forEach(key => {
+        const extDotIndex = key.lastIndexOf(".");
+        const base = key.substr(0, extDotIndex);
+        const originalExt = key.substr(extDotIndex);
+        const registerExt = extensionMap[originalExt] || defaultExtensionMap[originalExt];
+        const registerName = base + registerExt;
+        if (registerName.startsWith("./") && registerName.endsWith(".js")) {
+            const jsNickName = registerName.substr(2, registerName.length - 5);
+            // This is extremely short version like "main-page" that was promoted to be used with global.registerModule("module-name", loaderFunc);
+            global.registerModule(jsNickName, () => context(key));
+        }
+        global.registerModule(registerName, () => context(key));
+    });
+}
+
 global.moduleExists = function(name: string): boolean {
     return modules.has(name);
 }

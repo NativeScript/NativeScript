@@ -54,6 +54,7 @@ export function transformConverter(text: string): TransformFunctionsInfo;
 export const clipPathProperty: CssProperty<Style, string>;
 export const colorProperty: InheritedCssProperty<Style, Color>;
 
+export const backgroundProperty: ShorthandProperty<Style, string>;
 export const backgroundColorProperty: CssAnimationProperty<Style, Color>;
 export const backgroundImageProperty: CssProperty<Style, string>;
 export const backgroundRepeatProperty: CssProperty<Style, BackgroundRepeat>;

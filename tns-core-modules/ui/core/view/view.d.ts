@@ -164,6 +164,11 @@ export abstract class View extends ViewBase {
     color: Color;
 
     /**
+     * Gets or sets the background style property.
+     */
+    background: string;
+
+    /**
      * Gets or sets the background color of the view.
      */
     backgroundColor: string | Color;
