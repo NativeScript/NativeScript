@@ -102,6 +102,17 @@ function initializeEditTextListeners(): void {
                 return;
             }
 
+            // https://github.com/NativeScript/NativeScript/issues/5121 
+            // default or preinstalled IME is not raise onEditorAction, but Google's input method(e.g. Google Japanese Input,Google Korean Input.) raises this.
+            // so we have to treat this as returning false .If not so, we cannot make new-lines.
+            if (actionId === 0 && (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
+                if (textView.getMaxLines() === 1) {
+                    owner.dismissSoftInput();
+                }
+                owner._onReturnPress();
+                return false;
+            }
+            
             if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
