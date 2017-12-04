@@ -512,6 +512,7 @@ class UINavigationControllerImpl extends UINavigationController {
         }
     }
 
+    @profile
     public viewDidLayoutSubviews(): void {
         let owner = this._owner.get();
         if (owner) {
@@ -551,6 +552,7 @@ class UINavigationControllerImpl extends UINavigationController {
         });
     }
 
+    @profile
     public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
         let navigationTransition = <NavigationTransition>viewController[TRANSITION];
         if (traceEnabled()) {
@@ -568,6 +570,7 @@ class UINavigationControllerImpl extends UINavigationController {
         });
     }
 
+    @profile
     public setViewControllersAnimated(viewControllers: NSArray<any>, animated: boolean): void {
         let viewController = viewControllers.lastObject;
         let navigationTransition = <NavigationTransition>viewController[TRANSITION];

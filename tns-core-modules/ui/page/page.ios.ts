@@ -72,6 +72,7 @@ class UIViewControllerImpl extends UIViewController {
         return controller;
     }
 
+    @profile
     public viewDidLayoutSubviews() {
         let owner = this._owner.get();
         if (!owner) {
@@ -131,6 +132,7 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
+    @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         this.shown = false;
@@ -189,6 +191,7 @@ class UIViewControllerImpl extends UIViewController {
         page._enableLoadedEvents = false;
     }
 
+    @profile
     public viewDidAppear(animated: boolean): void {
         super.viewDidAppear(animated);
         this.shown = true;
@@ -242,6 +245,7 @@ class UIViewControllerImpl extends UIViewController {
         }
     };
 
+    @profile
     public viewWillDisappear(animated: boolean): void {
         super.viewWillDisappear(animated);
 
@@ -270,6 +274,7 @@ class UIViewControllerImpl extends UIViewController {
         page._viewWillDisappear = true;
     }
 
+    @profile
     public viewDidDisappear(animated: boolean): void {
         super.viewDidDisappear(animated);
 
