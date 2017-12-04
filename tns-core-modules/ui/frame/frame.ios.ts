@@ -30,7 +30,9 @@ class NotificationObserver2 extends NSObject {
     }
 
     public onReceive(notification: NSNotification): void {
-        this._onReceiveCallback(notification);
+        if (this._onReceiveCallback) {
+            this._onReceiveCallback(notification);
+        }
     }
 
     public static ObjCExposedMethods = {
@@ -96,104 +98,106 @@ export class Frame extends FrameBase {
     public _navigateCore(backstackEntry: BackstackEntry) {
         super._navigateCore(backstackEntry);
 
-        let viewController: UIViewController = backstackEntry.resolvedPage.ios;
-        if (!viewController) {
-            throw new Error("Required page does not have a viewController created.");
-        }
-
-        let clearHistory = backstackEntry.entry.clearHistory;
-        if (clearHistory) {
-            this._clearBackStack();
-            navDepth = -1;
-        }
-        navDepth++;
-
-        let navigationTransition: NavigationTransition;
-        let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
-        if (animated) {
-            navigationTransition = this._getNavigationTransition(backstackEntry.entry);
-            if (navigationTransition) {
-                viewController[TRANSITION] = navigationTransition;
+        if (backstackEntry) {
+            let viewController: UIViewController = backstackEntry.resolvedPage.ios;
+            if (!viewController) {
+                throw new Error("Required page does not have a viewController created.");
             }
-        }
-        else {
-            //https://github.com/NativeScript/NativeScript/issues/1787
-            viewController[TRANSITION] = { name: "non-animated" };
-        }
 
-        let nativeTransition = _getNativeTransition(navigationTransition, true);
-        if (!nativeTransition && navigationTransition) {
-            this._ios.controller.delegate = this._animatedDelegate;
-            viewController[DELEGATE] = this._animatedDelegate;
-        }
-        else {
-            viewController[DELEGATE] = null;
-            this._ios.controller.delegate = null;
-        }
+            let clearHistory = backstackEntry.entry.clearHistory;
+            if (clearHistory) {
+                this._clearBackStack();
+                navDepth = -1;
+            }
+            navDepth++;
 
-        backstackEntry[NAV_DEPTH] = navDepth;
-        viewController[ENTRY] = backstackEntry;
+            let navigationTransition: NavigationTransition;
+            let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
+            if (animated) {
+                navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+                if (navigationTransition) {
+                    viewController[TRANSITION] = navigationTransition;
+                }
+            }
+            else {
+                //https://github.com/NativeScript/NativeScript/issues/1787
+                viewController[TRANSITION] = { name: "non-animated" };
+            }
 
-        // First navigation.
-        if (!this._currentEntry) {
-            // Update action-bar with disabled animations before the initial navigation.
-            this._updateActionBar(backstackEntry.resolvedPage, true);
+            let nativeTransition = _getNativeTransition(navigationTransition, true);
+            if (!nativeTransition && navigationTransition) {
+                this._ios.controller.delegate = this._animatedDelegate;
+                viewController[DELEGATE] = this._animatedDelegate;
+            }
+            else {
+                viewController[DELEGATE] = null;
+                this._ios.controller.delegate = null;
+            }
+
+            backstackEntry[NAV_DEPTH] = navDepth;
+            viewController[ENTRY] = backstackEntry;
+
+            // First navigation.
+            if (!this._currentEntry) {
+                // Update action-bar with disabled animations before the initial navigation.
+                this._updateActionBar(backstackEntry.resolvedPage, true);
+                this._ios.controller.pushViewControllerAnimated(viewController, animated);
+                if (traceEnabled()) {
+                    traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+                }
+                return;
+            }
+
+            // We should clear the entire history.
+            if (clearHistory) {
+                viewController.navigationItem.hidesBackButton = true;
+                const newControllers = NSMutableArray.alloc().initWithCapacity(1);
+                newControllers.addObject(viewController);
+
+                // Mark all previous ViewControllers as cleared
+                const oldControllers = this._ios.controller.viewControllers;
+                for (let i = 0; i < oldControllers.count; i++) {
+                    (<any>oldControllers.objectAtIndex(i)).isBackstackCleared = true;
+                }
+
+                this._ios.controller.setViewControllersAnimated(newControllers, animated);
+                if (traceEnabled()) {
+                    traceWrite(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+                }
+                return;
+
+            }
+
+            // We should hide the current entry from the back stack.
+            if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
+                let newControllers = NSMutableArray.alloc<UIViewController>().initWithArray(this._ios.controller.viewControllers);
+                if (newControllers.count === 0) {
+                    throw new Error("Wrong controllers count.");
+                }
+
+                // the code below fixes a phantom animation that appears on the Back button in this case
+                // TODO: investigate why the animation happens at first place before working around it
+                viewController.navigationItem.hidesBackButton = this.backStack.length === 0;
+
+                // swap the top entry with the new one
+                const skippedNavController = newControllers.lastObject;
+                (<any>skippedNavController).isBackstackSkipped = true;
+                newControllers.removeLastObject();
+                newControllers.addObject(viewController);
+
+                // replace the controllers instead of pushing directly
+                this._ios.controller.setViewControllersAnimated(newControllers, animated);
+                if (traceEnabled()) {
+                    traceWrite(`${this}.setViewControllersAnimated([originalControllers - lastController + ${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+                }
+                return;
+            }
+
+            // General case.
             this._ios.controller.pushViewControllerAnimated(viewController, animated);
             if (traceEnabled()) {
                 traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
-            return;
-        }
-
-        // We should clear the entire history.
-        if (clearHistory) {
-            viewController.navigationItem.hidesBackButton = true;
-            const newControllers = NSMutableArray.alloc().initWithCapacity(1);
-            newControllers.addObject(viewController);
-
-            // Mark all previous ViewControllers as cleared
-            const oldControllers = this._ios.controller.viewControllers;
-            for (let i = 0; i < oldControllers.count; i++) {
-                (<any>oldControllers.objectAtIndex(i)).isBackstackCleared = true;
-            }
-
-            this._ios.controller.setViewControllersAnimated(newControllers, animated);
-            if (traceEnabled()) {
-                traceWrite(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
-            }
-            return;
-
-        }
-
-        // We should hide the current entry from the back stack.
-        if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
-            let newControllers = NSMutableArray.alloc<UIViewController>().initWithArray(this._ios.controller.viewControllers);
-            if (newControllers.count === 0) {
-                throw new Error("Wrong controllers count.");
-            }
-
-            // the code below fixes a phantom animation that appears on the Back button in this case
-            // TODO: investigate why the animation happens at first place before working around it
-            viewController.navigationItem.hidesBackButton = this.backStack.length === 0;
-
-            // swap the top entry with the new one
-            const skippedNavController = newControllers.lastObject;
-            (<any>skippedNavController).isBackstackSkipped = true;
-            newControllers.removeLastObject();
-            newControllers.addObject(viewController);
-
-            // replace the controllers instead of pushing directly
-            this._ios.controller.setViewControllersAnimated(newControllers, animated);
-            if (traceEnabled()) {
-                traceWrite(`${this}.setViewControllersAnimated([originalControllers - lastController + ${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
-            }
-            return;
-        }
-
-        // General case.
-        this._ios.controller.pushViewControllerAnimated(viewController, animated);
-        if (traceEnabled()) {
-            traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
         }
     }
 

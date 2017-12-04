@@ -45,7 +45,7 @@ export function reloadPage(): void {
             create: currentEntry.create,
             moduleName: currentEntry.moduleName,
             backstackVisible: currentEntry.backstackVisible
-        }
+        };
 
         frame.navigate(newEntry);
     }
@@ -72,7 +72,7 @@ const moduleCreatePage = profile("module.createPage", (moduleNamePath: string, m
     if (traceEnabled()) {
         traceWrite("Calling createPage()", traceCategories.Navigation);
     }
-    var page = moduleExports.createPage();
+    const page = moduleExports.createPage();
 
     let cssFileName = resolveFileName(moduleNamePath, "css");
     // If there is no cssFile only appCss will be applied at loaded.
@@ -204,7 +204,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         const navigationContext: NavigationContext = {
             entry: backstackEntry,
             isBackNavigation: true
-        }
+        };
 
         this._navigationQueue.push(navigationContext);
 
@@ -273,7 +273,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         const navigationContext: NavigationContext = {
             entry: backstackEntry,
             isBackNavigation: false
-        }
+        };
 
         this._navigationQueue.push(navigationContext);
 
@@ -367,34 +367,38 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     @profile
     private performNavigation(navigationContext: NavigationContext) {
-        let navContext = navigationContext.entry;
+        if (navigationContext) {
+            let navContext = navigationContext.entry;
 
-        // TODO: This should happen once navigation is completed.
-        if (navigationContext.entry.entry.clearHistory) {
-            // Don't clear backstack immediately or we can't remove pages from frame.
-        } else if (FrameBase._isEntryBackstackVisible(this._currentEntry)) {
-            this._backStack.push(this._currentEntry);
+            // TODO: This should happen once navigation is completed.
+            if (navContext && navContext.entry && navContext.entry.clearHistory) {
+                // Don't clear backstack immediately or we can't remove pages from frame.
+            } else if (FrameBase._isEntryBackstackVisible(this._currentEntry)) {
+                this._backStack.push(this._currentEntry);
+            }
+
+            this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
+            this._navigateCore(navContext);
         }
-
-        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
-        this._navigateCore(navContext);
     }
 
     @profile
     private performGoBack(navigationContext: NavigationContext) {
-        let backstackEntry = navigationContext.entry;
-        if (!backstackEntry) {
-            backstackEntry = this._backStack.pop();
-            navigationContext.entry = backstackEntry;
-        } else {
-            const index = this._backStack.indexOf(backstackEntry);
-            const removed = this._backStack.splice(index + 1);
-            this._backStack.pop();
-            this._removeBackstackEntries(removed);
+        if (navigationContext) {
+            let backstackEntry = navigationContext.entry;
+            if (!backstackEntry) {
+                backstackEntry = this._backStack.pop();
+                navigationContext.entry = backstackEntry;
+            } else {
+                const index = this._backStack.indexOf(backstackEntry);
+                const removed = this._backStack.splice(index + 1);
+                this._backStack.pop();
+                this._removeBackstackEntries(removed);
+            }
+
+            this._onNavigatingTo(backstackEntry, true);
+            this._goBackCore(backstackEntry);
         }
-       
-        this._onNavigatingTo(backstackEntry, true);
-        this._goBackCore(backstackEntry);
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
