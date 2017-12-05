@@ -32,6 +32,8 @@ class NotificationObserver2 extends NSObject {
     public onReceive(notification: NSNotification): void {
         if (this._onReceiveCallback) {
             this._onReceiveCallback(notification);
+        } else {
+            handleNotification(notification);
         }
     }
 
