@@ -10,6 +10,7 @@ import { isAndroid, isIOS } from "tns-core-modules/platform";
 import { View } from "tns-core-modules/ui/core/view";
 import { Length, PercentLength } from "tns-core-modules/ui/core/view";
 import * as fontModule from "tns-core-modules/ui/styling/font";
+import { LengthPercentUnit, LengthPxUnit } from "tns-core-modules/ui/styling/style-properties";
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("textDecoration", "text-decoration", "underline");
@@ -861,4 +862,58 @@ export function test_border_radius() {
     TKUnit.assertTrue(Length.equals(testView.style.borderTopRightRadius, expected), "right");
     TKUnit.assertTrue(Length.equals(testView.style.borderBottomRightRadius, expected), "bottom");
     TKUnit.assertTrue(Length.equals(testView.style.borderBottomLeftRadius, expected), "left");
+}
+
+function assertPercentLengthParseInputOutputPairs(pairs: [string, any][]) {
+    pairs.forEach((pair: [string, any]) => {
+        const output = PercentLength.parse(pair[0]) as LengthPxUnit | LengthPercentUnit;
+        TKUnit.assertEqual(pair[1].unit, output.unit,
+            `PercentLength.parse('${pair[0]}') should return unit '${pair[1].unit}' but returned '${output.unit}'`
+        );
+        TKUnit.assertEqual(pair[1].value.toFixed(2), output.value.toFixed(2),
+            `PercentLength.parse('${pair[0]}') should return value '${pair[1].value}' but returned '${output.value}'`
+        );
+    });
+}
+
+export function test_PercentLength_parses_pixel_values_from_string_input() {
+    assertPercentLengthParseInputOutputPairs([
+        ['4px', {unit: 'px', value: 4}],
+        ['-4px', {unit: 'px', value: -4}],
+    ]);
+}
+
+export function test_PercentLength_parses_percentage_values_from_string_input() {
+    assertPercentLengthParseInputOutputPairs([
+        ['4%', {unit: '%', value: 0.04}],
+        ['17%', {unit: '%', value: 0.17}],
+        ['-27%', {unit: '%', value: -0.27}],
+    ]);
+}
+
+export function test_PercentLength_parse_throws_given_string_input_it_cannot_parse() {
+    const inputs: any[] = [
+        '-l??%',
+        'qre%',
+        'undefinedpx',
+        'undefined',
+        '-frog%'
+    ];
+    inputs.forEach((input) => {
+        TKUnit.assertThrows(() => {
+            PercentLength.parse(input);
+        }, `PercentLength.parse('${input}') should throw.`);
+    });
+}
+
+export function test_PercentLength_returns_unsupported_types_untouched() {
+    const inputs: any[] = [
+        null,
+        undefined,
+        {baz: true}
+    ];
+    inputs.forEach((input) => {
+        const result = PercentLength.parse(input);
+        TKUnit.assertEqual(input, result, `PercentLength.parse(${input}) should return input value`);
+    });
 }

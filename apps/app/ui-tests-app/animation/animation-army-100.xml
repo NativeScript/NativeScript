@@ -1,0 +1,157 @@
+<Page loaded="onLoaded" unloaded="onUnloaded">
+    <AbsoluteLayout>
+        <GridLayout top="0" left="0" width="100%" rows="48, 48, 48, 48, 48, 48" columns="*,*,*">
+
+            <Label row="0" colSpan="3" text="Animate"/>
+            <SegmentedBar row="1" colSpan="3" id="select">
+                <SegmentedBar.items>
+                    <SegmentedBarItem title="height"/>
+                    <SegmentedBarItem title="width"/>
+                    <SegmentedBarItem title="opacity"/>
+                    <SegmentedBarItem title="color"/>
+                    <SegmentedBarItem title="rotate"/>
+                    <SegmentedBarItem title="scale"/>
+                </SegmentedBar.items>
+            </SegmentedBar>
+
+            <Label row="2" colSpan="3" text="Easing"/>
+            <Button row="3" col="0" text="easeIn" tap="easeAnimate"/>
+            <Button row="3" col="1" text="easeOut" tap="easeAnimate"/>
+            <Button row="3" col="2" text="easeInOut" tap="easeAnimate"/>
+            <Button row="4" col="0" text="spring" tap="easeAnimate"/>
+            <Button row="4" col="1" text="linear" tap="easeAnimate"/>
+            <Button row="4" col="2" text="ease" tap="easeAnimate"/>
+        </GridLayout>
+
+        <StackLayout top="20" left="200" orientation="horizontal">
+            <Label text="FPS: "></Label>
+            <Label id="fps"></Label>
+        </StackLayout>
+
+        <GridLayout top="256" left="20" width="100%"
+                    rows="24,24,24,24,24,24,24,24,24,24"
+                    columns="32,32,32,32,32,32,32,32,32,32">
+            <!-- 0 -->
+            <Label row="0" col="0" height="24" width="32" id="el-0" backgroundColor="purple"/>
+            <Label row="0" col="1" height="24" width="32" id="el-1" backgroundColor="purple"/>
+            <Label row="0" col="2" height="24" width="32" id="el-2" backgroundColor="purple"/>
+            <Label row="0" col="3" height="24" width="32" id="el-3" backgroundColor="purple"/>
+            <Label row="0" col="4" height="24" width="32" id="el-4" backgroundColor="purple"/>
+            <Label row="0" col="5" height="24" width="32" id="el-5" backgroundColor="purple"/>
+            <Label row="0" col="6" height="24" width="32" id="el-6" backgroundColor="purple"/>
+            <Label row="0" col="7" height="24" width="32" id="el-7" backgroundColor="purple"/>
+            <Label row="0" col="8" height="24" width="32" id="el-8" backgroundColor="purple"/>
+            <Label row="0" col="9" height="24" width="32" id="el-9" backgroundColor="purple"/>
+
+            <!-- 1 -->
+            <Label row="1" col="0" height="24" width="32" id="el-10" backgroundColor="purple"/>
+            <Label row="1" col="1" height="24" width="32" id="el-11" backgroundColor="purple"/>
+            <Label row="1" col="2" height="24" width="32" id="el-12" backgroundColor="purple"/>
+            <Label row="1" col="3" height="24" width="32" id="el-13" backgroundColor="purple"/>
+            <Label row="1" col="4" height="24" width="32" id="el-14" backgroundColor="purple"/>
+            <Label row="1" col="5" height="24" width="32" id="el-15" backgroundColor="purple"/>
+            <Label row="1" col="6" height="24" width="32" id="el-16" backgroundColor="purple"/>
+            <Label row="1" col="7" height="24" width="32" id="el-17" backgroundColor="purple"/>
+            <Label row="1" col="8" height="24" width="32" id="el-18" backgroundColor="purple"/>
+            <Label row="1" col="9" height="24" width="32" id="el-19" backgroundColor="purple"/>
+
+            <!-- 2 -->
+            <Label row="2" col="0" height="24" width="32" id="el-20" backgroundColor="purple"/>
+            <Label row="2" col="1" height="24" width="32" id="el-21" backgroundColor="purple"/>
+            <Label row="2" col="2" height="24" width="32" id="el-22" backgroundColor="purple"/>
+            <Label row="2" col="3" height="24" width="32" id="el-23" backgroundColor="purple"/>
+            <Label row="2" col="4" height="24" width="32" id="el-24" backgroundColor="purple"/>
+            <Label row="2" col="5" height="24" width="32" id="el-25" backgroundColor="purple"/>
+            <Label row="2" col="6" height="24" width="32" id="el-26" backgroundColor="purple"/>
+            <Label row="2" col="7" height="24" width="32" id="el-27" backgroundColor="purple"/>
+            <Label row="2" col="8" height="24" width="32" id="el-28" backgroundColor="purple"/>
+            <Label row="2" col="9" height="24" width="32" id="el-29" backgroundColor="purple"/>
+
+            <!-- 3 -->
+            <Label row="3" col="0" height="24" width="32" id="el-30" backgroundColor="purple"/>
+            <Label row="3" col="1" height="24" width="32" id="el-31" backgroundColor="purple"/>
+            <Label row="3" col="2" height="24" width="32" id="el-32" backgroundColor="purple"/>
+            <Label row="3" col="3" height="24" width="32" id="el-33" backgroundColor="purple"/>
+            <Label row="3" col="4" height="24" width="32" id="el-34" backgroundColor="purple"/>
+            <Label row="3" col="5" height="24" width="32" id="el-35" backgroundColor="purple"/>
+            <Label row="3" col="6" height="24" width="32" id="el-36" backgroundColor="purple"/>
+            <Label row="3" col="7" height="24" width="32" id="el-37" backgroundColor="purple"/>
+            <Label row="3" col="8" height="24" width="32" id="el-38" backgroundColor="purple"/>
+            <Label row="3" col="9" height="24" width="32" id="el-39" backgroundColor="purple"/>
+
+            <!-- 4 -->
+            <Label row="4" col="0" height="24" width="32" id="el-40" backgroundColor="purple"/>
+            <Label row="4" col="1" height="24" width="32" id="el-41" backgroundColor="purple"/>
+            <Label row="4" col="2" height="24" width="32" id="el-42" backgroundColor="purple"/>
+            <Label row="4" col="3" height="24" width="32" id="el-43" backgroundColor="purple"/>
+            <Label row="4" col="4" height="24" width="32" id="el-44" backgroundColor="purple"/>
+            <Label row="4" col="5" height="24" width="32" id="el-45" backgroundColor="purple"/>
+            <Label row="4" col="6" height="24" width="32" id="el-46" backgroundColor="purple"/>
+            <Label row="4" col="7" height="24" width="32" id="el-47" backgroundColor="purple"/>
+            <Label row="4" col="8" height="24" width="32" id="el-48" backgroundColor="purple"/>
+            <Label row="4" col="9" height="24" width="32" id="el-49" backgroundColor="purple"/>
+
+            <!-- 5 -->
+            <Label row="5" col="0" height="24" width="32" id="el-50" backgroundColor="purple"/>
+            <Label row="5" col="1" height="24" width="32" id="el-51" backgroundColor="purple"/>
+            <Label row="5" col="2" height="24" width="32" id="el-52" backgroundColor="purple"/>
+            <Label row="5" col="3" height="24" width="32" id="el-53" backgroundColor="purple"/>
+            <Label row="5" col="4" height="24" width="32" id="el-54" backgroundColor="purple"/>
+            <Label row="5" col="5" height="24" width="32" id="el-55" backgroundColor="purple"/>
+            <Label row="5" col="6" height="24" width="32" id="el-56" backgroundColor="purple"/>
+            <Label row="5" col="7" height="24" width="32" id="el-57" backgroundColor="purple"/>
+            <Label row="5" col="8" height="24" width="32" id="el-58" backgroundColor="purple"/>
+            <Label row="5" col="9" height="24" width="32" id="el-59" backgroundColor="purple"/>
+
+            <!-- 6 -->
+            <Label row="6" col="0" height="24" width="32" id="el-60" backgroundColor="purple"/>
+            <Label row="6" col="1" height="24" width="32" id="el-61" backgroundColor="purple"/>
+            <Label row="6" col="2" height="24" width="32" id="el-62" backgroundColor="purple"/>
+            <Label row="6" col="3" height="24" width="32" id="el-63" backgroundColor="purple"/>
+            <Label row="6" col="4" height="24" width="32" id="el-64" backgroundColor="purple"/>
+            <Label row="6" col="5" height="24" width="32" id="el-65" backgroundColor="purple"/>
+            <Label row="6" col="6" height="24" width="32" id="el-66" backgroundColor="purple"/>
+            <Label row="6" col="7" height="24" width="32" id="el-67" backgroundColor="purple"/>
+            <Label row="6" col="8" height="24" width="32" id="el-68" backgroundColor="purple"/>
+            <Label row="6" col="9" height="24" width="32" id="el-69" backgroundColor="purple"/>
+
+            <!-- 7 -->
+            <Label row="7" col="0" height="24" width="32" id="el-70" backgroundColor="purple"/>
+            <Label row="7" col="1" height="24" width="32" id="el-71" backgroundColor="purple"/>
+            <Label row="7" col="2" height="24" width="32" id="el-72" backgroundColor="purple"/>
+            <Label row="7" col="3" height="24" width="32" id="el-73" backgroundColor="purple"/>
+            <Label row="7" col="4" height="24" width="32" id="el-74" backgroundColor="purple"/>
+            <Label row="7" col="5" height="24" width="32" id="el-75" backgroundColor="purple"/>
+            <Label row="7" col="6" height="24" width="32" id="el-76" backgroundColor="purple"/>
+            <Label row="7" col="7" height="24" width="32" id="el-77" backgroundColor="purple"/>
+            <Label row="7" col="8" height="24" width="32" id="el-78" backgroundColor="purple"/>
+            <Label row="7" col="9" height="24" width="32" id="el-79" backgroundColor="purple"/>
+
+            <!-- 8 -->
+            <Label row="8" col="0" height="24" width="32" id="el-80" backgroundColor="purple"/>
+            <Label row="8" col="1" height="24" width="32" id="el-81" backgroundColor="purple"/>
+            <Label row="8" col="2" height="24" width="32" id="el-82" backgroundColor="purple"/>
+            <Label row="8" col="3" height="24" width="32" id="el-83" backgroundColor="purple"/>
+            <Label row="8" col="4" height="24" width="32" id="el-84" backgroundColor="purple"/>
+            <Label row="8" col="5" height="24" width="32" id="el-85" backgroundColor="purple"/>
+            <Label row="8" col="6" height="24" width="32" id="el-86" backgroundColor="purple"/>
+            <Label row="8" col="7" height="24" width="32" id="el-87" backgroundColor="purple"/>
+            <Label row="8" col="8" height="24" width="32" id="el-88" backgroundColor="purple"/>
+            <Label row="8" col="9" height="24" width="32" id="el-89" backgroundColor="purple"/>
+
+            <!-- 9 -->
+            <Label row="9" col="0" height="24" width="32" id="el-90" backgroundColor="purple"/>
+            <Label row="9" col="1" height="24" width="32" id="el-91" backgroundColor="purple"/>
+            <Label row="9" col="2" height="24" width="32" id="el-92" backgroundColor="purple"/>
+            <Label row="9" col="3" height="24" width="32" id="el-93" backgroundColor="purple"/>
+            <Label row="9" col="4" height="24" width="32" id="el-94" backgroundColor="purple"/>
+            <Label row="9" col="5" height="24" width="32" id="el-95" backgroundColor="purple"/>
+            <Label row="9" col="6" height="24" width="32" id="el-96" backgroundColor="purple"/>
+            <Label row="9" col="7" height="24" width="32" id="el-97" backgroundColor="purple"/>
+            <Label row="9" col="8" height="24" width="32" id="el-98" backgroundColor="purple"/>
+            <Label row="9" col="9" height="24" width="32" id="el-99" backgroundColor="purple"/>
+
+        </GridLayout>
+
+    </AbsoluteLayout>
+</Page>

@@ -19,7 +19,8 @@ import {
     backgroundColorProperty,
     scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty,
-    rotateProperty, opacityProperty
+    rotateProperty, opacityProperty,
+    widthProperty, heightProperty, PercentLength
 } from "../styling/style-properties";
 
 export class Keyframes implements KeyframesDefinition {
@@ -60,6 +61,8 @@ interface Keyframe {
     translate?: { x: number, y: number };
     rotate?: number;
     opacity?: number;
+    width?: PercentLength;
+    height?: PercentLength;
     valueSource?: "keyframe" | "animation";
     duration?: number;
     curve?: any;
@@ -207,6 +210,12 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             if ("opacity" in animation) {
                 view.style[opacityProperty.keyframe] = animation.opacity;
             }
+            if ("height" in animation) {
+                view.style[heightProperty.keyframe] = animation.height;
+            }
+            if ("width" in animation) {
+                view.style[widthProperty.keyframe] = animation.width;
+            }
 
             setTimeout(() => this.animate(view, 1, iterations), 1);
         }
@@ -270,6 +279,12 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
         }
         if ("opacity" in animation) {
             view.style[opacityProperty.keyframe] = unsetValue;
+        }
+        if ("height" in animation) {
+            view.style[heightProperty.keyframe] = unsetValue;
+        }
+        if ("width" in animation) {
+            view.style[widthProperty.keyframe] = unsetValue;
         }
     }
 }

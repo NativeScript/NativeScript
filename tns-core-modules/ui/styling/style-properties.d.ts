@@ -85,8 +85,8 @@ export const opacityProperty: CssAnimationProperty<Style, number>;
 
 export const minWidthProperty: CssProperty<Style, dip | LengthDipUnit | LengthPxUnit>;
 export const minHeightProperty: CssProperty<Style, dip | LengthDipUnit | LengthPxUnit>;
-export const widthProperty: CssProperty<Style, PercentLength>;
-export const heightProperty: CssProperty<Style, PercentLength>;
+export const widthProperty: CssAnimationProperty<Style, PercentLength>;
+export const heightProperty: CssAnimationProperty<Style, PercentLength>;
 export const lineHeightProperty: CssProperty<Style, number>;
 export const marginProperty: ShorthandProperty<Style, string | PercentLength>;
 export const marginLeftProperty: CssProperty<Style, PercentLength>;
