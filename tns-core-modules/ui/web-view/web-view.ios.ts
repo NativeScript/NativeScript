@@ -1,114 +1,123 @@
 import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
 import { profile } from "../../profiling";
-
+import { layout } from "../core/view";
 export * from "./web-view-common";
 
-class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
-    public static ObjCProtocols = [UIWebViewDelegate];
-
+class WKNavigationDelegateImpl extends NSObject
+    implements WKNavigationDelegate {
+    public static ObjCProtocols = [WKNavigationDelegate];
+    public static initWithOwner(owner: WeakRef<WebView>): WKNavigationDelegateImpl {
+        const handler = <WKNavigationDelegateImpl>WKNavigationDelegateImpl.new();
+        handler._owner = owner;
+        return handler;
+    }
     private _owner: WeakRef<WebView>;
 
-    public static initWithOwner(owner: WeakRef<WebView>): UIWebViewDelegateImpl {
-        let delegate = <UIWebViewDelegateImpl>UIWebViewDelegateImpl.new();
-        delegate._owner = owner;
-        return delegate;
-    }
-
-    public webViewShouldStartLoadWithRequestNavigationType(webView: UIWebView, request: NSURLRequest, navigationType: number) {
-        let owner = this._owner.get();
-
-        if (owner && request.URL) {
+    public webViewDecidePolicyForNavigationActionDecisionHandler(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: any): void {
+        const owner = this._owner.get();
+        if (owner && navigationAction.request.URL) {
             let navType: NavigationType = "other";
 
-            switch (navigationType) {
-                case UIWebViewNavigationType.LinkClicked:
+            switch (navigationAction.navigationType) {
+                case WKNavigationType.LinkActivated:
                     navType = "linkClicked";
                     break;
-                case UIWebViewNavigationType.FormSubmitted:
+                case WKNavigationType.FormSubmitted:
                     navType = "formSubmitted";
                     break;
-                case UIWebViewNavigationType.BackForward:
+                case WKNavigationType.BackForward:
                     navType = "backForward";
                     break;
-                case UIWebViewNavigationType.Reload:
+                case WKNavigationType.Reload:
                     navType = "reload";
                     break;
-                case UIWebViewNavigationType.FormResubmitted:
+                case WKNavigationType.FormResubmitted:
                     navType = "formResubmitted";
                     break;
             }
+            decisionHandler(WKNavigationActionPolicy.Allow);
 
             if (traceEnabled()) {
-                traceWrite("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", traceCategories.Debug);
+                traceWrite("WKNavigationDelegateClass.webViewDecidePolicyForNavigationActionDecisionHandler(" + navigationAction.request.URL.absoluteString + ", " + navigationAction.navigationType + ")", traceCategories.Debug);
             }
-            owner._onLoadStarted(request.URL.absoluteString, navType);
-        }
-
-        return true;
-    }
-
-    public webViewDidStartLoad(webView: UIWebView) {
-        if (traceEnabled()) {
-            traceWrite("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", traceCategories.Debug);
+            owner._onLoadStarted(navigationAction.request.URL.absoluteString, navType);
         }
     }
 
-    public webViewDidFinishLoad(webView: UIWebView) {
+    public webViewDidStartProvisionalNavigation(webView: WKWebView, navigation: WKNavigation): void {
         if (traceEnabled()) {
-            traceWrite("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", traceCategories.Debug);
+            traceWrite("WKNavigationDelegateClass.webViewDidStartProvisionalNavigation(" + webView.URL + ")", traceCategories.Debug);
         }
-        let owner = this._owner.get();
-        
+    };
+
+    public webViewDidFinishNavigation(webView: WKWebView, navigation: WKNavigation): void {
+        if (traceEnabled()) {
+            traceWrite("WKNavigationDelegateClass.webViewDidFinishNavigation(" + webView.URL + ")", traceCategories.Debug);
+        }
+        const owner = this._owner.get();
         if (owner) {
+           webView.evaluateJavaScriptCompletionHandler("document.body.height",(val,err)=>{
+               console.log(val);
+           });
             let src = owner.src;
-            if (webView.request && webView.request.URL) {
-                src = webView.request.URL.absoluteString;
+            if (webView.URL) {
+                src = webView.URL.absoluteString;
             }
             owner._onLoadFinished(src);
         }
     }
 
-    public webViewDidFailLoadWithError(webView: UIWebView, error: NSError) {
-        let owner = this._owner.get();
+    public webViewDidFailNavigationWithError(webView: WKWebView, navigation: WKNavigation, error: NSError): void {
+        const owner = this._owner.get();
         if (owner) {
             let src = owner.src;
-            if (webView.request && webView.request.URL) {
-                src = webView.request.URL.absoluteString;
+            if (webView.URL) {
+                src = webView.URL.absoluteString;
             }
-
             if (traceEnabled()) {
-                traceWrite("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", traceCategories.Debug);
+                traceWrite("WKNavigationDelegateClass.webViewDidFailNavigationWithError(" + error.localizedDescription + ")", traceCategories.Debug);
             }
-            if (owner) {
-                owner._onLoadFinished(src, error.localizedDescription);
-            }
+            owner._onLoadFinished(src, error.localizedDescription);
         }
     }
+
 }
 
 export class WebView extends WebViewBase {
-    private _ios: UIWebView;
+    private _ios: WKWebView;
     private _delegate: any;
 
     constructor() {
         super();
-
-        this.nativeViewProtected = this._ios = UIWebView.new();
-        this._delegate = UIWebViewDelegateImpl.initWithOwner(new WeakRef(this));
+        const configuration = WKWebViewConfiguration.new();
+        this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+        const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
+        const wkUScript = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScript,WKUserScriptInjectionTime.AtDocumentEnd,true);
+        const wkUController = WKUserContentController.new();
+        wkUController.addUserScript(wkUScript);
+        configuration.userContentController = wkUController;
+        configuration.preferences.setValueForKey(
+            true,
+            'allowFileAccessFromFileURLs'
+        );
+        this.nativeViewProtected = this._ios = new WKWebView({
+            frame: CGRectZero,
+            configuration:configuration
+        });
     }
 
     @profile
     public onLoaded() {
         super.onLoaded();
-        this._ios.delegate = this._delegate;
+        this._ios.navigationDelegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this._ios.navigationDelegate = null;
         super.onUnloaded();
     }
 
-    get ios(): UIWebView {
+    get ios(): WKWebView {
         return this._ios;
     }
 
@@ -117,7 +126,11 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(src: string) {
-        this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
+        if(src.startsWith('file:///')){
+            this._ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
+        }else{
+            this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
+        }
     }
 
     public _loadData(content: string) {
