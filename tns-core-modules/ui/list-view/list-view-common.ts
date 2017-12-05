@@ -23,8 +23,9 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
     // TODO: get rid of such hacks.
-    public static knownFunctions = ["itemTemplateSelector"]; //See component-builder.ts isKnownFunction
+    public static knownFunctions = ["itemTemplateSelector", "itemIdGenerator"]; //See component-builder.ts isKnownFunction
 
+    private _itemIdGenerator: (item: any, index: number, items: any) => number = (_item: any, index: number) => index;
     private _itemTemplateSelector: (item: any, index: number, items: any) => string;
     private _itemTemplateSelectorBindable = new Label();
     public _defaultTemplate: KeyedTemplate = {
@@ -70,6 +71,14 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
         else if (typeof value === "function") {
             this._itemTemplateSelector = value;
         }
+    }
+
+    get itemIdGenerator(): (item: any, index: number, items: any) => number {
+        return this._itemIdGenerator;
+    }
+
+    set itemIdGenerator(generatorFn: (item: any, index: number, items: any) => number) {
+        this._itemIdGenerator = generatorFn;
     }
 
     public refresh() {

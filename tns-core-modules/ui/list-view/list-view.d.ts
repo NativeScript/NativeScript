@@ -64,6 +64,11 @@ export class ListView extends View {
     itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
 
     /**
+     * Item id generator
+     */
+    itemIdGenerator: (item: any, index: number, items: any) => number;
+
+    /**
      * Gets or set the items separator line color of the ListView. 
      */
     separatorColor: Color;

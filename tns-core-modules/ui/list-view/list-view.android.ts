@@ -216,14 +216,19 @@ function ensureListViewAdapterClass() {
         public getItem(i: number) {
             if (this.owner && this.owner.items && i < this.owner.items.length) {
                 let getItem = (<ItemsSource>this.owner.items).getItem;
-                return getItem ? getItem(i) : this.owner.items[i];
+                return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
             }
 
             return null;
         }
 
         public getItemId(i: number) {
-            return long(i);
+            let item = this.getItem(i);
+            let id = i;
+            if (this.owner && item && this.owner.items) {
+                id = this.owner.itemIdGenerator(item, i, this.owner.items);
+            }
+            return long(id);
         }
 
         public hasStableIds(): boolean {
