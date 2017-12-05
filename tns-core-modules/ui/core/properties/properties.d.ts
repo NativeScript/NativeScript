@@ -125,6 +125,10 @@ export class CssAnimationProperty<T extends Style, U> {
      * @private
      */
     public static _getByCssName(name: string): CssAnimationProperty<any, any>;
+    /**
+     * @private
+     */
+    public static _getPropertyNames(): string[];
 }
 
 export function initNativeView(view: ViewBase): void;
