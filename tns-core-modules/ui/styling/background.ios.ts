@@ -338,7 +338,7 @@ function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor)
 
     if (params.sizeX > 0 && params.sizeY > 0) {
         const resizeRect = CGRectMake(0, 0, params.sizeX, params.sizeY);
-        UIGraphicsBeginImageContext(resizeRect.size);
+        UIGraphicsBeginImageContextWithOptions(resizeRect.size, false, 0.0);
         img.drawInRect(resizeRect);
         img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
