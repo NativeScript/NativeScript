@@ -102,6 +102,16 @@ export var testClear = function () {
     TKUnit.assert(!appSettings.hasKey(numberKey), "Failed to remove key: " + numberKey);
 };
 
+export var testFlush = function () {
+    appSettings.setString(stringKey, "String value");
+    // >> application-settings-flush
+    var flushed = appSettings.flush();
+    // will return boolean indicating whether flush to disk was successful
+    // << application-settings-flush
+    TKUnit.assert(flushed, "Flush failed: "+ flushed);
+    TKUnit.assert(appSettings.hasKey(stringKey), "There is no key: " + stringKey);
+};
+
 export var testInvalidKey = function () {
     try {
         appSettings.hasKey(undefined);
