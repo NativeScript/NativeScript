@@ -99,6 +99,15 @@ class CSSSource {
     }
 
     public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
+        // .scss, .sass, etc. css files in vanilla app are usually compiled to .css so we will try to load a compiled file first.
+        let cssFileUrl = url.replace(/\..\w+$/, ".css");
+        if (cssFileUrl !== url) {
+            const cssFile = CSSSource.resolveCSSPathFromURL(cssFileUrl);
+            if (cssFile) {
+                return new CSSSource(undefined, url, cssFile, keyframes, undefined);
+            }
+        }
+
         const file = CSSSource.resolveCSSPathFromURL(url);
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
@@ -619,6 +628,9 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     }
 
     if (!isAbsolutePath) {
+        if (fileName[0] === "~" && fileName[1] !== "/" && fileName[1] !== "\"") {
+            fileName = fileName.substr(1);
+        }
         const external = path.join(appDirectory, "tns_modules", fileName);
         if (fileExists(external)) {
             return external;
