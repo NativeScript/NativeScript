@@ -149,6 +149,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _style: Style;
     private _isLoaded: boolean;
     private _visualState: string;
+    private _templateParent: ViewBase;
     private __nativeView: any;
     // private _disableNativeViewRecycling: boolean;
     public domNode: dnm.DOMNode;
@@ -219,6 +220,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         super();
         this._domId = viewIdCounter++;
         this._style = new Style(this);
+    }
+
+    get parentNode() {
+        return this._templateParent || this.parent;
+    }
+
+    set parentNode(node: ViewBase) {
+        this._templateParent = node;
     }
 
     get nativeView(): any {

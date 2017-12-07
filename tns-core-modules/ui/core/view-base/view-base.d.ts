@@ -158,6 +158,11 @@ export abstract class ViewBase extends Observable {
     public readonly parent: ViewBase;
 
     /**
+     * Gets the template parent or the native parent. Sets the template parent.
+     */
+    public parentNode: ViewBase;
+
+    /**
      * Gets or sets the id for this view.
      */
     public id: string;
