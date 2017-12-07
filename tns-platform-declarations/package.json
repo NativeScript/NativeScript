@@ -1,11 +1,13 @@
 {
   "name": "tns-platform-declarations",
-  "version": "3.4.0",
-  "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
+  "version": "4.0.0",
+  "description":
+    "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
   "main": "",
   "scripts": {
     "test": "tsc",
-    "package-tag": "npm version $npm_package_version-$PACKAGE_VERSION --no-git-tag-version"
+    "package-tag":
+      "npm version $npm_package_version-$PACKAGE_VERSION --no-git-tag-version"
   },
   "repository": {
     "type": "git",
