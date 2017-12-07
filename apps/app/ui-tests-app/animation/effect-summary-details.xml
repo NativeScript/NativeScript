@@ -1,0 +1,13 @@
+<Page loaded="pageLoaded">
+    <AbsoluteLayout height="100%">
+        <TextView id="details"
+                  padding="12" paddingBottom="24"
+                  top="{{ detailsHeight }}" width="100%"
+                  text="{{ ipsum }}" fontSize="20"
+                  opacity="0" translateY="50" editable="false"/>
+        <Label originY="0" height="100%" width="100%" fontSize="42"
+               backgroundColor="MidnightBlue" color="white"
+               textAlignment="center" verticalAlignment="center"
+               tap="theFinalFrontier" text="{{ summary }}"/>
+    </AbsoluteLayout>
+</Page>
