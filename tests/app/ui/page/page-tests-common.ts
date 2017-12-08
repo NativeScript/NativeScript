@@ -4,7 +4,8 @@ import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page"
 import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
 // << article-require-page-module
 
-import { resolvePageFromEntry } from "tns-core-modules/ui/frame";
+// TODO: Remove this and get it from global to decouple builder for angular
+import { createViewFromEntry } from "tns-core-modules/ui/builder";
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
@@ -508,12 +509,12 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
             moduleName: basePath + "modal-page"
         };
 
-        modalPage = <Page>resolvePageFromEntry(entry);
+        modalPage = createViewFromEntry(entry) as Page;
         modalPage.on(Page.shownModallyEvent, onShownModal);
         modalPage.on(Page.loadedEvent, onModalLoaded);
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
 
-        page.showModal(modalPage, ctx, modalCloseCallback, false);
+        page.showModal(modalPage, ctx, modalCloseCallback, false, false);
         TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
     };
 

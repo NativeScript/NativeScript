@@ -102,28 +102,28 @@ export class ActionBar extends ActionBarBase {
     public update() {
         const page = this.page;
         // Page should be attached to frame to update the action bar.
-        if (!page || !page.parent) {
+        if (!page || !page.frame) {
             return;
         }
 
         const viewController = (<UIViewController>page.ios);
         const navigationItem: UINavigationItem = viewController.navigationItem;
-        const navController = <UINavigationController>page.frame.ios.controller;
+        const navController = <UINavigationController>viewController.navigationController;
         const navigationBar = navController ? navController.navigationBar : null;
         let previousController: UIViewController;
 
         // Set Title
         navigationItem.title = this.title;
-
-        if (this.titleView && this.titleView.ios) {
-            navigationItem.titleView = this.titleView.ios;
+        const titleView = this.titleView;
+        if (titleView && titleView.ios) {
+            navigationItem.titleView = titleView.ios;
         } else {
             navigationItem.titleView = null;
         }
 
         // Find previous ViewController in the navigation stack
         const indexOfViewController = navController.viewControllers.indexOfObject(viewController);
-        if (indexOfViewController < navController.viewControllers.count && indexOfViewController > 0) {
+        if (indexOfViewController > 0 && indexOfViewController < navController.viewControllers.count) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
 

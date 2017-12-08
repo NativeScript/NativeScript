@@ -1,13 +1,14 @@
 // Definitions.
+import { ViewBase } from "../view-base";
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
-
+import { AndroidActivityBackPressedEventData } from "../../../application";
 // Types.
-import { Background, ad as androidBackground } from "../../styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, 
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
+    Color
 } from "./view-common";
 
 import {
@@ -19,16 +20,35 @@ import {
     zIndexProperty, backgroundInternalProperty
 } from "../../styling/style-properties";
 
+import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 
 export * from "./view-common";
+
+const DOMID = "_domId";
+const androidBackPressedEvent = "androidBackPressed";
+
+const modalMap = new Map<number, DialogOptions>();
+
+let TouchListener: TouchListener;
+let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
+let DialogFragment: DialogFragment;
+let Dialog: android.app.Dialog;
+
+interface DialogOptions {
+    owner: View;
+    fullscreen: boolean;
+    shownCallback: () => void;
+    dismissCallback: () => void;
+}
 
 interface TouchListener {
     new(owner: View): android.view.View.OnTouchListener;
 }
 
-let TouchListener: TouchListener;
-let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
+interface DialogFragment {
+    new(): android.app.DialogFragment;
+}
 
 function initializeDisabledListener(): void {
     if (disableUserInteractionListener) {
@@ -71,10 +91,128 @@ function initializeTouchListener(): void {
     TouchListener = TouchListenerImpl;
 }
 
+function initializeDialogFragment() {
+    if (DialogFragment) {
+        return;
+    }
+
+    class DialogImpl extends android.app.Dialog {
+        constructor(public fragment: DialogFragmentImpl,
+            context: android.content.Context,
+            themeResId: number) {
+            super(context, themeResId);
+            return global.__native(this);
+        }
+
+        public onBackPressed(): void {
+            const view = this.fragment.owner;
+            const args = <AndroidActivityBackPressedEventData>{
+                eventName: "activityBackPressed",
+                object: view,
+                activity: view._context,
+                cancel: false,
+            };
+            view.notify(args);
+
+            if (!args.cancel && !view._onBackPressed()) {
+                super.onBackPressed();
+            }
+        }
+    }
+
+    class DialogFragmentImpl extends android.app.DialogFragment {
+        public owner: View;
+        private _fullscreen: boolean;
+        private _shownCallback: () => void;
+        private _dismissCallback: () => void;
+
+        constructor() {
+            super();
+            return global.__native(this);
+        }
+
+        public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
+            const ownerId = this.getArguments().getInt(DOMID);
+            const options = getModalOptions(ownerId);
+            this.owner = options.owner;
+            this._fullscreen = options.fullscreen;
+            this._dismissCallback = options.dismissCallback;
+            this._shownCallback = options.shownCallback;
+            this.owner._dialogFragment = this;
+            this.setStyle(android.app.DialogFragment.STYLE_NO_TITLE, 0);
+            
+            return new DialogImpl(this, this.getActivity(), this.getTheme());
+        }
+
+        public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+            const owner = this.owner;
+            owner._setupUI(this.getActivity());
+            owner._isAddedToNativeVisualTree = true;
+
+            return this.owner.nativeViewProtected;
+        }
+
+        public onStart(): void {
+            super.onStart();
+            if (this._fullscreen) {
+                const window = this.getDialog().getWindow();
+                const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+                window.setLayout(length, length);
+                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
+            }
+
+            const owner = this.owner;
+            if (!owner.isLoaded) {
+                owner.callLoaded();
+            }
+
+            this._shownCallback();
+        }
+
+        public onStop(): void {
+            super.onStop();
+            const owner = this.owner;
+            if (owner.isLoaded) {
+                owner.callUnloaded();
+            }
+        }
+
+        public onDismiss(dialog: android.content.IDialogInterface): void {
+            super.onDismiss(dialog);
+            const manager = this.getFragmentManager();
+            if (manager) {
+                const owner = this.owner;
+                removeModal(owner._domId);
+                this._dismissCallback();
+                owner._isAddedToNativeVisualTree = false;
+                owner._tearDownUI(true);
+            }
+        }
+    }
+
+    DialogFragment = DialogFragmentImpl;
+}
+
+function saveModal(options: DialogOptions) {
+    modalMap.set(options.owner._domId, options);
+}
+
+function removeModal(domId: number) {
+    modalMap.delete(domId);
+}
+
+function getModalOptions(domId: number): DialogOptions {
+    return modalMap.get(domId);
+}
+
 export class View extends ViewCommon {
+    public static androidBackPressedEvent = androidBackPressedEvent;
+
+    public _dialogFragment: android.app.DialogFragment;
     private _isClickable: boolean;
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
+    private _manager: android.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
 
@@ -86,8 +224,35 @@ export class View extends ViewCommon {
         }
     }
 
+    public _getFragmentManager(): android.app.FragmentManager {
+        let manager = this._manager;
+        if (!manager) {
+            let view: View = this;
+            while (view) {
+                const dialogFragment = view._dialogFragment;
+                if (dialogFragment) {
+                    manager = dialogFragment.getChildFragmentManager();
+                    break;
+                } else {
+                    // the case is needed because _dialogFragment is on View
+                    // but parent may be ViewBase.
+                    view = view.parent as View;
+                }
+            }
+
+            if (!manager && this._context) {
+                manager = (<android.app.Activity>this._context).getFragmentManager();
+            }
+
+            this._manager = manager;
+        }
+
+        return manager;
+    }
+
     @profile
     public onLoaded() {
+        this._manager = null;
         super.onLoaded();
         this.setOnTouchListener();
     }
@@ -100,6 +265,7 @@ export class View extends ViewCommon {
             this.nativeViewProtected.setClickable(this._isClickable);
         }
 
+        this._manager = null;
         super.onUnloaded();
     }
 
@@ -275,6 +441,45 @@ export class View extends ViewCommon {
         }
 
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
+    }
+
+    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+        super._showNativeModalView(parent, context, closeCallback, fullscreen);
+        if (!this.backgroundColor) {
+            this.backgroundColor = new Color("White");
+        }
+
+        initializeDialogFragment();
+
+        const df = new DialogFragment();
+        const args = new android.os.Bundle();
+        args.putInt(DOMID, this._domId);
+        df.setArguments(args);
+
+        const dialogOptions: DialogOptions = {
+            owner: this,
+            fullscreen: !!fullscreen,
+            shownCallback: () => this._raiseShownModallyEvent(),
+            dismissCallback: () => this.closeModal()
+        }
+
+        saveModal(dialogOptions);
+
+        this._dialogFragment = df;
+        this._raiseShowingModallyEvent();
+
+        this._dialogFragment.show(parent._getFragmentManager(), this._domId.toString());
+    }
+
+    protected _hideNativeModalView(parent: View) {
+        const manager = this._dialogFragment.getFragmentManager();
+        if (manager) {
+            this._dialogFragment.dismissAllowingStateLoss();
+        }
+
+        this._dialogFragment = null;
+        parent._modal = undefined;
+        super._hideNativeModalView(parent);
     }
 
     [isEnabledProperty.setNative](value: boolean) {
@@ -469,7 +674,7 @@ export class View extends ViewCommon {
                 return drawable;
             }
         }
-        
+
         return null;
     }
     [backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
@@ -498,7 +703,7 @@ export class View extends ViewCommon {
         } else {
             const nativeView = this.nativeViewProtected;
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
-            
+
             const style = this.style;
             const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
             const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
@@ -523,7 +728,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         return new org.nativescript.widgets.ContentLayout(this._context);
     }
 
-    public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {
+    public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
         super._addViewToNativeVisualTree(child);
 
         if (this.nativeViewProtected && child.nativeViewProtected) {

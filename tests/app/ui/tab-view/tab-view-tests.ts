@@ -47,6 +47,27 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         super.tearDown();
     }
 
+    public waitUntilSelectedItemIsFullyLoaded(): boolean {
+        const tabView = this.testView;
+        if (!tabView.isLoaded) {
+            return false;
+        }
+
+        const i = tabView.selectedIndex;
+        if (i >= 0 && !tabView.items[i].isLoaded) {
+            return false;
+        }
+
+        if (tabView.android) {
+            var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+            if (viewPager.getChildCount() === 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public testWhenTabViewIsCreatedItemsAreUndefined = function () {
         TKUnit.assertEqual(this.testView.items, undefined, "Items should be undefined initally.");
     }
@@ -281,7 +302,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         }
 
         this.testView.items = this._createItems(1);
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilSelectedItemIsFullyLoaded();
 
         const originalFont = tabViewTestsNative.getOriginalFont(this.testView);
         TKUnit.assertNotNull(originalFont, "Original Font should be applied");
@@ -292,12 +313,14 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         TKUnit.assertNotEqual(originalFont, nativeFont, "Font should be changed");
 
         this.testView.items = this._createItems(2);
+        this.waitUntilSelectedItemIsFullyLoaded();
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be 20 Pacifico after rebinding items.");
 
         this.testView.style.font = "bold 12 monospace";
         nativeFont = tabViewTestsNative.getNativeFont(this.testView);
 
         this.testView.items = this._createItems(3);
+        this.waitUntilSelectedItemIsFullyLoaded();
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be bold 12 monospace after rebinding items.");
 
         this.testView.style.font = unsetValue;

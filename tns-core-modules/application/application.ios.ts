@@ -14,8 +14,10 @@ import {
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
+// TODO: Remove this and get it from global to decouple builder for angular
+import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, ViewBase } from "../ui/core/view";
-import { Frame, View, NavigationEntry, loadViewFromEntry } from "../ui/frame";
+import { Frame, View, NavigationEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
 import * as utils from "../utils/utils";
 import { profile } from "../profiling";
@@ -188,7 +190,7 @@ function createRootView(v?: View) {
                 rootView = frame;
                 frame.navigate(mainEntry);
             } else {
-                rootView = loadViewFromEntry(mainEntry);
+                rootView = createViewFromEntry(mainEntry);
             }
         } else {
             // TODO: Throw an exception?

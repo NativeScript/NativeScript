@@ -13,6 +13,8 @@ import { FlexboxLayout } from "tns-core-modules/ui/layouts/flexbox-layout";
 import { FormattedString, Span } from "tns-core-modules/text/formatted-string";
 import { _getProperties, _getStyleProperties } from "tns-core-modules/ui/core/properties";
 import { device } from "tns-core-modules/platform";
+// TODO: Remove this and get it from global to decouple builder for angular
+import { createViewFromEntry } from "tns-core-modules/ui/builder";
 
 const DELTA = 0.1;
 const sdkVersion = parseInt(device.sdkVersion);
@@ -170,7 +172,7 @@ export function waitUntilLayoutReady(view: View): void {
 }
 
 export function navigateWithEntry(entry: frame.NavigationEntry): Page {
-    const page = frame.resolvePageFromEntry(entry);
+    const page = createViewFromEntry(entry) as Page;
     entry.moduleName = null;
     entry.create = function () {
         return page;

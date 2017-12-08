@@ -42,7 +42,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 
     var navigatedToEventHandler = function (args) {
         var basePath = "ui/page/";
-        modalPage = masterPage.showModal(basePath + "modal-page", null, null, false);
+        modalPage = masterPage.showModal(basePath + "modal-page", null, null, false) as Page;
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
     };
 
@@ -80,6 +80,7 @@ function getNativeHeight(view: View): number {
 
 export function test_correct_layout_scrollable_content_false() {
     const page = new Page();
+    topmost().viewController.navigationBar.translucent = true;
     (<any>page).scrollableContent = false;
     page.actionBar.title = "ActionBar";
     page.actionBarHidden = true;
@@ -127,6 +128,7 @@ export function test_correct_layout_scrollable_content_false() {
 
 export function test_correct_layout_scrollable_content_true() {
     const page = new Page();
+    topmost().viewController.navigationBar.translucent = true;
     (<any>page).scrollableContent = true;
     page.actionBar.title = "ActionBar";
     page.actionBarHidden = true;
@@ -196,6 +198,7 @@ export function test_correct_layout_scrollable_content_true_flat_action_bar() {
     const contentHeight = getHeight(lbl);
     const expectedLabelHeight = screenHeight - statusBarHeight - navBarHeight - tabBarHeight;
     TKUnit.assertEqual(contentHeight, expectedLabelHeight, "lbl.height !== screenHeight - statusBar - navBarHeight - tabBarHeight");
+    page.actionBar.flat = false;
 }
 
 export function test_correct_layout_scrollable_content_true_flat_action_bar_edges_span_under_opaque_bars() {
@@ -235,6 +238,7 @@ export function test_correct_layout_scrollable_content_true_flat_action_bar_edge
 
     const contentHeight = getHeight(lbl);
     TKUnit.assertEqual(contentHeight, screenHeight, "lbl.height !== screenHeight");
+    page.actionBar.flat = false;
 }
 
 export function test_correct_layout_scrollable_content_true_top_edge_does_not_span() {
@@ -266,12 +270,15 @@ export function test_correct_layout_scrollable_content_true_top_edge_does_not_sp
 
     const contentHeight = getHeight(lbl);
     TKUnit.assertEqual(contentHeight, expectedPageHeight, "lbl.height !== screenHeight - statusBar - navBarHeight");
+    (<UIViewController>page.viewController).edgesForExtendedLayout = UIRectEdge.All;
 }
 
 export function test_correct_layout_scrollable_content_true_bottom_edge_does_not_span() {
     const page = new Page();
     (<any>page).scrollableContent = true;
     page.actionBar.title = "ActionBar";
+    page.viewController.automaticallyAdjustsScrollViewInsets = false;
+    (<UIViewController>page.viewController).edgesForExtendedLayout = UIRectEdge.All;
 
     const tabView = new TabView();
     const tabItem = new TabViewItem();

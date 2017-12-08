@@ -1,5 +1,5 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition, NavigationEntry } from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
@@ -20,6 +20,30 @@ const DELEGATE = "_delegate";
 
 let navDepth = -1;
 
+export function reloadPage(): void {
+    const frame = topmost();
+    if (frame) {
+        if (frame.currentPage && frame.currentPage.modal) {
+            frame.currentPage.modal.closeModal();
+        }
+
+        const currentEntry = frame._currentEntry.entry;
+        const newEntry: NavigationEntry = {
+            animated: false,
+            clearHistory: true,
+            context: currentEntry.context,
+            create: currentEntry.create,
+            moduleName: currentEntry.moduleName,
+            backstackVisible: currentEntry.backstackVisible
+        }
+
+        frame.navigate(newEntry);
+    }
+}
+
+// attach on global, so it can be overwritten in NativeScript Angular
+(<any>global).__onLiveSyncCore = reloadPage;
+
 export class Frame extends FrameBase {
     public viewController: UINavigationControllerImpl;
     private _ios: iOSFrame;
@@ -37,6 +61,10 @@ export class Frame extends FrameBase {
         this._ios = new iOSFrame(this);
         this.viewController = this._ios.controller;
         this.nativeViewProtected = this._ios.controller.view;
+    }
+
+    public get ios(): iOSFrame {
+        return this._ios;
     }
 
     @profile
@@ -209,10 +237,6 @@ export class Frame extends FrameBase {
         }
     }
 
-    public get ios(): iOSFrame {
-        return this._ios;
-    }
-
     public static get defaultAnimatedNavigation(): boolean {
         return FrameBase.defaultAnimatedNavigation;
     }
@@ -354,7 +378,7 @@ class UINavigationControllerImpl extends UINavigationController {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
         if (owner && (!owner.isLoaded && !owner.parent)) {
-            owner.onLoaded();
+            owner.callLoaded();
         }
     }
 
@@ -574,7 +598,9 @@ class iOSFrame implements iOSFrameDefinition {
         const length = viewController ? viewController.count : 0;
         const animated = length > 0 && !this._disableNavBarAnimation;
 
-        this._controller.setNavigationBarHiddenAnimated(!value, animated);
+        this._controller.setNavigationBarHiddenAnimated(!value, true);
+        // this._controller.view.setNeedsLayout();
+        // this._controller.view.layoutIfNeeded();
     }
 
     public get navBarVisibility(): "auto" | "never" | "always" {

@@ -64,6 +64,23 @@ export interface Size {
 }
 
 /**
+ * Defines the data for the shownModally event.
+ */
+export interface ShownModallyData extends EventData {
+    /**
+     * The context (optional, may be undefined) passed to the view when shown modally.
+     */
+    context?: any;
+
+    /**
+     * A callback to call when you want to close the modally shown view.
+     * Pass in any kind of arguments and you will receive when the callback parameter
+     * of View.showModal is executed.
+     */
+    closeCallback?: Function;
+}
+
+/**
  * This class is the base class for all UI components. 
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
  */
@@ -427,7 +444,7 @@ export abstract class View extends ViewBase {
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    on(eventNames: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any);
+    on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
 
     /**
      * Removes listener(s) for the specified event name.
@@ -435,7 +452,7 @@ export abstract class View extends ViewBase {
      * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
      * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
      */
-    off(eventNames: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any);
+    off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
 
     /**
      * Raised when a loaded event occurs.
@@ -447,6 +464,58 @@ export abstract class View extends ViewBase {
      */
     on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
 
+    /**
+     * Raised when a back button is pressed.
+     * This event is raised only for android.
+     */
+    on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
+
+    /**
+     * Raised before the view is shown as a modal dialog.
+     */
+    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
+
+    /**
+     * Raised after the view is shown as a modal dialog.
+     */
+    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
+
+    /**
+     * Shows the View contained in moduleName as a modal view.
+     * @param moduleName - The name of the module to load starting from the application root.
+     * @param context - Any context you want to pass to the modally shown view.
+     * This same context will be available in the arguments of the shownModally event handler.
+     * @param closeCallback - A function that will be called when the view is closed.
+     * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+     * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
+     */
+    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): View;
+
+    /**
+     * Shows the view passed as parameter as a modal view.
+     * @param view - View instance to be shown modally.
+     * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
+     * @param closeCallback - A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+     * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
+     */
+    showModal(view: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): View;
+
+    /**
+     * Deprecated. Showing view as modal is deprecated.
+     * Use showModal method with arguments.
+     */
+    showModal(): View;
+
+    /**
+     * Closes the current modal view that this page is showing.
+     */
+    closeModal(): void;
+
+    /**
+     * Returns the current modal view that this page is showing (is parent of), if any.
+     */
+    modal: View;
+    
     /**
      * Animates one or more properties of the view based on the supplied options. 
      */
@@ -485,6 +554,14 @@ export abstract class View extends ViewBase {
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
+    /**
+     * @private
+     */
+    _modal: View;
+    /**
+     * @private
+     */
+    _modalParent?: View;
     /**
      * @private
      */
@@ -552,7 +629,21 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _removeAnimation(animation: Animation): boolean
+    _removeAnimation(animation: Animation): boolean;
+    /**
+     * @private
+     */
+    _onBackPressed(): boolean;
+    /**
+     * @private
+     */
+    _getFragmentManager(): any; /* android.app.FragmentManager */
+    /**
+     * @private
+     * Adds the content of the file to the current css.
+     * @param cssFileName - A valid file name (from the application root) which contains a valid css.
+     */
+    addCssFile(cssFileName: string): void;
     //@endprivate
 
     /**

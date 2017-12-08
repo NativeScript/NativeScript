@@ -4,6 +4,7 @@
  */ /** */
 
 ///<reference path="../../tns-core-modules.d.ts" /> Include global typings
+import { ShownModallyData } from "../core/view";
 import { ContentView, EventData, Property, Color, CssProperty, Style } from "../content-view";
 import { Frame } from "../frame";
 import { ActionBar } from "../action-bar";
@@ -28,21 +29,6 @@ export interface NavigatedData extends EventData {
      * Represents if a navigation is forward or backward.
      */
     isBackNavigation: boolean;
-}
-
-/**
- * Defines the data for the Page.shownModally event.
- */
-export interface ShownModallyData extends EventData {
-    /**
-     * The context (optional, may be undefined) passed to the page when shown modally.
-     */
-    context: any;
-
-    /**
-     * A callback to call when you want to close the modally shown page. Pass in any kind of arguments and you will receive when the callback parameter of Page.showModal is executed.
-     */
-    closeCallback: Function;
 }
 
 export module knownCollections {
@@ -172,62 +158,16 @@ export class Page extends ContentView {
      * Raised when navigation from the page has finished.
      */
     public on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
-
-    /**
-     * Raised before the page is shown as a modal dialog.
-     */
-    public on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
-
-    /**
-     * Raised after the page is shown as a modal dialog.
-     */
-    public on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
-
-    /**
-     * Shows the page contained in moduleName as a modal view.
-     * @param moduleName - The name of the page module to load starting from the application root.
-     * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
-     * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
-     * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
-     */
-    public showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean): Page;
-
-    /**
-     * Shows the page passed as parameter as a modal view.
-     * @param page - Page instance to be shown modally.
-     * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
-     * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
-     * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
-     */
-    public showModal(page: Page, context: any, closeCallback: Function, fullscreen?: boolean): Page;
-
-    /**
-     * Shows the page as a modal view.
-     */
-    public showModal(): Page;
-
-    /**
-     * Closes the current modal view that this page is showing.
-     */
-    public closeModal(): void;
-
-    /**
-     * Returns the current modal view that this page is showing (is parent of), if any.
-     */
-    public modal: Page;
-
     //@private
 
     /**
-     * identifier for the fragment that shows this page.
-     * Android only.
      * @private
      */
-    public _fragmentTag: string;
+    hasActionBar: boolean;
     /**
      * @private
      */
-    public _frame: Frame;
+    _frame: Frame;
 
     /**
      * A method called before navigating to the page.

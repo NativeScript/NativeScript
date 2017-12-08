@@ -199,6 +199,18 @@ export abstract class ViewBase extends Observable {
      */
     public getViewById<T extends ViewBase>(id: string): T;
 
+    /**
+     * Load view.
+     * @param view to load.
+     */
+    public loadView(view: ViewBase): void;
+
+    /**
+     * Unload view.
+     * @param view to unload.
+     */
+    public unloadView(view: ViewBase): void;
+
     public onLoaded(): void;
     public onUnloaded(): void;
     public onResumeNativeUpdates(): void;
@@ -348,6 +360,16 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     _inheritStyleScope(styleScope: any /* StyleScope */): void;
+        
+    /**
+     * @private
+     */
+    callLoaded(): void;
+    
+    /**
+     * @private
+     */
+    callUnloaded(): void;
     //@endprivate
 }
 

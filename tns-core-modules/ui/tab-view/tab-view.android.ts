@@ -1,3 +1,4 @@
+import { TabViewItem as TabViewItemDefinition } from ".";
 import { Font } from "../styling/font";
 
 import {
@@ -19,148 +20,206 @@ const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
 interface PagerAdapter {
-    new(owner: TabView, items: Array<TabViewItem>): android.support.v4.view.PagerAdapter;
+    new(owner: TabView): android.support.v4.view.PagerAdapter;
 }
 
-interface PageChangedListener {
-    new(owner: TabView): android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
-}
-
+const TABID = "_tabId";
+const INDEX = "_index";
 let PagerAdapter: PagerAdapter;
-let PageChangedListener: PageChangedListener;
+
+function makeFragmentName(viewId: number, id: number): string {
+    return "android:viewpager:" + viewId + ":" + id;
+}
+
+function getTabById(id: number): TabView {
+    const ref = tabs.find(ref => {
+        const tab = ref.get();
+        return tab && tab._domId === id;
+    });
+
+    return ref && ref.get();
+}
 
 function initializeNativeClasses() {
     if (PagerAdapter) {
         return;
     }
 
-    class PagerAdapterImpl extends android.support.v4.view.PagerAdapter {
-        constructor(public owner: TabView, public items: Array<TabViewItem>) {
+    class TabFragmentImplementation extends android.app.Fragment {
+        private tab: TabView;
+        private index: number;
+
+        constructor() {
+            super();
+            return global.__native(this);
+        }
+
+        static newInstance(tabId: number, index: number): TabFragmentImplementation {
+            const args = new android.os.Bundle();
+            args.putInt(TABID, tabId);
+            args.putInt(INDEX, index);
+            const fragment = new TabFragmentImplementation();
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        public onCreate(savedInstanceState: android.os.Bundle): void {
+            super.onCreate(savedInstanceState);
+            const args = this.getArguments();
+            this.tab = getTabById(args.getInt(TABID));
+            this.index = args.getInt(INDEX)
+            if (!this.tab) {
+                throw new Error(`Cannot find TabView`);
+            }
+        }
+
+        public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+            return this.tab.items[this.index].view.nativeViewProtected;
+        }
+    }
+
+    class FragmentPagerAdapter extends android.support.v4.view.PagerAdapter {
+        private mCurTransaction: android.app.FragmentTransaction;
+        private mCurrentPrimaryItem: android.app.Fragment;
+
+        constructor(public owner: TabView) {
             super();
             return global.__native(this);
         }
 
         getCount() {
-            return this.items ? this.items.length : 0;
+            const items = this.owner.items;
+            return items ? items.length : 0;
         }
 
         getPageTitle(index: number) {
-            if (index < 0 || index >= this.items.length) {
+            const items = this.owner.items;
+            if (index < 0 || index >= items.length) {
                 return "";
             }
 
-            return this.items[index].title;
+            return items[index].title;
         }
 
-        instantiateItem(container: android.view.ViewGroup, index: number) {
-            if (traceEnabled()) {
-                traceWrite("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, traceCategory);
+        startUpdate(container: android.view.ViewGroup): void {
+            if (container.getId() === android.view.View.NO_ID) {
+                throw new Error(`ViewPager with adapter ${this} requires a view containerId`);
+            }
+        }
+
+        instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
+            const fragmentManager = this.owner._getFragmentManager();
+            if (!this.mCurTransaction) {
+                this.mCurTransaction = fragmentManager.beginTransaction();
             }
 
-            const item = this.items[index];
-            if (this[VIEWS_STATES]) {
-                if (traceEnabled()) {
-                    traceWrite("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
+            const itemId = this.getItemId(position);
+            const name = makeFragmentName(container.getId(), itemId);
+
+            let fragment: android.app.Fragment = fragmentManager.findFragmentByTag(name);
+            if (fragment != null) {
+                this.mCurTransaction.attach(fragment);
+            } else {
+                fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
+                this.mCurTransaction.add(container.getId(), fragment, name);
+            }
+
+            if (fragment !== this.mCurrentPrimaryItem) {
+                fragment.setMenuVisibility(false);
+                fragment.setUserVisibleHint(false);
+            }
+
+            const items = this.owner.items;
+            const item = items ? items[position] : null;
+            if (item) {
+                item.canBeLoaded = true;
+            }
+
+            return fragment;
+        }
+
+        destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+            if (!this.mCurTransaction) {
+                const fragmentManager = this.owner._getFragmentManager();
+                this.mCurTransaction = fragmentManager.beginTransaction();
+            }
+
+            const fragment: android.app.Fragment = <android.app.Fragment>object;
+            this.mCurTransaction.detach(fragment);
+
+            const items = this.owner.items;
+            const item = items ? items[position] : null;
+            if (item) {
+                item.canBeLoaded = false;
+            }
+        }
+
+        setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+            const fragment = <android.app.Fragment>object;
+            if (fragment !== this.mCurrentPrimaryItem) {
+                if (this.mCurrentPrimaryItem != null) {
+                    this.mCurrentPrimaryItem.setMenuVisibility(false);
+                    this.mCurrentPrimaryItem.setUserVisibleHint(false);
                 }
-                item.view.nativeViewProtected.restoreHierarchyState(this[VIEWS_STATES]);
-            }
 
-            if (item.view.nativeViewProtected) {
-                container.addView(item.view.nativeViewProtected);
-            }
+                if (fragment != null) {
+                    fragment.setMenuVisibility(true);
+                    fragment.setUserVisibleHint(true);
+                }
 
-            return item.view.nativeViewProtected;
+                this.mCurrentPrimaryItem = fragment;
+                this.owner.selectedIndex = position;
+        
+                const tab = this.owner;
+                const items = tab.items;
+                const newItem = items ? items[position] : null;
+                if (newItem && !newItem.isLoaded && tab.isLoaded) {
+                    tab.loadView(newItem);
+                }
+            }
         }
 
-        destroyItem(container: android.view.ViewGroup, index: number, nativeView: android.view.View) {
-            if (traceEnabled()) {
-                traceWrite("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; nativeView: " + nativeView, traceCategory);
+        finishUpdate(container: android.view.ViewGroup): void {
+            if (this.mCurTransaction != null) {
+                if (android.os.Build.VERSION.SDK_INT >= 24) {
+                    (<any>this.mCurTransaction).commitNowAllowingStateLoss();
+                } else {
+                    this.mCurTransaction.commitAllowingStateLoss();
+                }
+
+                this.mCurTransaction = null;
             }
-
-            if (!nativeView) {
-                return;
-            }
-
-            container.removeView(nativeView);
-
-            // Note: this.owner._removeView will clear item.view.nativeView.
-            // So call this after the native instance is removed form the container.
-            // if (item.view.parent === this.owner) {
-            //     this.owner._removeView(item.view);
-            // }
         }
 
-        isViewFromObject(view: android.view.View, _object: any) {
-            return view === _object;
+        isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
+            return (<android.app.Fragment>object).getView() === view;
         }
 
         saveState(): android.os.Parcelable {
-            if (traceEnabled()) {
-                traceWrite("TabView.PagerAdapter.saveState", traceCategory);
-            }
-
-            const owner: TabView = this.owner;
-            // no owner could happen when tabView was shown as modal.
-            if (!owner || owner._childrenCount === 0) {
-                return null;
-            }
-
-            if (!this[VIEWS_STATES]) {
-                this[VIEWS_STATES] = new android.util.SparseArray<android.os.Parcelable>();
-            }
-
-            const viewStates = this[VIEWS_STATES];
-            const childCallback = function (view: View): boolean {
-                const nativeView: android.view.View = view.nativeViewProtected;
-                if (nativeView && nativeView.isSaveFromParentEnabled()) {
-                    nativeView.saveHierarchyState(viewStates);
-                }
-                return true;
-            }
-
-            owner.eachChildView(childCallback);
-
-            const bundle = new android.os.Bundle();
-            bundle.putSparseParcelableArray(VIEWS_STATES, viewStates);
-            return bundle;
+            return null;
         }
 
-        restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader) {
-            if (traceEnabled()) {
-                traceWrite("TabView.PagerAdapter.restoreState", traceCategory);
-            }
-            let bundle: android.os.Bundle = <android.os.Bundle>state;
-            bundle.setClassLoader(loader);
-            this[VIEWS_STATES] = bundle.getSparseParcelableArray(VIEWS_STATES);
-        }
-    };
-
-    class PageChangedListenerImpl extends android.support.v4.view.ViewPager.SimpleOnPageChangeListener {
-        private _owner: TabView;
-        constructor(owner: TabView) {
-            super();
-            this._owner = owner;
-            return global.__native(this);
+        restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader): void {
+            //
         }
 
-        public onPageSelected(position: number) {
-            this._owner.selectedIndex = position;
+        getItemId(position: number): number {
+            return position;
         }
     }
 
-    PagerAdapter = PagerAdapterImpl;
-    PageChangedListener = PageChangedListenerImpl;
+    PagerAdapter = FragmentPagerAdapter;
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
-    let result = new org.nativescript.widgets.TabItemSpec();
+    const result = new org.nativescript.widgets.TabItemSpec();
     result.title = item.title;
 
     if (item.iconSource) {
         if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
         } else {
-            let is = fromFileOrResource(item.iconSource);
+            const is = fromFileOrResource(item.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
@@ -257,12 +316,18 @@ function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.
     }
 }
 
-export class TabView extends TabViewBase {
+export const tabs = new Array<WeakRef<TabView>>();
 
+export class TabView extends TabViewBase {
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
     private _androidViewId: number = -1;
+
+    constructor() {
+        super();
+        tabs.push(new WeakRef(this));
+    }
 
     public onItemsChanged(oldItems: TabViewItem[], newItems: TabViewItem[]): void {
         super.onItemsChanged(oldItems, newItems);
@@ -310,11 +375,7 @@ export class TabView extends TabViewBase {
         nativeView.addView(viewPager);
         (<any>nativeView).viewPager = viewPager;
 
-        const listener = new PageChangedListener(this);
-        (<any>viewPager).addOnPageChangeListener(listener);
-        (<any>viewPager).listener = listener;
-
-        const adapter = new PagerAdapter(this, null);
+        const adapter = new PagerAdapter(this);
         viewPager.setAdapter(adapter);
         (<any>viewPager).adapter = adapter;
 
@@ -333,24 +394,37 @@ export class TabView extends TabViewBase {
         const viewPager = (<any>nativeView).viewPager;
         viewPager.setId(this._androidViewId);
         this._viewPager = viewPager;
-        (<any>viewPager).listener.owner = this;
-
         this._pagerAdapter = (<any>viewPager).adapter;
         (<any>this._pagerAdapter).owner = this;
+
+        const items = this.items;
+        if (items) {
+            this.setAdapterItems(items)
+        }
     }
 
     public disposeNativeView() {
+        (<any>this._pagerAdapter).items = null;
+        this._tabLayout.setItems(null, null);
         this._pagerAdapter.notifyDataSetChanged();
         (<any>this._pagerAdapter).owner = null;
         this._pagerAdapter = null;
 
         this._tabLayout = null;
-        (<any>this._viewPager).listener.owner = null;
         this._viewPager = null;
         super.disposeNativeView();
     }
 
-    private setAdapterItems(items: Array<TabViewItem>) {
+    public _onBackPressed(): boolean {
+        const currentView = this._selectedView;
+        if (currentView) {
+            return currentView._onBackPressed();
+        }
+
+        return false;
+    }
+
+    private setAdapterItems(items: Array<TabViewItemDefinition>) {
         (<any>this._pagerAdapter).items = items;
 
         const length = items ? items.length : 0;
@@ -361,7 +435,7 @@ export class TabView extends TabViewBase {
         }
 
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        items.forEach((item, i, arr) => {
+        items.forEach((item: TabViewItem, i, arr) => {
             const tabItemSpec = createTabItemSpec(item);
             item.index = i;
             item.tabItemSpec = tabItemSpec;

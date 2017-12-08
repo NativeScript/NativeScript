@@ -1,6 +1,7 @@
 ﻿// Definitions.
 import { LoadOptions } from ".";
 import { View, ViewBase, Template, KeyedTemplate } from "../core/view";
+import { NavigationEntry } from "../frame";
 
 // Types.
 import { debug, ScopeError, SourceError, Source } from "../../utils/debug";
@@ -31,34 +32,130 @@ export function parse(value: string | Template, context: any): View {
     } else {
         const exports = context ? getExports(context) : undefined;
         const componentModule = parseInternal(value, exports);
-        if (componentModule) {
-            return componentModule.component;
-        }
-        return undefined;
+        return componentModule && componentModule.component;
     }
 }
 
 export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
-    let dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
+    const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
     return parseInternal(dummyComponent, context).component["itemTemplates"];
 }
 
-function parseInternal(value: string, context: any, uri?: string, moduleNamePath?: string): ComponentModule {
-    var start: xml2ui.XmlStringParser;
-    var ui: xml2ui.ComponentParser;
+export function load(pathOrOptions: string | LoadOptions, context?: any): View {
+    let componentModule: ComponentModule;
+    if (!context) {
+        if (typeof pathOrOptions === "string") {
+            componentModule = loadInternal(pathOrOptions);
+        } else {
+            componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page);
+        }
+    } else {
+        let path = <string>pathOrOptions;
+        componentModule = loadInternal(path, context);
+    }
 
-    var errorFormat = (debug && uri) ? xml2ui.SourceErrorFormat(uri) : xml2ui.PositionErrorFormat;
-    var componentSourceTracker = (debug && uri) ? xml2ui.ComponentSourceTracker(uri) : () => {
-        // no-op
-    };
+    return componentModule && componentModule.component;
+}
 
-    (start = new xml2ui.XmlStringParser(errorFormat))
-        .pipe(new xml2ui.PlatformFilter())
-        .pipe(new xml2ui.XmlStateParser(ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleNamePath)));
+export function loadPage(moduleNamePath: string, fileName: string, context?: any): View {
+    const componentModule = loadInternal(fileName, context, moduleNamePath);
+    return componentModule && componentModule.component;
+}
 
-    start.parse(value);
+const loadModule = profile("loadModule", (moduleNamePath: string, entry: NavigationEntry): ModuleExports => {
+    // web-pack case where developers register their page JS file manually.
+    if (global.moduleExists(entry.moduleName)) {
+        return global.loadModule(entry.moduleName);
+    } else {
+        let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
+        if (moduleExportsResolvedPath) {
+            // Exclude extension when doing require.
+            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
+            return global.loadModule(moduleExportsResolvedPath);
+        }
+    }
 
-    return ui.rootComponentModule;
+    return null;
+})
+
+const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, moduleExports: any): View => {
+    // Possible XML file path.
+    const fileName = resolveFileName(moduleNamePath, "xml");
+    if (fileName) {
+        // Or check if the file exists in the app modules and load the page from XML.
+        return loadPage(moduleNamePath, fileName, moduleExports);
+    }
+
+    // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
+    // if (page && fileName === `${moduleNamePath}.port.xml` || fileName === `${moduleNamePath}.land.xml`){
+    //     page["isBiOrientational"] = true;
+    // }
+
+    return null;
+})
+
+export const createViewFromEntry = profile("createViewFromEntry", (entry: NavigationEntry): View => {
+    if (entry.create) {
+        return createView(entry);
+    } else if (entry.moduleName) {
+        // Current app full path.
+        const currentAppPath = knownFolders.currentApp().path;
+        
+        // Full path of the module = current app full path + module name.
+        const moduleNamePath = path.join(currentAppPath, entry.moduleName);
+        const moduleExports = loadModule(moduleNamePath, entry);
+
+        if (moduleExports && moduleExports.createPage) {
+            return moduleCreateView(moduleNamePath, moduleExports);
+        } else {
+            // cssFileName is loaded inside pageFromBuilder->loadPage
+            return viewFromBuilder(moduleNamePath, moduleExports);
+        }
+    }
+    
+    throw new Error("Failed to load page XML file for module: " + entry.moduleName);
+});
+
+const createView = profile("entry.create", (entry: NavigationEntry): View => {
+    const view = entry.create();
+    if (!view) {
+        throw new Error("Failed to create Page with entry.create() function.");
+    }
+
+    return view;
+});
+
+interface ModuleExports {
+    createPage?: () => View;
+}
+
+const moduleCreateView = profile("module.createView", (moduleNamePath: string, moduleExports: ModuleExports): View => {
+    const view = moduleExports.createPage();
+    const cssFileName = resolveFileName(moduleNamePath, "css");
+    
+    // If there is no cssFile only appCss will be applied at loaded.
+    if (cssFileName) {
+        view.addCssFile(cssFileName);
+    }
+    return view;
+});
+
+function loadInternal(fileName: string, context?: any, moduleNamePath?: string): ComponentModule {
+    let componentModule: ComponentModule;
+
+    // Check if the XML file exists.
+    if (File.exists(fileName)) {
+        const file = File.fromPath(fileName);
+        const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message) });
+        componentModule = parseInternal(text, context, fileName, moduleNamePath);
+    }
+
+    if (componentModule && componentModule.component) {
+        // Save exports to root component (will be used for templates).
+        (<any>componentModule.component).exports = context;
+    }
+
+    return componentModule;
 }
 
 function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View): ComponentModule {
@@ -68,27 +165,28 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         parentPage = context["_parentPage"];
         delete context["_parentPage"];
     }
-    var result: ComponentModule;
+
+    let result: ComponentModule;
     componentPath = componentPath.replace("~/", "");
     const moduleName = componentPath + "/" + componentName;
 
-    var fullComponentPathFilePathWithoutExt = componentPath;
+    let fullComponentPathFilePathWithoutExt = componentPath;
 
     if (!File.exists(componentPath) || componentPath === "." || componentPath === "./") {
         fullComponentPathFilePathWithoutExt = path.join(knownFolders.currentApp().path, componentPath, componentName);
     }
 
-    var xmlFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "xml");
+    const xmlFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "xml");
 
     if (xmlFilePath) {
         // Custom components with XML
 
-        var subExports = context;
+        let subExports = context;
         if (global.moduleExists(moduleName)) {
             // Component has registered code module.
             subExports = global.loadModule(moduleName);
         } else {
-            var jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
+            const jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
             if (jsFilePath) {
                 // Component has code file.
                 subExports = global.loadModule(jsFilePath)
@@ -100,6 +198,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         if (!subExports) {
             subExports = {};
         }
+
         subExports["_parentPage"] = parentPage;
 
         result = loadInternal(xmlFilePath, subExports);
@@ -143,72 +242,6 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     return result;
 }
 
-export function load(pathOrOptions: string | LoadOptions, context?: any): View {
-    var viewToReturn: View;
-    var componentModule: ComponentModule;
-
-    if (!context) {
-        if (!isString(pathOrOptions)) {
-            let options = <LoadOptions>pathOrOptions;
-            componentModule = loadCustomComponent(options.path, options.name, options.attributes, options.exports, options.page);
-        } else {
-            let path = <string>pathOrOptions;
-            componentModule = loadInternal(path);
-        }
-    } else {
-        let path = <string>pathOrOptions;
-        componentModule = loadInternal(path, context);
-    }
-
-    if (componentModule) {
-        viewToReturn = componentModule.component;
-    }
-
-    return viewToReturn;
-}
-
-export function loadPage(moduleNamePath: string, fileName: string, context?: any): View {
-    var componentModule: ComponentModule;
-
-    // Check if the XML file exists.
-    if (File.exists(fileName)) {
-        const file = File.fromPath(fileName);
-        const onError = function (error) {
-            throw new Error("Error loading file " + fileName + " :" + error.message);
-        }
-        const text = file.readTextSync(onError);
-        componentModule = parseInternal(text, context, fileName, moduleNamePath);
-    }
-
-    if (componentModule && componentModule.component) {
-        // Save exports to root component (will be used for templates).
-        (<any>componentModule.component).exports = context;
-    }
-
-    return componentModule.component;
-}
-
-function loadInternal(fileName: string, context?: any): ComponentModule {
-    var componentModule: ComponentModule;
-
-    // Check if the XML file exists.
-    if (File.exists(fileName)) {
-        const file = File.fromPath(fileName);
-        const onError = function (error) {
-            throw new Error("Error loading file " + fileName + " :" + error.message);
-        }
-        const text = file.readTextSync(onError);
-        componentModule = parseInternal(text, context, fileName);
-    }
-
-    if (componentModule && componentModule.component) {
-        // Save exports to root component (will be used for templates).
-        (<any>componentModule.component).exports = context;
-    }
-
-    return componentModule;
-}
-
 function getExports(instance: ViewBase): any {
     const isView = !!instance._domId;
     if (!isView) {
@@ -223,6 +256,24 @@ function getExports(instance: ViewBase): any {
     }
 
     return exportObject;
+}
+
+function parseInternal(value: string, context: any, uri?: string, moduleNamePath?: string): ComponentModule {
+    var start: xml2ui.XmlStringParser;
+    var ui: xml2ui.ComponentParser;
+
+    var errorFormat = (debug && uri) ? xml2ui.SourceErrorFormat(uri) : xml2ui.PositionErrorFormat;
+    var componentSourceTracker = (debug && uri) ? xml2ui.ComponentSourceTracker(uri) : () => {
+        // no-op
+    };
+
+    (start = new xml2ui.XmlStringParser(errorFormat))
+        .pipe(new xml2ui.PlatformFilter())
+        .pipe(new xml2ui.XmlStateParser(ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleNamePath)));
+
+    start.parse(value);
+
+    return ui.rootComponentModule;
 }
 
 namespace xml2ui {
@@ -664,7 +715,7 @@ namespace xml2ui {
                 }
             }
 
-             return this;
+            return this;
         }
 
         private static isComplexProperty(name: string): boolean {

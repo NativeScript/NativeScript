@@ -148,3 +148,79 @@ export function test_go_back_to_backstack_entry() {
     frame.goBack();
     TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 }
+
+export function test_page_parent_when_backstackVisible_is_false() {
+    const frame = topmost();
+
+    const pages = new Array<Page>();
+    const create = () => {
+        const page = new Page();
+        pages.push(page);
+        return page;
+    };
+
+    frame.navigate({ create: () => new Page(), clearHistory: true });
+    frame.navigate({ create, backstackVisible: false });
+    frame.navigate(() => new Page());
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+
+    TKUnit.assertEqual(pages.length, 1);
+    TKUnit.assertEqual(frame.backStack.length, 1);
+    pages.forEach(p => {
+        TKUnit.assertNull(p.parent);
+        TKUnit.assertNull(p.frame);
+    });
+
+    pages.length = 0;
+}
+
+export function test_page_parent_when_navigate_with_clear_history() {
+    const frame = topmost();
+
+    const pages = new Array<Page>();
+    const create = () => {
+        const page = new Page();
+        pages.push(page);
+        return page;
+    };
+
+    frame.navigate({ create });
+    frame.navigate({ create, backstackVisible: false });
+    frame.navigate({ create });
+    frame.navigate({ create: () => new Page(), clearHistory: true });
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+
+    TKUnit.assertEqual(pages.length, 3);
+    TKUnit.assertEqual(frame.backStack.length, 0);
+    pages.forEach(p => {
+        TKUnit.assertNull(p.parent);
+        TKUnit.assertNull(p.frame);
+    });
+
+    pages.length = 0;
+}
+
+export function test_page_parent_when_navigate_back() {
+    const frame = topmost();
+
+    const pages = new Array<Page>();
+    const create = () => {
+        const page = new Page();
+        pages.push(page);
+        return page;
+    };
+
+    frame.navigate({ create: () => new Page(), clearHistory: true });
+    frame.navigate({ create });
+    frame.goBack();
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+    
+    TKUnit.assertEqual(pages.length, 1);
+    TKUnit.assertEqual(frame.backStack.length, 0);
+    pages.forEach(p => {
+        TKUnit.assertNull(p.parent);
+        TKUnit.assertNull(p.frame);
+    });
+
+    pages.length = 0;
+}

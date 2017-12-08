@@ -1,4 +1,5 @@
-﻿import { Font } from "../styling/font";
+﻿import { TabViewItem as TabViewItemDefinition } from ".";
+import { Font } from "../styling/font";
 
 import { ios as iosView } from "../core/view";
 import {
@@ -31,7 +32,7 @@ class UITabBarControllerImpl extends UITabBarController {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
         if (owner && !owner.isLoaded && !owner.parent) {
-            owner.onLoaded();
+            owner.callLoaded();
         }
     }
 }
@@ -232,7 +233,7 @@ export class TabView extends TabViewBase {
         const heightAndState = View.resolveSizeAndState(height, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
-    }  
+    }
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
@@ -319,8 +320,7 @@ export class TabView extends TabViewBase {
         const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
         const states = getTitleAttributesForStates(this);
 
-        for (let i = 0; i < length; i++) {
-            const item = items[i];
+        items.forEach((item, i) => {
             const controller = this.getViewController(item);
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
@@ -334,7 +334,8 @@ export class TabView extends TabViewBase {
 
             controller.tabBarItem = tabBarItem;
             controllers.addObject(controller);
-        }
+            (<TabViewItemDefinition>item).canBeLoaded = true;
+        });
 
         this._ios.viewControllers = controllers;
         this._ios.customizableViewControllers = null;

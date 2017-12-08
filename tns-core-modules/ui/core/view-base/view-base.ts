@@ -140,10 +140,36 @@ let viewIdCounter = 1;
 //     list.push(new WeakRef(view.nativeViewProtected));
 // }
 
+enum Flags {
+    superOnLoadedCalled = 'Loaded',
+    superOnUnloadedCalled = 'Unloaded',
+}
+
+enum SuspendType {
+    Incremental = 0,
+    Loaded = 1 << 20,
+    NativeView = 1 << 21,
+    UISetup = 1 << 22,
+    IncrementalCountMask = ~((1 << 20) + (1 << 21) + (1 << 22))
+}
+
+namespace SuspendType {
+    export function toString(type: SuspendType): string {
+        return (type ? "suspended" : "resumed") + "(" +
+            "Incremental: " + (type & SuspendType.IncrementalCountMask) + ", " +
+            "Loaded: " + !(type & SuspendType.Loaded) + ", " +
+            "NativeView: " + !(type & SuspendType.NativeView) + ", " +
+            "UISetup: " + !(type & SuspendType.UISetup) +
+            ")";
+    }
+}
+
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
+    private _onLoadedCalled: boolean = false;
+    private _onUnloadedCalled: boolean = false;
     private _iosView: Object;
     private _androidView: Object;
     private _style: Style;
@@ -170,7 +196,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _cssState: ssm.CssState = new ssm.CssState(this);
     public _styleScope: ssm.StyleScope;
     public _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
-    public _suspendNativeUpdatesCount: number;
+    public _suspendNativeUpdatesCount: SuspendType;
 
     // Dynamic properties.
     left: Length;
@@ -303,55 +329,109 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public onLoaded() {
+        this.setFlag(Flags.superOnLoadedCalled, true);
+        if (this._isLoaded) {
+            return;
+        }
+
         this._isLoaded = true;
         this._cssState.onLoaded();
-        this._resumeNativeUpdates();
-        this._loadEachChild();
-        this._emit("loaded");
-    }
+        this._resumeNativeUpdates(SuspendType.Loaded);
 
-    public _loadEachChild() {
-        this.eachChild((child) => {
-            child.onLoaded();
+        this.eachChild(child => {
+            this.loadView(child);
             return true;
         });
+
+        this._emit("loaded");
     }
 
     @profile
     public onUnloaded() {
-        this._suspendNativeUpdates();
-        this._unloadEachChild();
+        this.setFlag(Flags.superOnUnloadedCalled, true);
+        if (!this._isLoaded) {
+            return;
+        }
+
+        this._suspendNativeUpdates(SuspendType.Loaded);
+
+        this.eachChild(child => {
+            this.unloadView(child);
+            return true;
+        });
+
         this._isLoaded = false;
         this._cssState.onUnloaded();
         this._emit("unloaded");
     }
 
-    public _suspendNativeUpdates(): void {
-        this._suspendNativeUpdatesCount++;
+    public _suspendNativeUpdates(type: SuspendType): void {
+        if (type) {
+            this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount | type;
+        } else {
+            this._suspendNativeUpdatesCount++;
+        }
     }
-    public _resumeNativeUpdates(): void {
-        this._suspendNativeUpdatesCount--;
+    public _resumeNativeUpdates(type: SuspendType): void {
+        if (type) {
+            this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount & ~type;
+        } else {
+            if ((this._suspendNativeUpdatesCount & SuspendType.IncrementalCountMask) === 0) {
+                throw new Error(`Invalid call to ${this}._resumeNativeUpdates`);
+            }
+            this._suspendNativeUpdatesCount--;
+        }
+
         if (!this._suspendNativeUpdatesCount) {
             this.onResumeNativeUpdates();
         }
     }
+
     public _batchUpdate<T>(callback: () => T): T {
         try {
-            this._suspendNativeUpdates();
+            this._suspendNativeUpdates(SuspendType.Incremental);
             return callback();
         } finally {
-            this._resumeNativeUpdates();
+            this._resumeNativeUpdates(SuspendType.Incremental);
         }
     }
 
-    private _unloadEachChild() {
-        this.eachChild((child) => {
-            if (child.isLoaded) {
-                child.onUnloaded();
-            }
+    private setFlag(flag: Flags, value: boolean): void {
+        switch (flag) {
+            case Flags.superOnLoadedCalled:
+                this._onLoadedCalled = value;
+                break;
 
-            return true;
-        });
+            case Flags.superOnUnloadedCalled:
+                this._onUnloadedCalled = value;
+                break;
+        }
+    }
+
+    private isFlagSet(flag: Flags): boolean {
+        switch (flag) {
+            case Flags.superOnLoadedCalled:
+                return this._onLoadedCalled;
+
+            case Flags.superOnUnloadedCalled:
+                return this._onUnloadedCalled;
+        }
+    }
+
+    private callFunctionWithSuper(flag: Flags, func: () => void): void {
+        this.setFlag(flag, false);
+        func();
+        if (!this.isFlagSet(flag)) {
+            throw new Error(`super.${flag} not called in ${this}`);
+        }
+    }
+
+    public callLoaded(): void {
+        this.callFunctionWithSuper(Flags.superOnLoadedCalled, () => this.onLoaded());
+    }
+
+    public callUnloaded(): void {
+        this.callFunctionWithSuper(Flags.superOnUnloadedCalled, () => this.onUnloaded());
     }
 
     private notifyPseudoClassChanged(pseudoClass: string): void {
@@ -369,7 +449,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public cssPseudoClasses: Set<string> = new Set();
 
     private getAllAliasedStates(name: string): Array<string> {
-        let allStates = [];
+        const allStates = [];
         allStates.push(name);
         if (name in this.pseudoClassAliases) {
             for (let i = 0; i < this.pseudoClassAliases[name].length; i++) {
@@ -509,7 +589,19 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         if (this._isLoaded) {
-            view.onLoaded();
+            this.loadView(view);
+        }
+    }
+
+    public loadView(view: ViewBase): void {
+        if (!view.isLoaded) {
+            view.callLoaded();
+        }
+    }
+
+    public unloadView(view: ViewBase): void {
+        if (view.isLoaded) {
+            view.callUnloaded();
         }
     }
 
@@ -538,9 +630,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     public _removeViewCore(view: ViewBase) {
-        if (view.isLoaded) {
-            view.onUnloaded();
-        }
+        this.unloadView(view);
 
         if (view._context) {
             view._tearDownUI();
@@ -588,20 +678,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     @profile
-    public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean) {
-
-        traceNotifyEvent(this, "_setupUI");
-        if (traceEnabled()) {
-            traceWrite(`${this}._setupUI(${context})`, traceCategories.VisualTreeEvents);
-        }
-
+    public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean): void {
         if (this._context === context) {
             return;
+        } else if (this._context) {
+            this._tearDownUI(true);
         }
 
         this._context = context;
-        traceNotifyEvent(this, "_onContextChanged");
-
         let nativeView;
         if (isAndroid) {
             // const recycle = this.recycleNativeView;
@@ -659,7 +743,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
         }
 
-        this._resumeNativeUpdates();
+        this._resumeNativeUpdates(SuspendType.UISetup);
 
         this.eachChild((child) => {
             child._setupUI(context);
@@ -673,23 +757,20 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         if (this.__nativeView) {
-            this._suspendNativeUpdates();
+            this._suspendNativeUpdates(SuspendType.NativeView);
             // We may do a `this.resetNativeView()` here?
         }
+
         this.__nativeView = this.nativeViewProtected = value;
         if (this.__nativeView) {
             this._suspendedUpdates = undefined;
             this.initNativeView();
-            this._resumeNativeUpdates();
+            this._resumeNativeUpdates(SuspendType.NativeView);
         }
     }
 
     @profile
-    public _tearDownUI(force?: boolean) {
-        if (traceEnabled()) {
-            traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
-        }
-
+    public _tearDownUI(force?: boolean): void {
         // No context means we are already teared down.
         if (!this._context) {
             return;
@@ -727,7 +808,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.disposeNativeView();
 
-        this._suspendNativeUpdates();
+        this._suspendNativeUpdates(SuspendType.UISetup);
 
         if (isAndroid) {
             this.setNativeView(null);
@@ -742,9 +823,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this.domNode.dispose();
             this.domNode = undefined;
         }
-
-        traceNotifyEvent(this, "_onContextChanged");
-        traceNotifyEvent(this, "_tearDownUI");
     }
 
     _childIndexToNativeChildIndex(index?: number): number {
@@ -766,7 +844,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     public _removeViewFromNativeVisualTree(view: ViewBase) {
-        traceNotifyEvent(view, "_removeViewFromNativeVisualTree");
         view._isAddedToNativeVisualTree = false;
     }
 
@@ -774,6 +851,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (traceEnabled()) {
             traceWrite(this + " going to state: " + state, traceCategories.Style);
         }
+
         if (state === this._visualState) {
             return;
         }
@@ -890,11 +968,10 @@ ViewBase.prototype._defaultPaddingLeft = 0;
 ViewBase.prototype._isViewBase = true;
 ViewBase.prototype.recycleNativeView = "never";
 
-// Removing from visual tree does +1, adding to visual tree does -1, see parentChanged
-// Removing the nativeView does +1, adding the nativeView does -1, see set nativeView
-// Pre _setupUI and post _tearDownUI does +1, in between _setupUI and _tearDownUI is -1
-// Initially launch with 2, native updates wont fire unless both added to the JS visual tree and got nativeView.
-ViewBase.prototype._suspendNativeUpdatesCount = 3;
+ViewBase.prototype._suspendNativeUpdatesCount =
+    SuspendType.Loaded |
+    SuspendType.NativeView |
+    SuspendType.UISetup;
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);

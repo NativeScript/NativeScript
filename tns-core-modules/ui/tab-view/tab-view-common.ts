@@ -1,4 +1,4 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData, TabViewItem } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
@@ -151,6 +151,15 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
         }
     }
 
+    public loadView(view: ViewBase): void {
+        const item = view as TabViewItem;
+        const index = this.items.indexOf(item);
+        if (index === this.selectedIndex && item.canBeLoaded) {
+            super.loadView(item);
+        }
+        // Don't load items until their fragments are instantiated.
+    }
+
     public eachChildView(callback: (child: View) => boolean) {
         const items = this.items;
         if (items) {
@@ -162,24 +171,37 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 
     public onItemsChanged(oldItems: TabViewItemDefinition[], newItems: TabViewItemDefinition[]): void {
         if (oldItems) {
-            for (let i = 0, count = oldItems.length; i < count; i++) {
-                this._removeView(oldItems[i]);
-            }
+            oldItems.forEach(item => this._removeView(item));
         }
 
         if (newItems) {
-            for (let i = 0, count = newItems.length; i < count; i++) {
-                const item = newItems[i];
-                if (!item) {
-                    throw new Error(`TabViewItem at index ${i} is undefined.`);
-                }
-
+            newItems.forEach(item => {
                 if (!item.view) {
-                    throw new Error(`TabViewItem at index ${i} does not have a view.`);
+                    throw new Error(`TabViewItem must have a view.`);
                 }
+                
                 this._addView(item);
-            }
+            });
         }
+    }
+
+    public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
+        const items = this.items;
+        if (!items) {
+            return;
+        }
+
+        const oldItem = items[oldIndex];
+        if (oldItem) {
+            this.unloadView(oldItem);
+        }
+
+        const newItem = items[newIndex];
+        if (newItem && !newItem.isLoaded && this.isLoaded) {
+            this.loadView(newItem);
+        }
+
+        this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
     }
 }
 export interface TabViewBase {
@@ -190,7 +212,7 @@ export interface TabViewBase {
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
     name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
     valueChanged: (target, oldValue, newValue) => {
-        target.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: target, oldIndex: oldValue, newIndex: newValue });
+        target.onSelectedIndexChanged(oldValue, newValue);
     },
     coerceValue: (target, value) => {
         let items = target.items;

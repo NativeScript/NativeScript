@@ -90,8 +90,6 @@ class UIViewControllerImpl extends UIViewController {
             owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
 
-        owner._enableLoadedEvents = true;
-
         // Add page to frame if showing modal page.
         // TODO: This needs refactoring. 
         if (modalParent) {
@@ -100,28 +98,19 @@ class UIViewControllerImpl extends UIViewController {
 
         if (frame) {
             if (!owner.parent) {
-                if (!frame._currentEntry) {
-                    frame._currentEntry = newEntry;
-                }
-
                 owner._frame = frame;
                 frame._addView(owner);
             } else if (owner.parent !== frame) {
                 throw new Error("Page is already shown on another frame.");
             }
 
-            owner.actionBar.update();
+            frame._updateActionBar(owner);
         }
-
-        //https://github.com/NativeScript/NativeScript/issues/1201
-        owner._viewWillDisappear = false;
 
         // Pages in backstack are unloaded so raise loaded here.
         if (!owner.isLoaded) {
-            owner.onLoaded();
+            owner.callLoaded();
         }
-
-        owner._enableLoadedEvents = false;
     }
 
     @profile
@@ -133,10 +122,8 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        //https://github.com/NativeScript/NativeScript/issues/1201
-        owner._viewWillDisappear = false;
-
-        const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const navigationController = this.navigationController;
+        const frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
             const newEntry = this[ENTRY];
@@ -149,24 +136,22 @@ class UIViewControllerImpl extends UIViewController {
                 isBack = isBackNavigationTo(owner, newEntry);
             }
 
-            if (!isBack) {
-                frame._updateBackstack(newEntry);
-            }
-            frame.setCurrent(newEntry);
-            owner.onNavigatedTo(isBack);
+            frame._updateBackstack(newEntry, isBack);
+            frame.setCurrent(newEntry, isBack);
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
 
+            frame._processNavigationQueue(owner);
+
+            // _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
             // Workaround for disabled backswipe on second custom native transition
             if (frame.canGoBack()) {
-                this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
-                this.navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+                navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+                navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
             } else {
-                this.navigationController.interactivePopGestureRecognizer.enabled = false;
+                navigationController.interactivePopGestureRecognizer.enabled = false;
             }
-
-            frame._processNavigationQueue(owner);
         }
 
         if (!this.presentedViewController) {
@@ -204,9 +189,6 @@ class UIViewControllerImpl extends UIViewController {
                 owner.onNavigatingFrom(isBack);
             }
         }
-
-        //https://github.com/NativeScript/NativeScript/issues/1201
-        owner._viewWillDisappear = true;
     }
 
     @profile
@@ -221,53 +203,45 @@ class UIViewControllerImpl extends UIViewController {
 
         const modalParent = page._modalParent;
         page._modalParent = undefined;
-        page._UIModalPresentationFormSheet = false;
 
         // Clear up after modal page has closed.
         if (modalParent) {
-            modalParent._removeView(page);
             modalParent._modal = undefined;
+            modalParent._removeView(page);
         }
 
         // Manually pop backStack when Back button is pressed or navigating back with edge swipe.
         // Don't pop if we are hiding modally shown page.
-        const frame = page.frame;
+        // const frame = page.frame;
         // We are not modal page, have frame with backstack and navigation queue is empty and currentPage is closed
         // then pop our backstack.
         // If we are in frame wich is in tab and tab.selectedControler is not the frame
         // skip navigation.
-        const tab = this.tabBarController;
-        const fireNavigationEvents = !tab
-            || tab.selectedViewController === this.navigationController;
+        // const tab = this.tabBarController;
+        // const fireNavigationEvents = !tab
+        //     || tab.selectedViewController === this.navigationController;
 
-        if (!modalParent && frame && frame.backStack.length > 0 && frame.navigationQueueIsEmpty() && frame.currentPage === page) {
-            if (fireNavigationEvents) {
-                (<any>frame)._backStack.pop();
-            }
-        }
-
-        page._enableLoadedEvents = true;
-
-        // Remove from parent if page was in frame and we navigated back.
+        // Remove from parent if page was in frame and we navigated back or
+        // navigate forward but current entry is not backstack visible.
         // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
-        const isBack = isBackNavigationFrom(this, page);
-        if (isBack) {
-            // Remove parent when navigating back.
-            frame._removeView(page);
-            page._frame = null;
-        }
+        // const isBack = isBackNavigationFrom(this, page);
+        // if (frame && page.frame === frame &&
+        //     (isBack || !frame._isCurrentEntryBackstackVisible)) {
+        //     // Remove parent when navigating back.
+        //     frame._removeBackstackEntries([_removeBackstackEntries])
+        //     frame._removeView(page);
+        //     page._frame = null;
+        // }
 
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
-            page.onUnloaded();
+            page.callUnloaded();
         }
 
-        page._enableLoadedEvents = false;
-
-        if (!modalParent && fireNavigationEvents) {
-            // Last raise onNavigatedFrom event if we are not modally shown.
-            page.onNavigatedFrom(isBack);
-        }
+        // if (!modalParent && fireNavigationEvents) {
+        //     // Last raise onNavigatedFrom event if we are not modally shown.
+        //     page.onNavigatedFrom(isBack);
+        // }
     }
 
     public viewWillLayoutSubviews(): void {
@@ -291,10 +265,6 @@ export class Page extends PageBase {
     viewController: UIViewControllerImpl;
 
     private _ios: UIViewControllerImpl;
-    public _enableLoadedEvents: boolean;
-    public _modalParent: Page;
-    public _UIModalPresentationFormSheet: boolean;
-    public _viewWillDisappear: boolean;
     public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
 
     constructor() {
@@ -323,63 +293,10 @@ export class Page extends PageBase {
         //
     }
 
-    @profile
-    public onLoaded() {
-        // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
-        if (this._enableLoadedEvents) {
-            super.onLoaded();
-        }
-
-        this.updateActionBar();
-    }
-
-    public onUnloaded() {
-        // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
-        if (this._enableLoadedEvents) {
-            super.onUnloaded();
-        }
-    }
-
-    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
-        super._showNativeModalView(parent, context, closeCallback, fullscreen);
-        this._modalParent = parent;
-
-        if (!parent.ios.view.window) {
-            throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
-        }
-
-        if (fullscreen) {
-            this._ios.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
-        } else {
-            this._ios.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
-            this._UIModalPresentationFormSheet = true;
-        }
-
-        this._raiseShowingModallyEvent();
-
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, true, null);
-        const transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
-        if (transitionCoordinator) {
-            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
-        } else {
-            // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
-            // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
-            // Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
-            this._raiseShownModallyEvent();
-        }
-    }
-
-    protected _hideNativeModalView(parent: Page) {
-        parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(true);
-
-        super._hideNativeModalView(parent);
-    }
-
-    private updateActionBar(disableNavBarAnimation: boolean = false) {
-        const frame = this.frame;
-        if (frame) {
-            frame._updateActionBar(this, disableNavBarAnimation);
+    public onLoaded(): void {
+        super.onLoaded();
+        if (this.hasActionBar) {
+            this.actionBar.update();
         }
     }
 
@@ -443,16 +360,12 @@ export class Page extends PageBase {
             return true;
         }
 
-        // // Don't add modal pages our visual tree.
-        // if (child !== this.content) {
-        //     return true;
-        // }
-
         const nativeParent = this.nativeViewProtected.subviews[0];
         const nativeChild = child.nativeViewProtected;
 
         const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;
         if (viewController) {
+            // Adding modal controllers to as child will make app freeze.
             if (this.viewController.presentedViewController === viewController) {
                 return true;
             }
@@ -489,10 +402,15 @@ export class Page extends PageBase {
 
     [actionBarHiddenProperty.setNative](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
+
+        // Invalidate all inner controller.
         invalidateTopmostController(this.viewController);
 
-        // Update nav-bar visibility with disabled animations
-        this.updateActionBar(true);
+        const frame = this.frame;
+        if (frame) {
+            // Update nav-bar visibility with disabled animations
+            frame._updateActionBar(this, true);
+        }
     }
 
     [statusBarStyleProperty.getDefault](): UIBarStyle {

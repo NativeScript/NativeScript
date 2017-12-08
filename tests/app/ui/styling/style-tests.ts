@@ -112,6 +112,7 @@ export function test_css_is_applied_inside_TabView() {
     helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
         const page = <pageModule.Page>views[1];
         page.css = "button { color: red; }";
+        TKUnit.waitUntilReady(() => testButton.isLoaded);
         helper.assertViewColor(testButton, "#FF0000");
     });
 }

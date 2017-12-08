@@ -1,5 +1,8 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, Color, dip } from ".";
+import {
+    View as ViewDefinition, Point, Size, Color, dip,
+    ShownModallyData
+} from ".";
 
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
@@ -16,6 +19,8 @@ import {
     fromString as gestureFromString
 } from "../../gestures";
 
+import { createViewFromEntry } from "../../builder";
+
 export * from "../../styling/style-properties";
 export * from "../view-base";
 
@@ -28,8 +33,8 @@ function ensureAnimationModule() {
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
-    let stateEventNames = pseudoClasses.map(s => ":" + s);
-    let listeners = Symbol("listeners");
+    const stateEventNames = pseudoClasses.map(s => ":" + s);
+    const listeners = Symbol("listeners");
     return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
         function update(change: number) {
             let prev = this[listeners] || 0;
@@ -45,6 +50,14 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 }
 
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
+    public static shownModallyEvent = "shownModally";
+    public static showingModallyEvent = "showingModally";
+
+    protected _closeModalCallback: Function;
+
+    private _modalContext: any;
+    public _modal: ViewCommon;
+
     private _measuredWidth: number;
     private _measuredHeight: number;
 
@@ -126,6 +139,82 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         } else if (typeof arg === "number") {
             this._disconnectGestureObservers(<GestureTypes>arg);
         }
+    }
+
+    public _onBackPressed(): boolean {
+        return false;
+    }
+
+    public _getFragmentManager(): any {
+        return undefined;
+    }
+
+    public showModal(): ViewDefinition {
+        if (arguments.length === 0) {
+            throw new Error('showModal without parameters is deprecated. Please call showModal on a view instance instead.');
+        } else {
+            const firstAgrument = arguments[0];
+            const context: any = arguments[1];
+            const closeCallback: Function = arguments[2];
+            const fullscreen: boolean = arguments[3];
+            const animated = arguments[4];            
+
+            const view: ViewDefinition = firstAgrument instanceof ViewCommon 
+                ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
+
+            (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated);
+            return view;
+        }
+    }
+
+    public closeModal() {
+        if (this._closeModalCallback) {
+            this._closeModalCallback.apply(undefined, arguments);
+        }
+    }
+
+    public get modal(): ViewCommon {
+        return this._modal;
+    }
+
+    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+        parent._modal = this;
+        this._modalContext = context;
+        const that = this;
+        this._closeModalCallback = function () {
+            if (that._closeModalCallback) {
+                that._closeModalCallback = null;
+                that._modalContext = null;
+                that._hideNativeModalView(parent);
+                if (typeof closeCallback === "function") {
+                    closeCallback.apply(undefined, arguments);
+                }
+            }
+        };
+    }
+
+    protected _hideNativeModalView(parent: ViewCommon) {
+        //
+    }
+
+    protected _raiseShownModallyEvent() {
+        const args: ShownModallyData = {
+            eventName: ViewCommon.shownModallyEvent,
+            object: this,
+            context: this._modalContext,
+            closeCallback: this._closeModalCallback
+        };
+        this.notify(args);
+    }
+
+    protected _raiseShowingModallyEvent() {
+        const args: ShownModallyData = {
+            eventName: ViewCommon.showingModallyEvent,
+            object: this,
+            context: this._modalContext,
+            closeCallback: this._closeModalCallback
+        }
+        this.notify(args);
     }
 
     private _isEvent(name: string): boolean {
@@ -585,7 +674,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
             const width = layout.getMeasureSpecSize(widthSpec);
             const widthMode = layout.getMeasureSpecMode(widthSpec);
-    
+
             const height = layout.getMeasureSpecSize(heightSpec);
             const heightMode = layout.getMeasureSpecMode(heightSpec);
 
@@ -796,6 +885,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public _redrawNativeBackground(value: any): void {
         //
+    }
+
+    addCssFile(cssFileName: string): void {
+        // TODO: Implement
     }
 }
 

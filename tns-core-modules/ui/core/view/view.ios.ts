@@ -29,6 +29,8 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends ViewCommon {
     nativeViewProtected: UIView;
+    viewController: UIViewController;
+
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
@@ -40,6 +42,8 @@ export class View extends ViewCommon {
      *  - `drawn` - the view background has been property drawn, on subsequent layouts it may need to be redrawn if the background depends on the view's size.
      */
     _nativeBackgroundState: "unset" | "invalid" | "drawn";
+
+    public _modalParent: View;
 
     get isLayoutRequired(): boolean {
         return (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
@@ -302,6 +306,52 @@ export class View extends ViewCommon {
 
     public _isPresentationLayerUpdateSuspeneded() {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
+    }
+
+    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+        super._showNativeModalView(parent, context, closeCallback, fullscreen);
+        let controller = this.viewController;
+        if (!controller) {
+            controller = ios.UILayoutViewController.initWithOwner(new WeakRef(this));
+            this.viewController = controller;
+        }
+
+        this._setupAsRootView({});
+        this._modalParent = parent;
+
+        const parentController = parent.viewController;
+        if (!parentController.view.window) {
+            throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
+        }
+
+        if (fullscreen) {
+            controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
+        } else {
+            controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
+        }
+
+        this._raiseShowingModallyEvent();
+        animated = animated === undefined ? true : !!animated;
+        (<any>controller).animated = animated;
+        parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
+        const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
+        if (transitionCoordinator) {
+            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
+        } else {
+            // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
+            // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
+            // Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
+            this._raiseShownModallyEvent();
+        }
+    }
+
+    protected _hideNativeModalView(parent: View) {
+        parent.requestLayout();
+        const parentController = parent.viewController;
+        const animated = (<any>this.viewController).animated;
+        parentController.dismissModalViewControllerAnimated(animated);
+
+        super._hideNativeModalView(parent);
     }
 
     [isEnabledProperty.getDefault](): boolean {
@@ -641,8 +691,24 @@ export namespace ios {
         const frame = controller.view.subviews[0].bounds;
         const origin = frame.origin;
         const size = frame.size;
-        const width = layout.toDevicePixels(size.width);
-        const height = layout.toDevicePixels(size.height);
+        let width = layout.toDevicePixels(size.width);
+        let height = layout.toDevicePixels(size.height);
+
+        if (iosUtils.MajorVersion < 11) {
+            const window = controller.view.window;
+            if (window) {
+                const windowSize = window.frame.size;
+                const windowInPortrait = windowSize.width < windowSize.height;
+                const viewInPortrait = width < height;
+                if (windowInPortrait !== viewInPortrait) {
+                    // NOTE: This happens on iOS <11.
+                    // We were not visible (probably in backstack) when orientation happened.
+                    // request layout so we get the new dimensions.
+                    // There is no sync way to force a layout.
+                    setTimeout(() => owner.requestLayout());
+                }
+            }
+        }
 
         const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
         const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);

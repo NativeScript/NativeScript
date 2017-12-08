@@ -28,6 +28,11 @@ export class TabViewItem extends ViewBase {
      * Gets or sets the text transform of the tab titles. 
      */
     textTransform: TextTransform;
+
+    /**
+     * @private
+     */
+    canBeLoaded?: boolean;
 }
 
 /**
