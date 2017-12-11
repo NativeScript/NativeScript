@@ -30,7 +30,7 @@ export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
 export const orientationChangedEvent = "orientationChanged";
 
-let cssFile: string = "app.css";
+let cssFile: string = "./app.css";
 
 let resources: any = {};
 

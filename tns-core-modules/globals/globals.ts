@@ -42,20 +42,30 @@ interface ExtensionMap {
     [originalFileExtension: string]: string;
 }
 
-const defaultExtensionMap = { ".js": ".js", ".ts": ".js", ".css": ".css", ".scss": ".css", ".xml": ".xml" };
+const defaultExtensionMap = { ".js": ".js", ".ts": ".js", ".css": ".css", ".scss": ".css", ".xml": ".xml", ".less": ".css", ".sass": ".css" };
 global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
     context.keys().forEach(key => {
         const extDotIndex = key.lastIndexOf(".");
         const base = key.substr(0, extDotIndex);
         const originalExt = key.substr(extDotIndex);
-        const registerExt = extensionMap[originalExt] || defaultExtensionMap[originalExt];
+        const registerExt = extensionMap[originalExt] || defaultExtensionMap[originalExt] || originalExt;
+
+        // We prefer source files for webpack scenarios before compilation leftovers,
+        // e. g. if we get a .js and .ts for the same module, the .js is probably the compiled version of the .ts file,
+        // so we register the .ts with higher priority, similar is the case with us preferring the .scss to .css
+        const isSourceFile = originalExt !== registerExt;
+
         const registerName = base + registerExt;
         if (registerName.startsWith("./") && registerName.endsWith(".js")) {
             const jsNickName = registerName.substr(2, registerName.length - 5);
             // This is extremely short version like "main-page" that was promoted to be used with global.registerModule("module-name", loaderFunc);
-            global.registerModule(jsNickName, () => context(key));
+            if (isSourceFile || !global.moduleExists(jsNickName)) {
+                global.registerModule(jsNickName, () => context(key));
+            }
         }
-        global.registerModule(registerName, () => context(key));
+        if (isSourceFile || !global.moduleExists(registerName)) {
+            global.registerModule(registerName, () => context(key));
+        }
     });
 }
 
