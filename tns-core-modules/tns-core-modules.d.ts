@@ -21,6 +21,15 @@ declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 declare var console: Console;
 declare var require: NodeRequire;
 
+// Extend NodeRequire with the webpack's require context extension.
+interface NodeRequire {
+    context(root: string, recursive: boolean, filter: RegExp): {
+        (module: string): any;
+        id: number;
+        keys(): string[];
+    }
+}
+
 declare var __dirname: string;
 declare var __filename: string;
 
