@@ -173,8 +173,8 @@ function initializeNativeClasses() {
                 const tab = this.owner;
                 const items = tab.items;
                 const newItem = items ? items[position] : null;
-                if (newItem && !newItem.isLoaded && tab.isLoaded) {
-                    tab.loadView(newItem);
+                if (newItem && tab.isLoaded) {
+                    newItem.loadView(newItem.view);
                 }
             }
         }

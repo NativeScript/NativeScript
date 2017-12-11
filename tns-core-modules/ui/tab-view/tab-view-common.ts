@@ -30,7 +30,6 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
     get title(): string {
         return this._title;
     }
-
     set title(value: string) {
         if (this._title !== value) {
             this._title = value;
@@ -66,6 +65,17 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
         const view = this._view;
         if (view) {
             callback(view);
+        }
+    }
+
+    public loadView(view: ViewBase): void {
+        const tabView = this.parent as TabViewBase;
+        if (tabView && tabView.items) {
+            const index = tabView.items.indexOf(this);
+            // Don't load items until their fragments are instantiated.
+            if (index === tabView.selectedIndex && (<TabViewItemDefinition>this).canBeLoaded) {
+                super.loadView(view);
+            }
         }
     }
 
@@ -135,11 +145,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     }
 
     get _childrenCount(): number {
-        if (this.items) {
-            return this.items.length;
-        }
-
-        return 0;
+        const items = this.items;
+        return items ? items.length : 0;
     }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
@@ -149,15 +156,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
                 callback(item);
             });
         }
-    }
-
-    public loadView(view: ViewBase): void {
-        const item = view as TabViewItem;
-        const index = this.items.indexOf(item);
-        if (index === this.selectedIndex && item.canBeLoaded) {
-            super.loadView(item);
-        }
-        // Don't load items until their fragments are instantiated.
     }
 
     public eachChildView(callback: (child: View) => boolean) {
@@ -193,17 +191,18 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 
         const oldItem = items[oldIndex];
         if (oldItem) {
-            this.unloadView(oldItem);
+            oldItem.unloadView(oldItem.view);
         }
 
         const newItem = items[newIndex];
-        if (newItem && !newItem.isLoaded && this.isLoaded) {
-            this.loadView(newItem);
+        if (newItem && this.isLoaded) {
+            newItem.loadView(newItem.view);
         }
 
         this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
     }
 }
+
 export interface TabViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);

@@ -44,9 +44,6 @@ export class Page extends PageBase {
         this.actionBar.update();
     }
 
-    [actionBarHiddenProperty.getDefault](): boolean {
-        return undefined;
-    }
     [actionBarHiddenProperty.setNative](value: boolean) {
         this.updateActionBar();
     }

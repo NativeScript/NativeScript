@@ -141,14 +141,20 @@ function initializeDialogFragment() {
             this.owner._dialogFragment = this;
             this.setStyle(android.app.DialogFragment.STYLE_NO_TITLE, 0);
             
-            return new DialogImpl(this, this.getActivity(), this.getTheme());
+            const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
+
+            // adjust alignment based on fullscreen value.
+            this.owner.horizontalAlignment = this._fullscreen ? "stretch" : "center";
+            this.owner.verticalAlignment = this._fullscreen ? "stretch" : "middle";
+          
+            return dialog;
         }
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const owner = this.owner;
             owner._setupUI(this.getActivity());
             owner._isAddedToNativeVisualTree = true;
-
+            
             return this.owner.nativeViewProtected;
         }
 
