@@ -25,7 +25,11 @@ class TimerTargetImpl extends NSObject {
 
     public tick(timer): void {
         if (!this.disposed) {
-            this.callback();
+            try {
+                this.callback();
+            } catch (e) {
+                // TODO
+            }
         }
 
         if (!this.shouldRepeat) {
