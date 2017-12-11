@@ -204,10 +204,11 @@ export function _onFragmentCreateAnimator(entry: ExpandedEntry, fragment: androi
 
     if (!animator && sdkVersion() >= 21) {
         const view = fragment.getView();
-        const parent = view.getParent();
+        const jsParent = entry.resolvedPage.parent;
+        const parent = view.getParent() || (jsParent && jsParent.nativeViewProtected);
         const animatedEntries = _getAnimatedEntries(entry.frameId);
         if (!animatedEntries || !animatedEntries.has(entry)) {
-            if (!(<any>parent).isLaidOut()) {
+            if (parent && !(<any>parent).isLaidOut()) {
                 animator = enter ? entry.defaultEnterAnimator : entry.defaultExitAnimator;
             }
         }

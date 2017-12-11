@@ -185,6 +185,7 @@ function initializeNativeClasses() {
                     (<any>this.mCurTransaction).commitNowAllowingStateLoss();
                 } else {
                     this.mCurTransaction.commitAllowingStateLoss();
+                    this.owner._getFragmentManager().executePendingTransactions();
                 }
 
                 this.mCurTransaction = null;
