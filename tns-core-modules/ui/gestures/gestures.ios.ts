@@ -198,7 +198,11 @@ export class GesturesObserver extends GesturesObserverBase {
 
     public _executeCallback(args: GestureEventData) {
         if (this.callback) {
-            this.callback.call(this.context, args);
+            try {
+                this.callback.call(this.context, args);
+            } catch (e) {
+                // TODO
+            }
         }
     }
 
