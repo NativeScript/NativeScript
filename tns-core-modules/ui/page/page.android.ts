@@ -25,11 +25,20 @@ export class Page extends PageBase {
         this.nativeViewProtected.setBackgroundColor(-1); // White color.
     }
 
-    public _onContentChanged(oldView: View, newView: View) {
-        super._onContentChanged(oldView, newView);
-        if (newView) {
-            GridLayout.setRow(newView, 1);
+    public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
+        // Set the row property for the child 
+        if (this.nativeViewProtected && child.nativeViewProtected) {
+            if (child instanceof ActionBar) {
+                GridLayout.setRow(child, 0);
+                child.horizontalAlignment = "stretch";
+                child.verticalAlignment = "top";
+            }
+            else {
+                GridLayout.setRow(child, 1);
+            }
         }
+
+        return super._addViewToNativeVisualTree(child, atIndex);
     }
 
     @profile
