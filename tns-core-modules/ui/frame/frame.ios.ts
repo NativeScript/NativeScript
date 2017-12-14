@@ -1,5 +1,5 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition, NavigationEntry } from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
@@ -54,8 +54,8 @@ function handleNotification(notification: NSNotification): void {
 }
 
 export class Frame extends FrameBase {
+    public viewController: UINavigationControllerImpl;
     private _ios: iOSFrame;
-    private _paramToNavigate: any;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
 
     public _shouldSkipNativePop: boolean = false;
@@ -69,27 +69,12 @@ export class Frame extends FrameBase {
     constructor() {
         super();
         this._ios = new iOSFrame(this);
+        this.viewController = this._ios.controller;
         this.nativeViewProtected = this._ios.controller.view;
     }
 
-    @profile
-    public onLoaded() {
-        super.onLoaded();
-
-        if (this._paramToNavigate) {
-            this.navigate(this._paramToNavigate);
-            this._paramToNavigate = undefined;
-        }
-    }
-
-    public navigate(param: any) {
-        if (this.isLoaded) {
-            super.navigate(param);
-            this._isInitialNavigation = false;
-        }
-        else {
-            this._paramToNavigate = param;
-        }
+    public get ios(): iOSFrame {
+        return this._ios;
     }
 
     @profile
@@ -103,7 +88,6 @@ export class Frame extends FrameBase {
 
         let clearHistory = backstackEntry.entry.clearHistory;
         if (clearHistory) {
-            this._clearBackStack();
             navDepth = -1;
         }
         navDepth++;
@@ -262,10 +246,6 @@ export class Frame extends FrameBase {
                 newValue = !!newValue; // Make sure it is boolean
                 return newValue;
         }
-    }
-
-    public get ios(): iOSFrame {
-        return this._ios;
     }
 
     public static get defaultAnimatedNavigation(): boolean {
@@ -506,7 +486,7 @@ class UINavigationControllerImpl extends UINavigationController {
     @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner && (!owner.isLoaded && !owner.parent)) {
             owner.onLoaded();
         }

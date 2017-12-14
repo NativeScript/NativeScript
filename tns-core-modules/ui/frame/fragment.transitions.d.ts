@@ -21,14 +21,19 @@ export const enum AnimationType {
 export function _setAndroidFragmentTransitions(
     animated: boolean,
     navigationTransition: NavigationTransition,
-    currentFragment: any,
-    newFragment: any,
+    currentEntry: BackstackEntry,
+    newEntry: BackstackEntry,
     fragmentTransaction: any,
-    manager: any /* android.app.FragmentManager */): void;
+    manager: any /* android.app.FragmentManager */,
+    frameId: number): void;
 /**
  * @private
  */
-export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
+export function _onFragmentCreateAnimator(entry: BackstackEntry, fragment: any, nextAnim: number, enter: boolean): any;
+/**
+ * @private
+ */
+export function _getAnimatedEntries(frameId: number): Set<BackstackEntry>;
 /**
  * @private
  * Called once fragment is recreated after it was destroyed.
@@ -54,7 +59,7 @@ export function _clearEntry(entry: BackstackEntry): void;
  * Removes all animations and transitions but keeps them on the entry
  * in order to reapply them when new fragment is created for the same entry.
  */
-export function _clearFragment(fragment: any): void;
+export function _clearFragment(entry: BackstackEntry): void;
 /**
  * @private
  */

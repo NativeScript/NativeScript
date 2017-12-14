@@ -105,6 +105,6 @@ export var test_Resolve_Fragment_ForPage = function () {
     frame.navigate(pageFactory);
     TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 
-    const fragment = frame.android.fragmentForPage(testPage);
+    const fragment = frame.android.fragmentForPage(frame._currentEntry);
     TKUnit.assertNotNull(fragment, "Failed to resolve native fragment for page");
 }

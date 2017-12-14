@@ -19,16 +19,15 @@ const ENTRY = "_entry";
 const DELEGATE = "_delegate";
 
 function isBackNavigationTo(page: Page, entry): boolean {
-    let frame = page.frame;
+    const frame = page.frame;
     if (!frame) {
         return false;
     }
 
     if (frame.navigationQueueIsEmpty()) {
         return true;
-    }
-    else {
-        let navigationQueue = (<any>frame)._navigationQueue;
+    } else {
+        const navigationQueue = (<any>frame)._navigationQueue;
         for (let i = 0; i < navigationQueue.length; i++) {
             if (navigationQueue[i].entry === entry) {
                 return navigationQueue[i].isBackNavigation;
@@ -65,7 +64,7 @@ class UIViewControllerImpl extends UIViewController {
     public shown: boolean;
 
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
-        let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
+        const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
         controller._owner = owner;
         controller.automaticallyAdjustsScrollViewInsets = false;
         controller.shown = false;
@@ -152,7 +151,7 @@ class UIViewControllerImpl extends UIViewController {
 
         // Don't raise event if currentPage was showing modal page.
         if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
-            let isBack = isBackNavigationTo(page, newEntry);
+            const isBack = isBackNavigationTo(page, newEntry);
             page.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
 
@@ -206,7 +205,8 @@ class UIViewControllerImpl extends UIViewController {
         //https://github.com/NativeScript/NativeScript/issues/1201
         page._viewWillDisappear = false;
 
-        let frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const navigationController = this.navigationController;
+        const frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
         if (!page._presentedViewController && frame) {
             let newEntry = this[ENTRY];
@@ -217,24 +217,24 @@ class UIViewControllerImpl extends UIViewController {
             }
 
             frame._navigateToEntry = null;
-            frame._currentEntry = newEntry;
+            frame._updateBackstack(newEntry, isBack);
+            frame.setCurrent(newEntry, isBack);
             frame.remeasureFrame();
             frame._updateActionBar(page);
-
-            page.onNavigatedTo(isBack);
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
 
+            frame._processNavigationQueue(page);
+
+            // _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
             // Workaround for disabled backswipe on second custom native transition
             if (frame.canGoBack()) {
-                this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
-                this.navigationController.interactivePopGestureRecognizer.enabled = page.enableSwipeBackNavigation;
+                navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+                navigationController.interactivePopGestureRecognizer.enabled = page.enableSwipeBackNavigation;
             } else {
-                this.navigationController.interactivePopGestureRecognizer.enabled = false;
+                navigationController.interactivePopGestureRecognizer.enabled = false;
             }
-
-            frame._processNavigationQueue(page);
         }
 
         if (!this.presentedViewController) {
@@ -243,7 +243,7 @@ class UIViewControllerImpl extends UIViewController {
             // If we clean it when we have viewController then once presented VC is dismissed then
             page._presentedViewController = null;
         }
-    };
+    }
 
     @profile
     public viewWillDisappear(animated: boolean): void {
@@ -299,34 +299,38 @@ class UIViewControllerImpl extends UIViewController {
 
         // Manually pop backStack when Back button is pressed or navigating back with edge swipe.
         // Don't pop if we are hiding modally shown page.
-        let frame = page.frame;
+        // const frame = page.frame;
         // We are not modal page, have frame with backstack and navigation queue is empty and currentPage is closed
         // then pop our backstack.
-        if (!modalParent && frame && frame.backStack.length > 0 && frame.navigationQueueIsEmpty() && frame.currentPage === page) {
-            (<any>frame)._backStack.pop();
-        }
+        // If we are in frame wich is in tab and tab.selectedControler is not the frame
+        // skip navigation.
+        // const tab = this.tabBarController;
+        // const fireNavigationEvents = !tab
+        //     || tab.selectedViewController === this.navigationController;
+
+        // Remove from parent if page was in frame and we navigated back or
+        // navigate forward but current entry is not backstack visible.
+        // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
+        // const isBack = isBackNavigationFrom(this, page);
+        // if (frame && page.frame === frame &&
+        //     (isBack || !frame._isCurrentEntryBackstackVisible)) {
+        //     // Remove parent when navigating back.
+        //     frame._removeBackstackEntries([_removeBackstackEntries])
+        //     frame._removeView(page);
+        //     page._frame = null;
+        // }
 
         page._enableLoadedEvents = true;
-
-        // Remove from parent if page was in frame and we navigated back.
-        // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
-        let isBack = isBackNavigationFrom(this, page);
-        if (isBack) {
-            // Remove parent when navigating back.
-            frame._removeView(page);
-        }
 
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
             page.onUnloaded();
         }
 
-        page._enableLoadedEvents = false;
-
-        if (!modalParent) {
-            // Last raise onNavigatedFrom event if we are not modally shown.
-            page.onNavigatedFrom(isBack);
-        }
+        // if (!modalParent && fireNavigationEvents) {
+        //     // Last raise onNavigatedFrom event if we are not modally shown.
+        //     page.onNavigatedFrom(isBack);
+        // }
     }
 }
 
@@ -461,10 +465,10 @@ export class Page extends PageBase {
     public _updateStatusBarStyle(value?: string) {
         const frame = this.frame;
         if (this.frame && value) {
-            let navigationController = frame.ios.controller;
-            let navigationBar = navigationController.navigationBar;
+            const navigationController: UINavigationController = frame.ios.controller;
+            const navigationBar = navigationController.navigationBar;
 
-            navigationBar.barStyle = value === "dark" ? 1 : 0;
+            navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
         }
     }
 
@@ -587,9 +591,6 @@ export class Page extends PageBase {
         super._removeViewFromNativeVisualTree(view);
     }
 
-    [actionBarHiddenProperty.getDefault](): boolean {
-        return undefined;
-    }
     [actionBarHiddenProperty.setNative](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
         if (this.isLoaded) {
@@ -602,9 +603,9 @@ export class Page extends PageBase {
         return UIBarStyle.Default;
     }
     [statusBarStyleProperty.setNative](value: string | UIBarStyle) {
-        let frame = this.frame;
+        const frame = this.frame;
         if (frame) {
-            let navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
+            const navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
             if (typeof value === "string") {
                 navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
             } else {
