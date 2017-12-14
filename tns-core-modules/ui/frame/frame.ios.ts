@@ -59,7 +59,6 @@ export class Frame extends FrameBase {
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
 
     public _shouldSkipNativePop: boolean = false;
-    public _navigateToEntry: BackstackEntry;
     public _widthMeasureSpec: number;
     public _heightMeasureSpec: number;
     public _right: number;
@@ -282,12 +281,6 @@ export class Frame extends FrameBase {
         this._heightMeasureSpec = heightMeasureSpec;
 
         let result = this.measurePage(this.currentPage);
-        if (this._navigateToEntry && this.currentPage) {
-            let newPageSize = this.measurePage(this._navigateToEntry.resolvedPage);
-            result.measuredWidth = Math.max(result.measuredWidth, newPageSize.measuredWidth);
-            result.measuredHeight = Math.max(result.measuredHeight, newPageSize.measuredHeight);
-        }
-
         let widthAndState = View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
@@ -312,9 +305,6 @@ export class Frame extends FrameBase {
         this._bottom = bottom;
         this._handleHigherInCallStatusBarIfNeeded();
         this.layoutPage(this.currentPage);
-        if (this._navigateToEntry && this.currentPage) {
-            this.layoutPage(this._navigateToEntry.resolvedPage);
-        }
     }
 
     public layoutPage(page: Page): void {
@@ -487,8 +477,17 @@ class UINavigationControllerImpl extends UINavigationController {
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
-        if (owner && (!owner.isLoaded && !owner.parent)) {
+        if (owner && !owner.isLoaded && !owner.parent) {
             owner.onLoaded();
+        }
+    }
+
+    @profile
+    public viewDidDisappear(animated: boolean): void {
+        super.viewDidDisappear(animated);    
+        const owner = this._owner.get();
+        if (owner && owner.isLoaded && !owner.parent) {
+            owner.onUnloaded();
         }
     }
 

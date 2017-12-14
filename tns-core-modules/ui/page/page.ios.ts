@@ -164,17 +164,13 @@ class UIViewControllerImpl extends UIViewController {
 
         if (frame) {
             if (!page.parent) {
-                if (!frame._currentEntry) {
-                    frame._currentEntry = newEntry;
-                } else {
-                    frame._navigateToEntry = newEntry;
-                }
-
                 frame._addView(page);
-                frame.remeasureFrame();
             } else if (page.parent !== frame) {
                 throw new Error("Page is already shown on another frame.");
             }
+
+            frame.measurePage(page);
+            frame.layoutPage(page);
 
             page.actionBar.update();
         }
@@ -216,7 +212,6 @@ class UIViewControllerImpl extends UIViewController {
                 isBack = false;
             }
 
-            frame._navigateToEntry = null;
             frame._updateBackstack(newEntry, isBack);
             frame.setCurrent(newEntry, isBack);
             frame.remeasureFrame();
