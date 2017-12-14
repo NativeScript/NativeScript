@@ -115,15 +115,28 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         result = getComponentModule(componentName, componentPath, attributes, context);
     }
 
-    // Add component CSS file if exists.
-    var cssFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "css");
-    if (cssFilePath) {
-        if (parentPage && typeof (<any>parentPage).addCssFile === "function") {
-            (<any>parentPage).addCssFile(cssFilePath);
-        } else {
-            ensureTrace();
+    // webpack modules require paths to be relative to /app folder.
+    let cssModulePath = fullComponentPathFilePathWithoutExt + ".css";
+    if (cssModulePath.startsWith("/")) {
+        var app = knownFolders.currentApp().path + "/";
+        if (cssModulePath.startsWith(app)) {
+            cssModulePath = "./" + cssModulePath.substr(app.length);
+        }
+    }
 
-            trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
+    // Add CSS from webpack module if exists.
+    if (global.moduleExists(cssModulePath)) {
+        (<any>parentPage).addCssFile(cssModulePath);
+    } else {
+        var cssFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "css");
+        // Add component CSS file if exists.
+        if (cssFilePath) {
+            if (parentPage && typeof (<any>parentPage).addCssFile === "function") {
+                (<any>parentPage).addCssFile(cssFilePath);
+            } else {
+                ensureTrace();
+                trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
+            }
         }
     }
 

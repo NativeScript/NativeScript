@@ -80,22 +80,34 @@ class CSSSource {
     }
 
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
+        // webpack modules require all file paths to be relative to /app folder.
+        let appRelativeUri = uri;
+        if (appRelativeUri.startsWith("/")) {
+            var app = knownFolders.currentApp().path + "/";
+            if (appRelativeUri.startsWith(app)) {
+                appRelativeUri = "./" + appRelativeUri.substr(app.length);
+            }
+        }
+
         try {
-            const cssOrAst = global.loadModule(uri);
+            const cssOrAst = global.loadModule(appRelativeUri);
             if (cssOrAst) {
                 if (typeof cssOrAst === "string") {
-                    return CSSSource.fromSource(cssOrAst, keyframes, uri);
+                    // raw-loader
+                    return CSSSource.fromSource(cssOrAst, keyframes, appRelativeUri);
                 } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
-                    return CSSSource.fromAST(cssOrAst, keyframes, uri);
+                    // css-loader
+                    return CSSSource.fromAST(cssOrAst, keyframes, appRelativeUri);
                 } else {
-                    // Probably a webpack css-loader exported object.
-                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, uri);
+                    // css2json-loader
+                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, appRelativeUri);
                 }
             }
         } catch(e) {
             //
         }
-        return CSSSource.fromFile(uri, keyframes);
+
+        return CSSSource.fromFile(appRelativeUri, keyframes);
     }
 
     public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
