@@ -165,38 +165,89 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public static androidOptionSelectedEvent = "optionSelected";
 
     private _animated: boolean;
-    public _currentEntry: BackstackEntry;
     private _transition: NavigationTransition;
     private _backStack = new Array<BackstackEntry>();
     private _navigationQueue = new Array<NavigationContext>();
 
+    public _currentEntry: BackstackEntry;
+    public _executingEntry: BackstackEntry;
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
     public static defaultTransition: NavigationTransition;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
+    public _addChildFromBuilder(name: string, value: any) {
+        if (value instanceof Page) {
+            this.navigate({ create: () => value });
+        }
+    }
+
+    @profile
+    public onLoaded() {
+        super.onLoaded();
+        this._processNextNavigationEntry();
+    }
+
     public canGoBack(): boolean {
-        return this._backStack.length > 0;
+        let backstack = this._backStack.length;
+        let previousForwardNotInBackstack = false;
+        this._navigationQueue.forEach(item => {
+            const entry = item.entry;
+            if (item.isBackNavigation) {
+                previousForwardNotInBackstack = false;
+                if (!entry) {
+                    backstack--;
+                } else {
+                    const backstackIndex = this._backStack.indexOf(entry);
+                    if (backstackIndex !== -1) {
+                        backstack = backstackIndex;
+                    } else {
+                        // NOTE: We don't search for entries in navigationQueue because there is no way for 
+                        // developer to get reference to BackstackEntry unless transition is completed.
+                        // At that point the entry is put in the backstack array.
+                        // If we start to return Backstack entry from navigate method then
+                        // here we should check also navigationQueue as well.
+                        backstack--;
+                    }
+                }
+            } else if (entry.entry.clearHistory) {
+                previousForwardNotInBackstack = false;
+                backstack = 0;
+            } else {
+                backstack++;
+                if (previousForwardNotInBackstack) {
+                    backstack--;
+                }
+
+                previousForwardNotInBackstack = entry.entry.backstackVisible === false;
+            }
+        });
+
+        // this is our first navigation which is not completed yet.
+        if (this._navigationQueue.length > 0 && !this._currentEntry) {
+            backstack--;
+        }
+
+        return backstack > 0;
     }
 
     /**
      * Navigates to the previous entry (if any) in the back stack.
      * @param to The backstack entry to navigate back to.
      */
-    public goBack(backstackEntry?: BackstackEntry) {
+    public goBack(backstackEntry?: BackstackEntry): void {
         if (traceEnabled()) {
             traceWrite(`GO BACK`, traceCategories.Navigation);
         }
 
         if (!this.canGoBack()) {
-            // TODO: Do we need to throw an error?
             return;
         }
 
         if (backstackEntry) {
-            const backIndex = this._backStack.indexOf(backstackEntry);
-            if (backIndex < 0) {
+            const index = this._backStack.indexOf(backstackEntry);
+            if (index < 0) {
                 return;
             }
         }
@@ -207,19 +258,18 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         this._navigationQueue.push(navigationContext);
-
-        if (this._navigationQueue.length === 1) {
-            this._processNavigationContext(navigationContext);
-        }
-        else {
-            if (traceEnabled()) {
-                traceWrite(`Going back scheduled`, traceCategories.Navigation);
-            }
-        }
+        this._processNextNavigationEntry();
     }
 
-    public _removeBackstackEntries(removed: BackstackEntry[]): void {
-        // Handled in android.
+    public _removeEntry(removed: BackstackEntry): void {
+        const page = removed.resolvedPage;
+        const frame = page.frame;
+        (<any>page)._frame = null;
+        if (frame) {
+            frame._removeView(page);
+        } else {
+            page._tearDownUI(true);
+        }
     }
 
     // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
@@ -249,7 +299,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         const entry = buildEntryFromArgs(param);
-        const page = resolvePageFromEntry(entry);
+        const page = resolvePageFromEntry(entry) as Page;
 
         // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
         // if (page["isBiOrientational"] && entry.moduleName && !this._subscribedToOrientationChangedEvent){
@@ -276,22 +326,59 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         this._navigationQueue.push(navigationContext);
-
-        if (this._navigationQueue.length === 1) {
-            this._processNavigationContext(navigationContext);
-        } else {
-            if (traceEnabled()) {
-                traceWrite(`Navigation scheduled`, traceCategories.Navigation);
-            }
-        }
+        this._processNextNavigationEntry();
     }
 
     public isCurrent(entry: BackstackEntry): boolean {
         return this._currentEntry === entry;
     }
 
-    public setCurrent(entry: BackstackEntry): void {
+    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+        const newPage = entry.resolvedPage;
+        // In case we navigated forward to a page that was in the backstack
+        // with clearHistory: true
+        if (!newPage.frame) {
+            this._addView(newPage);
+            (<any>newPage)._frame = this;
+        }
+        
         this._currentEntry = entry;
+        this._executingEntry = null;
+        newPage.onNavigatedTo(isBack);
+    }
+
+    public _updateBackstack(entry: BackstackEntry, isBack: boolean): void {
+        this.raiseCurrentPageNavigatedEvents(isBack);
+        const current = this._currentEntry;
+
+        if (isBack) {
+            const index = this._backStack.indexOf(entry);
+            this._backStack.splice(index + 1).forEach(e => this._removeEntry(e));
+            this._backStack.pop();
+        } else {
+            if (entry.entry.clearHistory) {
+                this._backStack.forEach(e => this._removeEntry(e));
+                this._backStack.length = 0;
+            } else if (FrameBase._isEntryBackstackVisible(current)) {
+                this._backStack.push(current);
+            }
+        }
+
+        if (current && this._backStack.indexOf(current) < 0) {
+            this._removeEntry(current);
+        }
+    }
+
+    private raiseCurrentPageNavigatedEvents(isBack: boolean) {
+        const page = this.currentPage;
+        if (page) {
+            if (page.isLoaded) {
+                // Forward navigation does not remove page from frame so we raise unloaded manually.
+                page.onUnloaded();
+            }
+
+            page.onNavigatedFrom(isBack);
+        }
     }
 
     public _processNavigationQueue(page: Page) {
@@ -300,8 +387,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             return;
         }
 
-        let entry = this._navigationQueue[0].entry;
-        let currentNavigationPage = entry.resolvedPage;
+        const entry = this._navigationQueue[0].entry;
+        const currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
             // If the page is not the one that requested navigation - skip it.
             return;
@@ -309,12 +396,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         // remove completed operation.
         this._navigationQueue.shift();
-
-        if (this._navigationQueue.length > 0) {
-            let navigationContext = this._navigationQueue[0];
-            this._processNavigationContext(navigationContext);
-        }
-
+        this._processNextNavigationEntry();
         this._updateActionBar();
     }
 
@@ -353,29 +435,25 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         //traceWrite("calling _updateActionBar on Frame", traceCategories.Navigation);
     }
 
-    protected _processNavigationContext(navigationContext: NavigationContext) {
-        if (navigationContext.isBackNavigation) {
-            this.performGoBack(navigationContext);
-        } else {
-            this.performNavigation(navigationContext);
+    protected _processNextNavigationEntry() {
+        if (!this.isLoaded || this._executingEntry) {
+            return;
         }
-    }
 
-    public _clearBackStack(): void {
-        this._backStack.length = 0;
+        if (this._navigationQueue.length > 0) {
+            const navigationContext = this._navigationQueue[0];
+            if (navigationContext.isBackNavigation) {
+                this.performGoBack(navigationContext);
+            } else {
+                this.performNavigation(navigationContext);
+            }
+        }
     }
 
     @profile
     private performNavigation(navigationContext: NavigationContext) {
-        let navContext = navigationContext.entry;
-
-        // TODO: This should happen once navigation is completed.
-        if (navigationContext.entry.entry.clearHistory) {
-            // Don't clear backstack immediately or we can't remove pages from frame.
-        } else if (FrameBase._isEntryBackstackVisible(this._currentEntry)) {
-            this._backStack.push(this._currentEntry);
-        }
-
+        const navContext = navigationContext.entry;
+        this._executingEntry = navContext;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
         this._navigateCore(navContext);
     }
@@ -383,16 +461,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     @profile
     private performGoBack(navigationContext: NavigationContext) {
         let backstackEntry = navigationContext.entry;
+        const backstack = this._backStack;
         if (!backstackEntry) {
-            backstackEntry = this._backStack.pop();
+            backstackEntry = backstack[backstack.length - 1];
             navigationContext.entry = backstackEntry;
-        } else {
-            const index = this._backStack.indexOf(backstackEntry);
-            const removed = this._backStack.splice(index + 1);
-            this._backStack.pop();
-            this._removeBackstackEntries(removed);
         }
-       
+
+        this._executingEntry = backstackEntry;
         this._onNavigatingTo(backstackEntry, true);
         this._goBackCore(backstackEntry);
     }
@@ -485,8 +560,9 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public eachChildView(callback: (child: View) => boolean) {
-        if (this.currentPage) {
-            callback(this.currentPage);
+        const page = this.currentPage;
+        if (page) {
+            callback(page);
         }
     }
 
@@ -588,7 +664,7 @@ export function topmost(): FrameBase {
 
 export function goBack(): boolean {
     const top = topmost();
-    if (top.canGoBack()) {
+    if (top && top.canGoBack()) {
         top.goBack();
         return true;
     }

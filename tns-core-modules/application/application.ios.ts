@@ -154,6 +154,11 @@ class IOSApplication implements IOSApplicationDefinition {
         let ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
         let object = this;
         notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
+        const content = this._window.content;
+        if (content && !content.isLoaded) {
+            content.onLoaded();
+        }
+
         if (!displayedOnce) {
             notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
             displayedOnce = true;
@@ -161,10 +166,18 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     private didEnterBackground(notification: NSNotification) {
+        const content = this._window.content;
+        if (content && content.isLoaded) {
+            content.onUnloaded();
+        }
         notify(<ApplicationEventData>{ eventName: suspendEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
     }
 
     private willTerminate(notification: NSNotification) {
+        const content = this._window.content;
+        if (content && content.isLoaded) {
+            content.onUnloaded();
+        }
         notify(<ApplicationEventData>{ eventName: exitEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
     }
 

@@ -1,5 +1,5 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition, NavigationEntry } from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
@@ -54,12 +54,11 @@ function handleNotification(notification: NSNotification): void {
 }
 
 export class Frame extends FrameBase {
+    public viewController: UINavigationControllerImpl;
     private _ios: iOSFrame;
-    private _paramToNavigate: any;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
 
     public _shouldSkipNativePop: boolean = false;
-    public _navigateToEntry: BackstackEntry;
     public _widthMeasureSpec: number;
     public _heightMeasureSpec: number;
     public _right: number;
@@ -69,27 +68,12 @@ export class Frame extends FrameBase {
     constructor() {
         super();
         this._ios = new iOSFrame(this);
+        this.viewController = this._ios.controller;
         this.nativeViewProtected = this._ios.controller.view;
     }
 
-    @profile
-    public onLoaded() {
-        super.onLoaded();
-
-        if (this._paramToNavigate) {
-            this.navigate(this._paramToNavigate);
-            this._paramToNavigate = undefined;
-        }
-    }
-
-    public navigate(param: any) {
-        if (this.isLoaded) {
-            super.navigate(param);
-            this._isInitialNavigation = false;
-        }
-        else {
-            this._paramToNavigate = param;
-        }
+    public get ios(): iOSFrame {
+        return this._ios;
     }
 
     @profile
@@ -103,7 +87,6 @@ export class Frame extends FrameBase {
 
         let clearHistory = backstackEntry.entry.clearHistory;
         if (clearHistory) {
-            this._clearBackStack();
             navDepth = -1;
         }
         navDepth++;
@@ -264,10 +247,6 @@ export class Frame extends FrameBase {
         }
     }
 
-    public get ios(): iOSFrame {
-        return this._ios;
-    }
-
     public static get defaultAnimatedNavigation(): boolean {
         return FrameBase.defaultAnimatedNavigation;
     }
@@ -302,12 +281,6 @@ export class Frame extends FrameBase {
         this._heightMeasureSpec = heightMeasureSpec;
 
         let result = this.measurePage(this.currentPage);
-        if (this._navigateToEntry && this.currentPage) {
-            let newPageSize = this.measurePage(this._navigateToEntry.resolvedPage);
-            result.measuredWidth = Math.max(result.measuredWidth, newPageSize.measuredWidth);
-            result.measuredHeight = Math.max(result.measuredHeight, newPageSize.measuredHeight);
-        }
-
         let widthAndState = View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
@@ -332,9 +305,6 @@ export class Frame extends FrameBase {
         this._bottom = bottom;
         this._handleHigherInCallStatusBarIfNeeded();
         this.layoutPage(this.currentPage);
-        if (this._navigateToEntry && this.currentPage) {
-            this.layoutPage(this._navigateToEntry.resolvedPage);
-        }
     }
 
     public layoutPage(page: Page): void {
@@ -506,9 +476,18 @@ class UINavigationControllerImpl extends UINavigationController {
     @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
-        let owner = this._owner.get();
-        if (owner && (!owner.isLoaded && !owner.parent)) {
+        const owner = this._owner.get();
+        if (owner && !owner.isLoaded && !owner.parent) {
             owner.onLoaded();
+        }
+    }
+
+    @profile
+    public viewDidDisappear(animated: boolean): void {
+        super.viewDidDisappear(animated);    
+        const owner = this._owner.get();
+        if (owner && owner.isLoaded && !owner.parent) {
+            owner.onUnloaded();
         }
     }
 
