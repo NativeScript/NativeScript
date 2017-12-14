@@ -261,6 +261,11 @@ export class TabViewItem extends TabViewItemBase {
         }
     }
 
+    public disposeNativeView(): void {
+        super.disposeNativeView();
+        (<TabViewItemDefinition>this).canBeLoaded = false;
+    }
+
     public createNativeView() {
         return this.nativeViewProtected;
     }

@@ -187,12 +187,16 @@ function initializeDialogFragment() {
             super.onDismiss(dialog);
             const manager = this.getFragmentManager();
             if (manager) {
-                const owner = this.owner;
-                removeModal(owner._domId);
+                removeModal(this.owner._domId);
                 this._dismissCallback();
-                owner._isAddedToNativeVisualTree = false;
-                owner._tearDownUI(true);
             }
+        }
+
+        public onDestroy(): void {
+            super.onDestroy();
+            const owner = this.owner;
+            owner._isAddedToNativeVisualTree = false;
+            owner._tearDownUI(true);
         }
     }
 

@@ -208,10 +208,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return this._currentEntry === entry;
     }
 
-    public changeEntry(entry: BackstackEntry): void {
-        // android specific.
-    }
-
     public setCurrent(entry: BackstackEntry, isBack: boolean): void {
         const newPage = entry.resolvedPage;
         // In case we navigated forward to a page that was in the backstack

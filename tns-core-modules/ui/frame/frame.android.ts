@@ -170,12 +170,6 @@ export class Frame extends FrameBase {
         return newFragment;
     }
 
-    public changeEntry(entry: BackstackEntry): void {
-        const isBack = this._isBack;
-        this.setCurrent(entry, isBack);
-        this._isBack = true;
-    }
-    
     public setCurrent(entry: BackstackEntry, isBack: boolean): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
@@ -189,12 +183,10 @@ export class Frame extends FrameBase {
             if (this._tearDownPending) {
                 this._tearDownPending = false;
                 if (!entry.recreated) {
-                    entry.recreated = false;
                     clearEntry(entry);
                 }
-
+               
                 if (current && !current.recreated) {
-                    current.recreated = false;
                     clearEntry(current);
                 }
 
@@ -205,6 +197,9 @@ export class Frame extends FrameBase {
                     entry.fragment = this.createFragment(entry, entry.fragmentTag);
                     entry.resolvedPage._setupUI(context);
                 }
+
+                entry.recreated = false;
+                current.recreated = false;
             }
 
             super.setCurrent(entry, isBack);
@@ -402,6 +397,7 @@ function clearEntry(entry: BackstackEntry): void {
         _clearFragment(entry);
     }
 
+    entry.recreated = false;
     entry.fragment = null;
     const page = entry.resolvedPage;
     if (page._context) {
