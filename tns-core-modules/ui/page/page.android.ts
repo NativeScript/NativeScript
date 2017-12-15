@@ -4,6 +4,7 @@ import { GridLayout } from "../layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
 import { device } from "../../platform";
 import { profile } from "../../profiling";
+import * as application from "../../application";
 
 export * from "./page-common";
 
@@ -21,6 +22,33 @@ function initializeDialogFragment() {
         return;
     }
 
+    class DialogImpl extends android.app.Dialog {
+        constructor(context: android.content.Context) {
+            super(context);
+
+            this.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+            return global.__native(this);
+        }
+
+        public onBackPressed() : void {
+            // context is the main Activity class
+            let context = this.getContext();
+            
+            const args = <application.AndroidActivityBackPressedEventData>{
+                eventName: "activityBackPressed",
+                object: application.android,
+                activity: context,
+                cancel: false,
+            };
+            application.android.notify(args);
+
+            if(!args.cancel) {
+                // base implementation will simply cancel the dialog (if cancelable)
+                super.onBackPressed();
+            }
+        }
+    }
+
     class DialogFragmentImpl extends android.app.DialogFragment {
         constructor(
             private _owner: Page,
@@ -32,8 +60,7 @@ function initializeDialogFragment() {
         }
 
         public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
-            const dialog = new android.app.Dialog(this._owner._context);
-            dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+            const dialog = new DialogImpl(this._owner._context);            
 
             // Hide actionBar and adjust alignment based on _fullscreen value.
             this._owner.horizontalAlignment = this._fullscreen ? "stretch" : "center";
