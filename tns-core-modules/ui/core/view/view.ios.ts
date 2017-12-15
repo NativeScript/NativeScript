@@ -575,15 +575,7 @@ export class CustomLayoutView extends View {
 function isScrollable(controller: UIViewController, owner: View): boolean {
     let scrollable = (<any>owner).scrollableContent;
     if (scrollable === undefined) {
-        let view: UIView = controller.view.subviews.count > 0 ? controller.view.subviews[0] : null;
-        if (!(controller instanceof ios.UILayoutViewController)) {
-            // Propbably we are PageViewController. Consider different cases
-            if (view && view.subviews.count > 0) {
-                // Take page content.
-                view = view.subviews[0];
-            }
-        }
-
+        const view: UIView = controller.view.subviews.count > 0 ? controller.view.subviews[0] : null;
         if (view instanceof UIScrollView) {
             scrollable = true;
         }
@@ -599,124 +591,213 @@ interface ExtendedController extends UIViewController {
     navBarHidden: boolean;
     hasChildControllers: boolean;
 
-    safeAreaLeft: NSLayoutConstraint;
-    safeAreaTop: NSLayoutConstraint;
-    safeAreaRight: NSLayoutConstraint;
-    safeAreaBottom: NSLayoutConstraint;
-    fullscreenTop: NSLayoutConstraint;
-    fullscreenBottom: NSLayoutConstraint;
-    activeConstraints: NSLayoutConstraint[];
+    // safeAreaLeft: NSLayoutConstraint;
+    // safeAreaTop: NSLayoutConstraint;
+    // safeAreaRight: NSLayoutConstraint;
+    // safeAreaBottom: NSLayoutConstraint;
+    // fullscreenTop: NSLayoutConstraint;
+    // fullscreenBottom: NSLayoutConstraint;
+    // fullscreenLeft: NSLayoutConstraint;
+    // fullscreenRight: NSLayoutConstraint;
+    // activeConstraints: NSLayoutConstraint[];
 }
 
 export namespace ios {
     function constrainView(controller: ExtendedController, owner: View): void {
         const root = controller.view;
-        const view = root.subviews[0];
 
-        if (!controller.safeAreaTop) {
-            view.translatesAutoresizingMaskIntoConstraints = false;
-            if (majorVersion > 10) {
-                const safeArea = root.safeAreaLayoutGuide;
-                controller.safeAreaTop = view.topAnchor.constraintEqualToAnchor(safeArea.topAnchor);
-                controller.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
-                controller.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(safeArea.bottomAnchor);
-                controller.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
-                controller.safeAreaLeft = view.leftAnchor.constraintEqualToAnchor(safeArea.leftAnchor);
-                controller.safeAreaRight = view.rightAnchor.constraintEqualToAnchor(safeArea.rightAnchor);
-            } else {
-                controller.safeAreaTop = view.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor);
-                controller.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
-                controller.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor);
-                controller.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
-                controller.safeAreaLeft = view.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor);
-                controller.safeAreaRight = view.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor);
-            }
+        if (!root.safeAreaLayoutGuide) {
+            const layoutGuide = (<any>root).safeAreaLayoutGuide = UILayoutGuide.alloc().init();
+            root.addLayoutGuide(layoutGuide);
+            // // view.translatesAutoresizingMaskIntoConstraints = false;
+            // if (majorVersion > 10) {
+            //     const safeArea = root.safeAreaLayoutGuide;
+            //     layoutGuide.topAnchor.constraintEqualToAnchor(safeArea.topAnchor);
+            //     layoutGuide.bottomAnchor.constraintEqualToAnchor(safeArea.bottomAnchor);
+            //     layoutGuide.leftAnchor.constraintEqualToAnchor(safeArea.leftAnchor);
+            //     layoutGuide.rightAnchor.constraintEqualToAnchor(safeArea.rightAnchor);
+            // } else {
+            NSLayoutConstraint.activateConstraints(<any>[
+                layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor),
+                layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor),
+                layoutGuide.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor),
+                layoutGuide.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor)
+            ]);
+            // }
         }
 
-        const navBarHidden = controller.navBarHidden;
-        const scrollable = controller.scrollable;;
-        const hasChildControllers = controller.hasChildControllers;
-        const constraints = [
-            hasChildControllers || scrollable ? controller.fullscreenBottom : controller.safeAreaBottom,
-            controller.safeAreaLeft,
-            controller.safeAreaRight
-        ];
+        // const view = root.subviews[0];
+        // if (!controller.safeAreaTop) {
+        //     view.translatesAutoresizingMaskIntoConstraints = false;
+        //     if (majorVersion > 10) {
+        //         const safeArea = root.safeAreaLayoutGuide;
+        //         controller.safeAreaTop = view.topAnchor.constraintEqualToAnchor(safeArea.topAnchor);
+        //         controller.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
+        //         controller.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(safeArea.bottomAnchor);
+        //         controller.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
+        //         controller.safeAreaLeft = view.leftAnchor.constraintEqualToAnchor(safeArea.leftAnchor);
+        //         controller.fullscreenLeft = view.leftAnchor.constraintEqualToAnchor(root.leftAnchor);
+        //         controller.safeAreaRight = view.rightAnchor.constraintEqualToAnchor(safeArea.rightAnchor);
+        //         controller.fullscreenRight = view.rightAnchor.constraintEqualToAnchor(root.rightAnchor);
+        //     } else {
+        //         controller.safeAreaTop = view.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor);
+        //         controller.fullscreenTop = view.topAnchor.constraintEqualToAnchor(root.topAnchor);
+        //         controller.safeAreaBottom = view.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor);
+        //         controller.fullscreenBottom = view.bottomAnchor.constraintEqualToAnchor(root.bottomAnchor);
+        //         controller.safeAreaLeft = view.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor);
+        //         controller.fullscreenLeft = controller.safeAreaLeft;
+        //         controller.safeAreaRight = view.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor);
+        //         controller.fullscreenRight = controller.safeAreaRight;
+        //     }
+        // }
 
-        if (hasChildControllers) {
-            // If not inner most extend to fullscreen
-            constraints.push(controller.fullscreenTop);
-        } else if (!scrollable) {
-            // If not scrollable dock under safe area
-            constraints.push(controller.safeAreaTop);
-        } else if (navBarHidden) {
-            // If scrollable but no navigation bar dock under safe area
-            constraints.push(controller.safeAreaTop);
-        } else {
-            // If scrollable and navigation bar extend to fullscreen
-            constraints.push(controller.fullscreenTop);
-        }
+        // // check if this works
+        // const fullscreenHorizontally = controller === 
+        //     iosUtils.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController
+        //     || !!(<any>owner).wantsFullscreen;
 
-        const activeConstraints = controller.activeConstraints;
-        if (activeConstraints) {
-            NSLayoutConstraint.deactivateConstraints(<any>activeConstraints);
-        }
+        // const navBarHidden = controller.navBarHidden;
+        // const scrollable = controller.scrollable;;
+        // const hasChildControllers = controller.hasChildControllers;
+        // const constraints = [
+        //     hasChildControllers || scrollable ? controller.fullscreenBottom : controller.safeAreaBottom,
+        //     fullscreenHorizontally ? controller.fullscreenLeft : controller.safeAreaLeft,
+        //     fullscreenHorizontally ? controller.fullscreenRight : controller.safeAreaRight
+        // ];
 
-        NSLayoutConstraint.activateConstraints(<any>constraints);
-        controller.activeConstraints = constraints;
+        // if (hasChildControllers) {
+        //     // If not inner most extend to fullscreen
+        //     constraints.push(controller.fullscreenTop);
+        // } else if (!scrollable) {
+        //     // If not scrollable dock under safe area
+        //     constraints.push(controller.safeAreaTop);
+        // } else if (navBarHidden) {
+        //     // If scrollable but no navigation bar dock under safe area
+        //     constraints.push(controller.safeAreaTop);
+        // } else {
+        //     // If scrollable and navigation bar extend to fullscreen
+        //     constraints.push(controller.fullscreenTop);
+        // }
+
+        // const activeConstraints = controller.activeConstraints;
+        // if (activeConstraints) {
+        //     NSLayoutConstraint.deactivateConstraints(<any>activeConstraints);
+        // }
+
+        // NSLayoutConstraint.activateConstraints(<any>constraints);
+        // controller.activeConstraints = constraints;
     }
 
     export function updateConstraints(controller: UIViewController, owner: View): void {
         const extendedController = <ExtendedController>controller;
-        const navController = controller.navigationController;
-        const navBarHidden = navController ? navController.navigationBarHidden : true;
-        const scrollable = (owner && isScrollable(controller, owner));
-        const hasChildControllers = controller.childViewControllers.count > 0;
+        // const navController = controller.navigationController;
+        // const navBarHidden = navController ? navController.navigationBarHidden : true;
+        // const scrollable = isScrollable(controller, owner);
+        // const hasChildControllers = controller.childViewControllers.count > 0;
 
-        if (extendedController.scrollable !== scrollable
-            || extendedController.navBarHidden !== navBarHidden
-            || extendedController.hasChildControllers !== hasChildControllers) {
-            extendedController.scrollable = scrollable;
-            extendedController.navBarHidden = navBarHidden;
-            extendedController.hasChildControllers = hasChildControllers;
-            constrainView(extendedController, owner);
-        }
+        //     if (extendedController.scrollable !== scrollable
+        //     || extendedController.navBarHidden !== navBarHidden
+        //     || extendedController.hasChildControllers !== hasChildControllers) {
+        //     extendedController.scrollable = scrollable;
+        //     extendedController.navBarHidden = navBarHidden;
+        //     extendedController.hasChildControllers = hasChildControllers;
+        //     constrainView(extendedController, owner);
+        // }
+
+        constrainView(extendedController, owner);
     }
 
     export function layoutView(controller: UIViewController, owner: View): void {
-        // If we are not most inner controller - don't layout
-        if (controller.childViewControllers.count > 0) {
-            return;
-        }
+        // const frame = controller.view.subviews[0].bounds;
 
-        const frame = controller.view.subviews[0].bounds;
-        const origin = frame.origin;
-        const size = frame.size;
-        let width = layout.toDevicePixels(size.width);
-        let height = layout.toDevicePixels(size.height);
+        // check if this works
+        const fullscreen = controller ===
+            iosUtils.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController;
+        //     || !!(<any>owner).wantsFullscreen;
 
-        if (iosUtils.MajorVersion < 11) {
-            const window = controller.view.window;
-            if (window) {
-                const windowSize = window.frame.size;
-                const windowInPortrait = windowSize.width < windowSize.height;
-                const viewInPortrait = width < height;
-                if (windowInPortrait !== viewInPortrait) {
-                    // NOTE: This happens on iOS <11.
-                    // We were not visible (probably in backstack) when orientation happened.
-                    // request layout so we get the new dimensions.
-                    // There is no sync way to force a layout.
-                    setTimeout(() => owner.requestLayout());
-                }
+        let left: number, top: number, width: number, height: number;
+
+        const frame = controller.view.frame;
+        const fullscreenOrigin = frame.origin;
+        const fullscreenSize = frame.size;
+
+        if (fullscreen) {
+            left = layout.toDevicePixels(fullscreenOrigin.x);
+            top = layout.toDevicePixels(fullscreenOrigin.y);
+            width = layout.toDevicePixels(fullscreenSize.width);
+            height = layout.toDevicePixels(fullscreenSize.height);
+        } else {
+            const safeArea = controller.view.safeAreaLayoutGuide.layoutFrame;
+            const safeOrigin = safeArea.origin;
+            const safeAreaSize = safeArea.size;
+
+            const navController = controller.navigationController;
+            const navBarHidden = navController ? navController.navigationBarHidden : true;
+            const scrollable = isScrollable(controller, owner);
+            const hasChildControllers = controller.childViewControllers.count > 0;
+
+            const safeAreaTopLength = safeOrigin.y - fullscreenOrigin.y;
+            const safeAreaBottomLength = fullscreenSize.height - safeAreaSize.height - safeAreaTopLength;
+
+            left = safeOrigin.x;
+            width = safeAreaSize.width;
+
+            if (hasChildControllers) {
+                // If not inner most extend to fullscreen
+                top = fullscreenOrigin.y; // constraints.push(controller.fullscreenTop);
+                height = fullscreenSize.height;
+            } else if (!scrollable) {
+                // If not scrollable dock under safe area
+                top = safeOrigin.y;
+                height = safeAreaSize.height;
+                // constraints.push(controller.safeAreaTop);
+            } else if (navBarHidden) {
+                // If scrollable but no navigation bar dock under safe area
+                top = safeOrigin.y; // constraints.push(controller.safeAreaTop);
+                // const adjusted = parentControllerAdjustedScrollViewInsets(controller);
+                height = safeAreaSize.height + safeAreaBottomLength;
+                // if ()
+            } else {
+                // If scrollable and navigation bar extend to fullscreen
+                top = fullscreenOrigin.y; // constraints.push(controller.fullscreenTop);
+                height = fullscreenOrigin.y + fullscreenSize.height;
             }
+
+            left = layout.toDevicePixels(left);
+            top = layout.toDevicePixels(top);
+            width = layout.toDevicePixels(width);
+            height = layout.toDevicePixels(height);
         }
+
+        // const frame = controller.view.safeAreaLayoutGuide.layoutFrame;
+        // const origin = frame.origin;
+        // const size = frame.size;
+        // width = layout.toDevicePixels(fullscreenSize.width);
+        // height = layout.toDevicePixels(fullscreenSize.height);
+
+        // if (iosUtils.MajorVersion < 11) {
+        //     const window = controller.view.window;
+        //     if (window) {
+        //         const windowSize = window.frame.size;
+        //         const windowInPortrait = windowSize.width < windowSize.height;
+        //         const viewInPortrait = width < height;
+        //         if (windowInPortrait !== viewInPortrait) {
+        //             // NOTE: This happens on iOS <11.
+        //             // We were not visible (probably in backstack) when orientation happened.
+        //             // request layout so we get the new dimensions.
+        //             // There is no sync way to force a layout.
+        //             setTimeout(() => owner.requestLayout());
+        //         }
+        //     }
+        // }
 
         const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
         const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
 
         View.measureChild(null, owner, widthSpec, heightSpec);
-        const left = layout.toDevicePixels(origin.x);
-        const top = layout.toDevicePixels(origin.y);
-        View.layoutChild(null, owner, left, top, width + left, height + top, false);
+        // const left = layout.toDevicePixels(fullscreenOrigin.x);
+        // const top = layout.toDevicePixels(fullscreenOrigin.y);
+        View.layoutChild(null, owner, left, top, width + left, height + top);
 
         layoutParent(owner.parent);
     }
@@ -751,12 +832,34 @@ export namespace ios {
 
         public viewWillLayoutSubviews(): void {
             super.viewWillLayoutSubviews();
-            updateConstraints(this, this.owner.get())
+            const owner = this.owner.get();
+            if (owner) {
+                updateConstraints(this, owner);
+            }
         }
 
         public viewDidLayoutSubviews(): void {
             super.viewDidLayoutSubviews();
-            layoutView(this, this.owner.get());
+            const owner = this.owner.get();
+            if (owner) {
+                layoutView(this, owner);
+            }
+        }
+
+        public viewWillAppear(animated: boolean): void {
+            super.viewWillAppear(animated);
+            const owner = this.owner.get();
+            if (owner && !owner.parent) {
+                owner.callLoaded();
+            }
+        }
+
+        public viewDidDisappear(animated: boolean): void {
+            super.viewDidDisappear(animated);
+            const owner = this.owner.get();
+            if (owner && !owner.parent) {
+                owner.callUnloaded();
+            }
         }
     }
 }

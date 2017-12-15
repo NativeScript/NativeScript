@@ -118,6 +118,7 @@ class IOSApplication implements IOSApplicationDefinition {
         this._rootView = rootView;
         const controller = getViewController(rootView);
         this._window.rootViewController = controller;
+        rootView._setupAsRootView({});
         this._window.makeKeyAndVisible();
     }
 
@@ -199,8 +200,7 @@ function createRootView(v?: View) {
         // try to navigate to the mainEntry (if specified)
         if (mainEntry) {
             if (createRootFrame) {
-                const frame = new Frame();
-                rootView = frame;
+                const frame = rootView = new Frame();
                 frame.navigate(mainEntry);
             } else {
                 rootView = createViewFromEntry(mainEntry);
@@ -211,7 +211,6 @@ function createRootView(v?: View) {
         }
     }
 
-    rootView._setupAsRootView({});
     return rootView;
 }
 
@@ -230,6 +229,7 @@ export function start(entry?: string | NavigationEntry) {
         // Normal NativeScript app will need UIApplicationMain. 
         UIApplicationMain(0, null, null, iosApp && iosApp.delegate ? NSStringFromClass(<any>iosApp.delegate) : NSStringFromClass(Responder));
     } else {
+        // TODO: this rootView should be held alive until rootController dismissViewController is called.
         const rootView = createRootView();
         if (rootView) {
             // Attach to the existing iOS app
@@ -238,6 +238,7 @@ export function start(entry?: string | NavigationEntry) {
                 const rootController = window.rootViewController;
                 if (rootController) {
                     const controller = getViewController(rootView);
+                    rootView._setupAsRootView({});
                     rootController.presentViewControllerAnimatedCompletion(controller, true, null);
                 }
             }
@@ -258,13 +259,17 @@ function getViewController(view: View): UIViewController {
     let viewController: UIViewController = view.viewController || view.ios;
     if (viewController instanceof UIViewController) {
         return viewController;
-    } else if (view.ios instanceof UIView) {
-        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
-        viewController.view.addSubview(view.ios);
-        return viewController;
     } else {
-        throw new Error("Root should be either UIViewController or UIView");
+        const nativeView = view.ios || view.nativeViewProtected;
+        if (nativeView instanceof UIView) {
+            viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
+            viewController.view.addSubview(nativeView);
+            view.viewController = viewController;
+            return viewController;
+        }
     }
+
+    throw new Error("Root should be either UIViewController or UIView");
 }
 
 global.__onLiveSync = function () {

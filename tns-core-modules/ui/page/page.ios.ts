@@ -246,16 +246,20 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillLayoutSubviews(): void {
         super.viewWillLayoutSubviews();
-
         const owner = this._owner.get();
-        iosView.updateConstraints(this, owner);
+        if (owner) {
+            iosView.updateConstraints(this, owner);
+        }
     }
 
     public viewDidLayoutSubviews(): void {
         super.viewDidLayoutSubviews();
-
         const owner = this._owner.get();
-        iosView.layoutView(this, owner);
+        if (owner) {
+            // layout(owner.actionBar)
+            // layout(owner.content)
+            iosView.layoutView(this, owner);
+        }
     }
 }
 
@@ -270,8 +274,6 @@ export class Page extends PageBase {
     constructor() {
         super();
         const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-        const view = UIView.alloc().initWithFrame(getter(UIScreen, UIScreen.mainScreen).bounds);
-        controller.view.addSubview(view);
         this.viewController = this._ios = controller;
         this.nativeViewProtected = controller.view;
         this.nativeViewProtected.backgroundColor = whiteColor;
@@ -330,7 +332,7 @@ export class Page extends PageBase {
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
+        if (this.frame && this.frame._getNavBarVisible(this)) {
             const { width, height } = this.actionBar._getActualSize;
             const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
             const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
@@ -351,7 +353,7 @@ export class Page extends PageBase {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
-        View.layoutChild(this, this.layoutView, 0, 0, right - left, bottom - top);
+        View.layoutChild(this, this.layoutView, left, top, right, bottom);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
@@ -360,7 +362,7 @@ export class Page extends PageBase {
             return true;
         }
 
-        const nativeParent = this.nativeViewProtected.subviews[0];
+        const nativeParent = this.nativeViewProtected;
         const nativeChild = child.nativeViewProtected;
 
         const viewController = child.ios instanceof UIViewController ? child.ios : child.viewController;

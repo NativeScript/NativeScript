@@ -28,11 +28,21 @@ class UITabBarControllerImpl extends UITabBarController {
         return handler;
     }
 
+    @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
-        if (owner && !owner.isLoaded && !owner.parent) {
+        if (owner && !owner.parent) {
             owner.callLoaded();
+        }
+    }
+
+    @profile
+    public viewDidDisappear(animated: boolean): void {
+        super.viewDidDisappear(animated);
+        const owner = this._owner.get();
+        if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
+            owner.callUnloaded();
         }
     }
 }
@@ -288,7 +298,7 @@ export class TabView extends TabViewBase {
 
     private getViewController(item: TabViewItem): UIViewController {
         let newController: UIViewController = item.view ? item.view.viewController : null;
-
+        
         if (newController) {
             item.setViewController(newController, newController.view);
             return newController;
