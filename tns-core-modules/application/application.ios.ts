@@ -126,6 +126,11 @@ class IOSApplication implements IOSApplicationDefinition {
         const ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
         const object = this;
         notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
+        const rootView = this._rootView;
+        if (rootView && !rootView.isLoaded) {
+            rootView.callLoaded();
+        }
+
         if (!displayedOnce) {
             notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
             displayedOnce = true;
@@ -134,10 +139,18 @@ class IOSApplication implements IOSApplicationDefinition {
 
     private didEnterBackground(notification: NSNotification) {
         notify(<ApplicationEventData>{ eventName: suspendEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        const rootView = this._rootView;
+        if (rootView && rootView.isLoaded) {
+            rootView.callUnloaded();
+        }
     }
 
     private willTerminate(notification: NSNotification) {
         notify(<ApplicationEventData>{ eventName: exitEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        const rootView = this._rootView;
+        if (rootView && rootView.isLoaded) {
+            rootView.callUnloaded();
+        }
     }
 
     private didReceiveMemoryWarning(notification: NSNotification) {

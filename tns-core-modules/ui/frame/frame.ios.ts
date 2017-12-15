@@ -46,15 +46,9 @@ export function reloadPage(): void {
 
 export class Frame extends FrameBase {
     public viewController: UINavigationControllerImpl;
-    private _ios: iOSFrame;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
 
-    public _shouldSkipNativePop: boolean = false;
-    public _navigateToEntry: BackstackEntry;
-    public _widthMeasureSpec: number;
-    public _heightMeasureSpec: number;
-    public _right: number;
-    public _bottom: number;
+    private _ios: iOSFrame;
 
     constructor() {
         super();
@@ -173,19 +167,17 @@ export class Frame extends FrameBase {
 
     public _goBackCore(backstackEntry: BackstackEntry) {
         super._goBackCore(backstackEntry);
-
         navDepth = backstackEntry[NAV_DEPTH];
 
-        if (!this._shouldSkipNativePop) {
-            let controller = backstackEntry.resolvedPage.ios;
-            let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
+        let controller = backstackEntry.resolvedPage.ios;
+        let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
-            this._updateActionBar(backstackEntry.resolvedPage);
-            if (traceEnabled()) {
-                traceWrite(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
-            }
-            this._ios.controller.popToViewControllerAnimated(controller, animated);
+        this._updateActionBar(backstackEntry.resolvedPage);
+        if (traceEnabled()) {
+            traceWrite(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
         }
+
+        this._ios.controller.popToViewControllerAnimated(controller, animated);
     }
 
     public _updateActionBar(page?: Page, disableNavBarAnimation: boolean = false): void {
@@ -377,8 +369,17 @@ class UINavigationControllerImpl extends UINavigationController {
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
-        if (owner && (!owner.isLoaded && !owner.parent)) {
+        if (owner && !owner.isLoaded && !owner.parent) {
             owner.callLoaded();
+        }
+    }
+
+    @profile
+    public viewDidDisappear(animated: boolean): void {
+        super.viewDidDisappear(animated);    
+        const owner = this._owner.get();
+        if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
+            owner.callUnloaded();
         }
     }
 
