@@ -73,7 +73,12 @@ export function getCssFileName(): string {
 }
 
 export function loadAppCss(): void {
-    events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
+    try {
+        events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
+    } catch (e) {
+        throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
+           `You may need to register it inside ./app/vendor.ts.`);
+    }
 }
 
 export function addCss(cssText: string): void {
