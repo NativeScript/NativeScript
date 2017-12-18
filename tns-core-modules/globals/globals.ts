@@ -57,11 +57,20 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
 
         const registerName = base + registerExt;
         if (registerName.startsWith("./") && registerName.endsWith(".js")) {
-            const jsNickName = registerName.substr(2, registerName.length - 5);
-            // This is extremely short version like "main-page" that was promoted to be used with global.registerModule("module-name", loaderFunc);
-            if (isSourceFile || !global.moduleExists(jsNickName)) {
-                global.registerModule(jsNickName, () => context(key));
-            }
+            const jsNickNames = [
+                // This is extremely short version like "main-page" that was promoted to be used with global.registerModule("module-name", loaderFunc);
+                registerName.substr(2, registerName.length - 5),
+                // This is for supporting module names like "./main/main-page"
+                registerName.substr(0, registerName.length - 3),
+                // This is for supporting module names like "main/main-page.js"
+                registerName.substr(2),
+            ];
+
+            jsNickNames.forEach(jsNickName => {
+                if (isSourceFile || !global.moduleExists(jsNickName)) {
+                    global.registerModule(jsNickName, () => context(key));
+                }
+            });
         }
         if (isSourceFile || !global.moduleExists(registerName)) {
             global.registerModule(registerName, () => context(key));
