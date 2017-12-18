@@ -18,7 +18,7 @@ Using a TextField requires the text-field module.
 {%snippet creating-textfield%}
 ### Setting the text of a TextField
 {%snippet setting-text-property%}
-### Setting the text of a TextField
+### Setting the hint of a TextField
 {%snippet setting-hint-property%}
 ### Binding text property directly to model
 {%snippet binding-text-property-second%}
