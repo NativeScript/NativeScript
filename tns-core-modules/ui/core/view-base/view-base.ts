@@ -178,6 +178,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _templateParent: ViewBase;
     private __nativeView: any;
     // private _disableNativeViewRecycling: boolean;
+    
     public domNode: dnm.DOMNode;
 
     public recycleNativeView: "always" | "never" | "auto";
@@ -197,6 +198,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _styleScope: ssm.StyleScope;
     public _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
     public _suspendNativeUpdatesCount: SuspendType;
+    public _isStyleScopeHost: boolean;
 
     // Dynamic properties.
     left: Length;
@@ -927,6 +929,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     _inheritStyleScope(styleScope: ssm.StyleScope): void {
+        // If we are styleScope don't inherit parent stylescope.
+        // TODO: Consider adding parent scope and merge selectors.
+        if (this._isStyleScopeHost) {
+            return;
+        }
+
         if (this._styleScope !== styleScope) {
             this._styleScope = styleScope;
             this._onCssStateChange();

@@ -152,7 +152,7 @@ function initializeDialogFragment() {
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const owner = this.owner;
-            owner._setupUI(this.getActivity());
+            owner._setupAsRootView(this.getActivity());
             owner._isAddedToNativeVisualTree = true;
             
             return this.owner.nativeViewProtected;
@@ -323,7 +323,7 @@ export class View extends ViewCommon {
     public requestLayout(): void {
         super.requestLayout();
         if (this.nativeViewProtected) {
-            return this.nativeViewProtected.requestLayout();
+            this.nativeViewProtected.requestLayout();
         }
     }
 

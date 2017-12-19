@@ -95,23 +95,6 @@ export class Page extends ContentView {
     public enableSwipeBackNavigation: boolean;
 
     /**
-     * A valid css string which will be applied for all nested UI components (based on css rules).
-     */
-    public css: string;
-
-    /**
-     * Adds a new values to current css.
-     * @param cssString - A valid css which will be added to current css. 
-     */
-    public addCss(cssString: string): void;
-
-    /**
-     * Adds the content of the file to the current css.
-     * @param cssFileName - A valid file name (from the application root) which contains a valid css.
-     */
-    public addCssFile(cssFileName: string): void;
-
-    /**
      * Returns a CSS keyframe animation with the specified name, if it exists.
      */
     public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo;

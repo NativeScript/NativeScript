@@ -141,24 +141,15 @@ function updateItemIconPosition(tabBarItem: UITabBarItem): void {
 
 export class TabViewItem extends TabViewItemBase {
     private __controller: UIViewController;
-    private _setNeedsLayoutOnSuperview: boolean;
+    
     public setViewController(controller: UIViewController, nativeView: UIView) {
         this.__controller = controller;
         this.setNativeView(nativeView);
-        this._setNeedsLayoutOnSuperview = controller.view !== nativeView;
-    }
-
-    public requestLayout(): void {
-        super.requestLayout();
-        if (this._setNeedsLayoutOnSuperview) {
-            this.nativeViewProtected.superview.setNeedsLayout();
-        }
     }
 
     public disposeNativeView() {
         this.__controller = undefined;
         this.setNativeView(undefined);
-        this._setNeedsLayoutOnSuperview = false;
     }
 
     public _update() {

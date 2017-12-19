@@ -78,6 +78,22 @@ function getNativeHeight(view: View): number {
     return layout.toDevicePixels(bounds.size.height);
 }
 
+export function test_correct_layout_top_bottom_edges_does_not_span_not_scrollable_not_flat() {
+    test_correct_layout_top_bottom_edges_does_not_span_options(false, false);
+}
+
+export function test_correct_layout_top_bottom_edges_does_not_span_scrollable_not_flat() {
+    test_correct_layout_top_bottom_edges_does_not_span_options(true, false);
+}
+
+export function test_correct_layout_top_bottom_edges_does_not_span_not_scrollable_flat() {
+    test_correct_layout_top_bottom_edges_does_not_span_options(false, true);
+}
+
+export function test_correct_layout_top_bottom_edges_does_not_span_scrollable_flat() {
+    test_correct_layout_top_bottom_edges_does_not_span_options(true, true);
+}
+
 export function test_correct_layout_scrollable_content_false() {
     const page = new Page();
     topmost().viewController.navigationBar.translucent = true;
@@ -251,6 +267,8 @@ export function test_correct_layout_scrollable_content_true_top_edge_does_not_sp
     const tabItem = new TabViewItem();
     tabItem.title = "Item";
     const lbl = new Label();
+    lbl.viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(lbl));
+    lbl.viewController.edgesForExtendedLayout = UIRectEdge.Bottom | UIRectEdge.Left | UIRectEdge.Right;
     (<any>lbl).scrollableContent = true;
     tabItem.view = lbl;
     tabView.items = [tabItem];
@@ -284,6 +302,8 @@ export function test_correct_layout_scrollable_content_true_bottom_edge_does_not
     const tabItem = new TabViewItem();
     tabItem.title = "Item";
     const lbl = new Label();
+    lbl.viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(lbl));
+    lbl.viewController.edgesForExtendedLayout = UIRectEdge.Top | UIRectEdge.Left | UIRectEdge.Right;
     (<any>lbl).scrollableContent = true;
     tabItem.view = lbl;
     tabView.items = [tabItem];
@@ -292,11 +312,7 @@ export function test_correct_layout_scrollable_content_true_bottom_edge_does_not
     helper.navigate(() => page);
     TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
     TKUnit.assertNotNull(lbl.viewController);
-    (<UIViewController>lbl.viewController).edgesForExtendedLayout = UIRectEdge.Top | UIRectEdge.Left | UIRectEdge.Right;
-    lbl.requestLayout();
-    (<UIView>lbl.nativeViewProtected).setNeedsLayout();
-    (<UIView>lbl.nativeViewProtected).layoutIfNeeded();
-    TKUnit.waitUntilReady(() => lbl.isLayoutValid);
+
     const tabBarHeight = uiUtils.ios.getActualHeight(tabView.viewController.tabBar);
     const screenHeight = layout.toDevicePixels(UIScreen.mainScreen.bounds.size.height);
 
@@ -307,58 +323,35 @@ export function test_correct_layout_scrollable_content_true_bottom_edge_does_not
     TKUnit.assertEqual(contentHeight, screenHeight - tabBarHeight, "lbl.height !== screenHeight - tabBarHeight");
 }
 
-export function test_correct_layout_top_bottom_edges_does_not_span() {
+function test_correct_layout_top_bottom_edges_does_not_span_options(scrollable: boolean, flat: boolean) {
     const page = new Page();
-    page.actionBar.flat = false;
-    (<any>page).scrollableContent = false;
     page.actionBar.title = "ActionBar";
-    (<UIViewController>page.viewController).edgesForExtendedLayout = UIRectEdge.Left | UIRectEdge.Right;
 
     const tabView = new TabView();
-    (<UIViewController>tabView.viewController).edgesForExtendedLayout = UIRectEdge.Left | UIRectEdge.Right;
     const tabItem = new TabViewItem();
     tabItem.title = "Item";
     const lbl = new Label();
+    lbl.viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(lbl));
+    lbl.viewController.edgesForExtendedLayout = UIRectEdge.Left | UIRectEdge.Right;
     tabItem.view = lbl;
     tabView.items = [tabItem];
 
     page.content = tabView;
+
+    page.actionBar.flat = flat;
+    (<any>page).scrollableContent = scrollable;
+    (<any>lbl).scrollableContent = scrollable;
+
     helper.navigate(() => page);
     TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
-
-    (<UIViewController>lbl.viewController).edgesForExtendedLayout = UIRectEdge.Left | UIRectEdge.Right;
-    lbl.requestLayout();
-    (<UIView>lbl.nativeViewProtected).setNeedsLayout();
-    (<UIView>lbl.nativeViewProtected).layoutIfNeeded();
-    TKUnit.waitUntilReady(() => lbl.isLayoutValid);
 
     const statusBarHeight = uiUtils.ios.getStatusBarHeight(page.viewController);
     const tabBarHeight = uiUtils.ios.getActualHeight(tabView.viewController.tabBar);
     const screenHeight = layout.toDevicePixels(UIScreen.mainScreen.bounds.size.height);
     const navBarHeight = uiUtils.ios.getActualHeight(page.frame.ios.controller.navigationBar);
 
-    const assert = (scrollable: boolean, flat: boolean) => {
-        page.actionBar.flat = flat;
-        (<any>page).scrollableContent = scrollable;
-        (<any>lbl).scrollableContent = scrollable;
-
-        lbl.requestLayout();
-        TKUnit.waitUntilReady(() => lbl.isLayoutValid);
-
-        const pageHeight = getHeight(page);
-        TKUnit.assertEqual(pageHeight, screenHeight - statusBarHeight - navBarHeight, "page.height !== screenHeight - statusBarHeight - navBarHeight");
-        const contentHeight = getHeight(lbl);
-        TKUnit.assertEqual(contentHeight, screenHeight - statusBarHeight - navBarHeight - tabBarHeight, "lbl.height !== screenHeight - statusBarHeight - navBarHeight - tabBarHeight");
-    };
-
-    // scrollable: false, flat: false;
-    assert(false, false);
-    // scrollable: true, flat: false;
-    assert(true, false);
-    // scrollable: true, flat: true;
-    assert(true, true);
-    // scrollable: false, flat: true;
-    assert(false, true);
+    const contentHeight = getHeight(lbl);
+    TKUnit.assertEqual(contentHeight, screenHeight - statusBarHeight - navBarHeight - tabBarHeight, "lbl.height !== screenHeight - statusBarHeight - navBarHeight - tabBarHeight");
 }
 
 export function test_showing_native_viewcontroller_doesnt_throw_exception() {

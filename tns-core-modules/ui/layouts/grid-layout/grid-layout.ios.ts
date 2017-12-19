@@ -41,6 +41,11 @@ export class GridLayout extends GridLayoutBase {
         this.removeFromMap(child);
     }
 
+    protected invalidate(): void {
+        super.invalidate();
+        this.requestLayout();
+    }
+
     private getColumnIndex(view: View): number {
         return Math.max(0, Math.min(GridLayout.getColumn(view), this.columnsInternal.length - 1));
     }

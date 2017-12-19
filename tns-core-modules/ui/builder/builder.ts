@@ -47,7 +47,7 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
         if (typeof pathOrOptions === "string") {
             componentModule = loadInternal(pathOrOptions);
         } else {
-            componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page);
+            componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page, true);
         }
     } else {
         let path = <string>pathOrOptions;
@@ -158,7 +158,7 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
     return componentModule;
 }
 
-function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View): ComponentModule {
+function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent: boolean = true): ComponentModule {
     if (!parentPage && context) {
         // Read the parent page that was passed down below
         // https://github.com/NativeScript/NativeScript/issues/1639
@@ -211,7 +211,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         }
     } else {
         // Custom components without XML
-        result = getComponentModule(componentName, componentPath, attributes, context);
+        result = getComponentModule(componentName, componentPath, attributes, context, undefined, isRootComponent);
     }
 
     // webpack modules require paths to be relative to /app folder.
@@ -607,7 +607,7 @@ namespace xml2ui {
         private buildComponent(args: xml.ParserEvent): ComponentModule {
             if (args.prefix && args.namespace) {
                 // Custom components
-                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView);
+                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView);
             } else {
                 // Default components
                 let namespace = args.namespace;
@@ -615,7 +615,7 @@ namespace xml2ui {
                     //Ignore the default ...tns.xsd namespace URL
                     namespace = undefined;
                 }
-                return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath);
+                return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath, !this.currentRootView);
             }
         }
 

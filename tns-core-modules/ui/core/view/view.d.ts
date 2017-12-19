@@ -515,7 +515,7 @@ export abstract class View extends ViewBase {
      * Returns the current modal view that this page is showing (is parent of), if any.
      */
     modal: View;
-    
+
     /**
      * Animates one or more properties of the view based on the supplied options. 
      */
@@ -638,6 +638,20 @@ export abstract class View extends ViewBase {
      * @private
      */
     _getFragmentManager(): any; /* android.app.FragmentManager */
+
+    /**
+     * @private
+     * A valid css string which will be applied for all nested UI components (based on css rules).
+     */
+    css: string;
+
+    /**
+     * @private
+     * Adds a new values to current css.
+     * @param cssString - A valid css which will be added to current css. 
+     */
+    addCss(cssString: string): void;
+
     /**
      * @private
      * Adds the content of the file to the current css.
@@ -649,12 +663,12 @@ export abstract class View extends ViewBase {
     /**
      * __Obsolete:__ There is a new property system that does not rely on _getValue.
      */
-    public _getValue(property: any): never;
+    _getValue(property: any): never;
 
     /**
      * __Obsolete:__ There is a new property system that does not rely on _setValue.
      */
-    public _setValue(property: any, value: any): never;
+    _setValue(property: any, value: any): never;
 }
 
 /**

@@ -1,5 +1,5 @@
 ﻿import { ContentView as ContentViewDefinition } from ".";
-import { View, CustomLayoutView, AddChildFromBuilder, layout } from "../core/view";
+import { View, CustomLayoutView, AddChildFromBuilder, layout, isIOS } from "../core/view";
 
 export * from "../core/view";
 
@@ -22,7 +22,7 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         }
 
         this._onContentChanged(oldView, value);
-        if (oldView !== value) {
+        if (isIOS && oldView !== value) {
             this.requestLayout();
         }
     }

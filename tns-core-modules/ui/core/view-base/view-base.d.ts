@@ -337,6 +337,11 @@ export abstract class ViewBase extends Observable {
      */
     public _isPaddingRelative: boolean;
     public _styleScope: any;
+    
+    /**
+     * @private
+     */
+    _isStyleScopeHost: boolean;
 
     /**
      * Determines the depth of suspended updates.

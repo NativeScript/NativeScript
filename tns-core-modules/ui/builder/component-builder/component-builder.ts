@@ -174,13 +174,16 @@ const applyComponentAttributes = profile("applyComponentAttributes", (instance: 
     }
 });
 
-export function getComponentModule(elementName: string, namespace: string, attributes: Object, moduleExports: Object, moduleNamePath?: string): ComponentModule {
+export function getComponentModule(elementName: string, namespace: string, attributes: Object, moduleExports: Object, moduleNamePath?: string, isRootComponent?: boolean): ComponentModule {
     // Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
     elementName = elementName.split("-").map(s => { return s[0].toUpperCase() + s.substring(1) }).join("");
 
     const { instance, instanceModule } = createComponentInstance(elementName, namespace);
     moduleExports = getComponentModuleExports(instance, moduleExports, attributes);
-    applyComponentCss(instance, moduleNamePath, attributes);
+    if (isRootComponent) {
+        applyComponentCss(instance, moduleNamePath, attributes);
+    }
+
     applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
 
     var componentModule;

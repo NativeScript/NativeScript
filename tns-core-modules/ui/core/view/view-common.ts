@@ -20,6 +20,7 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
+import { StyleScope } from "../../styling/style-scope";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";
@@ -73,6 +74,52 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _setMinHeightNative: (value: Length) => void;
 
     public _gestureObservers = {};
+
+    get css(): string {
+        const scope = this._styleScope;
+        return scope && scope.css;
+    }
+    set css(value: string) {
+        this.updateStyleScope(undefined, undefined, value);
+    }
+
+    public addCss(cssString: string): void {
+        this.updateStyleScope(undefined, cssString);
+    }
+
+    public addCssFile(cssFileName: string) {
+        this.updateStyleScope(cssFileName);
+    }
+
+    private updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+        let scope = this._styleScope;
+        if (!scope) {
+            scope = new StyleScope();
+            this.setScopeProperty(scope, cssFileName, cssString, css);
+            this._inheritStyleScope(scope);
+            this._isStyleScopeHost = true;
+        } else {
+            this.setScopeProperty(scope, cssFileName, cssString, css);
+            this._onCssStateChange();
+        }
+    }
+
+    private setScopeProperty(scope: StyleScope, cssFileName?: string, cssString?: string, css?: string): void {
+        if (cssFileName !== undefined) {
+            scope.addCssFile(cssFileName);
+        } else if (cssString !== undefined) {
+            scope.addCss(cssString);
+        } else if (css !== undefined) {
+            scope.css = css;
+        }
+    }
+
+    _setupAsRootView(context: any): void {
+        super._setupAsRootView(context);
+        if (!this._styleScope) {
+            this.updateStyleScope();
+        }
+    }
 
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {
@@ -157,9 +204,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             const context: any = arguments[1];
             const closeCallback: Function = arguments[2];
             const fullscreen: boolean = arguments[3];
-            const animated = arguments[4];            
+            const animated = arguments[4];
 
-            const view: ViewDefinition = firstAgrument instanceof ViewCommon 
+            const view: ViewDefinition = firstAgrument instanceof ViewCommon
                 ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
 
             (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated);
@@ -885,10 +932,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public _redrawNativeBackground(value: any): void {
         //
-    }
-
-    addCssFile(cssFileName: string): void {
-        // TODO: Implement
     }
 }
 

@@ -6,7 +6,6 @@ import {
 import { Frame, topmost as topmostFrame } from "../frame";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
-import { StyleScope } from "../styling/style-scope";
 import { File, path, knownFolders } from "../../file-system";
 import { profile } from "../../profiling";
 
@@ -28,22 +27,9 @@ export class PageBase extends ContentView implements PageDefinition {
     public enableSwipeBackNavigation: boolean;
     public backgroundSpanUnderStatusBar: boolean;
     public hasActionBar: boolean;
-
-    constructor() {
-        super();
-        this._styleScope = new StyleScope();
-    }
-
+    
     get navigationContext(): any {
         return this._navigationContext;
-    }
-
-    get css(): string {
-        return this._styleScope.css;
-    }
-    set css(value: string) {
-        this._styleScope.css = value;
-        this._onCssStateChange();
     }
 
     get actionBar(): ActionBar {
@@ -93,16 +79,6 @@ export class PageBase extends ContentView implements PageDefinition {
         } else {
             super._addChildFromBuilder(name, value);
         }
-    }
-
-    public addCss(cssString: string): void {
-        this._styleScope.addCss(cssString);
-        this._onCssStateChange();
-    }
-
-    public addCssFile(cssFileName: string) {
-        this._styleScope.addCssFile(cssFileName);
-        this._onCssStateChange();
     }
 
     public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
@@ -160,10 +136,6 @@ export class PageBase extends ContentView implements PageDefinition {
 
     get _childrenCount(): number {
         return (this.content ? 1 : 0) + (this._actionBar ? 1 : 0);
-    }
-
-    _inheritStyleScope(styleScope: StyleScope): void {
-        // The Page have its own scope.
     }
 }
 

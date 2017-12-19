@@ -890,10 +890,10 @@ function setActivityContent(activity: android.app.Activity, savedInstanceState: 
     let rootView = callbacks._rootView = (<any>app).rootView;
     if (!rootView) {
         const mainEntry = application.getMainEntry();
+        const intent = activity.getIntent();
+        rootView = notifyLaunch(intent, savedInstanceState);
         if (shouldCreateRootFrame) {
-            const intent = activity.getIntent();
             const extras = intent.getExtras();
-            rootView = notifyLaunch(intent, savedInstanceState);
             let frameId = -1;
 
             // We have extras when we call - new Frame().navigate();
