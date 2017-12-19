@@ -174,6 +174,14 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
         webView.src = targetSrc;
     }
+
+    public testAndroidClientIsExported() {
+        let webView = this.testView;
+
+        if (webView.android) {
+            TKUnit.assertNotEqual((<any>webViewModule).WebViewClientImpl, undefined, "Android WebViewClient implementation not exported");
+        }
+    }
 }
 
 export function createTestCase(): WebViewTest {
