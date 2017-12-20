@@ -1,5 +1,18 @@
 Cross Platform Modules Changelog
 ==============================
+## 3.4.0 (2017, December 20)
+
+## Fixed
+- [(# 5047)](https://github.com/NativeScript/NativeScript/pull/5047) Android: Click next moves the focus to next focusable TextField
+- [(# 5046)](https://github.com/NativeScript/NativeScript/pull/5046) Android: Fix search-bar bug
+- [(# 5019)](https://github.com/NativeScript/NativeScript/issues/5019) IOS: App crash on low memory notification with custom fonts
+- [(# 4993)](https://github.com/NativeScript/NativeScript/issues/4993) ScrollView base: Adding listener when you are supposed to remove it
+
+### New
+- [(# 4871)](https://github.com/NativeScript/NativeScript/issues/4871) Application Settings blocks UI thread
+- [(# 2992)](https://github.com/NativeScript/NativeScript/issues/2992) CSS background shorthand property
+
+
 ## 3.3.0 (2017, October 25)
 
 ### Fixed
