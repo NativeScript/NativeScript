@@ -17,7 +17,7 @@ interface EditTextListeners extends android.text.TextWatcher, android.view.View.
 
 interface EditTextListenersClass {
     prototype: EditTextListeners;
-    new (owner: EditableTextBase): EditTextListeners;
+    new(owner: EditableTextBase): EditTextListeners;
 }
 
 let EditTextListeners: EditTextListenersClass;
@@ -71,13 +71,8 @@ function initializeEditTextListeners(): void {
             }
 
             if (hasFocus) {
-                if (dismissKeyboardTimeoutId) {
-                    // https://github.com/NativeScript/NativeScript/issues/2942
-                    // Don't hide the keyboard since another (or the same) EditText has gained focus.
-                    clearTimeout(dismissKeyboardTimeoutId);
-                    dismissKeyboardTimeoutId = undefined;
-                }
                 owner.notify({ eventName: EditableTextBase.focusEvent, object: owner });
+                owner.focus();
             }
             else {
                 if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
@@ -85,24 +80,20 @@ function initializeEditTextListeners(): void {
                     owner._dirtyTextAccumulator = undefined;
                 }
 
-                dismissKeyboardTimeoutId = setTimeout(() => {
-                    // https://github.com/NativeScript/NativeScript/issues/2942
-                    // Dismiss the keyboard if focus goes to something different from EditText.
-                    owner.dismissSoftInput();
-                    dismissKeyboardTimeoutId = null;
-                }, 1);
-
                 owner.notify({ eventName: EditableTextBase.blurEvent, object: owner });
+                owner.dismissSoftInput();
             }
         }
 
         public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
             const owner = this.owner;
             if (!owner) {
-                return;
+                return false;
             }
 
-            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+            if (actionId === android.view.inputmethod.EditorInfo.IME_NULL ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
@@ -112,8 +103,8 @@ function initializeEditTextListeners(): void {
                 if (textView.getMaxLines() === 1) {
                     owner.dismissSoftInput();
                 }
+
                 owner._onReturnPress();
-                return true;
             }
 
             // If action is ACTION_NEXT then do not close keyboard
@@ -178,7 +169,20 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     public dismissSoftInput() {
-        ad.dismissSoftInput(this.nativeViewProtected);
+        const nativeView = this.nativeViewProtected;
+        if (!nativeView) {
+            return;
+        }
+
+        const activity = this._context as android.app.Activity;
+        setTimeout(() => {
+            const focused = activity.getCurrentFocus();
+            if (!focused
+                || focused === nativeView
+                || !(focused instanceof android.widget.EditText)) {
+                ad.dismissSoftInput(nativeView);
+            }
+        }, 100);
     }
 
     public focus(): boolean {
