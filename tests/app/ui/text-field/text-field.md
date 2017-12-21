@@ -14,6 +14,7 @@ Using a TextField requires the text-field module.
 <TextField text="{{ someProperty }}" />{%endraw%}
 ```
 {%snippet binding-text-property-textfield%}
+{%snippet require-observable-binding-options-textfield%}
 ## Creating a TextField
 {%snippet creating-textfield%}
 ### Setting the text of a TextField
