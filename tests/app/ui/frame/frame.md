@@ -39,11 +39,12 @@ Using the `BackstackEntry` allows us to navigate back to a specific page.
 </Page>
 ```
 ```TypeScript
-import {topmost, BackstackEntry} from "ui/frame"
+import {BackstackEntry, Frame} from "ui/frame"
 
 export function backNavigation(args){
-    let backstackEntryFirstPage = topmost().backStack[0];
-    topmost().goBack(backstackEntryFirstPage);
+    let backstackEntryFirstPage:BackstackEntry = <BackstackEntry>args.object.page.frame.backStack[0];
+    var frame:Frame = <Frame>args.object.page.frame
+    frame.goBack(backstackEntryFirstPage);
 }
 ```
 With the help of the Frame we access the page's BackstackEntry by providing the the sequence number - `backStack[<page number>]`. In the example above we will navigate back to the initial page and to do that we need to take the first BackstackEntry as follow: `topmost().backStack[0]`
