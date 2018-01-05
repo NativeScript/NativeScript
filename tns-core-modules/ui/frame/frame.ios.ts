@@ -349,10 +349,6 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
-        //
-    }
-
     _handleHigherInCallStatusBarIfNeeded() {
         let statusBarHeight = uiUtils.ios.getStatusBarHeight();
         if (!this._ios ||
