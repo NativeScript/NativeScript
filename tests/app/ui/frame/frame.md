@@ -42,8 +42,8 @@ Using the `BackstackEntry` allows us to navigate back to a specific page.
 import {BackstackEntry, Frame} from "ui/frame"
 
 export function backNavigation(args){
-    let backstackEntryFirstPage:BackstackEntry = <BackstackEntry>args.object.page.frame.backStack[0];
-    var frame:Frame = <Frame>args.object.page.frame
+    const backstackEntryFirstPage = args.object.page.frame.backStack[0];
+    const frame = args.object.page.frame;
     frame.goBack(backstackEntryFirstPage);
 }
 ```
