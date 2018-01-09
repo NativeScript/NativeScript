@@ -175,7 +175,6 @@ export function _setAndroidFragmentTransitions(
         }
     }
 
-    initDefaultAnimations(manager);
     setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
 
     printTransitions(currentEntry);

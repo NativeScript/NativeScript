@@ -57,11 +57,6 @@ export class View extends ViewCommon {
         super.requestLayout();
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
-        const parent = this.parent;
-        if (parent) {
-            parent.requestLayout();
-        }
-
         const nativeView = this.nativeViewProtected;
         if (nativeView) {
             nativeView.setNeedsLayout();
@@ -346,7 +341,6 @@ export class View extends ViewCommon {
     }
 
     protected _hideNativeModalView(parent: View) {
-        parent.requestLayout();
         const parentController = parent.viewController;
         const animated = (<any>this.viewController).animated;
         parentController.dismissModalViewControllerAnimated(animated);
@@ -589,13 +583,6 @@ const majorVersion = iosUtils.MajorVersion;
 export namespace ios {
     export function updateConstraints(controller: UIViewController, owner: View): void {
         const root = controller.view;
-        root.autoresizesSubviews = false;
-        
-        // const view = controller.view.subviews.length > 0 ? controller.view.subviews[0] : null;
-        // if (view) {
-        //     view.translatesAutoresizingMaskIntoConstraints = false;
-        // }
-        
         if (!root.safeAreaLayoutGuide) {
             const layoutGuide = (<any>root).safeAreaLayoutGuide = UILayoutGuide.alloc().init();
             root.addLayoutGuide(layoutGuide);

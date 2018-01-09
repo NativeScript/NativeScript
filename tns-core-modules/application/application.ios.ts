@@ -118,7 +118,13 @@ class IOSApplication implements IOSApplicationDefinition {
         this._rootView = rootView;
         const controller = getViewController(rootView);
         this._window.rootViewController = controller;
-        rootView._setupAsRootView({});
+        if (createRootFrame) {
+            // Don't setup as styleScopeHost
+            rootView._setupUI({});
+        } else {
+            // setup view as styleScopeHost
+            rootView._setupAsRootView({});
+        }
         this._window.makeKeyAndVisible();
     }
 

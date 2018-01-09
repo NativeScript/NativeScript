@@ -2,6 +2,7 @@
 import * as TKUnit from "./TKUnit";
 import { messageType } from "tns-core-modules/trace";
 import { topmost, Frame } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { Button } from "tns-core-modules/ui/button";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
@@ -282,7 +283,7 @@ function printRunTestStats() {
     let finalMessage = `\n` +
         `=== ALL TESTS COMPLETE ===\n` +
         `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` +
-        `DURATION: ${totalTime} ms\n` + 
+        `DURATION: ${totalTime} ms\n` +
         `=== END OF TESTS ===\n`;
 
     TKUnit.write(finalMessage, messageType.info);
@@ -341,23 +342,24 @@ function showReportPage(finalMessage: string) {
     messageContainer.text = finalMessage;
     stack.addChild(messageContainer);
 
-    const page = topmost().currentPage;
-    page.id = unsetValue;
-    page.className = unsetValue;
-    page.bindingContext = unsetValue;
-    page.style.color = unsetValue;
-    page.backgroundColor = "white";
-    page.content = stack;
-    messageContainer.focus();
-    page.style.fontSize = 11;
-    if (page.android) {
-        setTimeout(() => {
-            messageContainer.dismissSoftInput();
-            (<android.view.View>messageContainer.nativeViewProtected).scrollTo(0, 0);
-        }, 10);
-    }
-}
+    topmost().navigate({
+        create: () => {
+            const page = new Page();
+            page.content = stack;
+            messageContainer.focus();
+            page.style.fontSize = 11;
+            if (page.android) {
+                setTimeout(() => {
+                    messageContainer.dismissSoftInput();
+                    (<android.view.View>messageContainer.nativeViewProtected).scrollTo(0, 0);
+                }, 500);
+            }
 
+            return page;
+        },
+        clearHistory: true
+    });
+}
 
 function startLog(): void {
     let testsName: string = this.name;

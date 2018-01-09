@@ -142,7 +142,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         if (frame) {
             frame._removeView(page);
         } else {
-            console.log(`---- Removing enrty that was not added to Frame: ${removed.fragmentTag}`);
             page._tearDownUI(true);
         }
     }

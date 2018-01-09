@@ -1,6 +1,6 @@
 ﻿// Definitions.
 import {
-    AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationEntry, 
+    AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationEntry,
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
 } from ".";
 import { Page } from "../page";
@@ -8,7 +8,7 @@ import { Page } from "../page";
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, NavigationContext, stack, goBack, View, Observable, topmost, 
+    FrameBase, NavigationContext, stack, goBack, View, Observable, topmost,
     traceEnabled, traceWrite, traceCategories
 } from "./frame-common";
 
@@ -65,8 +65,8 @@ export function reloadPage(): void {
                 return;
             }
         }
-         
-        frame.navigate(newEntry);            
+
+        frame.navigate(newEntry);
     }
 }
 
@@ -185,7 +185,7 @@ export class Frame extends FrameBase {
                 if (!entry.recreated) {
                     clearEntry(entry);
                 }
-               
+
                 if (current && !current.recreated) {
                     clearEntry(current);
                 }
@@ -317,7 +317,7 @@ export class Frame extends FrameBase {
         if (removed.fragment) {
             _clearEntry(removed);
         }
-    
+
         removed.fragment = null;
         removed.viewSavedState = null;
     }
@@ -661,7 +661,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         // Load page here even if root view is not loaded yet.
-        // Otherwiaw it will show as blank,
+        // Otherwise it will show as blank,
         // The case is Tab->Frame->Page activity recreated, fragments are 
         // created before Tab loads its items.
         // TODO: addCheck if the fragment is visible so we don't load pages
@@ -927,7 +927,14 @@ function setActivityContent(activity: android.app.Activity, savedInstanceState: 
     }
 
     // Initialize native visual tree;
-    rootView._setupAsRootView(activity);
+    if (shouldCreateRootFrame) {
+        // Don't setup as styleScopeHost
+        rootView._setupUI(activity);
+    } else {
+        // setup view as styleScopeHost
+        rootView._setupAsRootView(activity);
+    }
+
     activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
 }
 
