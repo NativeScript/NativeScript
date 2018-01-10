@@ -71,10 +71,9 @@ function initializeEditTextListeners(): void {
             }
 
             if (hasFocus) {
+                owner.clearDismissTimer();
                 owner.notify({ eventName: EditableTextBase.focusEvent, object: owner });
-                owner.focus();
-            }
-            else {
+            } else {
                 if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
                     textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
                     owner._dirtyTextAccumulator = undefined;
@@ -130,6 +129,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     private _inputType: number;
 
     public _changeFromCode: boolean;
+    public _dismissId: NodeJS.Timer;
 
     public abstract _configureEditText(editText: android.widget.EditText): void;
 
@@ -175,17 +175,28 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
 
         const activity = this._context as android.app.Activity;
-        setTimeout(() => {
-            const focused = activity.getCurrentFocus();
-            if (!focused
-                || focused === nativeView
-                || !(focused instanceof android.widget.EditText)) {
-                ad.dismissSoftInput(nativeView);
-            }
-        }, 100);
+        if (!this._dismissId) {
+            this._dismissId = setTimeout(() => {
+                this._dismissId = null;
+                const focused = activity.getCurrentFocus();
+                if (!focused
+                    || focused === nativeView
+                    || !(focused instanceof android.widget.EditText)) {
+                    ad.dismissSoftInput(nativeView);
+                }
+            }, 100);
+        }
+    }
+
+    public clearDismissTimer(): void {
+        if (this._dismissId) {
+            clearTimeout(this._dismissId);
+            this._dismissId = null;
+        }
     }
 
     public focus(): boolean {
+        this.clearDismissTimer();
         const result = super.focus();
         if (result) {
             ad.showSoftInput(this.nativeViewProtected);
