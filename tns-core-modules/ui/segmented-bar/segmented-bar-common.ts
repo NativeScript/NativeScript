@@ -1,7 +1,7 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, InheritedCssProperty, Color, Style, EventData
+    Property, CoercibleProperty, InheritedCssProperty, Color, Style, EventData, CSSType
 } from "../core/view";
 
 export * from "../core/view";
@@ -10,6 +10,7 @@ export module knownCollections {
     export var items = "items";
 }
 
+@CSSType("SegmentedBarItem")
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
     private _title: string = "";
 
@@ -27,6 +28,7 @@ export abstract class SegmentedBarItemBase extends ViewBase implements Segmented
     public abstract _update();
 }
 
+@CSSType("SegmentedBar")
 export abstract class SegmentedBarBase extends View implements SegmentedBarDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
@@ -89,6 +91,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
         }
     }
 }
+
 export interface SegmentedBarBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);

@@ -14,6 +14,22 @@ export * from "../../styling/style-properties";
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
 /**
+ * Specifies the type name for the instances of this View class,
+ * that is used when matching CSS type selectors.
+ * 
+ * Usage:
+ * ```
+ * @CSSType("Button")
+ * class Button extends View {
+ * }
+ * ```
+ * 
+ * Internally the decorator set `Button.prototype.cssType = "Button"`.
+ * @param type The type name, e. g. "Button", "Label", etc.
+ */
+export function CSSType(type: string): ClassDecorator;
+
+/**
  * Denotes a length number that is in device independent pixel units.
  */
 export type dip = number;
@@ -339,8 +355,8 @@ export abstract class View extends ViewBase {
     /**
      * This is called to find out how big a view should be. The parent supplies constraint information in the width and height parameters.
      * The actual measurement work of a view is performed in onMeasure(int, int), called by this method. Therefore, only onMeasure(int, int) can and must be overridden by subclasses.
-     * @param widthMeasureSpec	Horizontal space requirements as imposed by the parent
-     * @param heightMeasureSpec	Vertical space requirements as imposed by the parent
+     * @param widthMeasureSpec    Horizontal space requirements as imposed by the parent
+     * @param heightMeasureSpec    Vertical space requirements as imposed by the parent
      */
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void;
 
@@ -370,8 +386,8 @@ export abstract class View extends ViewBase {
     /**
      * Measure the view and its content to determine the measured width and the measured height. This method is invoked by measure(int, int) and should be overriden by subclasses to provide accurate and efficient measurement of their contents.
      * When overriding this method, you must call setMeasuredDimension(int, int) to store the measured width and height of this view. Failure to do so will trigger an exception, thrown by measure(int, int).
-     * @param widthMeasureSpec	horizontal space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec.
-     * @param heightMeasureSpec	vertical space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec.
+     * @param widthMeasureSpec    horizontal space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec.
+     * @param heightMeasureSpec    vertical space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec.
      */
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
 
@@ -380,14 +396,14 @@ export abstract class View extends ViewBase {
      * @param left      Left position, relative to parent
      * @param top       Top position, relative to parent
      * @param right     Right position, relative to parent
-     * @param bottom	Bottom position, relative to parent
+     * @param bottom    Bottom position, relative to parent
      */
     public onLayout(left: number, top: number, right: number, bottom: number): void;
 
     /**
      * This method must be called by onMeasure(int, int) to store the measured width and measured height. Failing to do so will trigger an exception at measurement time.
-     * @param measuredWidth	    The measured width of this view. May be a complex bit mask as defined by MEASURED_SIZE_MASK and MEASURED_STATE_TOO_SMALL.
-     * @param measuredHeight	The measured height of this view. May be a complex bit mask as defined by MEASURED_SIZE_MASK and MEASURED_STATE_TOO_SMALL.
+     * @param measuredWidth        The measured width of this view. May be a complex bit mask as defined by MEASURED_SIZE_MASK and MEASURED_STATE_TOO_SMALL.
+     * @param measuredHeight    The measured height of this view. May be a complex bit mask as defined by MEASURED_SIZE_MASK and MEASURED_STATE_TOO_SMALL.
      */
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void;
 
@@ -397,7 +413,7 @@ export abstract class View extends ViewBase {
      * @param left      Left position, relative to parent
      * @param top       Top position, relative to parent
      * @param right     Right position, relative to parent
-     * @param bottom	Bottom position, relative to parent
+     * @param bottom    Bottom position, relative to parent
      */
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void;
 
@@ -405,8 +421,8 @@ export abstract class View extends ViewBase {
      * Measure a child by taking into account its margins and a given measureSpecs.
      * @param parent            This parameter is not used. You can pass null.
      * @param child             The view to be measured.
-     * @param measuredWidth	    The measured width that the parent layout specifies for this view.
-     * @param measuredHeight	The measured height that the parent layout specifies for this view.
+     * @param measuredWidth        The measured width that the parent layout specifies for this view.
+     * @param measuredHeight    The measured height that the parent layout specifies for this view.
      */
     public static measureChild(parent: View, child: View, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number };
 
@@ -416,7 +432,7 @@ export abstract class View extends ViewBase {
      * @param left      Left position, relative to parent
      * @param top       Top position, relative to parent
      * @param right     Right position, relative to parent
-     * @param bottom	Bottom position, relative to parent
+     * @param bottom    Bottom position, relative to parent
      */
     public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void;
 

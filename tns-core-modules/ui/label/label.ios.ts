@@ -4,7 +4,7 @@ import {
     TextBase, View, layout,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
-    Length, WhiteSpace, booleanConverter
+    Length, WhiteSpace, booleanConverter, CSSType
 } from "../text-base";
 
 import { ios } from "../styling/background";
@@ -18,6 +18,7 @@ enum FixedSize {
     BOTH = 3
 }
 
+@CSSType("Label")
 export class Label extends TextBase implements LabelDefinition {
     nativeViewProtected: TNSLabel;
     private _fixedSize: FixedSize;
