@@ -188,7 +188,7 @@ class ObservableFromObject extends Observable {
     public get(name: string): any {
         return this._map[name];
     }
-    
+
     public set(name: string, value: any) {
         const currentValue = this._map[name];
         if (currentValue === value) {
@@ -218,13 +218,17 @@ function addPropertiesFromObject(observable: ObservableFromObject, source: any, 
     let isRecursive = recursive;
     for (let prop in source) {
         if (source.hasOwnProperty(prop)) {
-            if (isRecursive) {
-                if (!Array.isArray(source[prop]) && source[prop] && typeof source[prop] === 'object' && !(source[prop] instanceof Observable)) {
-                    source[prop] = fromObjectRecursive(source[prop]);
-                }
+            let value = source[prop];
+            if (isRecursive
+                && !Array.isArray(value)
+                && value
+                && typeof value === 'object'
+                && !(value instanceof Observable)) {
+                value = fromObjectRecursive(value);
             }
+            
             defineNewProperty(observable, prop);
-            observable.set(prop, source[prop]);
+            observable.set(prop, value);
         }
     }
 }

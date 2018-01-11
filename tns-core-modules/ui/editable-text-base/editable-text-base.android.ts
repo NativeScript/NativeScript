@@ -10,7 +10,8 @@ import { ad } from "../../utils/utils";
 export * from "./editable-text-base-common";
 
 //https://github.com/NativeScript/NativeScript/issues/2942
-let dismissKeyboardTimeoutId: any;
+export let dismissKeyboardTimeoutId: NodeJS.Timer;
+export let dismissKeyboardOwner: WeakRef<EditableTextBase>;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
 }
@@ -22,6 +23,30 @@ interface EditTextListenersClass {
 
 let EditTextListeners: EditTextListenersClass;
 
+function clearDismissTimer(): void {
+    dismissKeyboardOwner = null;
+    if (dismissKeyboardTimeoutId) {
+        clearTimeout(dismissKeyboardTimeoutId);
+        dismissKeyboardTimeoutId = null;
+    }
+}
+
+function dismissSoftInput(owner: EditableTextBase): void {
+    clearDismissTimer();
+    if (!dismissKeyboardTimeoutId) {
+        dismissKeyboardTimeoutId = setTimeout(() => {
+            const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
+            const activity = (owner && owner._context) as android.app.Activity;
+            const nativeView = owner && owner.nativeViewProtected;
+            dismissKeyboardTimeoutId = null;
+            dismissKeyboardOwner = null;
+            const focused = activity && activity.getCurrentFocus();
+            if (!focused || !(focused instanceof android.widget.EditText)) {
+                ad.dismissSoftInput(nativeView);
+            }
+        }, 10);
+    }
+}
 function initializeEditTextListeners(): void {
     if (EditTextListeners) {
         return;
@@ -71,7 +96,7 @@ function initializeEditTextListeners(): void {
             }
 
             if (hasFocus) {
-                owner.clearDismissTimer();
+                clearDismissTimer();
                 owner.notify({ eventName: EditableTextBase.focusEvent, object: owner });
             } else {
                 if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
@@ -80,7 +105,7 @@ function initializeEditTextListeners(): void {
                 }
 
                 owner.notify({ eventName: EditableTextBase.blurEvent, object: owner });
-                owner.dismissSoftInput();
+                dismissSoftInput(owner);
             }
         }
 
@@ -129,7 +154,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     private _inputType: number;
 
     public _changeFromCode: boolean;
-    public _dismissId: NodeJS.Timer;
 
     public abstract _configureEditText(editText: android.widget.EditText): void;
 
@@ -168,35 +192,26 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeViewProtected.setInputType(this._inputType);
     }
 
+    public onUnloaded() {
+        this.dismissSoftInput();
+        super.onUnloaded();
+    }
+
     public dismissSoftInput() {
         const nativeView = this.nativeViewProtected;
         if (!nativeView) {
             return;
         }
 
-        const activity = this._context as android.app.Activity;
-        if (!this._dismissId) {
-            this._dismissId = setTimeout(() => {
-                this._dismissId = null;
-                const focused = activity.getCurrentFocus();
-                if (!focused
-                    || focused === nativeView
-                    || !(focused instanceof android.widget.EditText)) {
-                    ad.dismissSoftInput(nativeView);
-                }
-            }, 100);
-        }
-    }
-
-    public clearDismissTimer(): void {
-        if (this._dismissId) {
-            clearTimeout(this._dismissId);
-            this._dismissId = null;
-        }
+        ad.dismissSoftInput(nativeView);
     }
 
     public focus(): boolean {
-        this.clearDismissTimer();
+        const nativeView = this.nativeViewProtected;
+        if (!nativeView) {
+            return;
+        }
+
         const result = super.focus();
         if (result) {
             ad.showSoftInput(this.nativeViewProtected);

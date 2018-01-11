@@ -251,10 +251,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._style = new Style(this);
     }
 
+    // Used in Angular.
     get parentNode() {
         return this._templateParent || this.parent;
     }
-
     set parentNode(node: ViewBase) {
         this._templateParent = node;
     }

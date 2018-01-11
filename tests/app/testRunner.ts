@@ -348,11 +348,11 @@ function showReportPage(finalMessage: string) {
             page.content = stack;
             messageContainer.focus();
             page.style.fontSize = 11;
-            if (page.android) {
-                setTimeout(() => {
-                    messageContainer.dismissSoftInput();
-                    (<android.view.View>messageContainer.nativeViewProtected).scrollTo(0, 0);
-                }, 500);
+            if (platform.isAndroid) {
+                page.on('navigatedTo', () => {
+                    messageContainer.focus();
+                    setTimeout(() => messageContainer.dismissSoftInput());
+                });
             }
 
             return page;
