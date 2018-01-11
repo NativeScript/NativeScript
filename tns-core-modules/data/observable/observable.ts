@@ -215,22 +215,19 @@ function defineNewProperty(target: ObservableFromObject, propertyName: string): 
 }
 
 function addPropertiesFromObject(observable: ObservableFromObject, source: any, recursive: boolean = false) {
-    let isRecursive = recursive;
-    for (let prop in source) {
-        if (source.hasOwnProperty(prop)) {
-            let value = source[prop];
-            if (isRecursive
-                && !Array.isArray(value)
-                && value
-                && typeof value === 'object'
-                && !(value instanceof Observable)) {
-                value = fromObjectRecursive(value);
-            }
-            
-            defineNewProperty(observable, prop);
-            observable.set(prop, value);
+    Object.keys(source).forEach(prop => {
+        let value = source[prop];
+        if (recursive
+            && !Array.isArray(value)
+            && value
+            && typeof value === 'object'
+            && !(value instanceof Observable)) {
+            value = fromObjectRecursive(value);
         }
-    }
+
+        defineNewProperty(observable, prop);
+        observable.set(prop, value);
+    });
 }
 
 export function fromObject(source: any): Observable {
