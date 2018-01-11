@@ -59,11 +59,11 @@ function initializeEditTextListeners(): void {
             return global.__native(this);
         }
 
-        public beforeTextChanged(text: string, start: number, count: number, after: number) {
+        public beforeTextChanged(text: string, start: number, count: number, after: number): void {
             //
         }
 
-        public onTextChanged(text: string, start: number, before: number, count: number) {
+        public onTextChanged(text: string, start: number, before: number, count: number): void {
             // const owner = this.owner;
             // let selectionStart = owner.android.getSelectionStart();
             // owner.android.removeTextChangedListener(owner._editTextListeners);
@@ -71,7 +71,7 @@ function initializeEditTextListeners(): void {
             // owner.android.setSelection(selectionStart);
         }
 
-        public afterTextChanged(editable: android.text.IEditable) {
+        public afterTextChanged(editable: android.text.IEditable): void {
             const owner = this.owner;
             if (!owner || owner._changeFromCode) {
                 return;
@@ -89,7 +89,7 @@ function initializeEditTextListeners(): void {
             }
         }
 
-        public onFocusChange(view: android.view.View, hasFocus: boolean) {
+        public onFocusChange(view: android.view.View, hasFocus: boolean): void {
             const owner = this.owner;
             if (!owner) {
                 return;
