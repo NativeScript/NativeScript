@@ -25,7 +25,7 @@ export class Image extends ImageBase {
         if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
             this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
             this._templateImageWasCreated = true;
-        } else if (this.nativeViewProtected.image && this._templateImageWasCreated) {
+        } else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
             this._templateImageWasCreated = false;
             this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
         }
@@ -48,7 +48,7 @@ export class Image extends ImageBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        // We don't call super because we measure native view with specific size.     
+        // We don't call super because we measure native view with specific size.
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
