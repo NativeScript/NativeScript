@@ -658,6 +658,14 @@ export abstract class View extends ViewBase {
      * @param cssFileName - A valid file name (from the application root) which contains a valid css.
      */
     addCssFile(cssFileName: string): void;
+
+    /**
+     * Updates styleScope or create new styleScope.
+     * @param cssFileName 
+     * @param cssString 
+     * @param css 
+     */
+    _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void;
     //@endprivate
 
     /**

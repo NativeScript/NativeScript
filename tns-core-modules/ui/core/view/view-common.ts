@@ -80,18 +80,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return scope && scope.css;
     }
     set css(value: string) {
-        this.updateStyleScope(undefined, undefined, value);
+        this._updateStyleScope(undefined, undefined, value);
     }
 
     public addCss(cssString: string): void {
-        this.updateStyleScope(undefined, cssString);
+        this._updateStyleScope(undefined, cssString);
     }
 
     public addCssFile(cssFileName: string) {
-        this.updateStyleScope(cssFileName);
+        this._updateStyleScope(cssFileName);
     }
 
-    private updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+    public _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
         let scope = this._styleScope;
         if (!scope) {
             scope = new StyleScope();
@@ -117,7 +117,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _setupAsRootView(context: any): void {
         super._setupAsRootView(context);
         if (!this._styleScope) {
-            this.updateStyleScope();
+            this._updateStyleScope();
         }
     }
 

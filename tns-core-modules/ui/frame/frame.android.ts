@@ -657,6 +657,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 page._setupUI(context);
             }
         } else {
+            if (!this.frame._styleScope) {
+                // Make sure page will have styleScope even if parents don't.
+                page._updateStyleScope();
+            }
+            
             this.frame._addView(page);
         }
 
