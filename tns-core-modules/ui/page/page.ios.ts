@@ -99,6 +99,11 @@ class UIViewControllerImpl extends UIViewController {
         if (frame) {
             if (!owner.parent) {
                 owner._frame = frame;
+                if (!frame._styleScope) {
+                    // Make sure page will have styleScope even if frame don't.
+                    owner._updateStyleScope();
+                }
+
                 frame._addView(owner);
             } else if (owner.parent !== frame) {
                 throw new Error("Page is already shown on another frame.");
