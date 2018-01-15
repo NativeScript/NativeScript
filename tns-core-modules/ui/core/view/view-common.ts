@@ -934,6 +934,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public _redrawNativeBackground(value: any): void {
         //
     }
+
+    _onAttachedToWindow(): void {
+        //
+    }
+    
+    _onDetachedFromWindow(): void {
+        //
+    }
 }
 
 export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });

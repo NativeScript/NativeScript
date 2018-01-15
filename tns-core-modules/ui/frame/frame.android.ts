@@ -28,6 +28,8 @@ const INTENT_EXTRA = "com.tns.activity";
 const FRAMEID = "_frameId";
 const CALLBACKS = "_callbacks";
 
+const ownerSymbol = Symbol("_owner");
+
 let navDepth = -1;
 let fragmentId = -1;
 export let moduleLoaded: boolean;
@@ -38,36 +40,41 @@ if (global && global.__inspector) {
     devtools.attachDOMInspectorCommandCallbacks(global.__inspector);
 }
 
-export function reloadPage(): void {
-    const frame = topmost();
-    if (frame) {
-        if (frame.currentPage && frame.currentPage.modal) {
-            frame.currentPage.modal.closeModal();
-        }
+export let attachStateChangeListener: android.view.View.OnAttachStateChangeListener;
 
-        const currentEntry = frame._currentEntry.entry;
-        const newEntry: NavigationEntry = {
-            animated: false,
-            clearHistory: true,
-            context: currentEntry.context,
-            create: currentEntry.create,
-            moduleName: currentEntry.moduleName,
-            backstackVisible: currentEntry.backstackVisible
-        }
+function getAttachListener(): android.view.View.OnAttachStateChangeListener {
+    if (!attachStateChangeListener) {
+        @Interfaces([android.view.View.OnAttachStateChangeListener])
+        class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
+            constructor() {
+                super();
+                return global.__native(this);
+            }
 
-        // If create returns the same page instance we can't recreate it.
-        // Instead of navigation set activity content.
-        // This could happen if current page was set in XML as a Page instance.
-        if (newEntry.create) {
-            const page = newEntry.create();
-            if (page === frame.currentPage) {
-                resetActivityContent(frame.android.activity);
-                return;
+            onViewAttachedToWindow(view: android.view.View): void {
+                const owner: View = view[ownerSymbol];
+                if (owner) {
+                    owner._onAttachedToWindow();
+                }
+            }
+
+            onViewDetachedFromWindow(view: android.view.View): void {
+                const owner: View = view[ownerSymbol];
+                if (owner) {
+                    owner._onDetachedFromWindow();
+                }
             }
         }
 
-        frame.navigate(newEntry);
+        attachStateChangeListener = new AttachListener();
     }
+
+    return attachStateChangeListener;
+}
+
+export function reloadPage(): void {
+    // Delete previously cached root view in order to recreate it.
+    resetActivityContent(application.android.foregroundActivity);
 }
 
 // attach on global, so it can be overwritten in NativeScript Angular
@@ -78,6 +85,7 @@ export class Frame extends FrameBase {
     private _delayedNavigationEntry: BackstackEntry;
     private _containerViewId: number = -1;
     private _tearDownPending = false;
+    private _attachedToWindow = false;
     public _isBack: boolean = true;
 
     constructor() {
@@ -107,13 +115,24 @@ export class Frame extends FrameBase {
         return this._android;
     }
 
+    _onAttachedToWindow(): void {
+        super._onAttachedToWindow();
+        this._attachedToWindow = true;
+        this._processNextNavigationEntry();
+    }
+
+    _onDetachedFromWindow(): void {
+        super._onDetachedFromWindow();
+        this._attachedToWindow = false;
+    }
+
     protected _processNextNavigationEntry(): void {
         // In case activity was destroyed because of back button pressed (e.g. app exit)
         // and application is restored from recent apps, current fragment isn't recreated.
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events. 
         // As JS instances are alive it is already done for the current page.
-        if (!this.isLoaded) {
+        if (!this.isLoaded || !this._attachedToWindow) {
             return;
         }
 
@@ -328,6 +347,9 @@ export class Frame extends FrameBase {
 
     public initNativeView(): void {
         super.initNativeView();
+        const listener = getAttachListener();
+        this.nativeViewProtected.addOnAttachStateChangeListener(listener);
+        this.nativeViewProtected[ownerSymbol] = this;
         this._android.rootViewGroup = this.nativeViewProtected;
         if (this._containerViewId < 0) {
             this._containerViewId = android.view.View.generateViewId();
@@ -336,6 +358,9 @@ export class Frame extends FrameBase {
     }
 
     public disposeNativeView() {
+        const listener = getAttachListener();
+        this.nativeViewProtected.removeOnAttachStateChangeListener(listener);
+        this.nativeViewProtected[ownerSymbol] = null;
         this._tearDownPending = !!this._executingEntry;
         const current = this._currentEntry;
 
@@ -661,7 +686,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 // Make sure page will have styleScope even if parents don't.
                 page._updateStyleScope();
             }
-            
+
             this.frame._addView(page);
         }
 

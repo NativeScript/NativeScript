@@ -666,6 +666,16 @@ export abstract class View extends ViewBase {
      * @param css 
      */
     _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void;
+    
+    /**
+     * Called in android when native view is attached to window.
+     */
+    _onAttachedToWindow(): void;
+    
+    /**
+     * Called in android when native view is dettached from window.
+     */
+    _onDetachedFromWindow(): void;
     //@endprivate
 
     /**

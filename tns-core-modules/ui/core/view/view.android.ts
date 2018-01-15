@@ -164,6 +164,7 @@ function initializeDialogFragment() {
                 const window = this.getDialog().getWindow();
                 const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
                 window.setLayout(length, length);
+                // This removes the default backgroundDrawable so there are no margins.
                 window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
             }
 
