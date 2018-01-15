@@ -119,9 +119,10 @@ export class ImageSource implements ImageSourceDefinition {
     }
 
     public setNativeSource(source: any): boolean {
-        if (source instanceof UIImage) {
-            this.ios = source;
+        if (!(source instanceof UIImage)) {
+            throw new Error("The method setNativeSource() expects UIImage instance.");
         }
+        this.ios = source;
         return source != null;
     }
 

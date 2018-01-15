@@ -140,6 +140,9 @@ export class ImageSource implements ImageSourceDefinition {
     }
 
     public setNativeSource(source: any): boolean {
+        if (!(source instanceof android.graphics.Bitmap)) {
+            throw new Error("The method setNativeSource() expects android.graphics.Bitmap instance.");
+        }
         this.android = source;
         return source != null;
     }
