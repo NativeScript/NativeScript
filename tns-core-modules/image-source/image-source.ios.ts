@@ -118,12 +118,11 @@ export class ImageSource implements ImageSourceDefinition {
         });
     }
 
-    public setNativeSource(source: any): boolean {
-        if (!(source instanceof UIImage)) {
+    public setNativeSource(source: any): void {
+        if (source && !(source instanceof UIImage)) {
             throw new Error("The method setNativeSource() expects UIImage instance.");
         }
         this.ios = source;
-        return source != null;
     }
 
     public saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality?: number): boolean {
@@ -222,8 +221,9 @@ export function fromBase64(source: string): ImageSource {
 }
 
 export function fromNativeSource(source: any): ImageSource {
-    const image = new ImageSource();
-    return image.setNativeSource(source) ? image : null;
+    const imageSource = new ImageSource();
+    imageSource.setNativeSource(source);
+    return imageSource;
 }
 
 export function fromUrl(url: string): Promise<ImageSource> {
