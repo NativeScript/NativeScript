@@ -28,6 +28,12 @@ Our Getting Started Guides are hands-on tutorials that walk you through installi
 * [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
 * [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 
+## NativeScript architecture diagram
+
+Below is a common NativeScript architecture diagram. In more detail, read the [How NativeScript Works article](https://docs.nativescript.org/start/how-it-works).
+
+![Architecture diagram](https://github.com/NativeScript/docs/blob/master/docs/img/ns-common.png)
+
 ## Quick Links
 
 - [NativeScript home page](https://nativescript.org)
