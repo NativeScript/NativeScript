@@ -4,8 +4,7 @@
             verticalAlignment="bottom"
             horizontalAlignment="right">
             <Button text="LIVESYNC" tap="onLiveSync" />
-            <Button text="Close Modal" tap="tap" />
-            <Button text="new Frame" tap="newFrame" />
+            <Button text="Close Modal" tap="closeModal" />
             <Button text="Show Modal Frame" tap="onModalFrame" />
             <TextView text="text viesw" />
             <TextField text="text field" />
@@ -35,7 +34,7 @@
     <TabViewItem title="Item 3">
         <ScrollView>
             <StackLayout verticalAlignment="bottom" horizontalAlignment="right">
-                <Button text="Close Modal" tap="tap" />
+                <Button text="Close Modal" tap="closeModal" />
                 <Button text="Show Modal Frame" tap="onModalFrame" />
             </StackLayout>
         </ScrollView>

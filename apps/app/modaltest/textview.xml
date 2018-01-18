@@ -1,8 +1,0 @@
-<Frame>
-    <Page backgroundColor="blue" >
-        <StackLayout backgroundColor="orange" verticalAlignment="top">
-            <Button text="set text" tap='tap' />
-            <TextView text="text" />
-        </StackLayout>
-    </Page>
-</Frame>
