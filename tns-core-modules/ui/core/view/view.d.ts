@@ -481,14 +481,14 @@ export abstract class View extends ViewBase {
     on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
 
     /**
-     * Shows the View contained in moduleName as a modal view.
-     * @param moduleName - The name of the module to load starting from the application root.
-     * @param context - Any context you want to pass to the modally shown view.
-     * This same context will be available in the arguments of the shownModally event handler.
-     * @param closeCallback - A function that will be called when the view is closed.
-     * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
-     * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
-     */
+    * Shows the View contained in moduleName as a modal view.
+    * @param moduleName - The name of the module to load starting from the application root.
+    * @param context - Any context you want to pass to the modally shown view.
+    * This same context will be available in the arguments of the shownModally event handler.
+    * @param closeCallback - A function that will be called when the view is closed.
+    * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+    * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
+    */
     showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): View;
 
     /**
@@ -546,6 +546,26 @@ export abstract class View extends ViewBase {
      */
     public getActualSize(): Size;
 
+    /**
+     * @private
+     * A valid css string which will be applied for all nested UI components (based on css rules).
+     */
+    css: string;
+
+    /**
+     * @private
+     * Adds a new values to current css.
+     * @param cssString - A valid css which will be added to current css. 
+     */
+    addCss(cssString: string): void;
+
+    /**
+     * @private
+     * Adds the content of the file to the current css.
+     * @param cssFileName - A valid file name (from the application root) which contains a valid css.
+     */
+    addCssFile(cssFileName: string): void;
+
     // Lifecycle events
     _getNativeViewsCount(): number;
 
@@ -554,10 +574,6 @@ export abstract class View extends ViewBase {
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
-    /**
-     * @private
-     */
-    _modal: View;
     /**
      * @private
      */
@@ -633,31 +649,15 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
+    _onLivesync(): boolean;
+    /**
+     * @private
+     */
     _onBackPressed(): boolean;
     /**
      * @private
      */
     _getFragmentManager(): any; /* android.app.FragmentManager */
-
-    /**
-     * @private
-     * A valid css string which will be applied for all nested UI components (based on css rules).
-     */
-    css: string;
-
-    /**
-     * @private
-     * Adds a new values to current css.
-     * @param cssString - A valid css which will be added to current css. 
-     */
-    addCss(cssString: string): void;
-
-    /**
-     * @private
-     * Adds the content of the file to the current css.
-     * @param cssFileName - A valid file name (from the application root) which contains a valid css.
-     */
-    addCssFile(cssFileName: string): void;
 
     /**
      * Updates styleScope or create new styleScope.
@@ -666,12 +666,12 @@ export abstract class View extends ViewBase {
      * @param css 
      */
     _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void;
-    
+
     /**
      * Called in android when native view is attached to window.
      */
     _onAttachedToWindow(): void;
-    
+
     /**
      * Called in android when native view is dettached from window.
      */

@@ -43,8 +43,6 @@ export class View extends ViewCommon {
      */
     _nativeBackgroundState: "unset" | "invalid" | "drawn";
 
-    public _modalParent: View;
-
     get isLayoutRequired(): boolean {
         return (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
     }
@@ -303,8 +301,20 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
+    private getParentWithViewController(parent: View): View {
+        let view = parent;
+        let controller = view.viewController;
+        while (!controller) {
+            view = view.parent as View;
+            controller = view.viewController;
+        }
+
+        return view;
+    }
     protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
-        super._showNativeModalView(parent, context, closeCallback, fullscreen);
+        let parentWithController = this.getParentWithViewController(parent);
+
+        super._showNativeModalView(parentWithController, context, closeCallback, fullscreen);
         let controller = this.viewController;
         if (!controller) {
             controller = ios.UILayoutViewController.initWithOwner(new WeakRef(this));
@@ -312,9 +322,8 @@ export class View extends ViewCommon {
         }
 
         this._setupAsRootView({});
-        this._modalParent = parent;
 
-        const parentController = parent.viewController;
+        const parentController = parentWithController.viewController;
         if (!parentController.view.window) {
             throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
         }
@@ -343,9 +352,9 @@ export class View extends ViewCommon {
     protected _hideNativeModalView(parent: View) {
         const parentController = parent.viewController;
         const animated = (<any>this.viewController).animated;
-        parentController.dismissModalViewControllerAnimated(animated);
 
         super._hideNativeModalView(parent);
+        parentController.dismissModalViewControllerAnimated(animated);
     }
 
     [isEnabledProperty.getDefault](): boolean {

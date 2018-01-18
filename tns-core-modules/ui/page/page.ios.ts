@@ -90,12 +90,6 @@ class UIViewControllerImpl extends UIViewController {
             owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
 
-        // Add page to frame if showing modal page.
-        // TODO: This needs refactoring. 
-        if (modalParent) {
-            modalParent._addView(owner);
-        }
-
         if (frame) {
             if (!owner.parent) {
                 owner._frame = frame;
@@ -206,47 +200,10 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        const modalParent = page._modalParent;
-        page._modalParent = undefined;
-
-        // Clear up after modal page has closed.
-        if (modalParent) {
-            modalParent._modal = undefined;
-            modalParent._removeView(page);
-        }
-
-        // Manually pop backStack when Back button is pressed or navigating back with edge swipe.
-        // Don't pop if we are hiding modally shown page.
-        // const frame = page.frame;
-        // We are not modal page, have frame with backstack and navigation queue is empty and currentPage is closed
-        // then pop our backstack.
-        // If we are in frame wich is in tab and tab.selectedControler is not the frame
-        // skip navigation.
-        // const tab = this.tabBarController;
-        // const fireNavigationEvents = !tab
-        //     || tab.selectedViewController === this.navigationController;
-
-        // Remove from parent if page was in frame and we navigated back or
-        // navigate forward but current entry is not backstack visible.
-        // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
-        // const isBack = isBackNavigationFrom(this, page);
-        // if (frame && page.frame === frame &&
-        //     (isBack || !frame._isCurrentEntryBackstackVisible)) {
-        //     // Remove parent when navigating back.
-        //     frame._removeBackstackEntries([_removeBackstackEntries])
-        //     frame._removeView(page);
-        //     page._frame = null;
-        // }
-
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
             page.callUnloaded();
         }
-
-        // if (!modalParent && fireNavigationEvents) {
-        //     // Last raise onNavigatedFrom event if we are not modally shown.
-        //     page.onNavigatedFrom(isBack);
-        // }
     }
 
     public viewWillLayoutSubviews(): void {

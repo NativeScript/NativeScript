@@ -526,6 +526,33 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         return result;
     }
+
+    public _onLivesync(): boolean {
+        super._onLivesync();
+
+        const currentEntry = this._currentEntry.entry;
+        const newEntry: NavigationEntry = {
+            animated: false,
+            clearHistory: true,
+            context: currentEntry.context,
+            create: currentEntry.create,
+            moduleName: currentEntry.moduleName,
+            backstackVisible: currentEntry.backstackVisible
+        }
+
+        // If create returns the same page instance we can't recreate it.
+        // Instead of navigation set activity content.
+        // This could happen if current page was set in XML as a Page instance.
+        if (newEntry.create) {
+            const page = newEntry.create();
+            if (page === this.currentPage) {
+                return false;
+            }
+        }
+
+        this.navigate(newEntry);
+        return true;
+    }
 }
 
 export function topmost(): FrameBase {

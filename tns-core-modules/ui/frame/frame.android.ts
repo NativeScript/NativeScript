@@ -73,8 +73,12 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export function reloadPage(): void {
-    // Delete previously cached root view in order to recreate it.
-    resetActivityContent(application.android.foregroundActivity);
+    const app = application.android;
+    const rootView: View = (<any>app).rootView;
+    if (!rootView || !rootView._onLivesync()) {
+        // Delete previously cached root view in order to recreate it.
+        resetActivityContent(application.android.foregroundActivity);
+    }
 }
 
 // attach on global, so it can be overwritten in NativeScript Angular

@@ -50,14 +50,17 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
     };
 }
 
+export const _rootModalViews = new Array<ViewBase>();
+
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public static shownModallyEvent = "shownModally";
     public static showingModallyEvent = "showingModally";
 
     protected _closeModalCallback: Function;
 
+    public _modalParent: ViewCommon;
     private _modalContext: any;
-    public _modal: ViewCommon;
+    private _modal: ViewCommon;
 
     private _measuredWidth: number;
     private _measuredHeight: number;
@@ -188,6 +191,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
+    _onLivesync(): boolean {
+        _rootModalViews.forEach(v => v.closeModal());
+        _rootModalViews.length = 0;
+        return false;
+    }
+
     public _onBackPressed(): boolean {
         return false;
     }
@@ -215,8 +224,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public closeModal() {
-        if (this._closeModalCallback) {
-            this._closeModalCallback.apply(undefined, arguments);
+        let closeCallback = this._closeModalCallback;
+        if (closeCallback) {
+            closeCallback.apply(undefined, arguments);
+        } else {
+            let parent = this.parent;
+            if (parent) {
+                parent.closeModal();
+            }
         }
     }
 
@@ -225,14 +240,21 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+        _rootModalViews.push(this);
+
         parent._modal = this;
+        this._modalParent = parent;
         this._modalContext = context;
         const that = this;
         this._closeModalCallback = function () {
             if (that._closeModalCallback) {
-                that._closeModalCallback = null;
-                that._modalContext = null;
+                const modalIndex = _rootModalViews.indexOf(that);
+                _rootModalViews.splice(modalIndex);
                 that._hideNativeModalView(parent);
+                that._modalParent = null
+                that._modalContext = null;
+                that._closeModalCallback = null;
+                parent._modal = null;
                 if (typeof closeCallback === "function") {
                     closeCallback.apply(undefined, arguments);
                 }
@@ -938,7 +960,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _onAttachedToWindow(): void {
         //
     }
-    
+
     _onDetachedFromWindow(): void {
         //
     }

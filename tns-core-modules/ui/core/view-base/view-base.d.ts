@@ -1,7 +1,6 @@
 /**
  * @module "ui/core/view-base"
  */ /** */
-
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style } from "../properties";
 import { BindingOptions, Observable } from "../bindable";
 
@@ -110,6 +109,37 @@ export abstract class ViewBase extends Observable {
     _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
     //@endprivate
 
+    /**
+     * Shows the View contained in moduleName as a modal view.
+     * @param moduleName - The name of the module to load starting from the application root.
+     * @param context - Any context you want to pass to the modally shown view.
+     * This same context will be available in the arguments of the shownModally event handler.
+     * @param closeCallback - A function that will be called when the view is closed.
+     * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+     * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
+     */
+    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): ViewBase;
+
+    /**
+     * Shows the view passed as parameter as a modal view.
+     * @param view - View instance to be shown modally.
+     * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
+     * @param closeCallback - A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+     * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
+     */
+    showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): ViewBase;
+
+    /**
+     * Deprecated. Showing view as modal is deprecated.
+     * Use showModal method with arguments.
+     */
+    showModal(): ViewBase;
+
+    /**
+     * Closes the current modal view that this page is showing.
+     */
+    closeModal(): void;
+
     public effectiveMinWidth: number;
     public effectiveMinHeight: number;
     public effectiveWidth: number;
@@ -139,7 +169,7 @@ export abstract class ViewBase extends Observable {
 
     public ios: any;
     public android: any;
-    
+
     /**
      * returns the native UIViewController.
      */
@@ -337,7 +367,7 @@ export abstract class ViewBase extends Observable {
      */
     public _isPaddingRelative: boolean;
     public _styleScope: any;
-    
+
     /**
      * @private
      */
@@ -365,12 +395,12 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     _inheritStyleScope(styleScope: any /* StyleScope */): void;
-        
+
     /**
      * @private
      */
     callLoaded(): void;
-    
+
     /**
      * @private
      */

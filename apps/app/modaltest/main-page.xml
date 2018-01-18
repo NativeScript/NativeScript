@@ -1,0 +1,19 @@
+<Frame>
+    <Page backgroundColor="blue" loaded='onNavigatingTo'>
+        <ActionBar>
+            <Label text='MIDDLE TEXT' backgroundColor='green' />
+        </ActionBar> -->
+        <!-- <TabView backgroundColor="green">
+            <TabViewItem title="Item One"> -->
+                <!-- <ScrollView backgroundColor="purple"> -->
+                    <StackLayout backgroundColor="orange" verticalAlignment="center">
+                        <Button text="LiveSync" tap="sync" />
+                        <Button text="Show Modal TabView" tap="onModalTab" />
+                        <Button text="Show Modal Frame" tap="onModalFrame" />
+                        <Button text="requestLayout for titleView" tap="onTap3" />
+                    </StackLayout>
+                <!-- </ScrollView> -->
+            <!-- </TabViewItem>
+        </TabView> -->
+    </Page>
+</Frame>

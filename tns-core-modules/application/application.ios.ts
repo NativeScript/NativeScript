@@ -16,8 +16,8 @@ export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../ui/builder";
-import { ios as iosView, ViewBase } from "../ui/core/view";
-import { Frame, View, NavigationEntry } from "../ui/frame";
+import { ios as iosView, View } from "../ui/core/view";
+import { Frame, NavigationEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
 import * as utils from "../utils/utils";
 import { profile } from "../profiling";
@@ -51,7 +51,7 @@ class IOSApplication implements IOSApplicationDefinition {
     private _currentOrientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
-    private _rootView: ViewBase;
+    private _rootView: View;
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -114,18 +114,7 @@ class IOSApplication implements IOSApplicationDefinition {
         notify(args);
         notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: getCssFileName() });
 
-        const rootView = createRootView(args.root);
-        this._rootView = rootView;
-        const controller = getViewController(rootView);
-        this._window.rootViewController = controller;
-        if (createRootFrame) {
-            // Don't setup as styleScopeHost
-            rootView._setupUI({});
-        } else {
-            // setup view as styleScopeHost
-            rootView._setupAsRootView({});
-        }
-        this._window.makeKeyAndVisible();
+        this.setWindowContent(args.root);
     }
 
     @profile
@@ -193,11 +182,43 @@ class IOSApplication implements IOSApplicationDefinition {
             });
         }
     }
+
+    public _onLivesync(): void {
+        // If view can't handle livesync set window controller.
+        if (!this._rootView._onLivesync()) {
+            this.setWindowContent();
+        }
+    }
+
+    public setWindowContent(view?: View): void {
+        const rootView = createRootView(view);
+        this._rootView = rootView;
+        const controller = getViewController(rootView);
+
+        if (createRootFrame) {
+            // Don't setup as styleScopeHost
+            rootView._setupUI({});
+        } else {
+            // setup view as styleScopeHost
+            rootView._setupAsRootView({});
+        }
+
+        const haveController = this._window.rootViewController !== null;
+        this._window.rootViewController = controller;
+        if (!haveController) {
+            this._window.makeKeyAndVisible();
+        }
+    }
 }
 
 const iosApp = new IOSApplication();
 exports.ios = iosApp;
 setApplication(iosApp);
+
+// attach on global, so it can be overwritten in NativeScript Angular
+(<any>global).__onLiveSyncCore = function () {
+    iosApp._onLivesync();
+}
 
 let mainEntry: NavigationEntry;
 function createRootView(v?: View) {

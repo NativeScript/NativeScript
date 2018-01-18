@@ -489,7 +489,6 @@ export class View extends ViewCommon {
         }
 
         this._dialogFragment = null;
-        parent._modal = undefined;
         super._hideNativeModalView(parent);
     }
 

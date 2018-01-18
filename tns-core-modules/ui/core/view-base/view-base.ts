@@ -944,6 +944,18 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             });
         }
     }
+
+    public showModal(): ViewBase {
+        const parent = this.parent;
+        return parent && parent.showModal();
+    }
+
+    public closeModal(): void {
+        const parent = this.parent;
+        if (parent) {
+            parent.closeModal();
+        }
+    }
 }
 
 ViewBase.prototype.isCollapsed = false;

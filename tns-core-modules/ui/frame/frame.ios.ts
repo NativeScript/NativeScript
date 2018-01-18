@@ -20,30 +20,6 @@ const DELEGATE = "_delegate";
 
 let navDepth = -1;
 
-export function reloadPage(): void {
-    const frame = topmost();
-    if (frame) {
-        if (frame.currentPage && frame.currentPage.modal) {
-            frame.currentPage.modal.closeModal();
-        }
-
-        const currentEntry = frame._currentEntry.entry;
-        const newEntry: NavigationEntry = {
-            animated: false,
-            clearHistory: true,
-            context: currentEntry.context,
-            create: currentEntry.create,
-            moduleName: currentEntry.moduleName,
-            backstackVisible: currentEntry.backstackVisible
-        }
-
-        frame.navigate(newEntry);
-    }
-}
-
-// attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = reloadPage;
-
 export class Frame extends FrameBase {
     public viewController: UINavigationControllerImpl;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
