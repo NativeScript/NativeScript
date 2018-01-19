@@ -1,5 +1,5 @@
 <Page backgroundColor="pink" showingModally="showingModally">
-    <ActionBar title="{{ $value }} ">
+    <ActionBar title="{{ $value + ' page' }} ">
         <ActionItem text="close" tap="closeModal" ios.position='right' />
     </ActionBar>
     <StackLayout backgroundColor="orange">

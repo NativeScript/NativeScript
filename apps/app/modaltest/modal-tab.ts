@@ -22,7 +22,7 @@ export function onTap(args) {
     const view = args.object as View;
     const page = view.page;
     let context = page.bindingContext || 0;
-    page.frame.navigate({ moduleName: "page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
+    page.frame.navigate({ moduleName: "modaltest/page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
 }
 
 export function tenGoBacks(args) {
@@ -33,7 +33,7 @@ export function tenGoBacks(args) {
     let context = page.bindingContext || 0;
     let x = 4;
     while (x--) {
-        frame.navigate({ moduleName: "page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
+        frame.navigate({ moduleName: "modaltest/page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
     }
 
     x = 4;
@@ -50,17 +50,17 @@ export function navigateToFrame(args: EventData) {
     const view = args.object as View;
     const page = view.page;
     const frame = page.frame;
-    frame.navigate("modal-frame");
+    frame.navigate("modaltest/modal-frame");
 }
 
 export function navigateToPageWithFrame(args: EventData) {
     const view = args.object as View;
     const page = view.page;
     const frame = page.frame;
-    frame.navigate("modal-frame.1");
+    frame.navigate("modaltest/modal-frame.1");
 }
 
 export function onModalFrame(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-frame", "some context", closeModal, false);
+    view.showModal("modaltest/modal-frame", "some context", undefined, false);
 }
