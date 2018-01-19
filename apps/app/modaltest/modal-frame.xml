@@ -1,4 +1,4 @@
-<Frame codeFile='~/page.2'>
+<Frame codeFile='~/modaltest/page.2'>
     <Page backgroundColor="pink">
         <ActionBar title="{{ $value, 'Page ' + $value }} ">
             <ActionItem text="close" tap="closeModal" ios.position='right' />

@@ -1,5 +1,5 @@
 <Page backgroundColor="blue" actionBarHidden="true" loaded="pageLoaded"
-    codeFile='~/modal-tab'>
+    codeFile='~/modaltest/modal-tab'>
     <ActionBar title="Frame in Modal Page">
         <ActionItem text="close" tap="closeModal" />
     </ActionBar>

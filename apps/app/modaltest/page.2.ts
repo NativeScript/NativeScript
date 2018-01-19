@@ -17,7 +17,7 @@ export function onTap(args: EventData) {
     const view = args.object as View;
     const page = view.page;
     let context = page.bindingContext || 0;
-    page.frame.navigate({ moduleName: "page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
+    page.frame.navigate({ moduleName: "modaltest/page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
 }
 
 export function onBack(args: EventData) {
@@ -32,7 +32,7 @@ export function closeModal(args: EventData) {
 
 let modalContext = 0;
 export function showModal(args: EventData) {
-    (args.object as View).showModal("page.2", ++modalContext, function () {
+    (args.object as View).showModal("modaltest/page.2", ++modalContext, function () {
         console.log("Closed Modal: " + (args.object as View).bindingContext);
     });
 }

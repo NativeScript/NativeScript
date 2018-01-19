@@ -1,4 +1,4 @@
-<Page backgroundColor="pink" codeFile='~/page.2' actionBarHidden="true">
+<Page backgroundColor="pink" codeFile='~/modaltest/page.2' actionBarHidden="true">
     <Frame>
         <Page backgroundColor="purple">
             <ActionBar title=" AAA ">
