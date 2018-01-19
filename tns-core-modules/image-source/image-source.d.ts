@@ -88,11 +88,11 @@ export class ImageSource {
     fromBase64(source: string): Promise<boolean>;        
 
    /**
-    * Sets the provided native source object (typically a Bitmap).
+    * Sets the provided native source object (typically a Bitmap or a UIImage).
     * This will update either the android or ios properties, depending on the target os.
     * @param source The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
     */
-    setNativeSource(source: any): boolean;
+    setNativeSource(source: any): void;
 
    /**
     * Saves this instance to the specified file, using the provided image format and quality.
