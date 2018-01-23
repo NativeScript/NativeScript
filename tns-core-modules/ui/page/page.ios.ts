@@ -106,6 +106,9 @@ class UIViewControllerImpl extends UIViewController {
             frame._updateActionBar(owner);
         }
 
+        // Set autoAdjustScrollInsets in will appear - as early as possible
+        iosView.updateAutoAdjustScrollInsets(this, owner);
+
         // Pages in backstack are unloaded so raise loaded here.
         if (!owner.isLoaded) {
             owner.callLoaded();

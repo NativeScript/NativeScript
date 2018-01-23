@@ -32,7 +32,13 @@ class UITabBarControllerImpl extends UITabBarController {
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
-        if (owner && !owner.parent) {
+        if(!owner){
+            return;
+        }
+
+        iosView.updateAutoAdjustScrollInsets(this, owner);
+
+        if (!owner.parent) {
             owner.callLoaded();
         }
     }

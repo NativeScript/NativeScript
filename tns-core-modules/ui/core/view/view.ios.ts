@@ -575,21 +575,26 @@ export class CustomLayoutView extends View {
     }
 }
 
-function isScrollable(controller: UIViewController, owner: View): boolean {
-    let scrollable = (<any>owner).scrollableContent;
-    if (scrollable === undefined) {
-        const view: UIView = controller.view.subviews.count > 0 ? controller.view.subviews[0] : null;
-        if (view instanceof UIScrollView) {
-            scrollable = true;
-        }
-    }
-
-    return scrollable === true || scrollable === "true";;
-}
-
 const majorVersion = iosUtils.MajorVersion;
 
 export namespace ios {
+    export function isContentScrollable(controller: UIViewController, owner: View): boolean {
+        let scrollableContent = (<any>owner).scrollableContent;
+        if (scrollableContent === undefined) {
+            const view: UIView = controller.view.subviews.count > 0 ? controller.view.subviews[0] : null;
+            if (view instanceof UIScrollView) {
+                scrollableContent = true;
+            }
+        }
+
+        return scrollableContent === true || scrollableContent === "true";;
+    }
+
+    export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
+        const scrollable = isContentScrollable(controller, owner);
+        controller.automaticallyAdjustsScrollViewInsets = scrollable;
+    }
+
     export function updateConstraints(controller: UIViewController, owner: View): void {
         const root = controller.view;
         if (!root.safeAreaLayoutGuide) {
@@ -619,66 +624,55 @@ export namespace ios {
     }
 
     export function layoutView(controller: UIViewController, owner: View): void {
-        const fullscreen = controller ===
-            iosUtils.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController;
-
         let left: number, top: number, width: number, height: number;
 
         const frame = controller.view.frame;
         const fullscreenOrigin = frame.origin;
         const fullscreenSize = frame.size;
+        const safeArea = controller.view.safeAreaLayoutGuide.layoutFrame;
+        const safeOrigin = safeArea.origin;
+        const safeAreaSize = safeArea.size;
 
-        if (fullscreen) {
-            left = layout.toDevicePixels(fullscreenOrigin.x);
-            top = layout.toDevicePixels(fullscreenOrigin.y);
-            width = layout.toDevicePixels(fullscreenSize.width);
-            height = layout.toDevicePixels(fullscreenSize.height);
-        } else {
-            const safeArea = controller.view.safeAreaLayoutGuide.layoutFrame;
-            const safeOrigin = safeArea.origin;
-            const safeAreaSize = safeArea.size;
+        const navController = controller.navigationController;
+        const navBarHidden = navController ? navController.navigationBarHidden : true;
+        const scrollable = isContentScrollable(controller, owner);
+        const hasChildControllers = controller.childViewControllers.count > 0;
 
-            const navController = controller.navigationController;
-            const navBarHidden = navController ? navController.navigationBarHidden : true;
-            const scrollable = isScrollable(controller, owner);
-            const hasChildControllers = controller.childViewControllers.count > 0;
+        const safeAreaTopLength = safeOrigin.y - fullscreenOrigin.y;
+        const safeAreaBottomLength = fullscreenSize.height - safeAreaSize.height - safeAreaTopLength;
 
-            const safeAreaTopLength = safeOrigin.y - fullscreenOrigin.y;
-            const safeAreaBottomLength = fullscreenSize.height - safeAreaSize.height - safeAreaTopLength;
-
-            if (!(controller.edgesForExtendedLayout & UIRectEdge.Top)) {
-                const statusBarHeight = getStatusBarHeight(controller);
-                const navBarHeight = controller.navigationController ? controller.navigationController.navigationBar.frame.size.height : 0;
-                fullscreenOrigin.y = safeOrigin.y;
-                fullscreenSize.height -= (statusBarHeight + navBarHeight);
-            }
-
-            left = safeOrigin.x;
-            width = safeAreaSize.width;
-
-            if (hasChildControllers) {
-                // If not inner most extend to fullscreen
-                top = fullscreenOrigin.y;
-                height = fullscreenSize.height;
-            } else if (!scrollable) {
-                // If not scrollable dock under safe area
-                top = safeOrigin.y;
-                height = safeAreaSize.height;
-            } else if (navBarHidden) {
-                // If scrollable but no navigation bar dock under safe area
-                top = safeOrigin.y;
-                height = navController ? (fullscreenSize.height - top) : safeAreaSize.height;
-            } else {
-                // If scrollable and navigation bar extend to fullscreen
-                top = fullscreenOrigin.y;
-                height = fullscreenSize.height;
-            }
-
-            left = layout.toDevicePixels(left);
-            top = layout.toDevicePixels(top);
-            width = layout.toDevicePixels(width);
-            height = layout.toDevicePixels(height);
+        if (!(controller.edgesForExtendedLayout & UIRectEdge.Top)) {
+            const statusBarHeight = getStatusBarHeight(controller);
+            const navBarHeight = controller.navigationController ? controller.navigationController.navigationBar.frame.size.height : 0;
+            fullscreenOrigin.y = safeOrigin.y;
+            fullscreenSize.height -= (statusBarHeight + navBarHeight);
         }
+
+        left = safeOrigin.x;
+        width = safeAreaSize.width;
+
+        if (hasChildControllers) {
+            // If not inner most extend to fullscreen
+            top = fullscreenOrigin.y;
+            height = fullscreenSize.height;
+        } else if (!scrollable) {
+            // If not scrollable dock under safe area
+            top = safeOrigin.y;
+            height = safeAreaSize.height;
+        } else if (navBarHidden) {
+            // If scrollable but no navigation bar dock under safe area
+            top = safeOrigin.y;
+            height = navController ? (fullscreenSize.height - top) : safeAreaSize.height;
+        } else {
+            // If scrollable and navigation bar extend to fullscreen
+            top = fullscreenOrigin.y;
+            height = fullscreenSize.height;
+        }
+
+        left = layout.toDevicePixels(left);
+        top = layout.toDevicePixels(top);
+        width = layout.toDevicePixels(width);
+        height = layout.toDevicePixels(height);
 
         const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
         const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
@@ -736,7 +730,13 @@ export namespace ios {
         public viewWillAppear(animated: boolean): void {
             super.viewWillAppear(animated);
             const owner = this.owner.get();
-            if (owner && !owner.parent) {
+            if(!owner){
+                return;
+            }
+        
+            updateAutoAdjustScrollInsets(this, owner);
+
+            if (!owner.parent) {
                 owner.callLoaded();
             }
         }
