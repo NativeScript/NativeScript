@@ -688,7 +688,7 @@ export namespace ios {
             return;
         }
 
-        if (view instanceof View) {
+        if (view instanceof View && view.nativeViewProtected) {
             const frame = view.nativeViewProtected.frame;
             const origin = frame.origin;
             const size = frame.size;
