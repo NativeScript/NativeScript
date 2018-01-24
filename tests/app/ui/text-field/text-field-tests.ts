@@ -16,11 +16,11 @@ import { Span } from "tns-core-modules/text/span";
 import { TextField } from "tns-core-modules/ui/text-field";
 // << require-textfield
 // Other frequently used modules when working with buttons include:
-
+// >> require-observable-binding-options-textfield
 import { BindingOptions } from "tns-core-modules/ui/core/bindable";
-// >> require-observable-textfield
+
 import { Observable } from "tns-core-modules/data/observable";
-// << require-observable-textfield
+// << require-observable-binding-options-textfield
 
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
