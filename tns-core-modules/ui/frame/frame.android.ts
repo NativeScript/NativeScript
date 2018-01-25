@@ -945,7 +945,7 @@ function setActivityContent(activity: android.app.Activity, savedInstanceState: 
             if (!rootView) {
                 // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
                 // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
-                rootView = frameId >= 0 ? getFrameById(frameId) : new Frame();
+                rootView = getFrameById(frameId) || new Frame();
             }
 
             if (rootView instanceof Frame) {
