@@ -3,7 +3,7 @@ import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTr
 import { Page } from "../page";
 
 // Types.
-import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "../core/view";
+import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData, Property } from "../core/view";
 import { resolveFileName } from "../../file-system/file-name-resolver";
 import { knownFolders, path } from "../../file-system";
 import { parse, createViewFromEntry } from "../builder";
@@ -52,9 +52,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
     public _addChildFromBuilder(name: string, value: any) {
-        if (value instanceof Page) {
-            this.navigate({ create: () => value });
-        }
+        throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
     }
 
     @profile
@@ -215,7 +213,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             this._addView(newPage);
             newPage._frame = this;
         }
-        
+
         this._currentEntry = entry;
         this._executingEntry = null;
         newPage.onNavigatedTo(isBack);
@@ -580,3 +578,11 @@ export function goBack(): boolean {
 export function stack(): Array<FrameBase> {
     return frameStack;
 }
+
+export const defaultPage = new Property<FrameBase, string>({
+    name: "defaultPage", valueChanged: (frame: FrameBase, oldValue: string, newValue: string) => {
+        frame.navigate({ moduleName: newValue });
+    }
+});
+
+defaultPage.register(FrameBase)
