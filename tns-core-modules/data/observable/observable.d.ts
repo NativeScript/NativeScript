@@ -96,6 +96,14 @@ export class Observable {
     on(event: "propertyChange", callback: (data: EventData) => void, thisArg?: any);
 
     /**
+     * Adds one-time listener function for the event named `event`.
+     * @param event Name of the event to attach to.
+     * @param callback A function to be called when the specified event is raised.
+     * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
+     */
+    once(event: string, callback: (data: EventData) => void, thisArg?: any);
+
+    /**
      * Shortcut alias to the removeEventListener method.
      */
     off(eventNames: string, callback?: any, thisArg?: any);

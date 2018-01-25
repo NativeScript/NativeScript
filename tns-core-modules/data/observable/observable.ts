@@ -3,6 +3,7 @@
 interface ListenerEntry {
     callback: (data: EventData) => void;
     thisArg: any;
+    once?: true;
 }
 
 let _wrappedIndex = 0;
@@ -54,6 +55,11 @@ export class Observable implements ObservableDefinition {
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
         this.addEventListener(eventNames, callback, thisArg);
+    }
+
+    public once(event: string, callback: (data: EventData) => void, thisArg?: any) {
+        const list = this._getEventList(event, true);
+        list.push({ callback, thisArg, once: true });
     }
 
     public off(eventNames: string, callback?: any, thisArg?: any) {
@@ -120,6 +126,9 @@ export class Observable implements ObservableDefinition {
 
         for (let i = observers.length - 1; i >= 0; i--) {
             let entry = observers[i];
+            if (entry.once) {
+                observers.splice(i, 1);
+            }
             if (entry.thisArg) {
                 entry.callback.apply(entry.thisArg, [data]);
             } else {
