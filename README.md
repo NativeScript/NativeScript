@@ -56,7 +56,7 @@ The NativeScript framework consists of a number of components, all of which are 
     [![npm](https://img.shields.io/npm/dm/tns-core-modules.svg)](https://www.npmjs.com/package/tns-core-modules) [![Waffle.io - NativeScript Modules and Angular](https://badge.waffle.io/NativeScript/NativeScript.svg?columns=In%20Progress)](https://waffle.io/NativeScript/NativeScript)
     - This repo contains the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
 - **[iOS runtime](//github.com/NativeScript/ios-runtime/)**
-    [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/tns-ios) [![Waffle.io - NativeScript Runtimes and CLI](https://badge.waffle.io/NativeScript/android-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/android-runtime)
+    [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/tns-ios) [![Waffle.io - NativeScript iOS Runtime](https://badge.waffle.io/NativeScript/ios-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/ios-runtime)
     - This repo contains the NativeScript iOS runtime—the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
 - **[Android runtime](//github.com/NativeScript/android-runtime)**
     [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android) [![Waffle.io - NativeScript Runtimes and CLI](https://badge.waffle.io/NativeScript/android-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/android-runtime)
