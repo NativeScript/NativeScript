@@ -19,6 +19,7 @@ import * as helper from "../helper";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
+import { Frame } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 
@@ -536,6 +537,271 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     TKUnit.assertEqual(modalUnloaded, 1, "modalUnloaded");
 
     masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
+}
+
+export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised() {
+    let hostNavigatingToCount = 0;
+    let hostNavigatedToCount = 0;
+    let hostNavigatingFromCount = 0;
+    let hostNavigatedFromCount = 0;
+
+    let ready = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        ready = true;
+    }
+
+    const hostNavigatingToEventHandler = function () {
+        hostNavigatingToCount++;
+    };
+
+    const hostNavigatedToEventHandler = function () {
+        hostNavigatedToCount++;
+    };
+
+    const hostNavigatingFromEventHandler = function () {
+        hostNavigatingFromCount++;
+    };
+
+    const hostNavigatedFromEventHandler = function () {
+        hostNavigatedFromCount++;
+    };
+
+    const hostNavigatedToEventHandler2 = function(args: NavigatedData) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler2);
+
+        const basePath = "ui/page/";
+        const entry: NavigationEntry = {
+            moduleName: basePath + "modal-page"
+        };
+
+        const modalPage = createViewFromEntry(entry) as Page;
+        page.showModal(modalPage, {}, modalCloseCallback, false, false);
+    }
+    
+    const masterPageFactory = function (): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised";
+        masterPage.on(Page.navigatingToEvent, hostNavigatingToEventHandler);
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler2);
+        masterPage.on(Page.navigatingFromEvent, hostNavigatingFromEventHandler);
+        masterPage.on(Page.navigatedFromEvent, hostNavigatedFromEventHandler);
+
+        const label = new Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => ready);
+
+    // only raised by the initial navigation to the master page
+    TKUnit.assertTrue(hostNavigatingToCount === 1);
+    TKUnit.assertTrue(hostNavigatedToCount === 1);
+
+    TKUnit.assertTrue(hostNavigatingFromCount === 0);
+    TKUnit.assertTrue(hostNavigatedFromCount === 0);
+}
+
+export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
+    let modalNavigatingToCount = 0;
+    let modalNavigatedToCount = 0;
+    let modalNavigatingFromCount = 0;
+    let modalNavigatedFromCount = 0;
+
+    let ready = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        ready = true;
+    }
+
+    const modalNavigatingToEventHandler = function () {
+        modalNavigatingToCount++;
+    };
+
+    const modalNavigatedToEventHandler = function (args: NavigatedData) {
+        modalNavigatedToCount++;
+
+        (args.object as View).closeModal();
+    };
+
+    const modalNavigatingFromEventHandler = function () {
+        modalNavigatingFromCount++;
+    };
+
+    const modalNavigatedFromEventHandler = function () {
+        modalNavigatedFromCount++;
+    };
+
+    const modalFrameShownModallyEventHandler = function(args) {
+        const basePath = "ui/page/";
+        const entry: NavigationEntry = {
+            moduleName: basePath + "modal-page"
+        };        
+        
+        const modalPage = createViewFromEntry(entry) as Page;
+        modalPage.on(Page.navigatingToEvent, modalNavigatingToEventHandler);
+        modalPage.on(Page.navigatedToEvent, modalNavigatedToEventHandler);
+        modalPage.on(Page.navigatingFromEvent, modalNavigatingFromEventHandler);
+        modalPage.on(Page.navigatedFromEvent, modalNavigatedFromEventHandler);
+
+        (args.object as Frame).navigate(() => modalPage);
+    }
+
+    let modalFrame;
+
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        modalFrame = new Frame();
+        modalFrame.on(Frame.shownModallyEvent, modalFrameShownModallyEventHandler);
+
+        page.showModal(modalFrame, {}, modalCloseCallback, false, false);
+    }
+    
+    const masterPageFactory = function (): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenModalPageShownModalNavigationToEventsShouldBeRaised";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const label = new Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => ready && !modalFrame.isLoaded);
+
+    // only raised by the initial show modal navigation
+    TKUnit.assertTrue(modalNavigatingToCount === 1);
+    TKUnit.assertTrue(modalNavigatedToCount === 1);
+
+    TKUnit.assertTrue(modalNavigatingFromCount === 0);
+    TKUnit.assertTrue(modalNavigatedFromCount === 0);
+}
+
+export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
+    let showingModallyCount = 0;
+    let shownModallyCount = 0;
+
+    let ready = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        ready = true;
+    }
+
+    const modalFrameShowingModallyEventHandler = function(args: ShownModallyData) {
+        showingModallyCount++;
+    }
+
+    const modalFrameShownModallyEventHandler = function(args: ShownModallyData) {
+        shownModallyCount++;
+
+        args.closeCallback("return value");
+    }
+
+    let modalFrame;
+
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const basePath = "ui/page/";
+        const entry: NavigationEntry = {
+            moduleName: basePath + "modal-page"
+        };
+
+        const modalPage = createViewFromEntry(entry) as Page;
+
+        modalFrame = new Frame();
+        modalFrame.on(Frame.showingModallyEvent, modalFrameShowingModallyEventHandler);
+        modalFrame.on(Frame.shownModallyEvent, modalFrameShownModallyEventHandler);
+        modalFrame.navigate(() => modalPage);
+
+        page.showModal(modalFrame, {}, modalCloseCallback, false, false);
+    }
+    
+    const masterPageFactory = function (): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const label = new Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => ready && !modalFrame.isLoaded);
+
+    TKUnit.assertTrue(showingModallyCount === 1);
+    TKUnit.assertTrue(shownModallyCount === 1);
+}
+
+export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
+    let showingModallyCount = 0;
+    let shownModallyCount = 0;
+
+    let ready = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        ready = true;
+    }
+
+    const modalPageShowingModallyEventHandler = function(args: ShownModallyData) {
+        showingModallyCount++;
+    }
+
+    const modalPageShownModallyEventHandler = function(args: ShownModallyData) {
+        shownModallyCount++;
+
+        setTimeout(() => {
+            args.closeCallback("return value");
+        }, 0);
+    }
+
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const basePath = "ui/page/";
+        const entry: NavigationEntry = {
+            moduleName: basePath + "modal-page"
+        };
+
+        const modalPage = createViewFromEntry(entry) as Page;
+        modalPage.on(Page.showingModallyEvent, modalPageShowingModallyEventHandler);
+        modalPage.on(Page.shownModallyEvent, modalPageShownModallyEventHandler);
+
+        page.showModal(modalPage, {}, modalCloseCallback, false, false);
+    }
+    
+    const masterPageFactory = function (): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const label = new Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => ready);
+
+    TKUnit.assertTrue(showingModallyCount === 1);
+    TKUnit.assertTrue(shownModallyCount === 1);
 }
 
 export function test_percent_width_and_height_support() {

@@ -40,16 +40,6 @@ export module knownCollections {
  */
 export class Page extends ContentView {
     /**
-     * String value used when hooking to showingModally event.
-     */
-    public static showingModallyEvent: string;
-
-    /**
-     * String value used when hooking to shownModally event.
-     */
-    public static shownModallyEvent: string;
-
-    /**
      * String value used when hooking to navigatingTo event.
      */
     public static navigatingToEvent: string;

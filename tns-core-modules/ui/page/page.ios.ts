@@ -180,10 +180,11 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         const frame = owner.frame;
-        // Skip navigation events if we are hiding because we are about to show modal page
+        // Skip navigation events if we are hiding because we are about to show a modal page,
+        // or because we are closing a modal page, 
         // or because we are in tab and another controller is selected.
         const tab = this.tabBarController;
-        if (!owner._presentedViewController && frame && frame.currentPage === owner) {
+        if (!owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
             const willSelectViewController = tab && (<any>tab)._willSelectViewController;
             if (!willSelectViewController
                 || willSelectViewController === tab.selectedViewController) {
