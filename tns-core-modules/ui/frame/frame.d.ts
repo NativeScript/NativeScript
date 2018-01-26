@@ -434,9 +434,5 @@ export function reloadPage(): void;
 /**
  * @private
  */
-export function resolvePageFromEntry(entry: NavigationEntry): Page;
-/**
- * @private
- */
 export function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
 //@endprivate

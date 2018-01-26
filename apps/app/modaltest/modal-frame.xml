@@ -1,0 +1,12 @@
+<Frame codeFile='~/modaltest/page.2'>
+    <Page backgroundColor="pink">
+        <ActionBar title="{{ $value, 'Page ' + $value }} ">
+            <ActionItem text="close" tap="closeModal" ios.position='right' />
+        </ActionBar>
+        <StackLayout backgroundColor="orange">
+            <Button text="FORWARD" tap="onTap"/>
+            <Button text="BACKWARD" tap="onBack"/>
+            <Button text="showModal" tap="showModal"/>
+        </StackLayout>
+    </Page>
+</Frame>

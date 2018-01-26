@@ -124,6 +124,8 @@ setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
+// NOTE: for backwards compatibility. Remove for 4.0.0.
+let createRootFrame = true;
 export function start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
@@ -135,6 +137,15 @@ export function start(entry?: NavigationEntry | string) {
         const nativeApp = getNativeApplication();
         androidApp.init(nativeApp);
     }
+}
+
+export function shouldCreateRootFrame(): boolean {
+    return createRootFrame;
+}
+
+export function run(entry?: NavigationEntry | string) {
+    createRootFrame = false;
+    start(entry);
 }
 
 export function getMainEntry() {

@@ -3,12 +3,12 @@
         <TabView.items>
             <TabViewItem title="First">
                 <TabViewItem.view>
-                    <Label text="First View" loaded="loaded"/>
+                    <Label text="First View" />
                 </TabViewItem.view>
             </TabViewItem>
             <TabViewItem title= "Second">
                 <TabViewItem.view>
-                    <Label text="Second View" />
+                    <Label text="Second View" loaded="loaded"/>
                 </TabViewItem.view>
             </TabViewItem>
         </TabView.items>

@@ -30,7 +30,7 @@ const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
 
 (<any>global).moduleResolvers = [global.require];
 
-global.registerModule = function(name: string, loader: ModuleLoader): void {
+global.registerModule = function (name: string, loader: ModuleLoader): void {
     modules.set(name, loader);
 }
 
@@ -78,11 +78,11 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
     });
 }
 
-global.moduleExists = function(name: string): boolean {
+global.moduleExists = function (name: string): boolean {
     return modules.has(name);
 }
 
-global.loadModule = function(name: string): any {
+global.loadModule = function (name: string): any {
     const loader = modules.get(name);
     if (loader) {
         return loader();
@@ -119,7 +119,7 @@ global.registerModule("fetch", () => require("fetch"));
         return new Promise((resolve, reject) => {
             try {
                 resolve(global.require(path));
-            } catch(e) {
+            } catch (e) {
                 reject(e);
             }
         });

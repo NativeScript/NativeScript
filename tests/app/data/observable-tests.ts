@@ -559,3 +559,10 @@ export function test_get_set_on_observables_fromObject_with_property_in_json() {
     TKUnit.assertEqual(value1, array);
     TKUnit.assertEqual(value2, array);
 }
+
+export function test_fromObjectRecursive_does_not_override_source_object_property() {
+    const myObj = {};
+    const source = { name: "a", value: myObj };
+    const observable = fromObjectRecursive(source);
+    TKUnit.assertEqual(source.value, myObj);
+}

@@ -1,5 +1,8 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, Color, dip } from ".";
+import {
+    View as ViewDefinition, Point, Size, Color, dip,
+    ShownModallyData
+} from ".";
 
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
@@ -16,6 +19,9 @@ import {
     fromString as gestureFromString
 } from "../../gestures";
 
+import { createViewFromEntry } from "../../builder";
+import { StyleScope } from "../../styling/style-scope";
+
 export * from "../../styling/style-properties";
 export * from "../view-base";
 
@@ -28,8 +34,8 @@ function ensureAnimationModule() {
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
-    let stateEventNames = pseudoClasses.map(s => ":" + s);
-    let listeners = Symbol("listeners");
+    const stateEventNames = pseudoClasses.map(s => ":" + s);
+    const listeners = Symbol("listeners");
     return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
         function update(change: number) {
             let prev = this[listeners] || 0;
@@ -44,7 +50,18 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
     };
 }
 
+export const _rootModalViews = new Array<ViewBase>();
+
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
+    public static shownModallyEvent = "shownModally";
+    public static showingModallyEvent = "showingModally";
+
+    protected _closeModalCallback: Function;
+
+    public _modalParent: ViewCommon;
+    private _modalContext: any;
+    private _modal: ViewCommon;
+
     private _measuredWidth: number;
     private _measuredHeight: number;
 
@@ -60,6 +77,52 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _setMinHeightNative: (value: Length) => void;
 
     public _gestureObservers = {};
+
+    get css(): string {
+        const scope = this._styleScope;
+        return scope && scope.css;
+    }
+    set css(value: string) {
+        this._updateStyleScope(undefined, undefined, value);
+    }
+
+    public addCss(cssString: string): void {
+        this._updateStyleScope(undefined, cssString);
+    }
+
+    public addCssFile(cssFileName: string) {
+        this._updateStyleScope(cssFileName);
+    }
+
+    public _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+        let scope = this._styleScope;
+        if (!scope) {
+            scope = new StyleScope();
+            this.setScopeProperty(scope, cssFileName, cssString, css);
+            this._inheritStyleScope(scope);
+            this._isStyleScopeHost = true;
+        } else {
+            this.setScopeProperty(scope, cssFileName, cssString, css);
+            this._onCssStateChange();
+        }
+    }
+
+    private setScopeProperty(scope: StyleScope, cssFileName?: string, cssString?: string, css?: string): void {
+        if (cssFileName !== undefined) {
+            scope.addCssFile(cssFileName);
+        } else if (cssString !== undefined) {
+            scope.addCss(cssString);
+        } else if (css !== undefined) {
+            scope.css = css;
+        }
+    }
+
+    _setupAsRootView(context: any): void {
+        super._setupAsRootView(context);
+        if (!this._styleScope) {
+            this._updateStyleScope();
+        }
+    }
 
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {
@@ -126,6 +189,101 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         } else if (typeof arg === "number") {
             this._disconnectGestureObservers(<GestureTypes>arg);
         }
+    }
+
+    _onLivesync(): boolean {
+        _rootModalViews.forEach(v => v.closeModal());
+        _rootModalViews.length = 0;
+        return false;
+    }
+
+    public _onBackPressed(): boolean {
+        return false;
+    }
+
+    public _getFragmentManager(): any {
+        return undefined;
+    }
+
+    public showModal(): ViewDefinition {
+        if (arguments.length === 0) {
+            throw new Error('showModal without parameters is deprecated. Please call showModal on a view instance instead.');
+        } else {
+            const firstAgrument = arguments[0];
+            const context: any = arguments[1];
+            const closeCallback: Function = arguments[2];
+            const fullscreen: boolean = arguments[3];
+            const animated = arguments[4];
+
+            const view: ViewDefinition = firstAgrument instanceof ViewCommon
+                ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
+
+            (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated);
+            return view;
+        }
+    }
+
+    public closeModal() {
+        let closeCallback = this._closeModalCallback;
+        if (closeCallback) {
+            closeCallback.apply(undefined, arguments);
+        } else {
+            let parent = this.parent;
+            if (parent) {
+                parent.closeModal();
+            }
+        }
+    }
+
+    public get modal(): ViewCommon {
+        return this._modal;
+    }
+
+    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+        _rootModalViews.push(this);
+
+        parent._modal = this;
+        this._modalParent = parent;
+        this._modalContext = context;
+        const that = this;
+        this._closeModalCallback = function () {
+            if (that._closeModalCallback) {
+                const modalIndex = _rootModalViews.indexOf(that);
+                _rootModalViews.splice(modalIndex);
+                that._hideNativeModalView(parent);
+                that._modalParent = null
+                that._modalContext = null;
+                that._closeModalCallback = null;
+                parent._modal = null;
+                if (typeof closeCallback === "function") {
+                    closeCallback.apply(undefined, arguments);
+                }
+            }
+        };
+    }
+
+    protected _hideNativeModalView(parent: ViewCommon) {
+        //
+    }
+
+    protected _raiseShownModallyEvent() {
+        const args: ShownModallyData = {
+            eventName: ViewCommon.shownModallyEvent,
+            object: this,
+            context: this._modalContext,
+            closeCallback: this._closeModalCallback
+        };
+        this.notify(args);
+    }
+
+    protected _raiseShowingModallyEvent() {
+        const args: ShownModallyData = {
+            eventName: ViewCommon.showingModallyEvent,
+            object: this,
+            context: this._modalContext,
+            closeCallback: this._closeModalCallback
+        }
+        this.notify(args);
     }
 
     private _isEvent(name: string): boolean {
@@ -456,6 +614,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public requestLayout(): void {
         this._isLayoutValid = false;
+        super.requestLayout();
     }
 
     public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
@@ -487,7 +646,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return curState | newState;
     }
 
-    public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number): void {
+    public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame: boolean = true): void {
         if (!child || child.isCollapsed) {
             return;
         }
@@ -571,7 +730,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             traceWrite(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, traceCategories.Layout);
         }
 
-        child.layout(childLeft, childTop, childRight, childBottom);
+        child.layout(childLeft, childTop, childRight, childBottom, setFrame);
     }
 
     public static measureChild(parent: ViewCommon, child: ViewCommon, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
@@ -579,17 +738,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let measureHeight = 0;
 
         if (child && !child.isCollapsed) {
-            child._updateEffectiveLayoutValues(parent);
 
-            let style = child.style;
-            let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
-            let verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
+            const widthSpec = parent ? parent._currentWidthMeasureSpec : widthMeasureSpec;
+            const heightSpec = parent ? parent._currentHeightMeasureSpec : heightMeasureSpec;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
+            const width = layout.getMeasureSpecSize(widthSpec);
+            const widthMode = layout.getMeasureSpecMode(widthSpec);
+
+            const height = layout.getMeasureSpecSize(heightSpec);
+            const heightMode = layout.getMeasureSpecMode(heightSpec);
+
+            child._updateEffectiveLayoutValues(width, widthMode, height, heightMode);
+
+            const style = child.style;
+            const horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
+            const verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
+
+            const childWidthMeasureSpec = ViewCommon.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
+            const childHeightMeasureSpec = ViewCommon.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
 
             if (traceEnabled()) {
-                traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
+                traceWrite(`${child.parent} :measureChild: ${child} ${layout.measureSpecToString(childWidthMeasureSpec)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`, traceCategories.Layout);
             }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -683,10 +852,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return callback(this);
     }
 
-    public _updateLayout() {
-        // needed for iOS.
-    }
-
     public focus(): boolean {
         return undefined;
     }
@@ -764,26 +929,24 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         throw new Error("The View._setValue is obsolete. There is a new property system.");
     }
 
-    _updateEffectiveLayoutValues(parent: ViewDefinition): void {
+    _updateEffectiveLayoutValues(
+        parentWidthMeasureSize: number,
+        parentWidthMeasureMode: number,
+        parentHeightMeasureSize: number,
+        parentHeightMeasureMode: number): void {
         const style = this.style;
 
-        let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
-        let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
-        let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
-        let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
+        const availableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
 
-        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth);
-        this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
-        this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
+        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, availableWidth);
+        this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, availableWidth);
+        this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, availableWidth);
 
-        let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
-        let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
-        let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
-        let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+        const availableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
 
-        this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
-        this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
-        this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
+        this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, availableHeight);
+        this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, availableHeight);
+        this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, availableHeight);
     }
 
     public _setNativeClipToBounds() {
@@ -791,6 +954,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _redrawNativeBackground(value: any): void {
+        //
+    }
+
+    _onAttachedToWindow(): void {
+        //
+    }
+
+    _onDetachedFromWindow(): void {
         //
     }
 }

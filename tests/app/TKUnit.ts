@@ -114,17 +114,17 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
         duration = time() - testStartTime;
         testInfo.duration = duration;
         if (isDone) {
-            write(`--- [${testInfo.testName}] OK, duration: ${duration}`, trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, trace.messageType.info);
             testInfo.isPassed = true;
             runTests(testsQueue, recursiveIndex + 1);
         } else if (error) {
-            write(`--- [${testInfo.testName}] FAILED: ${error.message}, duration: ${duration}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${error.message}, duration: ${duration.toFixed(2)}`, trace.messageType.error);
            testInfo.errorMessage = error.message;
             runTests(testsQueue, recursiveIndex + 1);
         } else {
             const testEndTime = time();
             if (testEndTime - testStartTime > timeout) {
-                write(`--- [${testInfo.testName}] TIMEOUT, duration: ${duration}`, trace.messageType.error);
+                write(`--- [${testInfo.testName}] TIMEOUT, duration: ${duration.toFixed(2)}`, trace.messageType.error);
                 testInfo.errorMessage = "Test timeout.";
                 runTests(testsQueue, recursiveIndex + 1);
             } else {
@@ -211,7 +211,7 @@ export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual
         }
     }
     else if (actual !== expected) {
-        throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})`);
+        throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})` );
     }
 }
 
@@ -350,17 +350,15 @@ export function wait(seconds: number): void {
     waitUntilReady(() => false, seconds, false);
 }
 
-export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 300, shouldThrow: boolean = true) {
+export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
     }
 
     if (Application.ios) {
-        // const waitTime = 1 / 10000;
         const timeoutMs = timeoutSec * 1000;
         let totalWaitTime = 0;
         while (true) {
-            // const nsDate = <any>NSDate.dateWithTimeIntervalSinceNow(waitTime);
             const begin = time();
             const currentRunLoop = utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop);
             currentRunLoop.limitDateForMode(currentRunLoop.currentMode);

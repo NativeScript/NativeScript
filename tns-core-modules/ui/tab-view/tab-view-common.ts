@@ -1,4 +1,4 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData, TabViewItem } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
@@ -30,7 +30,6 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
     get title(): string {
         return this._title;
     }
-
     set title(value: string) {
         if (this._title !== value) {
             this._title = value;
@@ -66,6 +65,17 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
         const view = this._view;
         if (view) {
             callback(view);
+        }
+    }
+
+    public loadView(view: ViewBase): void {
+        const tabView = this.parent as TabViewBase;
+        if (tabView && tabView.items) {
+            const index = tabView.items.indexOf(this);
+            // Don't load items until their fragments are instantiated.
+            if (index === tabView.selectedIndex && (<TabViewItemDefinition>this).canBeLoaded) {
+                super.loadView(view);
+            }
         }
     }
 
@@ -135,11 +145,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     }
 
     get _childrenCount(): number {
-        if (this.items) {
-            return this.items.length;
-        }
-
-        return 0;
+        const items = this.items;
+        return items ? items.length : 0;
     }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
@@ -162,26 +169,40 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 
     public onItemsChanged(oldItems: TabViewItemDefinition[], newItems: TabViewItemDefinition[]): void {
         if (oldItems) {
-            for (let i = 0, count = oldItems.length; i < count; i++) {
-                this._removeView(oldItems[i]);
-            }
+            oldItems.forEach(item => this._removeView(item));
         }
 
         if (newItems) {
-            for (let i = 0, count = newItems.length; i < count; i++) {
-                const item = newItems[i];
-                if (!item) {
-                    throw new Error(`TabViewItem at index ${i} is undefined.`);
-                }
-
+            newItems.forEach(item => {
                 if (!item.view) {
-                    throw new Error(`TabViewItem at index ${i} does not have a view.`);
+                    throw new Error(`TabViewItem must have a view.`);
                 }
+                
                 this._addView(item);
-            }
+            });
         }
     }
+
+    public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
+        const items = this.items;
+        if (!items) {
+            return;
+        }
+
+        const oldItem = items[oldIndex];
+        if (oldItem) {
+            oldItem.unloadView(oldItem.view);
+        }
+
+        const newItem = items[newIndex];
+        if (newItem && this.isLoaded) {
+            newItem.loadView(newItem.view);
+        }
+
+        this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
+    }
 }
+
 export interface TabViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
@@ -190,7 +211,7 @@ export interface TabViewBase {
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
     name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
     valueChanged: (target, oldValue, newValue) => {
-        target.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: target, oldIndex: oldValue, newIndex: newValue });
+        target.onSelectedIndexChanged(oldValue, newValue);
     },
     coerceValue: (target, value) => {
         let items = target.items;

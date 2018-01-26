@@ -4,7 +4,8 @@ import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page"
 import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
 // << article-require-page-module
 
-import { resolvePageFromEntry } from "tns-core-modules/ui/frame";
+// TODO: Remove this and get it from global to decouple builder for angular
+import { createViewFromEntry } from "tns-core-modules/ui/builder";
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
@@ -15,6 +16,7 @@ exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
 import { Label } from "tns-core-modules/ui/label";
@@ -507,12 +509,12 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
             moduleName: basePath + "modal-page"
         };
 
-        modalPage = <Page>resolvePageFromEntry(entry);
+        modalPage = createViewFromEntry(entry) as Page;
         modalPage.on(Page.shownModallyEvent, onShownModal);
         modalPage.on(Page.loadedEvent, onModalLoaded);
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
 
-        page.showModal(modalPage, ctx, modalCloseCallback, false);
+        page.showModal(modalPage, ctx, modalCloseCallback, false, false);
         TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
     };
 
@@ -562,31 +564,40 @@ export function test_percent_width_and_height_support() {
 
 export function test_percent_margin_support() {
     const testPage = new Page();
-    testPage.id = "ttest_percent_margin_support";
-
+    const gridLayout = new GridLayout();
     const stackLayout = new StackLayout();
     stackLayout.margin = "10%";
-    testPage.content = stackLayout;
+    gridLayout.addChild(stackLayout);
+    testPage.content = gridLayout;
 
-    const pageWidth = testPage.getMeasuredWidth();
-    const pageHeight = testPage.getMeasuredHeight()
+    helper.navigate(() => testPage);
 
-    const marginLeft = pageWidth * 0.1;
-    const marginTop = pageHeight * 0.1;
+    const parentBounds = gridLayout._getCurrentLayoutBounds();
+    const parentWidth = parentBounds.right - parentBounds.left;
+    const parentHeight = parentBounds.bottom - parentBounds.top;
 
-    const bounds = stackLayout._getCurrentLayoutBounds();
-    TKUnit.assertEqual(bounds.left, Math.round(marginLeft), "Page's content LEFT position incorrect");
-    TKUnit.assertEqual(bounds.top, Math.round(marginTop), "Page's content  TOP position incorrect");
-    TKUnit.assertEqual(bounds.right, Math.round(marginLeft + pageWidth), "Page's content  RIGHT position incorrect");
-    TKUnit.assertEqual(bounds.bottom, Math.round(marginTop + pageHeight), "Page's content  BOTTOM position incorrect");
+    const marginLeft = isIOS ? Math.round(parentWidth * 0.1) : Math.floor(parentWidth * 0.1);
+    const marginTop = isIOS ? Math.round(parentHeight * 0.1) : Math.floor(parentHeight * 0.1);
+
+    let bounds = stackLayout._getCurrentLayoutBounds();
+    TKUnit.assertEqual(Math.round(bounds.left), marginLeft, "Stack LEFT position incorrect");
+    TKUnit.assertEqual(Math.round(bounds.top), marginTop, "Stack TOP position incorrect");
+    TKUnit.assertEqual(Math.round(bounds.bottom - bounds.top), parentHeight - (2 * marginTop), "Stack HEIGHT incorrect");
+    TKUnit.assertEqual(Math.round(bounds.right - bounds.left), parentWidth - (2 * marginLeft), "Stack WIDTH incorrect");
+    TKUnit.assertEqual(Math.round(bounds.right), parentWidth - marginLeft, "Stack RIGHT position incorrect");
+    TKUnit.assertEqual(Math.round(bounds.bottom), parentHeight - marginTop, "Stack BOTTOM position incorrect");
 
     //reset values.
-    testPage.margin = "0";
+    stackLayout.margin = "0";
+    TKUnit.waitUntilReady(() => stackLayout.isLayoutValid);
 
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginLeft, 0));
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginTop, 0));
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginRight, 0));
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginBottom, 0));
+    bounds = stackLayout._getCurrentLayoutBounds();
+    TKUnit.assertEqual(bounds.left, 0, "Stack LEFT position incorrect");
+    TKUnit.assertEqual(bounds.top, 0, "Stack TOP position incorrect");
+    TKUnit.assertEqual(bounds.bottom - bounds.top, parentHeight, "Stack HEIGHT incorrect");
+    TKUnit.assertEqual(bounds.right - bounds.left, parentWidth, "Stack WIDTH incorrect");
+    TKUnit.assertEqual(bounds.right, parentWidth, "Stack RIGHT position incorrect");
+    TKUnit.assertEqual(bounds.bottom, parentHeight, "Stack BOTTOM position incorrect");
 }
 
 //export function test_ModalPage_Layout_is_Correct() {

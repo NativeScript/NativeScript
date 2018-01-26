@@ -1,8 +1,12 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, flatProperty, layout, Color } from "./action-bar-common";
 import { ImageSource, fromFileOrResource } from "../../image-source";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./action-bar-common";
+
+const majorVersion = iosUtils.MajorVersion;
+const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 class TapBarItemHandlerImpl extends NSObject {
     private _owner: WeakRef<ActionItemDefinition>;
@@ -46,12 +50,12 @@ export class NavigationButton extends ActionItem {
 export class ActionBar extends ActionBarBase {
 
     get ios(): UIView {
-        let page = this.page;
+        const page = this.page;
         if (!page || !page.parent) {
             return;
         }
 
-        let viewController = (<UIViewController>page.ios);
+        const viewController = (<UIViewController>page.ios);
         if (viewController.navigationController !== null) {
             return viewController.navigationController.navigationBar;
         }
@@ -66,40 +70,60 @@ export class ActionBar extends ActionBarBase {
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof NavigationButton) {
             this.navigationButton = value;
-        }
-        else if (value instanceof ActionItem) {
+        } else if (value instanceof ActionItem) {
             this.actionItems.addItem(value);
-        }
-        else if (value instanceof View) {
+        } else if (value instanceof View) {
             this.titleView = value;
         }
+    }
+
+    public get _getActualSize(): { width: number, height: number } {
+        const navBar = this.ios;
+        if (!navBar) {
+            return { width: 0, height: 0 };
+        }
+        
+        const frame = navBar.frame;
+        const size = frame.size;
+        const width = layout.toDevicePixels(size.width);
+        const height = layout.toDevicePixels(size.height);
+        return { width, height };
+    }
+
+    public layoutInternal(): void {
+        const { width, height } = this._getActualSize;
+        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+
+        this.measure(widthSpec, heightSpec);
+        this.layout(0, 0, width, height, false);
     }
 
     public update() {
         const page = this.page;
         // Page should be attached to frame to update the action bar.
-        if (!page || !page.parent) {
+        if (!page || !page.frame) {
             return;
         }
 
-        let viewController = (<UIViewController>page.ios);
-        let navigationItem: UINavigationItem = viewController.navigationItem;
-        let navController = <UINavigationController>page.frame.ios.controller;
-        let navigationBar = navController ? navController.navigationBar : null;
+        const viewController = (<UIViewController>page.ios);
+        const navigationItem: UINavigationItem = viewController.navigationItem;
+        const navController = <UINavigationController>viewController.navigationController;
+        const navigationBar = navController ? navController.navigationBar : null;
         let previousController: UIViewController;
 
         // Set Title
         navigationItem.title = this.title;
-
-        if (this.titleView && this.titleView.ios) {
-            navigationItem.titleView = this.titleView.ios;
+        const titleView = this.titleView;
+        if (titleView && titleView.ios) {
+            navigationItem.titleView = titleView.ios;
         } else {
             navigationItem.titleView = null;
         }
 
         // Find previous ViewController in the navigation stack
-        let indexOfViewController = navController.viewControllers.indexOfObject(viewController);
-        if (indexOfViewController < navController.viewControllers.count && indexOfViewController > 0) {
+        const indexOfViewController = navController.viewControllers.indexOfObject(viewController);
+        if (indexOfViewController > 0 && indexOfViewController < navController.viewControllers.count) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
 
@@ -109,8 +133,7 @@ export class ActionBar extends ActionBarBase {
                 let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
                 let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
-            }
-            else {
+            } else {
                 previousController.navigationItem.backBarButtonItem = null;
             }
         }
@@ -128,8 +151,7 @@ export class ActionBar extends ActionBarBase {
             let image = img.ios.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
             navigationBar.backIndicatorImage = image;
             navigationBar.backIndicatorTransitionMaskImage = image;
-        }
-        else {
+        } else {
             navigationBar.backIndicatorImage = null;
             navigationBar.backIndicatorTransitionMaskImage = null;
         }
@@ -147,18 +169,21 @@ export class ActionBar extends ActionBarBase {
 
         // the 'flat' property may have changed in between pages
         this.updateFlatness(navigationBar);
+
+        if (!this.isLayoutValid) {
+            this.layoutInternal();
+        }
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
-        let items = this.actionItems.getVisibleItems();
-        let leftBarItems = [];
-        let rightBarItems = [];
+        const items = this.actionItems.getVisibleItems();
+        const leftBarItems = [];
+        const rightBarItems = [];
         for (let i = 0; i < items.length; i++) {
-            let barButtonItem = this.createBarButtonItem(items[i]);
+            const barButtonItem = this.createBarButtonItem(items[i]);
             if (items[i].ios.position === "left") {
                 leftBarItems.push(barButtonItem);
-            }
-            else {
+            } else {
                 rightBarItems.splice(0, 0, barButtonItem);
             }
         }
@@ -171,7 +196,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     private createBarButtonItem(item: ActionItemDefinition): UIBarButtonItem {
-        let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
+        const tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
         // associate handler with menuItem or it will get collected by JSC.
         (<any>item).handler = tapHandler;
 
@@ -180,24 +205,21 @@ export class ActionBar extends ActionBarBase {
             let recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
             item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
-        }
-        else if (item.ios.systemIcon !== undefined) {
+        } else if (item.ios.systemIcon !== undefined) {
             let id: number = item.ios.systemIcon;
             if (typeof id === "string") {
                 id = parseInt(id);
             }
+
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
-        }
-        else if (item.icon) {
-            let img = fromFileOrResource(item.icon);
+        } else if (item.icon) {
+            const img = fromFileOrResource(item.icon);
             if (img && img.ios) {
                 barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.Plain, tapHandler, "tap");
-            }
-            else {
+            } else {
                 throw new Error("Error loading icon from " + item.icon);
             }
-        }
-        else {
+        } else {
             barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }
 
@@ -211,17 +233,16 @@ export class ActionBar extends ActionBarBase {
     }
 
     private updateColors(navBar: UINavigationBar) {
-        let color = this.color;
+        const color = this.color;
         if (color) {
             navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
             navBar.tintColor = color.ios;
-        }
-        else {
+        } else {
             navBar.titleTextAttributes = null;
             navBar.tintColor = null;
         }
 
-        let bgColor = <Color>this.backgroundColor;
+        const bgColor = <Color>this.backgroundColor;
         navBar.barTintColor = bgColor ? bgColor.ios : null;
     }
 
@@ -251,71 +272,55 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let navBarWidth = 0;
-        let navBarHeight = 0;
-
-        const frame = this.page.frame;
-        if (frame) {
-            let navBar: UIView = frame.ios.controller.navigationBar;
-            if (!navBar.hidden) {
-                const desiredSize = layout.measureNativeView(navBar, width, widthMode, height, heightMode);
-                navBarWidth = desiredSize.width;
-                navBarHeight = desiredSize.height;
-            }
-        }
-
-        this._navigationBarHeight = navBarHeight;
         if (this.titleView) {
-            View.measureChild(this, this.titleView,
-                layout.makeMeasureSpec(width, layout.AT_MOST),
-                layout.makeMeasureSpec(navBarHeight, layout.AT_MOST));
+            View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
-            if (actionItem.actionView) {
-                View.measureChild(this, actionItem.actionView,
-                    layout.makeMeasureSpec(width, layout.AT_MOST),
-                    layout.makeMeasureSpec(navBarHeight, layout.AT_MOST));
+            const actionView = actionItem.actionView;
+            if (actionView) {
+                View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
             }
         });
 
         // We ignore our width/height, minWidth/minHeight dimensions because it is against Apple policy to change height of NavigationBar.
-        this.setMeasuredDimension(navBarWidth, navBarHeight);
+        this.setMeasuredDimension(width, height);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
+        const titleView = this.titleView;
+        if (titleView) {
+            if (majorVersion > 10) {
+                // On iOS 11 titleView is wrapped in another view that is centered with constraints.
+                View.layoutChild(this, titleView, 0, 0, titleView.getMeasuredWidth(), titleView.getMeasuredHeight());
+            } else {
+                // On iOS <11 titleView is direct child of UINavigationBar so we give it full width and leave
+                // the layout to center it.
+                View.layoutChild(this, titleView, 0, 0, right - left, bottom - top);
+            }
+        }
+
         this.actionItems.getItems().forEach((actionItem) => {
-            if (actionItem.actionView && actionItem.actionView.ios) {
-                let measuredWidth = actionItem.actionView.getMeasuredWidth();
-                let measuredHeight = actionItem.actionView.getMeasuredHeight();
-                View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
+            const actionView = actionItem.actionView;
+            if (actionView && actionView.ios) {
+                const measuredWidth = actionView.getMeasuredWidth();
+                const measuredHeight = actionView.getMeasuredHeight();
+                View.layoutChild(this, actionView, 0, 0, measuredWidth, measuredHeight);
             }
         });
 
         super.onLayout(left, top, right, bottom);
-        let navigationBar = this.ios;
-        if (navigationBar) {
-            navigationBar.setNeedsLayout();
-        }
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number) {
         return;
     }
-
-    // public _shouldApplyStyleHandlers() {
-    //     let topFrame = frameModule.topmost();
-    //     return !!topFrame;
-    // }
 
     private get navBar(): UINavigationBar {
         const page = this.page;
@@ -361,7 +366,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     [flatProperty.setNative](value: boolean) { // tslint:disable-line
-        let navBar = this.navBar;
+        const navBar = this.navBar;
         if (navBar) {
             this.updateFlatness(navBar);
         }

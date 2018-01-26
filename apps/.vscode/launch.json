@@ -9,6 +9,7 @@
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "watch": true,
+            "stopOnEntry": true,
             "tnsArgs": [
                 "--sync-all-files"
             ]

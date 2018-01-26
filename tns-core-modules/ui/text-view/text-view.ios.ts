@@ -6,12 +6,14 @@ import {
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout
 } from "../editable-text-base";
+
+import { ios } from "../../utils/utils";
 import { profile } from "../../profiling";
 
 export * from "../editable-text-base";
 
-class UITextViewDelegateImpl extends NSObject implements UIScrollViewDelegate, UITextViewDelegate {
-    public static ObjCProtocols = [UITextViewDelegate, UIScrollViewDelegate];
+class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
+    public static ObjCProtocols = [UITextViewDelegate];
 
     private _owner: WeakRef<TextView>;
 
@@ -31,7 +33,7 @@ class UITextViewDelegateImpl extends NSObject implements UIScrollViewDelegate, U
     }
 
     public textViewDidBeginEditing(textView: UITextView): void {
-      const owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             owner._isEditing = true;
             owner.notify({ eventName: TextView.focusEvent, object: owner });
@@ -57,6 +59,7 @@ class UITextViewDelegateImpl extends NSObject implements UIScrollViewDelegate, U
             if (owner.updateTextTrigger === "textChanged") {
                 textProperty.nativeValueChange(owner, textView.text);
             }
+            owner.requestLayout();
         }
     }
 
@@ -101,9 +104,9 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     constructor() {
         super();
 
-        this.nativeViewProtected = this._ios = UITextView.new();
-        if (!this._ios.font) {
-            this._ios.font = UIFont.systemFontOfSize(12);
+        const textView = this.nativeViewProtected = this._ios = UITextView.new();
+        if (!textView.font) {
+            textView.font = UIFont.systemFontOfSize(12);
         }
         this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
@@ -122,10 +125,6 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     get ios(): UITextView {
         return this._ios;
     }
-
-    // get nativeView(): UITextView {
-    //     return this._ios;
-    // }
 
     public _refreshHintState(hint: string, text: string) {
         if (this.formattedText) {
@@ -182,6 +181,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         this._isShowingHint = false;
         this._refreshColor();
         this._setNativeText();
+        this.requestLayout();
     }
 
     [textProperty.getDefault](): string {

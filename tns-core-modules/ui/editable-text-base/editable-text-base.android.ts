@@ -10,18 +10,43 @@ import { ad } from "../../utils/utils";
 export * from "./editable-text-base-common";
 
 //https://github.com/NativeScript/NativeScript/issues/2942
-let dismissKeyboardTimeoutId: any;
+export let dismissKeyboardTimeoutId: NodeJS.Timer;
+export let dismissKeyboardOwner: WeakRef<EditableTextBase>;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
 }
 
 interface EditTextListenersClass {
     prototype: EditTextListeners;
-    new (owner: EditableTextBase): EditTextListeners;
+    new(owner: EditableTextBase): EditTextListeners;
 }
 
 let EditTextListeners: EditTextListenersClass;
 
+function clearDismissTimer(): void {
+    dismissKeyboardOwner = null;
+    if (dismissKeyboardTimeoutId) {
+        clearTimeout(dismissKeyboardTimeoutId);
+        dismissKeyboardTimeoutId = null;
+    }
+}
+
+function dismissSoftInput(owner: EditableTextBase): void {
+    clearDismissTimer();
+    if (!dismissKeyboardTimeoutId) {
+        dismissKeyboardTimeoutId = setTimeout(() => {
+            const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
+            const activity = (owner && owner._context) as android.app.Activity;
+            const nativeView = owner && owner.nativeViewProtected;
+            dismissKeyboardTimeoutId = null;
+            dismissKeyboardOwner = null;
+            const focused = activity && activity.getCurrentFocus();
+            if (!focused || !(focused instanceof android.widget.EditText)) {
+                ad.dismissSoftInput(nativeView);
+            }
+        }, 10);
+    }
+}
 function initializeEditTextListeners(): void {
     if (EditTextListeners) {
         return;
@@ -34,11 +59,11 @@ function initializeEditTextListeners(): void {
             return global.__native(this);
         }
 
-        public beforeTextChanged(text: string, start: number, count: number, after: number) {
+        public beforeTextChanged(text: string, start: number, count: number, after: number): void {
             //
         }
 
-        public onTextChanged(text: string, start: number, before: number, count: number) {
+        public onTextChanged(text: string, start: number, before: number, count: number): void {
             // const owner = this.owner;
             // let selectionStart = owner.android.getSelectionStart();
             // owner.android.removeTextChangedListener(owner._editTextListeners);
@@ -46,7 +71,7 @@ function initializeEditTextListeners(): void {
             // owner.android.setSelection(selectionStart);
         }
 
-        public afterTextChanged(editable: android.text.IEditable) {
+        public afterTextChanged(editable: android.text.IEditable): void {
             const owner = this.owner;
             if (!owner || owner._changeFromCode) {
                 return;
@@ -64,45 +89,35 @@ function initializeEditTextListeners(): void {
             }
         }
 
-        public onFocusChange(view: android.view.View, hasFocus: boolean) {
+        public onFocusChange(view: android.view.View, hasFocus: boolean): void {
             const owner = this.owner;
             if (!owner) {
                 return;
             }
 
             if (hasFocus) {
-                if (dismissKeyboardTimeoutId) {
-                    // https://github.com/NativeScript/NativeScript/issues/2942
-                    // Don't hide the keyboard since another (or the same) EditText has gained focus.
-                    clearTimeout(dismissKeyboardTimeoutId);
-                    dismissKeyboardTimeoutId = undefined;
-                }
+                clearDismissTimer();
                 owner.notify({ eventName: EditableTextBase.focusEvent, object: owner });
-            }
-            else {
+            } else {
                 if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
                     textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
                     owner._dirtyTextAccumulator = undefined;
                 }
 
-                dismissKeyboardTimeoutId = setTimeout(() => {
-                    // https://github.com/NativeScript/NativeScript/issues/2942
-                    // Dismiss the keyboard if focus goes to something different from EditText.
-                    owner.dismissSoftInput();
-                    dismissKeyboardTimeoutId = null;
-                }, 1);
-
                 owner.notify({ eventName: EditableTextBase.blurEvent, object: owner });
+                dismissSoftInput(owner);
             }
         }
 
         public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
             const owner = this.owner;
             if (!owner) {
-                return;
+                return false;
             }
 
-            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+            if (actionId === android.view.inputmethod.EditorInfo.IME_NULL ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
@@ -112,8 +127,8 @@ function initializeEditTextListeners(): void {
                 if (textView.getMaxLines() === 1) {
                     owner.dismissSoftInput();
                 }
+
                 owner._onReturnPress();
-                return true;
             }
 
             // If action is ACTION_NEXT then do not close keyboard
@@ -177,11 +192,26 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeViewProtected.setInputType(this._inputType);
     }
 
+    public onUnloaded() {
+        this.dismissSoftInput();
+        super.onUnloaded();
+    }
+
     public dismissSoftInput() {
-        ad.dismissSoftInput(this.nativeViewProtected);
+        const nativeView = this.nativeViewProtected;
+        if (!nativeView) {
+            return;
+        }
+
+        ad.dismissSoftInput(nativeView);
     }
 
     public focus(): boolean {
+        const nativeView = this.nativeViewProtected;
+        if (!nativeView) {
+            return;
+        }
+
         const result = super.focus();
         if (result) {
             ad.showSoftInput(this.nativeViewProtected);

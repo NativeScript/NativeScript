@@ -278,7 +278,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     }
 
     protected invalidate(): void {
-        this.requestLayout();
+        // handled natively in android and overriden in ios.
     }
 
     set rows(value: string) {

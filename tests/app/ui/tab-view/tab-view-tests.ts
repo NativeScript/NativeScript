@@ -1,17 +1,17 @@
-import testModule = require("../../ui-test");
+import { UITest } from "../../ui-test";
+import { Label } from "tns-core-modules/ui/label";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { unsetValue } from "tns-core-modules/ui/core/view";
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
-import labelModule = require("tns-core-modules/ui/label");
-import stackLayoutModule = require("tns-core-modules/ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
-import { unsetValue } from "tns-core-modules/ui/core/view";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
 import * as tabViewModule from "tns-core-modules/ui/tab-view";
 // << article-require-tabview-module
 
-export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
+export class TabViewTest extends UITest<tabViewModule.TabView> {
 
     public create(): tabViewModule.TabView {
         // >> article-create-tabview
@@ -30,7 +30,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
     _createItems(count: number): Array<tabViewModule.TabViewItem> {
         var items = new Array<tabViewModule.TabViewItem>();
         for (var i = 0; i < count; i++) {
-            var label = new labelModule.Label();
+            var label = new Label();
             label.text = "Tab " + i;
             var tabEntry = new tabViewModule.TabViewItem();
             tabEntry.title = "Tab " + i;
@@ -45,6 +45,27 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
             this.testView.items.length = 0;
         }
         super.tearDown();
+    }
+
+    public waitUntilSelectedItemIsFullyLoaded(): boolean {
+        const tabView = this.testView;
+        if (!tabView.isLoaded) {
+            return false;
+        }
+
+        const i = tabView.selectedIndex;
+        if (i >= 0 && !tabView.items[i].isLoaded) {
+            return false;
+        }
+
+        if (tabView.android) {
+            var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+            if (viewPager.getChildCount() === 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public testWhenTabViewIsCreatedItemsAreUndefined = function () {
@@ -80,16 +101,16 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         var tabView = this.testView;
         // >> article-binding-tabview-items
         var items = [];
-        var StackLayout0 = new stackLayoutModule.StackLayout();
-        var label0 = new labelModule.Label();
+        var StackLayout0 = new StackLayout();
+        var label0 = new Label();
         label0.text = "Tab 0";
         StackLayout0.addChild(label0);
         var tabEntry0 = new tabViewModule.TabViewItem();
         tabEntry0.title = "Tab 0";
         tabEntry0.view = StackLayout0;
         items.push(tabEntry0);
-        var StackLayout1 = new stackLayoutModule.StackLayout();
-        var label1 = new labelModule.Label();
+        var StackLayout1 = new StackLayout();
+        var label1 = new Label();
         label1.text = "Tab 1";
         StackLayout1.addChild(label1);
         var tabEntry1 = new tabViewModule.TabViewItem();
@@ -167,25 +188,6 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
     }
-
-    // public testSettingNegativeSelectedIndexShouldThrow = function () {
-    //     var tabView = this.testView;
-    //     this.waitUntilTestElementIsLoaded();
-    //     tabView.items = this._createItems(10);
-
-    //     TKUnit.assertThrows(function () {
-    //         tabView.selectedIndex = -1;
-    //     }, "Setting selectedIndex to a negative number should throw.");
-    // }
-
-    // public testSettingSelectedIndexLargerThanCountShouldThrow = function () {
-    //     var tabView = this.testView;
-    //     this.waitUntilTestElementIsLoaded();
-    //     tabView.items = this._createItems(10);
-    //     TKUnit.assertThrows(function () {
-    //         tabView.selectedIndex = 10;
-    //     }, "Setting selectedIndex to a number bigger than items count should throw.");
-    // }
 
     public testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
         var tabView = this.testView;
@@ -300,7 +302,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         }
 
         this.testView.items = this._createItems(1);
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilSelectedItemIsFullyLoaded();
 
         const originalFont = tabViewTestsNative.getOriginalFont(this.testView);
         TKUnit.assertNotNull(originalFont, "Original Font should be applied");
@@ -311,12 +313,14 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         TKUnit.assertNotEqual(originalFont, nativeFont, "Font should be changed");
 
         this.testView.items = this._createItems(2);
+        this.waitUntilSelectedItemIsFullyLoaded();
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be 20 Pacifico after rebinding items.");
 
         this.testView.style.font = "bold 12 monospace";
         nativeFont = tabViewTestsNative.getNativeFont(this.testView);
 
         this.testView.items = this._createItems(3);
+        this.waitUntilSelectedItemIsFullyLoaded();
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be bold 12 monospace after rebinding items.");
 
         this.testView.style.font = unsetValue;

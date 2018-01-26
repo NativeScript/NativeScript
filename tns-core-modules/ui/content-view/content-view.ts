@@ -1,5 +1,5 @@
 ﻿import { ContentView as ContentViewDefinition } from ".";
-import { View, CustomLayoutView, AddChildFromBuilder, layout } from "../core/view";
+import { View, CustomLayoutView, AddChildFromBuilder, layout, isIOS } from "../core/view";
 
 export * from "../core/view";
 
@@ -22,6 +22,9 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         }
 
         this._onContentChanged(oldView, value);
+        if (isIOS && oldView !== value) {
+            this.requestLayout();
+        }
     }
 
     get layoutView(): View {
@@ -43,11 +46,7 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
     }
 
     get _childrenCount(): number {
-        if (this._content) {
-            return 1;
-        }
-
-        return 0;
+        return this._content ? 1 : 0;
     }
 
     public _onContentChanged(oldView: View, newView: View) {

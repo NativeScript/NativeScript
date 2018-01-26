@@ -280,7 +280,6 @@ const customShortHandProperty = new ShorthandProperty<Style, string>({
     name: "customShortHand",
     cssName: "custom-short-hand",
     converter(value: string): [CssProperty<any, any>, any][] {
-        console.log("Convert: " + value);
         const values = value.split(",");
         return [
             [customCssAProperty, values[0]],

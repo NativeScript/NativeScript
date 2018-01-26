@@ -3,6 +3,7 @@ import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "../trace";
 
+import { layout as layoutCommon } from "./utils-common";
 export * from "./utils-common";
 
 let mainScreenScale;
@@ -38,8 +39,8 @@ export module layout {
             height: heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : toDeviceIndependentPixels(height)
         });
 
-        nativeSize.width = toDevicePixels(nativeSize.width);
-        nativeSize.height = toDevicePixels(nativeSize.height);
+        nativeSize.width = layoutCommon.round(toDevicePixels(nativeSize.width));
+        nativeSize.height = layoutCommon.round(toDevicePixels(nativeSize.height));
         return nativeSize;
     }
 }

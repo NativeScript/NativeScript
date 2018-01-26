@@ -28,18 +28,25 @@ Our Getting Started Guides are hands-on tutorials that walk you through installi
 * [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
 * [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 
+## NativeScript architecture diagram
+
+Below is a common NativeScript architecture diagram. In more detail, read the [How NativeScript Works article](https://docs.nativescript.org/start/how-it-works).
+
+![Architecture diagram](https://github.com/NativeScript/docs/blob/master/docs/img/ns-common.png)
+
 ## Quick Links
 
-- [NativeScript home page](http://nativescript.org)
-- [NativeScript Code Samples](http://docs.nativescript.org/angular/code-samples/overview)
-- [Install NativeScript Demo mobile app](https://www.nativescript.org/nativescript-example-application)
-- [NativeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
+- [NativeScript home page](https://nativescript.org)
+- [NativeScript code samples](https://docs.nativescript.org/angular/code-samples/overview)
+- [Install NativeScript demo mobile app](https://www.nativescript.org/nativescript-example-application)
+- [NativeScript playground](https://play.nativescript.org)
+- [NativeScript and Angular](https://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 - [@NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation)
+- [NativeScript community forum](https://discourse.nativescript.org/)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
-- [NativeScript documentation](http://docs.nativescript.org/)
-
-- [NativeScript blog](http://www.nativescript.org/blog)
+- [NativeScript documentation](https://docs.nativescript.org/)
+- [NativeScript marketplace](https://market.nativescript.org/)
 
 ## Repositories
 
@@ -49,13 +56,13 @@ The NativeScript framework consists of a number of components, all of which are 
     [![npm](https://img.shields.io/npm/dm/tns-core-modules.svg)](https://www.npmjs.com/package/tns-core-modules) [![Waffle.io - NativeScript Modules and Angular](https://badge.waffle.io/NativeScript/NativeScript.svg?columns=In%20Progress)](https://waffle.io/NativeScript/NativeScript)
     - This repo contains the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
 - **[iOS runtime](//github.com/NativeScript/ios-runtime/)**
-    [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/tns-ios) [![Waffle.io - NativeScript Runtimes and CLI](https://badge.waffle.io/NativeScript/android-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/android-runtime)
+    [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/tns-ios) [![Waffle.io - NativeScript iOS Runtime](https://badge.waffle.io/NativeScript/ios-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/ios-runtime)
     - This repo contains the NativeScript iOS runtime—the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
 - **[Android runtime](//github.com/NativeScript/android-runtime)**
     [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android) [![Waffle.io - NativeScript Runtimes and CLI](https://badge.waffle.io/NativeScript/android-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/android-runtime)
     - This repo contains the NativeScript Android—the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
-    [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) [![Waffle.io - NativeScript Runtimes and CLI](https://badge.waffle.io/NativeScript/android-runtime.svg?columns=In%20Progress)](https://waffle.io/NativeScript/android-runtime)
+    [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) [![Waffle.io - NativeScript CLI](https://badge.waffle.io/NativeScript/nativescript-cli.svg?columns=In%20Progress)](https://waffle.io/NativeScript/nativescript-cli)
     - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs)**
     - This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
@@ -72,6 +79,6 @@ We [worked together with the Google Angular team](http://angularjs.blogspot.com/
 
 ## Get Help
 
-Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](CONTRIBUTING.md#bugs) or [requesting features](CONTRIBUTING.md#features). For general NativeScript questions and support, check out the [NativeScript community forum](https://discourse.nativescript.org/).
+Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](CONTRIBUTING.md#bugs) or [requesting features](CONTRIBUTING.md#features). For general NativeScript questions and support, check out the [NativeScript community forum](https://discourse.nativescript.org/) or ask our experts in [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation).
 
 ![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 

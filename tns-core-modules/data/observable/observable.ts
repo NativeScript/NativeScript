@@ -3,6 +3,7 @@
 interface ListenerEntry {
     callback: (data: EventData) => void;
     thisArg: any;
+    once?: true;
 }
 
 let _wrappedIndex = 0;
@@ -54,6 +55,11 @@ export class Observable implements ObservableDefinition {
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
         this.addEventListener(eventNames, callback, thisArg);
+    }
+
+    public once(event: string, callback: (data: EventData) => void, thisArg?: any) {
+        const list = this._getEventList(event, true);
+        list.push({ callback, thisArg, once: true });
     }
 
     public off(eventNames: string, callback?: any, thisArg?: any) {
@@ -120,6 +126,9 @@ export class Observable implements ObservableDefinition {
 
         for (let i = observers.length - 1; i >= 0; i--) {
             let entry = observers[i];
+            if (entry.once) {
+                observers.splice(i, 1);
+            }
             if (entry.thisArg) {
                 entry.callback.apply(entry.thisArg, [data]);
             } else {
@@ -188,7 +197,7 @@ class ObservableFromObject extends Observable {
     public get(name: string): any {
         return this._map[name];
     }
-    
+
     public set(name: string, value: any) {
         const currentValue = this._map[name];
         if (currentValue === value) {
@@ -215,18 +224,19 @@ function defineNewProperty(target: ObservableFromObject, propertyName: string): 
 }
 
 function addPropertiesFromObject(observable: ObservableFromObject, source: any, recursive: boolean = false) {
-    let isRecursive = recursive;
-    for (let prop in source) {
-        if (source.hasOwnProperty(prop)) {
-            if (isRecursive) {
-                if (!Array.isArray(source[prop]) && source[prop] && typeof source[prop] === 'object' && !(source[prop] instanceof Observable)) {
-                    source[prop] = fromObjectRecursive(source[prop]);
-                }
-            }
-            defineNewProperty(observable, prop);
-            observable.set(prop, source[prop]);
+    Object.keys(source).forEach(prop => {
+        let value = source[prop];
+        if (recursive
+            && !Array.isArray(value)
+            && value
+            && typeof value === 'object'
+            && !(value instanceof Observable)) {
+            value = fromObjectRecursive(value);
         }
-    }
+
+        defineNewProperty(observable, prop);
+        observable.set(prop, value);
+    });
 }
 
 export function fromObject(source: any): Observable {

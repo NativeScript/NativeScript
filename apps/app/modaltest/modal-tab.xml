@@ -1,0 +1,42 @@
+<TabView backgroundColor="red" loaded="onLoaded">
+    <TabViewItem title="Button">
+        <StackLayout backgroundColor="orange"
+            verticalAlignment="bottom"
+            horizontalAlignment="right">
+            <Button text="LIVESYNC" tap="onLiveSync" />
+            <Button text="Close Modal" tap="closeModal" />
+            <Button text="Show Modal Frame" tap="onModalFrame" />
+            <TextView text="text viesw" />
+            <TextField text="text field" />
+            <TextField text="text field" />
+            <Button text="Button" />
+        </StackLayout>
+    </TabViewItem>
+    <TabViewItem title="Frame">
+        <Frame backgroundColor="green">
+            <Page backgroundColor="blue" actionBarHidden="true" loaded="pageLoaded">
+                <Page.actionBar>
+                    <ActionBar title="Frame in Modal Page" />
+                    <ActionItem text="close" tap="closeModal" />
+                </Page.actionBar>
+                <ScrollView backgroundColor="cyan">
+                    <StackLayout backgroundColor="pink" verticalAlignment="bottom" >
+                        <Label text="I'm frame in modal page" />
+                        <Label text="Tap the button" />
+                        <Button text="TAP" tap="onTap" />
+                        <Button text="Do 10 go backs" tap="tenGoBacks" />
+                        <Button text="Navigate To Page with Frame" tap="navigateToPageWithFrame" />
+                    </StackLayout>
+                </ScrollView>
+            </Page>
+        </Frame>
+    </TabViewItem>
+    <TabViewItem title="Item 3">
+        <ScrollView>
+            <StackLayout verticalAlignment="bottom" horizontalAlignment="right">
+                <Button text="Close Modal" tap="closeModal" />
+                <Button text="Show Modal Frame" tap="onModalFrame" />
+            </StackLayout>
+        </ScrollView>
+    </TabViewItem> 
+</TabView>

@@ -1,12 +1,12 @@
-﻿// Definitions.
+﻿﻿// Definitions.
 import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from ".";
 import { Page } from "../page";
 
 // Types.
-import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "../core/view";
+import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData, Property } from "../core/view";
 import { resolveFileName } from "../../file-system/file-name-resolver";
 import { knownFolders, path } from "../../file-system";
-import { parse, loadPage } from "../builder";
+import { parse, createViewFromEntry } from "../builder";
 import { profile } from "../../profiling";
 
 export * from "../core/view";
@@ -30,132 +30,6 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
     return entry;
 }
 
-export function reloadPage(): void {
-    const frame = topmost();
-    if (frame) {
-        if (frame.currentPage && frame.currentPage.modal) {
-            frame.currentPage.modal.closeModal();
-        }
-
-        const currentEntry = frame._currentEntry.entry;
-        const newEntry: NavigationEntry = {
-            animated: false,
-            clearHistory: true,
-            context: currentEntry.context,
-            create: currentEntry.create,
-            moduleName: currentEntry.moduleName,
-            backstackVisible: currentEntry.backstackVisible
-        }
-
-        frame.navigate(newEntry);
-    }
-}
-
-// attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = reloadPage;
-
-const entryCreatePage = profile("entry.create", (entry: NavigationEntry): Page => {
-    const page = entry.create();
-
-    if (!page) {
-        throw new Error("Failed to create Page with entry.create() function.");
-    }
-
-    return page;
-});
-
-interface PageModuleExports {
-    createPage?: () => Page;
-}
-
-const moduleCreatePage = profile("module.createPage", (moduleNamePath: string, moduleExports: PageModuleExports): Page => {
-    if (traceEnabled()) {
-        traceWrite("Calling createPage()", traceCategories.Navigation);
-    }
-    var page = moduleExports.createPage();
-
-    let cssFileName = resolveFileName(moduleNamePath, "css");
-    // If there is no cssFile only appCss will be applied at loaded.
-    if (cssFileName) {
-        page.addCssFile(cssFileName);
-    }
-    return page;
-});
-
-const loadPageModule = profile("loadPageModule", (moduleNamePath: string, entry: NavigationEntry): PageModuleExports => {
-    // web-pack case where developers register their page JS file manually.
-    if (global.moduleExists(entry.moduleName)) {
-        if (traceEnabled()) {
-            traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
-        }
-        return global.loadModule(entry.moduleName);
-    } else {
-        let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
-        if (moduleExportsResolvedPath) {
-            if (traceEnabled()) {
-                traceWrite("Loading JS file: " + moduleExportsResolvedPath, traceCategories.Navigation);
-            }
-
-            // Exclude extension when doing require.
-            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
-            return global.loadModule(moduleExportsResolvedPath);
-        }
-    }
-    return null;
-});
-
-const pageFromBuilder = profile("pageFromBuilder", (moduleNamePath: string, moduleExports: any): Page => {
-    let page: Page;
-
-    // Possible XML file path.
-    let fileName = resolveFileName(moduleNamePath, "xml");
-    if (fileName) {
-        if (traceEnabled()) {
-            traceWrite("Loading XML file: " + fileName, traceCategories.Navigation);
-        }
-
-        // Or check if the file exists in the app modules and load the page from XML.
-        page = loadPage(moduleNamePath, fileName, moduleExports);
-    }
-
-    // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
-    // if (page && fileName === `${moduleNamePath}.port.xml` || fileName === `${moduleNamePath}.land.xml`){
-    //     page["isBiOrientational"] = true;
-    // }
-
-    return page;
-});
-
-export const resolvePageFromEntry = profile("resolvePageFromEntry", (entry: NavigationEntry): Page => {
-    let page: Page;
-
-    if (entry.create) {
-        page = entryCreatePage(entry);
-    } else if (entry.moduleName) {
-        // Current app full path.
-        let currentAppPath = knownFolders.currentApp().path;
-        //Full path of the module = current app full path + module name.
-        const moduleNamePath = path.join(currentAppPath, entry.moduleName);
-        traceWrite("frame module path: " + moduleNamePath, traceCategories.Navigation);
-        traceWrite("frame module module: " + entry.moduleName, traceCategories.Navigation);
-
-        const moduleExports = loadPageModule(moduleNamePath, entry);
-
-        if (moduleExports && moduleExports.createPage) {
-            page = moduleCreatePage(moduleNamePath, moduleExports);
-        } else {
-            // cssFileName is loaded inside pageFromBuilder->loadPage
-            page = pageFromBuilder(moduleNamePath, moduleExports);
-        }
-
-        if (!page) {
-            throw new Error("Failed to load page XML file for module: " + entry.moduleName);
-        }
-    }
-
-    return page;
-});
-
 export interface NavigationContext {
     entry: BackstackEntry;
     isBackNavigation: boolean;
@@ -178,9 +52,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
     public _addChildFromBuilder(name: string, value: any) {
-        if (value instanceof Page) {
-            this.navigate({ create: () => value });
-        }
+        throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
     }
 
     @profile
@@ -264,7 +136,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public _removeEntry(removed: BackstackEntry): void {
         const page = removed.resolvedPage;
         const frame = page.frame;
-        (<any>page)._frame = null;
+        page._frame = null;
         if (frame) {
             frame._removeView(page);
         } else {
@@ -299,7 +171,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         const entry = buildEntryFromArgs(param);
-        const page = resolvePageFromEntry(entry) as Page;
+        const page = createViewFromEntry(entry) as Page;
 
         // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
         // if (page["isBiOrientational"] && entry.moduleName && !this._subscribedToOrientationChangedEvent){
@@ -339,9 +211,9 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         // with clearHistory: true
         if (!newPage.frame) {
             this._addView(newPage);
-            (<any>newPage)._frame = this;
+            newPage._frame = this;
         }
-        
+
         this._currentEntry = entry;
         this._executingEntry = null;
         newPage.onNavigatedTo(isBack);
@@ -374,7 +246,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         if (page) {
             if (page.isLoaded) {
                 // Forward navigation does not remove page from frame so we raise unloaded manually.
-                page.onUnloaded();
+                page.callUnloaded();
             }
 
             page.onNavigatedFrom(isBack);
@@ -652,6 +524,33 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         return result;
     }
+
+    public _onLivesync(): boolean {
+        super._onLivesync();
+
+        const currentEntry = this._currentEntry.entry;
+        const newEntry: NavigationEntry = {
+            animated: false,
+            clearHistory: true,
+            context: currentEntry.context,
+            create: currentEntry.create,
+            moduleName: currentEntry.moduleName,
+            backstackVisible: currentEntry.backstackVisible
+        }
+
+        // If create returns the same page instance we can't recreate it.
+        // Instead of navigation set activity content.
+        // This could happen if current page was set in XML as a Page instance.
+        if (newEntry.create) {
+            const page = newEntry.create();
+            if (page === this.currentPage) {
+                return false;
+            }
+        }
+
+        this.navigate(newEntry);
+        return true;
+    }
 }
 
 export function topmost(): FrameBase {
@@ -679,3 +578,11 @@ export function goBack(): boolean {
 export function stack(): Array<FrameBase> {
     return frameStack;
 }
+
+export const defaultPage = new Property<FrameBase, string>({
+    name: "defaultPage", valueChanged: (frame: FrameBase, oldValue: string, newValue: string) => {
+        frame.navigate({ moduleName: newValue });
+    }
+});
+
+defaultPage.register(FrameBase)

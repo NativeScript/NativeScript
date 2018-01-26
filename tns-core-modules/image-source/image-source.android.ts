@@ -139,9 +139,11 @@ export class ImageSource implements ImageSourceDefinition {
         });
     }
 
-    public setNativeSource(source: any): boolean {
+    public setNativeSource(source: any): void {
+        if (source && !(source instanceof android.graphics.Bitmap)) {
+            throw new Error("The method setNativeSource() expects android.graphics.Bitmap instance.");
+        }
         this.android = source;
-        return source != null;
     }
 
     public saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality = 100): boolean {
@@ -239,8 +241,9 @@ export function fromBase64(source: string): ImageSource {
 }
 
 export function fromNativeSource(source: any): ImageSource {
-    const image = new ImageSource();
-    return image.setNativeSource(source) ? image : null;
+    const imageSource = new ImageSource();
+    imageSource.setNativeSource(source);
+    return imageSource;
 }
 
 export function fromUrl(url: string): Promise<ImageSourceDefinition> {

@@ -1,0 +1,33 @@
+<Page backgroundColor="blue" actionBarHidden="true" loaded="pageLoaded"
+    codeFile='~/modaltest/modal-tab'>
+    <ActionBar title="Frame in Modal Page">
+        <ActionItem text="close" tap="closeModal" />
+    </ActionBar>
+    <TabView backgroundColor="magenta">
+        <TabViewItem title="Button">
+            <StackLayout verticalAlignment="center" backgroundColor="green"  verticalAlignment="bottom" horizontalAlignment="right">
+                <Button text="Close Modal" tap="tap" />
+                <Button text="Show Modal Frame" tap="onModalFrame" />
+            </StackLayout>
+        </TabViewItem>
+        <TabViewItem title="Frame">
+            <ScrollView backgroundColor="cyan">
+                <StackLayout backgroundColor="pink" verticalAlignment="bottom" >
+                    <Label text="I'm frame in modal page" />
+                    <Label text="Tap the button" />
+                    <Button text="TAP" tap="onTap" />
+                    <Button text="Do 10 go backs" tap="tenGoBacks" />
+                    <Button text="Navigate To Page with Frame" tap="navigateToPageWithFrame" />
+                </StackLayout>
+            </ScrollView>            
+        </TabViewItem>
+        <TabViewItem title="Item 3">
+            <ScrollView>
+                <StackLayout verticalAlignment="bottom" horizontalAlignment="right">
+                    <Button text="Close Modal" tap="tap" />
+                    <Button text="Show Modal Frame" tap="onModalFrame" />
+                </StackLayout>
+            </ScrollView>
+        </TabViewItem> 
+    </TabView>
+</Page>

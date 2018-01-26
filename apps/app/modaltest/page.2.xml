@@ -1,0 +1,14 @@
+<Page backgroundColor="pink" showingModally="showingModally">
+    <ActionBar title="{{ $value + ' page' }} ">
+        <ActionItem text="close" tap="closeModal" ios.position='right' />
+    </ActionBar>
+    <StackLayout backgroundColor="orange">
+        <Button text="{{ $value, Modal Page: $value }}" />
+        <Button text="FORWARD" tap="onTap"/>
+        <Button text="BACKWARD" tap="onBack"/>
+        <Button text="Do 10 go backs" tap="tenGoBacks" />
+        <Button text="Show Modal" tap="showModal"/>
+        <Button text="Close Modal" tap="closeModal"/>
+        <Button text="Livesync" tap="onLivesync"/>
+    </StackLayout>
+</Page>
