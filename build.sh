@@ -28,7 +28,6 @@ cp -r ios/TNSWidgets/build/TNSWidgets.framework dist/package/platforms/ios/TNSWi
 
 echo "Copy NPM artefacts"
 cp LICENSE dist/package/LICENSE
-cp LICENSE.md dist/package/LICENSE.md
 cp README.md dist/package/README.md
 cp package.json dist/package/package.json
 if [ "$1" ]
