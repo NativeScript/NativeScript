@@ -217,6 +217,8 @@ global.__onLiveSync = function () {
     livesync();
 };
 
+let onGlobalLayoutListener;
+let onFrameCallback;
 function initLifecycleCallbacks() {
     const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: android.app.Activity) => {
         // Set app theme after launch screen was used during startup
@@ -235,11 +237,16 @@ function initLifecycleCallbacks() {
 
     const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: android.app.Activity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
-        let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+        onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
             onGlobalLayout() {
-                notify({ eventName: displayedEvent, object: androidApp, activity });
-                let viewTreeObserver = rootView.getViewTreeObserver();
-                viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener);
+                onFrameCallback = new android.view.Choreographer.FrameCallback({
+                    doFrame(nanos) {
+                        notify({ eventName: displayedEvent, object: androidApp, activity });
+                        onFrameCallback = null;
+                    }
+                });
+                rootView.getViewTreeObserver().removeOnGlobalLayoutListener(onGlobalLayoutListener);
+                android.view.Choreographer.getInstance().postFrameCallback(onFrameCallback);
             }
         });
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
