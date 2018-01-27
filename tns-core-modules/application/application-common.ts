@@ -2,6 +2,12 @@
 require("globals");
 
 import { Observable, EventData } from "../data/observable";
+import {
+    trace as profilingTrace,
+    time,
+    uptime,
+    level as profilingLevel,
+} from "../profiling";
 
 const events = new Observable();
 let launched = false;
@@ -10,6 +16,15 @@ function setLaunched() {
     events.off("launch", setLaunched);
 }
 events.on("launch", setLaunched);
+
+if (profilingLevel() > 0) {
+    events.on("displayed", () => {
+        const duration = uptime();
+        const end = time();
+        const start = end - duration;
+        profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
+    });
+}
 
 export function hasLaunched(): boolean {
     return launched;
