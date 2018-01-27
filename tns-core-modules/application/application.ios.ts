@@ -20,13 +20,11 @@ import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { ios } from "../ui/utils";
 import * as utils from "../utils/utils";
-import { profile } from "../profiling";
+import { profile, level as profilingLevel, Level } from "../profiling";
 
 class Responder extends UIResponder {
     //
 }
-
-let displayedOnce = false;
 
 class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
@@ -44,6 +42,24 @@ class NotificationObserver extends NSObject {
     public static ObjCExposedMethods = {
         "onReceive": { returns: interop.types.void, params: [NSNotification] }
     };
+}
+
+let displayedOnce = false;
+let displayedLinkTarget;
+let displayedLink;
+class CADisplayLinkTarget extends NSObject {
+    onDisplayed(link: CADisplayLink) {
+        link.invalidate();
+        const ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
+        const object = iosApp;
+        displayedOnce = true;
+        notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
+        displayedLinkTarget = null;
+        displayedLink = null;
+    }
+    public static ObjCExposedMethods = {
+        "onDisplayed": { returns: interop.types.void, params: [CADisplayLink] }
+    }
 }
 
 class IOSApplication implements IOSApplicationDefinition {
@@ -101,6 +117,13 @@ class IOSApplication implements IOSApplicationDefinition {
 
     @profile
     private didFinishLaunchingWithOptions(notification: NSNotification) {
+        if (!displayedOnce && profilingLevel() >= Level.lifecycle) {
+            displayedLinkTarget = CADisplayLinkTarget.new();
+            displayedLink = CADisplayLink.displayLinkWithTargetSelector(displayedLinkTarget, "onDisplayed");
+            displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
+            displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
+        }
+
         this._window = UIWindow.alloc().initWithFrame(utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
         // TODO: Expose Window module so that it can we styled from XML & CSS
         this._window.backgroundColor = utils.ios.getter(UIColor, UIColor.whiteColor);
@@ -125,11 +148,6 @@ class IOSApplication implements IOSApplicationDefinition {
         const rootView = this._rootView;
         if (rootView && !rootView.isLoaded) {
             rootView.callLoaded();
-        }
-
-        if (!displayedOnce) {
-            notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
-            displayedOnce = true;
         }
     }
 
