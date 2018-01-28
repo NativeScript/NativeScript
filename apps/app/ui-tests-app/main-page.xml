@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
   <GridLayout rows="auto, *">
     <GridLayout row="0" columns="*,30" id="parentLayout">
