@@ -78,7 +78,11 @@ function initializeNativeClasses() {
         }
     }
 
+    const POSITION_UNCHANGED = -1;
+    const POSITION_NONE = -2;
+
     class FragmentPagerAdapter extends android.support.v4.view.PagerAdapter {
+        public items: Array<TabViewItemDefinition>;
         private mCurTransaction: android.app.FragmentTransaction;
         private mCurrentPrimaryItem: android.app.Fragment;
 
@@ -88,12 +92,12 @@ function initializeNativeClasses() {
         }
 
         getCount() {
-            const items = this.owner.items;
+            const items = this.items;
             return items ? items.length : 0;
         }
 
         getPageTitle(index: number) {
-            const items = this.owner.items;
+            const items = this.items;
             if (index < 0 || index >= items.length) {
                 return "";
             }
@@ -129,13 +133,17 @@ function initializeNativeClasses() {
                 fragment.setUserVisibleHint(false);
             }
 
-            const items = this.owner.items;
-            const item = items ? items[position] : null;
-            if (item) {
-                item.canBeLoaded = true;
+            const tabItems = this.owner.items;
+            const tabItem = tabItems ? tabItems[position] : null;
+            if (tabItem) {
+                tabItem.canBeLoaded = true;
             }
 
             return fragment;
+        }
+
+        getItemPosition(object: java.lang.Object): number {
+            return this.items ? POSITION_UNCHANGED : POSITION_NONE;
         }
 
         destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
@@ -147,10 +155,10 @@ function initializeNativeClasses() {
             const fragment: android.app.Fragment = <android.app.Fragment>object;
             this.mCurTransaction.detach(fragment);
 
-            const items = this.owner.items;
-            const item = items ? items[position] : null;
-            if (item) {
-                item.canBeLoaded = false;
+            const tabItems = this.owner.items;
+            const tabItem = tabItems ? tabItems[position] : null;
+            if (tabItem) {
+                tabItem.canBeLoaded = false;
             }
         }
 
@@ -169,13 +177,13 @@ function initializeNativeClasses() {
 
                 this.mCurrentPrimaryItem = fragment;
                 this.owner.selectedIndex = position;
-        
-                const tab = this.owner;
-                const items = tab.items;
-                const newItem = items ? items[position] : null;
-                if (newItem && tab.isLoaded) {
-                    newItem.loadView(newItem.view);
-                }
+            }
+
+            const tab = this.owner;
+            const tabItems = tab.items;
+            const newTabItem = tabItems ? tabItems[position] : null;
+            if (newTabItem && tab.isLoaded) {
+                newTabItem.loadView(newTabItem.view);
             }
         }
 
@@ -251,6 +259,10 @@ export class TabViewItem extends TabViewItemBase {
         if (this.nativeViewProtected) {
             this._defaultTransformationMethod = this.nativeViewProtected.getTransformationMethod();
         }
+    }
+
+    public onLoaded(): void {
+        super.onLoaded();
     }
 
     public resetNativeView(): void {
@@ -409,6 +421,18 @@ export class TabView extends TabViewBase {
         }
     }
 
+    public onLoaded(): void {
+        super.onLoaded();
+
+        this.setAdapterItems(this.items);
+    }
+
+    public onUnloaded(): void {
+        super.onUnloaded();
+
+        this.setAdapterItems(null);
+    }
+
     public disposeNativeView() {
         (<any>this._pagerAdapter).items = null;
         this._tabLayout.setItems(null, null);
@@ -447,10 +471,6 @@ export class TabView extends TabViewBase {
             item.tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });
-
-        // // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
-        // this._pagerAdapter = new PagerAdapter(this, items);
-        // this._viewPager.setAdapter(this._pagerAdapter);
 
         const tabLayout = this._tabLayout;
         tabLayout.setItems(tabItems, this._viewPager);

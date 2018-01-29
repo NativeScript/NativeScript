@@ -740,7 +740,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     @profile
     public onStop(fragment: android.app.Fragment, superFunc: Function): void {
         superFunc.call(fragment);
-        this.entry.resolvedPage.callUnloaded();
     }
 
     @profile
