@@ -28,6 +28,11 @@ class NativeScriptActivity extends android.app.Activity {
         this._callbacks.onCreate(this, savedInstanceState, super.onCreate);
     }
 
+    protected onNewIntent(intent: android.content.Intent): void {
+        super.onNewIntent(intent);
+        super.setIntent(intent);
+    }
+
     protected onSaveInstanceState(outState: android.os.Bundle): void {
         this._callbacks.onSaveInstanceState(this, outState, super.onSaveInstanceState);
     }
