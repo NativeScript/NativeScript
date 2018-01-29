@@ -11,10 +11,25 @@ interface TimerInfo {
 
 /**
  * Profiling mode to use.
- *  - `counters` Accumulates method call counts and times until dumpProfiles is called and then prints agregated statistic in the console. This is the default.
+ *  - `counters` Accumulates method call counts and times until dumpProfiles is called and then prints aggregated statistic in the console. This is the default.
  *  - `timeline` Outputs method names along start/end timestamps in the console on the go.
+ *  - `lifecycle` Outputs basic non-verbose times for startup, navigation, etc.
  */
-type InstrumentationMode = "counters" | "timeline";
+type InstrumentationMode = "counters" | "timeline" | "lifecycle";
+
+/**
+ * Logging levels in order of verbosity.
+ */
+export enum Level {
+    none,
+    lifecycle,
+    timeline,
+}
+
+/**
+ * Get the current logging level.
+ */
+export function level(): Level;
 
 /**
  * Enables profiling.
@@ -32,8 +47,9 @@ type InstrumentationMode = "counters" | "timeline";
  * ```
  * 
  * @param type Profiling mode to use.
- *  - "counters" - Accumulates method call counts and times until dumpProfiles is called and then prints agregated statistic in the console. This is the default.
+ *  - "counters" - Accumulates method call counts and times until dumpProfiles is called and then prints aggregated statistic in the console. This is the default.
  *  - "timeline" - Outputs method names along start/end timestamps in the console on the go.
+ *  - "lifecycle" - Outputs basic non-verbose times for startup, navigation, etc.
  */
 export declare function enable(type?: InstrumentationMode): void;
 
@@ -133,3 +149,13 @@ export function uptime(): number;
  * Logs important messages. Contrary to console.log's behavior, the profiling log should output even for release builds.
  */
 export function log(message: string): void;
+
+/**
+ * Manually output profiling messages. The `@profile` decorator is useful when measuring times that function calls take on the stack
+ * but when measuring times between longer periods (startup times, times between the navigatingTo - navigatedTo events etc.)
+ * you can call this method and provide manually the times to be logged.
+ * @param message A string message
+ * @param start The start time (see `time()`)
+ * @param end The end time (see `time()`)
+ */
+export function trace(message: string, start: number, end: number): void;
