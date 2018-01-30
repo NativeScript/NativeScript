@@ -371,6 +371,13 @@
                 getItemCount(): number;
             }
 
+            export class TabViewPager extends android.support.v4.view.ViewPager {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.IAttributeSet);
+
+                setSwipePageEnabled(enabled: boolean): void;
+            }
+
             export class TabItemSpec {
                 title: string;
                 iconId: number;
