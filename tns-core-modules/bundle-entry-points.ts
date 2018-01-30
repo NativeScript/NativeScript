@@ -12,6 +12,7 @@ if (global.TNS_WEBPACK) {
     global.registerModule("ui/button", () => require("ui/button"))
     global.registerModule("ui/content-view", () => require("ui/content-view"))
     global.registerModule("ui/date-picker", () => require("ui/date-picker"))
+    global.registerModule("ui/frame", () => require("ui/frame"))
     global.registerModule("ui/html-view", () => require("ui/html-view"))
     global.registerModule("ui/image", () => require("ui/image"))
     global.registerModule("ui/label", () => require("ui/label"))
