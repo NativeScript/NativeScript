@@ -25,6 +25,8 @@ class ScrollLayoutTest extends UITest<ScrollView> {
         btn.height = { value: 500, unit: "px" };
         scrollView.content = btn;
 
+        // Use page with scrollableContent disabled for scroll-view tests
+        (<any>this.testPage).scrollableContent = false;
         return scrollView;
     }
 
