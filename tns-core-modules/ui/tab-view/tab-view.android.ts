@@ -5,7 +5,7 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, View, layout,
+    androidTabsPositionProperty, fontSizeProperty, fontInternalProperty, View, layout,
     traceCategory, traceEnabled, traceWrite, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -367,29 +367,28 @@ export class TabView extends TabViewBase {
 
         const context: android.content.Context = this._context;
         const nativeView = new org.nativescript.widgets.GridLayout(context);
-        nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-
-        const tabLayout = new org.nativescript.widgets.TabLayout(context);
-        nativeView.addView(tabLayout);
-        (<any>nativeView).tabLayout = tabLayout;
-
-        setElevation(nativeView, tabLayout);
-
-        const accentColor = getDefaultAccentColor(context);
-        if (accentColor) {
-            tabLayout.setSelectedIndicatorColors([accentColor]);
-        }
-
-        const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
-        if (primaryColor) {
-            tabLayout.setBackgroundColor(primaryColor);
-        }
-
         const viewPager = new android.support.v4.view.ViewPager(context);
+        const tabLayout = new org.nativescript.widgets.TabLayout(context);
         const lp = new org.nativescript.widgets.CommonLayoutParams();
+        const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
+        let accentColor = getDefaultAccentColor(context);
+
         lp.row = 1;
-        viewPager.setLayoutParams(lp);
+
+        if (this.androidTabsPosition === "top") {
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+
+            viewPager.setLayoutParams(lp);
+        } else {
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+
+            tabLayout.setLayoutParams(lp);
+            // set completely transparent accent color for tab selected indicator.
+            accentColor = 0x00FFFFFF;
+        }
+
         nativeView.addView(viewPager);
         (<any>nativeView).viewPager = viewPager;
 
@@ -397,7 +396,55 @@ export class TabView extends TabViewBase {
         viewPager.setAdapter(adapter);
         (<any>viewPager).adapter = adapter;
 
+        nativeView.addView(tabLayout);
+        (<any>nativeView).tabLayout = tabLayout;
+
+        setElevation(nativeView, tabLayout);
+
+        if (accentColor) {
+            tabLayout.setSelectedIndicatorColors([accentColor]);
+        }
+
+        if (primaryColor) {
+            tabLayout.setBackgroundColor(primaryColor);
+        }
+
+        console.log(this.androidTabsPosition);
         return nativeView;
+
+        // const context: android.content.Context = this._context;
+        // const nativeView = new org.nativescript.widgets.GridLayout(context);
+        // nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+        // nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+
+        // const tabLayout = new org.nativescript.widgets.TabLayout(context);
+        // nativeView.addView(tabLayout);
+        // (<any>nativeView).tabLayout = tabLayout;
+
+        // setElevation(nativeView, tabLayout);
+
+        // const accentColor = getDefaultAccentColor(context);
+        // if (accentColor) {
+        //     tabLayout.setSelectedIndicatorColors([accentColor]);
+        // }
+
+        // const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
+        // if (primaryColor) {
+        //     tabLayout.setBackgroundColor(primaryColor);
+        // }
+
+        // const viewPager = new android.support.v4.view.ViewPager(context);
+        // const lp = new org.nativescript.widgets.CommonLayoutParams();
+        // lp.row = 1;
+        // viewPager.setLayoutParams(lp);
+        // nativeView.addView(viewPager);
+        // (<any>nativeView).viewPager = viewPager;
+
+        // const adapter = new PagerAdapter(this);
+        // viewPager.setAdapter(adapter);
+        // (<any>viewPager).adapter = adapter;
+
+        // return nativeView;
     }
 
     public initNativeView(): void {
@@ -572,6 +619,21 @@ export class TabView extends TabViewBase {
         const color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);
     }
+
+    // [androidTabsPositionProperty.getDefault](): "top" | "bottom" {
+    //     return "top";
+    // }
+    // [androidTabsPositionProperty.setNative](value: "top" | "bottom") {
+    //     let items = this.items;
+    //     if (items && items.length) {
+    //         for (let i = 0, length = items.length; i < length; i++) {
+    //             const item = items[i];
+    //             if (item.iconSource) {
+    //                 (<TabViewItem>item)._update();
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
