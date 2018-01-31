@@ -414,11 +414,6 @@ export class TabView extends TabViewBase {
         this._viewPager = viewPager;
         this._pagerAdapter = (<any>viewPager).adapter;
         (<any>this._pagerAdapter).owner = this;
-
-        const items = this.items;
-        if (items) {
-            this.setAdapterItems(items)
-        }
     }
 
     public onLoaded(): void {
@@ -434,9 +429,7 @@ export class TabView extends TabViewBase {
     }
 
     public disposeNativeView() {
-        (<any>this._pagerAdapter).items = null;
         this._tabLayout.setItems(null, null);
-        this._pagerAdapter.notifyDataSetChanged();
         (<any>this._pagerAdapter).owner = null;
         this._pagerAdapter = null;
 
@@ -454,32 +447,67 @@ export class TabView extends TabViewBase {
         return false;
     }
 
-    private setAdapterItems(items: Array<TabViewItemDefinition>) {
-        (<any>this._pagerAdapter).items = items;
+    private shouldUpdateAdapter(items: Array<TabViewItemDefinition>) {
+        const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
 
-        const length = items ? items.length : 0;
-        if (length === 0) {
-            this._tabLayout.setItems(null, null);
-            this._pagerAdapter.notifyDataSetChanged();
-            return;
+        // if both values are null, should not update
+        if (!items && !currentPagerAdapterItems) {
+            return false;
         }
 
-        const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        items.forEach((item: TabViewItem, i, arr) => {
-            const tabItemSpec = createTabItemSpec(item);
-            item.index = i;
-            item.tabItemSpec = tabItemSpec;
-            tabItems.push(tabItemSpec);
+        // if one value is null, should update
+        if (!items || !currentPagerAdapterItems) {
+            return true;
+        }
+
+        // if both are Arrays but length doesn't match, should update
+        if (items.length !== currentPagerAdapterItems.length) {
+            return true;
+        }
+
+        const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
+            return !!items.filter((item) => { 
+                return item._domId === currentItem._domId
+            })[0];
         });
 
-        const tabLayout = this._tabLayout;
-        tabLayout.setItems(tabItems, this._viewPager);
-        items.forEach((item, i, arr) => {
-            const tv = tabLayout.getTextViewForItemAt(i);
-            item.setNativeView(tv);
-        });
+        // if both are Arrays and length matches, but not all items are the same, should update
+        if (matchingItems.length !== items.length) {
+            return true;
+        }
 
-        this._pagerAdapter.notifyDataSetChanged();
+        // if both are Arrays and length matches and all items are the same, should not update
+        return false;
+    }
+
+    private setAdapterItems(items: Array<TabViewItemDefinition>) {
+        if (this.shouldUpdateAdapter(items)) {
+            (<any>this._pagerAdapter).items = items;
+
+            const length = items ? items.length : 0;
+            if (length === 0) {
+                this._tabLayout.setItems(null, null);
+                this._pagerAdapter.notifyDataSetChanged();
+                return;
+            }
+
+            const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
+            items.forEach((item: TabViewItem, i, arr) => {
+                const tabItemSpec = createTabItemSpec(item);
+                item.index = i;
+                item.tabItemSpec = tabItemSpec;
+                tabItems.push(tabItemSpec);
+            });
+
+            const tabLayout = this._tabLayout;
+            tabLayout.setItems(tabItems, this._viewPager);
+            items.forEach((item, i, arr) => {
+                const tv = tabLayout.getTextViewForItemAt(i);
+                item.setNativeView(tv);
+            });
+
+            this._pagerAdapter.notifyDataSetChanged();
+        }
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
