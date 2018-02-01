@@ -342,7 +342,7 @@ export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
     const angleResult = parseUnit(value, start);
     if (angleResult) {
         const { start, end, value } = angleResult;
-        return (angleUnitsToRadMap[value.unit] || (() => null))(start, end, value.value);
+        return (angleUnitsToRadMap[value.unit] || ((_,__,___) => null))(start, end, value.value);
     }
     return null;
 }
@@ -693,7 +693,8 @@ export interface AttributeSelector {
 
 export type SimpleSelector = UniversalSelector | TypeSelector | ClassSelector | IdSelector | PseudoClassSelector | AttributeSelector;
 export type SimpleSelectorSequence = SimpleSelector[];
-export type Selector = [SimpleSelectorSequence, Combinator];
+export type SelectorCombinatorPair = [SimpleSelectorSequence, Combinator];
+export type Selector = SelectorCombinatorPair[];
 
 const universalSelectorRegEx = /\*/gy;
 export function parseUniversalSelector(text: string, start: number = 0): Parsed<UniversalSelector> {
@@ -781,6 +782,7 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
     let value = <Selector>[];
     let combinator: Parsed<Combinator>;
     let expectSimpleSelector = true; // Must have at least one
+    let pair = <SelectorCombinatorPair>[];
     do {
         const simpleSelectorSequence = parseSimpleSelectorSequence(text, end);
         if (!simpleSelectorSequence) {
@@ -792,16 +794,17 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
         }
         end = simpleSelectorSequence.end;
         if (combinator) {
-            value.push(combinator.value);
+            pair[1] = combinator.value;
         }
-        value.push(simpleSelectorSequence.value);
+        pair = [simpleSelectorSequence.value, undefined]
+        value.push(pair)
+
         combinator = parseCombinator(text, end);
         if (combinator) {
             end = combinator.end;
         }
         expectSimpleSelector = combinator && combinator.value !== " "; // Simple selector must follow non trailing white space combinator
     } while(combinator);
-    value.push(undefined);
     return { start, end, value };
 }
 

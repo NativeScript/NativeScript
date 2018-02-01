@@ -432,13 +432,13 @@ function createSimpleSelectorSequenceFromAst(ast: parser.SimpleSelectorSequence)
 function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSelectorSequence | Selector {
     if (ast.length === 0) {
         return new InvalidSelector(new Error("Empty selector."));
-    } else if (ast.length <= 2) {
-        return createSimpleSelectorSequenceFromAst(ast[0]);
+    } else if (ast.length === 1) {
+        return createSimpleSelectorSequenceFromAst(ast[0][0]);
     } else {
         let simpleSelectorSequences = [];
-        for (var i = 0; i < ast.length; i += 2) {
-            const simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i]);
-            const combinator = <parser.Combinator>ast[i + 1];
+        for (var i = 0; i < ast.length; i ++) {
+            const simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i][0]);
+            const combinator = <parser.Combinator>ast[i][1];
             if (combinator) {
                 simpleSelectorSequence.combinator = combinator;
             }
