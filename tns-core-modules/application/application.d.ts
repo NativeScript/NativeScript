@@ -178,6 +178,12 @@ export function start(entry?: NavigationEntry | string);
  */
 export function run(entry?: NavigationEntry | string);
 
+/**
+ * Call this method to change the root view of your application. Important: Your application must already be running.
+ * This method won't create Frame as root view.
+ */
+export function _newRootView(entry?: NavigationEntry | string);
+
 //@private
 /**
  * Internal method use to check if a root Frame should be automatically created as root view.

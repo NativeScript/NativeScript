@@ -296,6 +296,12 @@ export function run(entry?: string | NavigationEntry) {
     start(entry);
 }
 
+export function _newRootView(entry?: NavigationEntry | string) {
+    createRootFrame = false;
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
+    iosApp.setWindowContent();
+}
+
 export function getNativeApplication(): UIApplication {
     return iosApp.nativeApp;
 }

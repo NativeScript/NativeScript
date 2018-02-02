@@ -15,6 +15,8 @@ export * from "./application-common";
 
 import { NavigationEntry } from "../ui/frame";
 
+import { createViewFromEntry } from "../ui/builder";
+
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";
 const ActivityStarted = "activityStarted";
@@ -53,7 +55,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
         if (this.nativeApp === nativeApp) {
             return;
         }
-        
+
         if (this.nativeApp) {
             throw new Error("application.android already initialized.");
         }
@@ -148,6 +150,29 @@ export function run(entry?: NavigationEntry | string) {
     start(entry);
 }
 
+const CALLBACKS = "_callbacks";
+
+export function _newRootView(entry?: NavigationEntry | string) {
+    const activity = androidApp.foregroundActivity;
+    if (!activity) {
+        throw new Error("Cannot find android activity.");
+    }
+
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
+    const callbacks = activity[CALLBACKS];
+
+    // Delete previously cached root view in order to recreate it.
+    callbacks._rootView = (<any>androidApp).rootView = null;
+
+    const rootView = createViewFromEntry(mainEntry);
+    callbacks._rootView = (<any>androidApp).rootView = rootView;
+
+    rootView._setupAsRootView(activity);
+    activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
+
+    callbacks._rootView.callLoaded();
+}
+
 export function getMainEntry() {
     return mainEntry;
 }
@@ -202,11 +227,11 @@ function initLifecycleCallbacks() {
         }
     });
 
-    const notifyActivityCreated = profile("notifyActivityCreated", function(activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
+    const notifyActivityCreated = profile("notifyActivityCreated", function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
         androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
     });
 
-    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function(activity: android.app.Activity) {
+    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: android.app.Activity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
         let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
             onGlobalLayout() {
