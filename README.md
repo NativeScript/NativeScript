@@ -47,6 +47,7 @@ Below is a common NativeScript architecture diagram. In more detail, read the [H
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 - [NativeScript documentation](https://docs.nativescript.org/)
 - [NativeScript marketplace](https://market.nativescript.org/)
+- [NativeScript roadmap](https://www.nativescript.org/roadmap)
 
 ## Repositories
 
