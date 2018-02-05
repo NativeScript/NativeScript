@@ -1,11 +1,13 @@
 import { WebView as WebViewDefinition, LoadEventData, NavigationType } from ".";
-import { ContainerView, Property, EventData, CSSType } from "../core/view";
+import { booleanConverter, ContainerView, CSSType, EventData, Property } from "../core/view";
 import { File, knownFolders, path } from "../../file-system";
 
 export { File, knownFolders, path, NavigationType };
 export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
+export const syncCookiesProperty = new Property<WebViewBase, boolean>({ name: "syncCookies", defaultValue: false, valueConverter: booleanConverter });
+export const cookieExpiresInProperty = new Property<WebViewBase, boolean>({ name: "cookieExpiresIn" });
 
 @CSSType("WebView")
 export abstract class WebViewBase extends ContainerView implements WebViewDefinition {
@@ -13,6 +15,8 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
     public static loadFinishedEvent = "loadFinished";
 
     public src: string;
+    public syncCookies: boolean;
+    public cookieExpiresIn: string;
 
     public _onLoadFinished(url: string, error?: string) {
         let args = <LoadEventData>{
@@ -100,3 +104,5 @@ export interface WebViewBase {
 }
 
 srcProperty.register(WebViewBase);
+syncCookiesProperty.register(WebViewBase);
+cookieExpiresInProperty.register(WebViewBase);
