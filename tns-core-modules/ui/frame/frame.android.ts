@@ -954,7 +954,8 @@ function setActivityContent(activity: android.app.Activity, savedInstanceState: 
                 throw new Error("A Frame must be used to navigate to a Page.");
             }
         } else {
-            rootView = createViewFromEntry(mainEntry);
+            // Create the root view if the notifyLaunch didn't return it
+            rootView = rootView || createViewFromEntry(mainEntry);
         }
 
         callbacks._rootView = rootView;
