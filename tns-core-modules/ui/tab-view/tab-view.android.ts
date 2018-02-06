@@ -5,8 +5,8 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    androidTabsPositionProperty, fontSizeProperty, fontInternalProperty, View, layout,
-    traceCategory, traceEnabled, traceWrite, Color
+    fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled, 
+    traceWrite, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -585,21 +585,6 @@ export class TabView extends TabViewBase {
         const color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);
     }
-
-    // [androidTabsPositionProperty.getDefault](): "top" | "bottom" {
-    //     return "top";
-    // }
-    // [androidTabsPositionProperty.setNative](value: "top" | "bottom") {
-    //     let items = this.items;
-    //     if (items && items.length) {
-    //         for (let i = 0, length = items.length; i < length; i++) {
-    //             const item = items[i];
-    //             if (item.iconSource) {
-    //                 (<TabViewItem>item)._update();
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
