@@ -1,0 +1,17 @@
+<Page backgroundColor="green" showingModally="onShowingModally" loaded="onLoaded"
+    navigatingTo="onNavigatingTo" 
+    navigatingFrom="onNavigatingFrom"
+    navigatedTo="onNavigatedTo"
+    navigatedFrom="onNavigatedFrom">
+
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Modal"></Label>
+    </ActionBar>
+
+    <StackLayout backgroundColor="maroon">
+        <Button text="Navigate To Second Page" tap="onNavigate" visibility="{{ navigationVisibility }}" />
+        <Button text="Show Nested Modal Page" tap="showNestedModalPage" />
+        <Button text="Show Nested Modal Page With Frame" tap="showNestedModalFrame" />
+        <Button text="Close Modal" tap="closeModal" />
+    </StackLayout>
+</Page>

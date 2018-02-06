@@ -1,0 +1,14 @@
+<Page backgroundColor="yellow" 
+    navigatingTo="onNavigatingTo" 
+    navigatingFrom="onNavigatingFrom"
+    navigatedTo="onNavigatedTo"
+    navigatedFrom="onNavigatedFrom">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Nested Modal"></Label>
+    </ActionBar>
+
+    <StackLayout backgroundColor="darkBlue">
+        <Button text="Close Modal" tap="closeModal" />
+    </StackLayout>
+</Page>

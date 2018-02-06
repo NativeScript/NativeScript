@@ -1,0 +1,17 @@
+<Page class="page"
+    navigatingTo="onNavigatingTo" 
+    navigatingFrom="onNavigatingFrom"
+    navigatedTo="onNavigatedTo"
+    navigatedFrom="onNavigatedFrom"
+    xmlns="http://schemas.nativescript.org/tns.xsd">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Second"></Label>
+    </ActionBar>
+
+    <StackLayout>
+        <Button text="Show Modal Page With Frame" tap="onModalFrame" />
+        <Button text="Show Modal Page" tap="onModalPage" />
+        <Button text="Go Back" tap="onGoBack" />
+    </StackLayout>
+</Page>
