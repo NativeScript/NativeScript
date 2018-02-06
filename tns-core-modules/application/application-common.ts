@@ -2,6 +2,8 @@
 require("globals");
 
 import { Observable, EventData } from "../data/observable";
+// types
+import { View } from "../ui/core/view";
 import {
     trace as profilingTrace,
     time,
@@ -48,6 +50,16 @@ export const orientationChangedEvent = "orientationChanged";
 let cssFile: string = "./app.css";
 
 let resources: any = {};
+
+let rootView: View = undefined;
+
+export function getRootView() {
+    return rootView;
+}
+
+export function _setRootView(rootViewValue: View) {
+    rootView = rootViewValue;
+}
 
 export function getResources() {
     return resources;

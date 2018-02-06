@@ -8,7 +8,8 @@
 
 import {
     notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
+    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName,
+    _setRootView
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -211,6 +212,7 @@ class IOSApplication implements IOSApplicationDefinition {
     public setWindowContent(view?: View): void {
         const rootView = createRootView(view);
         this._rootView = rootView;
+        _setRootView(rootView);
         const controller = getViewController(rootView);
 
         if (createRootFrame) {
@@ -296,7 +298,7 @@ export function run(entry?: string | NavigationEntry) {
     start(entry);
 }
 
-export function _newRootView(entry?: NavigationEntry | string) {
+export function _resetRootView(entry?: NavigationEntry | string) {
     createRootFrame = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     iosApp.setWindowContent();

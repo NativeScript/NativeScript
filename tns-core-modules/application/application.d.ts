@@ -117,6 +117,19 @@ export interface CssChangedEventData extends EventData {
 export function getMainEntry(): NavigationEntry;
 
 /**
+ * Get current application root view.
+ */
+export function getRootView(): View;
+
+//@private
+/**
+ * Internal method use to set the current cached root view.
+ * @private
+ */
+export function _setRootView(rootViewValue: View): void;
+//@endprivate
+
+/**
  * Get application level static resources.
  */
 export function getResources(): any;
@@ -182,7 +195,7 @@ export function run(entry?: NavigationEntry | string);
  * Call this method to change the root view of your application. Important: Your application must already be running.
  * This method won't create Frame as root view.
  */
-export function _newRootView(entry?: NavigationEntry | string);
+export function _resetRootView(entry?: NavigationEntry | string);
 
 //@private
 /**

@@ -73,11 +73,11 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export function reloadPage(): void {
-    const app = application.android;
-    const rootView: View = (<any>app).rootView;
+    const activity = application.android.foregroundActivity;
+    const rootView: View = activity[CALLBACKS]._rootView;
     if (!rootView || !rootView._onLivesync()) {
         // Delete previously cached root view in order to recreate it.
-        resetActivityContent(application.android.foregroundActivity);
+        resetActivityContent(activity);
     }
 }
 
@@ -908,7 +908,8 @@ function resetActivityContent(activity: android.app.Activity): void {
     const app = application.android;
 
     // Delete previously cached root view in order to recreate it.
-    callbacks._rootView = (<any>app).rootView = null;
+    callbacks._rootView = null;
+    application._setRootView(undefined);
     setActivityContent(activity, null);
     callbacks._rootView.callLoaded();
 }
@@ -920,7 +921,7 @@ function setActivityContent(activity: android.app.Activity, savedInstanceState: 
     const app = application.android;
 
     // TODO: this won't work if we open more than one activity!!!
-    let rootView = callbacks._rootView = (<any>app).rootView;
+    let rootView = callbacks._rootView;
     if (!rootView) {
         const mainEntry = application.getMainEntry();
         const intent = activity.getIntent();
@@ -956,7 +957,8 @@ function setActivityContent(activity: android.app.Activity, savedInstanceState: 
             rootView = createViewFromEntry(mainEntry);
         }
 
-        callbacks._rootView = (<any>app).rootView = rootView;
+        callbacks._rootView = rootView;
+        application._setRootView(rootView);
     }
 
     // Initialize native visual tree;

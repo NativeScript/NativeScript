@@ -6,7 +6,7 @@
 
 import {
     notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent, displayedEvent,
-    setApplication, livesync, Observable
+    setApplication, livesync, Observable, _setRootView
 } from "./application-common";
 import { profile } from "../profiling";
 
@@ -152,7 +152,7 @@ export function run(entry?: NavigationEntry | string) {
 
 const CALLBACKS = "_callbacks";
 
-export function _newRootView(entry?: NavigationEntry | string) {
+export function _resetRootView(entry?: NavigationEntry | string) {
     const activity = androidApp.foregroundActivity;
     if (!activity) {
         throw new Error("Cannot find android activity.");
@@ -162,10 +162,12 @@ export function _newRootView(entry?: NavigationEntry | string) {
     const callbacks = activity[CALLBACKS];
 
     // Delete previously cached root view in order to recreate it.
-    callbacks._rootView = (<any>androidApp).rootView = null;
+    callbacks._rootView = null;
+    _setRootView(undefined);
 
     const rootView = createViewFromEntry(mainEntry);
-    callbacks._rootView = (<any>androidApp).rootView = rootView;
+    callbacks._rootView = rootView;
+    _setRootView(rootView);
 
     rootView._setupAsRootView(activity);
     activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
