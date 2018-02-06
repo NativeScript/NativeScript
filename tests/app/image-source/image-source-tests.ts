@@ -1,12 +1,4 @@
-﻿// >> imagesource-require
-// const imageSource = require("image-source");
-// << imagesource-require
-
-// >> imagesource-require-alt
-// const fs = require("file-system");
-// << imagesource-require-alt
-
-import * as imageSource from "tns-core-modules/image-source";
+﻿import * as imageSource from "tns-core-modules/image-source";
 import * as fs from "tns-core-modules/file-system";
 import * as app from "tns-core-modules/application";
 import * as TKUnit from "../TKUnit";
@@ -19,18 +11,18 @@ export function testFromResource() {
     // >> imagesource-resname
     const img = imageSource.fromResource("icon");
     // << imagesource-resname
+    
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 }
 
 export function testFromUrl(done) {
     let result: imageSource.ImageSource;
 
-    // >> imagesource-load-url
+    // Deprecated method fromUrl
     imageSource.fromUrl("https://www.google.com/images/errors/logo_sm_2.png")
-        .then(function (res: imageSource.ImageSource) {
-            //console.log("Image successfully loaded");
-            // >> (hide)
-            //completed = true;
+        .then((res: imageSource.ImageSource) => {
+            // console.log("Image successfully loaded");
+            // completed = true;
             result = res;
             try {
                 TKUnit.assertNotEqual(result, undefined, "Image not downloaded");
@@ -40,15 +32,11 @@ export function testFromUrl(done) {
             catch (e) {
                 done(e);
             }
-            // << (hide)
-        }, function (error) {
-            //console.log("Error loading image: " + error);
-            // >> (hide)
+        }, (error) => {
+            // console.log("Error loading image: " + error);
             //completed = true;
             done(error);
-            // << (hide)
         });
-    // << imagesource-load-url
 }
 
 export function testSaveToFile() {
@@ -88,17 +76,19 @@ export function testNativeFields() {
 const fullAndroidPng = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAA3NCSVQICAjb4U/gAAAAFUlEQVQImWP8z4AAjAz/kTnIPGQAAG86AwGcuMlCAAAAAElFTkSuQmCC";
 const fullIosPng = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
 
-const fullJpegImage = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAEAAQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+Pz/h5j+1Z/z9fBr/AMRt+AH/AM7uiiiv9fV9E36KOn/HMX0f+n/NlvDT/p3/ANUv/V3vrf8AP1nueaf8LOa9P+ZjjP8Ap3/0/wD6u99b/wD/2Q==";
+const jpgImageAsBase64String = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAEAAQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+Pz/h5j+1Z/z9fBr/AMRt+AH/AM7uiiiv9fV9E36KOn/HMX0f+n/NlvDT/p3/ANUv/V3vrf8AP1nueaf8LOa9P+ZjjP8Ap3/0/wD6u99b/wD/2Q==";
 const expectedJpegStart = "/9j/4AAQSkZJRgAB";
 const expectedPngStart = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAA";
 
 export function testBase64Encode_PNG() {
+    // >> imagesource-to-base-string
     const img = imageSource.fromFile(smallImagePath);
-    let result = img.toBase64String("png");
+    let base64String = img.toBase64String("png");
+    // << imagesource-to-base-string
 
-    result = result.substr(0, expectedPngStart.length);
+    base64String = base64String.substr(0, expectedPngStart.length);
     TKUnit.assertEqual(
-        result,
+        base64String,
         expectedPngStart,
         "Base 64 encoded PNG");
 }
@@ -106,18 +96,20 @@ export function testBase64Encode_PNG() {
 export function testBase64Encode_JPEG() {
     const img = imageSource.fromFile(smallImagePath);
 
-    let result = img.toBase64String("jpeg");
-    result = result.substr(0, expectedJpegStart.length);
+    let base64String = img.toBase64String("jpeg");
+    base64String = base64String.substr(0, expectedJpegStart.length);
 
     TKUnit.assertEqual(
-        result,
+        base64String,
         expectedJpegStart,
         "Base 64 encoded JPEG");
 }
 
 export function testLoadFromBase64Encode_JPEG() {
+    // >> imagesource-from-base-string
     let img: imageSource.ImageSource;
-    img = imageSource.fromBase64(fullJpegImage);
+    img = imageSource.fromBase64(jpgImageAsBase64String);
+    // << imagesource-from-base-string
 
     TKUnit.assert(img !== null, "Actual: " + img);
     TKUnit.assertEqual(img.width, 4, "img.width");
