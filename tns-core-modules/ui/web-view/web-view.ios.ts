@@ -42,7 +42,7 @@ class WKNavigationDelegateImpl extends NSObject
             
             if ( owner.syncCookies ) {
                 // Following handle will get invoked for subsequent page navigation and updates the sharedHTTPCookieStorage
-                webView.evaluateJavaScriptCompletionHandler("window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",(val,err)=>{});            
+                webView.evaluateJavaScriptCompletionHandler("window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);", null);            
             }
             owner._onLoadStarted(navigationAction.request.URL.absoluteString, navType);
         }
@@ -134,38 +134,38 @@ class WKScriptMessageHandlerImpl extends NSObject
             let value = cookieMap[key];
             let uppercaseKey = key.toUpperCase();
 
-            if ( uppercaseKey == "DOMAIN" ) {
+            if ( uppercaseKey === "DOMAIN" ) {
                 if (!value.startsWith('.') && !value.startsWith('www')) {
                     value = "." + value;
                 }
 
                 cookieProperties.setObjectForKey(value, NSHTTPCookieDomain);
-            } else if ( uppercaseKey == "VERSION" ) {
+            } else if ( uppercaseKey === "VERSION" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieVersion);
-            } else if ( uppercaseKey == "MAX-AGE" || uppercaseKey == "MAXAGE" ) {
+            } else if ( uppercaseKey === "MAX-AGE" || uppercaseKey === "MAXAGE" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieMaximumAge);
-            } else if ( uppercaseKey == "PATH" ) {
+            } else if ( uppercaseKey === "PATH" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookiePath);
-            } else if ( uppercaseKey == "ORIGINURL" ) {
+            } else if ( uppercaseKey === "ORIGINURL" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieOriginURL);
-            } else if ( uppercaseKey == "PORT" ) {
+            } else if ( uppercaseKey === "PORT" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookiePort);
-            } else if ( uppercaseKey == "SECURE" || uppercaseKey == "ISSECURE" ) {
+            } else if ( uppercaseKey === "SECURE" || uppercaseKey === "ISSECURE" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieSecure);
-            } else if ( uppercaseKey == "COMMENT" ) {
+            } else if ( uppercaseKey === "COMMENT" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieComment);
-            } else if ( uppercaseKey == "COMMENTURL" ) {
+            } else if ( uppercaseKey === "COMMENTURL" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieCommentURL);
-            } else if ( uppercaseKey == "EXPIRES" ) {
+            } else if ( uppercaseKey === "EXPIRES" ) {
                 let dateFormatter: NSDateFormatter = NSDateFormatter.new();
                 dateFormatter.locale = NSLocale.alloc().initWithLocaleIdentifier("en_US");
                 dateFormatter.dateFormat = "EEE, dd-MMM-yyyy HH:mm:ss zzz";
                 cookieProperties.setObjectForKey(dateFormatter.dateFromString(value), NSHTTPCookieExpires);
-            } else if ( uppercaseKey == "DISCART" ) {
+            } else if ( uppercaseKey === "DISCART" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieDiscard);
-            } else if ( uppercaseKey == "NAME" ) {
+            } else if ( uppercaseKey === "NAME" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieName);
-            } else if ( uppercaseKey == "VALUE" ) {
+            } else if ( uppercaseKey === "VALUE" ) {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieValue);
             } else {
                 cookieProperties.setObjectForKey(key, NSHTTPCookieName);
@@ -196,7 +196,7 @@ class WKScriptMessageHandlerImpl extends NSObject
             let cookieKeyValueString = cookieKeyValueStrings[i];
 
             let separator = cookieKeyValueString.indexOf('=');
-            if ( separator != -1 && separator > 0 && separator < cookieKeyValueString.length ) {
+            if ( separator !== -1 && separator > 0 && separator < cookieKeyValueString.length ) {
                 let key = cookieKeyValueString.substring(0, separator).trim();
                 let value = cookieKeyValueString.substring(separator + 1).trim()
                 cookieMap[key] = value;
@@ -307,7 +307,7 @@ export class WebView extends WebViewBase {
 
             if (this.syncCookies) {
                 let validDomain = url.host;
-                let requestIsSecure = (url.scheme == 'https');
+                let requestIsSecure = (url.scheme === 'https');
 
                 let cookieArray = [];
                 for (let i = 0; i < NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies.count; i++) {
@@ -321,7 +321,6 @@ export class WebView extends WebViewBase {
                         traceWrite("Skipping " + cookie.properties + " (because not " + validDomain + ")", traceCategories.Debug);     
                         continue;
                     }
-
 
                     // Are we secure only?
                     if (cookie.secure && !requestIsSecure) {
