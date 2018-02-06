@@ -141,4 +141,4 @@ else {
 
 console.log(`TIME TO LOAD APP: ${time} ms`);
 
-application.start({ moduleName: "app/mainPage" });
+application.run({ moduleName: "app/appRoot" });

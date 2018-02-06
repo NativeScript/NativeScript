@@ -86,6 +86,16 @@ export interface ShownModallyData extends EventData {
  */
 export abstract class View extends ViewBase {
     /**
+     * String value used when hooking to showingModally event.
+     */
+    public static showingModallyEvent: string;
+
+    /**
+     * String value used when hooking to shownModally event.
+     */
+    public static shownModallyEvent: string;
+    
+    /**
      * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
      */
     public android: any;
