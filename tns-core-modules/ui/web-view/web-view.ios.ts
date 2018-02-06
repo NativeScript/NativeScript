@@ -39,9 +39,11 @@ class WKNavigationDelegateImpl extends NSObject
             if (traceEnabled()) {
                 traceWrite("WKNavigationDelegateClass.webViewDecidePolicyForNavigationActionDecisionHandler(" + navigationAction.request.URL.absoluteString + ", " + navigationAction.navigationType + ")", traceCategories.Debug);
             }
-
-            // Following handle will get invoke for subsequent page navigation and updates the sharedHTTPCookieStorage
-            webView.evaluateJavaScriptCompletionHandler("window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",(val,err)=>{});            
+            
+            if ( owner.syncCookies ) {
+                // Following handle will get invoked for subsequent page navigation and updates the sharedHTTPCookieStorage
+                webView.evaluateJavaScriptCompletionHandler("window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",(val,err)=>{});            
+            }
             owner._onLoadStarted(navigationAction.request.URL.absoluteString, navType);
         }
     }
@@ -270,13 +272,14 @@ export class WebView extends WebViewBase {
     setupCookieHandlers() {
         if (this.syncCookies && !this._isCookieHandlerAttached) {
             this._isCookieHandlerAttached = true;
+            // "updateCookies" message handler is used to get all the cookies from webpage
             const jScriptOutCookie = "window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);";
             const wkUScriptOutCookie = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScriptOutCookie, WKUserScriptInjectionTime.AtDocumentStart, true);
             this._wkUController.addUserScript(wkUScriptOutCookie);
             let cookieScriptHandler = WKScriptMessageHandlerImpl.initWithOwner(new WeakRef(this));
             this._wkUController.addScriptMessageHandlerName(cookieScriptHandler, "updateCookies");
 
-
+            // For AJAX calls to work document.cookie is updated with the cookies from sharedHTTPCookieStorage
             let jScriptInCookie = "var cookieNames = document.cookie.split('; ').map(function(cookie) { return cookie.split('=')[0] } );";
             for (let i = 0; i < NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies.count; i++) {
                 let cookie: NSHTTPCookie = NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies[i];
