@@ -164,8 +164,8 @@ export var test_getImage = function (done) {
     var result;
 
     // >> http-get-image
-    http.getImage("https://httpbin.org/image/png").then(function (r) {
-        //// Argument (r) is Image!
+    http.getImage("https://httpbin.org/image/png").then((r) => {
+        // Argument (r) is ImageSource!
         // >> (hide)
         result = r;
         try {
@@ -176,10 +176,10 @@ export var test_getImage = function (done) {
             done(err);
         }
         // << (hide)
-    }, function (e) {
-        //// Argument (e) is Error!
+    }, (err) => {
+        // Argument (e) is Error!
         // >> (hide)
-        done(e);
+        done(err);
         // << (hide)
     });
     // << http-get-image
