@@ -169,11 +169,11 @@ export const __test_SettingImageSrcTwiceMustNotMismatch = function (done) {
 };
 
 export const test_SettingStretch_AspectFit = function () {
-    // >> img-set-stretch
-    const image = new ImageModule.Image();
     // There are 4 modes of stretching none, fill, aspectFill, aspectFit
     // The default value is aspectFit.
     // Image stretch can be set by using ImageModule.stretch enum.
+    // >> img-set-stretch
+    const image = new ImageModule.Image();
     image.stretch = "aspectFit";
     // << img-set-stretch
 
