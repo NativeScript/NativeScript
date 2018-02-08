@@ -53,7 +53,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
         if (this.nativeApp === nativeApp) {
             return;
         }
-        
+
         if (this.nativeApp) {
             throw new Error("application.android already initialized.");
         }
@@ -202,11 +202,11 @@ function initLifecycleCallbacks() {
         }
     });
 
-    const notifyActivityCreated = profile("notifyActivityCreated", function(activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
+    const notifyActivityCreated = profile("notifyActivityCreated", function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
         androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
     });
 
-    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function(activity: android.app.Activity) {
+    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: android.app.Activity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
         let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
             onGlobalLayout() {
@@ -221,6 +221,10 @@ function initLifecycleCallbacks() {
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: profile("onActivityCreated", function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
             setThemeOnLaunch(activity);
+
+            if (!androidApp.foregroundActivity) {
+                androidApp.foregroundActivity = activity;
+            }
 
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
