@@ -4,6 +4,7 @@ title: "action-bar"
 environment: nativescript
 description: "Examples for using ActionBar"
 previous_url: /ApiReference/ui/action-bar/HOW-TO
+publish: false
 ---
 # ActionBar
 Using a ActionBar requires the action-bar module.
