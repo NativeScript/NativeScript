@@ -110,6 +110,14 @@ export class TabView extends View {
     androidOffscreenTabLimit: number;
 
     /**
+     * Gets or set the tabs vertical position.
+     * Valid values are:
+     *  - top
+     *  - bottom
+     */
+    androidTabsPosition: "top" | "bottom";
+
+    /**
      * String value used when hooking to the selectedIndexChanged event.
      */
     public static selectedIndexChangedEvent: string;

@@ -92,6 +92,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     public items: TabViewItemDefinition[];
     public selectedIndex: number;
     public androidOffscreenTabLimit: number;
+    public androidTabsPosition: "top" | "bottom";
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     get androidSelectedTabHighlightColor(): Color {
@@ -177,7 +178,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
                 if (!item.view) {
                     throw new Error(`TabViewItem must have a view.`);
                 }
-                
+
                 this._addView(item);
             });
         }
@@ -248,6 +249,9 @@ export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number
     valueConverter: (v) => parseInt(v)
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);
+
+export const androidTabsPositionProperty = new Property<TabViewBase, "top" | "bottom">({ name: "androidTabsPosition", defaultValue: "top" });
+androidTabsPositionProperty.register(TabViewBase);
 
 export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 tabTextColorProperty.register(Style);
