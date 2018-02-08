@@ -370,12 +370,12 @@ export class AndroidApplication extends Observable {
     foregroundActivity: any /* android.app.Activity */;
 
     /**
-     * [Deprecated. Please use the respective event instead.] Please use foregroundActivity property.
+     * Deprecated. Please use startActivity, foregroundActivity or context property.
      */
     currentContext: any /* android.content.Context */;
 
     /**
-     * [Deprecated. Please use foregroundActivity or activity related events instead.] The main (start) Activity for the application.
+     * The main (start) Activity for the application.
      */
     startActivity: any /* android.app.Activity */;
 
