@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<TabView>
+  <TabView.items>
+    <TabViewItem title="Frame">
+      <TabViewItem.view>
+        <Frame defaultPage="ui-tests-app/main-page"></Frame>
+      </TabViewItem.view>
+    </TabViewItem>
+    <TabViewItem title="Second">
+      <TabViewItem.view>
+        <Frame  defaultPage="ui-tests-app/main-page"></Frame>
+      </TabViewItem.view>
+    </TabViewItem>
+  </TabView.items>
+</TabView>
