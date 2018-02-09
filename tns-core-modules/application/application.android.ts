@@ -6,16 +6,15 @@
 
 import {
     notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent, displayedEvent,
-    setApplication, livesync, Observable, _setRootView
+    setApplication, livesync, Observable
 } from "./application-common";
 import { profile } from "../profiling";
 
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { NavigationEntry } from "../ui/frame";
-
-import { createViewFromEntry } from "../ui/builder";
+// types
+import { NavigationEntry, View, AndroidActivityCallbacks } from "../ui/frame";
 
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";
@@ -159,24 +158,24 @@ export function _resetRootView(entry?: NavigationEntry | string) {
     }
 
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
-    const callbacks = activity[CALLBACKS];
-
-    // Delete previously cached root view in order to recreate it.
-    callbacks._rootView = null;
-    _setRootView(undefined);
-
-    const rootView = createViewFromEntry(mainEntry);
-    callbacks._rootView = rootView;
-    _setRootView(rootView);
-
-    rootView._setupAsRootView(activity);
-    activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
-
-    callbacks._rootView.callLoaded();
+    const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+    callbacks.resetActivityContent(activity);
 }
 
 export function getMainEntry() {
     return mainEntry;
+}
+
+export function getRootView() {
+    // Use start activity as a backup when foregroundActivity is still not set
+    // in cases when we are getting the root view before activity.onResumed event is fired
+    const activity = androidApp.foregroundActivity || androidApp.startActivity;
+    if (!activity) {
+        return undefined;
+    }
+    const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+
+    return callbacks ? callbacks.getRootView() : undefined;
 }
 
 export function getNativeApplication(): android.app.Application {

@@ -8,8 +8,7 @@
 
 import {
     notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName,
-    _setRootView
+    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -99,6 +98,10 @@ class IOSApplication implements IOSApplicationDefinition {
         if (this._delegate !== value) {
             this._delegate = value;
         }
+    }
+
+    get rootView() : View {
+        return this._rootView;
     }
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
@@ -212,7 +215,6 @@ class IOSApplication implements IOSApplicationDefinition {
     public setWindowContent(view?: View): void {
         const rootView = createRootView(view);
         this._rootView = rootView;
-        _setRootView(rootView);
         const controller = getViewController(rootView);
 
         if (createRootFrame) {
@@ -263,6 +265,10 @@ function createRootView(v?: View) {
 
 export function getMainEntry() {
     return mainEntry;
+}
+
+export function getRootView() {
+    return iosApp.rootView;
 }
 
 // NOTE: for backwards compatibility. Remove for 4.0.0.

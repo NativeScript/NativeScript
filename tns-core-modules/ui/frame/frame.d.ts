@@ -186,7 +186,6 @@ export function goBack();
  */
 export function stack(): Array<Frame>;
 
-
 /**
  * Represents an entry to be used to create a view or load it form file
  */
@@ -382,6 +381,9 @@ export interface AndroidFrame extends Observable {
 }
 
 export interface AndroidActivityCallbacks {
+    getRootView(): View;
+    resetActivityContent(activity: any): void;
+    
     onCreate(activity: any, savedInstanceState: any, superFunc: Function): void;
     onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
     onStart(activity: any, superFunc: Function): void;

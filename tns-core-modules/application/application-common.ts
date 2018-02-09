@@ -51,16 +51,6 @@ let cssFile: string = "./app.css";
 
 let resources: any = {};
 
-let rootView: View = undefined;
-
-export function getRootView() {
-    return rootView;
-}
-
-export function _setRootView(rootViewValue: View) {
-    rootView = rootViewValue;
-}
-
 export function getResources() {
     return resources;
 }

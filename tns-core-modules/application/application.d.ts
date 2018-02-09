@@ -121,14 +121,6 @@ export function getMainEntry(): NavigationEntry;
  */
 export function getRootView(): View;
 
-//@private
-/**
- * Internal method use to set the current cached root view.
- * @private
- */
-export function _setRootView(rootViewValue: View): void;
-//@endprivate
-
 /**
  * Get application level static resources.
  */
