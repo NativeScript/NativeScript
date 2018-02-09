@@ -634,20 +634,12 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 };
 
 declare var Worker: any;
-export var test_getString_WorksProperlyInWorker = function () {
-    var ready;
-
-    var worker = new Worker("./http-string-worker");
-
-    worker.onmessage = function (msg) {
-        TKUnit.assert(typeof msg.data === "string", "Result from getString() should be valid string object!");
-        ready = true;
-    }
-
-    worker.onerror = function (e) {
-        ready = true;
-        throw e;
-    }
-
-    TKUnit.waitUntilReady(() => ready);
-}
+export var test_getString_WorksProperlyInWorker = function(done) {
+    let worker = new Worker("./http-string-worker");
+    worker.onmessage = function(msg) {
+        done();
+    };
+    worker.onerror = function(e) {
+        done(e);
+    };
+};
