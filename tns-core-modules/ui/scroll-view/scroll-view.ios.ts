@@ -1,10 +1,13 @@
 ﻿import { ScrollEventData } from ".";
 import { View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
+import { ios as iosUtils } from "../../utils/utils";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
 import * as uiUtils from "tns-core-modules/ui/utils";
 
 export * from "./scroll-view-common";
+
+const majorVersion = iosUtils.MajorVersion;
 
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
     private _owner: WeakRef<ScrollView>;
@@ -61,7 +64,7 @@ export class ScrollView extends ScrollViewBase {
             this.nativeViewProtected.showsHorizontalScrollIndicator = value;
         } else {
             this.nativeViewProtected.showsVerticalScrollIndicator = value;
-        } 
+        }
     }
 
     get horizontalOffset(): number {
@@ -92,7 +95,7 @@ export class ScrollView extends ScrollViewBase {
         return true;
     }
     [scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
-        this.updateScrollBarVisibility(value);   
+        this.updateScrollBarVisibility(value);
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
@@ -120,6 +123,16 @@ export class ScrollView extends ScrollViewBase {
         const child = this.layoutView;
         this._contentMeasuredWidth = this.effectiveMinWidth;
         this._contentMeasuredHeight = this.effectiveMinHeight;
+
+        // `_automaticallyAdjustsScrollViewInsets` is set to true only if the first child 
+        // of UIViewController (Page, TabView e.g) is UIScrollView (ScrollView, ListView e.g).
+        // On iOS 11 by default UIScrollView automatically adjusts the scroll view insets, but they s
+        if (majorVersion > 10 && !this.parent._automaticallyAdjustsScrollViewInsets) {
+            // Disable automatic adjustment of scroll view insets when ScrollView 
+            // is not the first child of UIViewController.
+            this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
+        }
+
         if (child) {
             let childSize: { measuredWidth: number; measuredHeight: number };
             if (this.orientation === "vertical") {
@@ -165,7 +178,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public _onOrientationChanged() {
-        this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);   
+        this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
     }
 }
 

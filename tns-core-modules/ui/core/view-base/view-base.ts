@@ -178,7 +178,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _templateParent: ViewBase;
     private __nativeView: any;
     // private _disableNativeViewRecycling: boolean;
-    
+
     public domNode: dnm.DOMNode;
 
     public recycleNativeView: "always" | "never" | "auto";
@@ -199,6 +199,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
     public _suspendNativeUpdatesCount: SuspendType;
     public _isStyleScopeHost: boolean;
+    public _automaticallyAdjustsScrollViewInsets: boolean;
 
     // Dynamic properties.
     left: Length;
