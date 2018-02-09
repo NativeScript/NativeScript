@@ -251,10 +251,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 const modalIndex = _rootModalViews.indexOf(that);
                 _rootModalViews.splice(modalIndex);
                 that._hideNativeModalView(parent);
-                that._modalParent = null
+                that._modalParent = null;
                 that._modalContext = null;
                 that._closeModalCallback = null;
+                that._dialogClosed();
                 parent._modal = null;
+                
                 if (typeof closeCallback === "function") {
                     closeCallback.apply(undefined, arguments);
                 }

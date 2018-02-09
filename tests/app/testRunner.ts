@@ -226,7 +226,7 @@ import * as cssAnimationTests from "./ui/animation/css-animation-tests";
 allTests["CSS-ANIMATION"] = cssAnimationTests;
 
 import * as transitionTests from "./navigation/transition-tests";
-allTests["TANSITIONS"] = transitionTests;
+allTests["TRANSITIONS"] = transitionTests;
 import * as searchBarTests from "./ui/search-bar/search-bar-tests";
 allTests["SEARCH-BAR"] = searchBarTests;
 

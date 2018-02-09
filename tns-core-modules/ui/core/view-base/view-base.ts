@@ -956,6 +956,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             parent.closeModal();
         }
     }
+
+    public _dialogClosed(): void {
+        return;
+    }
 }
 
 ViewBase.prototype.isCollapsed = false;
