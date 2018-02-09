@@ -117,6 +117,11 @@ export interface CssChangedEventData extends EventData {
 export function getMainEntry(): NavigationEntry;
 
 /**
+ * Get current application root view.
+ */
+export function getRootView(): View;
+
+/**
  * Get application level static resources.
  */
 export function getResources(): any;
@@ -177,6 +182,12 @@ export function start(entry?: NavigationEntry | string);
  * Compared to start this method won't create Frame as root view.
  */
 export function run(entry?: NavigationEntry | string);
+
+/**
+ * Call this method to change the root view of your application. Important: Your application must already be running.
+ * This method won't create Frame as root view.
+ */
+export function _resetRootView(entry?: NavigationEntry | string);
 
 //@private
 /**

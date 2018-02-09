@@ -13,7 +13,8 @@ import { profile } from "../profiling";
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { NavigationEntry } from "../ui/frame";
+// types
+import { NavigationEntry, View, AndroidActivityCallbacks } from "../ui/frame";
 
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";
@@ -53,7 +54,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
         if (this.nativeApp === nativeApp) {
             return;
         }
-        
+
         if (this.nativeApp) {
             throw new Error("application.android already initialized.");
         }
@@ -148,8 +149,33 @@ export function run(entry?: NavigationEntry | string) {
     start(entry);
 }
 
+const CALLBACKS = "_callbacks";
+
+export function _resetRootView(entry?: NavigationEntry | string) {
+    const activity = androidApp.foregroundActivity;
+    if (!activity) {
+        throw new Error("Cannot find android activity.");
+    }
+
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
+    const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+    callbacks.resetActivityContent(activity);
+}
+
 export function getMainEntry() {
     return mainEntry;
+}
+
+export function getRootView() {
+    // Use start activity as a backup when foregroundActivity is still not set
+    // in cases when we are getting the root view before activity.onResumed event is fired
+    const activity = androidApp.foregroundActivity || androidApp.startActivity;
+    if (!activity) {
+        return undefined;
+    }
+    const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+
+    return callbacks ? callbacks.getRootView() : undefined;
 }
 
 export function getNativeApplication(): android.app.Application {
@@ -202,11 +228,11 @@ function initLifecycleCallbacks() {
         }
     });
 
-    const notifyActivityCreated = profile("notifyActivityCreated", function(activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
+    const notifyActivityCreated = profile("notifyActivityCreated", function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
         androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
     });
 
-    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function(activity: android.app.Activity) {
+    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: android.app.Activity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
         let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
             onGlobalLayout() {

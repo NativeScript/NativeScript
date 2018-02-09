@@ -1,7 +1,7 @@
 ﻿// Definitions.
 import { LoadOptions } from ".";
 import { View, ViewBase, Template, KeyedTemplate } from "../core/view";
-import { NavigationEntry } from "../frame";
+import { ViewEntry } from "../frame";
 
 // Types.
 import { debug, ScopeError, SourceError, Source } from "../../utils/debug";
@@ -62,7 +62,7 @@ export function loadPage(moduleNamePath: string, fileName: string, context?: any
     return componentModule && componentModule.component;
 }
 
-const loadModule = profile("loadModule", (moduleNamePath: string, entry: NavigationEntry): ModuleExports => {
+const loadModule = profile("loadModule", (moduleNamePath: string, entry: ViewEntry): ModuleExports => {
     // web-pack case where developers register their page JS file manually.
     if (global.moduleExists(entry.moduleName)) {
         return global.loadModule(entry.moduleName);
@@ -94,7 +94,7 @@ const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, modu
     return null;
 })
 
-export const createViewFromEntry = profile("createViewFromEntry", (entry: NavigationEntry): View => {
+export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {
     if (entry.create) {
         return createView(entry);
     } else if (entry.moduleName) {
@@ -116,7 +116,7 @@ export const createViewFromEntry = profile("createViewFromEntry", (entry: Naviga
     throw new Error("Failed to load page XML file for module: " + entry.moduleName);
 });
 
-const createView = profile("entry.create", (entry: NavigationEntry): View => {
+const createView = profile("entry.create", (entry: ViewEntry): View => {
     const view = entry.create();
     if (!view) {
         throw new Error("Failed to create Page with entry.create() function.");

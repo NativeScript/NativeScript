@@ -25,10 +25,12 @@ import { createViewFromEntry } from "../builder";
 export * from "./frame-common";
 
 const INTENT_EXTRA = "com.tns.activity";
+const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
 const FRAMEID = "_frameId";
 const CALLBACKS = "_callbacks";
 
 const ownerSymbol = Symbol("_owner");
+const activityRootViewsMap = new Map<number, WeakRef<View>>();
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -73,11 +75,12 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export function reloadPage(): void {
-    const app = application.android;
-    const rootView: View = (<any>app).rootView;
+    const activity = application.android.foregroundActivity;
+    const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+    const rootView: View = callbacks.getRootView();
+
     if (!rootView || !rootView._onLivesync()) {
-        // Delete previously cached root view in order to recreate it.
-        resetActivityContent(application.android.foregroundActivity);
+        callbacks.resetActivityContent(activity);
     }
 }
 
@@ -288,7 +291,7 @@ export class Frame extends FrameBase {
         const newFragment = this.createFragment(newEntry, newFragmentTag);
         const transaction = manager.beginTransaction();
         const animated = this._getIsAnimatedNavigation(newEntry.entry);
-        // NOTE: Don't use transition for the initial nagivation (same as on iOS)
+        // NOTE: Don't use transition for the initial navigation (same as on iOS)
         // On API 21+ transition won't be triggered unless there was at least one
         // layout pass so we will wait forever for transitionCompleted handler...
         // https://github.com/NativeScript/NativeScript/issues/4895
@@ -754,7 +757,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 }
 
 class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
-    public _rootView: View;
+    private _rootView: View;
+
+    public getRootView(): View {
+        return this._rootView;
+    }
 
     @profile
     public onCreate(activity: android.app.Activity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
@@ -770,18 +777,29 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         let isRestart = !!savedInstanceState && moduleLoaded;
         superFunc.call(activity, isRestart ? savedInstanceState : null);
 
-        setActivityContent(activity, savedInstanceState);
+        // Try to get the rootViewId form the saved state in case the activity
+        // was destroyed and we are now recreating it.
+        if (savedInstanceState) {
+            const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
+            if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
+                this._rootView = activityRootViewsMap.get(rootViewId).get();
+            }
+        }
+
+        this.setActivityContent(activity, savedInstanceState, true);
         moduleLoaded = true;
     }
 
     @profile
     public onSaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle, superFunc: Function): void {
         superFunc.call(activity, outState);
-        const frame = this._rootView;
-        if (frame instanceof Frame) {
-            outState.putInt(INTENT_EXTRA, frame.android.frameId);
-            frame._saveFragmentsState();
+        const rootView = this._rootView;
+        if (rootView instanceof Frame) {
+            outState.putInt(INTENT_EXTRA, rootView.android.frameId);
+            rootView._saveFragmentsState();
         }
+
+        outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
     }
 
     @profile
@@ -870,7 +888,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     @profile
-    public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void {
+    public onRequestPermissionsResult(
+        activity: any,
+        requestCode: number,
+        permissions: Array<String>,
+        grantResults: Array<number>,
+        superFunc: Function
+    ): void {
         if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onRequestPermissionsResult;", traceCategories.NativeLifecycle);
         }
@@ -886,7 +910,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     @profile
-    public onActivityResult(activity: any, requestCode: number, resultCode: number, data: android.content.Intent, superFunc: Function): void {
+    public onActivityResult(
+        activity: any,
+        requestCode: number,
+        resultCode: number,
+        data: android.content.Intent,
+        superFunc: Function
+    ): void {
         superFunc.call(activity, requestCode, resultCode, data);
         if (traceEnabled()) {
             traceWrite(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, traceCategories.NativeLifecycle);
@@ -901,78 +931,98 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             intent: data
         });
     }
-}
 
-function resetActivityContent(activity: android.app.Activity): void {
-    const callbacks: ActivityCallbacksImplementation = activity[CALLBACKS];
-    const app = application.android;
+    public resetActivityContent(activity: android.app.Activity): void {
+        // Delete previously cached root view in order to recreate it.
+        this._rootView = null;
+        this.setActivityContent(activity, null, false);
+        this._rootView.callLoaded();
+    }
 
-    // Delete previously cached root view in order to recreate it.
-    callbacks._rootView = (<any>app).rootView = null;
-    setActivityContent(activity, null);
-    callbacks._rootView.callLoaded();
-}
+    // Paths that go trough this method:
+    // 1. Application initial start - there is no rootView in callbacks.
+    // 2. Application revived after Activity is destroyed. this._rootView should have been restored by id in onCreate. 
+    // 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
+    // 4. _resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
+    private setActivityContent(
+        activity: android.app.Activity,
+        savedInstanceState: android.os.Bundle,
+        fireLaunchEvent: boolean
+    ): void {
+        const shouldCreateRootFrame = application.shouldCreateRootFrame();
+        let rootView = this._rootView;
 
-function setActivityContent(activity: android.app.Activity, savedInstanceState: android.os.Bundle): void {
-    const callbacks: ActivityCallbacksImplementation = activity[CALLBACKS];
-
-    const shouldCreateRootFrame = application.shouldCreateRootFrame();
-    const app = application.android;
-
-    // TODO: this won't work if we open more than one activity!!!
-    let rootView = callbacks._rootView = (<any>app).rootView;
-    if (!rootView) {
-        const mainEntry = application.getMainEntry();
-        const intent = activity.getIntent();
-        rootView = notifyLaunch(intent, savedInstanceState);
-        if (shouldCreateRootFrame) {
-            const extras = intent.getExtras();
-            let frameId = -1;
-
-            // We have extras when we call - new Frame().navigate();
-            // savedInstanceState is used when activity is recreated.
-            // NOTE: On API 23+ we get extras on first run.
-            // Check changed - first try to get frameId from Extras if not from saveInstanceState.
-            if (extras) {
-                frameId = extras.getInt(INTENT_EXTRA, -1);
-            }
-
-            if (savedInstanceState && frameId < 0) {
-                frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
-            }
-
-            if (!rootView) {
-                // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
-                // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
-                rootView = getFrameById(frameId) || new Frame();
-            }
-
-            if (rootView instanceof Frame) {
-                rootView.navigate(mainEntry);
-            } else {
-                throw new Error("A Frame must be used to navigate to a Page.");
-            }
-        } else {
-            rootView = createViewFromEntry(mainEntry);
+        if (traceEnabled()) {
+            traceWrite(
+                `Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: ${shouldCreateRootFrame} fireLaunchEvent: ${fireLaunchEvent}`,
+                traceCategories.NativeLifecycle
+            );
         }
 
-        callbacks._rootView = (<any>app).rootView = rootView;
-    }
+        if (!rootView) {
+            const mainEntry = application.getMainEntry();
+            const intent = activity.getIntent();
 
-    // Initialize native visual tree;
-    if (shouldCreateRootFrame) {
-        // Don't setup as styleScopeHost
-        rootView._setupUI(activity);
-    } else {
-        // setup view as styleScopeHost
-        rootView._setupAsRootView(activity);
-    }
+            if (fireLaunchEvent) {
+                rootView = notifyLaunch(intent, savedInstanceState);
+            }
 
-    activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
+            if (shouldCreateRootFrame) {
+                const extras = intent.getExtras();
+                let frameId = -1;
+
+                // We have extras when we call - new Frame().navigate();
+                // savedInstanceState is used when activity is recreated.
+                // NOTE: On API 23+ we get extras on first run.
+                // Check changed - first try to get frameId from Extras if not from saveInstanceState.
+                if (extras) {
+                    frameId = extras.getInt(INTENT_EXTRA, -1);
+                }
+
+                if (savedInstanceState && frameId < 0) {
+                    frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
+                }
+
+                if (!rootView) {
+                    // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
+                    // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
+                    rootView = getFrameById(frameId) || new Frame();
+                }
+
+                if (rootView instanceof Frame) {
+                    rootView.navigate(mainEntry);
+                } else {
+                    throw new Error("A Frame must be used to navigate to a Page.");
+                }
+            } else {
+                // Create the root view if the notifyLaunch didn't return it
+                rootView = rootView || createViewFromEntry(mainEntry);
+            }
+
+            this._rootView = rootView;
+            activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
+        }
+
+        // Initialize native visual tree;
+        if (shouldCreateRootFrame) {
+            // Don't setup as styleScopeHost
+            rootView._setupUI(activity);
+        } else {
+            // setup view as styleScopeHost
+            rootView._setupAsRootView(activity);
+        }
+
+        activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
+    }
 }
 
 const notifyLaunch = profile("notifyLaunch", function notifyLaunch(intent: android.content.Intent, savedInstanceState: android.os.Bundle): View {
-    const launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: application.android, android: intent, savedInstanceState };
+    const launchArgs: application.LaunchEventData = {
+        eventName: application.launchEvent, 
+        object: application.android, 
+        android: intent, savedInstanceState 
+    };
+    
     application.notify(launchArgs);
     application.notify(<application.LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: application.getCssFileName() });
     return launchArgs.root;

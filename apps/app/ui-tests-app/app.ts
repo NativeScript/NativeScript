@@ -1,13 +1,11 @@
-﻿console.log("####### ------ APP MODULES START ")
+﻿console.log("####### ------ APP MODULES START ");
 
 import * as application from "tns-core-modules/application";
 import * as trace from "tns-core-modules/trace";
+trace.addCategories(trace.categories.NativeLifecycle);
+trace.addCategories(trace.categories.Navigation);
+trace.addCategories(trace.categories.Transition);
 trace.enable();
-trace.setCategories(trace.categories.concat(
-    trace.categories.NativeLifecycle,
-    trace.categories.Navigation,
-    trace.categories.Transition
-    ));
 
 var countResume = 0;
 var countSuspend = 0;
@@ -25,7 +23,7 @@ application.on("uncaughtError", args => {
     }
 });
 
-application.on(application.launchEvent, function (args: application.ApplicationEventData) {
+application.on(application.launchEvent, function(args: application.LaunchEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.
         console.log("### Launched application with: " + args.android + ".");
@@ -35,7 +33,7 @@ application.on(application.launchEvent, function (args: application.ApplicationE
     }
 });
 
-application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
+application.on(application.suspendEvent, function(args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("#" + ++countSuspend + "# SuspendEvent Activity: " + args.android);
@@ -45,7 +43,7 @@ application.on(application.suspendEvent, function (args: application.Application
     }
 });
 
-application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
+application.on(application.resumeEvent, function(args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("#" + ++countResume + "# ResumeEvent Activity: " + args.android);
@@ -55,7 +53,7 @@ application.on(application.resumeEvent, function (args: application.ApplicationE
     }
 });
 
-application.on(application.exitEvent, function (args: application.ApplicationEventData) {
+application.on(application.exitEvent, function(args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("### ExitEvent Activity: " + args.android);
@@ -65,7 +63,7 @@ application.on(application.exitEvent, function (args: application.ApplicationEve
     }
 });
 
-application.on(application.lowMemoryEvent, function (args: application.ApplicationEventData) {
+application.on(application.lowMemoryEvent, function(args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("### LowMemoryEvent Activity: " + args.android);
@@ -75,12 +73,15 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
     }
 });
 
-application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
-        console.log("### NativeScriptError: " + args.error);
-        console.log("### nativeException: " + (<any>args.error).nativeException);
-        console.log("### stackTace: " + (<any>args.error).stackTrace);
-        console.log("### stack: " + args.error.stack);
+application.on(application.uncaughtErrorEvent, function(args: application.UnhandledErrorEventData) {
+    console.log("### NativeScriptError: " + args.error);
+    console.log("### nativeException: " + (<any>args.error).nativeException);
+    console.log("### stackTrace: " + (<any>args.error).stackTrace);
+    console.log("### stack: " + args.error.stack);
 });
 
 application.setCssFileName("ui-tests-app/app.css");
+
 application.start({ moduleName: "ui-tests-app/main-page" });
+// application.run({ moduleName: "ui-tests-app/app-root" });
+// application.run();

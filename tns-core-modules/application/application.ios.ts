@@ -100,6 +100,10 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
+    get rootView() : View {
+        return this._rootView;
+    }
+
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         const observer = NotificationObserver.initWithCallback(onReceiveCallback);
         utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
@@ -263,6 +267,10 @@ export function getMainEntry() {
     return mainEntry;
 }
 
+export function getRootView() {
+    return iosApp.rootView;
+}
+
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 let createRootFrame = true;
 let started: boolean = false;
@@ -294,6 +302,12 @@ export function start(entry?: string | NavigationEntry) {
 export function run(entry?: string | NavigationEntry) {
     createRootFrame = false;
     start(entry);
+}
+
+export function _resetRootView(entry?: NavigationEntry | string) {
+    createRootFrame = false;
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
+    iosApp.setWindowContent();
 }
 
 export function getNativeApplication(): UIApplication {

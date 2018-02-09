@@ -19,7 +19,7 @@ class NativeScriptActivity extends android.app.Activity {
         appModule.android.init(this.getApplication());
         
         // Set isNativeScriptActivity in onCreate.
-        // The JS construcotr might not be called beacuse the activity is created from Andoird.
+        // The JS constructor might not be called because the activity is created from Android.
         this.isNativeScriptActivity = true;
         if (!this._callbacks) {
             setActivityCallbacks(this);

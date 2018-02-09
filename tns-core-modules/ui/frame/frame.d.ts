@@ -187,19 +187,23 @@ export function goBack();
 export function stack(): Array<Frame>;
 
 /**
- * Represents an entry in passed to navigate method.
+ * Represents an entry to be used to create a view or load it form file
  */
-export interface NavigationEntry {
+export interface ViewEntry {
     /**
-     * The name of the module containing the Page instance to load. Optional.
+     * The name of the module containing the View instance to load. Optional.
      */
     moduleName?: string;
 
     /**
-     * A function used to create the Page instance. Optional.
+     * A function used to create the View instance. Optional.
      */
-    create?: () => Page;
-
+    create?: () => View;
+}
+/**
+ * Represents an entry in passed to navigate method.
+ */
+export interface NavigationEntry extends ViewEntry {
     /**
      * An object passed to the onNavigatedTo callback of the Page. Typically this is used to pass some data among pages. Optional.
      */
@@ -377,6 +381,9 @@ export interface AndroidFrame extends Observable {
 }
 
 export interface AndroidActivityCallbacks {
+    getRootView(): View;
+    resetActivityContent(activity: any): void;
+    
     onCreate(activity: any, savedInstanceState: any, superFunc: Function): void;
     onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
     onStart(activity: any, superFunc: Function): void;
