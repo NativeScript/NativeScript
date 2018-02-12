@@ -1,0 +1,8 @@
+<TabView>
+    <TabViewItem title="First">
+        <Frame defaultPage="modal-navigation-app/home/home-page" />
+    </TabViewItem>
+    <TabViewItem title="Second">
+        <Frame defaultPage="modal-navigation-app/second/second-page" />
+    </TabViewItem>
+</TabView>
