@@ -263,6 +263,10 @@ export abstract class ViewBase extends Observable {
      */
     public _removeViewCore(view: ViewBase): void;
     public _parentChanged(oldParent: ViewBase): void;
+    /**
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    public _dialogClosed(): void;
 
     _domId: number;
 

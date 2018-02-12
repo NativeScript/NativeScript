@@ -243,7 +243,9 @@ export class Frame extends FrameBase {
         if (this.canGoBack()) {
             this.goBack();
             return true;
-        } else if (!this.navigationQueueIsEmpty()) {
+        }
+        
+        if (!this.navigationQueueIsEmpty()) {
             const manager = this._getFragmentManager();
             if (manager) {
                 manager.executePendingTransactions();

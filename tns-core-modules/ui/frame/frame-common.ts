@@ -58,16 +58,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     @profile
     public onLoaded() {
         super.onLoaded();
-
-        this._pushInFrameStack();
+        
         this._processNextNavigationEntry();
-    }
-
-    @profile
-    public onUnloaded() {
-        super.onUnloaded();
-
-        this._popFromFrameStack();
     }
 
     public canGoBack(): boolean {
@@ -191,6 +183,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         //     }
         //     app.on(app.orientationChangedEvent, (data) => this._onOrientationChanged());
         // }
+
+        this._pushInFrameStack();
 
         const backstackEntry: BackstackEntry = {
             entry: entry,
@@ -428,6 +422,10 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         frameStack.pop();
         this._isInFrameStack = false;
+    }
+
+    public _dialogClosed(): void {
+        this._popFromFrameStack();
     }
 
     get _childrenCount(): number {

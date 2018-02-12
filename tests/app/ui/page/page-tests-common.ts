@@ -19,7 +19,7 @@ import * as helper from "../helper";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
-import { Frame } from "tns-core-modules/ui/frame";
+import { Frame, stack } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 
@@ -548,6 +548,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
     let ready = false;
 
     const modalCloseCallback = function (returnValue: any) {
+        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
         ready = true;
     }
 
@@ -567,6 +568,10 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
         hostNavigatedFromCount++;
     };
 
+    const modalPageShownModallyEventHandler = function() {
+        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+    }
+
     const hostNavigatedToEventHandler2 = function(args: NavigatedData) {
         const page = <Page>args.object;
         page.off(Page.navigatedToEvent, hostNavigatedToEventHandler2);
@@ -576,7 +581,11 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
             moduleName: basePath + "modal-page"
         };
 
+        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+
         const modalPage = createViewFromEntry(entry) as Page;
+        modalPage.on(Frame.shownModallyEvent, modalPageShownModallyEventHandler);
+
         page.showModal(modalPage, {}, modalCloseCallback, false, false);
     }
     
@@ -694,6 +703,7 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
     let ready = false;
 
     const modalCloseCallback = function (returnValue: any) {
+        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
         ready = true;
     }
 
@@ -703,6 +713,7 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
 
     const modalFrameShownModallyEventHandler = function(args: ShownModallyData) {
         shownModallyCount++;
+        TKUnit.assertEqual(stack().length, 2, "Host and modal frame should be instantiated at this point!");
 
         args.closeCallback("return value");
     }
@@ -720,10 +731,14 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
 
         const modalPage = createViewFromEntry(entry) as Page;
 
+        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+
         modalFrame = new Frame();
         modalFrame.on(Frame.showingModallyEvent, modalFrameShowingModallyEventHandler);
         modalFrame.on(Frame.shownModallyEvent, modalFrameShownModallyEventHandler);
         modalFrame.navigate(() => modalPage);
+
+        TKUnit.assertEqual(stack().length, 2, "Host and modal frame should be instantiated at this point!");
 
         page.showModal(modalFrame, {}, modalCloseCallback, false, false);
     }
