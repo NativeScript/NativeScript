@@ -29,7 +29,7 @@ export function onModalFrame(args: EventData) {
     const view = args.object as View;
 
     const frame = new Frame();
-    frame.navigate("modal-navigation-app/modal/modal-page");
+    frame.navigate("modal/modal-page");
 
     view.showModal(frame,
         "context",
@@ -39,7 +39,7 @@ export function onModalFrame(args: EventData) {
 
 export function onModalPage(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-navigation-app/modal/modal-page",
+    view.showModal("modal/modal-page",
         { frameless: true },
         () => console.log("home-page modal page closed"),
         false);

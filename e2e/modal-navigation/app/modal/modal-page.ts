@@ -42,7 +42,7 @@ export function closeModal(args: EventData) {
 export function showNestedModalPage(args: EventData) {
     const view = args.object as View;
 
-    view.showModal("modal-navigation-app/modal-nested/modal-nested-page",
+    view.showModal("modal-nested/modal-nested-page",
         "nested-context",
         () => console.log("modal page nested closed"),
         false);
@@ -52,7 +52,7 @@ export function showNestedModalFrame(args: EventData) {
     const view = args.object as View;
 
     const frame = new Frame();
-    frame.navigate("modal-navigation-app/modal-nested/modal-nested-page");
+    frame.navigate("modal-nested/modal-nested-page");
 
     view.showModal(frame,
         "nested-context",
@@ -63,5 +63,5 @@ export function showNestedModalFrame(args: EventData) {
 export function onNavigate(args: EventData) {
     const view = args.object as View;
     const page = view.page as Page;
-    page.frame.navigate("modal-navigation-app/modal-second/modal-second-page");
+    page.frame.navigate("modal-second/modal-second-page");
 }

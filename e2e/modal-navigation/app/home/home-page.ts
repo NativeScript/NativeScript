@@ -24,7 +24,7 @@ export function onModalFrame(args: EventData) {
     const view = args.object as View;
 
     const frame = new Frame();
-    frame.navigate("modal-navigation-app/modal/modal-page");
+    frame.navigate("modal/modal-page");
 
     view.showModal(frame,
         "context",
@@ -34,7 +34,7 @@ export function onModalFrame(args: EventData) {
 
 export function onModalPage(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-navigation-app/modal/modal-page",
+    view.showModal("modal/modal-page",
         { frameless: true },
         () => console.log("home-page modal page closed"),
         false);
@@ -42,7 +42,7 @@ export function onModalPage(args: EventData) {
 
 export function onModalTabView(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-navigation-app/modal-tab/modal-tab-page",
+    view.showModal("modal-tab/modal-tab-page",
         { frameless: true },
         () => console.log("home-page modal tabview closed"),
         false);
@@ -51,5 +51,5 @@ export function onModalTabView(args: EventData) {
 export function onNavigate(args: EventData) {
     const view = args.object as View;
     const page = view.page as Page;
-    page.frame.navigate("modal-navigation-app/second/second-page");
+    page.frame.navigate("second/second-page");
 }

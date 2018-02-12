@@ -1,8 +1,8 @@
 <TabView showingModally="onShowingModally" shownModally="onShownModally">
     <TabViewItem title="Modal First">
-        <Frame defaultPage="modal-navigation-app/modal/modal-page" />
+        <Frame defaultPage="modal/modal-page" />
     </TabViewItem>
     <TabViewItem title="Modal Second">
-        <Frame defaultPage="modal-navigation-app/modal-second/modal-second-page" />
+        <Frame defaultPage="modal-second/modal-second-page" />
     </TabViewItem>
 </TabView>
