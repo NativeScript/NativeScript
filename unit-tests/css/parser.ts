@@ -143,68 +143,63 @@ describe("css", () => {
         describe("selectors", () => {
             test(parseSelector, `  listview#products.mark gridlayout:selected[row="2"] a> b   > c >d>e *[src]   `, {
                 start: 0, end: 79, value: [
-                    [
+                    [[
                         { type: "", identifier: "listview" },
                         { type: "#", identifier: "products" },
                         { type: ".", identifier: "mark" }
-                    ],
-                    " ",
-                    [
+                    ], " "],
+                    [[
                         { type: "", identifier: "gridlayout" },
                         { type: ":", identifier: "selected" },
                         { type: "[]", property: "row", test: "=", value: "2" }
-                    ],
-                    " ",
-                    [{ type: "", identifier: "a"}],
-                    ">",
-                    [{ type: "", identifier: "b"}],
-                    ">",
-                    [{ type: "", identifier: "c"}],
-                    ">",
-                    [{ type: "", identifier: "d"}],
-                    ">",
-                    [{ type: "", identifier: "e"}],
-                    " ",
-                    [
+                    ], " "],
+                    [[{ type: "", identifier: "a"}], ">"],
+                    [[{ type: "", identifier: "b"}], ">"],
+                    [[{ type: "", identifier: "c"}], ">"],
+                    [[{ type: "", identifier: "d"}], ">"],
+                    [[{ type: "", identifier: "e"}], " "],
+                    [[
                         { type: "*" },
                         { type: "[]", property: "src" }
-                    ],
-                    undefined
+                    ], undefined]
                 ],
             });
-            test(parseSelector, "*", { start: 0, end: 1, value: [[{ type: "*" }], undefined ]});
-            test(parseSelector, "button", { start: 0, end: 6, value: [[{ type: "", identifier: "button" }], undefined]});
-            test(parseSelector, ".login", { start: 0, end: 6, value: [[{ type: ".", identifier: "login" }], undefined]});
-            test(parseSelector, "#login", { start: 0, end: 6, value: [[{ type: "#", identifier: "login" }], undefined]});
-            test(parseSelector, ":hover", { start: 0, end: 6, value: [[{ type: ":", identifier: "hover" }], undefined]});
-            test(parseSelector, "[src]", { start: 0, end: 5, value: [[{ type: "[]", property: "src" }], undefined]});
-            test(parseSelector, `[src = "res://"]`, { start: 0, end: 16, value: [[{ type: "[]", property: "src", test: "=", value: `res://`}], undefined]});
+            test(parseSelector, "*", { start: 0, end: 1, value: [[[{ type: "*" }], undefined ]] });
+            test(parseSelector, "button", { start: 0, end: 6, value: [[[{ type: "", identifier: "button" }], undefined]]});
+            test(parseSelector, ".login", { start: 0, end: 6, value: [[[{ type: ".", identifier: "login" }], undefined]]});
+            test(parseSelector, "#login", { start: 0, end: 6, value: [[[{ type: "#", identifier: "login" }], undefined]]});
+            test(parseSelector, ":hover", { start: 0, end: 6, value: [[[{ type: ":", identifier: "hover" }], undefined]]});
+            test(parseSelector, "[src]",  { start: 0, end: 5, value: [[[{ type: "[]", property: "src" }], undefined]]});
+            test(parseSelector, `[src = "res://"]`, { start: 0, end: 16, value: [[[{ type: "[]", property: "src", test: "=", value: `res://`}], undefined]]});
             (<AttributeSelectorTest[]>["=", "^=", "$=", "*=", "=", "~=", "|="]).forEach(attributeTest => {
-                test(parseSelector, `[src ${attributeTest} "val"]`, { start: 0, end: 12 + attributeTest.length, value: [[{ type: "[]", property: "src", test: attributeTest, value: "val"}], undefined]});
+                test(parseSelector, `[src ${attributeTest} "val"]`, { start: 0, end: 12 + attributeTest.length, value: [[[{ type: "[]", property: "src", test: attributeTest, value: "val"}], undefined]]});
             });
-            test(parseSelector, "listview > .image", { start: 0, end: 17, value: [[{ type: "", identifier: "listview"}], ">", [{ type: ".", identifier: "image"}], undefined]});
-            test(parseSelector, "listview  .image", { start: 0, end: 16, value: [[{ type: "", identifier: "listview"}], " ", [{ type: ".", identifier: "image"}], undefined]});
-            test(parseSelector, "button:hover", { start: 0, end: 12, value: [[{ type: "", identifier: "button" }, { type: ":", identifier: "hover"}], undefined]});
+            test(parseSelector, "listview > .image", { start: 0, end: 17, value: [
+                [[{ type: "", identifier: "listview"}], ">"], 
+                [[{ type: ".", identifier: "image"}], undefined]
+            ]});
+            test(parseSelector, "listview  .image", { start: 0, end: 16, value: [
+                [[{ type: "", identifier: "listview"}], " "], 
+                [[{ type: ".", identifier: "image"}], undefined]
+            ]});
+            test(parseSelector, "button:hover", { start: 0, end: 12, value: [[[{ type: "", identifier: "button" }, { type: ":", identifier: "hover"}], undefined]]});
             test(parseSelector, "listview>:selected image.product", { start: 0, end: 32, value: [
-                [{ type: "", identifier: "listview" }],
-                ">",
-                [{ type: ":", identifier: "selected" }],
-                " ",
-                [
+                [[{ type: "", identifier: "listview" }], ">"],
+                [[{ type: ":", identifier: "selected" }], " "],
+                [[
                     { type: "", identifier: "image" },
                     { type: ".", identifier: "product" }
-                ],
-                undefined
+                ], undefined]
             ]});
             test(parseSelector, "button[testAttr]", { start: 0, end: 16, value: [
-                [
+                [[
                     { type: "", identifier: "button" },
                     { type: "[]", property: "testAttr" },
                 ],
-                undefined
+                undefined]
             ]});
             test(parseSelector, "button#login[user][pass]:focused:hovered", { start: 0, end: 40, value: [
-                [
+                [[
                     { type: "", identifier: "button" },
                     { type: "#", identifier: "login" },
                     { type: "[]", property: "user" },
@@ -212,7 +207,7 @@ describe("css", () => {
                     { type: ":", identifier: "focused" },
                     { type: ":", identifier: "hovered" }
                 ],
-                undefined
+                undefined]
             ]});
         });
 
