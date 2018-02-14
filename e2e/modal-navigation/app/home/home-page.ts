@@ -1,3 +1,4 @@
+import * as application from "tns-core-modules/application";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { View, EventData } from "tns-core-modules/ui/core/view";
@@ -52,4 +53,9 @@ export function onNavigate(args: EventData) {
     const view = args.object as View;
     const page = view.page as Page;
     page.frame.navigate("second/second-page");
+}
+
+export function onRootViewChange() {
+    let rootView: View = application.getRootView();
+    rootView.typeName === "Frame" ? application._resetRootView({moduleName: "tab-root"}) : application._resetRootView({moduleName: "app-root"});
 }

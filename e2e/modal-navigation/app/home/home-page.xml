@@ -14,5 +14,6 @@
         <Button text="Show Modal Page" tap="onModalPage" />
         <Button text="Show Modal TabView" tap="onModalTabView" />
         <Button text="Navigate To Second Page" tap="onNavigate" />
+        <Button text="Change Root View" tap="onRootViewChange" />
     </StackLayout>
 </Page>
