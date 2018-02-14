@@ -1,0 +1,8 @@
+<TabView androidTabsPosition="bottom">
+    <TabViewItem title="First">
+        <Frame defaultPage="home/home-page" />
+    </TabViewItem>
+    <TabViewItem title="Second">
+        <Frame defaultPage="second/second-page" />
+    </TabViewItem>
+</TabView>

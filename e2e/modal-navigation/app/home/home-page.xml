@@ -1,0 +1,19 @@
+<Page class="page"
+    navigatingTo="onNavigatingTo" 
+    navigatingFrom="onNavigatingFrom"
+    navigatedTo="onNavigatedTo"
+    navigatedFrom="onNavigatedFrom"
+    xmlns="http://schemas.nativescript.org/tns.xsd">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Home"></Label>
+    </ActionBar>
+
+    <StackLayout>
+        <Button text="Show Modal Page With Frame" tap="onModalFrame" />
+        <Button text="Show Modal Page" tap="onModalPage" />
+        <Button text="Show Modal TabView" tap="onModalTabView" />
+        <Button text="Navigate To Second Page" tap="onNavigate" />
+        <Button text="Change Root View" tap="onRootViewChange" />
+    </StackLayout>
+</Page>

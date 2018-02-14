@@ -51,6 +51,8 @@ apps/lib/
 apps/hooks/
 apps/node_modules/
 
+e2e/**/platforms
+
 package-lock.json
 
 .nsbuildinfo

@@ -1,0 +1,15 @@
+<Page class="page"
+    navigatingTo="onNavigatingTo" 
+    navigatingFrom="onNavigatingFrom"
+    navigatedTo="onNavigatedTo"
+    navigatedFrom="onNavigatedFrom"
+    xmlns="http://schemas.nativescript.org/tns.xsd">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Modal Second"></Label>
+    </ActionBar>
+
+    <StackLayout>
+        <Button text="Go Back" tap="onGoBack" />
+    </StackLayout>
+</Page>
