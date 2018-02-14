@@ -43,7 +43,7 @@ export function onModalPage(args: EventData) {
 
 export function onModalTabView(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-tab/modal-tab-page",
+    view.showModal("modal-tab/modal-tab-root",
         { frameless: true },
         () => console.log("home-page modal tabview closed"),
         false);

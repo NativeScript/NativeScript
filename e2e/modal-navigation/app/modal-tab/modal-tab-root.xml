@@ -1,4 +1,4 @@
-<TabView showingModally="onShowingModally" shownModally="onShownModally">
+<TabView androidTabsPosition="bottom" showingModally="onShowingModally" shownModally="onShownModally">
     <TabViewItem title="Modal First">
         <Frame defaultPage="modal/modal-page" />
     </TabViewItem>
