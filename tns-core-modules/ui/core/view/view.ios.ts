@@ -592,6 +592,8 @@ export namespace ios {
 
     export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
         const scrollable = isContentScrollable(controller, owner);
+
+        owner._automaticallyAdjustsScrollViewInsets = scrollable;
         controller.automaticallyAdjustsScrollViewInsets = scrollable;
     }
 
@@ -733,7 +735,7 @@ export namespace ios {
             if(!owner){
                 return;
             }
-        
+
             updateAutoAdjustScrollInsets(this, owner);
 
             if (!owner.parent) {

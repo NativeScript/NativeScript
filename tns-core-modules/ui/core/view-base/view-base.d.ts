@@ -375,6 +375,10 @@ export abstract class ViewBase extends Observable {
     /**
      * @private
      */
+    public _automaticallyAdjustsScrollViewInsets: boolean;
+    /**
+     * @private
+     */
     _isStyleScopeHost: boolean;
 
     /**
