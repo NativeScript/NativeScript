@@ -52,6 +52,7 @@ apps/hooks/
 apps/node_modules/
 
 e2e/**/platforms
+!e2e/**/webpack.config.js
 
 package-lock.json
 
