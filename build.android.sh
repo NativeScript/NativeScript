@@ -21,7 +21,6 @@ cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/
 
 echo "Copy NPM artefacts"
 cp LICENSE dist/package/LICENSE
-cp LICENSE.md dist/package/LICENSE.md
 cp README.md dist/package/README.md
 cp package.json dist/package/package.json
 if [ "$1" ]
@@ -36,4 +35,3 @@ PACKAGE="$(npm pack)"
 cd ../..
 mv dist/package/$PACKAGE dist/$PACKAGE
 echo "Output: dist/$PACKAGE"
-

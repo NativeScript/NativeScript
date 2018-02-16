@@ -1,12 +1,14 @@
-##This is an Android Studio project.
+### Android
+
+This directory contains an Android Studio project.
 
 ### How to open?
-* File/Open
-* Navigate to `tns-core-modules-widgets/android/`
-* select and open widgets
+* In Android Studio choose: File -> Open
+* Navigate to `tns-core-modules-widgets/android/` folder
+* On the left side of the screen choose the Project tab and select `widgets`
 
 ### How to build?
-* Open gradle tab on the right side of the screen
-* Navigate to `widgets/Tasks/build/`
-* run `build` task
-* output will be in `tns-core-modules-widgets/android/dist`
+* On the right side of the screen choose the Gradle tab
+* Navigate to `android/widgets/Tasks/build/`
+* Execute the `assembleRelease` task
+* Output will be in `./android/widgets/build/outputs/`

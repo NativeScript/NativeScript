@@ -19,7 +19,7 @@ cd android
 cd ..
 cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
 
-echo "Build ios"
+echo "Build iOS"
 mkdir dist/package/platforms/ios
 cd ios
 ./build.sh
