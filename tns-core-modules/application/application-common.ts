@@ -2,8 +2,6 @@
 require("globals");
 
 import { Observable, EventData } from "../data/observable";
-// types
-import { View } from "../ui/core/view";
 import {
     trace as profilingTrace,
     time,

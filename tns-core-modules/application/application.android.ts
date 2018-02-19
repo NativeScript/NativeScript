@@ -126,7 +126,7 @@ setApplication(androidApp);
 let mainEntry: NavigationEntry;
 let started = false;
 // NOTE: for backwards compatibility. Remove for 4.0.0.
-let createRootFrame = true;
+const createRootFrame = { value: true };
 export function start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
@@ -141,11 +141,11 @@ export function start(entry?: NavigationEntry | string) {
 }
 
 export function shouldCreateRootFrame(): boolean {
-    return createRootFrame;
+    return createRootFrame.value;
 }
 
 export function run(entry?: NavigationEntry | string) {
-    createRootFrame = false;
+    createRootFrame.value = false;
     start(entry);
 }
 
@@ -157,6 +157,7 @@ export function _resetRootView(entry?: NavigationEntry | string) {
         throw new Error("Cannot find android activity.");
     }
 
+    createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     callbacks.resetActivityContent(activity);
@@ -166,7 +167,7 @@ export function getMainEntry() {
     return mainEntry;
 }
 
-export function getRootView() {
+export function getRootView(): View {
     // Use start activity as a backup when foregroundActivity is still not set
     // in cases when we are getting the root view before activity.onResumed event is fired
     const activity = androidApp.foregroundActivity || androidApp.startActivity;

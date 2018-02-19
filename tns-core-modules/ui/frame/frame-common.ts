@@ -58,7 +58,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     @profile
     public onLoaded() {
         super.onLoaded();
-        
+
         this._processNextNavigationEntry();
     }
 
@@ -424,8 +424,23 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._isInFrameStack = false;
     }
 
+    private _removeFromFrameStack() {
+        if (!this._isInFrameStack) {
+            return;
+        }
+
+        const index = frameStack.indexOf(this);
+        frameStack.splice(index, 1);
+        this._isInFrameStack = false;
+    }
+
     public _dialogClosed(): void {
         this._popFromFrameStack();
+    }
+
+    public _onRootViewReset(): void {
+        this._removeFromFrameStack();
+        super._onRootViewReset();
     }
 
     get _childrenCount(): number {
