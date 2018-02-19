@@ -7,6 +7,7 @@ Here are some guides on how to do that:
  - [Reporting Bugs](#bugs)
  - [Requesting New Features](#features)
  - [Submitting a PR](#pr)
+ - [Commit Message Guidelines](#commit-messages)
 
 ##  <a name="coc"></a> Code of Conduct
 Help us keep a healthy and open community. We expect all participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
@@ -73,6 +74,132 @@ git push origin <my-fix-branch> --force
 It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
 
 
-### Where to Start
+## <a name="commit-messages"></a> Commit Message Guidelines
+
+Please follow the git commit message format described below when committing your changes or submitting a PR. That allows us to use the commit messages to generate a change log for every new release.
+
+### Commit Message Format
+Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
+format that includes a **type**, a **scope** and a **subject**:
+
+```
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+The **header** is mandatory and the **scope** of the header is optional.
+
+Any line of the commit message cannot be longer 100 characters! This allows the message to be easier
+to read on GitHub as well as in various git tools.
+
+Footer should contain a [closing reference to an issue](https://help.github.com/articles/closing-issues-via-commit-messages/) if any.
+
+Samples:
+
+```
+docs(README): add link to NativeScript roadmap
+```
+```
+fix(ios-layouts): switch contentInsetAdjustmentBehavior on ScrollView
+
+Do not auto adjust the ScrollView insets, by disabling contentInsetAdjustmentBehavior property, when ScrollView is used as a root Page element.
+```
+```
+release: cut the 3.2.0 release
+```
+
+### Revert
+If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit being reverted.
+
+### Type
+Must be one of the following:
+
+* **build**: Changes that affect the build system or external dependencies (example scopes: npm, grunt)
+* **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Jenkins)
+* **docs**: Documentation only changes
+* **feat**: A new feature
+* **fix**: A bug fix
+* **fix-next**: A fix for a bug in the master branch, that's not yet released
+* **perf**: A code change that improves performance
+* **refactor**: A code change that neither fixes a bug nor adds a feature
+* **release**: Reference commit for the git tag of the release
+* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+* **test**: Adding missing tests or correcting existing tests (example scopes: e2e, name-of-the-test-app)
+
+### Scope
+The scope should be the name of the affected component in the code.
+If the change affects only one of the target platforms (android, ios) that should be specified in the scope.
+
+Sample scopes for the `tns-core-modules` package:
+
+* **android/application**
+* **ios/application**
+* **action-bar**
+* **animations**
+* **date-picker**
+* **profiling**
+
+### Subject
+The subject contains succinct description of the change:
+
+* use the imperative, present tense: "change" not "changed" nor "changes"
+* don't capitalize first letter
+* no dot (.) at the end
+
+### Body
+Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
+The body should include the motivation for the change and contrast this with previous behavior.
+
+### Footer
+The footer should contain any information about **Breaking Changes** and is also the place to
+reference GitHub issues that this commit **Closes**.
+
+**Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. Describe the changes and provide a migration guide for any code that may be affected.
+Sample:
+```
+feat: Angular 4.2 support
+
+BREAKING CHANGES:
+
+
+NativeScriptModule should be imported only in the root application
+module (usually named AppModule).
+ApplicationModule.
+All other NgModules in the app (both feature and lazy-loaded ones)
+should import the NativeScriptCommonModule instead.
+The behaviour is alligned with BrowserModule and CommonModule in web
+Angular apps. angular.io/guide/ngmodule-faq#q-browser-vs-common-module
+Migration steps:
+In all NgModules, instead of the root one, replace:
+
+import { NativeScriptModule } from "nativescript-angular/nativescript.module";
+…
+@NgModule({
+    imports: [
+        NativeScriptModule,
+    ]
+…
+})
+
+with: 
+
+import { NativeScriptCommonModule } from "nativescript-angular/common";
+…
+@NgModule({
+    imports: [
+        NativeScriptCommonModule,
+    ]
+…
+})
+```
+The above guidelines are based on the [AngularJS Git Commit Message Conventions][commit-message-format]. A detailed explanation and additional examples can be found in this [document][commit-message-format].
+
+## Where to Start
 
 If you want to contribute, but you are not sure where to start - look for [issues labeled `help wanted`](https://github.com/NativeScript/NativeScript/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+
+
+[commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
