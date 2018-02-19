@@ -1,12 +1,37 @@
-To help the rest of the community review your change, please ensure:
+<!--
+We, the rest of the NativeScript community, thank you for your
+contribution! 
+To help the rest of the community review your change, please follow the instructions in the template.
+-->
 
-### PR has a meaningful title
-A good title is less than 50 characters and starts with a capital
-letter, similar to a good [Git Commit Message] (http://chris.beams.io/posts/git-commit/).
+<!-- PULL REQUEST TEMPLATE -->
+<!-- (Update "[ ]" to "[x]" to check a box) -->
 
-### The commit message references a specific issue in this repo
-Fixes/Implements #[Issue Number].
+## PR Checklist
 
-### You have [unit tests](https://github.com/NativeScript/NativeScript/blob/master/running-tests.md)
-if appropriate.
+- [ ] The PR title follows our guidelines: https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#commit-messages.
+- [ ] There is an issue for the bug/feature this PR is for. To avoid wasting your time, it's best to open a suggestion issue first and wait for approval before working on it.
+- [ ] You have signed the [CLA](http://www.nativescript.org/cla).
+- [ ] All existing tests are passing: https://github.com/NativeScript/NativeScript/blob/master/DevelopmentWorkflow.md#running-unit-tests.
+- [ ] Tests for the changes are included - https://github.com/NativeScript/NativeScript/blob/master/WritingUnitTests.md.
+
+## What is the current behavior?
+<!-- Please describe the current behavior that you are modifying, or link to a relevant issue. -->
+
+## What is the new behavior?
+<!-- Describe the changes. -->
+
+Fixes/Implements/Closes #[Issue Number].
+
+<!-- If this PR contains a breaking change, please describe the impact and migration path for existing applications below. -->
+
+<!-- 
+BREAKING CHANGES:
+
+
+[Describe the impact of the changes here.]
+
+Migration steps:
+[Provide a migration path for existing applications.]
+-->
 
