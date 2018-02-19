@@ -138,7 +138,6 @@ class UIViewControllerImpl extends UIViewController {
                 isBack = isBackNavigationTo(owner, newEntry);
             }
 
-            frame._updateBackstack(newEntry, isBack);
             frame.setCurrent(newEntry, isBack);
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.

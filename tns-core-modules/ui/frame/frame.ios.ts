@@ -37,6 +37,14 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
+    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+        if (entry !== this._currentEntry) {
+            this._updateBackstack(entry, isBack);
+        }
+
+        super.setCurrent(entry, isBack);
+    }
+
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
         super._navigateCore(backstackEntry);
@@ -352,7 +360,7 @@ class UINavigationControllerImpl extends UINavigationController {
 
     @profile
     public viewDidDisappear(animated: boolean): void {
-        super.viewDidDisappear(animated);    
+        super.viewDidDisappear(animated);
         const owner = this._owner.get();
         if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
             owner.callUnloaded();
