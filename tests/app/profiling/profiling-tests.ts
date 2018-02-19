@@ -1,4 +1,4 @@
-import { assert, assertEqual, assertFalse, assertTrue, assertThrows } from "../TKUnit";
+import { assert, assertEqual, assertFalse, assertNull, assertTrue, assertThrows } from "../TKUnit";
 import { enable, disable, profile, time, start, stop, timer, isRunning, resetProfiles } from "tns-core-modules/profiling";
 
 enable();
@@ -97,6 +97,19 @@ export function test_isRunning_withReentrancy() {
 
     stop(name);
     assertFalse(isRunning(name), "isRunning should be false after second stop");
+}
+
+export function test_reset_profiles() {
+    resetProfiles();
+    const name = "test_reset_profiles";
+
+    start(name);
+    stop(name);
+    resetProfiles();
+
+    const res = timer(name);
+
+    assertNull(res);
 }
 
 export function test_start_stop() {

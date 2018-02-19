@@ -46,6 +46,7 @@ export function start(name: string): void {
             runCount: 1
         };
         timers[name] = info;
+        profileNames.push(name);
     }
 }
 
@@ -94,7 +95,7 @@ export function isRunning(name: string): boolean {
 
 function countersProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
     profileNames.push(name);
-    return <any>function() {
+    return <any>function () {
         start(name);
         try {
             return fn.apply(this, arguments);
@@ -105,7 +106,7 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
 }
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
-    return type === MemberType.Instance ? <any>function() {
+    return type === MemberType.Instance ? <any>function () {
         const start = time();
         try {
             return fn.apply(this, arguments);
@@ -113,7 +114,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
             const end = time();
             console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
         }
-    } : function() {
+    } : function () {
         const start = time();
         try {
             return fn.apply(this, arguments);
@@ -154,10 +155,10 @@ try {
     if (appConfig && appConfig.profiling) {
         enable(appConfig.profiling);
     }
-} catch(e1) {
+} catch (e1) {
     try {
         console.log("Profiling startup failed to figure out defaults from package.json, error: " + e1);
-    } catch(e2) {
+    } catch (e2) {
         // We can get here if an exception is thrown in the mksnapshot as there is no console there.
     }
 }
