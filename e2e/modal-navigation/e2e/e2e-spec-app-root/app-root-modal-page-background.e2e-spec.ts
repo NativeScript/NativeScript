@@ -4,7 +4,7 @@ import { modalPageBackground,
     testSecondPageBackground,
     testNestedModalFrameBackground,
     testNestedModalPageBackground
-} from "../e2e-spec-shared/modal-frame"
+} from "../shared.e2e-spec"
 
 describe("app root modal page background scenarios", () => {
 

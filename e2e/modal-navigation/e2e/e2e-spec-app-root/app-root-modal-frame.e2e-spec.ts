@@ -1,6 +1,6 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "../screen"
-import { testSecondPage, testNestedModalFrame, testNestedModalPage } from "../e2e-spec-shared/modal-frame"
+import { testSecondPage, testNestedModalFrame, testNestedModalPage } from "../shared.e2e-spec"
 
 describe("app root modal frame scenarios", () => {
 
