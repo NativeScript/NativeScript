@@ -95,9 +95,9 @@
         "fullReset": false,
         "app": ""
     },
-    "sim.iPhoneX.iOS111": {
+    "sim.iPhoneX.iOS112": {
         "platformName": "iOS",
-        "platformVersion": "11.1",
+        "platformVersion": "11.2",
         "deviceName": "iPhone X",
         "noReset": true,
         "fullReset": false,

@@ -2,11 +2,14 @@ import { AppiumDriver } from "nativescript-dev-appium";
 import { assert } from "chai";
 
 const home = "Home"
+const first = "First"
 const modal = "Modal";
 const modalSecond = "Modal Second";
 const modalNested = "Modal Nested";
 
 const modalFrame = "Show Modal Page With Frame";
+
+const rootView = "Change Root View";
 
 const navToSecondPage = "Navigate To Second Page";
 const showNestedModalFrame = "Show Nested Modal Page With Frame";
@@ -24,11 +27,28 @@ export class Screen {
         this._driver = driver;
     }
 
-    // TODO:
-    loaded = async () => {
+    loadedHome = async () => {
         const lblHome = await this._driver.findElementByText(home);
         assert.isTrue(await lblHome.isDisplayed());
         console.log(home + " loaded!");
+    }
+
+    changeRootView = async () => {
+        const btnChangeRootView = await this._driver.findElementByText(rootView);
+        await btnChangeRootView.tap();
+    }
+
+    loadedTabRootView = async () => {
+        const tabFirst = await this._driver.findElementByText(first);
+        assert.isTrue(await tabFirst.isDisplayed());
+        console.log("Tab root view loaded!");
+    }
+
+    setTabRootView = async () => {
+        // should load tab root
+        await this.loadedHome();
+        await this.changeRootView();
+        await this.loadedTabRootView();
     }
 
     showModalFrame = async () => {
@@ -88,5 +108,15 @@ export class Screen {
     closeModal = async () => {
         const btnCloseModal = await this._driver.findElementByText(closeModal);
         await btnCloseModal.tap();
+    }
+
+    loadModalFrame = async () => {
+        try {
+            await this.loadedModalFrame();
+        } catch (err) {
+            // should show modal page with frame
+            await this.showModalFrame();
+            await this.loadedModalFrame();
+        }
     }
 }
