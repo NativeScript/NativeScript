@@ -8,10 +8,11 @@ const modalSecond = "Modal Second";
 const modalNested = "Modal Nested";
 
 const modalFrame = "Show Modal Page With Frame";
-
+const modalPage = "Show Modal Page";
+const modalTabView = "Show Modal TabView";
+const navToSecondPage = "Navigate To Second Page";
 const rootView = "Change Root View";
 
-const navToSecondPage = "Navigate To Second Page";
 const showNestedModalFrame = "Show Nested Modal Page With Frame";
 const showNestedModalPage = "Show Nested Modal Page";
 
@@ -60,6 +61,17 @@ export class Screen {
         const lblModal = await this._driver.findElementByText(modal);
         assert.isTrue(await lblModal.isDisplayed());
         console.log(modal + " loaded!");
+    }
+
+    showModalPage = async () => {
+        const btnModalPage = await this._driver.findElementByText(modalPage);
+        await btnModalPage.tap();
+    }
+
+    loadedModalPage = async () => {
+        const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
+        assert.isTrue(await btnShowNestedModalPage.isDisplayed());
+        console.log("Modal Page loaded!");
     }
 
     navigateToSecondPage = async () => {
@@ -117,6 +129,16 @@ export class Screen {
             // should show modal page with frame
             await this.showModalFrame();
             await this.loadedModalFrame();
+        }
+    }
+
+    loadModalPage = async () => {
+        try {
+            await this.loadedModalPage();
+        } catch (err) {
+            // should show modal page
+            await this.showModalPage();
+            await this.loadedModalPage();
         }
     }
 }

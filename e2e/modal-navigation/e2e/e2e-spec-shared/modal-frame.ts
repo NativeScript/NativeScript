@@ -11,28 +11,28 @@ export async function testSecondPage(screen: Screen) {
     await screen.loadedModalFrame();
 }
 
-export async function testNestedModalFrame(screen: Screen) {
+export async function testNestedModalFrame(screen: Screen, isInFrame: boolean = true) {
     await screen.showNestedModalFrame();
     await screen.loadedNestedModalFrame();
 
     await screen.closeModalNested();
-    await screen.loadedModalFrame();
+    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
 }
 
-export async function testNestedModalPage(screen: Screen) {
+export async function testNestedModalPage(screen: Screen, isInFrame: boolean = true) {
     await screen.showNestedModalPage();
     await screen.loadedNestedModalPage();
 
     await screen.closeModalNested();
-    await screen.loadedModalFrame();
+    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
 }
 
+// Background
 export async function modalFrameBackground(driver: AppiumDriver, screen: Screen) {
     await driver.backgroundApp(time);
     await screen.loadedModalFrame();
 }
 
-// Background
 export async function testSecondPageBackground(driver: AppiumDriver, screen: Screen) {
     await screen.navigateToSecondPage();
     await screen.loadedSecondPage();
@@ -44,7 +44,7 @@ export async function testSecondPageBackground(driver: AppiumDriver, screen: Scr
     await screen.loadedModalFrame();
 }
 
-export async function testNestedModalFrameBackground(driver: AppiumDriver, screen: Screen) {
+export async function testNestedModalFrameBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
     await screen.showNestedModalFrame();
     await screen.loadedNestedModalFrame();
 
@@ -52,10 +52,10 @@ export async function testNestedModalFrameBackground(driver: AppiumDriver, scree
     await screen.loadedNestedModalFrame();
 
     await screen.closeModalNested();
-    await screen.loadedModalFrame();
+    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
 }
 
-export async function testNestedModalPageBackground(driver: AppiumDriver, screen: Screen) {
+export async function testNestedModalPageBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
     await screen.showNestedModalPage();
     await screen.loadedNestedModalPage();
 
@@ -63,5 +63,10 @@ export async function testNestedModalPageBackground(driver: AppiumDriver, screen
     await screen.loadedNestedModalPage();
 
     await screen.closeModalNested();
-    await screen.loadedModalFrame();
+    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
+}
+
+export async function modalPageBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
+    await driver.backgroundApp(time);
+    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
 }
