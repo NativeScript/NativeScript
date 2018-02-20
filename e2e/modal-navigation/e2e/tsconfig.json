@@ -5,6 +5,7 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "importHelpers": false,
+        "sourceMap": true,
         "types": [
             "node",
             "mocha",

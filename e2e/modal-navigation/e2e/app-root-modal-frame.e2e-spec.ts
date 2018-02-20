@@ -10,61 +10,65 @@ describe("app root modal frame scenarios", () => {
     before(async () => {
         driver = await createDriver();
         screen = new Screen(driver);
+        // should load app root
+        await screen.loaded();
+    });
+
+    beforeEach(async function () {
+        try {
+            await screen.loadedModalFrame();
+        } catch (err) {
+            // should show modal page with frame
+            await screen.showModalFrame();
+            await screen.loadedModalFrame();
+        }
     });
 
     afterEach(async function () {
         if (this.currentTest.state === "failed") {
             await driver.logPageSource(this.currentTest.title);
             await driver.logScreenshot(this.currentTest.title);
+            await driver.resetApp();
         }
     });
 
     after(async () => {
+        // should close page with frame
+        await screen.closeModal();
+        await screen.loaded();
         await driver.quit();
         console.log("Quit driver!");
     });
 
-    it("should load app root", async () => {
-        await screen.loaded();
-    });
-
-    it("should show modal page with frame", async () => {
-        await screen.showModalFrame();
-    });
-
-    it("should navigate to second page", async () => {
+    it("should navigate to second page, go back", async () => {
         await screen.navigateToSecondPage();
-    });
+        await screen.loadedSecondPage();
 
-    it("should navigate back from second page", async () => {
         await screen.goBackFromSecondPage();
+        await screen.loadedModalFrame();
     });
 
-    it("should show nested modal page with frame", async () => {
+    it("should show nested modal page with frame, run in background, close", async () => {
         await screen.showNestedModalFrame();
-    });
+        await screen.loadedNestedModalFrame();
 
-    it("should close nested modal page with frame", async () => {
         await screen.closeModalNested();
+        await screen.loadedModalFrame();
     });
 
-    it("should show nested modal page", async () => {
+    it("should show nested modal page, run in background, close", async () => {
         await screen.showNestedModalPage();
-    });
+        await screen.loadedNestedModalPage();
 
-    it("should close nested modal page", async () => {
         await screen.closeModalNested();
+        await screen.loadedModalFrame();
     });
 
-    it("should navigate to second page again", async () => {
+    it("should navigate to second page, run in background, go back", async () => {
         await screen.navigateToSecondPage();
-    });
+        await screen.loadedSecondPage();
 
-    it("should navigate back from second page again", async () => {
         await screen.goBackFromSecondPage();
-    });
-
-    it("should close page with frame", async () => {
-        await screen.closeModal();
+        await screen.loadedModalFrame();
     });
 });
