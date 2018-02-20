@@ -1,10 +1,10 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen } from "./screen"
+import { Screen } from "../screen"
 import { modalFrameBackground,
     testSecondPageBackground,
     testNestedModalFrameBackground,
     testNestedModalPageBackground
-} from "./shared-e2e-spec/modal-frame"
+} from "../e2e-spec-shared/modal-frame"
 
 describe("tab root modal frame background scenarios", () => {
 
@@ -33,7 +33,7 @@ describe("tab root modal frame background scenarios", () => {
     after(async () => {
         // should close page with frame
         await screen.closeModal();
-        await screen.loaded();
+        await screen.loadedHome();
         await driver.quit();
         console.log("Quit driver!");
     });
