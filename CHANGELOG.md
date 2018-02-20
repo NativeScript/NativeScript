@@ -1,5 +1,11 @@
 Cross Platform Modules Changelog
 ==============================
+## 3.4.1 (2018, February 20)
+
+### New
+- [(# 5337)](https://github.com/NativeScript/NativeScript/pull/5337) Support intent replacement in the android activity
+- [(# 5344))](https://github.com/NativeScript/NativeScript/pull/5344) (iOS) Fire onDisplayed event when first frame is ready to be displayed
+
 ## 3.4.0 (2017, December 20)
 
 ## Fixed
