@@ -22,6 +22,7 @@ import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "t
 import { Frame, stack } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
+import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();
@@ -458,6 +459,60 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
     page2.off(Page.navigatedToEvent, navigatedEventHandler);
 
     helper.goBack();
+}
+
+export function test_WhenRootTabViewShownModallyItCanCloseModal() {
+    let modalClosed = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        modalClosed = true;
+    }
+
+    const createTabItems = function(count: number) {
+        var items = new Array<TabViewItem>();
+
+        for (var i = 0; i < count; i++) {
+            var label = new Label();
+            label.text = "Tab " + i;
+            var tabEntry = new TabViewItem();
+            tabEntry.title = "Tab " + i;
+            tabEntry.view = label;
+
+            items.push(tabEntry);
+        }
+
+        return items;
+    }
+
+    const tabViewShownModallyEventHandler = function(args: ShownModallyData) {
+        args.closeCallback("return value");
+    }
+
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const tabView = new TabView();
+        tabView.items = createTabItems(2);
+        tabView.on(View.shownModallyEvent, tabViewShownModallyEventHandler);
+
+        page.showModal(tabView, {}, modalCloseCallback, false, false);
+    }
+
+    const masterPageFactory = function(): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenRootTabViewShownModallyItCanCloseModal";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const label = new Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => modalClosed);
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {

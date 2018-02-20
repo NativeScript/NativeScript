@@ -461,6 +461,10 @@ export class TabView extends TabViewBase {
     }
 
     private shouldUpdateAdapter(items: Array<TabViewItemDefinition>) {
+        if (!this._pagerAdapter) {
+            return false;
+        }
+        
         const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
 
         // if both values are null, should not update
