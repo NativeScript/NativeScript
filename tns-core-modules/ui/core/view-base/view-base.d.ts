@@ -267,6 +267,10 @@ export abstract class ViewBase extends Observable {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     public _dialogClosed(): void;
+    /**
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    public _onRootViewReset(): void;
 
     _domId: number;
 

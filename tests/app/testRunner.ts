@@ -1,7 +1,8 @@
 ﻿/* tslint:disable */
 import * as TKUnit from "./TKUnit";
+import { _resetRootView, getRootView } from "tns-core-modules/application";
 import { messageType } from "tns-core-modules/trace";
-import { topmost, Frame } from "tns-core-modules/ui/frame";
+import { topmost, Frame, NavigationEntry } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { Button } from "tns-core-modules/ui/button";
@@ -232,6 +233,9 @@ allTests["SEARCH-BAR"] = searchBarTests;
 
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
+
+import * as resetRootViewTests from "./navigation/reset-root-view-tests";
+allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
 const testsSuitesWithLongDelay = {
     HTTP: 15 * 1000,

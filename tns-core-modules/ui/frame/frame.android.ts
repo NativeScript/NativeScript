@@ -244,7 +244,7 @@ export class Frame extends FrameBase {
             this.goBack();
             return true;
         }
-        
+
         if (!this.navigationQueueIsEmpty()) {
             const manager = this._getFragmentManager();
             if (manager) {
@@ -935,6 +935,10 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     public resetActivityContent(activity: android.app.Activity): void {
+        if (this._rootView) {
+            // if we already have a root view, we reset it.
+            this._rootView._onRootViewReset();
+        }
         // Delete previously cached root view in order to recreate it.
         this._rootView = null;
         this.setActivityContent(activity, null, false);
@@ -1020,11 +1024,11 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
 const notifyLaunch = profile("notifyLaunch", function notifyLaunch(intent: android.content.Intent, savedInstanceState: android.os.Bundle): View {
     const launchArgs: application.LaunchEventData = {
-        eventName: application.launchEvent, 
-        object: application.android, 
-        android: intent, savedInstanceState 
+        eventName: application.launchEvent,
+        object: application.android,
+        android: intent, savedInstanceState
     };
-    
+
     application.notify(launchArgs);
     application.notify(<application.LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: application.getCssFileName() });
     return launchArgs.root;

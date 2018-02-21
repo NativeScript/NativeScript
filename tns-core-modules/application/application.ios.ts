@@ -100,7 +100,7 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
-    get rootView() : View {
+    get rootView(): View {
         return this._rootView;
     }
 
@@ -213,11 +213,16 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     public setWindowContent(view?: View): void {
+        if (this._rootView) {
+            // if we already have a root view, we reset it.
+            this._rootView._onRootViewReset();
+        }
+
         const rootView = createRootView(view);
         this._rootView = rootView;
         const controller = getViewController(rootView);
 
-        if (createRootFrame) {
+        if (createRootFrame.value) {
             // Don't setup as styleScopeHost
             rootView._setupUI({});
         } else {
@@ -248,7 +253,7 @@ function createRootView(v?: View) {
     if (!rootView) {
         // try to navigate to the mainEntry (if specified)
         if (mainEntry) {
-            if (createRootFrame) {
+            if (createRootFrame.value) {
                 const frame = rootView = new Frame();
                 frame.navigate(mainEntry);
             } else {
@@ -272,7 +277,7 @@ export function getRootView() {
 }
 
 // NOTE: for backwards compatibility. Remove for 4.0.0.
-let createRootFrame = true;
+const createRootFrame = { value: true };
 let started: boolean = false;
 export function start(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
@@ -300,12 +305,12 @@ export function start(entry?: string | NavigationEntry) {
 }
 
 export function run(entry?: string | NavigationEntry) {
-    createRootFrame = false;
+    createRootFrame.value = false;
     start(entry);
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {
-    createRootFrame = false;
+    createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     iosApp.setWindowContent();
 }
