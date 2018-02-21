@@ -113,16 +113,18 @@ export function test_setTimeout_callbackShouldBeCleared() {
 export function test_setInterval_callbackCalledDuringPeriod(done) {
     let counter = 0;
     const expected = 4;
+    const timeLimit = 300;
 
     const start = TKUnit.time();
     // >> timer-set-expression
     const id = timer.setInterval(() => {
         // >> (hide)
         counter++;
-        if (counter === 4) {
+        if (counter === expected) {
             const end = TKUnit.time();
             timer.clearInterval(id);
-            done(end - start > 250 ? new Error('setInterval too slow.') : null);
+            const time = end - start;
+            done(time > timeLimit ? new Error(`setInterval too slow. Actual time: ${time} timelimit: ${timeLimit}`) : null);
         }
         // << (hide)
     }, 50);
