@@ -299,6 +299,12 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
         this.actionView = value;
     }
 
+    public _onVisibilityChanged(visibility: string) {
+        if (this.actionBar) {
+            this.actionBar.update();
+        }
+    }
+
     public eachChild(callback: (child: ViewBase) => boolean) {
         if (this._actionView) {
             callback(this._actionView);
@@ -323,13 +329,17 @@ function onItemChanged(item: ActionItemBase, oldValue: string, newValue: string)
     }
 }
 
+function onVisibilityChanged(item: ActionItemBase, oldValue: string, newValue: string) {
+    item._onVisibilityChanged(newValue);
+}
+
 export const textProperty = new Property<ActionItemBase, string>({ name: "text", defaultValue: "", valueChanged: onItemChanged });
 textProperty.register(ActionItemBase);
 
 export const iconProperty = new Property<ActionItemBase, string>({ name: "icon", valueChanged: onItemChanged });
 iconProperty.register(ActionItemBase);
 
-export const visibilityProperty = new Property({ name: "visibility", defaultValue: "visible", valueChanged: onItemChanged });
+export const visibilityProperty = new Property({ name: "visibility", defaultValue: "visible", valueChanged: onVisibilityChanged });
 visibilityProperty.register(ActionItemBase);
 
 export const flatProperty = new Property<ActionBarBase, boolean>({ name: "flat", defaultValue: false, valueConverter: booleanConverter });
