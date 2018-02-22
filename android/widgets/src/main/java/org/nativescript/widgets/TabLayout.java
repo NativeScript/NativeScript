@@ -66,7 +66,7 @@ public class TabLayout extends HorizontalScrollView {
     private static final int TITLE_OFFSET_DIPS = 24;
     private static final int TAB_VIEW_PADDING_DIPS = 16;
     private static final int TAB_VIEW_TEXT_SIZE_SP = 12;
-    private static final int TEXT_MAX_WIDHT = 180;
+    private static final int TEXT_MAX_WIDTH = 180;
     private static final int SMALL_MIN_HEIGHT = 48;
     private static final int LARGE_MIN_HEIGHT = 72;
 
@@ -240,7 +240,7 @@ public class TabLayout extends HorizontalScrollView {
 
         TextView textView = new TextView(context);
         textView.setGravity(Gravity.CENTER);
-        textView.setMaxWidth((int) (TEXT_MAX_WIDHT * density));
+        textView.setMaxWidth((int) (TEXT_MAX_WIDTH * density));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
         textView.setTypeface(Typeface.DEFAULT_BOLD);
         textView.setEllipsize(TextUtils.TruncateAt.END);

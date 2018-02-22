@@ -21,9 +21,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -86,6 +84,8 @@ class TabStrip extends LinearLayout {
 
         // Default selected color is the same as mTabTextColor
         mSelectedTabTextColor = mTabTextColor;
+
+        setMeasureWithLargestChildEnabled(true);
     }
 
     void setCustomTabColorizer(TabLayout.TabColorizer customTabColorizer) {
