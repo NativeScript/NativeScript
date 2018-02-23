@@ -27,6 +27,10 @@ function getViewById(nodeId: number): ViewBase {
 
 export function getDocument() {
     const topMostFrame = frameTopmost();
+    if (!topMostFrame) {
+        return undefined;
+    }
+    
     try {
         topMostFrame.ensureDomNode();
         
