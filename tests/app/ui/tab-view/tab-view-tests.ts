@@ -2,9 +2,9 @@ import { UITest } from "../../ui-test";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { unsetValue } from "tns-core-modules/ui/core/view";
-import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import tabViewTestsNative = require("./tab-view-tests-native");
+import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as tabViewTestsNative from "./tab-view-tests-native";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module

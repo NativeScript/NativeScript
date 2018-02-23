@@ -175,21 +175,18 @@ function initializeDialogFragment() {
 
             this._shownCallback();
         }
-
-        public onStop(): void {
-            super.onStop();
-            const owner = this.owner;
-            if (owner.isLoaded) {
-                owner.callUnloaded();
-            }
-        }
-
+        
         public onDismiss(dialog: android.content.IDialogInterface): void {
             super.onDismiss(dialog);
             const manager = this.getFragmentManager();
             if (manager) {
                 removeModal(this.owner._domId);
                 this._dismissCallback();
+            }
+
+            const owner = this.owner;
+            if (owner.isLoaded) {
+                owner.callUnloaded();
             }
         }
 
