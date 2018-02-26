@@ -32,7 +32,7 @@ class UITabBarControllerImpl extends UITabBarController {
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
-        if(!owner){
+        if (!owner) {
             return;
         }
 
@@ -147,7 +147,7 @@ function updateItemIconPosition(tabBarItem: UITabBarItem): void {
 
 export class TabViewItem extends TabViewItemBase {
     private __controller: UIViewController;
-    
+
     public setViewController(controller: UIViewController, nativeView: UIView) {
         this.__controller = controller;
         this.setNativeView(nativeView);
@@ -295,7 +295,7 @@ export class TabView extends TabViewBase {
 
     private getViewController(item: TabViewItem): UIViewController {
         let newController: UIViewController = item.view ? item.view.viewController : null;
-        
+
         if (newController) {
             item.setViewController(newController, newController.view);
             return newController;
@@ -399,6 +399,7 @@ export class TabView extends TabViewBase {
         }
 
         if (value > -1) {
+            (<any>this._ios)._willSelectViewController = this._ios.viewControllers[value];
             this._ios.selectedIndex = value;
         }
     }

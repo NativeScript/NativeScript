@@ -1,4 +1,5 @@
 ﻿import * as TKUnit from "../TKUnit";
+import * as helper from "../ui/helper";
 import { Page } from "tns-core-modules/ui/page";
 import { Frame, NavigationEntry, stack } from "tns-core-modules/ui/frame";
 import { _resetRootView, getRootView } from "tns-core-modules/application";
@@ -47,8 +48,7 @@ function createTestTabRootEntry() {
 export function test_reset_frame_to_frame() {
     const testFrameRoot1 = createTestFrameRootEntry();
 
-    _resetRootView(testFrameRoot1.entry);
-    TKUnit.waitUntilReady(() => testFrameRoot1.page.isLoaded);
+    helper.waitUntilNavigatedTo(testFrameRoot1.page, () => _resetRootView(testFrameRoot1.entry));
 
     const rootView1 = getRootView();
     const frameStack1 = stack();
@@ -57,8 +57,7 @@ export function test_reset_frame_to_frame() {
 
     const testFrameRoot2 = createTestFrameRootEntry();
 
-    _resetRootView(testFrameRoot2.entry);
-    TKUnit.waitUntilReady(() => testFrameRoot2.page.isLoaded);
+    helper.waitUntilNavigatedTo(testFrameRoot2.page, () => _resetRootView(testFrameRoot2.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
@@ -69,8 +68,7 @@ export function test_reset_frame_to_frame() {
 export function test_reset_frame_to_tab() {
     const testFrameRoot = createTestFrameRootEntry();
 
-    _resetRootView(testFrameRoot.entry);
-    TKUnit.waitUntilReady(() => testFrameRoot.page.isLoaded);
+    helper.waitUntilNavigatedTo(testFrameRoot.page, () => _resetRootView(testFrameRoot.entry));
 
     const rootView1 = getRootView();
     const frameStack1 = stack();
@@ -79,8 +77,7 @@ export function test_reset_frame_to_tab() {
 
     const testTabRoot = createTestTabRootEntry();
 
-    _resetRootView(testTabRoot.entry);
-    TKUnit.waitUntilReady(() => testTabRoot.page.isLoaded);
+    helper.waitUntilNavigatedTo(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
@@ -91,8 +88,7 @@ export function test_reset_frame_to_tab() {
 export function test_reset_tab_to_frame() {
     const testTabRoot = createTestTabRootEntry();
 
-    _resetRootView(testTabRoot.entry);
-    TKUnit.waitUntilReady(() => testTabRoot.page.isLoaded);
+    helper.waitUntilNavigatedTo(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
@@ -101,8 +97,7 @@ export function test_reset_tab_to_frame() {
 
     const testFrameRoot = createTestFrameRootEntry();
 
-    _resetRootView(testFrameRoot.entry);
-    TKUnit.waitUntilReady(() => testFrameRoot.page.isLoaded);
+    helper.waitUntilNavigatedTo(testFrameRoot.page, () => _resetRootView(testFrameRoot.entry));
 
     const rootView1 = getRootView();
     const frameStack1 = stack();
@@ -113,8 +108,7 @@ export function test_reset_tab_to_frame() {
 export function test_reset_tab_to_tab() {
     const testTabRoot1 = createTestTabRootEntry();
 
-    _resetRootView(testTabRoot1.entry);
-    TKUnit.waitUntilReady(() => testTabRoot1.page.isLoaded);
+    helper.waitUntilNavigatedTo(testTabRoot1.page, () => _resetRootView(testTabRoot1.entry));
 
     const rootView1 = getRootView();
     const frameStack1 = stack();
@@ -123,14 +117,27 @@ export function test_reset_tab_to_tab() {
 
     const testTabRoot2 = createTestTabRootEntry();
 
-    _resetRootView(testTabRoot2.entry);
-    TKUnit.waitUntilReady(() => testTabRoot2.page.isLoaded);
+    helper.waitUntilNavigatedTo(testTabRoot2.page, () => _resetRootView(testTabRoot2.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
     TKUnit.assertEqual(rootView2, testTabRoot2.root);
     TKUnit.assertEqual(frameStack2.length, 2);
 };
+
+export function test_reset_during_tab_index_change() {
+    const testTabRoot = createTestTabRootEntry();
+
+    helper.waitUntilNavigatedTo(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
+
+    testTabRoot.root.selectedIndex = 1;
+
+    const testFrameRoot = createTestFrameRootEntry();
+
+    helper.waitUntilNavigatedTo(testFrameRoot.page, () => _resetRootView(testFrameRoot.entry));
+
+    TKUnit.assertTrue(true);
+}
 
 export function tearDownModule() {
     // reset the root to frame for other tests

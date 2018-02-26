@@ -38,11 +38,13 @@ export class Frame extends FrameBase {
     }
 
     public setCurrent(entry: BackstackEntry, isBack: boolean): void {
-        if (entry !== this._currentEntry) {
+        const current = this._currentEntry;
+        const currentEntryChanged = current !== entry;
+        if (currentEntryChanged) {
             this._updateBackstack(entry, isBack);
-        }
 
-        super.setCurrent(entry, isBack);
+            super.setCurrent(entry, isBack);
+        }
     }
 
     @profile
