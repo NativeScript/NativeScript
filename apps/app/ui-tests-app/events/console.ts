@@ -58,22 +58,19 @@ export function pageLoaded() {
     console.assert("", "empty string evalutes to 'false'");
 
     console.trace("console.trace() called");
+    console.dir(true);
+    console.dir(false);
+    console.dir(null);
+    console.dir(undef);
 
-    if (app.android) {
-        console.dir(true);
-        console.dir(false);
-        console.dir(null);
-        console.dir(undef);
+    console.dir(num);
+    console.dir(str);
 
-        console.dir(num);
-        console.dir(str);
+    console.dir(obj);
+    console.log(`${button}`);
 
-        console.dir(obj);
-        console.log(`${button}`);
-
-        console.log(num, str, obj);
-        console.log([1, 5, 12.5, obj, str, 42]);
-    }
+    console.log(num, str, obj);
+    console.log([1, 5, 12.5, obj, str, 42]);
 
     console.trace();
 
