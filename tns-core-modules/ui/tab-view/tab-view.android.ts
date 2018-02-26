@@ -366,19 +366,7 @@ export class TabView extends TabViewBase {
         }
 
         const context: android.content.Context = this._context;
-
-        // In a modal dialog scenario with root tabview inside the DialogFragment 
-        // content at some point is set via PhoneWindow.setContentView(view) call
-        // where "view" is the gridLayout root element of the tabview; 
-        // this results in setContentView(view, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)) call
-        // that unconditionally overwrites the default instance of CommonLayoutParams attached to the gridLayout by us.
-        // As the default setter essentially created new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.FILL)
-        // we lose the Gravity.FILL setting and that prevents the gridLayout from stretching horizontally 
-        // so tab item titles do not distribute the excess whitespace among themselves.
-        // We need an outer native wrapper element to be laid out by the DialogFragment so
-        // we can perform the layout of the inner gridLayout element as expected.
-        const nativeViewWrapper = new org.nativescript.widgets.GridLayout(context);
-        const gridLayout = new org.nativescript.widgets.GridLayout(context);
+        const nativeView = new org.nativescript.widgets.GridLayout(context);
         const viewPager = new org.nativescript.widgets.TabViewPager(context);
         const tabLayout = new org.nativescript.widgets.TabLayout(context);
         const lp = new org.nativescript.widgets.CommonLayoutParams();
@@ -388,13 +376,13 @@ export class TabView extends TabViewBase {
         lp.row = 1;
 
         if (this.androidTabsPosition === "top") {
-            gridLayout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-            gridLayout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
             viewPager.setLayoutParams(lp);
         } else {
-            gridLayout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-            gridLayout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
 
             tabLayout.setLayoutParams(lp);
             viewPager.setSwipePageEnabled(false);
@@ -402,20 +390,17 @@ export class TabView extends TabViewBase {
             accentColor = 0x00FFFFFF;
         }
 
-        nativeViewWrapper.addView(gridLayout);
-        (<any>nativeViewWrapper).gridLayout = gridLayout;
-
-        gridLayout.addView(viewPager);
-        (<any>gridLayout).viewPager = viewPager;
+        nativeView.addView(viewPager);
+        (<any>nativeView).viewPager = viewPager;
 
         const adapter = new PagerAdapter(this);
         viewPager.setAdapter(adapter);
         (<any>viewPager).adapter = adapter;
 
-        gridLayout.addView(tabLayout);
-        (<any>gridLayout).tabLayout = tabLayout;
+        nativeView.addView(tabLayout);
+        (<any>nativeView).tabLayout = tabLayout;
 
-        setElevation(gridLayout, tabLayout);
+        setElevation(nativeView, tabLayout);
 
         if (accentColor) {
             tabLayout.setSelectedIndicatorColors([accentColor]);
@@ -425,7 +410,7 @@ export class TabView extends TabViewBase {
             tabLayout.setBackgroundColor(primaryColor);
         }
 
-        return nativeViewWrapper;
+        return nativeView;
     }
 
     public initNativeView(): void {
@@ -435,9 +420,9 @@ export class TabView extends TabViewBase {
         }
 
         const nativeView: any = this.nativeViewProtected;
-        this._tabLayout = (<any>nativeView).gridLayout.tabLayout;
+        this._tabLayout = (<any>nativeView).tabLayout;
 
-        const viewPager = (<any>nativeView).gridLayout.viewPager;
+        const viewPager = (<any>nativeView).viewPager;
         viewPager.setId(this._androidViewId);
         this._viewPager = viewPager;
         this._pagerAdapter = (<any>viewPager).adapter;
