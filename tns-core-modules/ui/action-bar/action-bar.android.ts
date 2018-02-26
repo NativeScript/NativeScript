@@ -103,7 +103,6 @@ export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinit
 }
 
 export class NavigationButton extends ActionItem {
-    //
 }
 
 export class ActionBar extends ActionBarBase {

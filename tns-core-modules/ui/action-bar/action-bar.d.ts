@@ -239,7 +239,12 @@ export interface AndroidActionBarSettings {
  * Represents the navigation (a.k.a. "back") button.
  */
 export class NavigationButton extends ActionItem {
-
+    //@private
+    /**
+     * @private
+     */
+    _navigationItem?: any
+    //@endprivate
 }
 
 /** @internal */

@@ -44,7 +44,14 @@ export class ActionItem extends ActionItemBase {
 }
 
 export class NavigationButton extends ActionItem {
+    _navigationItem: UINavigationItem;
 
+    public _onVisibilityChanged(visibility: string): void {
+        if (this._navigationItem) {
+            const visible: boolean = visibility === "visible";
+            this._navigationItem.setHidesBackButtonAnimated(!visible, true);
+        }
+    }
 }
 
 export class ActionBar extends ActionBarBase {
@@ -82,7 +89,7 @@ export class ActionBar extends ActionBarBase {
         if (!navBar) {
             return { width: 0, height: 0 };
         }
-        
+
         const frame = navBar.frame;
         const size = frame.size;
         const width = layout.toDevicePixels(size.width);
@@ -158,7 +165,8 @@ export class ActionBar extends ActionBarBase {
 
         // Set back button visibility
         if (this.navigationButton) {
-            navigationItem.setHidesBackButtonAnimated(!isVisible(this.navigationButton), true);
+            this.navigationButton._navigationItem = navigationItem;
+            navigationItem.setHidesBackButtonAnimated(!isVisible(this.navigationButton), false);
         }
 
         // Populate action items
