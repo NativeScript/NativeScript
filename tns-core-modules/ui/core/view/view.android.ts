@@ -125,7 +125,6 @@ function initializeDialogFragment() {
         private _fullscreen: boolean;
         private _shownCallback: () => void;
         private _dismissCallback: () => void;
-        private _nativeView: android.widget.FrameLayout;
 
         constructor() {
             super();
@@ -144,6 +143,14 @@ function initializeDialogFragment() {
             
             const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
           
+            // do not override alignment unless fullscreen modal will be shown; 
+            // otherwise we might break component-level layout:
+            // https://github.com/NativeScript/NativeScript/issues/5392 
+            if (this._fullscreen) {
+                this.owner.horizontalAlignment = "stretch";
+                this.owner.verticalAlignment = "stretch";
+            }
+
             return dialog;
         }
 
@@ -152,17 +159,7 @@ function initializeDialogFragment() {
             owner._setupAsRootView(this.getActivity());
             owner._isAddedToNativeVisualTree = true;
 
-            // We need a native wrapper element to be laid out by the DialogFragment and 
-            // adjust its alignment for fullscreen so we can make sure that the actual 
-            // modal view will be laid out as expected on component level.
-            this._nativeView = new android.widget.FrameLayout(owner._context);
-            this._nativeView.addView(owner.nativeViewProtected);
-
-            // adjust alignment based on fullscreen value.
-            this._nativeView.horizontalAlignment = this._fullscreen ? "stretch" : "center";
-            this._nativeView.verticalAlignment = this._fullscreen ? "stretch" : "middle";
-
-            return this._nativeView;
+            return owner.nativeViewProtected;
         }
 
         public onStart(): void {
@@ -199,8 +196,6 @@ function initializeDialogFragment() {
 
         public onDestroy(): void {
             super.onDestroy();
-            this._nativeView.removeView(this.owner.nativeViewProtected);
-            this._nativeView = null;
             const owner = this.owner;
             owner._isAddedToNativeVisualTree = false;
             owner._tearDownUI(true);
