@@ -35,7 +35,7 @@ export class ImageAsset extends common.ImageAsset {
         };
         let requestedSize = common.getRequestedImageSize(sourceSize, this.options);
 
-        let sampleSize = calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.width, requestedSize.height);
+        let sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.width, requestedSize.height);
 
         let finalBitmapOptions = new android.graphics.BitmapFactory.Options();
         finalBitmapOptions.inSampleSize = sampleSize;

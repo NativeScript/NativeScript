@@ -4,6 +4,7 @@
 } from "./image-common";
 import { knownFolders } from "../../file-system";
 
+import * as platform from "../../platform";
 export * from "./image-common";
 
 const FILE_PREFIX = "file:///";
@@ -86,8 +87,10 @@ export class Image extends ImageBase {
             return;
         }
 
-        let decodeWidth = this.decodeWidth;
-        let decodeHeight = this.decodeHeight;
+        let screen = platform.screen.mainScreen;
+
+        let decodeWidth = Math.min(this.decodeWidth, screen.widthPixels);
+        let decodeHeight = Math.min(this.decodeHeight, screen.heightPixels);
         let keepAspectRatio = this._calculateKeepAspectRatio();
         if (value instanceof ImageAsset) {
             if (value.options) {
