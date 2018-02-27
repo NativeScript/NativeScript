@@ -12,6 +12,8 @@ import { View, Color } from "../core/view";
 
 import { AnimationCurve } from "../enums";
 
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
+
 // Types.
 import { unsetValue } from "../core/properties";
 import { Animation } from "./animation";
@@ -161,7 +163,13 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
 
     public play(view: View): Promise<void> {
         if (this._isPlaying) {
-            throw new Error("Animation is already playing.");
+            const reason = "Keyframe animation is already playing.";
+            if (traceEnabled()) {
+                traceWrite(reason, traceCategories.Animation, 2);
+            }
+            return new Promise<void>((resolve, reject) => {
+                reject(reason);
+            });
         }
 
         let animationFinishedPromise = new Promise<void>((resolve, reject) => {

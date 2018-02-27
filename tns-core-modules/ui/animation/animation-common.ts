@@ -86,7 +86,13 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     public play(): AnimationPromiseDefinition {
         if (this.isPlaying) {
-            throw new Error("Animation is already playing.");
+            const reason = "Animation is already playing.";
+            if (traceEnabled()) {
+                traceWrite(reason, traceCategories.Animation, 2);
+            }
+            return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
+                reject(reason);
+            });
         }
 
         // We have to actually create a "Promise" due to a bug in the v8 engine and decedent promises
@@ -124,7 +130,9 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     public cancel(): void {
         if (!this.isPlaying) {
-            throw new Error("Animation is not currently playing.");
+            if (traceEnabled()) {
+                traceWrite("Animation is not currently playing.", traceCategories.Animation, 2);
+            }
         }
     }
 
