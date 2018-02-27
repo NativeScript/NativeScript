@@ -72,7 +72,7 @@ In addition to the code that makes up the NativeScript framework itself, we also
 
 ## Contributing
 
-We love PRs, and accept them for all of our repositories—even docs! Please follow our [contribution guide](CONTRIBUTING.md) if you want to become part of the project.
+We love PRs, and accept them for all of our repositories—even docs! Please follow our [contribution guide](CONTRIBUTING.md) if you want to become part of the project. 
 
 ## Angular
 
