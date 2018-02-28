@@ -201,9 +201,7 @@ export class Frame extends FrameBase {
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
             this._updateBackstack(entry, isBack);
-        }
 
-        if (currentEntryChanged) {
             // If activity was destroyed we need to destroy fragment and UI
             // of current and new entries.
             if (this._tearDownPending) {
@@ -936,7 +934,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
     public resetActivityContent(activity: android.app.Activity): void {
         if (this._rootView) {
-            // if we already have a root view, we reset it.
+            const manager = this._rootView._getFragmentManager();
+            manager.executePendingTransactions();
+
             this._rootView._onRootViewReset();
         }
         // Delete previously cached root view in order to recreate it.

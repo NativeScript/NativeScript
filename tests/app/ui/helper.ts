@@ -154,6 +154,18 @@ export function getClearCurrentPage(): Page {
     return page;
 }
 
+export function waitUntilNavigatedTo(page: Page, action: Function) {
+    let completed = false;
+    function navigatedTo(args) {
+        args.object.page.off("navigatedTo", navigatedTo);
+        completed = true;
+    }
+
+    page.on("navigatedTo", navigatedTo);
+    action();
+    TKUnit.waitUntilReady(() => completed, 100);
+}
+
 export function waitUntilNavigatedFrom(action: Function) {
     const currentPage = frame.topmost().currentPage;
     let completed = false;
