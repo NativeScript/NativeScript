@@ -435,7 +435,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _dialogClosed(): void {
-        this._popFromFrameStack();
+        // No super call as we do not support nested frames to clean up
+        this._removeFromFrameStack();
     }
 
     public _onRootViewReset(): void {

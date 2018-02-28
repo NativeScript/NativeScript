@@ -23,6 +23,7 @@ import { Frame, stack } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
+import { _resetRootView, getRootView } from "tns-core-modules/application";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();
@@ -874,6 +875,71 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
     TKUnit.assertTrue(shownModallyCount === 1);
 }
 
+export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView() {
+    let showingModallyCount = 0;
+    let shownModallyCount = 0;
+
+    let ready = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+
+        ready = true;
+    }
+
+    const modalTabViewShowingModallyEventHandler = function(args: ShownModallyData) {
+        showingModallyCount++;
+    }
+
+    const modalTabViewShownModallyEventHandler = function(args: ShownModallyData) {
+        shownModallyCount++;
+    }
+    
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const basePath = "ui/page/";
+        const entry: NavigationEntry = {
+            moduleName: basePath + "modal-tab-root"
+        };
+
+        TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+
+        const modalTabView = createViewFromEntry(entry) as TabView;
+        modalTabView.on(TabView.showingModallyEvent, modalTabViewShowingModallyEventHandler);
+        modalTabView.on(TabView.shownModallyEvent, modalTabViewShownModallyEventHandler);
+
+        TKUnit.assertEqual(stack().length, 2, "Host and tab modal frame should be instantiated at this point!");
+
+        page.showModal(modalTabView, { }, modalCloseCallback, false, false);
+    }
+
+    const masterPageFactory = function (): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const label = new Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.assertEqual(stack().length, 2, "Host and modal tab frame should be instantiated at this point!");
+
+    TKUnit.waitUntilReady(() => ready);
+
+    TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+
+    TKUnit.assertTrue(showingModallyCount === 1);
+    TKUnit.assertTrue(shownModallyCount === 1);
+}
+
 export function test_percent_width_and_height_support() {
     const testPage = new Page();
     testPage.id = "test_percent_width_and_height_support";
@@ -935,40 +1001,3 @@ export function test_percent_margin_support() {
     TKUnit.assertEqual(bounds.right, parentWidth, "Stack RIGHT position incorrect");
     TKUnit.assertEqual(bounds.bottom, parentHeight, "Stack BOTTOM position incorrect");
 }
-
-//export function test_ModalPage_Layout_is_Correct() {
-//    const testPage: Page;
-//    const label: Label;
-//    const pageFactory = function () {
-//        testPage = new Page();
-//        label = new Label();
-//        label.text = "Will Show modal page";
-//        testPage.content = label;
-//        return testPage;
-//    };
-
-//    helper.navigate(pageFactory);
-//    const basePath = "ui/page/";
-//    testPage.showModal(basePath + "page21", testPage, () => { }, false);
-
-//    // TODO: Remove this once navigate and showModal returns Promise<Page>.
-//    TKUnit.wait(0.350);
-//    const childPage = (<any>testPage).childPage;
-//    const closeCallback: Function = (<any>testPage).close;
-
-//    try {
-//        const layout = <StackLayout>childPage.content;
-//        const repeater = layout.getChildAt(1);
-//        TKUnit.assertTrue(repeater.isLayoutValid, "layout should be valid.");
-//        const bounds = repeater._getCurrentLayoutBounds();
-//        const height = bounds.bottom - bounds.top;
-//        TKUnit.assertTrue(height > 0, "Layout should be >0.");
-
-//        closeCallback();
-//        TKUnit.wait(0.150);
-//    }
-//    finally {
-//        helper.goBack
-//        helper.goBack();
-//    }
-//}

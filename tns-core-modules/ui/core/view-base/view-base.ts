@@ -959,7 +959,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public _dialogClosed(): void {
-        return;
+        eachDescendant(this, (child: ViewBase) => {
+            child._dialogClosed();
+            return true;
+        });
     }
 
     public _onRootViewReset(): void {
