@@ -30,6 +30,7 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
     private String mUri;
     private int mDecodeWidth;
     private int mDecodeHeight;
+    private boolean mKeepAspectRatio;
     private boolean mUseCache;
     private boolean mAsync;
     private Worker.OnImageLoadedListener mListener;
@@ -162,9 +163,14 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
     }
 
     public void setUri(String uri, int decodeWidth, int decodeHeight, boolean useCache, boolean async) {
+        this.setUri(uri, decodeWidth, decodeHeight, false, useCache, async);
+    }
+
+    public void setUri(String uri, int decodeWidth, int decodeHeight, boolean keepAspectRatio, boolean useCache, boolean async) {
         mUri = uri;
         mDecodeWidth = decodeWidth;
         mDecodeHeight = decodeHeight;
+        mKeepAspectRatio = keepAspectRatio;
         mUseCache = useCache;
         mAsync = async;
 
@@ -188,7 +194,7 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
         Fetcher fetcher = Fetcher.getInstance(this.getContext());
         if (mUri != null && fetcher != null) {
             // Get the Bitmap from cache.
-            fetcher.loadImage(mUri, this, mDecodeWidth, mDecodeHeight, mUseCache, mAsync, mListener);
+            fetcher.loadImage(mUri, this, mDecodeWidth, mDecodeHeight, mKeepAspectRatio, mUseCache, mAsync, mListener);
         }
     }
 

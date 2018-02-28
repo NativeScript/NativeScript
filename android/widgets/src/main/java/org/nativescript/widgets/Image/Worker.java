@@ -95,7 +95,7 @@ public abstract class Worker {
      * @param owner The owner to bind the downloaded image to.
      * @param listener A listener that will be called back once the image has been loaded.
      */
-    public void loadImage(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean useCache, boolean async, OnImageLoadedListener listener) {
+    public void loadImage(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean keepAspectRatio, boolean useCache, boolean async, OnImageLoadedListener listener) {
         if (uri == null) {
             return;
         }
@@ -111,7 +111,7 @@ public abstract class Worker {
 
         if (value == null && !async) {
             // Decode sync.
-            value = processBitmap(uri, decodeWidth, decodeHeight, useCache);
+            value = processBitmap(uri, decodeWidth, decodeHeight, keepAspectRatio, useCache);
             if (value != null) {
                 if (mCache != null && useCache) {
                     if (debuggable > 0) {
@@ -135,7 +135,7 @@ public abstract class Worker {
                 listener.onImageLoaded(true);
             }
         } else if (cancelPotentialWork(uri, owner)) {
-            final BitmapWorkerTask task = new BitmapWorkerTask(uri, owner, decodeWidth, decodeHeight, useCache, listener);
+            final BitmapWorkerTask task = new BitmapWorkerTask(uri, owner, decodeWidth, decodeHeight, keepAspectRatio, useCache, listener);
             final AsyncDrawable asyncDrawable =
                     new AsyncDrawable(mResources, mLoadingBitmap, task);
             owner.setDrawable(asyncDrawable);
@@ -194,7 +194,7 @@ public abstract class Worker {
      *            {@link Worker#loadImage(String, BitmapOwner, int, int, boolean, boolean, OnImageLoadedListener)}
      * @return The processed bitmap
      */
-    protected abstract Bitmap processBitmap(String uri, int decodeWidth, int decodeHeight, boolean useCache);
+    protected abstract Bitmap processBitmap(String uri, int decodeWidth, int decodeHeight, boolean keepAspectRatio, boolean useCache);
 
     /**
      * @return The {@link Cache} object currently being used by this Worker.
@@ -263,18 +263,20 @@ public abstract class Worker {
     private class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         private int mDecodeWidth;
         private int mDecodeHeight;
+        private boolean mKeepAspectRatio;
         private String mUri;
         private boolean mCacheImage;
         private final WeakReference<BitmapOwner> imageViewReference;
         private final OnImageLoadedListener mOnImageLoadedListener;
 
-        public BitmapWorkerTask(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean cacheImage) {
-            this(uri, owner, decodeWidth, decodeHeight, cacheImage, null);
+        public BitmapWorkerTask(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean keepAspectRatio, boolean cacheImage) {
+            this(uri, owner, decodeWidth, decodeHeight, keepAspectRatio, cacheImage, null);
         }
 
-        public BitmapWorkerTask(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean cacheImage, OnImageLoadedListener listener) {
+        public BitmapWorkerTask(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean keepAspectRatio, boolean cacheImage, OnImageLoadedListener listener) {
             mDecodeWidth = decodeWidth;
             mDecodeHeight = decodeHeight;
+            mKeepAspectRatio = keepAspectRatio;
             mCacheImage = cacheImage;
             mUri = uri;
             imageViewReference = new WeakReference<BitmapOwner>(owner);
@@ -308,7 +310,7 @@ public abstract class Worker {
             // process method (as implemented by a subclass)
             if (bitmap == null && !isCancelled() && getAttachedOwner() != null
                     && !mExitTasksEarly) {
-                bitmap = processBitmap(mUri, mDecodeWidth, mDecodeHeight, mCacheImage);
+                bitmap = processBitmap(mUri, mDecodeWidth, mDecodeHeight, mKeepAspectRatio, mCacheImage);
             }
 
             // If the bitmap was processed and the image cache is available, then add the processed
