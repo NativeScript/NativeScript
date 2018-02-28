@@ -176,7 +176,23 @@ export class Frame extends FrameBase {
         }
     }
 
+    onUnloaded(){
+        if(this._currentEntry && this._currentEntry.fragment){
+            console.log("?!?@# ===> removing fragment: " + this._currentEntry.fragmentTag);
+
+            const manager: android.app.FragmentManager = this._getFragmentManager();
+            
+            const transaction = manager.beginTransaction();
+            transaction.remove(this._currentEntry.fragment);
+            transaction.commitAllowingStateLoss();
+        }
+
+        super.onUnloaded();
+    }
+
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.app.Fragment {
+        console.log("?!?@# ===> creating fragment: " + fragmentTag);
+        
         ensureFragmentClass();
         const newFragment = new fragmentClass();
         const args = new android.os.Bundle();
