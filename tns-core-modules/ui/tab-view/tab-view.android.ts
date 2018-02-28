@@ -1,11 +1,11 @@
-import { TabViewItem as TabViewItemDefinition } from ".";
+import { TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import { Font } from "../styling/font";
 
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled, 
+    fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled,
     traceWrite, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -55,6 +55,7 @@ function initializeNativeClasses() {
         }
 
         static newInstance(tabId: number, index: number): TabFragmentImplementation {
+
             const args = new android.os.Bundle();
             args.putInt(TABID, tabId);
             args.putInt(INDEX, index);
@@ -64,18 +65,39 @@ function initializeNativeClasses() {
         }
 
         public onCreate(savedInstanceState: android.os.Bundle): void {
+            console.log(`onCreate index: ${this.index}`)
+
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
             this.index = args.getInt(INDEX)
+            console.log(`---> onCreate tab: ${this.tab} idx: ${this.index}`)
             if (!this.tab) {
                 throw new Error(`Cannot find TabView`);
             }
         }
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-            return this.tab.items[this.index].view.nativeViewProtected;
+
+            const tabItem = this.tab.items[this.index];
+            console.log(`onCreateView index: ${this.index} fragment: ${this} nativeView: ${tabItem.view.nativeViewProtected}`)
+
+            // if(this.tab.androidOffscreenTabLimit !== 0 || this.tab.selectedIndex === this.index){
+            //     tabItem.loadView(tabItem.view);
+            // }
+
+            return tabItem.view.nativeViewProtected;
         }
+
+        public onDestroyView() {
+            console.log(`onDestroyView index: ${this.index}`)
+
+            //     const tabItem = this.tab.items[this.index];
+            //     tabItem.unloadView(tabItem.view);
+
+            super.onDestroyView();
+        }
+
     }
 
     const POSITION_UNCHANGED = -1;
@@ -121,7 +143,9 @@ function initializeNativeClasses() {
             const name = makeFragmentName(container.getId(), itemId);
 
             let fragment: android.app.Fragment = fragmentManager.findFragmentByTag(name);
+            console.log("Fragment found for name: " + name + " fragment: " + fragment)
             if (fragment != null) {
+                // this.mCurTransaction.detach(fragment);
                 this.mCurTransaction.attach(fragment);
             } else {
                 fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
@@ -147,13 +171,15 @@ function initializeNativeClasses() {
         }
 
         destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+            console.log("##### destroyItem: " + position);
             if (!this.mCurTransaction) {
                 const fragmentManager = this.owner._getFragmentManager();
                 this.mCurTransaction = fragmentManager.beginTransaction();
             }
 
             const fragment: android.app.Fragment = <android.app.Fragment>object;
-            this.mCurTransaction.detach(fragment);
+            // this.mCurTransaction.detach(fragment);
+            this.mCurTransaction.remove(fragment);
 
             const tabItems = this.owner.items;
             const tabItem = tabItems ? tabItems[position] : null;
@@ -182,8 +208,10 @@ function initializeNativeClasses() {
             const tab = this.owner;
             const tabItems = tab.items;
             const newTabItem = tabItems ? tabItems[position] : null;
-            if (newTabItem && tab.isLoaded) {
-                newTabItem.loadView(newTabItem.view);
+
+            if (newTabItem && !newTabItem.view.isLoaded) {
+                console.log(">>>>>>>>>>>>>>>> Initial load in setPrimaryItem")
+                tab._loadUnloadTabItems(-1, tab.selectedIndex);
             }
         }
 
@@ -336,6 +364,14 @@ function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.
 
 export const tabs = new Array<WeakRef<TabView>>();
 
+function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
+    const rangeStart = Math.max(0, index - eps);
+    const rangeEnd = Math.min(index + eps, lastIndex);
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        callback(i);
+    }
+}
+
 export class TabView extends TabViewBase {
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
@@ -429,6 +465,58 @@ export class TabView extends TabViewBase {
         (<any>this._pagerAdapter).owner = this;
     }
 
+    public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
+        if (!this.items) {
+            return;
+        }
+
+        this._loadUnloadTabItems(oldIndex, newIndex);
+
+        this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
+    }
+
+
+
+    public _loadUnloadTabItems(oldIndex: number, newIndex: number) {
+        const items = this.items;
+        const lastIndex = this.items.length - 1;
+        const offsideItems = this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 0;
+
+        let toUnload = [];
+        let toLoad = [];
+
+        if (oldIndex >= 0) {
+            iterateIndexRange(oldIndex, offsideItems, lastIndex, (i) => toUnload.push(i));
+        }
+
+        iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => {
+            const indexOfI = toUnload.indexOf(i);
+            if (indexOfI < 0) {
+                toLoad.push(i);
+            } else {
+                toUnload.splice(indexOfI, 1);
+            }
+        });
+
+        console.log(`->>>>>>>>>>_loadUnloadItems:  isLoaded: ${this.isLoaded} oldIndex: ${oldIndex} newIndex: ${newIndex} toUnload: ${toUnload} toLoad: ${toLoad}`);
+
+        toUnload.forEach(index => {
+            const item = items[index];
+            if (items[index]) {
+                item.unloadView(item.view);
+            }
+        })
+
+        toLoad.forEach(index => {
+            const item = items[index];
+            if (this.isLoaded && items[index]) {
+                item.loadView(item.view);
+            }
+        })
+
+        super.onSelectedIndexChanged(oldIndex, newIndex);
+    }
+
     public onLoaded(): void {
         super.onLoaded();
 
@@ -464,7 +552,7 @@ export class TabView extends TabViewBase {
         if (!this._pagerAdapter) {
             return false;
         }
-        
+
         const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
 
         // if both values are null, should not update
@@ -483,7 +571,7 @@ export class TabView extends TabViewBase {
         }
 
         const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
-            return !!items.filter((item) => { 
+            return !!items.filter((item) => {
                 return item._domId === currentItem._domId
             })[0];
         });
@@ -535,6 +623,7 @@ export class TabView extends TabViewBase {
         return this._viewPager.getOffscreenPageLimit();
     }
     [androidOffscreenTabLimitProperty.setNative](value: number) {
+        console.log("----> androidOffscreenTabLimitProperty: " + value);
         this._viewPager.setOffscreenPageLimit(value);
     }
 

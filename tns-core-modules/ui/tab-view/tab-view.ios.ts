@@ -1,4 +1,4 @@
-﻿import { TabViewItem as TabViewItemDefinition } from ".";
+﻿import { TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import { Font } from "../styling/font";
 
 import { ios as iosView } from "../core/view";
@@ -227,6 +227,26 @@ export class TabView extends TabViewBase {
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         //
+    }
+
+
+    public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
+        const items = this.items;
+        if (!items) {
+            return;
+        }
+
+        const oldItem = items[oldIndex];
+        if (oldItem) {
+            oldItem.unloadView(oldItem.view);
+        }
+
+        const newItem = items[newIndex];
+        if (newItem && this.isLoaded) {
+            newItem.loadView(newItem.view);
+        }
+
+        super.onSelectedIndexChanged(oldIndex, newIndex);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
