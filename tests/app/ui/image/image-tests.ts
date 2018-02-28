@@ -138,7 +138,8 @@ export const test_SettingImageSrcToDataURI_async = function (done) {
 
 export function test_imageSourceNotResetAfterCreateUI() {
     let image = new ImageModule.Image();
-    let imageSource = ImageSourceModule.fromResource("splashscreen.9");
+    let imageSource = ImageSourceModule.fromResource("splashscreen");
+    TKUnit.assertNotEqual(null, imageSource);
     image.imageSource = imageSource;
     helper.buildUIAndRunTest(image, () => {
         TKUnit.waitUntilReady(() => image.isLoaded);

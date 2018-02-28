@@ -347,7 +347,7 @@
                 getRotationAngle(): number;
                 setRotationAngle(angle: number): void;
 
-                setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean): void;
+                setUri(uri: string, decodeWidth: number, decodeHeight: number, keepAspectRatio: boolean, useCache: boolean, async: boolean): void;
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
@@ -409,6 +409,8 @@
                 export class Fetcher extends Worker {
                     private constructor();
                     public static getInstance(context: android.content.Context): Fetcher;
+                    public static calculateInSampleSize(imageWidth: number, imageHeight: number,
+                        reqWidth: number, reqHeight: number): number;
                     public addImageCache(cache: Cache): void;
                     public initCache(): void;
                     public clearCache(): void;

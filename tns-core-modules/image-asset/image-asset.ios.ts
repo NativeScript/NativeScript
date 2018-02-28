@@ -1,13 +1,21 @@
 import * as common from "./image-asset-common";
+import { path as fsPath, knownFolders } from "../file-system";
 
 global.moduleMerge(common, exports);
 
 export class ImageAsset extends common.ImageAsset {
     private _ios: PHAsset;
 
-    constructor(asset: PHAsset | UIImage) {
+    constructor(asset: string | PHAsset | UIImage) {
         super();
-        if (asset instanceof UIImage) {
+        if (typeof asset === "string") {
+            if (asset.indexOf("~/") === 0) {
+                asset = fsPath.join(knownFolders.currentApp().path, asset.replace("~/", ""));
+            }
+
+            this.nativeImage = UIImage.imageWithContentsOfFile(asset);
+        }
+        else if (asset instanceof UIImage) {
             this.nativeImage = asset
         }
         else {
@@ -24,6 +32,10 @@ export class ImageAsset extends common.ImageAsset {
     }
 
     public getImageAsync(callback: (image, error) => void) {
+        if (!this.ios && !this.nativeImage) {
+            callback(null, "Asset cannot be found.");
+        }
+
         let srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
         let srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
         let requestedSize = common.getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);

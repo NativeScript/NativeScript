@@ -1,10 +1,14 @@
 ﻿import * as imageSource from "tns-core-modules/image-source";
+import * as imageAssetModule from "tns-core-modules/image-asset";
 import * as fs from "tns-core-modules/file-system";
 import * as app from "tns-core-modules/application";
 import * as TKUnit from "../TKUnit";
 import * as platform from "tns-core-modules/platform";
 
 const imagePath = "~/logo.png";
+const splashscreenPath = "~/splashscreen.png";
+const splashscreenWidth = 372;
+const splashscreenHeight = 218;
 const smallImagePath = "~/small-image.png";
 
 export function testFromResource() {
@@ -63,6 +67,96 @@ export function testFromFile() {
     const file = folder.getFile("test.png");
     file.remove();
     TKUnit.assert(!fs.File.exists(path), "test.png not removed");
+}
+
+export function testFromAssetFileNotFound(done) {
+    let asset = new imageAssetModule.ImageAsset('invalidFile.png');
+    asset.options = {
+        width: 0,
+        height: 0,
+        keepAspectRatio: true
+    };
+
+    let img = imageSource.fromAsset(asset).then((source) => {
+        done('Should not resolve with invalid file name.');
+    }, (error) => {
+        TKUnit.assertNotNull(error);
+        done();
+    });
+}
+
+export function testFromAssetSimple(done) {
+    let asset = new imageAssetModule.ImageAsset(splashscreenPath);
+    asset.options = {
+        width: 0,
+        height: 0,
+        keepAspectRatio: true
+    };
+
+    let img = imageSource.fromAsset(asset).then((source) => {
+        TKUnit.assertEqual(source.width, splashscreenWidth);
+        TKUnit.assertEqual(source.height, splashscreenHeight);
+        done();
+    }, (error) => {
+        done(error);
+    });
+}
+
+export function testFromAssetWithScaling(done) {
+    let asset = new imageAssetModule.ImageAsset(splashscreenPath);
+    let scaleWidth = 10;
+    let scaleHeight = 11;
+    asset.options = {
+        width: scaleWidth,
+        height: scaleHeight,
+        keepAspectRatio: false
+    };
+
+    let img = imageSource.fromAsset(asset).then((source) => {
+        TKUnit.assertEqual(source.width, scaleWidth);
+        TKUnit.assertEqual(source.height, scaleHeight);
+        done();
+    }, (error) => {
+        done(error);
+    });
+}
+
+export function testFromAssetWithScalingAndAspectRatio(done) {
+    let asset = new imageAssetModule.ImageAsset(splashscreenPath);
+    let scaleWidth = 10;
+    let scaleHeight = 11;
+    asset.options = {
+        width: scaleWidth,
+        height: scaleHeight,
+        keepAspectRatio: true
+    };
+
+    let img = imageSource.fromAsset(asset).then((source) => {
+        TKUnit.assertEqual(source.width, scaleWidth);
+        TKUnit.assertEqual(source.height, 5);
+        done();
+    }, (error) => {
+        done(error);
+    });
+}
+
+export function testFromAssetWithBiggerScaling(done) {
+    let asset = new imageAssetModule.ImageAsset(splashscreenPath);
+    let scaleWidth = 600;
+    let scaleHeight = 600;
+    asset.options = {
+        width: scaleWidth,
+        height: scaleHeight,
+        keepAspectRatio: false
+    };
+
+    let img = imageSource.fromAsset(asset).then((source) => {
+        TKUnit.assertEqual(source.width, scaleWidth);
+        TKUnit.assertEqual(source.height, scaleHeight);
+        done();
+    }, (error) => {
+        done(error);
+    });
 }
 
 export function testNativeFields() {

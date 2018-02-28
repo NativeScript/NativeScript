@@ -16,6 +16,7 @@ export function loadExamples() {
     examples.set("mode-matrix", "image-view/mode-matrix");
     examples.set("stretch-modes", "image-view/stretch-modes");
     examples.set("missing-image", "image-view/missing-image");
+    examples.set("image-asset", "image-view/image-asset/image-asset");
 
     return examples;
 }
