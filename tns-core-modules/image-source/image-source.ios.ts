@@ -185,10 +185,11 @@ function getFileName(path: string): string {
 function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 1.0): NSData {
     var data = null;
     switch (format) {
-        case "png": // PNG
+        case "png":
             data = UIImagePNGRepresentation(instance);
             break;
-        case "jpeg" || "jpg": // JPEG
+        case "jpeg":
+        case "jpg":
             data = UIImageJPEGRepresentation(instance, quality);
             break;
     }
