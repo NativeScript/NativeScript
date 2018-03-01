@@ -1,8 +1,12 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "../screen"
-import { testSecondPage, testNestedModalFrame, testNestedModalPage } from "../shared.e2e-spec"
+import { modalPageBackground,
+    testSecondPageBackground,
+    testNestedModalFrameBackground,
+    testNestedModalPageBackground
+} from "../shared.e2e-spec"
 
-describe("app root modal page scenarios", () => {
+describe("app root modal page background scenarios", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
@@ -34,11 +38,15 @@ describe("app root modal page scenarios", () => {
         console.log("Quit driver!");
     });
 
-    it("should show nested modal page with frame, close", async () => {
-        await testNestedModalFrame(screen, false);
+    it("should run modal page in background", async () => {
+        await modalPageBackground(driver, screen, false);
     });
 
-    it("should show nested modal page, close", async () => {
-        await testNestedModalPage(screen, false);
+    it("should show nested modal page with frame, run in background, close", async () => {
+        await testNestedModalFrameBackground(driver, screen, false);
+    });
+
+    it("should show nested modal page, run in background, close", async () => {
+        await testNestedModalPageBackground(driver, screen, false);
     });
 });

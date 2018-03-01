@@ -1,33 +1,8 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "./screen"
 
-const time = 5;
+const time = 1;
 
-export async function testSecondPage(screen: Screen) {
-    await screen.navigateToSecondPage();
-    await screen.loadedSecondPage();
-
-    await screen.goBackFromSecondPage();
-    await screen.loadedModalFrame();
-}
-
-export async function testNestedModalFrame(screen: Screen, isInFrame: boolean = true) {
-    await screen.showNestedModalFrame();
-    await screen.loadedNestedModalFrame();
-
-    await screen.closeModalNested();
-    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
-}
-
-export async function testNestedModalPage(screen: Screen, isInFrame: boolean = true) {
-    await screen.showNestedModalPage();
-    await screen.loadedNestedModalPage();
-
-    await screen.closeModalNested();
-    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
-}
-
-// Background
 export async function modalFrameBackground(driver: AppiumDriver, screen: Screen) {
     await driver.backgroundApp(time);
     await screen.loadedModalFrame();
