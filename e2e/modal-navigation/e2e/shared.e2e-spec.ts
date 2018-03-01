@@ -45,3 +45,19 @@ export async function modalPageBackground(driver: AppiumDriver, screen: Screen, 
     await driver.backgroundApp(time);
     isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
 }
+
+export async function modalTabViewBackground(driver: AppiumDriver, screen: Screen) {
+    await driver.backgroundApp(time);
+    await screen.loadedModalTabView();
+}
+
+export async function testSecondItemBackground(driver: AppiumDriver, screen: Screen) {
+    await screen.navigateToSecondItem();
+    await screen.loadedSecondItem();
+
+    await driver.backgroundApp(time);
+    await screen.loadedSecondItem();
+
+    await screen.navigateToFirstItem();
+    await screen.loadedFirstItem();
+}

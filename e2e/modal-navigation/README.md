@@ -32,7 +32,7 @@ ROOT FRAME:
 	2. Show nested modal dialog with frame
 		2. Close nested modal dialog
 	3. Close modal dialog
-3. Show modal tabview
+3. [Done] Show modal tabview
 	1. Navigate to second page within tab item frame
 		1. Go back
 	2. Show nested modal dialog

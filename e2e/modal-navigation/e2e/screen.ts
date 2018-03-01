@@ -4,6 +4,7 @@ import { assert } from "chai";
 const home = "Home"
 const first = "First"
 const modal = "Modal";
+const modalFirst = "Modal First";
 const modalSecond = "Modal Second";
 const modalNested = "Modal Nested";
 
@@ -74,15 +75,48 @@ export class Screen {
         console.log("Modal Page loaded!");
     }
 
+    showModalTabView = async () => {
+        const btnModalTabView = await this._driver.findElementByText(modalTabView);
+        await btnModalTabView.tap();
+    }
+
+    loadedModalTabView = async () => {
+        const itemModalFirst = await this._driver.findElementByText(modalFirst);
+        assert.isTrue(await itemModalFirst.isDisplayed());
+        console.log("Modal TabView loaded!");
+    }
+
     navigateToSecondPage = async () => {
         const btnNavToSecondPage = await this._driver.findElementByText(navToSecondPage);
         await btnNavToSecondPage.tap();
+    }
+
+    navigateToFirstItem = async () => {
+        const itemModalFirst = await this._driver.findElementByText(modalFirst);
+        await itemModalFirst.tap();
+    }
+
+    navigateToSecondItem = async () => {
+        const itemModalSecond = await this._driver.findElementByText(modalSecond);
+        await itemModalSecond.tap();
     }
 
     loadedSecondPage = async () => {
         const lblModalSecond = await this._driver.findElementByText(modalSecond);
         assert.isTrue(await lblModalSecond.isDisplayed());
         console.log(modalSecond + " loaded!");
+    }
+
+    loadedFirstItem = async () => {
+        const lblModal = await this._driver.findElementByText(modal);
+        assert.isTrue(await lblModal.isDisplayed());
+        console.log("First Item loaded!");
+    }
+
+    loadedSecondItem = async () => {
+        const btnGoBack = await this._driver.findElementByText(goBack);
+        assert.isTrue(await btnGoBack.isDisplayed());
+        console.log("Second Item loaded!");
     }
 
     goBackFromSecondPage = async () => {
@@ -139,6 +173,16 @@ export class Screen {
             // should show modal page
             await this.showModalPage();
             await this.loadedModalPage();
+        }
+    }
+
+    loadModalTabView = async () => {
+        try {
+            await this.loadedModalTabView();
+        } catch (err) {
+            // should show modal tab view with frame
+            await this.showModalTabView();
+            await this.loadedModalTabView();
         }
     }
 }

@@ -1,12 +1,14 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "../screen"
 import { modalFrameBackground,
+    modalTabViewBackground,
     testSecondPageBackground,
     testNestedModalFrameBackground,
-    testNestedModalPageBackground
+    testNestedModalPageBackground,
+    testSecondItemBackground
 } from "../shared.e2e-spec"
 
-describe("tab root modal frame background scenarios", () => {
+describe("tab root modal tab view background scenarios", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
@@ -14,11 +16,11 @@ describe("tab root modal frame background scenarios", () => {
     before(async () => {
         driver = await createDriver();
         screen = new Screen(driver);
-        await screen.setTabRootView();
+        // await screen.setTabRootView();
     });
 
     beforeEach(async function () {
-        await screen.loadModalFrame();
+        await screen.loadModalTabView();
     });
 
     afterEach(async function () {
@@ -38,8 +40,8 @@ describe("tab root modal frame background scenarios", () => {
         console.log("Quit driver!");
     });
 
-    it("should run modal page with frame in background", async () => {
-        await modalFrameBackground(driver, screen);
+    it("should run modal tab view in background", async () => {
+        await modalTabViewBackground(driver, screen);
     });
 
     it("should navigate to second page, run in background, go back", async () => {
@@ -52,6 +54,10 @@ describe("tab root modal frame background scenarios", () => {
 
     it("should show nested modal page, run in background, close", async () => {
         await testNestedModalPageBackground(driver, screen);
+    });
+
+    it("should navigate to second item, run in background, navigate back to first item", async () => {
+        await testSecondItemBackground(driver, screen);
     });
 
     it("should navigate to second page, run in background, go back", async () => {
