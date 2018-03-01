@@ -215,6 +215,11 @@ export function assertViewBackgroundColor(testView: ViewBase, hexColor: string) 
     TKUnit.assertEqual(testView.style.backgroundColor.hex, hexColor, "backgroundColor property");
 }
 
+export function assertTabSelectedTabTextColor(testView: ViewBase, hexColor: string) {
+    TKUnit.assert(testView.style.selectedTabTextColor, "selectedTabTextColor property not applied correctly. Style value is not defined.");
+    TKUnit.assertEqual(testView.style.selectedTabTextColor.hex, hexColor, "selectedTabTextColor property not applied correctly");
+}
+
 export function forceGC() {
     if (isIOS) {
         /* tslint:disable:no-unused-expression */

@@ -225,20 +225,23 @@ allTests["ANIMATION"] = animationTests;
 import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
 allTests["LIFECYCLE"] = lifecycle;
 
-
 import * as cssAnimationTests from "./ui/animation/css-animation-tests";
 allTests["CSS-ANIMATION"] = cssAnimationTests;
 
 import * as transitionTests from "./navigation/transition-tests";
 allTests["TRANSITIONS"] = transitionTests;
+
 import * as searchBarTests from "./ui/search-bar/search-bar-tests";
 allTests["SEARCH-BAR"] = searchBarTests;
 
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
-import * as resetRootViewTests from "./navigation/reset-root-view-tests";
+import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
+
+import * as rootViewTests from "./ui/root-view/root-view-tests";
+allTests["ROOT-VIEW"] = rootViewTests;
 
 const testsSuitesWithLongDelay = {
     HTTP: 15 * 1000,

@@ -158,7 +158,7 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
     return componentModule;
 }
 
-function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent: boolean = true): ComponentModule {
+function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent: boolean = true, moduleNamePath?: string): ComponentModule {
     if (!parentPage && context) {
         // Read the parent page that was passed down below
         // https://github.com/NativeScript/NativeScript/issues/1639
@@ -211,7 +211,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         }
     } else {
         // Custom components without XML
-        result = getComponentModule(componentName, componentPath, attributes, context, undefined, isRootComponent);
+        result = getComponentModule(componentName, componentPath, attributes, context, moduleNamePath, isRootComponent);
     }
 
     // webpack modules require paths to be relative to /app folder.
@@ -607,7 +607,7 @@ namespace xml2ui {
         private buildComponent(args: xml.ParserEvent): ComponentModule {
             if (args.prefix && args.namespace) {
                 // Custom components
-                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView);
+                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView, this.moduleNamePath);
             } else {
                 // Default components
                 let namespace = args.namespace;
