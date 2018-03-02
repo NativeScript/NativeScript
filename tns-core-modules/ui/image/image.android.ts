@@ -1,6 +1,6 @@
 ﻿import {
     ImageSource, ImageAsset, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
-    isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
+    isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, Length
 } from "./image-common";
 import { knownFolders } from "../../file-system";
 
@@ -43,8 +43,6 @@ function initializeImageLoadedListener() {
 export class Image extends ImageBase {
     nativeViewProtected: org.nativescript.widgets.ImageView;
 
-    public decodeWidth = 0;
-    public decodeHeight = 0;
     public useCache = true;
 
     public createNativeView() {
@@ -52,7 +50,7 @@ export class Image extends ImageBase {
             AndroidImageView = org.nativescript.widgets.ImageView;
         }
         initializeImageLoadedListener();
-        
+
         const imageView = new AndroidImageView(this._context);
         const listener = new ImageLoadedListener(this);
         imageView.setImageLoadedListener(listener);
@@ -73,7 +71,7 @@ export class Image extends ImageBase {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());        
+        this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());
     }
 
     public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset) {
@@ -89,8 +87,8 @@ export class Image extends ImageBase {
 
         let screen = platform.screen.mainScreen;
 
-        let decodeWidth = Math.min(this.decodeWidth, screen.widthPixels);
-        let decodeHeight = Math.min(this.decodeHeight, screen.heightPixels);
+        let decodeWidth = Math.min(Length.toDevicePixels(this.decodeWidth, 0), screen.widthPixels);
+        let decodeHeight = Math.min(Length.toDevicePixels(this.decodeHeight, 0), screen.heightPixels);
         let keepAspectRatio = this._calculateKeepAspectRatio();
         if (value instanceof ImageAsset) {
             if (value.options) {
