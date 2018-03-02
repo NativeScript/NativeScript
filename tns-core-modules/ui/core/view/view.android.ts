@@ -142,11 +142,15 @@ function initializeDialogFragment() {
             this.setStyle(android.app.DialogFragment.STYLE_NO_TITLE, 0);
             
             const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
-
-            // adjust alignment based on fullscreen value.
-            this.owner.horizontalAlignment = this._fullscreen ? "stretch" : "center";
-            this.owner.verticalAlignment = this._fullscreen ? "stretch" : "middle";
           
+            // do not override alignment unless fullscreen modal will be shown; 
+            // otherwise we might break component-level layout:
+            // https://github.com/NativeScript/NativeScript/issues/5392 
+            if (this._fullscreen) {
+                this.owner.horizontalAlignment = "stretch";
+                this.owner.verticalAlignment = "stretch";
+            }
+
             return dialog;
         }
 
@@ -154,8 +158,8 @@ function initializeDialogFragment() {
             const owner = this.owner;
             owner._setupAsRootView(this.getActivity());
             owner._isAddedToNativeVisualTree = true;
-            
-            return this.owner.nativeViewProtected;
+
+            return owner.nativeViewProtected;
         }
 
         public onStart(): void {
