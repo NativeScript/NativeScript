@@ -10,9 +10,9 @@ import { View } from "../core/view";
 
 // Types.
 import { Color } from "../../color";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
 
-export { Color, traceEnabled, traceWrite, traceCategories };
+export { Color, traceEnabled, traceWrite, traceCategories, traceType };
 export { AnimationPromise } from ".";
 
 export module Properties {
@@ -84,17 +84,16 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     abstract _resolveAnimationCurve(curve: any): any;
 
-    public play(): AnimationPromiseDefinition {
-        if (this.isPlaying) {
-            const reason = "Animation is already playing.";
-            if (traceEnabled()) {
-                traceWrite(reason, traceCategories.Animation, 2);
-            }
-            return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
-                reject(reason);
-            });
-        }
+    protected _rejectAlreadyPlaying(): AnimationPromiseDefinition{
+        const reason = "Animation is already playing.";
+        traceWrite(reason, traceCategories.Animation, traceType.warn);
+        
+        return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
+            reject(reason);
+        });
+    }
 
+    public play(): AnimationPromiseDefinition {
         // We have to actually create a "Promise" due to a bug in the v8 engine and decedent promises
         // We just cast it to a animationPromise so that all the rest of the code works fine
         var animationFinishedPromise = <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
@@ -129,11 +128,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
     }
 
     public cancel(): void {
-        if (!this.isPlaying) {
-            if (traceEnabled()) {
-                traceWrite("Animation is not currently playing.", traceCategories.Animation, 2);
-            }
-        }
+        // Implemented in platform specific files
     }
 
     public get isPlaying(): boolean {

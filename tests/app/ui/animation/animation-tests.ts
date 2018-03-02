@@ -57,7 +57,6 @@ export function test_AnimatingProperties(done) {
 export function test_PlayRejectsWhenAlreadyPlayingAnimation(done) {
     let label = prepareTest();
 
-    // >> animation-play
     var animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
 
     animation.play();
@@ -70,18 +69,14 @@ export function test_PlayRejectsWhenAlreadyPlayingAnimation(done) {
             done();
         }
     });
-    // << animation-play
 }
 
-export function test_CancelIgnoredWhenNotPlayingAnimation(done) {
+export function test_CancelIgnoredWhenNotPlayingAnimation() {
     let label = prepareTest();
 
-    // >> animation-cancel-ignore
     var animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
     animation.cancel(); // should not throw
     TKUnit.assert(!animation.isPlaying, "animation.isPlaying should be falsey since it was never played.");
-    done();
-    // << animation-cancel-ignore
 }
 
 export function test_CancellingAnimation(done) {
