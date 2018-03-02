@@ -34,8 +34,6 @@ describe("app root modal frame background scenarios", () => {
         // should close page with frame
         await screen.closeModal();
         await screen.loadedHome();
-        await driver.quit();
-        console.log("Quit driver!");
     });
 
     it("should run modal page with frame in background", async () => {

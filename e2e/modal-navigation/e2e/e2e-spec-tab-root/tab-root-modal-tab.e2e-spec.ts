@@ -16,7 +16,7 @@ describe("tab root modal tab view background scenarios", () => {
     before(async () => {
         driver = await createDriver();
         screen = new Screen(driver);
-        // await screen.setTabRootView();
+        await screen.setTabRootView();
     });
 
     beforeEach(async function () {
@@ -36,8 +36,6 @@ describe("tab root modal tab view background scenarios", () => {
         // should close page with frame
         await screen.closeModal();
         await screen.loadedHome();
-        await driver.quit();
-        console.log("Quit driver!");
     });
 
     it("should run modal tab view in background", async () => {

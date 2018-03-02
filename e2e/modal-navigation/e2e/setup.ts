@@ -10,5 +10,6 @@ before("start server", async () => {
 
 after("stop server", async () => {
     await driver.setDontKeepActivities(false);
+    await driver.quit();
     await stopServer();
 });
