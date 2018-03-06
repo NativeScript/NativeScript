@@ -38,6 +38,7 @@ let Dialog: android.app.Dialog;
 interface DialogOptions {
     owner: View;
     fullscreen: boolean;
+    stretched: boolean;
     shownCallback: () => void;
     dismissCallback: () => void;
 }
@@ -123,6 +124,7 @@ function initializeDialogFragment() {
     class DialogFragmentImpl extends android.app.DialogFragment {
         public owner: View;
         private _fullscreen: boolean;
+        private _stretched: boolean;
         private _shownCallback: () => void;
         private _dismissCallback: () => void;
 
@@ -136,17 +138,21 @@ function initializeDialogFragment() {
             const options = getModalOptions(ownerId);
             this.owner = options.owner;
             this._fullscreen = options.fullscreen;
+            this._stretched = options.stretched;
             this._dismissCallback = options.dismissCallback;
             this._shownCallback = options.shownCallback;
             this.owner._dialogFragment = this;
             this.setStyle(android.app.DialogFragment.STYLE_NO_TITLE, 0);
-            
+
             const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
-          
+
             // do not override alignment unless fullscreen modal will be shown; 
             // otherwise we might break component-level layout:
             // https://github.com/NativeScript/NativeScript/issues/5392 
-            if (this._fullscreen) {
+            if (!this._fullscreen && !this._stretched) {
+                this.owner.horizontalAlignment = "center";
+                this.owner.verticalAlignment = "middle";
+            } else {
                 this.owner.horizontalAlignment = "stretch";
                 this.owner.verticalAlignment = "stretch";
             }
@@ -179,7 +185,7 @@ function initializeDialogFragment() {
 
             this._shownCallback();
         }
-        
+
         public onDismiss(dialog: android.content.IDialogInterface): void {
             super.onDismiss(dialog);
             const manager = this.getFragmentManager();
@@ -455,8 +461,8 @@ export class View extends ViewCommon {
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
-    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
-        super._showNativeModalView(parent, context, closeCallback, fullscreen);
+    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
+        super._showNativeModalView(parent, context, closeCallback, fullscreen, stretched);
         if (!this.backgroundColor) {
             this.backgroundColor = new Color("White");
         }
@@ -471,6 +477,7 @@ export class View extends ViewCommon {
         const dialogOptions: DialogOptions = {
             owner: this,
             fullscreen: !!fullscreen,
+            stretched: !!stretched,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
         }
