@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Page codeFile="~/ui-tests-app/test-page" navigatingTo="navigatingTo" navigatedTo="navigatedTo">
-  <StackLayout>
-    <Label text="PAGE 2" />
-    <button text="navigate" tap="changeTab"/>
-    
-  </StackLayout>
-</Page>

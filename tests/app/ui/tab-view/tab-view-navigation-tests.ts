@@ -1,5 +1,6 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as frameModule from "tns-core-modules/ui/frame";
@@ -201,8 +202,15 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
     topFrame.currentPage.id = null;
 
-    TKUnit.arrayAssert(loadedEventsCount, [2, 0]);
-    TKUnit.arrayAssert(unloadedEventsCount, [1, 0]);
+    if (isIOS) {
+        TKUnit.arrayAssert(loadedEventsCount, [2, 0]);
+        TKUnit.arrayAssert(unloadedEventsCount, [1, 0]);
+    }
+
+    if (isAndroid) {
+        TKUnit.arrayAssert(loadedEventsCount, [2, 2]);
+        TKUnit.arrayAssert(unloadedEventsCount, [1, 1]);
+    }
 }
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {

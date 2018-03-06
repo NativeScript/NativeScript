@@ -2,10 +2,9 @@
 
 import * as application from "tns-core-modules/application";
 import * as trace from "tns-core-modules/trace";
-// trace.addCategories(trace.categories.NativeLifecycle);
-// trace.addCategories(trace.categories.Navigation);
-// trace.addCategories(trace.categories.Transition);
-trace.addCategories(trace.categories.Debug);
+trace.addCategories(trace.categories.NativeLifecycle);
+trace.addCategories(trace.categories.Navigation);
+trace.addCategories(trace.categories.Transition);
 
 trace.enable();
 
@@ -84,6 +83,6 @@ application.on(application.uncaughtErrorEvent, function(args: application.Unhand
 
 application.setCssFileName("ui-tests-app/app.css");
 
-// application.start({ moduleName: "ui-tests-app/main-page" });
-application.run({ moduleName: "ui-tests-app/app-root" });
+application.start({ moduleName: "ui-tests-app/main-page" });
+// application.run({ moduleName: "ui-tests-app/app-root" });
 // application.run();

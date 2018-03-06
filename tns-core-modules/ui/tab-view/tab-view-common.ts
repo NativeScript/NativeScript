@@ -73,8 +73,6 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
         if (tabView && tabView.items) {
             // Don't load items until their fragments are instantiated.
             if ((<TabViewItemDefinition>this).canBeLoaded) {
-                console.log("---> Really loading tab-view: " + view)
-                
                 super.loadView(view);
             }
         }
