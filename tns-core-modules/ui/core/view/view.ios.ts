@@ -334,6 +334,9 @@ export class View extends ViewCommon {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
         }
 
+        this.horizontalAlignment = "stretch";
+        this.verticalAlignment = "stretch";
+
         this._raiseShowingModallyEvent();
         animated = animated === undefined ? true : !!animated;
         (<any>controller).animated = animated;
