@@ -26,6 +26,27 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Tests on iOS",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                // "${workspaceFolder}/test",
+                "--opts",
+                "./e2e/config/mocha.opts",
+                "--runType",
+                "sim.iPhoneX.iOS112",
+                "--reuseDevice",
+                "--verbose"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
             "name": "Launch on iOS",
             "type": "nativescript",
             "request": "launch",

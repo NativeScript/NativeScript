@@ -49,8 +49,12 @@ export class Screen {
     setTabRootView = async () => {
         // should load tab root
         await this.loadedHome();
-        await this.changeRootView();
-        await this.loadedTabRootView();
+        try {
+            await this.loadedTabRootView();
+        } catch (err) {
+            await this.changeRootView();
+            await this.loadedTabRootView();
+        }
     }
 
     showModalFrame = async () => {
