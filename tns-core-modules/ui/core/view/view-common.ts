@@ -214,11 +214,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             const closeCallback: Function = arguments[2];
             const fullscreen: boolean = arguments[3];
             const animated = arguments[4];
+            const stretched = arguments[5];
 
             const view: ViewDefinition = firstAgrument instanceof ViewCommon
                 ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
 
-            (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated);
+            (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched);
             return view;
         }
     }
@@ -239,7 +240,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return this._modal;
     }
 
-    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
         _rootModalViews.push(this);
 
         parent._modal = this;

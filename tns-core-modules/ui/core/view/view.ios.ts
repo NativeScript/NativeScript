@@ -311,10 +311,10 @@ export class View extends ViewCommon {
 
         return view;
     }
-    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean) {
+    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
         let parentWithController = this.getParentWithViewController(parent);
 
-        super._showNativeModalView(parentWithController, context, closeCallback, fullscreen);
+        super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
         if (!controller) {
             controller = ios.UILayoutViewController.initWithOwner(new WeakRef(this));
@@ -333,6 +333,9 @@ export class View extends ViewCommon {
         } else {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
         }
+
+        this.horizontalAlignment = "stretch";
+        this.verticalAlignment = "stretch";
 
         this._raiseShowingModallyEvent();
         animated = animated === undefined ? true : !!animated;

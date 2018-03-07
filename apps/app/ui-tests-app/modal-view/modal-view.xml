@@ -2,6 +2,7 @@
   <StackLayout backgroundColor="PaleGreen">
     <Button text="Login (pop-up)" tap="onTap" />
     <Button text="Login (full-screen)" tap="onTap" />
+    <Button text="Login (pop-up-stretched)" tap="onTapStretched" />
     <Label id="label" text="Anonymous"/>
   </StackLayout>
 </Page>

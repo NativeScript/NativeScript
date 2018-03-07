@@ -498,8 +498,9 @@ export abstract class View extends ViewBase {
     * @param closeCallback - A function that will be called when the view is closed.
     * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
     * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
+    * @param stretched - An optional parameter specifying whether to stretch the modal page when not in full-screen mode.
     */
-    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): View;
+    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): View;
 
     /**
      * Shows the view passed as parameter as a modal view.
@@ -507,8 +508,9 @@ export abstract class View extends ViewBase {
      * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
      * @param closeCallback - A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
+     * @param stretched - An optional parameter specifying whether to stretch the modal page when not in full-screen mode.
      */
-    showModal(view: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean): View;
+    showModal(view: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): View;
 
     /**
      * Deprecated. Showing view as modal is deprecated.
