@@ -10,3 +10,15 @@ export function onTap(args) {
         label.text = username + "/" + password;
     }, fullscreen);
 }
+
+export function onTapStretched(args) {
+    const page = <Page>args.object.page;
+    const label = page.getViewById<Label>("label");
+    var fullscreen = false;
+    var stretched = true;
+    
+    page.showModal("ui-tests-app/modal-view/login-page", "context", function (username: string, password: string) {
+        console.log(username + "/" + password);
+        label.text = username + "/" + password;
+    }, fullscreen, false, stretched);
+}
