@@ -1,7 +1,7 @@
 import { AnimationDefinition } from ".";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories } from "./animation-common";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
@@ -210,6 +210,10 @@ export class Animation extends AnimationBase {
     }
 
     public play(): AnimationPromise {
+        if (this.isPlaying) {
+            return this._rejectAlreadyPlaying();
+        }
+
         let animationFinishedPromise = super.play();
         this._finishedAnimations = 0;
         this._cancelledAnimations = 0;
@@ -218,7 +222,10 @@ export class Animation extends AnimationBase {
     }
 
     public cancel(): void {
-        super.cancel();
+        if (!this.isPlaying) {
+            traceWrite("Animation is not currently playing.", traceCategories.Animation, traceType.warn);
+            return;
+        }
 
         let i = 0;
         let length = this._mergedPropertyAnimations.length;

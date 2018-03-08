@@ -54,6 +54,31 @@ export function test_AnimatingProperties(done) {
     // << animation-properties
 }
 
+export function test_PlayRejectsWhenAlreadyPlayingAnimation(done) {
+    let label = prepareTest();
+
+    var animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+
+    animation.play();
+    animation.play().then(() => {
+        // should never get here
+        throw new Error("Already playing.");
+    }, (e) => {
+        TKUnit.assert(animation.isPlaying === true, "animation.isPlaying should be true since it's currently playing.");
+        if (e === "Animation is already playing.") {
+            done();
+        }
+    });
+}
+
+export function test_CancelIgnoredWhenNotPlayingAnimation() {
+    let label = prepareTest();
+
+    var animation = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+    animation.cancel(); // should not throw
+    TKUnit.assert(!animation.isPlaying, "animation.isPlaying should be falsey since it was never played.");
+}
+
 export function test_CancellingAnimation(done) {
     let label = prepareTest();
 

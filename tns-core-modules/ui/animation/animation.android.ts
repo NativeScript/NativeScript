@@ -2,7 +2,7 @@
 import { AnimationDefinition } from ".";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories } from "./animation-common";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
@@ -135,6 +135,10 @@ export class Animation extends AnimationBase {
     }
 
     public play(): AnimationPromise {
+        if (this.isPlaying) {
+            return this._rejectAlreadyPlaying();
+        }
+
         let animationFinishedPromise = super.play();
 
         this._animators = new Array<android.animation.Animator>();
@@ -170,10 +174,13 @@ export class Animation extends AnimationBase {
     }
 
     public cancel(): void {
-        super.cancel();
-        if (traceEnabled()) {
-            traceWrite("Cancelling AnimatorSet.", traceCategories.Animation);
+        if (!this.isPlaying) {
+            traceWrite("Animation is not currently playing.", traceCategories.Animation, traceType.warn);
+            return;
         }
+
+        traceWrite("Cancelling AnimatorSet.", traceCategories.Animation);
+
         this._animatorSet.cancel();
     }
 
@@ -301,7 +308,7 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
                     }
-                    
+
                     if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[backgroundColorProperty.setNative]) {
                         propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
                     }
@@ -414,7 +421,7 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
                     }
-                    
+
                     if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
                     }

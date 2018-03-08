@@ -12,6 +12,8 @@ import { View, Color } from "../core/view";
 
 import { AnimationCurve } from "../enums";
 
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
+
 // Types.
 import { unsetValue } from "../core/properties";
 import { Animation } from "./animation";
@@ -143,25 +145,32 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
     }
 
     public cancel() {
-        if (this._isPlaying) {
-            this._isPlaying = false;
-            for (let i = this._nativeAnimations.length - 1; i >= 0; i--) {
-                let animation = this._nativeAnimations[i];
-                if (animation.isPlaying) {
-                    animation.cancel();
-                }
-            }
-            if (this._nativeAnimations.length > 0) {
-                let animation = this._nativeAnimations[0];
-                this._resetAnimationValues(this._target, animation);
-            }
-            this._rejectAnimationFinishedPromise();
+        if (!this.isPlaying) {
+            traceWrite("Keyframe animation is already playing.", traceCategories.Animation, traceType.warn);
+            return;
         }
+
+        this._isPlaying = false;
+        for (let i = this._nativeAnimations.length - 1; i >= 0; i--) {
+            let animation = this._nativeAnimations[i];
+            if (animation.isPlaying) {
+                animation.cancel();
+            }
+        }
+        if (this._nativeAnimations.length > 0) {
+            let animation = this._nativeAnimations[0];
+            this._resetAnimationValues(this._target, animation);
+        }
+        this._rejectAnimationFinishedPromise();
     }
 
     public play(view: View): Promise<void> {
         if (this._isPlaying) {
-            throw new Error("Animation is already playing.");
+            const reason = "Keyframe animation is already playing.";
+            traceWrite(reason, traceCategories.Animation, traceType.warn);
+            return new Promise<void>((resolve, reject) => {
+                reject(reason);
+            });
         }
 
         let animationFinishedPromise = new Promise<void>((resolve, reject) => {
