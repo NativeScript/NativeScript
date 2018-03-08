@@ -5,6 +5,7 @@ import * as trace from "tns-core-modules/trace";
 trace.addCategories(trace.categories.NativeLifecycle);
 trace.addCategories(trace.categories.Navigation);
 trace.addCategories(trace.categories.Transition);
+
 trace.enable();
 
 var countResume = 0;

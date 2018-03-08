@@ -1,7 +1,7 @@
 ﻿import { TabViewItem as TabViewItemDefinition } from ".";
 import { Font } from "../styling/font";
 
-import { ios as iosView } from "../core/view";
+import { ios as iosView, ViewBase } from "../core/view";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
@@ -158,6 +158,17 @@ export class TabViewItem extends TabViewItemBase {
         this.setNativeView(undefined);
     }
 
+    public loadView(view: ViewBase): void {
+        const tabView = this.parent as TabViewBase;
+        if (tabView && tabView.items) {
+            const index = tabView.items.indexOf(this);
+
+            if (index === tabView.selectedIndex) {
+                super.loadView(view);
+            }
+        }
+    }
+
     public _update() {
         const parent = <TabView>this.parent;
         const controller = this.__controller;
@@ -227,6 +238,25 @@ export class TabView extends TabViewBase {
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         //
+    }
+
+    public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
+        const items = this.items;
+        if (!items) {
+            return;
+        }
+
+        const oldItem = items[oldIndex];
+        if (oldItem) {
+            oldItem.unloadView(oldItem.view);
+        }
+
+        const newItem = items[newIndex];
+        if (newItem && this.isLoaded) {
+            newItem.loadView(newItem.view);
+        }
+
+        super.onSelectedIndexChanged(oldIndex, newIndex);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

@@ -71,9 +71,8 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
     public loadView(view: ViewBase): void {
         const tabView = this.parent as TabViewBase;
         if (tabView && tabView.items) {
-            const index = tabView.items.indexOf(this);
             // Don't load items until their fragments are instantiated.
-            if (index === tabView.selectedIndex && (<TabViewItemDefinition>this).canBeLoaded) {
+            if ((<TabViewItemDefinition>this).canBeLoaded) {
                 super.loadView(view);
             }
         }
@@ -185,21 +184,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     }
 
     public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
-        const items = this.items;
-        if (!items) {
-            return;
-        }
-
-        const oldItem = items[oldIndex];
-        if (oldItem) {
-            oldItem.unloadView(oldItem.view);
-        }
-
-        const newItem = items[newIndex];
-        if (newItem && this.isLoaded) {
-            newItem.loadView(newItem.view);
-        }
-
+        // to be overridden in platform specific files
         this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
     }
 }

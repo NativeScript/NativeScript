@@ -5,7 +5,7 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled, 
+    fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled,
     traceWrite, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -55,6 +55,7 @@ function initializeNativeClasses() {
         }
 
         static newInstance(tabId: number, index: number): TabFragmentImplementation {
+
             const args = new android.os.Bundle();
             args.putInt(TABID, tabId);
             args.putInt(INDEX, index);
@@ -74,7 +75,13 @@ function initializeNativeClasses() {
         }
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-            return this.tab.items[this.index].view.nativeViewProtected;
+            const tabItem = this.tab.items[this.index];
+
+            return tabItem.view.nativeViewProtected;
+        }
+
+        public onDestroyView() {
+            super.onDestroyView();
         }
     }
 
@@ -155,6 +162,10 @@ function initializeNativeClasses() {
             const fragment: android.app.Fragment = <android.app.Fragment>object;
             this.mCurTransaction.detach(fragment);
 
+            if (this.mCurrentPrimaryItem === fragment) {
+                this.mCurrentPrimaryItem = null;
+            }
+
             const tabItems = this.owner.items;
             const tabItem = tabItems ? tabItems[position] : null;
             if (tabItem) {
@@ -177,13 +188,14 @@ function initializeNativeClasses() {
 
                 this.mCurrentPrimaryItem = fragment;
                 this.owner.selectedIndex = position;
-            }
 
-            const tab = this.owner;
-            const tabItems = tab.items;
-            const newTabItem = tabItems ? tabItems[position] : null;
-            if (newTabItem && tab.isLoaded) {
-                newTabItem.loadView(newTabItem.view);
+                const tab = this.owner;
+                const tabItems = tab.items;
+                const newTabItem = tabItems ? tabItems[position] : null;
+
+                if (newTabItem) {
+                    tab._loadUnloadTabItems(tab.selectedIndex);
+                }
             }
         }
 
@@ -336,6 +348,14 @@ function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.
 
 export const tabs = new Array<WeakRef<TabView>>();
 
+function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
+    const rangeStart = Math.max(0, index - eps);
+    const rangeEnd = Math.min(index + eps, lastIndex);
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        callback(i);
+    }
+}
+
 export class TabView extends TabViewBase {
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
@@ -429,6 +449,38 @@ export class TabView extends TabViewBase {
         (<any>this._pagerAdapter).owner = this;
     }
 
+    public _loadUnloadTabItems(newIndex: number) {
+        const items = this.items;
+        const lastIndex = this.items.length - 1;
+        const offsideItems = this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 0;
+
+        let toUnload = [];
+        let toLoad = [];
+
+        iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
+
+        items.forEach((item, i) => {
+            const indexOfI = toLoad.indexOf(i);
+            if (indexOfI < 0) {
+                toUnload.push(i);
+            }
+        });
+
+        toUnload.forEach(index => {
+            const item = items[index];
+            if (items[index]) {
+                item.unloadView(item.view);
+            }
+        });
+
+        toLoad.forEach(index => {
+            const item = items[index];
+            if (this.isLoaded && items[index]) {
+                item.loadView(item.view);
+            }
+        });
+    }
+
     public onLoaded(): void {
         super.onLoaded();
 
@@ -464,7 +516,7 @@ export class TabView extends TabViewBase {
         if (!this._pagerAdapter) {
             return false;
         }
-        
+
         const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
 
         // if both values are null, should not update
@@ -483,7 +535,7 @@ export class TabView extends TabViewBase {
         }
 
         const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
-            return !!items.filter((item) => { 
+            return !!items.filter((item) => {
                 return item._domId === currentItem._domId
             })[0];
         });

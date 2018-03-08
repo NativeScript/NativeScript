@@ -176,6 +176,18 @@ export class Frame extends FrameBase {
         }
     }
 
+    onUnloaded() {
+        if (this._currentEntry && this._currentEntry.fragment) {
+            const manager: android.app.FragmentManager = this._getFragmentManager();
+
+            const transaction = manager.beginTransaction();
+            transaction.remove(this._currentEntry.fragment);
+            transaction.commitAllowingStateLoss();
+        }
+
+        super.onUnloaded();
+    }
+
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.app.Fragment {
         ensureFragmentClass();
         const newFragment = new fragmentClass();
@@ -569,7 +581,8 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         callbacks.entry = entry;
         entry.fragment = fragment;
         _updateTransitions(entry);
-    } else {
+    }
+    else {
         throw new Error(`Could not find a page for ${fragmentTag}.`);
     }
 }
@@ -697,13 +710,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             this.frame._addView(page);
         }
 
-        // Load page here even if root view is not loaded yet.
-        // Otherwise it will show as blank,
-        // The case is Tab->Frame->Page activity recreated, fragments are 
-        // created before Tab loads its items.
-        // TODO: addCheck if the fragment is visible so we don't load pages
-        // that are not in the selectedIndex of the Tab!!!!!!
-        if (!page.isLoaded) {
+        if (frame.isLoaded && !page.isLoaded) {
             page.callLoaded();
         }
 
