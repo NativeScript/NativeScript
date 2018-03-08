@@ -87,8 +87,8 @@ export class Image extends ImageBase {
 
         let screen = platform.screen.mainScreen;
 
-        let decodeWidth = Math.min(Length.toDevicePixels(this.decodeWidth, 0), screen.widthPixels);
-        let decodeHeight = Math.min(Length.toDevicePixels(this.decodeHeight, 0), screen.heightPixels);
+        let decodeWidth = Length.toDevicePixels(this.decodeWidth, 0) || screen.widthPixels;
+        let decodeHeight = Length.toDevicePixels(this.decodeHeight, 0) || screen.heightPixels;
         let keepAspectRatio = this._calculateKeepAspectRatio();
         if (value instanceof ImageAsset) {
             if (value.options) {
