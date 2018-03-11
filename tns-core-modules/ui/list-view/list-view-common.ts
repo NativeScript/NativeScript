@@ -1,4 +1,4 @@
-﻿import { ListView as ListViewDefinition, ItemsSource, ItemEventData } from ".";
+﻿import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
 import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable, EventData } from "../core/view";
 import { parse, parseMultipleTemplates } from "../builder";
 import { Label } from "../label";
@@ -18,7 +18,7 @@ export module knownMultiTemplates {
 
 const autoEffectiveRowHeight = -1;
 
-export abstract class ListViewBase extends View implements ListViewDefinition {
+export abstract class ListViewBase extends View implements ListViewDefinition, TemplatedItemsView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
