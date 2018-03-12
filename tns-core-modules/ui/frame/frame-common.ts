@@ -402,8 +402,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _pushInFrameStack() {
-        if (this._isInFrameStack) {
+        if (this._isInFrameStack && frameStack[frameStack.length - 1] === this) {
             return;
+        }
+
+        if (this._isInFrameStack) {
+            const indexOfFrame = frameStack.indexOf(this);
+            frameStack.splice(indexOfFrame, 1);
         }
 
         frameStack.push(this);
@@ -424,7 +429,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._isInFrameStack = false;
     }
 
-    private _removeFromFrameStack() {
+    public _removeFromFrameStack() {
         if (!this._isInFrameStack) {
             return;
         }
@@ -572,6 +577,10 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this.navigate(newEntry);
         return true;
     }
+}
+
+export function getFrameById(id: string): FrameBase {
+    return frameStack.find((frame) => frame.id && frame.id === id);
 }
 
 export function topmost(): FrameBase {
