@@ -6,10 +6,10 @@
   "nativescript": {
     "id": "org.nativescript.modalnavigation",
     "tns-ios": {
-      "version": "3.4.1"
+      "version": "next"
     },
     "tns-android": {
-      "version": "3.4.1"
+      "version": "next"
     }
   },
   "dependencies": {
