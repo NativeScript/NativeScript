@@ -1,6 +1,6 @@
 ﻿import { Repeater as RepeaterDefinition, ItemsSource } from ".";
 import { Label } from "../label";
-import { LayoutBase, CustomLayoutView, View, Template, Property, layout } from "../layouts/layout-base";
+import { LayoutBase, CustomLayoutView, View, Template, Property, layout, CSSType } from "../layouts/layout-base";
 import { StackLayout } from "../layouts/stack-layout";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
@@ -13,6 +13,7 @@ export module knownTemplates {
     export const itemTemplate = "itemTemplate";
 }
 
+@CSSType("Repeater")
 export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     private _isDirty = false;
     public ios;

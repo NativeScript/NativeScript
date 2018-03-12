@@ -1,8 +1,9 @@
 ﻿import { HtmlView as HtmlViewDefinition } from ".";
-import { View, Property } from "../core/view";
+import { View, Property, CSSType } from "../core/view";
 
 export * from "../core/view";
 
+@CSSType("HtmlView")
 export class HtmlViewBase extends View implements HtmlViewDefinition {
     public html: string;
 }

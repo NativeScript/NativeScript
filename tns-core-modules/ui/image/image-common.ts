@@ -1,5 +1,5 @@
 ﻿import { Image as ImageDefinition, Stretch } from ".";
-import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter } from "../core/view";
+import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter, CSSType } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
@@ -7,6 +7,7 @@ import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/ut
 export * from "../core/view";
 export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
+@CSSType("Image")
 export abstract class ImageBase extends View implements ImageDefinition {
     public imageSource: ImageSource;
     public src: string | ImageSource;

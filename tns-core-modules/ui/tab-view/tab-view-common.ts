@@ -1,7 +1,7 @@
 ﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData, TabViewItem } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
-    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
+    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType
 } from "../core/view";
 
 export * from "../core/view";
@@ -9,6 +9,7 @@ import { TextTransform } from "../text-base";
 
 export const traceCategory = "TabView";
 
+@CSSType("TabViewItem")
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
     private _title: string = "";
     private _view: View;
@@ -85,6 +86,7 @@ export module knownCollections {
     export const items = "items";
 }
 
+@CSSType("TabView")
 export class TabViewBase extends View implements TabViewDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 

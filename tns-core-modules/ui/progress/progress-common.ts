@@ -1,8 +1,9 @@
 ﻿import { Progress as ProgressDefinition } from ".";
-import { View, Property, CoercibleProperty } from "../core/view";
+import { View, Property, CoercibleProperty, CSSType } from "../core/view";
 
 export * from "../core/view";
 
+@CSSType("Progress")
 export class ProgressBase extends View implements ProgressDefinition {
     public value: number;
     public maxValue: number;

@@ -1,8 +1,9 @@
 ﻿import { WrapLayout as WrapLayoutDefinition, Orientation } from ".";
-import { LayoutBase, Property, isIOS, Length, makeValidator, makeParser } from "../layout-base";
+import { LayoutBase, Property, isIOS, Length, makeValidator, makeParser, CSSType } from "../layout-base";
 
 export * from "../layout-base";
 
+@CSSType("WrapLayout")
 export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
     public orientation: Orientation;
     public itemWidth: Length;

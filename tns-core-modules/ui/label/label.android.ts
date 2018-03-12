@@ -1,11 +1,12 @@
 ﻿import { Label as LabelDefinition } from ".";
-import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter } from "../text-base";
+import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter, CSSType } from "../text-base";
 import { profile } from "../../profiling";
 
 export * from "../text-base";
 
 let TextView: typeof android.widget.TextView;
 
+@CSSType("Label")
 export class Label extends TextBase implements LabelDefinition {
     nativeViewProtected: android.widget.TextView;
 

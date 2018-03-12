@@ -1,9 +1,10 @@
 ﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
-import { ContentView, Property, makeParser, makeValidator, EventData, booleanConverter } from "../content-view";
+import { ContentView, Property, makeParser, makeValidator, EventData, booleanConverter, CSSType } from "../content-view";
 import { profile } from "../../profiling";
 
 export * from "../content-view";
 
+@CSSType("ScrollView")
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
     private _scrollChangeCount: number = 0;
     public static scrollEvent = "scroll";

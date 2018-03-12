@@ -1,7 +1,8 @@
 import { Border as BorderDefinition } from ".";
-import { ContentView, View, layout } from "../content-view";
+import { ContentView, View, layout, CSSType } from "../content-view";
 
 @Deprecated
+@CSSType("Border")
 export class Border extends ContentView implements BorderDefinition {
     get cornerRadius(): number {
         if (typeof this.borderRadius === "number") {
