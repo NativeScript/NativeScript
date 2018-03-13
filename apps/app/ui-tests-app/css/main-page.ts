@@ -30,6 +30,7 @@ export function loadExamples() {
     examples.set("label-border", "css/label-border");
     examples.set("text-view-border", "css/text-view-border");
     examples.set("image-border", "css/image-border");
+    examples.set("gradient-border", "css/gradient-border");
     examples.set("layouts-border-overlap", "css/layouts-border-overlap");
     examples.set("measure-tests", "css/measure-tests");
     examples.set("all-uniform-border", "css/all-uniform-border");

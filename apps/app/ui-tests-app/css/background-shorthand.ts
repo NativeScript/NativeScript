@@ -10,6 +10,7 @@ const tests = [
     { name: "yellow hex color only", background: "#ffff00" },
     { name: "blue color only", background: "blue" },
     { name: "repeat image only", background: 'url("~/ui-tests-app/resources/images/icon.png")' },
+    { name: "linear gradient red-blue only", background: "linear-gradient(to bottom, red, blue)"},
 
     { name: "[straight] image only, no-repeat ", background: 'url("~/ui-tests-app/resources/images/icon.png") no-repeat' },
     { name: "[straight] green color, image, no-repeat", background: 'green url("~/ui-tests-app/resources/images/icon.png") no-repeat' },

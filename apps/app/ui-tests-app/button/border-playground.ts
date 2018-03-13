@@ -34,6 +34,10 @@ export function onToggle(args: EventData){
         target.backgroundImage = target.backgroundImage ? undefined : `~/ui-tests-app/resources/images/test2.png`; 
         debugConsole.text += `> background-image: ${target.backgroundImage}\n`;
     }
+    else if (button.text === "BGGradient"){
+        target.backgroundGradient = target.backgroundGradient ? undefined : 'linear-gradient(to right, purple, red)';
+        debugConsole.text += `> background-gradient: ${target.backgroundGradient} \n`;
+    }
 
     scrollView.scrollToVerticalOffset(scrollView.scrollableHeight, true);
 }
