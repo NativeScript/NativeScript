@@ -85,4 +85,4 @@ export function test_getJSON(done) {
 
 # Misc
 
-When looking into the code of the existing tests, you migh encounter strange comments looking like this `// >> animation-chaining`. These are markers for code snippets generated in the docs documetation. They are not related to testing so you don't need to add any of those in your tests.
+When looking into the code of the existing tests, you might encounter strange comments looking like this `// >> animation-chaining`. These are markers for code snippets generated in the docs documetation. They are not related to testing so you don't need to add any of those in your tests.
