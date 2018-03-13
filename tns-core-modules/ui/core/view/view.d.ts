@@ -222,6 +222,11 @@ export abstract class View extends ViewBase {
     backgroundImage: string;
 
     /**
+     * Gets or sets the background gradient of the view.
+     */
+    backgroundGradient: string;
+
+    /**
      * Gets or sets the minimum width the view may grow to.
      */
     minWidth: Length;

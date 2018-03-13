@@ -65,6 +65,7 @@ export class Style extends Observable {
     public background: string;
     public backgroundColor: Color;
     public backgroundImage: string;
+    public backgroundGradient: string;
     public backgroundRepeat: BackgroundRepeat;
     public backgroundSize: string;
     public backgroundPosition: string;

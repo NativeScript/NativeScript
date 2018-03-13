@@ -442,6 +442,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.backgroundImage = value;
     }
 
+    get backgroundGradient(): string {
+        return this.style.backgroundGradient;
+    }
+    set backgroundGradient(value: string) {
+        this.style.backgroundGradient = value;
+    }
+
     get minWidth(): Length {
         return this.style.minWidth;
     }

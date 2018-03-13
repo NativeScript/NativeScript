@@ -637,6 +637,14 @@ export const backgroundGradientProperty = new CssProperty<Style, LinearGradient>
     name: "backgroundGradient", cssName: "background-gradient", valueChanged: (target, oldValue, newValue) => {
         const background = target.backgroundInternal.withGradient(newValue);
         target.backgroundInternal = background;
+    }, equalityComparer: LinearGradient.equals,
+    valueConverter: (value: any) => {
+        if (typeof value === 'string') {
+            const background = parser.parseBackground(value).value;
+            value = (typeof background.image === 'object') ? LinearGradient.parse(background.image) : unsetValue;
+        }
+
+        return value;
     }
 });
 backgroundGradientProperty.register(Style);
