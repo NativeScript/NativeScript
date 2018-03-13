@@ -6,7 +6,7 @@ import { modalPageBackground,
     testNestedModalPageBackground
 } from "../shared.e2e-spec"
 
-describe.skip("tab root modal page background scenarios", () => {
+describe("tab root modal page background scenarios", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
