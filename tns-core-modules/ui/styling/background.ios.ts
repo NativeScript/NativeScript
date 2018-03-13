@@ -717,7 +717,7 @@ function drawGradient(nativeView: NativeView, background: BackgroundDefinition) 
     gradientLayer.endPoint = {x: endX, y: endY};
 
 
-    nativeView.layer.addSublayer(gradientLayer);
+    nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
 
 }
 
