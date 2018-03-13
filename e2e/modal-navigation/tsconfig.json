@@ -15,11 +15,15 @@
             "*": [
                 "./node_modules/tns-core-modules/*",
                 "./node_modules/*"
+            ],
+            "~/*": [
+                "app/*"
             ]
         }
     },
     "exclude": [
         "node_modules",
-        "platforms"
+        "platforms",
+	    "e2e"
     ]
 }

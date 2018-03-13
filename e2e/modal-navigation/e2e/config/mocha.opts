@@ -1,0 +1,4 @@
+--timeout 80000
+--recursive e2e
+--reporter mocha-multi 
+--reporter-options spec=-,mocha-junit-reporter=test-results.xml

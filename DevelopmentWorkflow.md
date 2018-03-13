@@ -20,7 +20,6 @@ Managing dependencies:
     - `tns-platform-declarations`
     - `tns-core-modules`
  - `e2e` depends on:
-    - `tns-platform-declarations`
     - `tns-core-modules`
  - `tests` depends on:
     - `tns-platform-declarations`
@@ -43,7 +42,7 @@ Install devDependencies:
 npm install
 ```
 
-Run `setup` script. This will [`npm link`](https://docs.npmjs.com/cli/link) the `tns-core-modules` and `tns-core-modules-declarations` dependencies inside the `tests`, `apps` and `e2e` projects.
+Run `setup` script. This will [`npm link`](https://docs.npmjs.com/cli/link) the `tns-core-modules` and `tns-core-modules-declarations` dependencies inside the `tests` and `apps` projects.
 
 ```bash
 npm run setup
@@ -69,7 +68,7 @@ The modules have `typescript` as a devDependency so you should also be able to u
 ./node_modules/.bin/tsc
 ```
 
-You can compile the TypeScript files in the `tns-core-modules`, `tns-platform-declarations`, `apps`, `e2e` and `tests` at once at the root of the repo:
+You can compile the TypeScript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
 
 ```bash
 npm run tsc

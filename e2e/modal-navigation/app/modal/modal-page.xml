@@ -10,8 +10,8 @@
 
     <StackLayout backgroundColor="maroon">
         <Button text="Navigate To Second Page" tap="onNavigate" visibility="{{ navigationVisibility }}" />
-        <Button text="Show Nested Modal Page" tap="showNestedModalPage" />
         <Button text="Show Nested Modal Page With Frame" tap="showNestedModalFrame" />
+        <Button text="Show Nested Modal Page" tap="showNestedModalPage" />
         <Button text="Close Modal" tap="closeModal" />
     </StackLayout>
 </Page>
