@@ -176,6 +176,18 @@ export class Frame extends FrameBase {
         }
     }
 
+    _onRootViewReset(): void {
+        if (this._currentEntry && this._currentEntry.fragment) {
+            const manager: android.app.FragmentManager = this._getFragmentManager();
+
+            const transaction = manager.beginTransaction();
+            transaction.remove(this._currentEntry.fragment);
+            transaction.commitAllowingStateLoss();
+        }
+
+        super._onRootViewReset();
+    }
+
     onUnloaded() {
         if (this._currentEntry && this._currentEntry.fragment) {
             const manager: android.app.FragmentManager = this._getFragmentManager();
