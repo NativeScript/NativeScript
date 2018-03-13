@@ -35,7 +35,10 @@
     "uglifyjs-webpack-plugin": "~1.1.6",
     "webpack": "~3.10.0",
     "webpack-bundle-analyzer": "^2.9.1",
-    "webpack-sources": "~1.1.0"
+    "webpack-sources": "~1.1.0",
+    "@types/chai": "^4.0.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.5"
   },
   "scripts": {
     "e2e": "tsc -p e2e && mocha --opts ./e2e/config/mocha.opts",
