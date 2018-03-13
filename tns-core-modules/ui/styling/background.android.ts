@@ -137,7 +137,6 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
     return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
 }
 
-
 const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
     const nativeView = <android.view.View>view.nativeViewProtected;

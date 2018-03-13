@@ -74,7 +74,6 @@ export module ios {
             drawClipPath(nativeView, background);
         }
 
-
         if (!background.image) {
             const uiColor = background.color ? background.color.ios : undefined;
             callback(uiColor);
@@ -715,7 +714,6 @@ function drawGradient(nativeView: NativeView, background: BackgroundDefinition) 
     );
     gradientLayer.startPoint = {x: startX, y: startY};
     gradientLayer.endPoint = {x: endX, y: endY};
-
 
     nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
 
