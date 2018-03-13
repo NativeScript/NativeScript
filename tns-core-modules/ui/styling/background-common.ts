@@ -1,6 +1,6 @@
 // Deifinitions.
 import { Background as BackgroundDefinition } from "./background";
-import { BackgroundRepeat } from "../core/view";
+import { BackgroundRepeat, LinearGradient } from "../core/view";
 
 // Types.
 import { Color } from "../../color";
@@ -10,6 +10,7 @@ export class Background implements BackgroundDefinition {
 
     public color: Color;
     public image: string;
+    public gradient: LinearGradient;
     public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
@@ -61,6 +62,12 @@ export class Background implements BackgroundDefinition {
     public withImage(value: string): Background {
         const clone = this.clone();
         clone.image = value;
+        return clone;
+    }
+
+    public withGradient(value: LinearGradient): Background {
+        const clone = this.clone();
+        clone.gradient = value;
         return clone;
     }
 
@@ -163,6 +170,7 @@ export class Background implements BackgroundDefinition {
     public isEmpty(): boolean {
         return !this.color
             && !this.image
+            && !this.gradient
             && !this.hasBorderWidth()
             && !this.hasBorderRadius()
             && !this.clipPath;
@@ -181,6 +189,7 @@ export class Background implements BackgroundDefinition {
 
         return Color.equals(value1.color, value2.color)
             && value1.image === value2.image
+            && LinearGradient.equals(value1.gradient, value2.gradient)
             && value1.position === value2.position
             && value1.repeat === value2.repeat
             && value1.size === value2.size

@@ -1,6 +1,6 @@
 // Types
-import { unsetValue, Style, 
-    CssProperty, CssAnimationProperty, 
+import { unsetValue, Style,
+    CssProperty, CssAnimationProperty,
     ShorthandProperty, InheritedCssProperty,
     makeValidator, makeParser } from "../core/properties";
 import {
@@ -571,6 +571,76 @@ export const backgroundImageProperty = new CssProperty<Style, string>({
 });
 backgroundImageProperty.register(Style);
 
+export interface LinearGradient {
+    angle: number;
+    colorStops: ColorStop[];
+}
+
+export interface ColorStop {
+    color: Color;
+    offset?: LengthPercentUnit;
+}
+
+export namespace LinearGradient {
+    export function parse(value: parser.LinearGradient): LinearGradient {
+        return {
+            angle: value.angle,
+            colorStops: value.colors.map(color => {
+                const offset = color.offset || null;
+                let offsetUnit: LengthPercentUnit;
+
+                if (offset && offset.unit === '%') {
+                   offsetUnit = {
+                       unit: '%',
+                       value: offset.value
+                   };
+                }
+
+                return {
+                    color: new Color(color.argb),
+                    offset: offsetUnit
+                }
+            })
+        }
+    }
+
+    export function equals(first: LinearGradient, second: LinearGradient): boolean {
+        if (!first && !second) {
+            return true;
+        } else if (!first || !second) {
+            return false
+        }
+
+        if (first.angle !== second.angle) {
+            return true;
+        }
+
+        if (first.colorStops.length !== second.colorStops.length) {
+            return true;
+        }
+
+        for (let i = 0; i < first.colorStops.length; i++) {
+            const firstStop = first.colorStops[i];
+            const secondStop = second.colorStops[i];
+            if (firstStop.offset !== secondStop.offset) {
+                return false;
+            }
+            if (!Color.equals(firstStop.color, secondStop.color)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+export const backgroundGradientProperty = new CssProperty<Style, LinearGradient>({
+    name: "backgroundGradient", cssName: "background-gradient", valueChanged: (target, oldValue, newValue) => {
+        const background = target.backgroundInternal.withGradient(newValue);
+        target.backgroundInternal = background;
+    }
+});
+backgroundGradientProperty.register(Style);
+
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
         const background = target.backgroundInternal.withColor(newValue);
@@ -618,13 +688,15 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
     if (typeof value === "string") {
         const backgrounds = parser.parseBackground(value).value;
         const backgroundColor = backgrounds.color ? new Color(backgrounds.color) : unsetValue;
-        const backgroundImage = backgrounds.image || unsetValue;
+        const backgroundImage = (typeof backgrounds.image === 'string') ? backgrounds.image : unsetValue;
+        const backgroundGradient = (typeof backgrounds.image === 'object') ? LinearGradient.parse(backgrounds.image) : unsetValue;
         const backgroundRepeat = backgrounds.repeat || unsetValue;
         const backgroundPosition = backgrounds.position ? backgrounds.position.text : unsetValue;
 
         return [
             [backgroundColorProperty, backgroundColor],
             [backgroundImageProperty, backgroundImage],
+            [backgroundGradientProperty, backgroundGradient],
             [backgroundRepeatProperty, backgroundRepeat],
             [backgroundPositionProperty, backgroundPosition]
         ];

@@ -21,6 +21,8 @@ interface NativeView extends UIView {
     rightBorderLayer: CALayer;
     bottomBorderLayer: CALayer;
     leftBorderLayer: CALayer;
+
+    gradientLayer: CAGradientLayer;
 }
 
 interface Rect {
@@ -65,6 +67,11 @@ export module ios {
         // It will eventually move them to different layer if uniform.
         if (background.clipPath) {
             drawClipPath(nativeView, background);
+        }
+
+        clearGradient(nativeView);
+        if (background.gradient) {
+            drawGradient(nativeView, background);
         }
 
         if (!background.image) {
@@ -661,6 +668,63 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
     }
 
     nativeView.hasNonUniformBorder = hasNonUniformBorder;
+}
+
+function drawGradient(nativeView: NativeView, background: BackgroundDefinition) {
+    const gradient = background.gradient;
+
+    const gradientLayer = CAGradientLayer.layer();
+    gradientLayer.frame = nativeView.bounds;
+    nativeView.gradientLayer = gradientLayer;
+
+    const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
+    const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
+    let hasStops = false;
+
+    gradient.colorStops.forEach(stop => {
+       iosColors.addObject(stop.color.ios.CGColor);
+       if (stop.offset) {
+           iosStops.addObject(stop.offset.value);
+           hasStops = true;
+       }
+       console.log('Color Stop: ' + JSON.stringify(stop.offset));
+    });
+
+    gradientLayer.colors = iosColors;
+
+    if (hasStops) {
+        gradientLayer.locations = iosStops;
+    }
+
+    const alpha = gradient.angle / (Math.PI * 2);
+    const startX = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.75)),
+      2
+    );
+    const startY = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.5)),
+      2
+    );
+    const endX = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.25)),
+      2
+    );
+    const endY = Math.pow(
+      Math.sin(Math.PI * alpha),
+      2
+    );
+    gradientLayer.startPoint = {x: startX, y: startY};
+    gradientLayer.endPoint = {x: endX, y: endY};
+
+
+    nativeView.layer.addSublayer(gradientLayer);
+
+}
+
+function clearGradient(nativeView: NativeView): void {
+    if (nativeView.gradientLayer) {
+        nativeView.gradientLayer.removeFromSuperlayer();
+    }
 }
 
 function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {

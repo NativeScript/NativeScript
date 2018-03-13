@@ -3,12 +3,13 @@
  */ /** */
 
 import { Color } from "../../color";
-import { View, BackgroundRepeat } from "../core/view";
+import { View, BackgroundRepeat, LinearGradient } from "../core/view";
 
 export class Background {
     public static default: Background;
     public color: Color;
     public image: string;
+    public gradient: LinearGradient;
     public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
@@ -28,6 +29,7 @@ export class Background {
 
     public withColor(value: Color): Background;
     public withImage(value: string): Background;
+    public withGradient(value: LinearGradient): Background;
     public withRepeat(value: BackgroundRepeat): Background;
     public withPosition(value: string): Background;
     public withSize(value: string): Background;
