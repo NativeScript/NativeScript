@@ -687,7 +687,6 @@ function drawGradient(nativeView: NativeView, background: BackgroundDefinition) 
            iosStops.addObject(stop.offset.value);
            hasStops = true;
        }
-       console.log('Color Stop: ' + JSON.stringify(stop.offset));
     });
 
     gradientLayer.colors = iosColors;

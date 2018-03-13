@@ -1,4 +1,4 @@
-import { View } from "../core/view";
+import { View, LinearGradient } from "../core/view";
 import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
@@ -52,6 +52,7 @@ export module ad {
             && !background.hasBorderRadius()
             && !background.clipPath
             && !background.image
+            && !background.gradient
             && background.color) {
             const backgroundColor = (<any>drawable).backgroundColor = background.color.android;
             drawable.mutate();
@@ -104,6 +105,39 @@ function fromBase64(source: string): android.graphics.Bitmap {
     return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
 }
 
+function fromGradient(gradient: LinearGradient): org.nativescript.widgets.LinearGradientDefinition {
+    const colors = Array.create('int', gradient.colorStops.length);
+    const stops = Array.create('float', gradient.colorStops.length);
+    let hasStops = false;
+    gradient.colorStops.forEach((stop, index) => {
+        colors[index] = stop.color.android;
+        if (stop.offset) {
+            stops[index] = stop.offset.value;
+            hasStops = true;
+        }
+    });
+
+    const alpha = gradient.angle / (Math.PI * 2);
+    const startX = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.75)),
+      2
+    );
+    const startY = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.5)),
+      2
+    );
+    const endX = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.25)),
+      2
+    );
+    const endY = Math.pow(
+      Math.sin(Math.PI * alpha),
+      2
+    );
+    return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
+}
+
+
 const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
     const nativeView = <android.view.View>view.nativeViewProtected;
@@ -141,6 +175,11 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
             }
         }
 
+        let gradient: org.nativescript.widgets.LinearGradientDefinition = null;
+        if (background.gradient) {
+            gradient = fromGradient(background.gradient);
+        }
+
         borderDrawable.refresh(
             background.borderTopColor ? background.borderTopColor.android : blackColor,
             background.borderRightColor ? background.borderRightColor.android : blackColor,
@@ -162,6 +201,7 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
             background.color ? background.color.android : 0,
             imageUri,
             bitmap,
+            gradient,
             context,
             background.repeat,
             background.position,
