@@ -84,7 +84,7 @@
     "tslint": "tslint --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' 'e2e/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'",
     "madge-ios": "tsc --skipLibCheck && tns prepare ios --path tests && madge --circular tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
     "madge-ios-image": "tsc --skipLibCheck && tns prepare ios --path tests && madge --image graph-tests-ios.svg tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
-    "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/src/main/assets/app/tns_modules/tns-core-modules",
-    "madge-android-image": "tsc --skipLibCheck && tns prepare android --path tests && madge --image graph-tests-android.svg tests/platforms/android/src/main/assets/app/tns_modules/tns-core-modules"
+    "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules",
+    "madge-android-image": "tsc --skipLibCheck && tns prepare android --path tests && madge --image graph-tests-android.svg tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules"
   }
 }
