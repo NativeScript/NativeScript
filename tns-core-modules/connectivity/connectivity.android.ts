@@ -46,7 +46,8 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
         let newConnectionType = getConnectionType();
         connectionTypeChangedCallback(newConnectionType);
     }
-    androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, onReceiveCallback);
+    let zoneCallback = <any>zonedCallback(onReceiveCallback); 
+    androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 
 export function stopMonitoring(): void {
