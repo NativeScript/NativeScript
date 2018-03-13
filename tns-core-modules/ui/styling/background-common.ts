@@ -33,6 +33,7 @@ export class Background implements BackgroundDefinition {
 
         clone.color = this.color;
         clone.image = this.image;
+        clone.gradient = this.gradient;
         clone.repeat = this.repeat;
         clone.position = this.position;
         clone.size = this.size;

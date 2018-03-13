@@ -45,6 +45,11 @@ export module ios {
             clearNonUniformBorders(nativeView);
         }
 
+        clearGradient(nativeView);
+        if (background.gradient) {
+            drawGradient(nativeView, background);
+        }
+
         const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
         const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
         if (background.hasUniformBorderColor() && (hasNonUniformBorderWidths || hasNonUniformBorderRadiuses)) {
@@ -69,10 +74,6 @@ export module ios {
             drawClipPath(nativeView, background);
         }
 
-        clearGradient(nativeView);
-        if (background.gradient) {
-            drawGradient(nativeView, background);
-        }
 
         if (!background.image) {
             const uiColor = background.color ? background.color.ios : undefined;
