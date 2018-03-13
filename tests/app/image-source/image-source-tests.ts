@@ -55,12 +55,10 @@ export function testSaveToFile() {
 }
 
 export function testSaveToFile_WithQuality() {
-    // >> imagesource-save-to
     const img = imageSource.fromFile(imagePath);
     const folder = fs.knownFolders.documents();
     const path = fs.path.join(folder.path, "test.png");
     const saved = img.saveToFile(path, "png", 70);
-    // << imagesource-save-to
     TKUnit.assert(saved, "Image not saved to file");
     TKUnit.assert(fs.File.exists(path), "Image not saved to file");
 }
@@ -199,11 +197,8 @@ export function testBase64Encode_PNG() {
 }
 
 export function testBase64Encode_PNG_WithQuality() {
-    // >> imagesource-to-base-string
     const img = imageSource.fromFile(smallImagePath);
     let base64String = img.toBase64String("png", 80);
-    // << imagesource-to-base-string
-
     base64String = base64String.substr(0, expectedPngStart.length);
     TKUnit.assertEqual(
         base64String,

@@ -130,7 +130,7 @@ export class ImageSource implements ImageSourceDefinition {
             return false;
         }
 
-        if (quality != null && quality > 1) {
+        if (quality) {
             quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
@@ -148,7 +148,7 @@ export class ImageSource implements ImageSourceDefinition {
             return res;
         }
 
-        if (quality != null && quality > 1) {
+        if (quality) {
             quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
