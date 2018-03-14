@@ -8,7 +8,7 @@ import { modalFrameBackground,
     testSecondItemBackground
 } from "../shared.e2e-spec"
 
-describe.skip("tab root modal tab view background scenarios", () => {
+describe("tab root modal tab view background scenarios", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
