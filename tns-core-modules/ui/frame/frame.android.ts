@@ -177,27 +177,22 @@ export class Frame extends FrameBase {
     }
 
     _onRootViewReset(): void {
-        if (this._currentEntry && this._currentEntry.fragment) {
-            const manager: android.app.FragmentManager = this._getFragmentManager();
-
-            const transaction = manager.beginTransaction();
-            transaction.remove(this._currentEntry.fragment);
-            transaction.commitAllowingStateLoss();
-        }
-
+        this.disposeCurrentFragment();
         super._onRootViewReset();
     }
 
     onUnloaded() {
+        this.disposeCurrentFragment();
+        super.onUnloaded();
+    }
+
+    private disposeCurrentFragment(){
         if (this._currentEntry && this._currentEntry.fragment) {
             const manager: android.app.FragmentManager = this._getFragmentManager();
-
             const transaction = manager.beginTransaction();
             transaction.remove(this._currentEntry.fragment);
             transaction.commitAllowingStateLoss();
         }
-
-        super.onUnloaded();
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.app.Fragment {
