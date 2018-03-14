@@ -27,6 +27,7 @@ import {
 } from "../../matrix";
 
 import * as parser from "../../css/parser";
+import {LinearGradient} from "./linear-gradient";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -563,91 +564,31 @@ export const backgroundInternalProperty = new CssProperty<Style, Background>({
 backgroundInternalProperty.register(Style);
 
 // const pattern: RegExp = /url\(('|")(.*?)\1\)/;
-export const backgroundImageProperty = new CssProperty<Style, string>({
+export const backgroundImageProperty = new CssProperty<Style, string | LinearGradient>({
     name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
         const background = target.backgroundInternal.withImage(newValue);
         target.backgroundInternal = background;
-    }
-});
-backgroundImageProperty.register(Style);
-
-export interface LinearGradient {
-    angle: number;
-    colorStops: ColorStop[];
-}
-
-export interface ColorStop {
-    color: Color;
-    offset?: LengthPercentUnit;
-}
-
-export namespace LinearGradient {
-    export function parse(value: parser.LinearGradient): LinearGradient {
-        return {
-            angle: value.angle,
-            colorStops: value.colors.map(color => {
-                const offset = color.offset || null;
-                let offsetUnit: LengthPercentUnit;
-
-                if (offset && offset.unit === '%') {
-                   offsetUnit = {
-                       unit: '%',
-                       value: offset.value
-                   };
-                }
-
-                return {
-                    color: new Color(color.argb),
-                    offset: offsetUnit
-                }
-            })
+    },
+    equalityComparer: (value1, value2) => {
+        if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
+            return LinearGradient.equals(value1, value2)
+        } else {
+            return value1 === value2;
         }
-    }
-
-    export function equals(first: LinearGradient, second: LinearGradient): boolean {
-        if (!first && !second) {
-            return true;
-        } else if (!first || !second) {
-            return false
-        }
-
-        if (first.angle !== second.angle) {
-            return true;
-        }
-
-        if (first.colorStops.length !== second.colorStops.length) {
-            return true;
-        }
-
-        for (let i = 0; i < first.colorStops.length; i++) {
-            const firstStop = first.colorStops[i];
-            const secondStop = second.colorStops[i];
-            if (firstStop.offset !== secondStop.offset) {
-                return false;
-            }
-            if (!Color.equals(firstStop.color, secondStop.color)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-}
-export const backgroundGradientProperty = new CssProperty<Style, LinearGradient>({
-    name: "backgroundGradient", cssName: "background-gradient", valueChanged: (target, oldValue, newValue) => {
-        const background = target.backgroundInternal.withGradient(newValue);
-        target.backgroundInternal = background;
-    }, equalityComparer: LinearGradient.equals,
+    },
     valueConverter: (value: any) => {
         if (typeof value === 'string') {
-            const background = parser.parseBackground(value).value;
-            value = (typeof background.image === 'object') ? LinearGradient.parse(background.image) : unsetValue;
+            const parsed = parser.parseBackground(value);
+            if (parsed) {
+                const background = parsed.value;
+                value = (typeof background.image === 'object') ? LinearGradient.parse(background.image) : value;
+            }
         }
 
         return value;
     }
 });
-backgroundGradientProperty.register(Style);
+backgroundImageProperty.register(Style);
 
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
@@ -696,15 +637,20 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
     if (typeof value === "string") {
         const backgrounds = parser.parseBackground(value).value;
         const backgroundColor = backgrounds.color ? new Color(backgrounds.color) : unsetValue;
-        const backgroundImage = (typeof backgrounds.image === 'string') ? backgrounds.image : unsetValue;
-        const backgroundGradient = (typeof backgrounds.image === 'object') ? LinearGradient.parse(backgrounds.image) : unsetValue;
+
+        let backgroundImage: string | LinearGradient;
+        if (typeof backgrounds.image === 'object' && backgrounds.image) {
+            backgroundImage = LinearGradient.parse(backgrounds.image);
+        } else {
+            backgroundImage = backgrounds.image || unsetValue;
+        }
+
         const backgroundRepeat = backgrounds.repeat || unsetValue;
         const backgroundPosition = backgrounds.position ? backgrounds.position.text : unsetValue;
 
         return [
             [backgroundColorProperty, backgroundColor],
             [backgroundImageProperty, backgroundImage],
-            [backgroundGradientProperty, backgroundGradient],
             [backgroundRepeatProperty, backgroundRepeat],
             [backgroundPositionProperty, backgroundPosition]
         ];

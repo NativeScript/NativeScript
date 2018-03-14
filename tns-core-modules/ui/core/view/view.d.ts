@@ -7,9 +7,11 @@ import { ViewBase, Property, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
+import { LinearGradient } from "../../styling/linear-gradient";
 
 export * from "../view-base";
 export * from "../../styling/style-properties";
+export { LinearGradient };
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
@@ -219,12 +221,7 @@ export abstract class View extends ViewBase {
     /**
      * Gets or sets the background image of the view.
      */
-    backgroundImage: string;
-
-    /**
-     * Gets or sets the background gradient of the view.
-     */
-    backgroundGradient: string;
+    backgroundImage: string | LinearGradient;
 
     /**
      * Gets or sets the minimum width the view may grow to.

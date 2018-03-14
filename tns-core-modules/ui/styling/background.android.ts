@@ -52,7 +52,6 @@ export module ad {
             && !background.hasBorderRadius()
             && !background.clipPath
             && !background.image
-            && !background.gradient
             && background.color) {
             const backgroundColor = (<any>drawable).backgroundColor = background.color.android;
             drawable.mutate();
@@ -148,8 +147,8 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
         const backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size);
         const blackColor = -16777216; //android.graphics.Color.BLACK;
 
-        let imageUri = background.image;
-        if (imageUri) {
+        let imageUri: string;
+        if (background.image && typeof background.image === 'string') {
             const match = imageUri.match(pattern);
             if (match && match[2]) {
                 imageUri = match[2];
@@ -175,8 +174,8 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
         }
 
         let gradient: org.nativescript.widgets.LinearGradientDefinition = null;
-        if (background.gradient) {
-            gradient = fromGradient(background.gradient);
+        if (background.image && background.image instanceof LinearGradient) {
+            gradient = fromGradient(background.image);
         }
 
         borderDrawable.refresh(

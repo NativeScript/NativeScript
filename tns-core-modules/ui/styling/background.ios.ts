@@ -1,7 +1,7 @@
 import { ScrollEventData } from "../scroll-view";
 
 import { Background as BackgroundDefinition } from "./background";
-import { View, Point } from "../core/view";
+import { View, Point, LinearGradient } from "../core/view";
 import { Color } from "../../color";
 import { ios as utilsIos, isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
 import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
@@ -46,8 +46,8 @@ export module ios {
         }
 
         clearGradient(nativeView);
-        if (background.gradient) {
-            drawGradient(nativeView, background);
+        if (background.image instanceof LinearGradient) {
+            drawGradient(nativeView, background.image);
         }
 
         const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
@@ -74,7 +74,7 @@ export module ios {
             drawClipPath(nativeView, background);
         }
 
-        if (!background.image) {
+        if (!background.image || background.image instanceof LinearGradient) {
             const uiColor = background.color ? background.color.ios : undefined;
             callback(uiColor);
         } else {
@@ -158,7 +158,7 @@ function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor:
 
     const style = view.style;
     const background = style.backgroundInternal;
-    let imageUri = background.image;
+    let imageUri = background.image as string;
     if (imageUri) {
         const match = imageUri.match(pattern);
         if (match && match[2]) {
@@ -670,8 +670,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
     nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-function drawGradient(nativeView: NativeView, background: BackgroundDefinition) {
-    const gradient = background.gradient;
+function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
 
     const gradientLayer = CAGradientLayer.layer();
     gradientLayer.frame = nativeView.bounds;

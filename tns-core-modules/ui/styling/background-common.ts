@@ -9,8 +9,7 @@ export class Background implements BackgroundDefinition {
     public static default = new Background();
 
     public color: Color;
-    public image: string;
-    public gradient: LinearGradient;
+    public image: string | LinearGradient;
     public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
@@ -33,7 +32,6 @@ export class Background implements BackgroundDefinition {
 
         clone.color = this.color;
         clone.image = this.image;
-        clone.gradient = this.gradient;
         clone.repeat = this.repeat;
         clone.position = this.position;
         clone.size = this.size;
@@ -60,15 +58,9 @@ export class Background implements BackgroundDefinition {
         return clone;
     }
 
-    public withImage(value: string): Background {
+    public withImage(value: string | LinearGradient): Background {
         const clone = this.clone();
         clone.image = value;
-        return clone;
-    }
-
-    public withGradient(value: LinearGradient): Background {
-        const clone = this.clone();
-        clone.gradient = value;
         return clone;
     }
 
@@ -171,7 +163,6 @@ export class Background implements BackgroundDefinition {
     public isEmpty(): boolean {
         return !this.color
             && !this.image
-            && !this.gradient
             && !this.hasBorderWidth()
             && !this.hasBorderRadius()
             && !this.clipPath;
@@ -188,9 +179,15 @@ export class Background implements BackgroundDefinition {
             return false;
         }
 
+        let imagesEqual = false;
+        if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
+            imagesEqual = LinearGradient.equals(value1, value2);
+        } else {
+            imagesEqual = value1.image === value2.image;
+        }
+
         return Color.equals(value1.color, value2.color)
-            && value1.image === value2.image
-            && LinearGradient.equals(value1.gradient, value2.gradient)
+            && imagesEqual
             && value1.position === value2.position
             && value1.repeat === value2.repeat
             && value1.size === value2.size
