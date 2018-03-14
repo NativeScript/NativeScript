@@ -203,7 +203,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return false;
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         return false;
     }
 

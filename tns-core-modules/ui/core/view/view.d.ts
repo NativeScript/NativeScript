@@ -678,10 +678,11 @@ export abstract class View extends ViewBase {
      * @private
      */
     _onLivesync(): boolean;
+
     /**
-     * @private
+     * Derived classes can override this method to handle Android back button press. 
      */
-    _onBackPressed(): boolean;
+    onBackPressed(): boolean;
     /**
      * @private
      */

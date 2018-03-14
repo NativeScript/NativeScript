@@ -510,10 +510,10 @@ export class TabView extends TabViewBase {
         super.disposeNativeView();
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         const currentView = this._selectedView;
         if (currentView) {
-            return currentView._onBackPressed();
+            return currentView.onBackPressed();
         }
 
         return false;
