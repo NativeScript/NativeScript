@@ -115,7 +115,7 @@ function initializeDialogFragment() {
             };
             view.notify(args);
 
-            if (!args.cancel && !view._onBackPressed()) {
+            if (!args.cancel && !view.onBackPressed()) {
                 super.onBackPressed();
             }
         }

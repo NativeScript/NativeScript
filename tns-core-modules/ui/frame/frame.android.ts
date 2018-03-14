@@ -249,7 +249,7 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         if (this.canGoBack()) {
             this.goBack();
             return true;
@@ -884,7 +884,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             };
             view.notify(viewArgs);
 
-            if (!viewArgs.cancel && !view._onBackPressed()) {
+            if (!viewArgs.cancel && !view.onBackPressed()) {
                 callSuper = true;
             }
         }
