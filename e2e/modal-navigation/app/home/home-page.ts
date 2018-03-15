@@ -42,11 +42,17 @@ export function onModalPage(args: EventData) {
 }
 
 export function onModalTabView(args: EventData) {
+    const fullscreen = false;
+    const animated = false;
+    const stretched = true;
+
     const view = args.object as View;
     view.showModal("modal-tab/modal-tab-root",
         { frameless: true },
         () => console.log("home-page modal tabview closed"),
-        false);
+        fullscreen,
+        animated,
+        stretched);
 }
 
 export function onNavigate(args: EventData) {
@@ -57,5 +63,5 @@ export function onNavigate(args: EventData) {
 
 export function onRootViewChange() {
     let rootView = application.getRootView();
-    rootView instanceof Frame ? application._resetRootView({moduleName: "tab-root"}) : application._resetRootView({moduleName: "app-root"});
+    rootView instanceof Frame ? application._resetRootView({ moduleName: "tab-root" }) : application._resetRootView({ moduleName: "app-root" });
 }
