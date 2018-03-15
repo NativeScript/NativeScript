@@ -58,7 +58,6 @@ export class LinearGradient {
     }
 }
 
-
 export interface ColorStop {
     color: Color;
     offset?: LengthPercentUnit;
