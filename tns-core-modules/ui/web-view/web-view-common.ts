@@ -1,5 +1,5 @@
 import { WebView as WebViewDefinition, LoadEventData, NavigationType } from ".";
-import { View, Property, EventData } from "../core/view";
+import { View, Property, EventData, CSSType } from "../core/view";
 import { File, knownFolders, path } from "../../file-system";
 
 export { File, knownFolders, path, NavigationType };
@@ -7,6 +7,7 @@ export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
 
+@CSSType("WebView")
 export abstract class WebViewBase extends View implements WebViewDefinition {
     public static loadStartedEvent = "loadStarted";
     public static loadFinishedEvent = "loadFinished";

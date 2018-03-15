@@ -46,10 +46,11 @@
     "typescript": "^2.6.1"
   },
   "scripts": {
-    "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps && npm run dev-link-e2e-modal",
+    "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps",
     "tsc": "node  --max_old_space_size=4096 ./node_modules/typescript/bin/tsc",
-    "ci": "tsc && npm run tslint && npm run ci-apps && npm run ci-tests",
+    "ci": "tsc && npm run tslint && npm run ci-apps && npm run ci-e2e && npm run ci-tests",
     "ci-apps": "cd apps && npm i ../tns-core-modules ../tns-platform-declarations --save",
+    "ci-e2e": "cd e2e && cd modal-navigation && npm i ../../tns-core-modules ../../tns-platform-declarations --save",
     "ci-tests": "cd tests && npm i ../tns-core-modules ../tns-platform-declarations --save",
     "unit-test": "tsc -p tsconfig.unit-tests.json && mocha --opts unit-tests/mocha.opts",
     "unit-test-watch": "mocha-typescript-watch -p tsconfig.unit-tests.json --opts unit-tests/mocha.opts",
@@ -83,7 +84,7 @@
     "tslint": "tslint --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' 'e2e/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'",
     "madge-ios": "tsc --skipLibCheck && tns prepare ios --path tests && madge --circular tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
     "madge-ios-image": "tsc --skipLibCheck && tns prepare ios --path tests && madge --image graph-tests-ios.svg tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
-    "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/src/main/assets/app/tns_modules/tns-core-modules",
-    "madge-android-image": "tsc --skipLibCheck && tns prepare android --path tests && madge --image graph-tests-android.svg tests/platforms/android/src/main/assets/app/tns_modules/tns-core-modules"
+    "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules",
+    "madge-android-image": "tsc --skipLibCheck && tns prepare android --path tests && madge --image graph-tests-android.svg tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules"
   }
 }

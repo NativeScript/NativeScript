@@ -11,6 +11,7 @@ import {
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
+import { Frame } from "../frame";
 
 export * from "./tab-view-common";
 
@@ -473,6 +474,12 @@ export class TabView extends TabViewBase {
             }
         });
 
+        const newItem = items[newIndex];
+        const selectedView = newItem && newItem.view;
+        if (selectedView instanceof Frame) {
+            selectedView._pushInFrameStack();
+        }
+
         toLoad.forEach(index => {
             const item = items[index];
             if (this.isLoaded && items[index]) {
@@ -503,10 +510,10 @@ export class TabView extends TabViewBase {
         super.disposeNativeView();
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         const currentView = this._selectedView;
         if (currentView) {
-            return currentView._onBackPressed();
+            return currentView.onBackPressed();
         }
 
         return false;

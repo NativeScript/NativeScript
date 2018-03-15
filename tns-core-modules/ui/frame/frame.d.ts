@@ -148,6 +148,14 @@ export class Frame extends View {
     /**
      * @private
      */
+    _pushInFrameStack();
+    /**
+     * @private
+     */
+    _removeFromFrameStack();
+    /**
+     * @private
+     */
     _isBack?: boolean;
     //@endprivate
 
@@ -171,6 +179,11 @@ export class Frame extends View {
 export function setFragmentClass(clazz: any): void;
 
 /**
+ * Gets a frame by id.
+ */
+export function getFrameById(id: string): Frame;
+
+/**
  * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
  */
 export function topmost(): Frame;
@@ -182,6 +195,7 @@ export function topmost(): Frame;
 export function goBack();
 
 /**
+ * Deprecated. Use getFrameById() if you want to retrieve a frame different than the topmost one.
  * Gets the frames stack.
  */
 export function stack(): Array<Frame>;

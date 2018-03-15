@@ -1,6 +1,7 @@
 ﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "."
-import { View, EventData } from "../core/view"
+import { View, EventData, CSSType } from "../core/view"
 
+@CSSType("Placeholder")
 export class Placeholder extends View implements PlaceholderDefinition {
     public static creatingViewEvent = "creatingView";
 

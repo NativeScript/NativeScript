@@ -130,6 +130,10 @@ export class ImageSource implements ImageSourceDefinition {
             return false;
         }
 
+        if (quality) {
+            quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
+        }
+
         const data = getImageData(this.ios, format, quality);
         if (data) {
             return NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
@@ -142,6 +146,10 @@ export class ImageSource implements ImageSourceDefinition {
         let res = null;
         if (!this.ios) {
             return res;
+        }
+
+        if (quality) {
+            quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
         const data = getImageData(this.ios, format, quality);

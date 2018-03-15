@@ -54,6 +54,15 @@ export function testSaveToFile() {
     TKUnit.assert(fs.File.exists(path), "Image not saved to file");
 }
 
+export function testSaveToFile_WithQuality() {
+    const img = imageSource.fromFile(imagePath);
+    const folder = fs.knownFolders.documents();
+    const path = fs.path.join(folder.path, "test.png");
+    const saved = img.saveToFile(path, "png", 70);
+    TKUnit.assert(saved, "Image not saved to file");
+    TKUnit.assert(fs.File.exists(path), "Image not saved to file");
+}
+
 export function testFromFile() {
     // >> imagesource-load-local
     const folder = fs.knownFolders.documents();
@@ -187,10 +196,32 @@ export function testBase64Encode_PNG() {
         "Base 64 encoded PNG");
 }
 
+export function testBase64Encode_PNG_WithQuality() {
+    const img = imageSource.fromFile(smallImagePath);
+    let base64String = img.toBase64String("png", 80);
+    base64String = base64String.substr(0, expectedPngStart.length);
+    TKUnit.assertEqual(
+        base64String,
+        expectedPngStart,
+        "Base 64 encoded PNG");
+}
+
 export function testBase64Encode_JPEG() {
     const img = imageSource.fromFile(smallImagePath);
 
     let base64String = img.toBase64String("jpeg");
+    base64String = base64String.substr(0, expectedJpegStart.length);
+
+    TKUnit.assertEqual(
+        base64String,
+        expectedJpegStart,
+        "Base 64 encoded JPEG");
+}
+
+export function testBase64Encode_JPEG_With_Quality() {
+    const img = imageSource.fromFile(smallImagePath);
+
+    let base64String = img.toBase64String("jpeg", 80);
     base64String = base64String.substr(0, expectedJpegStart.length);
 
     TKUnit.assertEqual(

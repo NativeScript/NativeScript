@@ -52,6 +52,10 @@ apps/hooks/
 apps/node_modules/
 
 e2e/**/platforms
+!e2e/**/webpack.config.js
+e2e/**/reports/
+e2e/**/*.trace/
+e2e/**/test-results.xml
 
 package-lock.json
 

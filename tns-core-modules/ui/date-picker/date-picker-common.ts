@@ -1,11 +1,12 @@
 ﻿import { DatePicker as DatePickerDefinition } from ".";
-import { View, Property } from "../core/view";
+import { View, Property, CSSType } from "../core/view";
 
 export * from "../core/view";
 
 const defaultDate = new Date();
 const dateComparer = (x: Date, y: Date): boolean => (x <= y && x >= y);
 
+@CSSType("DatePicker")
 export class DatePickerBase extends View implements DatePickerDefinition {
     public year: number;
     public month: number;

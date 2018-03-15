@@ -1,8 +1,9 @@
 ﻿import { ListPicker as ListPickerDefinition, ItemsSource } from ".";
-import { View, Property, CoercibleProperty } from "../core/view";
+import { View, Property, CoercibleProperty, CSSType } from "../core/view";
 
 export * from "../core/view";
 
+@CSSType("ListPicker")
 export class ListPickerBase extends View implements ListPickerDefinition {
 
     public selectedIndex: number;

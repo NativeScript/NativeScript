@@ -176,16 +176,23 @@ export class Frame extends FrameBase {
         }
     }
 
+    _onRootViewReset(): void {
+        this.disposeCurrentFragment();
+        super._onRootViewReset();
+    }
+
     onUnloaded() {
+        this.disposeCurrentFragment();
+        super.onUnloaded();
+    }
+
+    private disposeCurrentFragment(){
         if (this._currentEntry && this._currentEntry.fragment) {
             const manager: android.app.FragmentManager = this._getFragmentManager();
-
             const transaction = manager.beginTransaction();
             transaction.remove(this._currentEntry.fragment);
             transaction.commitAllowingStateLoss();
         }
-
-        super.onUnloaded();
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.app.Fragment {
@@ -249,7 +256,7 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         if (this.canGoBack()) {
             this.goBack();
             return true;
@@ -597,7 +604,7 @@ function startActivity(activity: android.app.Activity, frameId: number) {
     activity.startActivity(intent);
 }
 
-function getFrameById(frameId: number): Frame {
+function getFrameByNumberId(frameId: number): Frame {
     // Find the frame for this activity.
     for (let i = 0; i < framesCache.length; i++) {
         let aliveFrame = framesCache[i].get();
@@ -676,7 +683,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         if (!this.entry) {
             const args = fragment.getArguments();
             const frameId = args.getInt(FRAMEID);
-            const frame = getFrameById(frameId);
+            const frame = getFrameByNumberId(frameId);
             if (!frame) {
                 throw new Error(`Cannot find Frame for ${fragment}`);
             }
@@ -884,7 +891,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             };
             view.notify(viewArgs);
 
-            if (!viewArgs.cancel && !view._onBackPressed()) {
+            if (!viewArgs.cancel && !view.onBackPressed()) {
                 callSuper = true;
             }
         }
@@ -999,7 +1006,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
                 if (!rootView) {
                     // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
                     // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
-                    rootView = getFrameById(frameId) || new Frame();
+                    rootView = getFrameByNumberId(frameId) || new Frame();
                 }
 
                 if (rootView instanceof Frame) {

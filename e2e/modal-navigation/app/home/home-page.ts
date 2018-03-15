@@ -56,6 +56,6 @@ export function onNavigate(args: EventData) {
 }
 
 export function onRootViewChange() {
-    let rootView: View = application.getRootView();
-    rootView.typeName === "Frame" ? application._resetRootView({moduleName: "tab-root"}) : application._resetRootView({moduleName: "app-root"});
+    let rootView = application.getRootView();
+    rootView instanceof Frame ? application._resetRootView({moduleName: "tab-root"}) : application._resetRootView({moduleName: "app-root"});
 }
