@@ -101,12 +101,17 @@ public abstract class Worker {
         }
 
         Bitmap value = null;
+        String cacheUri = uri;
+
         if (debuggable > 0) {
             Log.v(TAG, "loadImage on: " + owner + " to: " + uri);
         }
 
         if (mCache != null && useCache) {
-            value = mCache.getBitmapFromMemCache(uri);
+            // Create new image cache for images with different decodeHeight/decodeWidth.
+            cacheUri = createCacheUri(uri, decodeHeight, decodeWidth);
+
+            value = mCache.getBitmapFromMemCache(cacheUri);
         }
 
         if (value == null && !async) {
@@ -115,9 +120,9 @@ public abstract class Worker {
             if (value != null) {
                 if (mCache != null && useCache) {
                     if (debuggable > 0) {
-                        Log.v(TAG, "loadImage.addBitmapToCache: " + owner + ", src: " + uri);
+                        Log.v(TAG, "loadImage.addBitmapToCache: " + owner + ", src: " + cacheUri);
                     }
-                    mCache.addBitmapToCache(uri, value);
+                    mCache.addBitmapToCache(cacheUri, value);
                 }
             }
         }
@@ -258,6 +263,16 @@ public abstract class Worker {
     }
 
     /**
+     * Create cache key depending on image uri and decode properties.
+     */
+    private static String createCacheUri(String uri, int decodeHeight, int decodeWidth) {
+        uri += decodeHeight != 0 ? "height%%" + String.valueOf(decodeHeight): "";
+        uri += decodeWidth != 0 ? "width%%" + String.valueOf(decodeWidth): "";
+
+        return uri;
+    }
+
+    /**
      * The actual AsyncTask that will asynchronously process the image.
      */
     private class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
@@ -265,6 +280,7 @@ public abstract class Worker {
         private int mDecodeHeight;
         private boolean mKeepAspectRatio;
         private String mUri;
+        private String mCacheUri;
         private boolean mCacheImage;
         private final WeakReference<BitmapOwner> imageViewReference;
         private final OnImageLoadedListener mOnImageLoadedListener;
@@ -279,6 +295,7 @@ public abstract class Worker {
             mKeepAspectRatio = keepAspectRatio;
             mCacheImage = cacheImage;
             mUri = uri;
+            mCacheUri = createCacheUri(uri, decodeHeight, decodeWidth);
             imageViewReference = new WeakReference<BitmapOwner>(owner);
             mOnImageLoadedListener = listener;
         }
@@ -320,9 +337,9 @@ public abstract class Worker {
             if (bitmap != null) {
                 if (mCache != null && mCacheImage) {
                     if (debuggable > 0) {
-                        Log.v(TAG, "addBitmapToCache: " + imageViewReference.get() + ", src: " + mUri);
+                        Log.v(TAG, "addBitmapToCache: " + imageViewReference.get() + ", src: " + mCacheUri);
                     }
-                    mCache.addBitmapToCache(mUri, bitmap);
+                    mCache.addBitmapToCache(mCacheUri, bitmap);
                 }
             }
 

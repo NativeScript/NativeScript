@@ -48,6 +48,9 @@ public class Fetcher extends Worker {
     private static final String HTTP_CACHE_DIR = "http";
     private static final int IO_BUFFER_SIZE = 8 * 1024;
 
+    private static int mDeviceWidthPixels;
+    private static int mDeviceHeightPixels;
+
     private File mHttpCacheDir;
     private DiskLruCache mHttpDiskCache;
     private boolean mHttpDiskCacheStarting = true;
@@ -74,6 +77,8 @@ public class Fetcher extends Worker {
         super(context);
         mHttpCacheDir = Cache.getDiskCacheDir(context, HTTP_CACHE_DIR);
         mPackageName = context.getPackageName();
+        mDeviceWidthPixels  = (int) context.getResources().getDisplayMetrics().widthPixels;
+        mDeviceHeightPixels  = (int) context.getResources().getDisplayMetrics().heightPixels;
     }
 
     @Override
@@ -477,15 +482,15 @@ public class Fetcher extends Worker {
 
         int sourceWidth = bitmap.getWidth();
         int sourceHeight = bitmap.getHeight();
-        reqWidth = reqWidth > 0 ? reqWidth : sourceWidth;
-        reqHeight = reqHeight > 0 ? reqHeight : sourceHeight;
+        reqWidth = reqWidth > 0 ? reqWidth : Math.min(sourceWidth, mDeviceWidthPixels);
+        reqHeight = reqHeight > 0 ? reqHeight : Math.min(sourceHeight, mDeviceHeightPixels);
 
         // scale
         if (reqWidth != sourceWidth || reqHeight != sourceHeight) {
             if (keepAspectRatio) {
                 double widthCoef = (double) sourceWidth / (double) reqWidth;
                 double heightCoef = (double) sourceHeight / (double) reqHeight;
-                double aspectCoef = widthCoef > heightCoef ? widthCoef : heightCoef;
+                double aspectCoef = Math.min(widthCoef, heightCoef);
 
                 reqWidth = (int) Math.floor(sourceWidth / aspectCoef);
                 reqHeight = (int) Math.floor(sourceHeight / aspectCoef);
