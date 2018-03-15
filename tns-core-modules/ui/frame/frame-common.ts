@@ -1,4 +1,4 @@
-﻿// Definitions.
+﻿﻿// Definitions.
 import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from ".";
 import { Page } from "../page";
 

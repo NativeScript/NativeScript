@@ -1,4 +1,4 @@
-﻿// Definitions.
+﻿﻿// Definitions.
 import { Frame } from "../frame";
 
 // Types.

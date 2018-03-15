@@ -1,4 +1,4 @@
-﻿// Definitions.
+﻿﻿// Definitions.
 import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition, NavigationEntry } from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";

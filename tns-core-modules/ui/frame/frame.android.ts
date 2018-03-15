@@ -1,4 +1,4 @@
-﻿// Definitions.
+﻿﻿// Definitions.
 import {
     AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationEntry,
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks

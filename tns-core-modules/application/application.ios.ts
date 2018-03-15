@@ -1,4 +1,4 @@
-﻿import {
+﻿﻿import {
     iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     ApplicationEventData,

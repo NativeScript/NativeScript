@@ -131,6 +131,10 @@ export class TextBase extends TextBaseCommon {
             paragraphStyle.lineSpacing = this.lineHeight;
             // make sure a possible previously set text alignment setting is not lost when line height is specified
             paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeViewProtected).textAlignment;
+            if (this.nativeViewProtected instanceof  UILabel) {
+                // make sure a possible previously set line break mode is not lost when line height is specified
+                paragraphStyle.lineBreakMode = this.nativeViewProtected.lineBreakMode;
+            }
             attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
         }
 
@@ -171,6 +175,10 @@ export class TextBase extends TextBaseCommon {
             paragraphStyle.lineSpacing = style.lineHeight;
             // make sure a possible previously set text alignment setting is not lost when line height is specified
             paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeViewProtected).textAlignment;
+            if (this.nativeViewProtected instanceof  UILabel) {
+                // make sure a possible previously set line break mode is not lost when line height is specified
+                paragraphStyle.lineBreakMode = this.nativeViewProtected.lineBreakMode;
+            }
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
