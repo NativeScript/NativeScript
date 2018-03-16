@@ -136,7 +136,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     }
 
     public isItemAtIndexVisible(index: number) {
-        // 
+        return false;
     }
 
     protected updateEffectiveRowHeight(): void {
