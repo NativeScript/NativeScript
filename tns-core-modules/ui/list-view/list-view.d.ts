@@ -92,6 +92,12 @@ export class ListView extends View {
     scrollToIndex(index: number);
 
     /**
+     * Checks if Specified item with index is visible.
+     * @param index - Item index.
+     */
+    isItemAtIndexVisible(index: number): boolean;
+
+    /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
      * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
      * @param callback - Callback function which will be executed when event is raised.

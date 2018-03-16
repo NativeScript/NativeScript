@@ -705,6 +705,33 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
     }
 
+    public test_check_if_item_at_index_is_visible() {
+        var listView = this.testView;
+
+        listView.itemTemplate = () => {
+            var label = new Label();
+            label.id = "testLabel";
+            label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+            label.height = { unit: "%", value: 50 }
+            return label;
+        }
+        listView.items = [1, 2, 3];
+
+        this.waitUntilListViewReady();
+
+        var firstNativeElementText = this.checkItemVisibleAtIndex(listView, 0);
+        var secondNativeElementText = this.checkItemVisibleAtIndex(listView, 1);
+        var thirdNativeElementText = this.checkItemVisibleAtIndex(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, true, "first element is visible");
+        TKUnit.assertEqual(secondNativeElementText, true, "second element is visible");
+        TKUnit.assertEqual(thirdNativeElementText, false, "third element not visible");
+    }
+
+    private checkItemVisibleAtIndex(listView: listViewModule.ListView, index: number ): boolean {
+        return listView.isItemAtIndexVisible(index);
+    }
+
     private assertNoMemoryLeak(weakRef: WeakRef<listViewModule.ListView>) {
         this.tearDown();
         TKUnit.waitUntilReady(() => {
