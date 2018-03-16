@@ -22,7 +22,6 @@ const autoEffectiveRowHeight = -1;
 export abstract class ListViewBase extends View implements ListViewDefinition {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
-    public static visibleItems = "visibleItems"; 
     public static loadMoreItemsEvent = "loadMoreItems";
     // TODO: get rid of such hacks.
     public static knownFunctions = ["itemTemplateSelector", "itemIdGenerator"]; //See component-builder.ts isKnownFunction

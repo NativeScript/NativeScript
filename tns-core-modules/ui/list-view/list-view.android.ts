@@ -14,18 +14,14 @@ export * from "./list-view-common";
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
-const VISIBLEITEMS = ListViewBase.visibleItems;
 
 interface ItemClickListener {
     new (owner: ListView): android.widget.AdapterView.OnItemClickListener;
 }
 
-interface ScrollListener {
-    new (owner: ListView): android.widget.AbsListView.OnScrollListener;
-}
+
 
 let ItemClickListener: ItemClickListener;
-let ScrollListener: ScrollListener;
 
 function initializeItemClickListener(): void {
     if (ItemClickListener) {
@@ -49,38 +45,6 @@ function initializeItemClickListener(): void {
     ItemClickListener = ItemClickListenerImpl;
 }
 
-function initializeScrollListener(): void {
-    if ( ScrollListener ) {
-        return;
-    }
-
-    @Interfaces([ android.widget.AbsListView.OnScrollListener ])
-    class ScrollListenerImpl extends java.lang.Object implements android.widget.AbsListView.OnScrollListener {
-        constructor( public owner: ListView ) {
-            super();
-
-            return global.__native(this);
-        }
-
-        onScroll(view: android.widget.AbsListView , firstVisibleItem: number, visibleItemCount: number, totalItemCount: number) {
-            const owner = this.owner;
-            const visibleIndexes = new Array(visibleItemCount).fill(firstVisibleItem).map((v, i) => {
-                if ( i === 0 ) return v;
-                return v + i;
-            });
-
-            owner.visibleIndexes = visibleIndexes;
-        }
-
-        onScrollStateChanged(view: android.widget.AbsListView, scrollState: number) {
-            // TODO: Implement this.
-        }
-
-    }
-
-    ScrollListener = ScrollListenerImpl;
-}
-
 export class ListView extends ListViewBase {
     nativeViewProtected: android.widget.ListView;
     private _androidViewId: number = -1;
@@ -93,7 +57,6 @@ export class ListView extends ListViewBase {
     @profile
     public createNativeView() {
         initializeItemClickListener();
-        initializeScrollListener();
 
         const listView = new android.widget.ListView(this._context);
         listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
@@ -109,10 +72,6 @@ export class ListView extends ListViewBase {
         const itemClickListener = new ItemClickListener(this);
         listView.setOnItemClickListener(itemClickListener);
         (<any>listView).itemClickListener = itemClickListener;
-
-        const scrollListener = new ScrollListener(this);
-        listView.setOnScrollListener(scrollListener);
-        (<any>listView).scrollListener = scrollListener;
 
         return listView;
     }
@@ -216,10 +175,10 @@ export class ListView extends ListViewBase {
     }
 
     public isItemAtIndexVisible(index: number): boolean {
-        if ( this.visibleIndexes.find(i => i === index) ) {
-            return true;    
-        }
-        return false;
+        let nativeView = this.nativeViewProtected;
+        const start = nativeView.getFirstVisiblePosition();
+        const end =  nativeView.getLastVisiblePosition();
+        return ( index >= start && index <= end );
     }
 
     [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
