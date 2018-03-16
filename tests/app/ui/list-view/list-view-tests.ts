@@ -712,20 +712,19 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             var label = new Label();
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
-            label.height = { unit: "%", value: 50 }
             return label;
         }
         listView.items = [1, 2, 3];
 
         this.waitUntilListViewReady();
 
-        var firstNativeElementText = this.checkItemVisibleAtIndex(listView, 0);
-        var secondNativeElementText = this.checkItemVisibleAtIndex(listView, 1);
-        var thirdNativeElementText = this.checkItemVisibleAtIndex(listView, 2);
+        var firstNativeElementVisible = this.checkItemVisibleAtIndex(listView, 0);
+        var secondNativeElementVisible = this.checkItemVisibleAtIndex(listView, 1);
+        var thirdNativeElementVisible = this.checkItemVisibleAtIndex(listView, 2);
 
-        TKUnit.assertEqual(firstNativeElementText, true, "first element is visible");
-        TKUnit.assertEqual(secondNativeElementText, true, "second element is visible");
-        TKUnit.assertEqual(thirdNativeElementText, false, "third element not visible");
+        TKUnit.assertEqual(firstNativeElementVisible, true, "first element is visible");
+        TKUnit.assertEqual(secondNativeElementVisible, true, "second element is visible");
+        TKUnit.assertEqual(thirdNativeElementVisible, true, "third element is visible");
     }
 
     private checkItemVisibleAtIndex(listView: listViewModule.ListView, index: number ): boolean {
