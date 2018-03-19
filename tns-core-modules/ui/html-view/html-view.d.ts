@@ -17,7 +17,7 @@ export class HtmlView extends View {
     android: any /* android.widget.TextView */;
 
     /**
-     * Gets the native [UILabel](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UILabel_Class/) that represents the user interface for this component. Valid only when running on iOS.
+     * Gets the native [UITextView](https://developer.apple.com/documentation/uikit/uitextview) that represents the user interface for this component. Valid only when running on iOS.
      */
     ios: any /* UITextView */;
 
