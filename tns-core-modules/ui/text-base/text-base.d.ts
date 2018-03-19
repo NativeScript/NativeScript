@@ -123,3 +123,5 @@ export const letterSpacingProperty: CssProperty<Style, number>;
 
 //Used by tab view
 export function getTransformedText(text: string, textTransform: TextTransform): string;
+
+export const resetSymbol: symbol;
