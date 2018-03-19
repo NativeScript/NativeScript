@@ -15,6 +15,7 @@ export function onTapStretched(args) {
     const page = <Page>args.object.page;
     const label = page.getViewById<Label>("label");
     var fullscreen = false;
+    // no-op change
     var stretched = true;
     
     page.showModal("ui-tests-app/modal-view/login-page", "context", function (username: string, password: string) {
