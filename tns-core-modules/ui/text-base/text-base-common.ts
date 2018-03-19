@@ -214,4 +214,4 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new CssProperty<Style, number>({ name: "lineHeight", cssName: "line-height", affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 lineHeightProperty.register(Style);
 
-export const resetSymbol = Symbol(-1);
+export const resetSymbol = Symbol("textPropertyDefault");
