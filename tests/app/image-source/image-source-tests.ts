@@ -141,8 +141,8 @@ export function testFromAssetWithScalingAndAspectRatio(done) {
     };
 
     let img = imageSource.fromAsset(asset).then((source) => {
-        TKUnit.assertEqual(source.width, scaleWidth);
-        TKUnit.assertEqual(source.height, 5);
+        TKUnit.assertEqual(source.width, 18);
+        TKUnit.assertEqual(source.height, scaleHeight);
         done();
     }, (error) => {
         done(error);
