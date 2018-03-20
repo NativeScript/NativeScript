@@ -708,23 +708,17 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     public test_check_if_item_at_index_is_visible() {
         var listView = this.testView;
 
-        listView.itemTemplate = () => {
-            var label = new Label();
-            label.id = "testLabel";
-            label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
-            return label;
-        }
-        listView.items = [1, 2, 3];
-
-        this.waitUntilListViewReady();
-
+        listView.itemTemplate = "<Label text='default' minHeight='100' maxHeight='100'/>";
+        listView.items = ListViewTest.generateItemsForMultipleTemplatesTests(40);
+        TKUnit.wait(0.1);
+        
         var firstNativeElementVisible = this.checkItemVisibleAtIndex(listView, 0);
         var secondNativeElementVisible = this.checkItemVisibleAtIndex(listView, 1);
-        var thirdNativeElementVisible = this.checkItemVisibleAtIndex(listView, 2);
+        var lastNativeElementVisible = this.checkItemVisibleAtIndex(listView, 39);
 
         TKUnit.assertEqual(firstNativeElementVisible, true, "first element is visible");
         TKUnit.assertEqual(secondNativeElementVisible, true, "second element is visible");
-        TKUnit.assertEqual(thirdNativeElementVisible, true, "third element is visible");
+        TKUnit.assertEqual(lastNativeElementVisible, false, "Last element is not visible");
     }
 
     private checkItemVisibleAtIndex(listView: listViewModule.ListView, index: number ): boolean {
