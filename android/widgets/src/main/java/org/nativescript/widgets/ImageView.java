@@ -315,6 +315,10 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
             paint.setAntiAlias(true);
             paint.setFilterBitmap(true);
             paint.setShader(bitmapShader);
+            ColorFilter filter = this.getColorFilter();
+            if (filter != null) {
+                paint.setColorFilter(filter);
+            }
             canvas.drawPath(path, paint);
         }
     }
