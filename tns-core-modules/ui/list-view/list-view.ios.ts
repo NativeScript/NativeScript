@@ -340,7 +340,7 @@ export class ListView extends ListViewBase {
             return height;
         }
 
-        return this.ios.estimatedRowHeight;
+        return this._ios.estimatedRowHeight;
     }
 
     public _prepareCell(cell: ListViewCell, indexPath: NSIndexPath): number {
