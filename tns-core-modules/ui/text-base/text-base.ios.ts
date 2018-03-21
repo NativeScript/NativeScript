@@ -3,7 +3,7 @@ import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
-    FormattedString, Span, Color, isBold
+    FormattedString, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -12,11 +12,11 @@ export class TextBase extends TextBaseCommon {
 
     public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
 
-    [textProperty.getDefault](): number {
-        return -1;
+    [textProperty.getDefault](): number | symbol {
+        return resetSymbol;
     }
-    [textProperty.setNative](value: string | number) {
-        const reset = value === -1;
+    [textProperty.setNative](value: string | number | symbol) {
+        const reset = value === resetSymbol;
         if (!reset && this.formattedText) {
             return;
         }
