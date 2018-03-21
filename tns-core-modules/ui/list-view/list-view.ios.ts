@@ -285,6 +285,11 @@ export class ListView extends ListViewBase {
         }
     }
 
+    public isItemAtIndexVisible( itemIndex: number ): boolean {
+        const indexes: NSIndexPath[] = Array.from(this._ios.indexPathsForVisibleRows); 
+        return indexes.some(visIndex => visIndex.row === itemIndex);
+    }
+
     public getHeight(index: number): number {
         return this._heights[index];
     }

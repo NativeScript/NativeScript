@@ -77,7 +77,6 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     get itemIdGenerator(): (item: any, index: number, items: any) => number {
         return this._itemIdGenerator;
     }
-
     set itemIdGenerator(generatorFn: (item: any, index: number, items: any) => number) {
         this._itemIdGenerator = generatorFn;
     }
@@ -133,6 +132,10 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
 
     public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
         this.refresh();
+    }
+
+    public isItemAtIndexVisible(index: number) {
+        return false;
     }
 
     protected updateEffectiveRowHeight(): void {
