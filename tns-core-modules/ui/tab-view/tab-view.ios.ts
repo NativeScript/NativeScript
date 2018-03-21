@@ -13,6 +13,7 @@ import { Page } from "../page";
 import { profile } from "../../profiling";
 import * as uiUtils from "../utils";
 import * as utils from "../../utils/utils";
+import { Frame } from "../frame";
 
 export * from "./tab-view-common";
 
@@ -253,6 +254,11 @@ export class TabView extends TabViewBase {
 
         const newItem = items[newIndex];
         if (newItem && this.isLoaded) {
+            const selectedView = items[newIndex].view;
+            if (selectedView instanceof Frame) {
+                selectedView._pushInFrameStack();
+            }
+
             newItem.loadView(newItem.view);
         }
 

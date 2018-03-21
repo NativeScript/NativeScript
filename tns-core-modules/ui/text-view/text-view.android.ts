@@ -1,8 +1,9 @@
 ﻿import { TextView as TextViewDefinition } from ".";
-import { EditableTextBase } from "../editable-text-base";
+import { EditableTextBase, CSSType } from "../editable-text-base";
 
 export * from "../text-base";
 
+@CSSType("TextView")
 export class TextView extends EditableTextBase implements TextViewDefinition {
 
     public _configureEditText(editText: android.widget.EditText) {

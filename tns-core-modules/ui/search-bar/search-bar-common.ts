@@ -1,8 +1,9 @@
 ﻿import { SearchBar as SearchBarDefinition } from ".";
-import { View, Property, Color, isIOS } from "../core/view";
+import { View, Property, Color, isIOS, CSSType } from "../core/view";
 
 export * from "../core/view";
 
+@CSSType("SearchBar")
 export abstract class SearchBarBase extends View implements SearchBarDefinition {
     public static submitEvent = "submit";
     public static clearEvent = "clear";

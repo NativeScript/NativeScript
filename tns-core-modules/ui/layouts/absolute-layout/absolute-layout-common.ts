@@ -1,5 +1,5 @@
 ﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from ".";
-import { LayoutBase, View, Property, Length, zeroLength } from "../layout-base";
+import { LayoutBase, View, Property, Length, zeroLength, CSSType } from "../layout-base";
 
 export * from "../layout-base";
 
@@ -13,6 +13,7 @@ function validateArgs(element: View): View {
     return element;
 }
 
+@CSSType("AbsoluteLayout")
 export class AbsoluteLayoutBase extends LayoutBase implements AbsoluteLayoutDefinition {
     // TODO: Do we still need this? it can be get like view.left
     public static getLeft(element: View): Length {

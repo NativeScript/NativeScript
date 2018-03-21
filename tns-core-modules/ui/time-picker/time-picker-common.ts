@@ -1,5 +1,5 @@
 ﻿import { TimePicker as TimePickerDefinition } from ".";
-import { View, Property } from "../core/view";
+import { View, Property, CSSType } from "../core/view";
 
 export * from "../core/view";
 
@@ -86,6 +86,7 @@ function getErrorMessage(picker: TimePickerDefinition, propertyName: string, new
     return `${propertyName} property value (${toString(newValue)}:${toString(picker.minute)}) is not valid. ${getMinMaxTimeErrorMessage(picker)}.`;
 }
 
+@CSSType("TimePicker")
 export abstract class TimePickerBase extends View implements TimePickerDefinition {
     public hour: number;
     public minute: number;

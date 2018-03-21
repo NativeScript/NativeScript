@@ -1,7 +1,7 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty, resetSymbol,
     textProperty, placeholderColorProperty, Color, textTransformProperty, maxLengthProperty
 } from "./editable-text-base-common";
 
@@ -241,13 +241,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    [textProperty.getDefault](): number {
-        return -1;
+    [textProperty.getDefault](): number | symbol {
+        return resetSymbol;
     }
-    [textProperty.setNative](value: string | number) {
+    [textProperty.setNative](value: string | number | symbol) {
         try {
             this._changeFromCode = true;
-            this._setNativeText(value === -1);
+            this._setNativeText(value === resetSymbol);
         } finally {
             this._changeFromCode = false;
         }

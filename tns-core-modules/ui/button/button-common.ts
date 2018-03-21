@@ -1,8 +1,9 @@
 ﻿import { Button as ButtonDefinition } from ".";
-import { TextBase, booleanConverter } from "../text-base";
+import { TextBase, booleanConverter, CSSType } from "../text-base";
 
 export * from "../text-base";
 
+@CSSType("Button")
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
     public static tapEvent = "tap";
 

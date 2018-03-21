@@ -2,19 +2,20 @@
     ActionBar as ActionBarDefinition,
     ActionItems as ActionItemsDefinition,
     ActionItem as ActionItemDefinition,
-    NavigationButton, IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings
+    NavigationButton, IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings,
 } from ".";
 
 import { profile } from "../../profiling";
 
 export * from "../core/view";
 
-import { View, ViewBase, Property, unsetValue, booleanConverter, horizontalAlignmentProperty, verticalAlignmentProperty } from "../core/view";
+import { View, ViewBase, Property, unsetValue, booleanConverter, horizontalAlignmentProperty, verticalAlignmentProperty, CSSType } from "../core/view";
 
 export module knownCollections {
     export var actionItems = "actionItems";
 }
 
+@CSSType("ActionBar")
 export class ActionBarBase extends View implements ActionBarDefinition {
     private _actionItems: ActionItems;
     private _navigationButton: NavigationButton;

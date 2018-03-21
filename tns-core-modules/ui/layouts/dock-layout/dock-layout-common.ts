@@ -1,5 +1,5 @@
 ﻿import { DockLayout as DockLayoutDefinition, Dock } from ".";
-import { LayoutBase, View, Property, isIOS, booleanConverter, makeValidator, makeParser } from "../layout-base";
+import { LayoutBase, View, Property, isIOS, booleanConverter, makeValidator, makeParser, CSSType } from "../layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
@@ -10,6 +10,7 @@ function validateArgs(element: View): View {
 
 export * from "../layout-base";
 
+@CSSType("DockLayout")
 export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
 
     public static getDock(element: View): Dock {

@@ -1,5 +1,5 @@
 ﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from ".";
-import { LayoutBase, View, Observable, Property, makeParser, makeValidator } from "../layout-base";
+import { LayoutBase, View, Observable, Property, makeParser, makeValidator, CSSType } from "../layout-base";
 
 export * from "../layout-base";
 
@@ -125,6 +125,7 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
     }
 }
 
+@CSSType("GridLayout")
 export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     private _rows: Array<ItemSpec> = new Array<ItemSpec>();
     private _cols: Array<ItemSpec> = new Array<ItemSpec>();

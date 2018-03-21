@@ -33,8 +33,7 @@ export class ImageAsset  extends observable.Observable implements definition.Ima
 export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, reqHeight) {
     let widthCoef = sourceWidth / reqWidth;
     let heightCoef = sourceHeight / reqHeight;
-
-    let aspectCoef = widthCoef > heightCoef ? widthCoef : heightCoef;
+    let aspectCoef = Math.min(widthCoef, heightCoef);
 
     return {
         width: Math.floor(sourceWidth / aspectCoef),

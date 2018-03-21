@@ -1,5 +1,5 @@
-﻿import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
-import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable, EventData } from "../core/view";
+import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
+import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
 import { parse, parseMultipleTemplates } from "../builder";
 import { Label } from "../label";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
@@ -18,6 +18,7 @@ export module knownMultiTemplates {
 
 const autoEffectiveRowHeight = -1;
 
+@CSSType("ListView")
 export abstract class ListViewBase extends View implements ListViewDefinition, TemplatedItemsView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
@@ -76,7 +77,6 @@ export abstract class ListViewBase extends View implements ListViewDefinition, T
     get itemIdGenerator(): (item: any, index: number, items: any) => number {
         return this._itemIdGenerator;
     }
-
     set itemIdGenerator(generatorFn: (item: any, index: number, items: any) => number) {
         this._itemIdGenerator = generatorFn;
     }
@@ -132,6 +132,10 @@ export abstract class ListViewBase extends View implements ListViewDefinition, T
 
     public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
         this.refresh();
+    }
+
+    public isItemAtIndexVisible(index: number) {
+        return false;
     }
 
     protected updateEffectiveRowHeight(): void {

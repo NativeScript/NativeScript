@@ -5,10 +5,10 @@
     navigatedFrom="onNavigatedFrom">
     
     <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Nested Modal"></Label>
+        <Label class="action-bar-title" text="Modal Nested"></Label>
     </ActionBar>
 
     <StackLayout backgroundColor="darkBlue">
-        <Button text="Close Modal" tap="closeModal" />
+        <Button text="Close Modal Nested" tap="closeModal" />
     </StackLayout>
 </Page>

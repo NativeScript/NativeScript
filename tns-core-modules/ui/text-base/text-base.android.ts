@@ -5,7 +5,7 @@ import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold
+    whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -97,12 +97,12 @@ export class TextBase extends TextBaseCommon {
         this._maxHeight = this._maxLines = undefined;
     }
 
-    [textProperty.getDefault](): number {
-        return -1;
+    [textProperty.getDefault](): symbol | number {
+        return resetSymbol;
     }
 
-    [textProperty.setNative](value: string | number) {
-        const reset = value === -1;
+    [textProperty.setNative](value: string | number | symbol) {
+        const reset = value === resetSymbol;
         if (!reset && this.formattedText) {
             return;
         }

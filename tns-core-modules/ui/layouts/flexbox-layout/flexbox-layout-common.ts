@@ -1,4 +1,4 @@
-import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "../layout-base";
+import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue, CSSType } from "../layout-base";
 
 export * from "../layout-base";
 
@@ -137,6 +137,7 @@ function validateArgs(element: View): View {
 /**
  * A common base class for all cross platform flexbox layout implementations.
  */
+@CSSType("FlexboxLayout")
 export abstract class FlexboxLayoutBase extends LayoutBase {
     get flexDirection(): FlexDirection {
         return this.style.flexDirection;

@@ -7,6 +7,7 @@ import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { LayoutBase } from "../layouts/layout-base";
 import { profile } from "../../profiling";
+import { onScroll } from '../../../apps/app/ui-tests-app/list-view/list-view';
 
 export * from "./list-view-common";
 
@@ -44,7 +45,6 @@ function initializeItemClickListener(): void {
 
 export class ListView extends ListViewBase {
     nativeViewProtected: android.widget.ListView;
-
     private _androidViewId: number = -1;
 
     public _realizedItems = new Map<android.view.View, View>();
@@ -168,6 +168,13 @@ export class ListView extends ListViewBase {
 
         this._realizedItems.clear();
         this._realizedTemplates.clear();
+    }
+
+    public isItemAtIndexVisible(index: number): boolean {
+        let nativeView = this.nativeViewProtected;
+        const start = nativeView.getFirstVisiblePosition();
+        const end =  nativeView.getLastVisiblePosition();
+        return ( index >= start && index <= end );
     }
 
     [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
