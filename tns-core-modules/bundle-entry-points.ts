@@ -21,6 +21,7 @@ if (global.TNS_WEBPACK) {
     global.registerModule("ui/layouts/grid-layout", () => require("ui/layouts/grid-layout"))
     global.registerModule("ui/layouts/stack-layout", () => require("ui/layouts/stack-layout"))
     global.registerModule("ui/layouts/flexbox-layout", () => require("ui/layouts/flexbox-layout"))
+    global.registerModule("ui/layouts/wrap-layout", () => require("ui/layouts/wrap-layout"))
     global.registerModule("ui/list-picker", () => require("ui/list-picker"))
     global.registerModule("ui/page", () => require("ui/page"))
     global.registerModule("ui/placeholder", () => require("ui/placeholder"))
