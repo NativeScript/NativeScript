@@ -2,7 +2,7 @@
 import { ItemEventData } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, Observable, Color,
-    separatorColorProperty, itemTemplatesProperty, layout, EventData
+    separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, layout, EventData
 } from "./list-view-common";
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
@@ -138,7 +138,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
         const owner = this._owner.get();
         if (!owner) {
-            return DEFAULT_HEIGHT;
+            return tableView.estimatedRowHeight;
         }
 
         let height: number;
@@ -188,7 +188,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         }
         return indexPath;
     }
-    
+
     public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
         tableView.deselectRowAtIndexPathAnimated(indexPath, true);
 
@@ -198,7 +198,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
         let owner = this._owner.get();
         if (!owner) {
-            return DEFAULT_HEIGHT;
+            return tableView.estimatedRowHeight;
         }
 
         return owner._effectiveRowHeight;
@@ -345,7 +345,7 @@ export class ListView extends ListViewBase {
             return height;
         }
 
-        return DEFAULT_HEIGHT;
+        return this._ios.estimatedRowHeight;
     }
 
     public _prepareCell(cell: ListViewCell, indexPath: NSIndexPath): number {
@@ -427,5 +427,14 @@ export class ListView extends ListViewBase {
         }
 
         this.refresh();
+    }
+
+    [iosEstimatedRowHeightProperty.getDefault](): Length {
+        return DEFAULT_HEIGHT;
+    }
+    [iosEstimatedRowHeightProperty.setNative](value: Length) {
+        const nativeView = this._ios;
+        const estimatedHeight = Length.toDevicePixels(value, 0);
+        nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
     }
 }

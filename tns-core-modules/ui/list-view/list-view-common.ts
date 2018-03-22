@@ -42,6 +42,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition, T
     public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
     public _effectiveRowHeight: number = autoEffectiveRowHeight;
     public rowHeight: Length;
+    public iosEstimatedRowHeight: Length;
     public items: any[] | ItemsSource;
     public itemTemplate: string | Template;
     public itemTemplates: string | Array<KeyedTemplate>;
@@ -209,6 +210,11 @@ export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
     }, valueConverter: Length.parse
 });
 rowHeightProperty.register(ListViewBase);
+
+export const iosEstimatedRowHeightProperty = new Property<ListViewBase, Length>({
+    name: "iosEstimatedRowHeight", valueConverter: (v) => Length.parse(v)
+});
+iosEstimatedRowHeightProperty.register(ListViewBase);
 
 export const separatorColorProperty = new CssProperty<Style, Color>({ name: "separatorColor", cssName: "separator-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 separatorColorProperty.register(Style);

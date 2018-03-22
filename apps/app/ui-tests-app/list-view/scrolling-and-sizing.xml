@@ -51,5 +51,15 @@
             </ListView>
         </StackLayout>
  
+         <StackLayout class="p-10" row="3">
+            <Label text="ios-estimated-row-height" class="body m-b-10" />
+            <ListView items="{{ $value }}" iosEstimatedRowHeight="0">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+            <Label text="after-auto-estimated-height" class="body m-b-10" />
+        </StackLayout>
+
     </StackLayout>
 </Page>

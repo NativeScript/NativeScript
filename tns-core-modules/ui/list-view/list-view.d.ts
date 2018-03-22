@@ -79,6 +79,12 @@ export class ListView extends View {
     rowHeight: Length;
 
     /**
+     * Gets or set the estimated height of rows in the ListView.
+     * The default value is 44px.
+     */
+    iosEstimatedRowHeight: Length;
+
+    /**
      * Forces the ListView to reload all its items.
      */
     refresh();
@@ -187,6 +193,11 @@ export const separatorColor: Property<ListView, Color>;
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
 export const rowHeightProperty: Property<ListView, Length>;
+
+/**
+ * Represents the observable property backing the iosEstimatedRowHeight property of each ListView instance.
+ */
+export const iosEstimatedRowHeightProperty: Property<ListView, Length>;
 
 /**
  * Backing property for separator color property.
