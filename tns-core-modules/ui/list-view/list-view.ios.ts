@@ -141,13 +141,9 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
             return tableView.estimatedRowHeight;
         }
 
-        let height: number;
-        if (ios.MajorVersion >= 8) {
-            height = owner.getHeight(indexPath.row);
-        }
-
-        if (ios.MajorVersion < 8 || height === undefined) {
-            // in iOS 7.1 (or iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated:) this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
+        let height = owner.getHeight(indexPath.row);
+        if (height === undefined) {
+            // in iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated: this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
             const template = owner._getItemTemplate(indexPath.row);
             let cell = this._measureCellMap.get(template.key);
             if (!cell) {

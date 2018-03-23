@@ -578,8 +578,6 @@ export class CustomLayoutView extends View {
     }
 }
 
-const majorVersion = iosUtils.MajorVersion;
-
 export namespace ios {
     export function isContentScrollable(controller: UIViewController, owner: View): boolean {
         let scrollableContent = (<any>owner).scrollableContent;
