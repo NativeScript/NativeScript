@@ -188,9 +188,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             completed = args.index === (listView.items.length - 1);
         });
 
-        // iOS7 needs to know the size of the cell before it is generated so we first measure them using fake cell
-        // then we generate the real cells. This cause itemLoading to be called twice per index.
-        let expected = (platform.device.os === platform.platformNames.ios && utils.ios.MajorVersion === 7) ? 2 : 1;
+        let expected = 1;
         TKUnit.waitUntilReady(() => completed);
         TKUnit.assertEqual(indexes[0], expected, "itemLoading called more than once");
         TKUnit.assertEqual(indexes[1], expected, "itemLoading called more than once");
@@ -557,12 +555,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         this.waitUntilListViewReady();
 
-        if (utils.ios && utils.ios.MajorVersion < 8) {
-            TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length * 2, "Converter should be called once for every item.");
-        }
-        else {
-            TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length, "Converter should be called once for every item.");
-        }
+        TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length, "Converter should be called once for every item.");
     }
 
     public test_RemovingChildViewsBeforeListView() {
