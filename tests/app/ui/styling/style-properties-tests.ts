@@ -47,10 +47,6 @@ export function test_setting_backgroundImage_property_from_CSS_is_applied_to_Sty
     test_property_from_CSS_is_applied_to_style("backgroundImage", "background-image", "url('~/pages/test2.png')");
 }
 
-export function test_setting_backgroundImage_gradient_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("backgroundImage", "background-image", "linear-gradient(to top, red, blue)");
-}
-
 export function test_setting_borderWidth_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", 5, "5", true);
 }

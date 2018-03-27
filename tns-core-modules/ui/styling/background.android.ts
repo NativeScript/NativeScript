@@ -149,6 +149,7 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
 
         let imageUri: string;
         if (background.image && typeof background.image === 'string') {
+            imageUri = background.image;
             const match = imageUri.match(pattern);
             if (match && match[2]) {
                 imageUri = match[2];
