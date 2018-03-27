@@ -56,9 +56,6 @@ class WKNavigationDelegateImpl extends NSObject
         }
         const owner = this._owner.get();
         if (owner) {
-           webView.evaluateJavaScriptCompletionHandler("document.body.height",(val,err)=>{
-               console.log(val);
-           });
             let src = owner.src;
             if (webView.URL) {
                 src = webView.URL.absoluteString;
