@@ -22,6 +22,7 @@ import {
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
+import { topmost } from "../../frame/frame-stack";
 
 export * from "./view-common";
 
@@ -285,6 +286,18 @@ export class View extends ViewCommon {
 
         this._manager = null;
         super.onUnloaded();
+    }
+
+    public onBackPressed(): boolean {
+        let topmostFrame = topmost();
+
+        // Delegate back navigation handling to the topmost Frame
+        // when it's a child of the current View.
+        if (topmostFrame && topmostFrame._hasAncestorView(this)) {
+            return topmostFrame.onBackPressed();
+        }
+
+        return false;
     }
 
     private hasGestureObservers() {

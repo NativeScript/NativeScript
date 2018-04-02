@@ -9,9 +9,8 @@ import { knownFolders, path } from "../../file-system";
 import { parse, createViewFromEntry } from "../builder";
 import { profile } from "../../profiling";
 
+import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
 export * from "../core/view";
-
-let frameStack: Array<FrameBase> = [];
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;
@@ -403,41 +402,15 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _pushInFrameStack() {
-        if (this._isInFrameStack && frameStack[frameStack.length - 1] === this) {
-            return;
-        }
-
-        if (this._isInFrameStack) {
-            const indexOfFrame = frameStack.indexOf(this);
-            frameStack.splice(indexOfFrame, 1);
-        }
-
-        frameStack.push(this);
-        this._isInFrameStack = true;
+        _pushInFrameStack(this);
     }
 
     public _popFromFrameStack() {
-        if (!this._isInFrameStack) {
-            return;
-        }
-
-        const top = topmost();
-        if (top !== this) {
-            throw new Error("Cannot pop a Frame which is not at the top of the navigation stack.");
-        }
-
-        frameStack.pop();
-        this._isInFrameStack = false;
+        _popFromFrameStack(this);
     }
 
     public _removeFromFrameStack() {
-        if (!this._isInFrameStack) {
-            return;
-        }
-
-        const index = frameStack.indexOf(this);
-        frameStack.splice(index, 1);
-        this._isInFrameStack = false;
+        _removeFromFrameStack(this);
     }
 
     public _dialogClosed(): void {
@@ -585,11 +558,7 @@ export function getFrameById(id: string): FrameBase {
 }
 
 export function topmost(): FrameBase {
-    if (frameStack.length > 0) {
-        return frameStack[frameStack.length - 1];
-    }
-
-    return undefined;
+    return frameStackTopmost();
 }
 
 export function goBack(): boolean {

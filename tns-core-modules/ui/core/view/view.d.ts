@@ -110,7 +110,7 @@ export abstract class View extends ViewBase {
      * String value used when hooking to shownModally event.
      */
     public static shownModallyEvent: string;
-    
+
     /**
      * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
      */
@@ -705,6 +705,11 @@ export abstract class View extends ViewBase {
      * Called in android when native view is dettached from window.
      */
     _onDetachedFromWindow(): void;
+
+    /**
+     * Checks whether the current view has specific view for an ancestor.
+     */
+    _hasAncestorView(ancestorView: View): boolean;
     //@endprivate
 
     /**
@@ -797,7 +802,7 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 
 export namespace ios {
-    export function isContentScrollable(controller: any /* UIViewController */, owner: View): boolean 
+    export function isContentScrollable(controller: any /* UIViewController */, owner: View): boolean
     export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void
     export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
     export function layoutView(controller: any /* UIViewController */, owner: View): void;

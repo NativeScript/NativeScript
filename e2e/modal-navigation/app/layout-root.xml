@@ -1,0 +1,3 @@
+<GridLayout>
+    <Frame defaultPage="home/home-page" />
+</GridLayout>
