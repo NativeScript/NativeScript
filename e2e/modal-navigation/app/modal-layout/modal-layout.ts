@@ -21,4 +21,3 @@ export function onNavigatedTo() {
 export function onNavigatedFrom() {
     console.log("modal-layout onNavigatedFrom");
 }
-
