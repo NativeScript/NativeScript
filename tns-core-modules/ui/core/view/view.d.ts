@@ -575,6 +575,11 @@ export abstract class View extends ViewBase {
     public getActualSize(): Size;
 
     /**
+     * Derived classes can override this method to handle Android back button press. 
+     */
+    onBackPressed(): boolean;
+
+    /**
      * @private
      * A valid css string which will be applied for all nested UI components (based on css rules).
      */
@@ -678,11 +683,6 @@ export abstract class View extends ViewBase {
      * @private
      */
     _onLivesync(): boolean;
-
-    /**
-     * Derived classes can override this method to handle Android back button press. 
-     */
-    onBackPressed(): boolean;
     /**
      * @private
      */
