@@ -2,7 +2,7 @@
  * Android specific dialogs functions implementation.
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getLabelColor, getButtonColor, getButtonBackgroundColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getLabelColor, getButtonColors, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
 import { android as androidApp } from "../../application";
 
 export * from "./dialogs-common";
@@ -43,9 +43,9 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
         }
     }
 
-    let buttonColor = getButtonColor();
-    let buttonBackgroundColor = getButtonBackgroundColor();
-    if (buttonColor) {
+    let { color, backgroundColor } = getButtonColors();
+
+    if (color) {
         let buttons: android.widget.Button[] = [];
         for (let i = 0; i < 3; i++) {
             let id = dlg.getContext().getResources().getIdentifier("android:id/button" + i, null, null);
@@ -54,11 +54,11 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
 
         buttons.forEach(button => {
             if (button) {
-                if (buttonColor) {
-                    button.setTextColor(buttonColor.android);
+                if (color) {
+                    button.setTextColor(color.android);
                 }
-                if (buttonBackgroundColor) {
-                    button.setBackgroundColor(buttonBackgroundColor.android);
+                if (backgroundColor) {
+                    button.setBackgroundColor(backgroundColor.android);
                 }
             }
         });
