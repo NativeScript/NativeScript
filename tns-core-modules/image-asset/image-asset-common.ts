@@ -30,8 +30,6 @@ export class ImageAsset  extends observable.Observable implements definition.Ima
         this._nativeImage = value;
     }
 
-    
-
     public getImageAsync(callback: (image: any, error: Error) => void) {
         //
     }
