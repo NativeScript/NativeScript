@@ -3,7 +3,7 @@
  */
 
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getCurrentPage, getLabelColor, getButtonColor, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
 
 export * from "./dialogs-common";
@@ -162,13 +162,14 @@ export function login(arg: any): Promise<LoginResult> {
             let passwordTextField: UITextField;
             let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
+            let textFieldColor = getTextFieldColor();
+            
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Login";
                 arg.text = isString(options.userName) ? options.userName : "";
 
-                let color = getTextFieldColor();
-                if (color) {
-                    arg.textColor = arg.tintColor = color.ios;
+                if (textFieldColor) {
+                    arg.textColor = arg.tintColor = textFieldColor.ios;
                 }
             });
 
@@ -177,9 +178,8 @@ export function login(arg: any): Promise<LoginResult> {
                 arg.secureTextEntry = true;
                 arg.text = isString(options.password) ? options.password : "";
 
-                let color = getTextFieldColor();
-                if (color) {
-                    arg.textColor = arg.tintColor = color.ios;
+                if (textFieldColor) {
+                    arg.textColor = arg.tintColor = textFieldColor.ios;
                 }
             });
 
@@ -214,7 +214,7 @@ function showUIAlertController(alertController: UIAlertController) {
                 alertController.popoverPresentationController.permittedArrowDirections = 0;
             }
 
-            let color = getButtonColor();
+            let color = getButtonColors().color;
             if (color) {
                 alertController.view.tintColor = color.ios;
             }
