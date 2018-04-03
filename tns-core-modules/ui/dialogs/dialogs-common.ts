@@ -1,4 +1,4 @@
-﻿// Deifinitions.
+﻿// Types.
 import { View } from "../core/view";
 import { Color } from "../../color";
 import { Page } from "../page";
@@ -42,75 +42,66 @@ export function getCurrentPage(): Page {
     if (topmostFrame) {
         return topmostFrame.currentPage;
     }
-    
+
     return undefined;
 }
 
-function applySelectors(view: View) {
+function applySelectors<T extends View>(view: T, callback: (view: T) => void) {
     let currentPage = getCurrentPage();
     if (currentPage) {
         let styleScope = currentPage._styleScope;
         if (styleScope) {
-            styleScope.matchSelectors(view);
+            view._inheritStyleScope(styleScope);
+            view.onLoaded();
+            callback(view);
+            view.onUnloaded();
         }
     }
 }
 
-let buttonColor: Color;
-let buttonBackgroundColor: Color;
+let button: View;
+let label: View;
+let textField: View;
 
-function getButtonColors(): void {
-    const Button = require("ui/button").Button;
-    const btn = new Button();
-    applySelectors(btn);
-    buttonColor = btn.color;
-    buttonBackgroundColor = btn.backgroundColor;
-    btn.onUnloaded();
-}
-
-// NOTE: This will fail if app.css is changed.
-export function getButtonColor(): Color {
-    if (!buttonColor) {
-        getButtonColors();
+export function getButtonColors(): { color: Color, backgroundColor: Color } {
+    if (!button) {
+        const Button = require("ui/button").Button;
+        button = new Button;
     }
 
-    return buttonColor;
+    let buttonColor: Color;
+    let buttonBackgroundColor: Color;
+    applySelectors(button, (btn) => {
+        buttonColor = btn.color;
+        buttonBackgroundColor = <Color>btn.backgroundColor;
+    });
+    return { color: buttonColor, backgroundColor: buttonBackgroundColor };
 }
 
-// NOTE: This will fail if app.css is changed.
-export function getButtonBackgroundColor(): Color {
-    if (!buttonBackgroundColor) {
-        getButtonColors();
-    }
-
-    return buttonBackgroundColor;
-}
-
-let textFieldColor: Color;
-export function getTextFieldColor(): Color {
-    if (!textFieldColor) {
-        const TextField = require("ui/text-field").TextField;
-        const tf = new TextField();
-        applySelectors(tf);
-        textFieldColor = tf.color;
-        tf.onUnloaded();
-    }
-
-    return textFieldColor;
-}
-
-let labelColor: Color;
-// NOTE: This will fail if app.css is changed.
 export function getLabelColor(): Color {
-    if (!labelColor) {
+    if (!label) {
         const Label = require("ui/label").Label;
-        let lbl = new Label();
-        applySelectors(lbl);
-        labelColor = lbl.color;
-        lbl.onUnloaded();
+        label = new Label;
     }
 
+    let labelColor: Color;
+    applySelectors(label, (lbl) => {
+        labelColor = lbl.color;
+    });
     return labelColor;
+}
+
+export function getTextFieldColor(): Color {
+    if (!textField) {
+        const TextField = require("ui/text-field").TextField;
+        textField = new TextField();
+    }
+
+    let textFieldColor: Color;
+    applySelectors(textField, (tf) => {
+        textFieldColor = tf.color;
+    });
+    return textFieldColor;
 }
 
 export function isDialogOptions(arg): boolean {
