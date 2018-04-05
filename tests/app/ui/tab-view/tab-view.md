@@ -6,7 +6,7 @@ description: "Examples for using TabView"
 previous_url: /ApiReference/ui/tab-view/HOW-TO
 ---
 # TabView
-The TabView is a component, which allows to navigate between different views in the same page. The general behaviour of the TabView component is to load its items on demand. This means that every TabViewItem view will be loaded when it is shown and will be unloaded when it disappears. Respectively loaded and unloaded events will be fired while showing or hiding each view. However, there are some specifics for each platform(iOS and Android), which are described in the notes below.
+The TabView is a component, which allows to navigate between different views. The general behaviour of the TabView component is to load its items on demand. This means that every TabViewItem view will be loaded when it is shown and will be unloaded when it disappears. Respectively loaded and unloaded events will be fired while showing or hiding each view. However, there are some specifics for each platform(iOS and Android), which are described in the notes below.
 
 > Note (iOS specific): `UITabBarController` is used in the implementation, which means that only one `TabViewItem` can be shown at a given time and only one needs to be loaded. When the user selects a new `TabViewItem`, we load the new item and unload the previous one.
 
@@ -20,20 +20,13 @@ The iOS and Android UX guidelines regarding the Tab controls differ greatly. The
 
 ### Declaring the TabView in xml.
 ``` XML
-<Page>
  <TabView>
-   <TabView.items>
      <TabViewItem title="Tab 1">
-       <TabViewItem.view>
-          <Label text="Label in Tab1" />
-       </TabViewItem.view>
+            // ...
      </TabViewItem>
      <TabViewItem title="Tab 2">
-       <TabViewItem.view>
-          <Label text="Label in Tab2" />
-       </TabViewItem.view>
+            // ...
      </TabViewItem>
-   </TabView.items>
  </TabView>
 </Page>
 ```
@@ -49,11 +42,9 @@ Using a TabView requires the "ui/tab-view" module.
 {%snippet article-tabview-selectedIndexChanged%}
 ### Using selectedIndexChanged event from xml
 ```XML
-<Page>
- <TabView selectedIndexChanged="onSelectedIndexChanged">
-   ...
- </TabView>
-</Page>
+<TabView selectedIndexChanged="onSelectedIndexChanged">
+    ...
+</TabView>
 ```
 ```TypeScript
 export function onSelectedIndexChanged(args) {...}
@@ -69,99 +60,81 @@ For the TabView component could be set three different styling properties
 * `textTransform` (coresponding CSS property `text-transform`) - setting up textTransform individual for every `TabViewItem`. Value options: `capitalize`, `lowercase`, `none`, `uppercase`.
 
 ```XML
-<TabView selectedTabTextColor="#00FF00" tabBackgroundColor="#FF0000" >
-            <TabView.items>
-                <TabViewItem title="Tab 1" textTransform="lowercase">
-                <TabViewItem.view>
-                    <Label text="Label in Tab1" />
-                </TabViewItem.view>
-                </TabViewItem>
-                <TabViewItem title="Tab 2" textTransform="lowercase">
-                <TabViewItem.view>
-                    <Label text="Label in Tab2" />
-                </TabViewItem.view>
-                </TabViewItem>
-            </TabView.items>
+<TabView selectedTabTextColor="#00FF00" tabBackgroundColor="#FF0000">
+	<TabViewItem title="Tab 1" textTransform="lowercase">
+		<Label text="Label in Tab1" />
+	</TabViewItem>
+	<TabViewItem title="Tab 2" textTransform="lowercase">
+		<Label text="Label in Tab2" />
+	</TabViewItem>
 </TabView>
+
 ```
 
 * `androidSelectedTabHighlightColor`<sup>android specific property</sup> (coresponding CSS property `android-selected-tab-highlight-color`) - setup underline color of the `Tab`s in Android.
 
 ```XML
 <TabView androidSelectedTabHighlightColor="red">
-                <TabView.items>
-                    <TabViewItem title="Tab 1" >
-                    <TabViewItem.view>
-                        <Label text="Label in Tab1"/>
-                    </TabViewItem.view>
-                    </TabViewItem>
-                    <TabViewItem title="Tab 2">
-                    <TabViewItem.view>
-                        <Label text="Label in Tab2" />
-                    </TabViewItem.view>
-                    </TabViewItem>
-                </TabView.items>
-    </TabView>
+	<TabViewItem title="Tab 1">
+		<Label text="Label in Tab1" />
+	</TabViewItem>
+	<TabViewItem title="Tab 2">
+		<Label text="Label in Tab2" />
+	</TabViewItem>
+</TabView>
 ```
 
-## Tabs Limit
+## Tabs Limit <sup>Android Secific<sup>
 
-Setting up the limit of the tabs, which should be pre-loaded on the left and right sides.
+Setting up the limit of the tabs, which should be pre-loaded on the left and right sides in Android.
 ```XML
 <TabView id="tabViewContainer" androidOffscreenTabLimit="0">
-        <TabView.items>
-                <TabViewItem title="NativeScript">
-                        <TabViewItem.view>
-                                <StackLayout>
-                                        <Label text="NativeScript" class="m-15 h2 text-left" color="blue"/>
-                                        <ScrollView>
-                                            <StackLayout height="100%">
-{% raw %}                                                <Label text="{{content}}" textWrap="true" class="m-15"/>{% endraw %}
-                                            </StackLayout>
-                                        </ScrollView>
-                                </StackLayout>
-                        </TabViewItem.view>
-                </TabViewItem>
-                <TabViewItem title="Icon">
-                        <TabViewItem.view>
-                                <StackLayout>
-                                        <Image class="m-t-30 m-b-15" src="res://icon" width="80" height="80"/>
-                                        <Label text="NativeScript" textWrap="true" class="h2 m-x-auto" color="blue"/>
-                                </StackLayout>        
-                        </TabViewItem.view>
-                </TabViewItem>
-        </TabView.items>
+	<TabViewItem title="NativeScript">
+		<StackLayout>
+			<Label text="NativeScript" class="m-15 h2 text-left" color="blue" />
+			<ScrollView>
+				<StackLayout height="100%">
+					{% raw %}
+					<Label text="{{content}}" textWrap="true" class="m-15" />
+					{% endraw %}
+				</StackLayout>
+			</ScrollView>
+		</StackLayout>
+	</TabViewItem>
+	<TabViewItem title="Icon">
+		<StackLayout>
+			<Image class="m-t-30 m-b-15" src="res://icon" width="80" height="80" />
+			<Label text="NativeScript" textWrap="true" class="h2 m-x-auto" color="blue" />
+		</StackLayout>
+	</TabViewItem>
 </TabView>
 ```
 
 ---
 
-## Tabs Position
+## Tabs Position <sup>Android Secific<sup>
 
 Setting up the bottom Tabs position for Android.
 ```XML
 <TabView id="tabViewContainer" androidTabsPosition="bottom">
-        <TabView.items>
-                <TabViewItem title="NativeScript">
-                        <TabViewItem.view>
-                                <StackLayout>
-                                        <Label text="NativeScript" class="m-15 h2 text-left" color="blue"/>
-                                        <ScrollView>
-                                            <StackLayout height="100%">
-{% raw %}                                                <Label text="{{content}}" textWrap="true" class="m-15"/>{% endraw %}
-                                            </StackLayout>
-                                        </ScrollView>
-                                </StackLayout>
-                        </TabViewItem.view>
-                </TabViewItem>
-                <TabViewItem title="Icon">
-                        <TabViewItem.view>
-                                <StackLayout>
-                                        <Image class="m-t-30 m-b-15" src="res://icon" width="80" height="80"/>
-                                        <Label text="NativeScript" textWrap="true" class="h2 m-x-auto" color="blue"/>
-                                </StackLayout>        
-                        </TabViewItem.view>
-                </TabViewItem>
-        </TabView.items>
+	<TabViewItem title="NativeScript">
+		<StackLayout>
+			<Label text="NativeScript" class="m-15 h2 text-left" color="blue" />
+			<ScrollView>
+				<StackLayout height="100%">
+					{% raw %}
+					<Label text="{{content}}" textWrap="true" class="m-15" />
+					{% endraw %}
+				</StackLayout>
+			</ScrollView>
+		</StackLayout>
+	</TabViewItem>
+	<TabViewItem title="Icon">
+		<StackLayout>
+			<Image class="m-t-30 m-b-15" src="res://icon" width="80" height="80" />
+			<Label text="NativeScript" textWrap="true" class="h2 m-x-auto" color="blue" />
+		</StackLayout>
+	</TabViewItem>
 </TabView>
+
 ```
