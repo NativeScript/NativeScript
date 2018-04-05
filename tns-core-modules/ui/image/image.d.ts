@@ -3,7 +3,7 @@
  * @module "ui/image"
  */ /** */
 
-import { View, Property, InheritedCssProperty, Color, Style } from "../core/view";
+import { View, Property, InheritedCssProperty, Color, Style, Length } from "../core/view";
 import { ImageSource } from "../../image-source";
 
 /**
@@ -52,6 +52,18 @@ export class Image extends View {
      * A color used to tint template images.
      */
     tintColor: Color;
+
+    /**
+     * Gets or sets the desired decode height of the image.
+     * This property is Android specific.
+     */
+    decodeHeight: Length;
+
+    /**
+     * Gets or sets the desired decode width of the image.
+     * This property is Android specific.
+     */
+    decodeWidth: Length;
 }
 
 export type Stretch = "none" | "aspectFill" | "aspectFit" | "fill";
@@ -62,3 +74,5 @@ export const isLoadingProperty: Property<Image, string>;
 export const loadMode: Property<Image, "sync" | "async">;
 export const stretchProperty: Property<Image, Stretch>;
 export const tintColorProperty: InheritedCssProperty<Style, Color>;
+export const decodeHeightProperty: Property<Image, Length>;
+export const decodeWidthProperty: Property<Image, Length>;
