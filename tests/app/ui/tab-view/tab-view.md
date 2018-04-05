@@ -108,7 +108,7 @@ For the TabView component could be set three different styling properties
 
 Setting up the limit of the tabs, which should be pre-loaded on the left and right sides.
 ```XML
-<TabView id="tabViewContainer" androidTabsPosition="bottom">
+<TabView id="tabViewContainer" androidOffscreenTabLimit="0">
         <TabView.items>
                 <TabViewItem title="NativeScript">
                         <TabViewItem.view>
