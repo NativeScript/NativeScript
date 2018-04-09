@@ -15,7 +15,7 @@ export function testFromResource() {
     // >> imagesource-resname
     const img = imageSource.fromResource("icon");
     // << imagesource-resname
-    
+
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 }
 
@@ -139,6 +139,22 @@ export function testFromAssetWithScalingAndAspectRatio(done) {
         height: scaleHeight,
         keepAspectRatio: true
     };
+
+    let img = imageSource.fromAsset(asset).then((source) => {
+        TKUnit.assertEqual(source.width, 18);
+        TKUnit.assertEqual(source.height, scaleHeight);
+        done();
+    }, (error) => {
+        done(error);
+    });
+}
+
+export function testFromAssetWithScalingAndDefaultAspectRatio(done) {
+    let asset = new imageAssetModule.ImageAsset(splashscreenPath);
+    let scaleWidth = 10;
+    let scaleHeight = 11;
+    asset.options.width = scaleWidth;
+    asset.options.height = scaleHeight;
 
     let img = imageSource.fromAsset(asset).then((source) => {
         TKUnit.assertEqual(source.width, 18);
