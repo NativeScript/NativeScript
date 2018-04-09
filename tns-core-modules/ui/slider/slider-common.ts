@@ -4,7 +4,7 @@ import { View, Property, CoercibleProperty, isIOS, CSSType } from "../core/view"
 export * from "../core/view";
 
 // TODO: Extract base Range class for slider and progress
-@CSSType("SliderBase")
+@CSSType("Slider")
 export class SliderBase extends View implements SliderDefinition {
     public value: number;
     public minValue: number;
