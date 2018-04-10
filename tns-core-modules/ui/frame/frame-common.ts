@@ -216,8 +216,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         this._currentEntry = entry;
-        this._executingEntry = null;
+
         newPage.onNavigatedTo(isBack);
+
+        // Reset executing entry after NavigatedTo is raised;
+        // we do not want to execute two navigations in parallel in case 
+        // additional navigation is triggered from the NavigatedTo handler.
+        this._executingEntry = null;
     }
 
     public _updateBackstack(entry: BackstackEntry, isBack: boolean): void {
