@@ -11,5 +11,6 @@
 
     <StackLayout>
         <Button text="Go Back" tap="onGoBack" />
+        <Button text="Close Modal" tap="onCloseModal" />
     </StackLayout>
 </Page>
