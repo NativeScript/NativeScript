@@ -1,6 +1,7 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "../screen"
-import { modalPageBackground,
+import {
+    modalPageBackground,
     testSecondPageBackground,
     testNestedModalFrameBackground,
     testNestedModalPageBackground

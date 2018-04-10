@@ -10,7 +10,7 @@ npm run e2e -- --runType android23 --reuseDevice
 iOS:
 
 ```
-npm run  e2e -- --runType sim.iPhoneX.iOS112 --reuseDevice
+npm run e2e -- --runType sim.iPhoneX.iOS112 --reuseDevice
 ```
 
 Scenarios

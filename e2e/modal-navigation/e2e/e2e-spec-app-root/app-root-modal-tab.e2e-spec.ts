@@ -1,8 +1,10 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "../screen"
-import { modalFrameBackground,
+import {
+    modalFrameBackground,
     modalTabViewBackground,
     testSecondPageBackground,
+    testSecondPageClose,
     testNestedModalFrameBackground,
     testNestedModalPageBackground,
     testSecondItemBackground
@@ -56,6 +58,10 @@ describe("app root modal tab view background scenarios", () => {
 
     it("should navigate to second item, run in background, navigate back to first item", async () => {
         await testSecondItemBackground(driver, screen);
+    });
+
+    it("should navigate to second page, close", async () => {
+        await testSecondPageClose(driver, screen);
     });
 
     it("should navigate to second page, run in background, go back", async () => {

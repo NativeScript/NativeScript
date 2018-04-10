@@ -19,6 +19,14 @@ export async function testSecondPageBackground(driver: AppiumDriver, screen: Scr
     await screen.loadedModalFrame();
 }
 
+export async function testSecondPageClose(driver: AppiumDriver, screen: Screen) {
+    await screen.navigateToSecondPage();
+    await screen.loadedSecondPage();
+
+    await screen.closeModal();
+    await screen.loadedHome();
+}
+
 export async function testNestedModalFrameBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
     await screen.showNestedModalFrame();
     await screen.loadedNestedModalFrame();
