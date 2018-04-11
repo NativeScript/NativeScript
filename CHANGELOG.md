@@ -1,5 +1,104 @@
 Cross Platform Modules Changelog
 ==============================
+
+# 4.0.0 (2018, April 10)
+
+A detailed list of the new features and changes coming with NativeScript 4.0 ca be found [here](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit?usp=sharing).
+
+### Bug Fixes
+
+* **android-images:** set decodeHeight/decodeWidth default values to dip ([#5490](https://github.com/NativeScript/NativeScript/issues/5490)) ([6509efa](https://github.com/NativeScript/NativeScript/commit/6509efa))
+* **animations:** change throw -> trace to avoid unnecessary app crash ([#5475](https://github.com/NativeScript/NativeScript/issues/5475)) ([fa80355](https://github.com/NativeScript/NativeScript/commit/fa80355))
+* **animations:** check if target is present before removing its animation ([#4586](https://github.com/NativeScript/NativeScript/issues/4586)) ([4bd3a94](https://github.com/NativeScript/NativeScript/commit/4bd3a94))
+* **animations:** register both style's "name" and "cssName" ([#3810](https://github.com/NativeScript/NativeScript/issues/3810)) ([3ea7365](https://github.com/NativeScript/NativeScript/commit/3ea7365))
+* **animations:** remove default getters for transform properties ([#4286](https://github.com/NativeScript/NativeScript/issues/4286)) ([26e2748](https://github.com/NativeScript/NativeScript/commit/26e2748))
+* **css-animations:** convert transform value properly ([#4352](https://github.com/NativeScript/NativeScript/issues/4352)) ([b7c61ca](https://github.com/NativeScript/NativeScript/commit/b7c61ca))
+* **date-picker:** Date picker changed check ([#4797](https://github.com/NativeScript/NativeScript/issues/4797)) ([d0b3e0c](https://github.com/NativeScript/NativeScript/commit/d0b3e0c))
+* **es6:** object constructor assign ([3ef45c1](https://github.com/NativeScript/NativeScript/commit/3ef45c1))
+* **file-system-access:** join paths without leading slash ([1a497b1](https://github.com/NativeScript/NativeScript/commit/1a497b1))
+* TextField not secure when keyboardType="number" ([#5012](https://github.com/NativeScript/NativeScript/issues/5012)) ([3e6f465](https://github.com/NativeScript/NativeScript/commit/3e6f465))
+* **frame:** add generic frame cleanup logic after modal dialog close ([#5479](https://github.com/NativeScript/NativeScript/issues/5479)) ([2704915](https://github.com/NativeScript/NativeScript/commit/2704915))
+* **frame:** recreate frame if no cached one found on app resume [#5318](https://github.com/NativeScript/NativeScript/issues/5318) ([#5330](https://github.com/NativeScript/NativeScript/issues/5330)) ([9d7f0e5](https://github.com/NativeScript/NativeScript/commit/9d7f0e5))
+* **frame:** root tabview with modal frame when suspend/resume app ([#5408](https://github.com/NativeScript/NativeScript/issues/5408)) ([2edef3d](https://github.com/NativeScript/NativeScript/commit/2edef3d))
+* **image:** image aspect dimensions for ImageSource.fromAsset(...) ([#5556](https://github.com/NativeScript/NativeScript/issues/5556)) ([7506905](https://github.com/NativeScript/NativeScript/commit/7506905))
+* **image-source:** Fix test for base64 image source for android API 26 ([#4741](https://github.com/NativeScript/NativeScript/issues/4741)) ([1171da2](https://github.com/NativeScript/NativeScript/commit/1171da2))
+* **image-source:** throw if source is not a correct native instance ([#5273](https://github.com/NativeScript/NativeScript/issues/5273)) ([58d61ca](https://github.com/NativeScript/NativeScript/commit/58d61ca))
+* **image:** apply tintColor correctly on iOS ([#5546](https://github.com/NativeScript/NativeScript/issues/5546)) ([75ee84c](https://github.com/NativeScript/NativeScript/commit/75ee84c))
+* **inspector:** Fix --debug-brk issue with Inspector ([#5460](https://github.com/NativeScript/NativeScript/issues/5460)) ([0b34e67](https://github.com/NativeScript/NativeScript/commit/0b34e67))
+* **iOS:** image._setColorTint is not a function fix ([465b5bf](https://github.com/NativeScript/NativeScript/commit/465b5bf))
+* **ios-action-bar:** enable NavigationButton text change on first navigation ([#5458](https://github.com/NativeScript/NativeScript/issues/5458)) ([b878143](https://github.com/NativeScript/NativeScript/commit/b878143))
+* **ios-action-bar:** NavigationButton cannot be hidden if navigating with transition ([#5451](https://github.com/NativeScript/NativeScript/issues/5451)) ([c54e069](https://github.com/NativeScript/NativeScript/commit/c54e069))
+* **ios-frame:** do not update backstack when navigating the same page ([#5426](https://github.com/NativeScript/NativeScript/issues/5426)) ([714af6b](https://github.com/NativeScript/NativeScript/commit/714af6b))
+* **layouts:** Set automaticallyAdjustsScrollViewInsets ([#5311](https://github.com/NativeScript/NativeScript/issues/5311)) ([b492996](https://github.com/NativeScript/NativeScript/commit/b492996))
+* **livesync:** attach __onLiveSyncCore to global object ([#4215](https://github.com/NativeScript/NativeScript/issues/4215)) ([90a0da2](https://github.com/NativeScript/NativeScript/commit/90a0da2))
+* **minor:** reword missing-xml-error to be clearer ([#4947](https://github.com/NativeScript/NativeScript/issues/4947)) ([374f31c](https://github.com/NativeScript/NativeScript/commit/374f31c))
+* **profiling:** resetProfiles doesn't reset all profiles ([#5425](https://github.com/NativeScript/NativeScript/issues/5425)) ([68d86fb](https://github.com/NativeScript/NativeScript/commit/68d86fb))
+* **slider:** correct maxValue setter for android  ([#4346](https://github.com/NativeScript/NativeScript/issues/4346)) ([6184338](https://github.com/NativeScript/NativeScript/commit/6184338)), closes [#4343](https://github.com/NativeScript/NativeScript/issues/4343)
+* **style:** Styles are not applied to dialogs ([#5612](https://github.com/NativeScript/NativeScript/issues/5612)) ([38e6f66](https://github.com/NativeScript/NativeScript/commit/38e6f66))
+* **style-scope:** remove isFileOrResourcePath check ([5746dc5](https://github.com/NativeScript/NativeScript/commit/5746dc5))
+* **text:** Allow -1 to be a valid binding value for text views ([#5563](https://github.com/NativeScript/NativeScript/issues/5563)) ([7cd8e7e](https://github.com/NativeScript/NativeScript/commit/7cd8e7e)), closes [#5559](https://github.com/NativeScript/NativeScript/issues/5559)
+* **uilabel:** line height setter should not break line break mode ([#5544](https://github.com/NativeScript/NativeScript/issues/5544)) ([75bd1d2](https://github.com/NativeScript/NativeScript/commit/75bd1d2))
+* **webpack:** fix fragment css not being applied with webpack ([#5172](https://github.com/NativeScript/NativeScript/issues/5172)) ([60773e7](https://github.com/NativeScript/NativeScript/commit/60773e7))
+* **webpack:** register wrap layout ([#5573](https://github.com/NativeScript/NativeScript/issues/5573)) ([0012bfd](https://github.com/NativeScript/NativeScript/commit/0012bfd))
+* **xml parser:** Fix text node data event. ([67cfab2](https://github.com/NativeScript/NativeScript/commit/67cfab2))
+* **xml parser:** Handle whitespace around attribute = ([2a2c0e5](https://github.com/NativeScript/NativeScript/commit/2a2c0e5))
+* ActionItems lacks proper support for VoiceOver on iOS ([#2796](https://github.com/NativeScript/NativeScript/issues/2796)) ([#2799](https://github.com/NativeScript/NativeScript/issues/2799)) ([37d927b](https://github.com/NativeScript/NativeScript/commit/37d927b))
+* ActionBar's title not updating in OnLoaded event ([1d63103](https://github.com/NativeScript/NativeScript/commit/1d63103))
+* add css-agent declarations ([#4361](https://github.com/NativeScript/NativeScript/issues/4361)) ([c62e79e](https://github.com/NativeScript/NativeScript/commit/c62e79e))
+* add dom-node declarations ([#4359](https://github.com/NativeScript/NativeScript/issues/4359)) ([08af2ef](https://github.com/NativeScript/NativeScript/commit/08af2ef))
+* cleanup modaltest paths ([#5300](https://github.com/NativeScript/NativeScript/issues/5300)) ([8d59cc4](https://github.com/NativeScript/NativeScript/commit/8d59cc4))
+* DatePicker month off by 1 in Android ([#4872](https://github.com/NativeScript/NativeScript/issues/4872)) ([1e47117](https://github.com/NativeScript/NativeScript/commit/1e47117))
+* Fix scroll-view tests for ios 9 and 10 ([#5358](https://github.com/NativeScript/NativeScript/issues/5358)) ([464cdd5](https://github.com/NativeScript/NativeScript/commit/464cdd5))
+* layoutParent crash with ProxyViewContainer ([#5315](https://github.com/NativeScript/NativeScript/issues/5315)) ([923d48b](https://github.com/NativeScript/NativeScript/commit/923d48b))
+* Navigation test app added ([4d23e37](https://github.com/NativeScript/NativeScript/commit/4d23e37))
+* Require core modules used for inspector lazily ([#4977](https://github.com/NativeScript/NativeScript/issues/4977)) ([0fe1806](https://github.com/NativeScript/NativeScript/commit/0fe1806))
+* set default values to time widgets ([#4383](https://github.com/NativeScript/NativeScript/issues/4383)) ([14098d4](https://github.com/NativeScript/NativeScript/commit/14098d4))
+* set tns-core-modules-widgets to 4.0.0 ([eff264e](https://github.com/NativeScript/NativeScript/commit/eff264e))
+* throw if global css file is not found in webpack context ([#5186](https://github.com/NativeScript/NativeScript/issues/5186)) ([9ce0819](https://github.com/NativeScript/NativeScript/commit/9ce0819))
+* typo on android utils, getPalleteColor to getPaletteColor ([#4687](https://github.com/NativeScript/NativeScript/issues/4687)) ([7b36461](https://github.com/NativeScript/NativeScript/commit/7b36461))
+* uuid for ios changed on IOS v7 ([#4681](https://github.com/NativeScript/NativeScript/issues/4681)) ([92471c6](https://github.com/NativeScript/NativeScript/commit/92471c6))
+
+
+
+### Features
+
+* **navigation:** Flexible Frame Composition ([#48](https://github.com/NativeScript/NativeScript/issues/48))
+* **angular xml:** Support [prop] and (tap) bindings ([fdd8c9b](https://github.com/NativeScript/NativeScript/commit/fdd8c9b))
+* **frame:** handle back navigation when common layout is used as a root element ([#5608](https://github.com/NativeScript/NativeScript/issues/5608)) ([70f0112](https://github.com/NativeScript/NativeScript/commit/70f0112))
+* **frame:** rework frame retrieval api ([#5527](https://github.com/NativeScript/NativeScript/issues/5527)) ([dfa70dd](https://github.com/NativeScript/NativeScript/commit/dfa70dd))
+* **ios:** fire onDisplayed event when first frame is ready to be displayed ([#5344](https://github.com/NativeScript/NativeScript/issues/5344)) ([1c78e47](https://github.com/NativeScript/NativeScript/commit/1c78e47))
+* **ios-image-source:** standardize quality scale in image-source  ([#5517](https://github.com/NativeScript/NativeScript/issues/5517)) ([319c153](https://github.com/NativeScript/NativeScript/commit/319c153)), closes [#5474](https://github.com/NativeScript/NativeScript/issues/5474)
+* **ios-list-view:** introduce iosEstimatedRowHeight property. ([#5568](https://github.com/NativeScript/NativeScript/issues/5568)) ([52c0448](https://github.com/NativeScript/NativeScript/commit/52c0448))
+* **listview:** add required interface for generalized list-view component ([#5524](https://github.com/NativeScript/NativeScript/issues/5524)) ([b29f04f](https://github.com/NativeScript/NativeScript/commit/b29f04f))
+* **modal:** introduce stretched param to showModal method ([#5496](https://github.com/NativeScript/NativeScript/issues/5496)) ([0138873](https://github.com/NativeScript/NativeScript/commit/0138873))
+* **observable:** Implement observable .once ([#5309](https://github.com/NativeScript/NativeScript/issues/5309)) ([2166d1e](https://github.com/NativeScript/NativeScript/commit/2166d1e))
+* **style-scope:** Resolve css sheets from tns_modules ([414ebc6](https://github.com/NativeScript/NativeScript/commit/414ebc6))
+* **tab-view-android:** enable tabs positioning at the bottom ([#5385](https://github.com/NativeScript/NativeScript/issues/5385)) ([f8dce08](https://github.com/NativeScript/NativeScript/commit/f8dce08))
+* **view:** expose method for android back override ([#5537](https://github.com/NativeScript/NativeScript/issues/5537)) ([cf8dcfa](https://github.com/NativeScript/NativeScript/commit/cf8dcfa))
+* **webpack:** mark the CSS type for stylable views explicitly ([#5257](https://github.com/NativeScript/NativeScript/issues/5257)) ([1cbb1e8](https://github.com/NativeScript/NativeScript/commit/1cbb1e8))
+* **xml parser:** Only allow angular syntax extensions if configured. ([748b4f1](https://github.com/NativeScript/NativeScript/commit/748b4f1))
+* Add methods to get the root view and set a different root view at run time ([#5386](https://github.com/NativeScript/NativeScript/issues/5386)) ([b113b00](https://github.com/NativeScript/NativeScript/commit/b113b00))
+* Add require.context typings ([#5156](https://github.com/NativeScript/NativeScript/issues/5156)) ([0986315](https://github.com/NativeScript/NativeScript/commit/0986315))
+* Register ./app.css instead of app.css so it can be provided by webpack context ([#5158](https://github.com/NativeScript/NativeScript/issues/5158)) ([d356339](https://github.com/NativeScript/NativeScript/commit/d356339))
+* support intent replacement in the android activity ([#5337](https://github.com/NativeScript/NativeScript/issues/5337)) ([01fab68](https://github.com/NativeScript/NativeScript/commit/01fab68))
+
+
+### BREAKING CHANGES
+
+* **webpack:** Extending classes requires marking the derived class with @CSSType
+The root classes are not marked with CSSType and classes derived from ViewBase and View
+will continue to work as expected. More concrete view classes (Button, Label, etc.) are
+marked with @CSSType now and store their cssType on the prototype suppressing the previous
+implementation that looked up the class function name. So clien classes that derive from one of
+our @CSSType decorated classes will now have to be marked with @CSSType.
+* **android-images:** change decodeHeight/decodeWidth properties to accept device independent pixels by default
+* [Android] NativeScript no longer overwrites the horizontal/vertical alignment on the user-defined root visual element when opening it in modal dialog window (i.e. not fullscreen).
+
+If your application logic relied on the previous behavior you need to manually set `horizontalAlignment="center"` and `verticalAlignment="middle"` on the root visual element you are showing modally.
+* **image-source:** Change the return type of `setNativeSource` method from `boolean` to `void`.
+
+
+
 ## 3.4.1 (2018, February 20)
 
 ### New
