@@ -1,5 +1,5 @@
 ﻿import * as TKUnit from "../TKUnit";
-import { Page, NavigatedData } from "tns-core-modules/ui/page";
+import { EventData, Page, NavigatedData } from "tns-core-modules/ui/page";
 import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
 import { Color } from "tns-core-modules/color";
 import * as helper from "../ui/helper";
@@ -377,4 +377,41 @@ export function test_NavigationEvents_WithClearHistory() {
 
 export function test_NavigationEvents_WithClearHistory_WithTransition() {
     _test_NavigationEvents_WithClearHistory({ name: "fade", duration: 10 });
+}
+
+export function test_Navigate_From_Page_Loaded_Handler() {
+    _test_Navigate_From_Page_Event_Handler(Page.loadedEvent);
+}
+
+export function test_Navigate_From_Page_NavigatedTo_Handler() {
+    _test_Navigate_From_Page_Event_Handler(Page.navigatedToEvent);
+}
+
+function _test_Navigate_From_Page_Event_Handler(eventName: string) {
+    let secondPageNavigatedTo = false;
+
+    const firstPageFactory = function (): Page {
+        const firstPage = new Page();
+        firstPage.id = "first-page";
+        firstPage.on(eventName, (args: EventData) => { 
+            const page = <Page>args.object;
+            const frame = page.frame;
+
+            const secondPageFactory = function (): Page {
+                const secondPage = new Page();
+                secondPage.id = "second-page";
+                secondPage.on(Page.navigatedToEvent, () => { secondPageNavigatedTo = true });
+
+                return secondPage;
+            };
+
+            frame.navigate(secondPageFactory);
+        });
+
+        return firstPage;
+    };
+
+    helper.navigateWithEntry({ create: firstPageFactory });
+
+    TKUnit.waitUntilReady(() => secondPageNavigatedTo);
 }
