@@ -3,13 +3,15 @@ Cross Platform Modules Changelog
 
 # 4.0.0 (2018, April 10)
 
+A detailed list of the new features and changes coming with NativeScript 4.0 ca be found [here](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit?usp=sharing).
+
 ### Bug Fixes
 
 * **android-images:** set decodeHeight/decodeWidth default values to dip ([#5490](https://github.com/NativeScript/NativeScript/issues/5490)) ([6509efa](https://github.com/NativeScript/NativeScript/commit/6509efa))
-* **animations:** change throw -> trace to avoid unnecessary app crash ([#5475](https://github.com/NativeScript/NativeScript/issues/5475)) ([fa80355](https://github.com/NativeScript/NativeScript/commit/fa80355)), closes [#1](https://github.com/NativeScript/NativeScript/issues/1)
+* **animations:** change throw -> trace to avoid unnecessary app crash ([#5475](https://github.com/NativeScript/NativeScript/issues/5475)) ([fa80355](https://github.com/NativeScript/NativeScript/commit/fa80355))
 * **animations:** check if target is present before removing its animation ([#4586](https://github.com/NativeScript/NativeScript/issues/4586)) ([4bd3a94](https://github.com/NativeScript/NativeScript/commit/4bd3a94))
 * **animations:** register both style's "name" and "cssName" ([#3810](https://github.com/NativeScript/NativeScript/issues/3810)) ([3ea7365](https://github.com/NativeScript/NativeScript/commit/3ea7365))
-* **animations:** remove default getters for tranform properties ([#4286](https://github.com/NativeScript/NativeScript/issues/4286)) ([26e2748](https://github.com/NativeScript/NativeScript/commit/26e2748))
+* **animations:** remove default getters for transform properties ([#4286](https://github.com/NativeScript/NativeScript/issues/4286)) ([26e2748](https://github.com/NativeScript/NativeScript/commit/26e2748))
 * **css-animations:** convert transform value properly ([#4352](https://github.com/NativeScript/NativeScript/issues/4352)) ([b7c61ca](https://github.com/NativeScript/NativeScript/commit/b7c61ca))
 * **date-picker:** Date picker changed check ([#4797](https://github.com/NativeScript/NativeScript/issues/4797)) ([d0b3e0c](https://github.com/NativeScript/NativeScript/commit/d0b3e0c))
 * **es6:** object constructor assign ([3ef45c1](https://github.com/NativeScript/NativeScript/commit/3ef45c1))
@@ -60,6 +62,7 @@ Cross Platform Modules Changelog
 
 ### Features
 
+* **navigation:** Flexible Frame Composition ([#48](https://github.com/NativeScript/NativeScript/issues/48))
 * **angular xml:** Support [prop] and (tap) bindings ([fdd8c9b](https://github.com/NativeScript/NativeScript/commit/fdd8c9b))
 * **frame:** handle back navigation when common layout is used as a root element ([#5608](https://github.com/NativeScript/NativeScript/issues/5608)) ([70f0112](https://github.com/NativeScript/NativeScript/commit/70f0112))
 * **frame:** rework frame retrieval api ([#5527](https://github.com/NativeScript/NativeScript/issues/5527)) ([dfa70dd](https://github.com/NativeScript/NativeScript/commit/dfa70dd))
@@ -70,7 +73,7 @@ Cross Platform Modules Changelog
 * **modal:** introduce stretched param to showModal method ([#5496](https://github.com/NativeScript/NativeScript/issues/5496)) ([0138873](https://github.com/NativeScript/NativeScript/commit/0138873))
 * **observable:** Implement observable .once ([#5309](https://github.com/NativeScript/NativeScript/issues/5309)) ([2166d1e](https://github.com/NativeScript/NativeScript/commit/2166d1e))
 * **style-scope:** Resolve css sheets from tns_modules ([414ebc6](https://github.com/NativeScript/NativeScript/commit/414ebc6))
-* **tab-view-android:** enable tabs repositioning ([#5385](https://github.com/NativeScript/NativeScript/issues/5385)) ([f8dce08](https://github.com/NativeScript/NativeScript/commit/f8dce08))
+* **tab-view-android:** enable tabs positioning at the bottom ([#5385](https://github.com/NativeScript/NativeScript/issues/5385)) ([f8dce08](https://github.com/NativeScript/NativeScript/commit/f8dce08))
 * **view:** expose method for android back override ([#5537](https://github.com/NativeScript/NativeScript/issues/5537)) ([cf8dcfa](https://github.com/NativeScript/NativeScript/commit/cf8dcfa))
 * **webpack:** mark the CSS type for stylable views explicitly ([#5257](https://github.com/NativeScript/NativeScript/issues/5257)) ([1cbb1e8](https://github.com/NativeScript/NativeScript/commit/1cbb1e8))
 * **xml parser:** Only allow angular syntax extensions if configured. ([748b4f1](https://github.com/NativeScript/NativeScript/commit/748b4f1))
