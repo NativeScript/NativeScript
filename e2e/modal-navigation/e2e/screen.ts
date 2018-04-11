@@ -12,7 +12,9 @@ const modalFrame = "Show Modal Page With Frame";
 const modalPage = "Show Modal Page";
 const modalTabView = "Show Modal TabView";
 const navToSecondPage = "Navigate To Second Page";
-const rootView = "Change Root View";
+const resetFrameRootView = "Reset Frame Root View";
+const resetTabRootView = "Reset Tab Root View";
+const resetLayoutRootView = "Reset Layout Root View";
 
 const showNestedModalFrame = "Show Nested Modal Page With Frame";
 const showNestedModalPage = "Show Nested Modal Page";
@@ -35,9 +37,19 @@ export class Screen {
         console.log(home + " loaded!");
     }
 
-    changeRootView = async () => {
-        const btnChangeRootView = await this._driver.findElementByText(rootView);
-        await btnChangeRootView.tap();
+    resetFrameRootView = async () => {
+        const btnResetFrameRootView = await this._driver.findElementByText(resetFrameRootView);
+        await btnResetFrameRootView.tap();
+    }
+
+    resetTabRootView = async () => {
+        const btnResetTabRootView = await this._driver.findElementByText(resetTabRootView);
+        await btnResetTabRootView.tap();
+    }
+
+    resetLayoutRootView = async () => {
+        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
+        await btnResetLayoutRootView.tap();
     }
 
     loadedTabRootView = async () => {
@@ -52,7 +64,7 @@ export class Screen {
         try {
             await this.loadedTabRootView();
         } catch (err) {
-            await this.changeRootView();
+            await this.resetTabRootView();
             await this.loadedTabRootView();
         }
     }

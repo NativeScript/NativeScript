@@ -9,6 +9,11 @@ export class ImageAsset  extends observable.Observable implements definition.Ima
     ios: PHAsset;
     android: string;
 
+    constructor () {
+        super();
+        this._options = { keepAspectRatio: true };
+    }
+
     get options(): definition.ImageAssetOptions {
         return this._options;
     }
