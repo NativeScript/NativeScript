@@ -561,7 +561,6 @@ public class Async
 				}
 				catch (Exception e) // TODO: Catch all exceptions?
 				{
-					e.printStackTrace();
 					result.error = e;
 
 					return result;
