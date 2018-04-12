@@ -59,10 +59,8 @@ class UISearchBarImpl extends UISearchBar {
     sizeThatFits(size: CGSize): CGSize {
         // iOS11 SDK does not support passing sizeThatFits(...) non-finite width value;
         // iOS layout system will take care to size the element properly when passed 0
-        if (majorVersion >= 11) {
-            if (!!size.width) {
-                size.width = 0;
-            }
+        if (majorVersion >= 11 && size.width === Number.POSITIVE_INFINITY) {
+            size.width = 0;
         }
 
         return super.sizeThatFits(size);
