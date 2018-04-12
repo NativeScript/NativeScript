@@ -3,8 +3,11 @@ import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty
 } from "./search-bar-common";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./search-bar-common";
+
+const majorVersion = iosUtils.MajorVersion;
 
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static ObjCProtocols = [UISearchBarDelegate];
@@ -52,6 +55,18 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     }
 }
 
+class UISearchBarImpl extends UISearchBar {
+    sizeThatFits(size: CGSize): CGSize {
+        // iOS11 SDK does not support passing sizeThatFits(...) non-finite width value;
+        // iOS layout system will take care to size the element properly when passed 0
+        if (majorVersion >= 11 && size.width === Number.POSITIVE_INFINITY) {
+            size.width = 0;
+        }
+
+        return super.sizeThatFits(size);
+    }
+}
+
 export class SearchBar extends SearchBarBase {
     private _ios: UISearchBar;
     private _delegate;
@@ -61,7 +76,7 @@ export class SearchBar extends SearchBarBase {
     constructor() {
         super();
 
-        this.nativeViewProtected = this._ios = UISearchBar.new();
+        this.nativeViewProtected = this._ios = UISearchBarImpl.new();
         this._delegate = UISearchBarDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
