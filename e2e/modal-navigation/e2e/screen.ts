@@ -70,6 +70,12 @@ export class Screen {
         }
     }
 
+    setLayoutRootView = async () => {
+        // should load layout root
+        await this.loadedHome();
+        await this.resetLayoutRootView();
+    }
+
     showModalFrame = async () => {
         const btnModalFrame = await this._driver.findElementByText(modalFrame);
         await btnModalFrame.tap();
