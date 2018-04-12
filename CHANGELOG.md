@@ -85,6 +85,9 @@ A detailed list of the new features and changes coming with NativeScript 4.0 ca 
 
 ### BREAKING CHANGES
 
+* **ios-layout** Frame, Page and TabView measure/layout methods no longer used. We now rely on the iOS to position these controls. As a result width, height, minWidth, minHeight, margins won't be respected on these controls
+* **ios-layout** Layouts for ViewContollers now implemented with UILayoutGuide (requires iOS 9)
+* **tabview** TabViewItems are now loaded/unloaded on demand - when they will be displayed.
 * **webpack:** Extending classes requires marking the derived class with @CSSType
 The root classes are not marked with CSSType and classes derived from ViewBase and View
 will continue to work as expected. More concrete view classes (Button, Label, etc.) are
@@ -92,9 +95,6 @@ marked with @CSSType now and store their cssType on the prototype suppressing th
 implementation that looked up the class function name. So clien classes that derive from one of
 our @CSSType decorated classes will now have to be marked with @CSSType.
 * **android-images:** change decodeHeight/decodeWidth properties to accept device independent pixels by default
-* [Android] NativeScript no longer overwrites the horizontal/vertical alignment on the user-defined root visual element when opening it in modal dialog window (i.e. not fullscreen).
-
-If your application logic relied on the previous behavior you need to manually set `horizontalAlignment="center"` and `verticalAlignment="middle"` on the root visual element you are showing modally.
 * **image-source:** Change the return type of `setNativeSource` method from `boolean` to `void`.
 
 
