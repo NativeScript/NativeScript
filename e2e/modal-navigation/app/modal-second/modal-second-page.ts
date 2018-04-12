@@ -28,4 +28,3 @@ export function onGoBack(args: EventData) {
 export function onCloseModal(args: EventData) {
     (args.object as View).closeModal();
 }
-
