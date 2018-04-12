@@ -10,6 +10,7 @@ const modalNested = "Modal Nested";
 
 const modalFrame = "Show Modal Page With Frame";
 const modalPage = "Show Modal Page";
+const modalLayout = "Show Modal Layout";
 const modalTabView = "Show Modal TabView";
 const navToSecondPage = "Navigate To Second Page";
 const resetFrameRootView = "Reset Frame Root View";
@@ -89,6 +90,15 @@ export class Screen {
         const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
         assert.isTrue(await btnShowNestedModalPage.isDisplayed());
         console.log("Modal Page loaded!");
+    }
+
+    showModalLayout = async () => {
+        const btnModalLayout = await this._driver.findElementByText(modalLayout);
+        await btnModalLayout.tap();
+    }
+
+    loadedModalLayout = async () => {
+        await this.loadedModalFrame();
     }
 
     showModalTabView = async () => {
@@ -189,6 +199,16 @@ export class Screen {
             // should show modal page
             await this.showModalPage();
             await this.loadedModalPage();
+        }
+    }
+
+    loadModalLayout = async () => {
+        try {
+            await this.loadedModalLayout();
+        } catch (err) {
+            // should show modal layout
+            await this.showModalLayout();
+            await this.loadedModalLayout();
         }
     }
 
