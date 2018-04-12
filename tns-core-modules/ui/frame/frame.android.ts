@@ -176,16 +176,23 @@ export class Frame extends FrameBase {
         }
     }
 
+    _onRootViewReset(): void {
+        this.disposeCurrentFragment();
+        super._onRootViewReset();
+    }
+
     onUnloaded() {
+        this.disposeCurrentFragment();
+        super.onUnloaded();
+    }
+
+    private disposeCurrentFragment(){
         if (this._currentEntry && this._currentEntry.fragment) {
             const manager: android.app.FragmentManager = this._getFragmentManager();
-
             const transaction = manager.beginTransaction();
             transaction.remove(this._currentEntry.fragment);
             transaction.commitAllowingStateLoss();
         }
-
-        super.onUnloaded();
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.app.Fragment {
@@ -249,7 +256,7 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         if (this.canGoBack()) {
             this.goBack();
             return true;
@@ -884,7 +891,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             };
             view.notify(viewArgs);
 
-            if (!viewArgs.cancel && !view._onBackPressed()) {
+            if (!viewArgs.cancel && !view.onBackPressed()) {
                 callSuper = true;
             }
         }

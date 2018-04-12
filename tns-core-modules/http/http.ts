@@ -1,7 +1,6 @@
 import { ImageSource } from "../image-source";
 import * as httpRequest from "./http-request";
-
-global.moduleMerge(httpRequest, exports);
+export * from "./http-request";
 
 export function getString(arg: any): Promise<string> {
     return new Promise<string>((resolve, reject) => {

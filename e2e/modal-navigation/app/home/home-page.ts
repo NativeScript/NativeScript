@@ -41,12 +41,26 @@ export function onModalPage(args: EventData) {
         false);
 }
 
+export function onModalLayout(args: EventData) {
+    const view = args.object as View;
+    view.showModal("modal-layout/modal-layout",
+        "context",
+        () => console.log("home-page modal layout closed"),
+        false);
+}
+
 export function onModalTabView(args: EventData) {
+    const fullscreen = false;
+    const animated = false;
+    const stretched = true;
+
     const view = args.object as View;
     view.showModal("modal-tab/modal-tab-root",
         { frameless: true },
         () => console.log("home-page modal tabview closed"),
-        false);
+        fullscreen,
+        animated,
+        stretched);
 }
 
 export function onNavigate(args: EventData) {
@@ -55,7 +69,14 @@ export function onNavigate(args: EventData) {
     page.frame.navigate("second/second-page");
 }
 
-export function onRootViewChange() {
-    let rootView = application.getRootView();
-    rootView instanceof Frame ? application._resetRootView({moduleName: "tab-root"}) : application._resetRootView({moduleName: "app-root"});
+export function onFrameRootViewReset() {
+    application._resetRootView({ moduleName: "app-root" });
+}
+
+export function onTabRootViewReset() {
+    application._resetRootView({ moduleName: "tab-root" });
+}
+
+export function onLayoutRootViewReset() {
+    application._resetRootView({ moduleName: "layout-root" });
 }

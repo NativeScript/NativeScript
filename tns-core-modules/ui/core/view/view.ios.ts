@@ -317,7 +317,13 @@ export class View extends ViewCommon {
         super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
         if (!controller) {
+            const nativeView = this.ios || this.nativeViewProtected;
             controller = ios.UILayoutViewController.initWithOwner(new WeakRef(this));
+
+            if (nativeView instanceof UIView) {
+                controller.view.addSubview(nativeView);
+            }
+
             this.viewController = controller;
         }
 
@@ -578,8 +584,6 @@ export class CustomLayoutView extends View {
     }
 }
 
-const majorVersion = iosUtils.MajorVersion;
-
 export namespace ios {
     export function isContentScrollable(controller: UIViewController, owner: View): boolean {
         let scrollableContent = (<any>owner).scrollableContent;
@@ -735,7 +739,7 @@ export namespace ios {
         public viewWillAppear(animated: boolean): void {
             super.viewWillAppear(animated);
             const owner = this.owner.get();
-            if(!owner){
+            if (!owner) {
                 return;
             }
 

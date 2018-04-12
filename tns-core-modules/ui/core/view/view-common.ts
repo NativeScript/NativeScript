@@ -205,7 +205,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return false;
     }
 
-    public _onBackPressed(): boolean {
+    public onBackPressed(): boolean {
         return false;
     }
 
@@ -265,7 +265,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 that._closeModalCallback = null;
                 that._dialogClosed();
                 parent._modal = null;
-                
+
                 if (typeof closeCallback === "function") {
                     closeCallback.apply(undefined, arguments);
                 }
@@ -977,6 +977,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     _onDetachedFromWindow(): void {
         //
+    }
+
+    _hasAncestorView(ancestorView: ViewDefinition): boolean {
+        let matcher = (view: ViewDefinition) => view === ancestorView;
+
+        for (let parent = this.parent; parent != null; parent = parent.parent) {
+            if (matcher(<ViewDefinition>parent)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

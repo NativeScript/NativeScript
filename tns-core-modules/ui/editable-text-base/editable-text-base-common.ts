@@ -1,5 +1,5 @@
 ﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from ".";
-import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser } from "../text-base";
+import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser, resetSymbol } from "../text-base";
 
 export * from "../text-base";
 
