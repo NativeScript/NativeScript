@@ -3,6 +3,26 @@ import { Screen } from "./screen"
 
 const time = 1;
 
+export const roots = ["frame", "layout", "tab"];
+
+export const setRoot = async (root: String, screen: Screen) => {
+    console.log("Application root:", root);
+    switch (root) {
+        case "frame": {
+            await screen.setFrameRootView();
+            break;
+        }
+        case "layout": {
+            await screen.setLayoutRootView();
+            break;
+        }
+        case "tab": {
+            await screen.setTabRootView();
+            break;
+        }
+    }
+};
+
 export async function modalFrameBackground(driver: AppiumDriver, screen: Screen) {
     await driver.backgroundApp(time);
     await screen.loadedModalFrame();

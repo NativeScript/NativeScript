@@ -39,8 +39,15 @@ export class Screen {
     }
 
     resetFrameRootView = async () => {
+        console.log("Setting frame root ...");
         const btnResetFrameRootView = await this._driver.findElementByText(resetFrameRootView);
         await btnResetFrameRootView.tap();
+    }
+
+    resetLayoutRootView = async () => {
+        console.log("Setting layout root ...");
+        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
+        await btnResetLayoutRootView.tap();
     }
 
     resetTabRootView = async () => {
@@ -48,15 +55,16 @@ export class Screen {
         await btnResetTabRootView.tap();
     }
 
-    resetLayoutRootView = async () => {
-        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
-        await btnResetLayoutRootView.tap();
-    }
-
     loadedTabRootView = async () => {
         const tabFirst = await this._driver.findElementByText(first);
         assert.isTrue(await tabFirst.isDisplayed());
         console.log("Tab root view loaded!");
+    }
+
+    setFrameRootView = async () => {
+        // should load frame root, no need to verify it is loaded
+        await this.loadedHome();
+        await this.resetFrameRootView();
     }
 
     setTabRootView = async () => {
@@ -71,7 +79,7 @@ export class Screen {
     }
 
     setLayoutRootView = async () => {
-        // should load layout root
+        // should load layout root, no need to verify it is loaded
         await this.loadedHome();
         await this.resetLayoutRootView();
     }
