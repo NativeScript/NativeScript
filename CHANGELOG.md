@@ -5,6 +5,8 @@ Cross Platform Modules Changelog
 
 A detailed list of the new features and changes coming with NativeScript 4.0 ca be found [here](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit?usp=sharing).
 
+You can also check the [NativeScript 4.0 is out blog post](https://www.nativescript.org/blog/nativescript-4.0-is-out) for highlights.
+
 ### Bug Fixes
 
 * **android-images:** set decodeHeight/decodeWidth default values to dip ([#5490](https://github.com/NativeScript/NativeScript/issues/5490)) ([6509efa](https://github.com/NativeScript/NativeScript/commit/6509efa))
