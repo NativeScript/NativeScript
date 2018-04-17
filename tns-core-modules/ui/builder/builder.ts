@@ -81,17 +81,13 @@ const loadModule = profile("loadModule", (moduleNamePath: string, entry: ViewEnt
 const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, moduleExports: any): View => {
     // Possible XML file path.
     const fileName = resolveFileName(moduleNamePath, "xml");
-    if (fileName) {
-        // Or check if the file exists in the app modules and load the page from XML.
-        return loadPage(moduleNamePath, fileName, moduleExports);
-    }
 
     // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
     // if (page && fileName === `${moduleNamePath}.port.xml` || fileName === `${moduleNamePath}.land.xml`){
     //     page["isBiOrientational"] = true;
-    // }
+    // };
 
-    return null;
+    return loadPage(moduleNamePath, fileName, moduleExports);
 })
 
 export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {
@@ -143,8 +139,13 @@ const moduleCreateView = profile("module.createView", (moduleNamePath: string, m
 function loadInternal(fileName: string, context?: any, moduleNamePath?: string): ComponentModule {
     let componentModule: ComponentModule;
 
-    // Check if the XML file exists.
-    if (File.exists(fileName)) {
+    const appPath = knownFolders.currentApp().path;
+    const filePathRelativeToApp = (moduleNamePath && moduleNamePath.startsWith(appPath) ? "./" + moduleNamePath.substr(appPath.length + 1) : moduleNamePath) + ".xml";
+
+    if (global.moduleExists(filePathRelativeToApp)) {
+        var text = global.loadModule(filePathRelativeToApp);
+        componentModule = parseInternal(text, context, fileName, moduleNamePath);
+    } else if (fileName && File.exists(fileName)) {
         const file = File.fromPath(fileName);
         const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message) });
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
