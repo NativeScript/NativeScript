@@ -17,6 +17,7 @@ export function loadExamples() {
     examples.set("listview-bg-separator-color", "list-view/listview-bg-separator-color");
     examples.set("csslv", "list-view/csslv");
     examples.set("scrolling-and-sizing", "list-view/scrolling-and-sizing");
+    examples.set("row-height", "list-view/row-height");
 
     return examples;
 }
