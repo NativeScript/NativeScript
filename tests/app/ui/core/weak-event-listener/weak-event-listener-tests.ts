@@ -105,7 +105,7 @@ export function test_listenerDoesNotRetainTarget(done) {
     // that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
     (function() {
         addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, emptyHandler, targetRef.get());
-    });
+    })();
     forceGC();
 
     try {
