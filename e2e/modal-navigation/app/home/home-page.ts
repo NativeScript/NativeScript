@@ -5,7 +5,6 @@ import { View, EventData } from "tns-core-modules/ui/core/view";
 import { Frame } from "tns-core-modules/ui/frame";
 
 export function onNavigatingTo(args: NavigatedData) {
-    const page = <StackLayout>args.object;
     console.log("home-page onNavigatingTo");
 }
 

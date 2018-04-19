@@ -9,7 +9,7 @@ import {
     testNestedModalPageBackground
 } from "./shared.e2e-spec"
 
-describe("modal page", () => {
+describe("modal page:", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
@@ -20,7 +20,7 @@ describe("modal page", () => {
     });
 
     roots.forEach(root => {
-        describe(`${root} root modal page background scenarios`, () => {
+        describe(`${root} root modal page background scenarios:`, () => {
 
             before(async () => {
                 if (driver.isAndroid) {
