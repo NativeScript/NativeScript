@@ -65,7 +65,10 @@ export function onModalTabView(args: EventData) {
 export function onNavigate(args: EventData) {
     const view = args.object as View;
     const page = view.page as Page;
-    page.frame.navigate("second/second-page");
+    // In the layout root case for iOS, the page will be null
+    if (page) {
+        page.frame.navigate("second/second-page");
+    }
 }
 
 export function onFrameRootViewReset() {
