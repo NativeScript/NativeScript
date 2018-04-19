@@ -121,7 +121,7 @@ function initializeEditTextListeners(): void {
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
-                (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
+                (actionId !== android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED && event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
                 // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
                 // https://github.com/NativeScript/NativeScript/issues/3111
                 if (textView.getMaxLines() === 1) {
