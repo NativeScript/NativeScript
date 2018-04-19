@@ -27,7 +27,12 @@ export enum connectionType {
     /**
      * Denotes a mobile connection, i.e. cellular network or WAN.
      */
-    mobile = 2
+    mobile = 2,
+
+    /**
+     * Denotes an ethernet connection
+     */
+    ethernet = 3
 }
 
 /**
