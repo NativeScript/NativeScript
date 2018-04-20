@@ -115,9 +115,7 @@ function initializeEditTextListeners(): void {
                 return false;
             }
 
-            if (actionId === android.view.inputmethod.EditorInfo.IME_NULL ||
-                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED ||
-                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
