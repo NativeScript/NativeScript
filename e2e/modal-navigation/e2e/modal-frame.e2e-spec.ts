@@ -2,7 +2,6 @@ import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "./screen"
 import {
     roots,
-    setRoot,
     modalFrameBackground,
     testSecondPageBackground,
     testSecondPageClose,
@@ -21,10 +20,10 @@ describe("modal frame:", () => {
     });
 
     roots.forEach(root => {
-        describe(`${root} root modal frame background scenarios:`, () => {
+        describe(`${root} modal frame background scenarios:`, () => {
 
             before(async () => {
-                await setRoot(root, screen);
+                await screen[root]();
             });
 
             beforeEach(async function () {
@@ -36,7 +35,7 @@ describe("modal frame:", () => {
                     await driver.logPageSource(this.currentTest.title);
                     await driver.logScreenshot(this.currentTest.title);
                     await driver.resetApp();
-                    await setRoot(root, screen);
+                    await screen[root]();
                 }
             });
 

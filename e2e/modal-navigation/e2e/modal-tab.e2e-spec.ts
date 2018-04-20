@@ -2,7 +2,6 @@ import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen } from "./screen"
 import {
     roots,
-    setRoot,
     modalFrameBackground,
     modalTabViewBackground,
     testSecondPageBackground,
@@ -23,13 +22,13 @@ describe("modal tab:", () => {
     });
 
     roots.forEach(root => {
-        describe(`${root} root modal tab view background scenarios:`, () => {
+        describe(`${root} modal tab view background scenarios:`, () => {
 
             before(async () => {
                 if (driver.isAndroid) {
                     await driver.resetApp();
                 }
-                await setRoot(root, screen);
+                await screen[root]();
             });
 
             beforeEach(async function () {
@@ -41,7 +40,7 @@ describe("modal tab:", () => {
                     await driver.logPageSource(this.currentTest.title);
                     await driver.logScreenshot(this.currentTest.title);
                     await driver.resetApp();
-                    await setRoot(root, screen);
+                    await screen[root]();
                 }
             });
 
