@@ -18,6 +18,11 @@ export class FileSystemAccess {
         return new Date(javaFile.lastModified());
     }
 
+    public getFileSize(path: string): number {
+        const javaFile = new java.io.File(path);
+        return javaFile.length();
+    }
+
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
             var javaFile = new java.io.File(path);
