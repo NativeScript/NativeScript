@@ -22,6 +22,9 @@ import { profile } from "../../profiling";
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
 
+import { device } from "../../platform";
+import lazy from "../../utils/lazy";
+
 export * from "./frame-common";
 
 const INTENT_EXTRA = "com.tns.activity";
@@ -31,6 +34,8 @@ const CALLBACKS = "_callbacks";
 
 const ownerSymbol = Symbol("_owner");
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -186,13 +191,28 @@ export class Frame extends FrameBase {
         super.onUnloaded();
     }
 
-    private disposeCurrentFragment(){
-        if (this._currentEntry && this._currentEntry.fragment) {
-            const manager: android.app.FragmentManager = this._getFragmentManager();
-            const transaction = manager.beginTransaction();
-            transaction.remove(this._currentEntry.fragment);
-            transaction.commitAllowingStateLoss();
+    private disposeCurrentFragment(): void {
+        if (!this._currentEntry || !this._currentEntry.fragment) {
+            return;
         }
+
+        const manager: android.app.FragmentManager = this._getFragmentManager();
+        const transaction = manager.beginTransaction();
+        const androidSdkVersion = sdkVersion();
+
+        if (androidSdkVersion !== 21 && androidSdkVersion !== 22) {
+            transaction.remove(this._currentEntry.fragment);
+        } else {
+            // https://github.com/NativeScript/NativeScript/issues/5674
+            // HACK: Add and remove dummy fragment to workaround a Lollipop issue
+            // with inFragment passed as null when adding transition targets: https://android.googlesource.com/platform/frameworks/base.git/+/lollipop-release/core/java/android/app/BackStackRecord.java#1127  
+            const dummyFragmentTag = "dummy";
+            const dummyFragment = this.createFragment(<BackstackEntry>{}, dummyFragmentTag);
+            transaction.replace(this.containerViewId, dummyFragment, dummyFragmentTag);
+            transaction.remove(dummyFragment);
+        }
+
+        transaction.commitAllowingStateLoss();
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.app.Fragment {
