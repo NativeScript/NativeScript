@@ -1,8 +1,9 @@
-const { resolve, join  } = require("path");
+const { relative, resolve, join  } = require("path");
 
 const webpack = require("webpack");
 const nsWebpack = require("nativescript-dev-webpack");
 const nativescriptTarget = require("nativescript-dev-webpack/nativescript-target");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const { NativeScriptWorkerPlugin } = require("nativescript-worker-loader/NativeScriptWorkerPlugin");
@@ -13,20 +14,48 @@ module.exports = env => {
     if (!platform) {
         throw new Error("You need to provide a target platform!");
     }
+
     const platforms = ["ios", "android"];
-    const { snapshot, uglify, report } = env;
+    const projectRoot = __dirname;
+    // Default destination inside platforms/<platform>/...
+    const dist = resolve(projectRoot, nsWebpack.getAppPath(platform));
+    const appResourcesPlatformDir = platform === "android" ? "Android" : "iOS";
+
+    const {
+        // The 'appPath' and 'appResourcesPath' values are fetched from
+        // the nsconfig.json configuration file
+        // when bundling with `tns run android|ios --bundle`.
+        appPath = "app",
+        appResourcesPath = "app/App_Resources",
+
+        // Snapshot, uglify and report can be enabled by providing
+        // the `--env.snapshot`, `--env.uglify` or `--env.report` flags
+        // when running 'tns run android|ios'
+        snapshot,
+        uglify,
+        report,
+    } = env;
+
+    const appFullPath = resolve(projectRoot, appPath);
+    const appResourcesFullPath = resolve(projectRoot, appResourcesPath);
 
     const config = {
-        context: resolve("./app"),
+        context: appFullPath,
+        watchOptions: {
+            ignored: [
+                appResourcesFullPath,
+                // Don't watch hidden files
+                "**/.*",
+            ]
+        },
         target: nativescriptTarget,
         entry: {
-            bundle: `./${nsWebpack.getEntryModule()}`,
+            bundle: `./${nsWebpack.getEntryModule(appFullPath)}`,
             vendor: "./vendor"
         },
         output: {
             pathinfo: true,
-            // Default destination inside platforms/<platform>/...
-            path: resolve(nsWebpack.getAppPath(platform)),
+            path: dist,
             libraryTarget: "commonjs2",
             filename: "[name].js",
         },
@@ -83,14 +112,23 @@ module.exports = env => {
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
             }),
+            // Remove all files from the out dir.
+            new CleanWebpackPlugin([ `${dist}/**/*` ]),
+            // Copy native app resources to out dir.
+            new CopyWebpackPlugin([
+              {
+                from: `${appResourcesFullPath}/${appResourcesPlatformDir}`,
+                to: `${dist}/App_Resources/${appResourcesPlatformDir}`,
+                context: projectRoot
+              },
+            ]),
             // Copy assets to out dir. Add your own globs as needed.
             new CopyWebpackPlugin([
-                { from: "App_Resources/**" },
                 { from: "fonts/**" },
                 { from: "**/*.jpg" },
                 { from: "**/*.png" },
                 { from: "**/*.xml" },
-            ]),
+            ], { ignore: [`${relative(appPath, appResourcesFullPath)}/**`] }),
             // Generate a bundle starter script and activate it in package.json
             new nsWebpack.GenerateBundleStarterPlugin([
                 "./vendor",
@@ -101,7 +139,6 @@ module.exports = env => {
             new nsWebpack.PlatformFSPlugin({
                 platform,
                 platforms,
-                // ignore: ["App_Resources"]
             }),
             // Does IPC communication with the {N} CLI to notify events when running in watch mode.
             new nsWebpack.WatchStateLoggerPlugin(),
@@ -113,14 +150,14 @@ module.exports = env => {
             analyzerMode: "static",
             openAnalyzer: false,
             generateStatsFile: true,
-            reportFilename: join(__dirname, "report", `report.html`),
-            statsFilename: join(__dirname, "report", `stats.json`),
+            reportFilename: resolve(projectRoot, "report", `report.html`),
+            statsFilename: resolve(projectRoot, "report", `stats.json`),
         }));
     }
     if (snapshot) {
         config.plugins.push(new nsWebpack.NativeScriptSnapshotPlugin({
             chunk: "vendor",
-            projectRoot: __dirname,
+            projectRoot,
             webpackConfig: config,
             targetArchs: ["arm", "arm64", "ia32"],
             tnsJavaClassesOptions: { packages: ["tns-core-modules" ] },
@@ -134,7 +171,6 @@ module.exports = env => {
         const compress = platform !== "android";
         config.plugins.push(new UglifyJsPlugin({
             uglifyOptions: {
-                mangle: { reserved: nsWebpack.uglifyMangleExcludes },
                 compress,
             }
         }));
