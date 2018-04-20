@@ -4,13 +4,13 @@ Execute Tests
 Android:
 
 ```
-npm run e2e -- --runType android23 --reuseDevice
+npm run e2e -- --runType android23 # --devMode
 ```
 
 iOS:
 
 ```
-npm run  e2e -- --runType sim.iPhoneX.iOS112 --reuseDevice
+npm run e2e -- --runType sim.iPhoneX.iOS112 # --devMode
 ```
 
 Scenarios
@@ -32,7 +32,15 @@ ROOT FRAME:
 	2. Show nested modal dialog with frame
 		2. Close nested modal dialog
 	3. Close modal dialog
-3. [Done] Show modal tabview
+3. [Done] Show modal layout
+	1. Navigate to modal second page within modal dialog
+		1. Go back
+	2. Show nested modal dialog
+		2. Close nested modal dialog
+	3. Show nested modal dialog with frame
+		3. Close nested modal dialog
+	4. Close modal dialog
+4. [Done] Show modal tabview
 	1. Navigate to second page within tab item frame
 		1. Go back
 	2. Show nested modal dialog
@@ -40,7 +48,7 @@ ROOT FRAME:
 	3. Show nested modal dialog with frame
 		3. Close nested modal dialog
 	4. Close modal dialog
-4. Navigate to second page within root frame
+5. Navigate to second page within root frame
 	1. Show modal dialog with frame
 		1. Navigate to second page within modal dialog
 			1. Go back
@@ -56,6 +64,10 @@ ROOT FRAME:
 			2. Close nested modal dialog
 		3. Close modal dialog
 	3. Go back
+
+ROOT LAYOUT:
+
+[Same as above]
 
 ROOT TABVIEW:
 

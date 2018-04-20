@@ -5,7 +5,6 @@ import { View, EventData } from "tns-core-modules/ui/core/view";
 import { Frame } from "tns-core-modules/ui/frame";
 
 export function onNavigatingTo(args: NavigatedData) {
-    const page = <StackLayout>args.object;
     console.log("home-page onNavigatingTo");
 }
 
@@ -66,7 +65,10 @@ export function onModalTabView(args: EventData) {
 export function onNavigate(args: EventData) {
     const view = args.object as View;
     const page = view.page as Page;
-    page.frame.navigate("second/second-page");
+    // In the layout root case for iOS, the page will be null
+    if (page) {
+        page.frame.navigate("second/second-page");
+    }
 }
 
 export function onFrameRootViewReset() {
