@@ -1,4 +1,4 @@
-<Page backgroundColor="yellow" 
+<Page backgroundColor="blue"
     navigatingTo="onNavigatingTo" 
     navigatingFrom="onNavigatingFrom"
     navigatedTo="onNavigatedTo"
@@ -8,7 +8,7 @@
         <Label class="action-bar-title" text="Modal Nested"></Label>
     </ActionBar>
 
-    <StackLayout backgroundColor="darkBlue">
+    <StackLayout backgroundColor="lightBlue">
         <Button text="Close Modal Nested" tap="closeModal" />
     </StackLayout>
 </Page>
