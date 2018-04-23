@@ -1,4 +1,4 @@
-<GridLayout backgroundColor="green" showingModally="onShowingModally" loaded="onLoaded"
+<GridLayout showingModally="onShowingModally" loaded="onLoaded"
     navigatingTo="onNavigatingTo"
     navigatingFrom="onNavigatingFrom"
     navigatedTo="onNavigatedTo"

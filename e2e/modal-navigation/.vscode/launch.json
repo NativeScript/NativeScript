@@ -53,7 +53,7 @@
             "platform": "ios",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "tnsArgs": [
                 "--syncAllFiles"
             ],
@@ -78,7 +78,7 @@
             "platform": "android",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "tnsArgs": [
                 "--syncAllFiles"
             ],

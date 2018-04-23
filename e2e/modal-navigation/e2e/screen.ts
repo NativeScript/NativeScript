@@ -10,6 +10,7 @@ const modalNested = "Modal Nested";
 
 const modalFrame = "Show Modal Page With Frame";
 const modalPage = "Show Modal Page";
+const modalLayout = "Show Modal Layout";
 const modalTabView = "Show Modal TabView";
 const navToSecondPage = "Navigate To Second Page";
 const resetFrameRootView = "Reset Frame Root View";
@@ -38,8 +39,15 @@ export class Screen {
     }
 
     resetFrameRootView = async () => {
+        console.log("Setting frame root ...");
         const btnResetFrameRootView = await this._driver.findElementByText(resetFrameRootView);
         await btnResetFrameRootView.tap();
+    }
+
+    resetLayoutRootView = async () => {
+        console.log("Setting layout root ...");
+        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
+        await btnResetLayoutRootView.tap();
     }
 
     resetTabRootView = async () => {
@@ -47,15 +55,16 @@ export class Screen {
         await btnResetTabRootView.tap();
     }
 
-    resetLayoutRootView = async () => {
-        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
-        await btnResetLayoutRootView.tap();
-    }
-
     loadedTabRootView = async () => {
         const tabFirst = await this._driver.findElementByText(first);
         assert.isTrue(await tabFirst.isDisplayed());
         console.log("Tab root view loaded!");
+    }
+
+    setFrameRootView = async () => {
+        // should load frame root, no need to verify it is loaded
+        await this.loadedHome();
+        await this.resetFrameRootView();
     }
 
     setTabRootView = async () => {
@@ -67,6 +76,12 @@ export class Screen {
             await this.resetTabRootView();
             await this.loadedTabRootView();
         }
+    }
+
+    setLayoutRootView = async () => {
+        // should load layout root, no need to verify it is loaded
+        await this.loadedHome();
+        await this.resetLayoutRootView();
     }
 
     showModalFrame = async () => {
@@ -89,6 +104,15 @@ export class Screen {
         const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
         assert.isTrue(await btnShowNestedModalPage.isDisplayed());
         console.log("Modal Page loaded!");
+    }
+
+    showModalLayout = async () => {
+        const btnModalLayout = await this._driver.findElementByText(modalLayout);
+        await btnModalLayout.tap();
+    }
+
+    loadedModalLayout = async () => {
+        await this.loadedModalFrame();
     }
 
     showModalTabView = async () => {
@@ -189,6 +213,16 @@ export class Screen {
             // should show modal page
             await this.showModalPage();
             await this.loadedModalPage();
+        }
+    }
+
+    loadModalLayout = async () => {
+        try {
+            await this.loadedModalLayout();
+        } catch (err) {
+            // should show modal layout
+            await this.showModalLayout();
+            await this.loadedModalLayout();
         }
     }
 
