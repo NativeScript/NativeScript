@@ -24,3 +24,7 @@ export function onGoBack(args: EventData) {
     const page = view.page as Page;
     page.frame.goBack();
 }
+
+export function onCloseModal(args: EventData) {
+    (args.object as View).closeModal();
+}

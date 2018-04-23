@@ -4,10 +4,12 @@ export enum connectionType {
     none = 0,
     wifi = 1,
     mobile = 2,
+    ethernet = 3
 }
 
 const wifi = "wifi";
 const mobile = "mobile";
+const ethernet = "ethernet";
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
@@ -36,6 +38,10 @@ export function getConnectionType(): number {
     
     if (type.indexOf(mobile) !== -1){
         return connectionType.mobile;
+    }
+
+    if (type.indexOf(ethernet) !== -1){
+        return connectionType.ethernet;
     }
         
     return connectionType.none;

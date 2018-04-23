@@ -16,6 +16,16 @@ export class FileSystemAccess {
         }
     }
 
+    public getFileSize(path: string): number {
+        const fileManager = ios.getter(NSFileManager, NSFileManager.defaultManager);
+        const attributes = fileManager.attributesOfItemAtPathError(path);
+        if (attributes) {
+            return attributes.objectForKey("NSFileSize");
+        } else {
+            return 0;
+        }
+    }
+
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
             const fileManager = ios.getter(NSFileManager, NSFileManager.defaultManager);

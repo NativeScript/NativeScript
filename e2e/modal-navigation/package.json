@@ -38,7 +38,8 @@
     "webpack-sources": "~1.1.0",
     "@types/chai": "^4.0.2",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.5"
+    "@types/node": "^7.0.5",
+    "clean-webpack-plugin": "~0.1.19"
   },
   "scripts": {
     "e2e": "tsc -p e2e && mocha --opts ./e2e/config/mocha.opts",

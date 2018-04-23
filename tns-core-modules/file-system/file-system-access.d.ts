@@ -13,6 +13,12 @@ export class FileSystemAccess {
     getLastModified(path: string): Date;
 
     /**
+     * Gets the size in bytes of a file with a given path.
+     * @param path Path to the file.
+     */
+    getFileSize(path: string): number;
+
+    /**
      * Gets the parent folder of a file with a given path.
      * @param path Path to the file.
      * @param onError A callback function to use if any error occurs.
