@@ -97,7 +97,6 @@ function layout_invalidate_test(moduleName: string) {
     TKUnit.waitUntilReady(() => lbl.isLayoutValid);
 }
 
-
 export function tearDownModule() {
     // reset the root to frame for other tests
     const resetFrameRoot = createTestFrameRootEntry();
