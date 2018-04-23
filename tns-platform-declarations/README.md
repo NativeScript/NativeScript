@@ -1,10 +1,10 @@
-**`tns-platform-declarations/`**
+**`tns-platform-declarations`**
 
 This plugin contains the type information to the underlying native platforms as exposed by the NativeScript framework.
 
 Offically supported entry points:
- - [`android.d.ts`](android/) - for android platform SDK and runtime types
- - [`ios.d.ts`](ios/) - for iOS platform SDK and runtime types
+ - [`android.d.ts`](android/android.d.ts) - for android platform SDK and runtime types
+ - [`ios.d.ts`](ios/ios.d.ts) - for iOS platform SDK and runtime types
  - desktop future maybe https://github.com/NativeScript/NativeScript/issues/27
 
 Using the declarations may conflict with DOM typings,
