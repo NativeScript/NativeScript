@@ -8,7 +8,7 @@
         <Label class="action-bar-title" text="Modal"></Label>
     </ActionBar>
 
-    <StackLayout backgroundColor="maroon">
+    <StackLayout backgroundColor="lightGreen">
         <Button text="Navigate To Second Page" tap="onNavigate" visibility="{{ navigationVisibility }}" />
         <Button text="Show Nested Modal Page With Frame" tap="showNestedModalFrame" />
         <Button text="Show Nested Modal Page" tap="showNestedModalPage" />
