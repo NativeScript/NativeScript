@@ -19,6 +19,10 @@ Help us keep a healthy and open community. We expect all participants in this pr
 2. Search for similar issues in the issues list for this repo; it may already be an identified problem.
 3. If this is a bug or problem that is clear, simple, and is unlikely to require any discussion -- it is OK to open an issue on GitHub with a reproduction of the bug including workflows and screenshots. If possible, submit a Pull Request with a failing test, entire application or module. If you'd rather take matters into your own hands, fix the bug yourself (jump down to the [Submitting a PR](#pr) section).
 
+> While we are doing all we can to take care of every issue, sometimes we get overwhelmed. That's why
+> - issues that are not constructive or describe problems that cannot be reproduced will be closed
+> - feature requests or bug reports with unanswered questions regarding the behavior/reproduction for more than 20 days will be closed 
+
 ## <a name="features"></a> Requesting Features
 
 1. Use Github Issues to submit feature requests.
