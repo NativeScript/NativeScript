@@ -36,11 +36,11 @@ export class LinearGradient {
         }
 
         if (first.angle !== second.angle) {
-            return true;
+            return false;
         }
 
         if (first.colorStops.length !== second.colorStops.length) {
-            return true;
+            return false;
         }
 
         for (let i = 0; i < first.colorStops.length; i++) {
