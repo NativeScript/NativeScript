@@ -59,6 +59,10 @@ export class View extends ViewCommon {
         if (nativeView) {
             nativeView.setNeedsLayout();
         }
+
+        if (this.viewController && this.viewController.view !== nativeView) {
+            this.viewController.view.setNeedsLayout();
+        }
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {

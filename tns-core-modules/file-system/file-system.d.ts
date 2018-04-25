@@ -23,7 +23,7 @@ export class FileSystemEntity {
     path: string;
 
     /**
-     * Gets the Folder object representing the parent of this entity. 
+     * Gets the Folder object representing the parent of this entity.
      * Will be null for a root folder like Documents or Temporary.
      * This property is readonly.
      */
@@ -66,6 +66,11 @@ export class File extends FileSystemEntity {
      * Gets the extension of the file.
      */
     extension: string;
+
+    /**
+     * Gets the size in bytes of the file.
+     */
+    size: number;
 
     /**
      * Gets a value indicating whether the file is currently locked, meaning a background operation associated with this file is running.
@@ -208,7 +213,7 @@ export module knownFolders {
      * iOS - this folder is read-only and contains the app and all its resources.
      */
     export function currentApp(): Folder;
-    
+
     /**
      * Contains iOS-specific known folders.
      */
@@ -217,42 +222,42 @@ export module knownFolders {
          * Gets the NSLibraryDirectory.
          */
         export function library(): Folder;
-        
+
         /**
          * Gets the NSDeveloperDirectory.
          */
         export function developer(): Folder;
-        
+
         /**
          * Gets the NSDesktopDirectory.
          */
         export function desktop(): Folder;
-        
+
         /**
          * Gets the NSDownloadsDirectory.
          */
         export function downloads(): Folder;
-        
+
         /**
          * Gets the NSMoviesDirectory.
          */
         export function movies(): Folder;
-        
+
         /**
          * Gets the NSMusicDirectory.
          */
         export function music(): Folder;
-        
+
         /**
          * Gets the NSPicturesDirectory.
          */
         export function pictures(): Folder;
-        
+
         /**
          * Gets the NSSharedPublicDirectory.
          */
         export function sharedPublic(): Folder;
-    } 
+    }
 }
 
 /**
