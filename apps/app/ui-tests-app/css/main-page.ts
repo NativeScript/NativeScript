@@ -42,5 +42,6 @@ export function loadExamples() {
     examples.set("non-uniform-radius", "css/non-uniform-radius");
     examples.set("missing-background-image", "css/missing-background-image");
     examples.set("background-shorthand", "css/background-shorthand");
+    examples.set("background-image-linear-gradient", "css/background-image-linear-gradient");
     return examples;
 }
