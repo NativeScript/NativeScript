@@ -49,6 +49,7 @@ export class ImageAsset extends common.ImageAsset {
 
         let imageRequestOptions = PHImageRequestOptions.alloc().init();
         imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
+        imageRequestOptions.networkAccessAllowed = true;
         
         PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions,
             (image, imageResultInfo) => {
