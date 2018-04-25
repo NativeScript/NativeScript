@@ -1,5 +1,5 @@
 import * as TKUnit from "../../TKUnit";
-import { Page } from "tns-core-modules/ui/page";
+import { Page, View } from "tns-core-modules/ui/page";
 import { Frame, NavigationEntry, stack } from "tns-core-modules/ui/frame";
 import { _resetRootView, getRootView } from "tns-core-modules/application";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
@@ -64,6 +64,38 @@ export function test_gridlayout_rootview_css_applied() {
     TKUnit.assert(rootView instanceof GridLayout);
     helper.assertViewBackgroundColor(rootView, "#0000FF");
 };
+
+export function test_gridlayout_rootview_layout_updates() {
+    layout_invalidate_test("ui/root-view/root-modules/gridlayout-root");
+}
+
+export function test_custom_component_rootview_layout_updates() {
+    layout_invalidate_test("ui/root-view/root-modules/custom-component-root");
+}
+
+export function test_tabview_rootview_layout_updates() {
+    layout_invalidate_test("ui/root-view/root-modules/gridlayout-root");
+}
+
+function layout_invalidate_test(moduleName: string) {
+    var entry = { moduleName };
+
+    _resetRootView(entry);
+
+    var rootView = getRootView();
+    TKUnit.waitUntilReady(() => rootView.isLayoutValid);
+
+    const lbl = <View>rootView.getViewById("my-test-label");
+
+    lbl.visibility = "collapse";
+    TKUnit.assertFalse(rootView.isLayoutValid);
+    TKUnit.waitUntilReady(() => rootView.isLayoutValid);
+
+    lbl.visibility = "visible";
+    TKUnit.assertFalse(rootView.isLayoutValid);
+    TKUnit.waitUntilReady(() => rootView.isLayoutValid);
+    TKUnit.waitUntilReady(() => lbl.isLayoutValid);
+}
 
 export function tearDownModule() {
     // reset the root to frame for other tests
