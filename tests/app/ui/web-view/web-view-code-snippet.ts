@@ -7,17 +7,17 @@ export function navigatingTo(args: EventData) {
     console.log("page navigating to");
 }
 
-export function webViewTouch(args){
+export function webViewTouch(args) {
     console.log("touch event");
 }
 
-export function webViewPan(args){
+export function webViewPan(args) {
     console.log("pan gesture");
 }
 
-export function webViewLoaded(args){
-    var webview:WebView = <WebView>args.object;
-    if(isAndroid){
+export function webViewLoaded(args) {
+    var webview: WebView = <WebView>args.object;
+    if (isAndroid) {
         webview.android.getSettings().setDisplayZoomControls(false);
     }
 }

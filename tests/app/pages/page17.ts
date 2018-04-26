@@ -3,7 +3,7 @@ import * as action from "tns-core-modules/ui/action-bar";
 
 import * as pages from "tns-core-modules/ui/page";
 
-var currentPage:pages.Page;
+var currentPage: pages.Page;
 // Event handler for Page "loaded" event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
     // Get the event sender

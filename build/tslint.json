@@ -3,36 +3,52 @@
         "class-name": true,
         "curly": true,
         "forin": false,
-        "indent": true,
+        "indent": [
+            true,
+            "spaces",
+            4
+        ],
         "jsdoc-format": false,
-        "max-line-length": [false, 120],
+        "max-line-length": [
+            false,
+            120
+        ],
         "no-arg": true,
         "no-consecutive-blank-lines": true,
         "no-construct": true,
         "no-debugger": true,
-        "triple-equals": [true, "allow-null-check"],
-        "variable-name": [false, "allow-leading-underscore"],
+        "triple-equals": [
+            true,
+            "allow-null-check"
+        ],
+        "variable-name": [
+            false,
+            "allow-leading-underscore"
+        ],
         "no-empty": true,
         "no-eval": true,
-		"no-unused-variable": [true],
-		"no-duplicate-variable": true,
-
+        "no-duplicate-variable": true,
         "no-bitwise": false,
         "no-string-literal": false,
         "no-trailing-whitespace": false,
         "no-unused-expression": true,
         "no-use-before-declare": false,
         "no-var-requires": false,
-        "one-line": [false,
+        "one-line": [
+            false,
             "check-open-brace",
             "check-catch",
             "check-else",
             "check-whitespace"
         ],
-        "quotemark": [false, "double"],
+        "quotemark": [
+            false,
+            "double"
+        ],
         "radix": false,
         "semicolon": false,
-        "typedef": [false,
+        "typedef": [
+            false,
             "callSignature",
             "indexSignature",
             "parameter",
@@ -40,19 +56,30 @@
             "variableDeclarator",
             "memberVariableDeclarator"
         ],
-        "typedef-whitespace": [false,
-            "callSignature",
-            "catchClause",
-            "indexSignature"
+        "typedef-whitespace": [
+            true,
+            {
+                "call-signature": "nospace",
+                "index-signature": "nospace",
+                "parameter": "nospace",
+                "property-declaration": "nospace",
+                "variable-declaration": "nospace"
+            },
+            {
+                "call-signature": "onespace",
+                "index-signature": "onespace",
+                "parameter": "onespace",
+                "property-declaration": "onespace",
+                "variable-declaration": "onespace"
+            }
         ],
-        "whitespace": [false,
+        "whitespace": [
+            false,
             "check-branch",
             "check-decl",
             "check-operator",
             "check-separator",
             "check-type"
-        ],
-        
-        "indent":4
+        ]
     }
 }
