@@ -54,12 +54,16 @@
                 "variable-declaration": "onespace"
             }
         ],
-        "whitespace": [false,
+        "whitespace": [true,
             "check-branch",
             "check-decl",
             "check-operator",
+            "check-module",
             "check-separator",
-            "check-type"
+            "check-rest-spread",
+            "check-type",
+            "check-type-operator",
+            "check-preblock"
         ]
     }
 }

@@ -138,7 +138,7 @@ export class XMLHttpRequest {
 
     private isTextContentType(contentType: string): boolean {
         let result = false;
-        for(let i = 0; i < this.textTypes.length; i++) {
+        for (let i = 0; i < this.textTypes.length; i++) {
             if (contentType.toLowerCase().indexOf(this.textTypes[i]) >= 0) {
                 result = true;
                 break;

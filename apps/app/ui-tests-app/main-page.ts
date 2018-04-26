@@ -43,7 +43,7 @@ export function pageLoaded(args: EventData) {
         parent.android.setFocusableInTouchMode(true);
         parent.android.setFocusable(true);
         searchBar.android.clearFocus();
-    }else{
-        parent.style.marginBottom=10;
+    } else {
+        parent.style.marginBottom = 10;
     }
 }

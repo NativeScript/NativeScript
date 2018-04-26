@@ -49,10 +49,10 @@ export function pageLoaded(args: EventData) {
 }
 
 let scrollToBottom = true;
-export function onScroll(args: EventData){
+export function onScroll(args: EventData) {
   let page = (<View>args.object).page;
   let gridLayout = page.getViewById<GridLayout>("grid-layout");
-  for (let i = 0, length = gridLayout.getChildrenCount(); i < length; i++){
+  for (let i = 0, length = gridLayout.getChildrenCount(); i < length; i++) {
       let listView = <ListView>gridLayout.getChildAt(i);
       listView.scrollToIndex(scrollToBottom ? listView.items.length - 1 : 0);
   }

@@ -155,7 +155,7 @@ export class XmlParser implements definition.XmlParser {
         });
 
         this._parser.on("textNode", function (text, uq, pos) {
-            var data = uq(XmlParser._dereferenceEntities(text));// Decode entity references such as &lt; and &gt;
+            var data = uq(XmlParser._dereferenceEntities(text)); // Decode entity references such as &lt; and &gt;
             onEvent(new ParserEvent(ParserEventType.Text, pos(), undefined, undefined, undefined, undefined, data));
         });
 

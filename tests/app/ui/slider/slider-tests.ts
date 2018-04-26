@@ -165,7 +165,7 @@ export function test_values_change_native_values() {
         TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, "4: Wrong native slider.maxValue");
 
         slider.value = 15;
-        TKUnit.assertEqual(getNativeValue(slider), isIOS ? 15: 5, "5: wrong native slider.value");
+        TKUnit.assertEqual(getNativeValue(slider), isIOS ? 15 : 5, "5: wrong native slider.value");
         TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, "5: Wrong native slider.maxValue");
     };
 

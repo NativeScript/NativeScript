@@ -73,7 +73,7 @@ export class Request {
                 resourceType = documentTypeByMimeType[this._mimeType];
             }
 
-            if(this._mimeType.indexOf("image/") !== -1) {
+            if (this._mimeType.indexOf("image/") !== -1) {
                 resourceType = "Image";
             }
 
@@ -182,7 +182,7 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
         var body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() :
                     resource_data.data.base64EncodedStringWithOptions(0);
 
-        if(resource_data) {
+        if (resource_data) {
              return {
                  body: body,
                  base64Encoded: !resource_data.hasTextContent

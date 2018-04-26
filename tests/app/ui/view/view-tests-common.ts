@@ -605,7 +605,7 @@ export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
         // TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
 
         TKUnit.assertEqual(secondView.cssPropCounter, 2, "7");
-        TKUnit.assertEqual(secondView.viewPropCounter,2, "8");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "8");
     });
 };
 

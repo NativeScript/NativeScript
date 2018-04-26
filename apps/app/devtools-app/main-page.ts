@@ -30,7 +30,7 @@ export function navigate() {
     frame.topmost().navigate("gallery-app/main-page");
 }
 
-export function change(args){
+export function change(args) {
     args.object.text = "hi " + Math.random();
 
 }

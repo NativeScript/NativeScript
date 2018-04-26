@@ -574,7 +574,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
     const bottom = layout.toDeviceIndependentPixels(background.borderBottomWidth);
     const left = layout.toDeviceIndependentPixels(background.borderLeftWidth);
 
-    const lto: Point = { x: nativeViewLayerBounds.left, y: nativeViewLayerBounds.top };// left-top-outside
+    const lto: Point = { x: nativeViewLayerBounds.left, y: nativeViewLayerBounds.top }; // left-top-outside
     const lti: Point = { x: nativeViewLayerBounds.left + left, y: nativeViewLayerBounds.top + top }; // left-top-inside
 
     const rto: Point = { x: nativeViewLayerBounds.right, y: nativeViewLayerBounds.top }; // right-top-outside

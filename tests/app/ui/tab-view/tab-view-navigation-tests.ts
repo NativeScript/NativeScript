@@ -117,7 +117,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
     _clickTheFirstButtonInTheListViewNatively(tabView);
 
     frameModule.goBack();
-    TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());//() => topFrame.currentPage === tabViewPage);
+    TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty()); //() => topFrame.currentPage === tabViewPage);
 
     frameModule.goBack();
 

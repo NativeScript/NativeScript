@@ -1,4 +1,4 @@
-import {TabView} from "tns-core-modules/ui/tab-view";
+import { TabView } from "tns-core-modules/ui/tab-view";
 import * as utils from "tns-core-modules/utils/utils";
 
 const titles = ["Etiam lacinia", "Imperdiet ante", "A interdum", "Quisque tempus", "Sodales viverra"];
