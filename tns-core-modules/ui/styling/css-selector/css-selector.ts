@@ -197,7 +197,7 @@ export class AttributeSelector extends SimpleSelector {
             return;
         }
     }
-    public toString(): string { return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ''}]${wrap(this.combinator)}`; }
+    public toString(): string { return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ""}]${wrap(this.combinator)}`; }
     public match(node: Node): boolean { return false; }
     public mayMatch(node: Node): boolean { return true; }
     public trackChanges(node: Node, map: ChangeAccumulator): void { map.addAttribute(node, this.attribute); }
@@ -412,7 +412,7 @@ function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector
     switch(ast.type) {
         case "*": return new UniversalSelector();
         case "#": return new IdSelector(ast.identifier);
-        case "": return new TypeSelector(ast.identifier.replace(/-/, '').toLowerCase());
+        case "": return new TypeSelector(ast.identifier.replace(/-/, "").toLowerCase());
         case ".": return new ClassSelector(ast.identifier);
         case ":": return new PseudoClassSelector(ast.identifier);
         case "[]": return ast.test ? new AttributeSelector(ast.property, ast.test, ast.value) : new AttributeSelector(ast.property);

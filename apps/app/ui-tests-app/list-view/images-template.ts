@@ -1,5 +1,5 @@
-import { EventData, Observable } from 'tns-core-modules/data/observable';
-import { Page } from 'tns-core-modules/ui/page';
+import { EventData, Observable } from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
 
 export function navigatingTo(args: EventData) {
     let page = <Page>args.object;

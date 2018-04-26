@@ -1,5 +1,5 @@
-import { EventData } from 'tns-core-modules/data/observable';
-import { Page } from 'tns-core-modules/ui/page';
+import { EventData } from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";

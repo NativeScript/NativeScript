@@ -1,4 +1,4 @@
-﻿import * as definition from ".";
+import * as definition from ".";
 import * as easysax from "../js-libs/easysax";
 
 export class ParserEventType implements definition.ParserEventType {
@@ -120,7 +120,7 @@ export class XmlParser implements definition.XmlParser {
         this._parser = new easysax.EasySAXParser();
 
         var that = this;
-        this._parser.on('startNode', function (elem, attr, uq, tagend, str, pos) {
+        this._parser.on("startNode", function (elem, attr, uq, tagend, str, pos) {
             var attributes = attr();
 
             if (attributes === true) {//HACK: For some reason easysax returns the true literal when an element has no attributes.
@@ -154,12 +154,12 @@ export class XmlParser implements definition.XmlParser {
             onEvent(new ParserEvent(ParserEventType.StartElement, pos(), prefix, namespace, name, attributes, undefined));
         });
 
-        this._parser.on('textNode', function (text, uq, pos) {
+        this._parser.on("textNode", function (text, uq, pos) {
             var data = uq(XmlParser._dereferenceEntities(text));// Decode entity references such as &lt; and &gt;
             onEvent(new ParserEvent(ParserEventType.Text, pos(), undefined, undefined, undefined, undefined, data));
         });
 
-        this._parser.on('endNode', function (elem, uq, tagstart, str, pos) {
+        this._parser.on("endNode", function (elem, uq, tagstart, str, pos) {
 
             var prefix = undefined;
             var namespace = undefined;
@@ -179,16 +179,16 @@ export class XmlParser implements definition.XmlParser {
             }
         });
 
-        this._parser.on('cdata', function (data, res, pos) {
+        this._parser.on("cdata", function (data, res, pos) {
             onEvent(new ParserEvent(ParserEventType.CDATA, pos(), undefined, undefined, undefined, undefined, data));
         });
 
-        this._parser.on('comment', function (text, uq, pos) {
+        this._parser.on("comment", function (text, uq, pos) {
             onEvent(new ParserEvent(ParserEventType.Comment, pos(), undefined, undefined, undefined, undefined, text));
         });
 
         if (onError) {
-            this._parser.on('error', function (msg, pos) {
+            this._parser.on("error", function (msg, pos) {
                 onError(new Error(msg), pos());
             });
         }
@@ -272,7 +272,7 @@ export class XmlParser implements definition.XmlParser {
 
     private static _dereferenceEntities(s: string): string {
         s = String(s);
-        if (s.length > 3 && s.indexOf('&') !== -1) {
+        if (s.length > 3 && s.indexOf("&") !== -1) {
             s = s.replace(_entitySearchRegEx, _HandleAmpEntities);
         }
 

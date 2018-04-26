@@ -1,5 +1,5 @@
 // >> web-view-loaded
-import { EventData } from 'tns-core-modules/data/observable';
+import { EventData } from "tns-core-modules/data/observable";
 import { WebView } from "tns-core-modules/ui/web-view";
 import { isAndroid } from "tns-core-modules/platform"
 

@@ -2,7 +2,7 @@ import { EventData } from "tns-core-modules/data/observable";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { View, KeyedTemplate } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
-import { ViewModel, Item } from './main-view-model';
+import { ViewModel, Item } from "./main-view-model";
 import { ListView } from "tns-core-modules/ui/list-view";
 import { Label } from "tns-core-modules/ui/label";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";

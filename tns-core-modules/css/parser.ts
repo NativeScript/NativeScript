@@ -996,7 +996,7 @@ export class CSS3Parser {
             case "U":
                 if (this.text[this.nextInputCodePointIndex + 1] === "+") {
                     const thirdChar = this.text[this.nextInputCodePointIndex + 2];
-                    if (thirdChar >= '0' && thirdChar <= '9' || thirdChar === "?") {
+                    if (thirdChar >= "0" && thirdChar <= "9" || thirdChar === "?") {
                         // TODO: Handle unicode stuff such as U+002B
                         throw new Error("Unicode tokens not supported!");
                     }

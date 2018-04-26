@@ -229,7 +229,7 @@ function addPropertiesFromObject(observable: ObservableFromObject, source: any, 
         if (recursive
             && !Array.isArray(value)
             && value
-            && typeof value === 'object'
+            && typeof value === "object"
             && !(value instanceof Observable)) {
             value = fromObjectRecursive(value);
         }

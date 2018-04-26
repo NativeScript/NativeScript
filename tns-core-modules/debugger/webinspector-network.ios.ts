@@ -127,7 +127,7 @@ export class Request {
     
     public requestWillBeSent(request: inspectorCommandTypes.NetworkDomain.Request): void {
         if (this._networkDomainDebugger.enabled) {
-            this._networkDomainDebugger.events.requestWillBeSent(this.requestID, frameId, loaderId, request.url, request, __inspectorTimestamp(), { type: 'Script' });
+            this._networkDomainDebugger.events.requestWillBeSent(this.requestID, frameId, loaderId, request.url, request, __inspectorTimestamp(), { type: "Script" });
         }
     }
 }

@@ -27,7 +27,7 @@ export class TextBase extends TextBaseCommon {
 
     [formattedTextProperty.setNative](value: FormattedString) {
         this._setNativeText();
-        textProperty.nativeValueChange(this, !value ? '' : value.toString());
+        textProperty.nativeValueChange(this, !value ? "" : value.toString());
         this._requestLayoutOnTextChanged();
     }
 
@@ -188,7 +188,7 @@ export class TextBase extends TextBaseCommon {
         }
 
         const text = this.text;
-        const string = (text === undefined || text === null) ? '' : text.toString();
+        const string = (text === undefined || text === null) ? "" : text.toString();
         const source = getTransformedText(string, this.textTransform);
         if (dict.size > 0 || isTextView) {
             if (isTextView) {
@@ -223,7 +223,7 @@ export class TextBase extends TextBaseCommon {
                 const span = formattedString.spans.getItem(i);
                 const text = span.text;
                 const textTransform = (<TextBase>formattedString.parent).textTransform;
-                let spanText = (text === null || text === undefined) ? '' : text.toString();
+                let spanText = (text === null || text === undefined) ? "" : text.toString();
                 if (textTransform !== "none" && textTransform !== "initial") {
                     spanText = getTransformedText(spanText, textTransform);
                 }
@@ -278,12 +278,12 @@ export class TextBase extends TextBaseCommon {
 
         if (valueSource) {
             const textDecorations = valueSource.textDecoration;
-            const underline = textDecorations.indexOf('underline') !== -1;
+            const underline = textDecorations.indexOf("underline") !== -1;
             if (underline) {
                 attrDict[NSUnderlineStyleAttributeName] = underline;
             }
 
-            const strikethrough = textDecorations.indexOf('line-through') !== -1;
+            const strikethrough = textDecorations.indexOf("line-through") !== -1;
             if (strikethrough) {
                 attrDict[NSStrikethroughStyleAttributeName] = strikethrough;
             }

@@ -1,4 +1,4 @@
-import { EventData } from 'tns-core-modules/data/observable';
+import { EventData } from "tns-core-modules/data/observable";
 import { SearchBar } from "tns-core-modules/ui/search-bar"
 
 export function navigatingTo(args: EventData) {

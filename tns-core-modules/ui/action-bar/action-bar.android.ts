@@ -421,7 +421,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     }
 
     if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-        let resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
+        let resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), "drawable", application.android.packageName);
         if (resourceId > 0) {
             return resourceId;
         }

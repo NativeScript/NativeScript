@@ -899,13 +899,13 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         if (listView.android) {
             //(<any>listView)._dumpRealizedTemplates();
             let realizedItems = <Map<android.view.View, View>>(<any>listView)._realizedItems;
-            TKUnit.assertTrue(realizedItems.size <= 6, 'Realized items must be 6 or less');
+            TKUnit.assertTrue(realizedItems.size <= 6, "Realized items must be 6 or less");
 
             let realizedTemplates = <Map<string, Map<android.view.View, View>>>(<any>listView)._realizedTemplates;
-            TKUnit.assertEqual(realizedTemplates.size, 3, 'Realized templates');
-            TKUnit.assertTrue(realizedTemplates.get("red").size <= 2, 'Red realized items must be 2 or less');
-            TKUnit.assertTrue(realizedTemplates.get("green").size <= 2, 'Green realized items must be 2 or less');
-            TKUnit.assertTrue(realizedTemplates.get("blue").size <= 2, 'Blue realized items must be 2 or less');
+            TKUnit.assertEqual(realizedTemplates.size, 3, "Realized templates");
+            TKUnit.assertTrue(realizedTemplates.get("red").size <= 2, "Red realized items must be 2 or less");
+            TKUnit.assertTrue(realizedTemplates.get("green").size <= 2, "Green realized items must be 2 or less");
+            TKUnit.assertTrue(realizedTemplates.get("blue").size <= 2, "Blue realized items must be 2 or less");
         }
     }
 

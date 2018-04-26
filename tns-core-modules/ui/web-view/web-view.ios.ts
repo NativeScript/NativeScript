@@ -95,7 +95,7 @@ export class WebView extends WebViewBase {
         configuration.userContentController = wkUController;
         configuration.preferences.setValueForKey(
             true,
-            'allowFileAccessFromFileURLs'
+            "allowFileAccessFromFileURLs"
         );
         this.nativeViewProtected = this._ios = new WKWebView({
             frame: CGRectZero,
@@ -123,7 +123,7 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(src: string) {
-        if(src.startsWith('file:///')){
+        if(src.startsWith("file:///")){
             this._ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
         }else{
             this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));

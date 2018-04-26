@@ -237,7 +237,7 @@ class CSSSource {
     }
 }
 
-const onCssChanged = profile('"style-scope".onCssChanged', (args: applicationCommon.CssChangedEventData) => {
+const onCssChanged = profile("\"style-scope\".onCssChanged", (args: applicationCommon.CssChangedEventData) => {
     if (args.cssText) {
         const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
         if (parsed) {
@@ -268,7 +268,7 @@ const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
 applicationCommon.on("cssChanged", onCssChanged);
 applicationCommon.on("livesync", onLiveSync);
 
-export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: applicationCommon.LoadAppCSSEventData) => {
+export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: applicationCommon.LoadAppCSSEventData) => {
     loadCss(args.cssFile);
     applicationCommon.off("loadAppCss", loadAppCSS);
 });

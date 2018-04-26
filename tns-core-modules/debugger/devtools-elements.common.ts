@@ -76,7 +76,7 @@ export function setAttributeAsText(nodeId, text, name) {
 
             if (textParts.length === 2) {
                 let attrName = textParts[0];
-                let attrValue = textParts[1].replace(/['"]+/g, '');
+                let attrValue = textParts[1].replace(/['"]+/g, "");
 
                 // if attr name is being replaced with another
                 if (name !== attrName && hasOriginalAttribute) {
