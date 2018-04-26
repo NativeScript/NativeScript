@@ -47,7 +47,7 @@ export function setNetwork(newNetwork: domains.network.NetworkDomainDebugger) {
 
 var dom;
 
-export function getDOM():any {
+export function getDOM(): any {
     return dom;
 }
 

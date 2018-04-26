@@ -183,7 +183,7 @@ export class SearchBar extends SearchBarBase {
         return "";
     }
     [textProperty.setNative](value: string) {
-        const text = (value === null || value === undefined) ? '' : value.toString();
+        const text = (value === null || value === undefined) ? "" : value.toString();
         this.nativeViewProtected.setQuery(text, false);
     }
     [hintProperty.getDefault](): string {

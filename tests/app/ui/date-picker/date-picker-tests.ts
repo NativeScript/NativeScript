@@ -112,7 +112,7 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
 
     public test_WhenCreated_NativeDayIsCurrentDay() {
-        const actualValue = datePickerTestsNative.getNativeDay(this.testView);;
+        const actualValue = datePickerTestsNative.getNativeDay(this.testView);
         const expectedValue = currentDate.getDate();
         TKUnit.assertEqual(actualValue, expectedValue);
     }

@@ -53,7 +53,7 @@ try {
     if (appConfig && appConfig.cssParser === "nativescript") {
         parser = "nativescript";
     }
-} catch(e) {
+} catch (e) {
     //
 }
 
@@ -103,7 +103,7 @@ class CSSSource {
                     return CSSSource.fromSource(cssOrAst.toString(), keyframes, appRelativeUri);
                 }
             }
-        } catch(e) {
+        } catch (e) {
             //
         }
 
@@ -173,7 +173,7 @@ class CSSSource {
     @profile
     private parseCSSAst() {
         if (this._source) {
-            switch(parser) {
+            switch (parser) {
                 case "nativescript":
                     const cssparser = new CSS3Parser(this._source);
                     const stylesheet = cssparser.parseAStylesheet();
@@ -237,7 +237,7 @@ class CSSSource {
     }
 }
 
-const onCssChanged = profile('"style-scope".onCssChanged', (args: applicationCommon.CssChangedEventData) => {
+const onCssChanged = profile("\"style-scope\".onCssChanged", (args: applicationCommon.CssChangedEventData) => {
     if (args.cssText) {
         const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
         if (parsed) {
@@ -268,7 +268,7 @@ const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
 applicationCommon.on("cssChanged", onCssChanged);
 applicationCommon.on("livesync", onLiveSync);
 
-export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: applicationCommon.LoadAppCSSEventData) => {
+export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: applicationCommon.LoadAppCSSEventData) => {
     loadCss(args.cssFile);
     applicationCommon.off("loadAppCss", loadAppCSS);
 });
@@ -399,7 +399,7 @@ export class CssState {
         Object.freeze(newPropertyValues);
 
         const oldProperties = this._appliedPropertyValues;
-        for(const key in oldProperties) {
+        for (const key in oldProperties) {
             if (!(key in newPropertyValues)) {
                 if (key in this.view.style) {
                     this.view.style[`css:${key}`] = unsetValue;
@@ -408,7 +408,7 @@ export class CssState {
                 }
             }
         }
-        for(const property in newPropertyValues) {
+        for (const property in newPropertyValues) {
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
                 continue;
             }

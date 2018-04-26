@@ -144,6 +144,6 @@ class UITimePickerChangeHandlerImpl extends NSObject {
     }
 
     public static ObjCExposedMethods = {
-        'valueChanged': { returns: interop.types.void, params: [UIDatePicker] }
+        "valueChanged": { returns: interop.types.void, params: [UIDatePicker] }
     }
 }

@@ -56,7 +56,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
             // >> (hide)
             let actual;
-            let expectedTitle = 'MyTitle';
+            let expectedTitle = "MyTitle";
 
             if (webView.ios) {
                 actual = webView.ios.title;
@@ -91,7 +91,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
             let actual;
-            let expectedTitle = 'MyTitle';
+            let expectedTitle = "MyTitle";
 
             if (webView.ios) {
                 actual = webView.ios.title;
@@ -127,7 +127,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             // >> (hide)
 
             let actual;
-            const expected = 'MyTitle';
+            const expected = "MyTitle";
 
             if (webView.ios) {
                 actual = webView.ios.title;
@@ -153,7 +153,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
                 message = "Error loading " + args.url + ": " + args.error;
             }
         });
-        webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">TestÖ</span></body></html>';
+        webView.src = "<!DOCTYPE html><html><head><title>MyTitle</title><meta charset=\"utf-8\" /></head><body><span style=\"color:red\">TestÖ</span></body></html>";
         // << webview-string
     }
 
