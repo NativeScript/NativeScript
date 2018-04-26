@@ -3,7 +3,7 @@ import { Font } from "../styling/font";
 
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
-    tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
+    tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
     fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled,
     traceWrite, Color
@@ -622,6 +622,21 @@ export class TabView extends TabViewBase {
         } else {
             this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
         }
+    }
+
+    [tabTextFontSizeProperty.getDefault](): { nativeSize: number } {
+        const nativeSize = this._tabLayout.getTextViewForItemAt(0).getTextSize();
+        return { nativeSize: nativeSize };
+    }
+    [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
+        this.items.forEach((item, i, arr) => {
+            const tv = this._tabLayout.getTextViewForItemAt(i);
+            if (typeof value === "number") {
+                tv.setTextSize(value);
+            } else {
+                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+            }
+        });
     }
 
     [tabTextColorProperty.getDefault](): number {
