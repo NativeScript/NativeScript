@@ -1,5 +1,6 @@
 {
     "rules": {
+        "arrow-return-shorthand": true,
         "class-name": true,
         "curly": true,
         "forin": false,

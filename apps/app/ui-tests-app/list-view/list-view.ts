@@ -35,15 +35,15 @@ export function pageLoaded(args: EventData) {
   lv4.itemTemplates = new Array<KeyedTemplate>(
       {
           key: "red",
-          createView: () => { return createLabel(new Color("red")); }
+          createView: () => createLabel(new Color("red"))
       },
       {
           key: "green",
-          createView: () => { return createLabel(new Color("green")); }
+          createView: () => createLabel(new Color("green"))
       },
       {
           key: "yellow",
-          createView: () => { return createLabel(new Color("yellow")); }
+          createView: () => createLabel(new Color("yellow"))
       }
   );
 }

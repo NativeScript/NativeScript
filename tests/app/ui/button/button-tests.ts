@@ -393,7 +393,7 @@ export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
     btn.style.fontFamily = "_UnknownFont";
 
     helper.buildUIAndRunTest(btn, function (views) {
-        TKUnit.waitUntilReady(() => { return btn.isLayoutValid; });
+        TKUnit.waitUntilReady(() => btn.isLayoutValid);
 
         let span = new spanModule.Span();
         span.text = "Login";
@@ -401,6 +401,6 @@ export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
         formattedString.spans.push(span);
         btn.formattedText = formattedString;
 
-        TKUnit.waitUntilReady(() => { return btn.isLayoutValid; });
+        TKUnit.waitUntilReady(() => btn.isLayoutValid);
     });
 }

@@ -4,7 +4,7 @@ import { getNodeById } from "./dom-node";
 import { ViewBase } from "../ui/core/view-base";
 
 // Use lazy requires for core modules
-const frameTopmost = () => { return require("../ui/frame").topmost(); };
+const frameTopmost = () => require("../ui/frame").topmost();
 
 let unsetValue;
 function unsetViewValue(view, name) {
