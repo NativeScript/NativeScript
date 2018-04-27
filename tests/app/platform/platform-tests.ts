@@ -31,7 +31,7 @@ export function snippet_print_all() {
 
     console.log("Screen width (px): " + platformModule.screen.mainScreen.widthPixels);
     console.log("Screen height (px): " + platformModule.screen.mainScreen.heightPixels);
-    console.log("Screen width (DIPs): " + platformModule.screen.mainScreen.heightDIPs);
+    console.log("Screen width (DIPs): " + platformModule.screen.mainScreen.widthDIPs);
     console.log("Screen height (DIPs): " + platformModule.screen.mainScreen.heightDIPs);
     console.log("Screen scale: " + platformModule.screen.mainScreen.scale);
     // << platform-current
