@@ -26,7 +26,7 @@ export function onTap3(args: EventData) {
 }
 
 function closeModal() {
-    console.log('closeModal Called');
+    console.log("closeModal Called");
 }
 
 export function sync(args: EventData) {

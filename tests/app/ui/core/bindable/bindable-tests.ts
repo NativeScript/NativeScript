@@ -34,8 +34,8 @@ export function test_Binding_to_bindingContext_of_View() {
     const source = new Button();
 
     target.bind({ targetProperty: "bindingContext", sourceProperty: "text" }, source);
-    source.text = 'a';
-    TKUnit.assertEqual(target.bindingContext, 'a');
+    source.text = "a";
+    TKUnit.assertEqual(target.bindingContext, "a");
 };
 
 export function test_Bindable_Bind_ToTarget_OneWay() {
@@ -220,7 +220,7 @@ export function test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCol
             stack.addChild(weakRef.get());
             TKUnit.assertEqual(weakRef.get().text, expectedValue, "Binding is not working properly!");
             stack.removeChild(weakRef.get());
-            TKUnit.waitUntilReady(() => { return !weakRef.get().isLoaded; });
+            TKUnit.waitUntilReady(() => !weakRef.get().isLoaded);
             utils.GC();
             TKUnit.assert(!weakRef.get(), "UIElement is still alive!");
             testFinished = true;
@@ -232,7 +232,7 @@ export function test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCol
 
     page.content = stack;
 
-    TKUnit.waitUntilReady(() => { return testFinished; });
+    TKUnit.waitUntilReady(() => testFinished);
     done(null);
 }
 
@@ -498,7 +498,7 @@ export function test_bindingToNestedPropertyWithValueSyntax() {
     }, bindingSource);
 
     TKUnit.assertEqual(testElement.get("targetPropertyName"), "testValue");
-    TKUnit.assertTrue(bindingSource['$value'] === undefined, "We should not add $value to bindingSource.");
+    TKUnit.assertTrue(bindingSource["$value"] === undefined, "We should not add $value to bindingSource.");
 };
 
 export function test_TwoElementsBindingToSameBindingContext() {
@@ -569,8 +569,8 @@ export function test_BindingToParentView_ShouldNotLeaveGarbageInViewModel() {
         testLabel.bind({ sourceProperty: "$parent.testProperty", targetProperty: "text", expression: "$parent.testProperty" });
 
         TKUnit.assertEqual(testLabel.text, expectedValue);
-        TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
-        TKUnit.assertTrue(testLabel.bindingContext['$parent'] === undefined, "testLabel.bindingContext['$parent'] should be removed from parent binding context.");
+        TKUnit.assertTrue(stackViewModel["$parent"] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
+        TKUnit.assertTrue(testLabel.bindingContext["$parent"] === undefined, "testLabel.bindingContext['$parent'] should be removed from parent binding context.");
     };
 
     helper.buildUIAndRunTest(createStack(), testFunc);
@@ -595,8 +595,8 @@ export function test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel() {
         testLabel.bind({ sourceProperty: "$parents['StackLayout'].testProperty", targetProperty: "text", expression: "$parents['StackLayout'].testProperty" });
 
         TKUnit.assertEqual(testLabel.text, expectedValue);
-        TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
-        TKUnit.assertTrue(testLabel.bindingContext['$parents'] === undefined, "testLabel.bindingContext['$parents'] should be removed from parent binding context.");
+        TKUnit.assertTrue(stackViewModel["$parent"] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
+        TKUnit.assertTrue(testLabel.bindingContext["$parents"] === undefined, "testLabel.bindingContext['$parents'] should be removed from parent binding context.");
     };
 
     helper.buildUIAndRunTest(createStack(), testFunc);
@@ -1084,7 +1084,7 @@ export function test_$ValueSupportWithinExpression() {
     model.set("anyColor", "red");
 
     TKUnit.assertEqual(bindableObj.get("text"), "red", "When anyColor is red test property should be red too.");
-    TKUnit.assertTrue(model['$value'] === undefined, "We should not add $value to binding context.");
+    TKUnit.assertTrue(model["$value"] === undefined, "We should not add $value to binding context.");
 }
 
 class DummyNestedClass extends Observable {
@@ -1095,7 +1095,7 @@ class DummyNestedClass extends Observable {
     public set secondsobject(value: number) {
         if (this._secondsobject !== value) {
             this._secondsobject = value;
-            this.notifyPropertyChange('secondsobject', value);
+            this.notifyPropertyChange("secondsobject", value);
         }
     }
 }
@@ -1109,7 +1109,7 @@ class DummyClassWithSamePropertyNames extends Observable {
     public set seconds(value: number) {
         if (this._seconds !== value) {
             this._seconds = value;
-            this.notifyPropertyChange('seconds', value);
+            this.notifyPropertyChange("seconds", value);
         }
     }
 
@@ -1119,7 +1119,7 @@ class DummyClassWithSamePropertyNames extends Observable {
     public set secondsobject(value: DummyNestedClass) {
         if (this._secondsobject !== value) {
             this._secondsobject = value;
-            this.notifyPropertyChange('secondsobject', value);
+            this.notifyPropertyChange("secondsobject", value);
         }
     }
 }
@@ -1245,14 +1245,14 @@ export function test_BindingToRelatedProps() {
     model.prop2 = "Alabala";
 
     let target1 = new Label();
-    target1.bind({ sourceProperty: 'prop1', targetProperty: 'targetProp1' }, model);
+    target1.bind({ sourceProperty: "prop1", targetProperty: "targetProp1" }, model);
 
     let target2 = new Label();
-    target2.bind({ sourceProperty: 'prop2', targetProperty: 'targetProp2' }, model);
+    target2.bind({ sourceProperty: "prop2", targetProperty: "targetProp2" }, model);
 
     model.prop2 = "Tralala";
 
-    TKUnit.assertEqual(target2.get('targetProp2'), "Tralala");
+    TKUnit.assertEqual(target2.get("targetProp2"), "Tralala");
 }
 
 export function test_only_Bindable_BindingContext_Null_DoesNotThrow() {
@@ -1314,18 +1314,18 @@ export function test_BindingToBindingContextProperty_ShouldUseNewContext() {
     stackLayout.addChild(label);
 
     label.bind({
-        sourceProperty: 'context',
-        targetProperty: 'bindingContext'
+        sourceProperty: "context",
+        targetProperty: "bindingContext"
     });
 
     label.bind({
-        sourceProperty: 'text',
-        targetProperty: 'text'
+        sourceProperty: "text",
+        targetProperty: "text"
     });
 
     let testBindingContext = fromObjectRecursive({
         context: {
-            text: 'Alabala'
+            text: "Alabala"
         }
     });
 

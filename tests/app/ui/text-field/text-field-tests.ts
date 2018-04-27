@@ -638,7 +638,7 @@ export function test_android_ime_actions_move_focus() {
     const addTextField = () => {
         const tf = new TextField();
         (<any>tf).returnPress = 0
-        tf.on('returnPress', (args) => (<any>args.object).returnPress++);
+        tf.on("returnPress", (args) => (<any>args.object).returnPress++);
         stack.addChild(tf);
     }
 

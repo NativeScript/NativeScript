@@ -7,7 +7,7 @@ import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { LayoutBase } from "../layouts/layout-base";
 import { profile } from "../../profiling";
-import { onScroll } from '../../../apps/app/ui-tests-app/list-view/list-view';
+import { onScroll } from "../../../apps/app/ui-tests-app/list-view/list-view";
 
 export * from "./list-view-common";
 

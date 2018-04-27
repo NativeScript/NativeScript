@@ -3,7 +3,7 @@
 
     <TabViewItem title="Tab">
         <TabViewItem.view>
-            <Label text="Tab" />
+            <Label text="Tab" id="my-test-label"/>
         </TabViewItem.view>
     </TabViewItem>
 

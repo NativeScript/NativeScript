@@ -87,7 +87,7 @@ export class TabView extends View {
     /**
      * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
      */
-    android: any /* android.view.View */;//android.support.v4.view.ViewPager;
+    android: any /* android.view.View */; //android.support.v4.view.ViewPager;
 
     /**
      * Gets the native iOS [UITabBarController](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITabBarController_Class/) that represents the user interface for this component. Valid only when running on iOS.

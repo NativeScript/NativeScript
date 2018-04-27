@@ -46,7 +46,7 @@ export var test_XmlParser_EntityReferencesInAttributeValuesAreDecoded = function
     var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
         switch (event.eventType) {
             case xmlModule.ParserEventType.StartElement:
-                data = event.attributes['text'];
+                data = event.attributes["text"];
                 break;
         }
     });

@@ -9,8 +9,8 @@ export module knownTemplates {
 export class TemplateView extends LayoutBase {
     public template: string;
 
-	public static testEvent: string = "test";
-	
+    public static testEvent: string = "test";
+    
     public parseTemplate() {
         this.addChild(parse(this.template));
     }

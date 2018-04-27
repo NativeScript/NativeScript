@@ -1367,7 +1367,7 @@ export function test_alone_attr_selector() {
 
 export function test_UsingSameSelectors_ShouldApplyLatest() {
     let testButton = new buttonModule.Button();
-    testButton.className = 'green';
+    testButton.className = "green";
 
     let testCss = ".green { background-color: #FF0000; } .green { background-color: #00FF00; }";
 
@@ -1380,7 +1380,7 @@ export function test_UsingSameSelectors_ShouldApplyLatest() {
 
 export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
     let testButton = new buttonModule.Button();
-    testButton.className = 'red green';
+    testButton.className = "red green";
 
     let testCss = ".red { background-color: #FF0000; } Button.green { background-color: #00FF00; }";
 
@@ -1395,7 +1395,7 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     const stack = new stackModule.StackLayout();
     const label = new labelModule.Label();
     label.text = "Some text";
-    label.className = 'lab1';
+    label.className = "lab1";
     stack.addChild(label);
 
     application.addCss(".added { background-color: red; } .added .lab1 { background-color: blue; } .lab1 { color: red}");

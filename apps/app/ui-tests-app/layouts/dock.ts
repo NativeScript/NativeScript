@@ -8,7 +8,7 @@ export function onLoaded(args: { eventName: string, object: any }) {
 
 export function onStretchLastChild(args: { eventName: string, object: any }) {
     var layout = args.object.parent;
-    if(layout.stretchLastChild === true) {
+    if (layout.stretchLastChild === true) {
         layout.stretchLastChild = false;
     } else {
         layout.stretchLastChild = true;

@@ -309,7 +309,7 @@ export class Binding {
         // update expression will be '$newPropertyValue + 2'
         // then on expression execution the new value will be taken and target property will be updated with the value of the expression.
         let escapedSourceProperty = escapeRegexSymbols(this.options.sourceProperty);
-        let expRegex = new RegExp(escapedSourceProperty, 'g');
+        let expRegex = new RegExp(escapedSourceProperty, "g");
         let resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
         return resultExp;
     }
@@ -444,7 +444,7 @@ export class Binding {
                 const newProps = sourceProps.slice(changedPropertyIndex + 1);
                 // add new weak event listeners
                 const newObject = data.object[sourceProps[changedPropertyIndex]]
-                if (!types.isNullOrUndefined(newObject) && typeof newObject === 'object') {
+                if (!types.isNullOrUndefined(newObject) && typeof newObject === "object") {
                     this.addPropertyChangeListeners(new WeakRef(newObject), newProps, parentProps);
                 }
             }

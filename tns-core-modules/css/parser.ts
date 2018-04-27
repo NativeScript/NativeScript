@@ -342,7 +342,7 @@ export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
     const angleResult = parseUnit(value, start);
     if (angleResult) {
         const { start, end, value } = angleResult;
-        return (angleUnitsToRadMap[value.unit] || ((_,__,___) => null))(start, end, value.value);
+        return (angleUnitsToRadMap[value.unit] || ((_, __, ___) => null))(start, end, value.value);
     }
     return null;
 }
@@ -461,27 +461,27 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
 
 const directionRegEx = /\s*to\s*(left|right|top|bottom)\s*(left|right|top|bottom)?\s*/gy;
 const sideDirections = {
-    top: Math.PI * 0/2,
-    right: Math.PI * 1/2,
-    bottom: Math.PI * 2/2,
-    left: Math.PI * 3/2
+    top: Math.PI * 0 / 2,
+    right: Math.PI * 1 / 2,
+    bottom: Math.PI * 2 / 2,
+    left: Math.PI * 3 / 2
 }
 const cornerDirections = {
     top: {
-        right: Math.PI * 1/4,
-        left: Math.PI * 7/4
+        right: Math.PI * 1 / 4,
+        left: Math.PI * 7 / 4
     },
     right: {
-        top: Math.PI * 1/4,
-        bottom: Math.PI * 3/4
+        top: Math.PI * 1 / 4,
+        bottom: Math.PI * 3 / 4
     },
     bottom: {
-        right: Math.PI * 3/4,
-        left: Math.PI * 5/4
+        right: Math.PI * 3 / 4,
+        left: Math.PI * 5 / 4
     },
     left: {
-        top: Math.PI * 7/4,
-        bottom: Math.PI * 5/4
+        top: Math.PI * 7 / 4,
+        bottom: Math.PI * 5 / 4
     }
 }
 function parseDirection(text: string, start: number = 0): Parsed<Angle> {
@@ -519,7 +519,7 @@ function parseArgumentsList<T>(text: string, start: number, argument: (value: st
         return { start, end, value };
     }
 
-    for(var index = 0; true; index++) {
+    for (var index = 0; true; index++) {
         const arg = argument(text, end, index);
         if (!arg) {
             return null;
@@ -608,7 +608,7 @@ function parseSlash(text: string, start: number): Parsed<"/"> {
 export function parseBackground(text: string, start: number = 0): Parsed<Background> {
     const value: any = {};
     let end = start;
-    while(end < text.length) {
+    while (end < text.length) {
         const keyword = parseKeyword(text, end);
         const color = parseColor(text, end, keyword);
         if (color) {
@@ -751,7 +751,7 @@ export function parseSimpleSelectorSequence(text: string, start: number): Parsed
     }
     let end = simpleSelector.end;
     let value = <SimpleSelectorSequence>[];
-    while(simpleSelector) {
+    while (simpleSelector) {
         value.push(simpleSelector.value);
         end = simpleSelector.end;
         simpleSelector = parseSimpleSelector(text, end);
@@ -804,7 +804,7 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
             end = combinator.end;
         }
         expectSimpleSelector = combinator && combinator.value !== " "; // Simple selector must follow non trailing white space combinator
-    } while(combinator);
+    } while (combinator);
     return { start, end, value };
 }
 
@@ -942,7 +942,7 @@ export class CSS3Parser {
         do {
             inputToken = this.consumeAToken();
             tokens.push(inputToken);
-        } while(inputToken);
+        } while (inputToken);
         return tokens;
     }
 
@@ -957,7 +957,7 @@ export class CSS3Parser {
             return result;
         }
         const char = this.text[this.nextInputCodePointIndex];
-        switch(char) {
+        switch (char) {
             case "\"": return this.consumeAStringToken();
             case "'": return this.consumeAStringToken();
             case "(":
@@ -996,7 +996,7 @@ export class CSS3Parser {
             case "U":
                 if (this.text[this.nextInputCodePointIndex + 1] === "+") {
                     const thirdChar = this.text[this.nextInputCodePointIndex + 2];
-                    if (thirdChar >= '0' && thirdChar <= '9' || thirdChar === "?") {
+                    if (thirdChar >= "0" && thirdChar <= "9" || thirdChar === "?") {
                         // TODO: Handle unicode stuff such as U+002B
                         throw new Error("Unicode tokens not supported!");
                     }
@@ -1164,9 +1164,9 @@ export class CSS3Parser {
             }
         }
 
-        while(this.nextInputCodePointIndex < this.text.length) {
+        while (this.nextInputCodePointIndex < this.text.length) {
             const char = this.text[this.nextInputCodePointIndex++];
-            switch(char) {
+            switch (char) {
                 case ")": return urlToken;
                 case " ":
                 case "\t":
@@ -1258,8 +1258,8 @@ export class CSS3Parser {
     public consumeAListOfRules(): Rule[] {
         const rules: Rule[] = [];
         let inputToken: InputToken;
-        while(inputToken = this.consumeAToken()) {
-            switch(inputToken) {
+        while (inputToken = this.consumeAToken()) {
+            switch (inputToken) {
                 case " ": continue;
                 case "<!--":
                 case "-->":
@@ -1302,7 +1302,7 @@ export class CSS3Parser {
             prelude: [],
             block: undefined
         }
-        while(inputToken = this.consumeAToken()) {
+        while (inputToken = this.consumeAToken()) {
             if (inputToken === ";") {
                 return atRule;
             } else if (inputToken === "{") {
@@ -1332,7 +1332,7 @@ export class CSS3Parser {
             block: undefined
         };
         let inputToken: InputToken;
-        while(inputToken = this.consumeAToken()) {
+        while (inputToken = this.consumeAToken()) {
             if (inputToken === "{") {
                 let block = this.consumeASimpleBlock(inputToken);
                 qualifiedRule.block = block;
@@ -1361,7 +1361,7 @@ export class CSS3Parser {
     private consumeAComponentValue(): InputToken {
         // const inputToken = this.consumeAToken();
         const inputToken = this.consumeAToken();
-        switch(inputToken) {
+        switch (inputToken) {
             case "{":
             case "[":
             case "(":
@@ -1392,7 +1392,7 @@ export class CSS3Parser {
             values: []
         };
         let nextInputToken;
-        while(nextInputToken = this.text[this.nextInputCodePointIndex]) {
+        while (nextInputToken = this.text[this.nextInputCodePointIndex]) {
             if (nextInputToken === endianToken) {
                 this.nextInputCodePointIndex++;
                 const end = this.nextInputCodePointIndex;
@@ -1421,7 +1421,7 @@ export class CSS3Parser {
                 return funcToken;
             }
             const nextInputToken = this.text[this.nextInputCodePointIndex];
-            switch(nextInputToken) {
+            switch (nextInputToken) {
                 case ")":
                     this.nextInputCodePointIndex++;
                     const end = this.nextInputCodePointIndex;
@@ -1434,7 +1434,7 @@ export class CSS3Parser {
                     }
                     // TODO: Else we won't advance
             }
-        } while(true);
+        } while (true);
     }
 }
 

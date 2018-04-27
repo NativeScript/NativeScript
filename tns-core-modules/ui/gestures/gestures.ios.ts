@@ -296,8 +296,8 @@ function _getPinchData(args: GestureEventData): PinchGestureEventData {
         ios: args.ios,
         android: undefined,
         scale: recognizer.scale,
-        getFocusX: () => { return center.x; },
-        getFocusY: () => { return center.y; },
+        getFocusX: () => center.x,
+        getFocusY: () => center.y,
         object: args.view,
         eventName: toString(args.type),
         state: getState(recognizer)

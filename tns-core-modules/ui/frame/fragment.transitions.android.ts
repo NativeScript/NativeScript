@@ -78,7 +78,7 @@ export function _setAndroidFragmentTransitions(
     const newFragment: android.app.Fragment = newEntry.fragment;
     const entries = waitingQueue.get(frameId);
     if (entries && entries.size > 0) {
-        throw new Error('Calling navigation before previous navigation finish.');
+        throw new Error("Calling navigation before previous navigation finish.");
     }
 
     initDefaultAnimations(manager);
@@ -88,24 +88,24 @@ export function _setAndroidFragmentTransitions(
         allowTransitionOverlap(newFragment);
     }
 
-    let name = '';
+    let name = "";
     let transition: Transition;
 
     if (navigationTransition) {
         transition = navigationTransition.instance;
-        name = navigationTransition.name ? navigationTransition.name.toLowerCase() : '';
+        name = navigationTransition.name ? navigationTransition.name.toLowerCase() : "";
     }
 
-    let useLollipopTransition = name && (name.indexOf('slide') === 0 || name === 'fade' || name === 'explode') && sdkVersion() >= 21;
+    let useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && sdkVersion() >= 21;
     if (!animated) {
-        name = 'none';
+        name = "none";
     } else if (transition) {
-        name = 'custom';
+        name = "custom";
         // specifiying transition should override default one even if name match the lollipop transition name.
         useLollipopTransition = false;
-    } else if (!useLollipopTransition && name.indexOf('slide') !== 0 && name !== 'fade' && name.indexOf('flip') !== 0) {
+    } else if (!useLollipopTransition && name.indexOf("slide") !== 0 && name !== "fade" && name.indexOf("flip") !== 0) {
         // If we are given name that doesn't match any of ours - fallback to default.
-        name = 'default';
+        name = "default";
     }
 
     let currentFragmentNeedsDifferentAnimation = false;
@@ -118,9 +118,9 @@ export function _setAndroidFragmentTransitions(
         }
     }
 
-    if (name === 'none') {
+    if (name === "none") {
         transition = new NoTransition(0, null);
-    } else if (name === 'default') {
+    } else if (name === "default") {
         transition = new DefaultTransition(0, null);
     } else if (useLollipopTransition) {
         // setEnterTransition: Enter
@@ -128,34 +128,34 @@ export function _setAndroidFragmentTransitions(
         // setReenterTransition: Pop Enter, same as Exit if not specified
         // setReturnTransition: Pop Exit, same as Enter if not specified
 
-        if (name.indexOf('slide') === 0) {
+        if (name.indexOf("slide") === 0) {
             setupNewFragmentSlideTransition(navigationTransition, newEntry, name);
             if (currentFragmentNeedsDifferentAnimation) {
                 setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, name);
             }
-        } else if (name === 'fade') {
+        } else if (name === "fade") {
             setupNewFragmentFadeTransition(navigationTransition, newEntry);
             if (currentFragmentNeedsDifferentAnimation) {
                 setupCurrentFragmentFadeTransition(navigationTransition, currentEntry);
             }
-        } else if (name === 'explode') {
+        } else if (name === "explode") {
             setupNewFragmentExplodeTransition(navigationTransition, newEntry);
             if (currentFragmentNeedsDifferentAnimation) {
                 setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
             }
         }
-    } else if (name.indexOf('slide') === 0) {
-        const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
+    } else if (name.indexOf("slide") === 0) {
+        const direction = name.substr("slide".length) || "left"; //Extract the direction from the string
         transition = new SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
-    } else if (name === 'fade') {
+    } else if (name === "fade") {
         transition = new FadeTransition(navigationTransition.duration, navigationTransition.curve);
-    } else if (name.indexOf('flip') === 0) {
-        const direction = name.substr('flip'.length) || 'right'; //Extract the direction from the string
+    } else if (name.indexOf("flip") === 0) {
+        const direction = name.substr("flip".length) || "right"; //Extract the direction from the string
         transition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
     }
 
     newEntry.transitionName = name;
-    if (name === 'custom') {
+    if (name === "custom") {
         newEntry.transition = transition;
     }
 
@@ -170,7 +170,7 @@ export function _setAndroidFragmentTransitions(
 
     if (currentEntry) {
         currentEntry.transitionName = name;
-        if (name === 'custom') {
+        if (name === "custom") {
             currentEntry.transition = transition;
         }
     }

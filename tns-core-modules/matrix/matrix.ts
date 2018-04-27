@@ -56,11 +56,11 @@ export function decompose2DTransformMatrix(matrix: number[])
     let rotate = 0;
     let scale = { x: 1, y: 1 };
     if (A || B) {
-        const R = Math.sqrt(A*A + B*B);
+        const R = Math.sqrt(A * A + B * B);
         rotate = B > 0 ? Math.acos(A / R) : -Math.acos(A / R);
         scale = { x: R, y: determinant / R };
     } else if (C || D) {
-        const R = Math.sqrt(C*C + D*D);
+        const R = Math.sqrt(C * C + D * D);
         rotate = Math.PI / 2 - (D > 0 ? Math.acos(-C / R) : -Math.acos(C / R));
         scale = { x: determinant / R, y: R  };
     }
