@@ -113,7 +113,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         this.testView.scrollToVerticalOffset(layoutHelper.dp(100), true);
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.9); });
+        TKUnit.waitUntilReady(() => TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.9));
 
         // The scrolling animation should be finished by now
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.9, "this.testView.verticalOffset");
@@ -138,7 +138,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
         // No synchronous change. 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
 
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9); });
+        TKUnit.waitUntilReady(() => TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9));
 
         // The scrolling animation should be finished by now
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9, "this.testView.horizontalOffset");

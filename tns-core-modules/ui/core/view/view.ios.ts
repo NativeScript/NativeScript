@@ -598,7 +598,7 @@ export namespace ios {
             }
         }
 
-        return scrollableContent === true || scrollableContent === "true";;
+        return scrollableContent === true || scrollableContent === "true";
     }
 
     export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {

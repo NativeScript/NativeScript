@@ -142,7 +142,7 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
         if (counter === 4) {
             const end = TKUnit.time();
             timer.clearInterval(id);
-            done(end - start > 250 ? new Error('setInterval too slow.') : null);
+            done(end - start > 250 ? new Error("setInterval too slow.") : null);
         }
     }, 50, rnd);
 };
@@ -156,7 +156,7 @@ export function test_setInterval_callbackShouldBeCleared(done) {
         // >> (hide)
         const end = TKUnit.time();
         timer.clearInterval(id);
-        done(end - start > 150 ? new Error('setInterval too slow.') : null);
+        done(end - start > 150 ? new Error("setInterval too slow.") : null);
         // << (hide)
         timer.clearInterval(id);
     }, 50);

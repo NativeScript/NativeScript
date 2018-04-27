@@ -85,7 +85,7 @@ class Device implements DeviceDefinition {
     }
 
     get region(): string {
-        if(!this._region) {
+        if (!this._region) {
             this._region = utils.ios.getter(NSLocale, NSLocale.currentLocale).objectForKey(NSLocaleCountryCode);
         }
 

@@ -141,7 +141,7 @@ export interface TouchGestureEventData extends GestureEventData {
     /**
      * Gets action of the touch. Possible values: 'up', 'move', 'down', 'cancel'
      */
-    action: 'up' | 'move' | 'down' | 'cancel';
+    action: "up" | "move" | "down" | "cancel";
 
     /**
      * Gets the X coordinate of this event inside the view that triggered the event.

@@ -13,7 +13,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.notify({ eventName: EditableTextBase.blurEvent, object: this });
     }
 
-    [keyboardTypeProperty.getDefault](): "datetime"| "phone" | "number" | "url" | "email" | string {
+    [keyboardTypeProperty.getDefault](): "datetime" | "phone" | "number" | "url" | "email" | string {
         let keyboardType = this.nativeViewProtected.keyboardType;
         switch (keyboardType) {
             case UIKeyboardType.NumbersAndPunctuation:
@@ -32,7 +32,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return keyboardType.toString();
         }
     }
-    [keyboardTypeProperty.setNative](value: "datetime"| "phone" | "number" | "url" | "email" | string) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
         let newKeyboardType: UIKeyboardType;
         switch (value) {
             case "datetime":
@@ -193,7 +193,7 @@ export function _updateCharactersInRangeReplacementString(formattedText: Formatt
     let currentLocation = 0;
     for (let i = 0, length = formattedText.spans.length; i < length; i++) {
         let span = formattedText.spans.getItem(i);
-        if (currentLocation <= rangeLocation && rangeLocation < (currentLocation + span.text.length)){
+        if (currentLocation <= rangeLocation && rangeLocation < (currentLocation + span.text.length)) {
             let newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
             span._setTextInternal(newText); 
             return;

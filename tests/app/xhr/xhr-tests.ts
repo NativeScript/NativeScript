@@ -228,7 +228,7 @@ export function test_ignore_zero_length_request_body() {
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "https://httpbin.org/get");
 
-    xhr.send('');
+    xhr.send("");
 }
 
 export function test_raises_onload_Event(done) {
@@ -246,9 +246,9 @@ export function test_xhr_events() {
     let loadCallbackFired = false, loadEventFired = false;
     xhr.onload = () => loadCallbackFired = true;
     let badEvent = () => { throw new Error("Shouldn't call me") }
-    xhr.addEventListener('load', () => loadEventFired = true);
-    xhr.addEventListener('load', badEvent);
-    xhr.removeEventListener('load', badEvent);
+    xhr.addEventListener("load", () => loadEventFired = true);
+    xhr.addEventListener("load", badEvent);
+    xhr.removeEventListener("load", badEvent);
 
     xhr._errorFlag = false;
     xhr._setReadyState(xhr.DONE);
@@ -257,23 +257,23 @@ export function test_xhr_events() {
 
     let errorCallbackData = null, errorEventData = null;
     xhr.onerror = (e) => errorCallbackData = e;
-    xhr.addEventListener('error', (e) => errorEventData = e);
-    xhr.addEventListener('error', badEvent);
-    xhr.removeEventListener('error', badEvent);
+    xhr.addEventListener("error", (e) => errorEventData = e);
+    xhr.addEventListener("error", badEvent);
+    xhr.removeEventListener("error", badEvent);
 
     xhr._errorFlag = true;
-    xhr._setReadyState(xhr.DONE, 'error data');
-    TKUnit.assertEqual(errorCallbackData, 'error data');
-    TKUnit.assertEqual(errorEventData, 'error data');
+    xhr._setReadyState(xhr.DONE, "error data");
+    TKUnit.assertEqual(errorCallbackData, "error data");
+    TKUnit.assertEqual(errorEventData, "error data");
 }
 
 export function test_xhr_responseType_rss() {
     const xhr = <any>new XMLHttpRequest();
-    const rawRssFeed = '<rss> <channel><item><title>Test</title></item></channel></rss>';
+    const rawRssFeed = "<rss> <channel><item><title>Test</title></item></channel></rss>";
     const response = {
         statusCode: 200,
         content: {
-            toString: function(){ return this.raw },
+            toString: function() { return this.raw },
             raw: rawRssFeed
         },
         headers: {
@@ -291,8 +291,8 @@ export function test_xhr_responseType_text() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function(){ return this.raw },
-            raw: 'response body'
+            toString: function() { return this.raw },
+            raw: "response body"
         },
         headers: {
             "Content-Type": "text/plain"
@@ -302,7 +302,7 @@ export function test_xhr_responseType_text() {
     xhr._loadResponse(response);
 
     TKUnit.assertEqual(xhr.responseType, "text");
-    TKUnit.assertEqual(xhr.response, 'response body');
+    TKUnit.assertEqual(xhr.response, "response body");
 }
 
 export function test_xhr_responseType_switched_to_JSON_if_header_present() {
@@ -310,8 +310,8 @@ export function test_xhr_responseType_switched_to_JSON_if_header_present() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function(){ return this.raw },
-            raw: '{"data": 42}'
+            toString: function() { return this.raw },
+            raw: "{\"data\": 42}"
         },
         headers: {
             "Content-Type": "application/json"
@@ -332,7 +332,7 @@ export function test_xhr_responseType_switched_to_JSON_if_headers_content_type_h
             toString: function () {
                 return this.raw
             },
-            raw: '{"data": 42}'
+            raw: "{\"data\": 42}"
         },
         headers: {
             "Content-Type": "type/media.type+json"
@@ -350,7 +350,7 @@ export function test_sets_status_and_statusText(done) {
         if (xhr.readyState > 3) {
             try {
                 TKUnit.assertEqual(xhr.status, 200);
-                TKUnit.assertEqual(xhr.statusText, 'OK');
+                TKUnit.assertEqual(xhr.statusText, "OK");
                 done(null);
             }
             catch (err) {
@@ -391,7 +391,7 @@ export function test_getResponseHeader() {
         statusCode: 200,
         content: {
             toString: function() { return this.raw },
-            raw: '{"data": 42}'
+            raw: "{\"data\": 42}"
         },
         headers: {
             "content-type": "application/json"

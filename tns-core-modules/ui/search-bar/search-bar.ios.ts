@@ -159,18 +159,18 @@ export class SearchBar extends SearchBarBase {
     }
 
     [textProperty.getDefault](): string {
-        return '';
+        return "";
     }
     [textProperty.setNative](value: string) {
-        const text = (value === null || value === undefined) ? '' : value.toString();
+        const text = (value === null || value === undefined) ? "" : value.toString();
         this._ios.text = text;
     }
 
     [hintProperty.getDefault](): string {
-        return '';
+        return "";
     }
     [hintProperty.setNative](value: string) {
-        const text = (value === null || value === undefined) ? '' : value.toString();
+        const text = (value === null || value === undefined) ? "" : value.toString();
         this._ios.placeholder = text;
     }
 

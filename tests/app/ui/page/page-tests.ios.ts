@@ -62,7 +62,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
     };
 
     helper.navigate(masterPageFactory);
-    TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
+    TKUnit.waitUntilReady(() => modalUnloaded > 0);
     TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
     masterPage.off(View.loadedEvent, navigatedToEventHandler);
     masterPage.off(View.unloadedEvent, unloadedEventHandler);
@@ -370,7 +370,7 @@ export function test_showing_native_viewcontroller_doesnt_throw_exception() {
     testPage.on(Page.navigatingFromEvent, () => navigatingFrom++);
     testPage.on(Page.navigatedFromEvent, () => navigatedFrom++);
 
-    helper.navigate(() => { return testPage; });
+    helper.navigate(() => testPage);
 
     TKUnit.assertEqual(1, navigatingTo, "navigatingTo");
     TKUnit.assertEqual(1, loaded, "navigatingTo");

@@ -9,7 +9,7 @@ export function onLoaded(args: { eventName: string, object: any }) {
 
 export function onOrientation(args: { eventName: string, object: any }) {
     var layout = args.object.parent;
-    if(layout.orientation === enums.Orientation.vertical) {
+    if (layout.orientation === enums.Orientation.vertical) {
         layout.orientation = enums.Orientation.horizontal;
     } else {
         layout.orientation = enums.Orientation.vertical;

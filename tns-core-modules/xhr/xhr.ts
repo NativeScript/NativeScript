@@ -72,7 +72,7 @@ export class XMLHttpRequest {
         this._status = null;
 
         if (types.isDefined(this._options)) {
-            if (types.isString(data) && this._options.method !== 'GET') {
+            if (types.isString(data) && this._options.method !== "GET") {
                 //The Android Java HTTP lib throws an exception if we provide a
                 //a request body for GET requests, so we avoid doing that.
                 //Browser implementations silently ignore it as well.
@@ -129,16 +129,16 @@ export class XMLHttpRequest {
     }
 
     private textTypes: string[] = [
-        'text/plain',
-        'application/xml',
-        'application/rss+xml',
-        'text/html',
-        'text/xml'
+        "text/plain",
+        "application/xml",
+        "application/rss+xml",
+        "text/html",
+        "text/xml"
     ];
 
     private isTextContentType(contentType: string): boolean {
         let result = false;
-        for(let i = 0; i < this.textTypes.length; i++) {
+        for (let i = 0; i < this.textTypes.length; i++) {
             if (contentType.toLowerCase().indexOf(this.textTypes[i]) >= 0) {
                 result = true;
                 break;
@@ -148,11 +148,11 @@ export class XMLHttpRequest {
     }
 
     private _setResponseType() {
-        const header = this.getResponseHeader('Content-Type');
+        const header = this.getResponseHeader("Content-Type");
         const contentType = header && header.toLowerCase();
 
         if (contentType) {
-            if (contentType.indexOf('application/json') >= 0 || contentType.indexOf('+json') >= 0) {
+            if (contentType.indexOf("application/json") >= 0 || contentType.indexOf("+json") >= 0) {
                 this.responseType = XMLHttpRequestResponseType.json;
             } else if (this.isTextContentType(contentType)) {
                 this.responseType = XMLHttpRequestResponseType.text;
@@ -165,8 +165,8 @@ export class XMLHttpRequest {
     private _listeners: Map<string, Array<Function>> = new Map<string, Array<Function>>();
 
     public addEventListener(eventName: string, handler: Function) {
-        if (eventName !== 'load' && eventName !== 'error') {
-            throw new Error('Event not supported: ' + eventName);
+        if (eventName !== "load" && eventName !== "error") {
+            throw new Error("Event not supported: " + eventName);
         }
 
         let handlers = this._listeners.get(eventName) || [];
@@ -256,12 +256,12 @@ export class XMLHttpRequest {
                 if (types.isFunction(this.onerror)) {
                     this.onerror(error);
                 }
-                this.emitEvent('error', error);
+                this.emitEvent("error", error);
             } else {
                 if (types.isFunction(this.onload)) {
                     this.onload();
                 }
-                this.emitEvent('load');
+                this.emitEvent("load");
             }
         }
     }

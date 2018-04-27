@@ -183,12 +183,12 @@ export var testFileReadWriteBinary = function () {
     var sourceFile = fs.File.fromPath(__dirname + "/../" + fileName);
     var destinationFile = fs.knownFolders.documents().getFile(fileName);
 
-    var source = sourceFile.readSync(e=> { error = e; });
+    var source = sourceFile.readSync(e => { error = e; });
 
-    destinationFile.writeSync(source, e=> { error = e; });
+    destinationFile.writeSync(source, e => { error = e; });
 
     // >> (hide)
-    var destination = destinationFile.readSync(e=> { error = e; });
+    var destination = destinationFile.readSync(e => { error = e; });
     TKUnit.assertNull(error);
     if (platform.device.os === platform.platformNames.ios) {
         TKUnit.assertTrue(source.isEqualToData(destination));
@@ -218,17 +218,17 @@ export var testGetKnownFolders = function () {
     // << file-system-known-folders
 };
 
-function _testIOSSpecificKnownFolder(knownFolderName: string){
+function _testIOSSpecificKnownFolder(knownFolderName: string) {
     let knownFolder: fs.Folder;
     let createdFile: fs.File;
-    let testFunc = function testFunc(){
+    let testFunc = function testFunc() {
         knownFolder = fs.knownFolders.ios[knownFolderName]();
         if (knownFolder) {
             createdFile = knownFolder.getFile("createdFile");
             createdFile.writeTextSync("some text");
         }
     };
-    if (platform.isIOS){
+    if (platform.isIOS) {
         testFunc();
         if (knownFolder) {
             TKUnit.assertTrue(knownFolder.isKnown, `The ${knownFolderName} folder should have its "isKnown" property set to true.`);

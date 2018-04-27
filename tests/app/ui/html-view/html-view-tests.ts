@@ -23,7 +23,7 @@ export var testLoadHTMLString = function () {
     page.content = htmlView;
 
     // >> htmlview-using
-    htmlView.html = '<span><font color="#ff0000">Test</font></span>';
+    htmlView.html = "<span><font color=\"#ff0000\">Test</font></span>";
     // << htmlview-using
 
     if (htmlView.ios) {

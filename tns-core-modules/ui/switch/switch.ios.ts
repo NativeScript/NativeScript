@@ -22,7 +22,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     }
 
     public static ObjCExposedMethods = {
-        'valueChanged': { returns: interop.types.void, params: [UISwitch] }
+        "valueChanged": { returns: interop.types.void, params: [UISwitch] }
     };
 }
 

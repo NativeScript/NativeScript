@@ -154,7 +154,7 @@ export function test_ActionBar_is_not_empty_when_titleView_is_set() {
 };
 
 export function test_ActionBarItemBindingToEvent() {
-    const p = <Page>builder.parse('<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap="{{ test }}"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>');
+    const p = <Page>builder.parse("<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap=\"{{ test }}\"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>");
 
     const testAction = function (views: Array<View>) {
         const page = <Page>views[0];

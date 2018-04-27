@@ -15,9 +15,9 @@ export function loadExamples() {
     examples.set("button-border", "button/button-border");
     examples.set("styles", "button/styles");
     examples.set("background", "button/background");
-    examples.set("border-playground","button/border-playground");
-    examples.set("issue-4287","button/issue-4287");
-    examples.set("issue-4385","button/issue-4385");
-    examples.set("highlight-4740","button/highlight-4740/highlight-4740");
+    examples.set("border-playground", "button/border-playground");
+    examples.set("issue-4287", "button/issue-4287");
+    examples.set("issue-4385", "button/issue-4385");
+    examples.set("highlight-4740", "button/highlight-4740/highlight-4740");
     return examples;
 }
