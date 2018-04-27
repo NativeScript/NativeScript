@@ -89,17 +89,17 @@ export class WebView extends WebViewBase {
         const configuration = WKWebViewConfiguration.new();
         this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
         const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
-        const wkUScript = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScript,WKUserScriptInjectionTime.AtDocumentEnd,true);
+        const wkUScript = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScript, WKUserScriptInjectionTime.AtDocumentEnd, true);
         const wkUController = WKUserContentController.new();
         wkUController.addUserScript(wkUScript);
         configuration.userContentController = wkUController;
         configuration.preferences.setValueForKey(
             true,
-            'allowFileAccessFromFileURLs'
+            "allowFileAccessFromFileURLs"
         );
         this.nativeViewProtected = this._ios = new WKWebView({
             frame: CGRectZero,
-            configuration:configuration
+            configuration: configuration
         });
     }
 
@@ -123,9 +123,9 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(src: string) {
-        if(src.startsWith('file:///')){
+        if (src.startsWith("file:///")) {
             this._ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
-        }else{
+        } else {
             this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
         }
     }

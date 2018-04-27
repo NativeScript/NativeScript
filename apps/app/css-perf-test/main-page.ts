@@ -1,4 +1,4 @@
-﻿import {EventData as ObservableEventData} from "tns-core-modules/data/observable";
+﻿import {EventData as ObservableEventData } from "tns-core-modules/data/observable";
 
 export function navigatedTo(args: ObservableEventData) {
     setTimeout(() => {

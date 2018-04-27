@@ -141,14 +141,14 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     private assertChildTexts(expected, layout, message) {
         let texts: Array<string> = [];
         layout.eachChildView((child: { text: string }) => texts.push(child.text));
-        TKUnit.assertEqual(expected, texts.join('|'), message);
+        TKUnit.assertEqual(expected, texts.join("|"), message);
     }
 
     public test_insertChildAtPosition() {
         this.assertChildTexts("btn1|btn2", this.rootLayout, "initial 2 buttons");
 
         let newChild = new Button();
-        newChild.text = 'in-between';
+        newChild.text = "in-between";
         this.rootLayout.insertChild(newChild, 1);
 
         this.assertChildTexts("btn1|in-between|btn2", this.rootLayout, "button inserted at correct location");

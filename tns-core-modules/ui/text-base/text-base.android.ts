@@ -127,7 +127,7 @@ export class TextBase extends TextBaseCommon {
         const spannableStringBuilder = createSpannableStringBuilder(value);
         nativeView.setText(<any>spannableStringBuilder);
 
-        textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
+        textProperty.nativeValueChange(this, (value === null || value === undefined) ? "" : value.toString());
 
         if (spannableStringBuilder && nativeView instanceof android.widget.Button &&
             !(nativeView.getTransformationMethod() instanceof TextTransformation)) {
@@ -302,7 +302,7 @@ export class TextBase extends TextBaseCommon {
             transformedText = createSpannableStringBuilder(this.formattedText);
         } else {
             const text = this.text;
-            const stringValue = (text === null || text === undefined) ? '' : text.toString();
+            const stringValue = (text === null || text === undefined) ? "" : text.toString();
             transformedText = getTransformedText(stringValue, this.textTransform);
         }
 
@@ -345,7 +345,7 @@ function createSpannableStringBuilder(formattedString: FormattedString): android
         const span = formattedString.spans.getItem(i);
         const text = span.text;
         const textTransform = (<TextBase>formattedString.parent).textTransform;
-        let spanText = (text === null || text === undefined) ? '' : text.toString();
+        let spanText = (text === null || text === undefined) ? "" : text.toString();
         if (textTransform && textTransform !== "none") {
             spanText = getTransformedText(spanText, textTransform);
         }
@@ -422,12 +422,12 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 
     if (valueSource) {
         const textDecorations = valueSource.textDecoration;
-        const underline = textDecorations.indexOf('underline') !== -1;
+        const underline = textDecorations.indexOf("underline") !== -1;
         if (underline) {
             ssb.setSpan(new android.text.style.UnderlineSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
-        const strikethrough = textDecorations.indexOf('line-through') !== -1;
+        const strikethrough = textDecorations.indexOf("line-through") !== -1;
         if (strikethrough) {
             ssb.setSpan(new android.text.style.StrikethroughSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }

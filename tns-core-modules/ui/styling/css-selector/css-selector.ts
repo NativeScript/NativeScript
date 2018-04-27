@@ -164,7 +164,7 @@ export class AttributeSelector extends SimpleSelector {
 
         let escapedValue = escapeRegexSymbols(value);
         let regexp: RegExp = null;
-        switch(test) {
+        switch (test) {
             case "^=": // PrefixMatch
                 regexp = new RegExp("^" + escapedValue);
                 break;
@@ -197,7 +197,7 @@ export class AttributeSelector extends SimpleSelector {
             return;
         }
     }
-    public toString(): string { return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ''}]${wrap(this.combinator)}`; }
+    public toString(): string { return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ""}]${wrap(this.combinator)}`; }
     public match(node: Node): boolean { return false; }
     public mayMatch(node: Node): boolean { return true; }
     public trackChanges(node: Node, map: ChangeAccumulator): void { map.addAttribute(node, this.attribute); }
@@ -275,7 +275,7 @@ export class Selector extends SelectorCore {
                 return !!node;
             } else {
                 let ancestor = node;
-                while(ancestor = ancestor.parent) {
+                while (ancestor = ancestor.parent) {
                     if (node = group.match(ancestor)) {
                         return true;
                     }
@@ -303,7 +303,7 @@ export class Selector extends SelectorCore {
                 return !!node;
             } else {
                 let ancestor = node;
-                while(ancestor = ancestor.parent) {
+                while (ancestor = ancestor.parent) {
                     let nextNode = group.mayMatch(ancestor);
                     if (nextNode) {
                         bounds.push({ left: ancestor, right: null });
@@ -335,7 +335,7 @@ export class Selector extends SelectorCore {
                 if (group.mayMatch(node)) {
                     group.trackChanges(node, map);
                 }
-            } while((node !== bound.right) && (node = node.parent));
+            } while ((node !== bound.right) && (node = node.parent));
         }
 
         return mayMatch;
@@ -391,7 +391,7 @@ export class RuleSet {
     constructor(public selectors: SelectorCore[], private declarations: Declaration[]) {
         this.selectors.forEach(sel => sel.ruleset = this);
     }
-    public toString(): string { return `${this.selectors.join(", ")} {${this.declarations.map((d, i) => `${i === 0 ? " ": ""}${d.property}: ${d.value}`).join("; ")} }`; }
+    public toString(): string { return `${this.selectors.join(", ")} {${this.declarations.map((d, i) => `${i === 0 ? " " : ""}${d.property}: ${d.value}`).join("; ")} }`; }
     public lookupSort(sorter: LookupSorter): void { this.selectors.forEach(sel => sel.lookupSort(sorter)); }
 }
 
@@ -409,10 +409,10 @@ function createDeclaration(decl: cssParser.Declaration): any {
 }
 
 function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector {
-    switch(ast.type) {
+    switch (ast.type) {
         case "*": return new UniversalSelector();
         case "#": return new IdSelector(ast.identifier);
-        case "": return new TypeSelector(ast.identifier.replace(/-/, '').toLowerCase());
+        case "": return new TypeSelector(ast.identifier.replace(/-/, "").toLowerCase());
         case ".": return new ClassSelector(ast.identifier);
         case ":": return new PseudoClassSelector(ast.identifier);
         case "[]": return ast.test ? new AttributeSelector(ast.property, ast.test, ast.value) : new AttributeSelector(ast.property);
@@ -455,7 +455,7 @@ export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequ
             return new InvalidSelector(new Error("Empty selector"));
         }
         return createSelectorFromAst(parsedSelector.value);
-    } catch(e) {
+    } catch (e) {
         return new InvalidSelector(e);
     }
 }

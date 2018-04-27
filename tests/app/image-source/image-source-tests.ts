@@ -79,7 +79,7 @@ export function testFromFile() {
 }
 
 export function testFromAssetFileNotFound(done) {
-    let asset = new imageAssetModule.ImageAsset('invalidFile.png');
+    let asset = new imageAssetModule.ImageAsset("invalidFile.png");
     asset.options = {
         width: 0,
         height: 0,
@@ -87,7 +87,7 @@ export function testFromAssetFileNotFound(done) {
     };
 
     let img = imageSource.fromAsset(asset).then((source) => {
-        done('Should not resolve with invalid file name.');
+        done("Should not resolve with invalid file name.");
     }, (error) => {
         TKUnit.assertNotNull(error);
         done();

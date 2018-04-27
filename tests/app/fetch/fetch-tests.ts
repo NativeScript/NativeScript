@@ -20,7 +20,7 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
 
 export var test_fetch_text = function (done: (err: Error, res?: string) => void) {
     // >> fetch-string
-    fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => response.text()).then(function (r) {
         // Argument (r) is string!
         // >> (hide)
         TKUnit.assert(types.isString(r), "Result from text() should be string! Actual result is: " + r);
@@ -32,7 +32,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
 
 export var test_fetch_json = function (done: (err: Error, res?: string) => void) {
     // >> fetch-json
-    fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => response.json()).then(function (r) {
         // Argument (r) is JSON object!
         // >> (hide)
         TKUnit.assertNotNull(r, "Result from json() should be JSON object!");
@@ -44,7 +44,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
 
 export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
     // >> fetch-formdata
-    fetch("https://httpbin.org/get").then(response => { return response.formData(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => response.formData()).then(function (r) {
         // Argument (r) is FormData object!
         // >> (hide)
         TKUnit.assert(r instanceof FormData, "Result from formData() should be FormData object! Actual result is: " + r);
@@ -133,7 +133,7 @@ export var test_fetch_post_json = function (done) {
         method: "POST",
         headers: new Headers({ "Content-Type": "application/json" }),
         body: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
-    }).then(r => { return r.json(); }).then(function (r) {
+    }).then(r => r.json()).then(function (r) {
         // >> (hide)
         TKUnit.assert(r.json["MyVariableOne"] === "ValueOne" && r.json["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Actual result is: " + r.json);
         done(null);

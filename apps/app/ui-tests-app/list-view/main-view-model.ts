@@ -18,7 +18,7 @@ export class Item extends Observable {
   set name(value: string) {
     if (this._name !== value) {
       this._name = value;
-      this.notifyPropertyChange('name', value)
+      this.notifyPropertyChange("name", value)
     }
   }
 
@@ -29,7 +29,7 @@ export class Item extends Observable {
   set id(value: number) {
     if (this._id !== value) {
       this._id = value;
-      this.notifyPropertyChange('id', value)
+      this.notifyPropertyChange("id", value)
     }
   }
 
@@ -43,7 +43,7 @@ export class ViewModel extends Observable {
 
   get items(): ObservableArray<Item> {
     this._items = new ObservableArray<Item>();
-    for (let i = 0; i < 100; i++){
+    for (let i = 0; i < 100; i++) {
       this._items.push(new Item(`Item`, i));
     }
     return this._items;

@@ -7,7 +7,7 @@ import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as labelModule from "tns-core-modules/ui/label";
 import * as color from "tns-core-modules/color";
 
-import {SelectorCore} from "tns-core-modules/ui/styling/css-selector";
+import { SelectorCore } from "tns-core-modules/ui/styling/css-selector";
 
 const DELTA = 1;
 const SCALE_DELTA = 0.001;

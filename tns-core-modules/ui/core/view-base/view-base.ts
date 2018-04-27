@@ -141,8 +141,8 @@ let viewIdCounter = 1;
 // }
 
 enum Flags {
-    superOnLoadedCalled = 'Loaded',
-    superOnUnloadedCalled = 'Unloaded',
+    superOnLoadedCalled = "Loaded",
+    superOnUnloadedCalled = "Unloaded",
 }
 
 enum SuspendType {
@@ -442,9 +442,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     private pseudoClassAliases = {
-        'highlighted': [
-            'active',
-            'pressed'
+        "highlighted": [
+            "active",
+            "pressed"
         ]
     };
 
@@ -946,9 +946,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
-    public showModal(): ViewBase {
+    public showModal(...args): ViewBase {
         const parent = this.parent;
-        return parent && parent.showModal();
+        return parent && parent.showModal(...args);
     }
 
     public closeModal(): void {
@@ -1028,7 +1028,7 @@ export const idProperty = new Property<ViewBase, string>({ name: "id", valueChan
 idProperty.register(ViewBase);
 
 export function booleanConverter(v: string): boolean {
-    const lowercase = (v + '').toLowerCase();
+    const lowercase = (v + "").toLowerCase();
     if (lowercase === "true") {
         return true;
     } else if (lowercase === "false") {

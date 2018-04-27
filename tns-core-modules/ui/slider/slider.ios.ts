@@ -26,7 +26,7 @@ class SliderChangeHandlerImpl extends NSObject {
     }
 
     public static ObjCExposedMethods = {
-        'sliderValueChanged': { returns: interop.types.void, params: [UISlider] }
+        "sliderValueChanged": { returns: interop.types.void, params: [UISlider] }
     };
 }
 

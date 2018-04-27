@@ -1,23 +1,20 @@
 {
     "rules": {
+        "arrow-return-shorthand": true,
         "class-name": true,
         "curly": true,
         "forin": false,
-        "indent": true,
+        "indent": [true, "spaces", 4],
         "jsdoc-format": false,
         "max-line-length": [false, 120],
         "no-arg": true,
+        "no-bitwise": false,
         "no-consecutive-blank-lines": true,
         "no-construct": true,
         "no-debugger": true,
-        "triple-equals": [true, "allow-null-check"],
-        "variable-name": [false, "allow-leading-underscore"],
+        "no-duplicate-variable": true,
         "no-empty": true,
         "no-eval": true,
-		"no-unused-variable": [true],
-		"no-duplicate-variable": true,
-
-        "no-bitwise": false,
         "no-string-literal": false,
         "no-trailing-whitespace": false,
         "no-unused-expression": true,
@@ -29,9 +26,10 @@
             "check-else",
             "check-whitespace"
         ],
-        "quotemark": [false, "double"],
+        "quotemark": [true, "double"],
         "radix": false,
         "semicolon": false,
+        "triple-equals": [true, "allow-null-check"],
         "typedef": [false,
             "callSignature",
             "indexSignature",
@@ -40,19 +38,33 @@
             "variableDeclarator",
             "memberVariableDeclarator"
         ],
-        "typedef-whitespace": [false,
-            "callSignature",
-            "catchClause",
-            "indexSignature"
+        "typedef-whitespace": [true,
+            {
+                "call-signature": "nospace",
+                "index-signature": "nospace",
+                "parameter": "nospace",
+                "property-declaration": "nospace",
+                "variable-declaration": "nospace"
+            },
+            {
+                "call-signature": "onespace",
+                "index-signature": "onespace",
+                "parameter": "onespace",
+                "property-declaration": "onespace",
+                "variable-declaration": "onespace"
+            }
         ],
-        "whitespace": [false,
+        "variable-name": [false, "allow-leading-underscore"],
+        "whitespace": [true,
             "check-branch",
             "check-decl",
             "check-operator",
+            "check-module",
             "check-separator",
-            "check-type"
-        ],
-        
-        "indent":4
+            "check-rest-spread",
+            "check-type",
+            "check-type-operator",
+            "check-preblock"
+        ]
     }
 }

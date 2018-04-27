@@ -1,4 +1,4 @@
-﻿import {ShownModallyData} from "tns-core-modules/ui/page";
+﻿import { ShownModallyData } from "tns-core-modules/ui/page";
 
 export function onShownModally(args: ShownModallyData) {
     args.context.childPage = args.object;
