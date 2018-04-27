@@ -4,7 +4,7 @@ import { Label } from "tns-core-modules/ui/label";
 
 const average = 3;
 const noValue = "noValue";
-const colors = ['red', 'green'];
+const colors = ["red", "green"];
 
 export function addRemove(counts: Array<number>, parent: LayoutBase): string {
     let result = `addRemove`;
@@ -29,7 +29,7 @@ export function addRemove(counts: Array<number>, parent: LayoutBase): string {
 }
 
 export function setText(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setText ${parent ? 'with nativeView' : ''}`;
+    let result = `setText ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         const lbl = setup(parent);
         const time = executeTest(() => {
@@ -44,7 +44,7 @@ export function setText(counts: Array<number>, parent?: LayoutBase): string {
 }
 
 export function setBackgroundColor(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setBackgroundColor ${parent ? 'with nativeView' : ''}`;
+    let result = `setBackgroundColor ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         if (parent && count > 10000) {
             result += setResultTime(noValue);
@@ -66,7 +66,7 @@ export function setBackgroundColor(counts: Array<number>, parent?: LayoutBase): 
 
 const borders = [1, 2, 3];
 export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setBorderWidths ${parent ? 'with nativeView' : ''}`;
+    let result = `setBorderWidths ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         if (count > 10000 && parent) {
             result += setResultTime(noValue);
@@ -90,7 +90,7 @@ export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): str
 }
 
 export function setColor(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setColor ${parent ? 'with nativeView' : ''}`;
+    let result = `setColor ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         const lbl = setup(parent);
         const style = lbl.style;
@@ -128,7 +128,7 @@ export function setColorWithParents(counts: Array<number>, parent: LayoutBase): 
 
 const fontSizes = [10, 20];
 export function setFontSize(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setFontSize ${parent ? 'with nativeView' : ''}`;
+    let result = `setFontSize ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         const lbl = setup(parent);
         const style = lbl.style;
@@ -165,13 +165,13 @@ export function setFontSizeWithParents(counts: Array<number>, parent: LayoutBase
 }
 
 export function setFontWeight(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setFontWeight ${parent ? 'with nativeView' : ''}`;
+    let result = `setFontWeight ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         const lbl = setup(parent);
         const style = lbl.style;
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
-                style.fontWeight = i % 2 === 0 ? 'bold' : 'normal';
+                style.fontWeight = i % 2 === 0 ? "bold" : "normal";
             }
         });
         result += setResultTime(time);
@@ -192,7 +192,7 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
-                style.fontWeight = i % 2 === 0 ? 'bold' : 'normal'
+                style.fontWeight = i % 2 === 0 ? "bold" : "normal"
             }
         });
         result += setResultTime(time);
@@ -202,7 +202,7 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
 }
 
 export function setBindingContext(counts: Array<number>, parent?: LayoutBase): string {
-    let result = `setBindingContext ${parent ? 'with nativeView' : ''}`;
+    let result = `setBindingContext ${parent ? "with nativeView" : ""}`;
     counts.forEach((count) => {
         const lbl = setup(parent);
         const time = executeTest(() => {

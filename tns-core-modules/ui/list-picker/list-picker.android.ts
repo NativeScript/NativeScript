@@ -159,7 +159,7 @@ export class ListPicker extends ListPickerBase {
     }
 
     [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
-	const editText = (<any>this.nativeViewProtected).editText;
+    const editText = (<any>this.nativeViewProtected).editText;
         return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: editText ? editText.getTextColors().getDefaultColor() : -1

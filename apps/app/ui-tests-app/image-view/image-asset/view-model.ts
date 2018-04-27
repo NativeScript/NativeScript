@@ -1,7 +1,7 @@
 ﻿import * as dialogs from "tns-core-modules/ui/dialogs";
 import * as observable from "tns-core-modules/data/observable";
 import * as imageAssetModule from "tns-core-modules/image-asset";
-import { ImageSource } from 'tns-core-modules/image-source';
+import { ImageSource } from "tns-core-modules/image-source";
 
 let _cameraImageAsset = null;
 let _cameraImageSrc = null;
@@ -10,7 +10,7 @@ export class ImageViewModel extends observable.Observable {
 
     constructor() {
         super();
-        let asset = new imageAssetModule.ImageAsset('~/splashscreen.png');
+        let asset = new imageAssetModule.ImageAsset("~/splashscreen.png");
         asset.options = {
             width: 300,
             height: 300,

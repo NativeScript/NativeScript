@@ -612,7 +612,7 @@ namespace xml2ui {
             } else {
                 // Default components
                 let namespace = args.namespace;
-                if (defaultNameSpaceMatcher.test(namespace || '')) {
+                if (defaultNameSpaceMatcher.test(namespace || "")) {
                     //Ignore the default ...tns.xsd namespace URL
                     namespace = undefined;
                 }

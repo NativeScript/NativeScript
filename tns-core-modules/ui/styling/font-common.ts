@@ -79,7 +79,7 @@ export function parseFontFamily(value: string): Array<string> {
 
     const split = value.split(",");
     for (let i = 0; i < split.length; i++) {
-        let str = split[i].trim().replace(/['"]+/g, '');
+        let str = split[i].trim().replace(/['"]+/g, "");
         if (str) {
             result.push(str);
         }

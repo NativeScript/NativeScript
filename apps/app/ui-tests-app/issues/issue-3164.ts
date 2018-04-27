@@ -4,7 +4,7 @@ import { Page } from "tns-core-modules/ui/page";
 import { View } from "tns-core-modules/ui/core/view";
 
 var page: Page;
-var borderColor : Color = new Color("#ff0000");
+var borderColor: Color = new Color("#ff0000");
 export function navigatingTo(args: EventData) {
     page = <Page>args.object;
 }

@@ -1087,7 +1087,7 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
 
 type PropertyInterface = Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 
-export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
+export const initNativeView = profile("\"properties\".initNativeView", function initNativeView(view: ViewBase): void {
     if (view._suspendedUpdates) {
         applyPendingNativeSetters(view);
     } else {

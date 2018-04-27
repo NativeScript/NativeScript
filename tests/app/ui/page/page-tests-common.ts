@@ -691,7 +691,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 
     helper.navigate(masterPageFactory);
 
-    TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
+    TKUnit.waitUntilReady(() => modalUnloaded > 0);
     TKUnit.assertEqual(shownModally, 1, "shownModally");
     TKUnit.assertEqual(modalLoaded, 1, "modalLoaded");
     TKUnit.assertEqual(modalUnloaded, 1, "modalUnloaded");
