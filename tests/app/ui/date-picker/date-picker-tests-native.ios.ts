@@ -15,11 +15,11 @@ export function getNativeDay(datePicker: datePickerModule.DatePicker): number {
 }
 
 export function getNativeMaxDate(datePicker: datePickerModule.DatePicker): Date {
-    return new Date(1000* NSDate.dateWithTimeIntervalSinceDate(0, datePicker.ios.maximumDate).timeIntervalSince1970);
+    return new Date(1000 * NSDate.dateWithTimeIntervalSinceDate(0, datePicker.ios.maximumDate).timeIntervalSince1970);
 }
 
 export function getNativeMinDate(datePicker: datePickerModule.DatePicker): Date {
-    return new Date(1000* NSDate.dateWithTimeIntervalSinceDate(0, datePicker.ios.minimumDate).timeIntervalSince1970);
+    return new Date(1000 * NSDate.dateWithTimeIntervalSinceDate(0, datePicker.ios.minimumDate).timeIntervalSince1970);
 }
 
 export function setNativeYear(datePicker: datePickerModule.DatePicker, value: number): void {

@@ -210,7 +210,8 @@ export class DOMNode {
             localName: this.localName,
             nodeValue: this.nodeValue,
             children: this.children.map(c => c.toObject()),
-            attributes: this.attributes
+            attributes: this.attributes,
+            backendNodeId: 0
         };
     }
 }

@@ -28,7 +28,7 @@ export function navigatingTo(args) {
 
             grid.addChild(image);
 
-            switch(Math.floor(x / 4)) {
+            switch (Math.floor(x / 4)) {
                 case 1:
                     image.borderWidth = "3";
                     break;
@@ -38,7 +38,7 @@ export function navigatingTo(args) {
                     break;
             }
 
-            switch(Math.floor(y / 4)) {
+            switch (Math.floor(y / 4)) {
                 case 1:
                     image.borderRadius = "12";
                     break;

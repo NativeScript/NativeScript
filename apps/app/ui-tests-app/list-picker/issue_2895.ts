@@ -1,4 +1,4 @@
-import { Page } from 'tns-core-modules/ui/page';
+import { Page } from "tns-core-modules/ui/page";
 import { Observable } from "tns-core-modules/data/observable";
 import { EventData } from "tns-core-modules/ui/core/view";
 

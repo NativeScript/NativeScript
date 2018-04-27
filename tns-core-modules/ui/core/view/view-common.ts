@@ -213,7 +213,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public showModal(): ViewDefinition {
         if (arguments.length === 0) {
-            throw new Error('showModal without parameters is deprecated. Please call showModal on a view instance instead.');
+            throw new Error("showModal without parameters is deprecated. Please call showModal on a view instance instead.");
         } else {
             const firstAgrument = arguments[0];
             const context: any = arguments[1];

@@ -127,7 +127,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
             }
         }
 
-        this.notifyPropertyChange('.', this);
+        this.notifyPropertyChange(".", this);
     }
 
     private addPropertyChangeHandler(span: Span) {

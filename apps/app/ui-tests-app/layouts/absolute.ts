@@ -12,7 +12,7 @@ export function onLoaded(args: { eventName: string, object: any }) {
 export function onSetLeftSetTop(args: { eventName: string, object: any }) {
     var layout = args.object.parent;
     var child = layout.getViewById("setLeftSetTop");
-    if(++count % 2 === 1) {
+    if (++count % 2 === 1) {
         absoluteLayout.AbsoluteLayout.setLeft(child, 175);
         absoluteLayout.AbsoluteLayout.setTop(child, 375);
     } else {

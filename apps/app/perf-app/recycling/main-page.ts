@@ -56,7 +56,7 @@ export function onTap(args) {
         result.text += line + "\n";
     }
 
-    let text = '';//"Count";
+    let text = ""; //"Count";
     // c.forEach(e => {
     //     text += `\t${e}`;
     // });

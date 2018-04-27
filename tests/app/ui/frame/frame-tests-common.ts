@@ -71,63 +71,63 @@ export function test_can_go_back() {
     frame.navigate({ create: () => new Page(), backstackVisible: false });
     frame.navigate(() => new Page());
 
-    TKUnit.assertTrue(frame.canGoBack(), '1');
+    TKUnit.assertTrue(frame.canGoBack(), "1");
     frame.goBack();
 
-    TKUnit.assertTrue(frame.canGoBack(), '2');
+    TKUnit.assertTrue(frame.canGoBack(), "2");
     frame.goBack();
 
-    TKUnit.assertTrue(frame.canGoBack(), '3');
+    TKUnit.assertTrue(frame.canGoBack(), "3");
     frame.goBack();
 
-    TKUnit.assertFalse(frame.canGoBack(), '4');
+    TKUnit.assertFalse(frame.canGoBack(), "4");
     frame.goBack();
 
     frame.navigate({ create: () => new Page(), backstackVisible: false });
     frame.navigate(() => new Page());
 
-    TKUnit.assertTrue(frame.canGoBack(), '5');
+    TKUnit.assertTrue(frame.canGoBack(), "5");
     frame.goBack();
 
-    TKUnit.assertFalse(frame.canGoBack(), '6');
+    TKUnit.assertFalse(frame.canGoBack(), "6");
     frame.goBack();
 
     frame.navigate(() => new Page());
     frame.navigate({ create: () => new Page(), clearHistory: true });
 
-    TKUnit.assertFalse(frame.canGoBack(), '7');
+    TKUnit.assertFalse(frame.canGoBack(), "7");
     frame.goBack();
 
     frame.navigate(() => new Page());
     frame.navigate({ create: () => new Page(), backstackVisible: false });
 
-    TKUnit.assertTrue(frame.canGoBack(), '8');
+    TKUnit.assertTrue(frame.canGoBack(), "8");
     frame.goBack();
 
-    TKUnit.assertTrue(frame.canGoBack(), '9');
+    TKUnit.assertTrue(frame.canGoBack(), "9");
     frame.goBack();
 
-    TKUnit.assertFalse(frame.canGoBack(), '10');
+    TKUnit.assertFalse(frame.canGoBack(), "10");
     frame.goBack();
 
     frame.navigate(() => new Page());
     frame.navigate({ create: () => new Page(), clearHistory: true });
     frame.navigate({ create: () => new Page(), backstackVisible: false });
 
-    TKUnit.assertTrue(frame.canGoBack(), '11');
+    TKUnit.assertTrue(frame.canGoBack(), "11");
     frame.goBack();
 
-    TKUnit.assertFalse(frame.canGoBack(), '12');
+    TKUnit.assertFalse(frame.canGoBack(), "12");
     frame.goBack();
 
     frame.navigate({ create: () => new Page(), clearHistory: true });
     frame.navigate({ create: () => new Page(), backstackVisible: false });
     frame.navigate(() => new Page());
 
-    TKUnit.assertTrue(frame.canGoBack(), '13');
+    TKUnit.assertTrue(frame.canGoBack(), "13");
     frame.goBack();
 
-    TKUnit.assertFalse(frame.canGoBack(), '14');
+    TKUnit.assertFalse(frame.canGoBack(), "14");
     frame.goBack();
     TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 }
@@ -142,10 +142,10 @@ export function test_go_back_to_backstack_entry() {
     frame.navigate({ create: () => new Page(), backstackVisible: false });
     frame.navigate(() => new Page());
 
-    TKUnit.assertTrue(frame.canGoBack(), '1');
+    TKUnit.assertTrue(frame.canGoBack(), "1");
     frame.goBack(frame.backStack[0]);
 
-    TKUnit.assertFalse(frame.canGoBack(), '2');
+    TKUnit.assertFalse(frame.canGoBack(), "2");
     frame.goBack();
     TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 }

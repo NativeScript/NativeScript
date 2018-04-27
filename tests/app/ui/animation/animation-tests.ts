@@ -1,8 +1,8 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
-import {Label} from "tns-core-modules/ui/label";
-import {StackLayout} from "tns-core-modules/ui/layouts/stack-layout";
+import { Label } from "tns-core-modules/ui/label";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as colorModule from "tns-core-modules/color";
 import * as enums from "tns-core-modules/ui/enums";
 import { AnimationPromise } from "tns-core-modules/ui/animation";

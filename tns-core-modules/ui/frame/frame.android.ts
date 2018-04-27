@@ -686,7 +686,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         if (traceEnabled()) {
-            traceWrite(`${fragment}.onCreateAnimator(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animator ? 'animator' : 'no animator'}`, traceCategories.NativeLifecycle);
+            traceWrite(`${fragment}.onCreateAnimator(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animator ? "animator" : "no animator"}`, traceCategories.NativeLifecycle);
         }
         return animator;
     }

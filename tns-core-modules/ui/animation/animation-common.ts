@@ -66,7 +66,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
         this._propertyAnimations = new Array<PropertyAnimation>();
         for (let i = 0, length = animationDefinitions.length; i < length; i++) {
-            if (animationDefinitions[i].curve){
+            if (animationDefinitions[i].curve) {
                 animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
             }
             this._propertyAnimations = this._propertyAnimations.concat(AnimationBase._createPropertyAnimations(animationDefinitions[i]));
@@ -84,7 +84,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     abstract _resolveAnimationCurve(curve: any): any;
 
-    protected _rejectAlreadyPlaying(): AnimationPromiseDefinition{
+    protected _rejectAlreadyPlaying(): AnimationPromiseDefinition {
         const reason = "Animation is already playing.";
         traceWrite(reason, traceCategories.Animation, traceType.warn);
         

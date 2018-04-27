@@ -357,7 +357,7 @@ export class FileSystemAccess {
                 const info = {
                     path: this.concatPath(path, file),
                     name: file,
-                    extension: ''
+                    extension: ""
                 };
 
                 if (!this.folderExists(this.joinPath(path, file))) {

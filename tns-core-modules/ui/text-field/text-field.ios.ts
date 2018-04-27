@@ -55,7 +55,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         this.firstEdit = false;
         const owner = this._owner.get();
         if (owner) {
-            textProperty.nativeValueChange(owner, '');
+            textProperty.nativeValueChange(owner, "");
         }
 
         return true;

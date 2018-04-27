@@ -1,4 +1,4 @@
-import { Issue5039ViewModel } from './issue-5039-view-model'
+import { Issue5039ViewModel } from "./issue-5039-view-model"
 import { SearchBar } from "tns-core-modules/ui/search-bar";
 import { Page } from "tns-core-modules/ui/page";
  

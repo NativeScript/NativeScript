@@ -5,7 +5,7 @@ import { TextField } from "tns-core-modules/ui/text-field";
 
 function exectuteOnAll(page: Page, callback: (txt: TextView | TextField) => void) { 
     page.getViewById("container").eachChild((child) => {
-        if(child instanceof TextView || child instanceof TextField) {
+        if (child instanceof TextView || child instanceof TextField) {
             callback(child);
         }
         return true;
