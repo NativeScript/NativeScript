@@ -282,9 +282,7 @@ export class ActionBar extends ActionBarBase {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
-        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
-        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         if (this.titleView) {
             View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);

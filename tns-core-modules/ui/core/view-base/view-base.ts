@@ -1,14 +1,12 @@
 // Definitions.
 import { ViewBase as ViewBaseDefinition } from ".";
 import { Page } from "../../page";
-import { SelectorCore } from "../../styling/css-selector";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
-import { KeyframeAnimation } from "../../animation/keyframe-animation";
 
 // Types.
-import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
 import { Source } from "../../../utils/debug";
-import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
+import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";

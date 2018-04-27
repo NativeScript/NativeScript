@@ -8,31 +8,25 @@ import { isString, isDefined, isFunction } from "../../utils/types";
 
 export * from "./dialogs-common";
 
-enum allertButtons {
-    cancel = 1 << 0,
-    neutral = 1 << 1,
-    ok = 1 << 2,
-}
-
 function addButtonsToAlertController(alertController: UIAlertController, options: ConfirmOptions, callback?: Function): void {
     if (!options) {
         return;
     }
 
     if (isString(options.cancelButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, () => {
             raiseCallback(callback, false);
         }));
     }
 
     if (isString(options.neutralButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, () => {
             raiseCallback(callback, undefined);
         }));
     }
 
     if (isString(options.okButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
             raiseCallback(callback, true);
         }));
     }
@@ -129,7 +123,7 @@ export function prompt(arg: any): Promise<PromptResult> {
     });
 }
 
-export function login(arg: any): Promise<LoginResult> {
+export function login(): Promise<LoginResult> {
     let options: LoginOptions;
 
     let defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
@@ -236,7 +230,7 @@ function showUIAlertController(alertController: UIAlertController) {
     }
 }
 
-export function action(arg: any): Promise<string> {
+export function action(): Promise<string> {
     let options: ActionOptions;
 
     let defaultOptions = { title: null, cancelButtonText: CANCEL };

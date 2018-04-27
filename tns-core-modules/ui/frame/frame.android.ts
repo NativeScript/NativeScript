@@ -1,6 +1,6 @@
 ﻿// Definitions.
 import {
-    AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationEntry,
+    AndroidFrame as AndroidFrameDefinition, BackstackEntry,
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
 } from ".";
 import { Page } from "../page";
@@ -8,7 +8,7 @@ import { Page } from "../page";
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, NavigationContext, stack, goBack, View, Observable, topmost,
+    FrameBase, stack, goBack, View, Observable,
     traceEnabled, traceWrite, traceCategories
 } from "./frame-common";
 
@@ -94,7 +94,6 @@ export function reloadPage(): void {
 
 export class Frame extends FrameBase {
     private _android: AndroidFrame;
-    private _delayedNavigationEntry: BackstackEntry;
     private _containerViewId: number = -1;
     private _tearDownPending = false;
     private _attachedToWindow = false;
@@ -311,7 +310,6 @@ export class Frame extends FrameBase {
                 startActivity(currentActivity, this._android.frameId);
             }
 
-            this._delayedNavigationEntry = newEntry;
             return;
         }
 

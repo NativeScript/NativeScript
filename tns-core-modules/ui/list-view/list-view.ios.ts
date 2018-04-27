@@ -1,14 +1,11 @@
-﻿import { ScrollEventData } from "../scroll-view";
-import { ItemEventData } from ".";
+﻿import { ItemEventData } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, Observable, Color,
     separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, layout, EventData
 } from "./list-view-common";
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
-import { ios } from "../../utils/utils";
 import { profile } from "../../profiling";
-import { device } from "../../platform";
 
 export * from "./list-view-common";
 

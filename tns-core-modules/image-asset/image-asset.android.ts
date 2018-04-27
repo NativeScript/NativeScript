@@ -1,4 +1,3 @@
-import * as platform from "../platform";
 import * as common from "./image-asset-common";
 import { path as fsPath, knownFolders } from "../file-system";
 
@@ -88,31 +87,4 @@ var calculateAngleFromFile = function (filename: string) {
     }
 
     return rotationAngle;
-}
-
-var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeight) {
-    let sampleSize = 1;
-    let displayWidth = platform.screen.mainScreen.widthDIPs;
-    let displayHeigth = platform.screen.mainScreen.heightDIPs;
-    reqWidth = (reqWidth > 0 && reqWidth < displayWidth) ? reqWidth : displayWidth;
-    reqHeight = (reqHeight > 0 && reqHeight < displayHeigth) ? reqHeight : displayHeigth;
-    if (imageWidth > reqWidth && imageHeight > reqHeight) {
-        let halfWidth = imageWidth / 2;
-        let halfHeight = imageHeight / 2;
-        while ((halfWidth / sampleSize) > reqWidth && (halfHeight / sampleSize) > reqHeight) {
-            sampleSize *= 2;
-        }
-    }
-
-    var totalPixels = (imageWidth / sampleSize) * (imageHeight / sampleSize);
-
-    // Anything more than 2x the requested pixels we'll sample down further
-    var totalReqPixelsCap = reqWidth * reqHeight * 2;
-
-    while (totalPixels > totalReqPixelsCap) {
-        sampleSize *= 2;
-        totalPixels = (imageWidth / sampleSize) * (imageHeight / sampleSize);
-    }
-
-    return sampleSize;
 }

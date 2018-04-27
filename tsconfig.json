@@ -1,11 +1,13 @@
 {
     "extends": "./tsconfig.shared",
     "exclude": [
-        "tns-core-modules/docs-shims.d.ts",
-        "tns-platform-declarations/node_modules/",
-        "tns-platform-declarations/package/",
         "tns-core-modules/node_modules/",
         "tns-core-modules/package/",
+        "tns-core-modules/references.d.ts",
+        "tns-platform-declarations/ios/objc-x86_64/",
+        "tns-platform-declarations/node_modules/",
+        "tns-platform-declarations/package/",
+        "tns-platform-declarations/references.d.ts",
         "tests/node_modules",
         "tests/package/",
         "tests/platforms",
@@ -19,10 +21,7 @@
         "build",
         "Deploy",
         "out",
-        "obj",
-        "tns-platform-declarations/references.d.ts",
-        "tns-core-modules/references.d.ts",
-        "tns-platform-declarations/ios/objc-x86_64/",
+        "obj",       
         "unit-tests/common-types.d.ts"
     ]
 }
