@@ -188,6 +188,12 @@ export class ObservableArray<T> extends observable.Observable implements observa
     sort(compareFn?: (a: T, b: T) => number): T[] {
         return this._array.sort(compareFn);
     }
+    /**
+     * Remove all items in the array
+     */
+    clear() {
+        this.splice(0);
+    }
 
     /**
      * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
