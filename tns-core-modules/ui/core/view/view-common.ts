@@ -21,9 +21,11 @@ import {
 
 import { createViewFromEntry } from "../../builder";
 import { StyleScope } from "../../styling/style-scope";
+import { LinearGradient } from "../../styling/linear-gradient";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";
+export { LinearGradient };
 
 import * as am from "../../animation";
 let animationModule: typeof am;
@@ -435,10 +437,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.backgroundColor = value;
     }
 
-    get backgroundImage(): string {
+    get backgroundImage(): string | LinearGradient {
         return this.style.backgroundImage;
     }
-    set backgroundImage(value: string) {
+    set backgroundImage(value: string | LinearGradient) {
         this.style.backgroundImage = value;
     }
 

@@ -17,6 +17,7 @@
         <StackLayout id="target" row="1" col="1">
             <Button text="BGColor" tap="onToggle"/>
             <Button text="BGImage" tap="onToggle"/>
+            <Button text="BGGradient" tap="onToggle"/>
         </StackLayout>
         <StackLayout id="right" class="button-container" row="1" col="2">
             <Button text="Color" id="borderRightColor" tap="onToggle"/>
