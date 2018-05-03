@@ -1,6 +1,6 @@
 import { View, EventData } from "tns-core-modules/ui/core/view";
 
-const colors = ['red', 'orange', 'magenta'];
+const colors = ["red", "orange", "magenta"];
 let x = 0;
 
 export function onLoaded(args) {

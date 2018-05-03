@@ -344,7 +344,7 @@ export const test_ObservableArray_sortShouldReturnNewSortedArray = function () {
 export const test_ObservableArray_sortShouldReturnNewSortedArrayAccordingSpecifiedOrder = function () {
     // >> observable-array-sort-comparer
     const array = new ObservableArray([10, 100, 1]);
-    const result = array.sort((a: number, b: number) => { return a - b; });
+    const result = array.sort((a: number, b: number) => a - b);
     // << observable-array-sort-comparer
     TKUnit.assert(result[2] === 100 && result.length === 3, "ObservableArray sort() should return new sorted array according to specified order!");
 };

@@ -1,12 +1,8 @@
-Dear friend, we, the rest of the NativeScript community really
-appreciate your feedback! While we are doing all we can to take care of every
-issue, sometimes we get overwhelmed. Because of that, we will consider issues
-that are not constructive or problems that cannot be reproduced "dead".
-Additionally, we will treat feature requests or bug reports with unanswered
-questions regarding the behavior/reproduction for more than 20 days "dead". All
-"dead" issues will get closed.
-
-## Please, provide the details below:
+<!--
+We appreciate your feedback! While we are doing all we can to take care of every issue, sometimes we get overwhelmed. That's why
+ - issues that are not constructive or describe problems that cannot be reproduced will be closed
+ - feature requests or bug reports with unanswered questions regarding the behavior/reproduction for more than 20 days will be closed 
+-->
 
 ### Did you verify this is a real problem by searching the [NativeScript Forum](http://forum.nativescript.org) and the [other open issues in this repo](https://github.com/NativeScript/nativescript/issues)?
 
@@ -30,4 +26,6 @@ project)
 The best approach would be to get your code running in the [NativeScript Playground](https://play.nativescript.org) and share the link with us, along with any additional details or steps to reproduce needed for examining the issue there. 
 
 ### Is there code involved? If so, please share the minimal amount of code needed to recreate the problem.
+
+
 

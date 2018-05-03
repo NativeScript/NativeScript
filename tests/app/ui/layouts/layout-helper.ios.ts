@@ -1,6 +1,6 @@
-﻿import {Button} from "tns-core-modules/ui/button";
-import {StackLayout} from "tns-core-modules/ui/layouts/stack-layout";
-import {GridLayout} from "tns-core-modules/ui/layouts/grid-layout";
+﻿import { Button } from "tns-core-modules/ui/button";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as utils from "tns-core-modules/utils/utils";
 import * as TKUnit from "../../TKUnit";
 import * as def from "./layout-helper";

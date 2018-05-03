@@ -6,10 +6,10 @@ export function onLoaded(args) {
     const textField = <TextField>page.getViewById("textField");
     const textView = <TextView>page.getViewById("textView");
 
-    attachToEvent(textField,"blur");
-    attachToEvent(textField,"focus");
-    attachToEvent(textView,"blur");
-    attachToEvent(textView,"focus");
+    attachToEvent(textField, "blur");
+    attachToEvent(textField, "focus");
+    attachToEvent(textView, "blur");
+    attachToEvent(textView, "focus");
 }
 
 function attachToEvent(control, event) {

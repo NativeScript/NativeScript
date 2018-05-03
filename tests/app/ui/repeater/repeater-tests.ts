@@ -26,7 +26,7 @@ for (var i = 0; i < 100; i++) {
 
 export function test_recycling() {
     const setters = new Map<string, stackLayoutModule.StackLayout>();
-    setters.set('itemsLayout', new stackLayoutModule.StackLayout());
+    setters.set("itemsLayout", new stackLayoutModule.StackLayout());
     helper.nativeView_recycling_test(() => new repeaterModule.Repeater(), null, null, setters);
 }
 

@@ -421,6 +421,110 @@ export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage(
     page.off(Label.loadedEvent, navigatedEventHandler);
 }
 
+export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() {
+    let modalClosed = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        modalClosed = true;
+    }
+
+    const createTabItems = function(count: number) {
+        var items = new Array<TabViewItem>();
+
+        for (var i = 0; i < count; i++) {
+            var label = new Label();
+            label.text = "Tab " + i;
+            var tabEntry = new TabViewItem();
+            tabEntry.title = "Tab " + i;
+            tabEntry.view = label;
+
+            items.push(tabEntry);
+        }
+
+        return items;
+    }
+
+    const modalPageShownModallyEventHandler = function(args: ShownModallyData) {
+        const page = <Page>args.object;
+        page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
+        args.closeCallback();
+    }
+
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const modalPage = new Page();
+        modalPage.id = "modalPage_test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal";
+        modalPage.on(View.shownModallyEvent, modalPageShownModallyEventHandler);
+        const tabViewItem = (<TabView>page.content).items[0];
+        tabViewItem.showModal(modalPage, {}, modalCloseCallback, false, false);
+    }
+
+    const masterPageFactory = function(): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        
+        const tabView = new TabView();
+        tabView.items = createTabItems(2);
+        masterPage.content = tabView;
+
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => modalClosed);
+}
+
+export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
+    let navigatedTo = false;
+
+    const createTabItems = function(count: number) {
+        var items = new Array<TabViewItem>();
+
+        for (var i = 0; i < count; i++) {
+            var label = new Label();
+            label.text = "Tab " + i;
+            var tabEntry = new TabViewItem();
+            tabEntry.title = "Tab " + i;
+            tabEntry.view = label;
+
+            items.push(tabEntry);
+        }
+
+        return items;
+    }
+
+    const hostNavigatedToEventHandler = function(args) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+     
+        const hostPage = <Page>args.object;
+        const tabViewItem = (<TabView>page.content).items[0];
+        TKUnit.assertThrows(() => tabViewItem.showModal());
+
+        navigatedTo = true;
+    }
+
+    const masterPageFactory = function(): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        
+        const tabView = new TabView();
+        tabView.items = createTabItems(2);
+        masterPage.content = tabView;
+
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => navigatedTo);
+}
+
 export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
     let page1;
     let page2;
@@ -587,7 +691,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 
     helper.navigate(masterPageFactory);
 
-    TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
+    TKUnit.waitUntilReady(() => modalUnloaded > 0);
     TKUnit.assertEqual(shownModally, 1, "shownModally");
     TKUnit.assertEqual(modalLoaded, 1, "modalLoaded");
     TKUnit.assertEqual(modalUnloaded, 1, "modalUnloaded");

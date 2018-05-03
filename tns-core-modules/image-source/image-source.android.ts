@@ -58,7 +58,7 @@ export class ImageSource implements ImageSourceDefinition {
         this.android = null;
         const res = getResources();
         if (res) {
-            const identifier: number = res.getIdentifier(name, 'drawable', getApplication().getPackageName());
+            const identifier: number = res.getIdentifier(name, "drawable", getApplication().getPackageName());
             if (0 < identifier) {
                 // Load BitmapDrawable with getDrawable to make use of Android internal caching
                 const bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);
