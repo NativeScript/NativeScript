@@ -1,6 +1,6 @@
-import {LengthPercentUnit} from "./style-properties";
+import { LengthPercentUnit } from "./style-properties";
 import * as parser from "../../css/parser";
-import {Color} from "../../color";
+import { Color } from "../../color";
 
 export class LinearGradient {
     public angle: number;
@@ -13,9 +13,9 @@ export class LinearGradient {
             const offset = color.offset || null;
             let offsetUnit: LengthPercentUnit;
 
-            if (offset && offset.unit === '%') {
+            if (offset && offset.unit === "%") {
                 offsetUnit = {
-                    unit: '%',
+                    unit: "%",
                     value: offset.value
                 };
             }

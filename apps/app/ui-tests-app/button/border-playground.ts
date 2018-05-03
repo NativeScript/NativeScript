@@ -34,9 +34,9 @@ export function onToggle(args: EventData) {
         target.backgroundImage = target.backgroundImage ? undefined : `~/ui-tests-app/resources/images/test2.png`; 
         debugConsole.text += `> background-image: ${target.backgroundImage}\n`;
     }
-    else if (button.text === "BGGradient"){
-        const gradient = 'linear-gradient(to right, purple, red)';
-        target.backgroundImage = typeof target.backgroundImage === 'object' ? undefined :  gradient;
+    else if (button.text === "BGGradient") {
+        const gradient = "linear-gradient(to right, purple, red)";
+        target.backgroundImage = typeof target.backgroundImage === "object" ? undefined :  gradient;
         debugConsole.text += `> background-image: ${gradient} \n`;
     }
 

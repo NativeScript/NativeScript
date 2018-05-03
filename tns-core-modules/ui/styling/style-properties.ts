@@ -27,7 +27,7 @@ import {
 } from "../../matrix";
 
 import * as parser from "../../css/parser";
-import {LinearGradient} from "./linear-gradient";
+import { LinearGradient } from "./linear-gradient";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -577,11 +577,11 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
         }
     },
     valueConverter: (value: any) => {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
             const parsed = parser.parseBackground(value);
             if (parsed) {
                 const background = parsed.value;
-                value = (typeof background.image === 'object') ? LinearGradient.parse(background.image) : value;
+                value = (typeof background.image === "object") ? LinearGradient.parse(background.image) : value;
             }
         }
 
@@ -639,7 +639,7 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
         const backgroundColor = backgrounds.color ? new Color(backgrounds.color) : unsetValue;
 
         let backgroundImage: string | LinearGradient;
-        if (typeof backgrounds.image === 'object' && backgrounds.image) {
+        if (typeof backgrounds.image === "object" && backgrounds.image) {
             backgroundImage = LinearGradient.parse(backgrounds.image);
         } else {
             backgroundImage = backgrounds.image || unsetValue;

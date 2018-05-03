@@ -105,8 +105,8 @@ function fromBase64(source: string): android.graphics.Bitmap {
 }
 
 function fromGradient(gradient: LinearGradient): org.nativescript.widgets.LinearGradientDefinition {
-    const colors = Array.create('int', gradient.colorStops.length);
-    const stops = Array.create('float', gradient.colorStops.length);
+    const colors = Array.create("int", gradient.colorStops.length);
+    const stops = Array.create("float", gradient.colorStops.length);
     let hasStops = false;
     gradient.colorStops.forEach((stop, index) => {
         colors[index] = stop.color.android;
@@ -148,7 +148,7 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
         const blackColor = -16777216; //android.graphics.Color.BLACK;
 
         let imageUri: string;
-        if (background.image && typeof background.image === 'string') {
+        if (background.image && typeof background.image === "string") {
             imageUri = background.image;
             const match = imageUri.match(pattern);
             if (match && match[2]) {
