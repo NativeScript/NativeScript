@@ -9,7 +9,9 @@ const tests = [
     { name: "black hex color only", background: "#000000" },
     { name: "yellow hex color only", background: "#ffff00" },
     { name: "blue color only", background: "blue" },
+
     { name: "repeat image only", background: "url(\"~/ui-tests-app/resources/images/icon.png\")" },
+    { name: "linear gradient red-blue only", background: "linear-gradient(to bottom, red, blue)"},
 
     { name: "[straight] image only, no-repeat ", background: "url(\"~/ui-tests-app/resources/images/icon.png\") no-repeat" },
     { name: "[straight] green color, image, no-repeat", background: "green url(\"~/ui-tests-app/resources/images/icon.png\") no-repeat" },
@@ -18,7 +20,7 @@ const tests = [
     { name: "[straight] orange hex color, image, no-repeat, position percents", background: "#F9791F url(\"~/ui-tests-app/resources/images/icon.png\") no-repeat 100% 100%" },
     { name: "[straight] green color, image, repeat-x, position percents", background: "green url(\"~/ui-tests-app/resources/images/icon.png\") repeat-x 100% 100%" },
     { name: "[straight] blue color, image, repeat-x, position", background: "blue url(\"~/ui-tests-app/resources/images/icon.png\") repeat-x 150 150" },
-    
+
     { name: "[shuffle] no-repeat, image only", background: "no-repeat url(\"~/ui-tests-app/resources/images/icon.png\")" },
     { name: "[shuffle] no-repeat, green color, image, ", background: "no-repeat green url(\"~/ui-tests-app/resources/images/icon.png\")" },
     { name: "[shuffle] yellow hex color, position pixels, image, no-repeat", background: "#ffff00 200px 200px url(\"~/ui-tests-app/resources/images/icon.png\") no-repeat" },
