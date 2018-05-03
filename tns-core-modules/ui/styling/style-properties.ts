@@ -1,6 +1,6 @@
 // Types
-import { unsetValue, Style,
-    CssProperty, CssAnimationProperty,
+import { unsetValue, Style, 
+    CssProperty, CssAnimationProperty, 
     ShorthandProperty, InheritedCssProperty,
     makeValidator, makeParser } from "../core/properties";
 import {
@@ -27,7 +27,6 @@ import {
 } from "../../matrix";
 
 import * as parser from "../../css/parser";
-import { LinearGradient } from "./linear-gradient";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -564,28 +563,10 @@ export const backgroundInternalProperty = new CssProperty<Style, Background>({
 backgroundInternalProperty.register(Style);
 
 // const pattern: RegExp = /url\(('|")(.*?)\1\)/;
-export const backgroundImageProperty = new CssProperty<Style, string | LinearGradient>({
+export const backgroundImageProperty = new CssProperty<Style, string>({
     name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
         const background = target.backgroundInternal.withImage(newValue);
         target.backgroundInternal = background;
-    },
-    equalityComparer: (value1, value2) => {
-        if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
-            return LinearGradient.equals(value1, value2)
-        } else {
-            return value1 === value2;
-        }
-    },
-    valueConverter: (value: any) => {
-        if (typeof value === "string") {
-            const parsed = parser.parseBackground(value);
-            if (parsed) {
-                const background = parsed.value;
-                value = (typeof background.image === "object") ? LinearGradient.parse(background.image) : value;
-            }
-        }
-
-        return value;
     }
 });
 backgroundImageProperty.register(Style);
@@ -637,14 +618,7 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
     if (typeof value === "string") {
         const backgrounds = parser.parseBackground(value).value;
         const backgroundColor = backgrounds.color ? new Color(backgrounds.color) : unsetValue;
-
-        let backgroundImage: string | LinearGradient;
-        if (typeof backgrounds.image === "object" && backgrounds.image) {
-            backgroundImage = LinearGradient.parse(backgrounds.image);
-        } else {
-            backgroundImage = backgrounds.image || unsetValue;
-        }
-
+        const backgroundImage = backgrounds.image || unsetValue;
         const backgroundRepeat = backgrounds.repeat || unsetValue;
         const backgroundPosition = backgrounds.position ? backgrounds.position.text : unsetValue;
 
