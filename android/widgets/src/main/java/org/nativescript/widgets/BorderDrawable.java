@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -49,6 +50,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
     private int backgroundColor;
     private String backgroundImage;
     private Bitmap backgroundBitmap;
+    private LinearGradientDefinition backgroundGradient;
     private String backgroundRepeat;
     private String backgroundPosition;
     private CSSValue[] backgroundPositionParsedCSSValues;
@@ -149,6 +151,8 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
         return backgroundBitmap;
     }
 
+    public LinearGradientDefinition getBackgroundGradient() { return backgroundGradient; }
+
     public String getBackgroundRepeat() {
         return backgroundRepeat;
     }
@@ -223,6 +227,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
                         int backgroundColor,
                         String backgroundImageUri,
                         Bitmap backgroundBitmap,
+                        LinearGradientDefinition backgroundGradient,
                         Context context,
                         String backgroundRepeat,
                         String backgroundPosition,
@@ -250,6 +255,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
         this.backgroundColor = backgroundColor;
         this.backgroundImage = backgroundImageUri;
         this.backgroundBitmap = backgroundBitmap;
+        this.backgroundGradient = backgroundGradient;
         this.backgroundRepeat = backgroundRepeat;
         this.backgroundPosition = backgroundPosition;
         this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
@@ -361,6 +367,24 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
             }
         }
 
+        if (this.backgroundGradient != null) {
+            LinearGradientDefinition def = this.backgroundGradient;
+            Paint backgroundGradientPaint = new Paint();
+            LinearGradient shader = new LinearGradient(
+                    def.getStartX() * width, def.getStartY() * height,
+                    def.getEndX() * width, def.getEndY() * height,
+                    def.getColors(), def.getStops(), Shader.TileMode.MIRROR);
+            backgroundGradientPaint.setAntiAlias(true);
+            backgroundGradientPaint.setFilterBitmap(true);
+            backgroundGradientPaint.setShader(shader);
+
+            if (this.clipPath != null && !this.clipPath.isEmpty()) {
+                drawClipPath(this.clipPath, canvas, backgroundGradientPaint, backgroundBoundsF, this.density);
+            } else {
+                canvas.drawPath(backgroundPath, backgroundGradientPaint);
+            }
+        }
+
         // draw border
         if (this.clipPath != null && !this.clipPath.isEmpty()) {
             float borderWidth = this.getUniformBorderWidth();
@@ -386,7 +410,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
                 float[] borderOuterRadii = {
                     borderTopLeftRadius, borderTopLeftRadius,
                     borderTopRightRadius, borderTopRightRadius,
-                    borderBottomRightRadius, borderBottomRightRadius, 
+                    borderBottomRightRadius, borderBottomRightRadius,
                     borderBottomLeftRadius, borderBottomLeftRadius
                 };
                 borderPath.addRoundRect(borderOuterRect, borderOuterRadii, Path.Direction.CW);
