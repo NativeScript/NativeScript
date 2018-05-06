@@ -614,6 +614,13 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 });
 backgroundPositionProperty.register(Style);
 
+
+export const transitionNameProperty = new CssProperty<Style, string>({
+    name: "transitionName",
+    cssName: "_transitionName"
+});
+transitionNameProperty.register(Style);
+
 function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>, any][] {
     if (typeof value === "string") {
         const backgrounds = parser.parseBackground(value).value;

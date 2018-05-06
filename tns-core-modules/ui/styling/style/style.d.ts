@@ -119,6 +119,9 @@ export class Style extends Observable {
     public horizontalAlignment: HorizontalAlignment;
     public verticalAlignment: VerticalAlignment;
 
+    //android specific props
+    public transitionName:string;
+
     // TabView-specific props
     public tabTextColor: Color;
     public tabBackgroundColor: Color;
@@ -149,6 +152,7 @@ export class Style extends Observable {
     public flexShrink: FlexShrink;
     public flexWrapBefore: FlexWrapBefore;
     public alignSelf: AlignSelf;
+
 
     /**
      * The property bag is a simple class that is paired with the Style class.

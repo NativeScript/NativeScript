@@ -7,7 +7,7 @@ if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
 }
 
 @JavaProxy("com.tns.NativeScriptActivity")
-class NativeScriptActivity extends android.app.Activity {
+class NativeScriptActivity extends android.support.v7.app.AppCompatActivity {
     private _callbacks: AndroidActivityCallbacks;
     public isNativeScriptActivity;
     constructor() {

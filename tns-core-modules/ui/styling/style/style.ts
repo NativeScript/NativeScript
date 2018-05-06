@@ -91,6 +91,9 @@ export class Style extends Observable implements StyleDefinition {
     public paddingBottom: Length;
     public horizontalAlignment: HorizontalAlignment;
     public verticalAlignment: VerticalAlignment;
+    
+    //android specific props
+    public transitionName:string;
 
     // TabView-specific props
     public tabTextColor: Color;

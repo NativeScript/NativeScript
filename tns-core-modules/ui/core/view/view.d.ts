@@ -311,6 +311,11 @@ export abstract class View extends ViewBase {
      */
     scaleY: number;
 
+    /**
+     * Gets or sets the transition name of the view.
+     */
+    transitionName: string;
+
     //END Style property shortcuts
 
     /**
@@ -653,7 +658,7 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _getFragmentManager(): any; /* android.app.FragmentManager */
+    _getFragmentManager(): any; /* android.support.v4.app.FragmentManager */
 
     /**
      * Updates styleScope or create new styleScope.
