@@ -11,7 +11,6 @@ import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "../../layouts/flexbox-layout";
-import { LinearGradient } from "../linear-gradient";
 
 export interface Thickness {
     left: number;
@@ -65,7 +64,7 @@ export class Style extends Observable {
 
     public background: string;
     public backgroundColor: Color;
-    public backgroundImage: string | LinearGradient;
+    public backgroundImage: string;
     public backgroundRepeat: BackgroundRepeat;
     public backgroundSize: string;
     public backgroundPosition: string;

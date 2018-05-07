@@ -73,7 +73,6 @@
                     backgroundColor: number,
                     backgroundImage: string,
                     backgroundBitmap: android.graphics.Bitmap,
-                    backgroundGradient: LinearGradientDefinition,
                     context: android.content.Context,
                     backgroundRepeat: string,
                     backgroundPosition: string,
@@ -116,18 +115,6 @@
                 public hasUniformBorder(): boolean;
 
                 public toDebugString(): string;
-            }
-
-            export class LinearGradientDefinition {
-                constructor(startX: number, endX: number, startY: number,
-                            endY: number, colors: number[], stops?: number[]);
-
-                public getStartX(): number;
-                public getStartY(): number;
-                public getEndX(): number;
-                public getEndY(): number;
-                public getColors(): number[];
-                public getStops(): number[];
             }
 
             export class CSSValue {

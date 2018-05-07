@@ -2,8 +2,7 @@ import { Style as StyleDefinition } from ".";
 import { Color } from "../../../color";
 import { Font, FontStyle, FontWeight } from "../font";
 import { Background } from "../background";
-import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility,
-    HorizontalAlignment, VerticalAlignment, dip, LinearGradient } from "../../core/view";
+import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
 import { Observable } from "../../../data/observable";
 
 import {
@@ -38,7 +37,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public background: string;
     public backgroundColor: Color;
-    public backgroundImage: string | LinearGradient;
+    public backgroundImage: string;
     public backgroundRepeat: BackgroundRepeat;
     public backgroundSize: string;
     public backgroundPosition: string;
