@@ -82,39 +82,47 @@ export class ObservableArray<T> extends observable.Observable {
      * Returns item at specified index.
      */
     getItem(index: number): T;
+    
     /**
      * Sets item at specified index.
      */
     setItem(index: number, value: T): void;
+    
     /**
      * Returns a string representation of an array.
      */
     toString(): string;
     toLocaleString(): string;
+    
     /**
      * Combines two or more arrays.
      * @param items Additional items to add to the end of array1.
      */
     concat<U extends T[]>(...items: U[]): T[];
+    
     /**
      * Combines two or more arrays.
      * @param items Additional items to add to the end of array1.
      */
     concat(...items: T[]): T[];
+    
     /**
      * Adds all the elements of an array separated by the specified separator string.
      * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
      */
     join(separator?: string): string;
+    
     /**
      * Removes the last element from an array and returns it.
      */
     pop(): T;
+    
     /**
      * Appends new elements to an array, and returns the new length of the array.
      * @param items New elements of the Array.
      */
     push(items: T[]): number;
+    
     /**
      * Appends new elements to an array, and returns the new length of the array.
      * @param items New elements of the Array.
@@ -125,10 +133,12 @@ export class ObservableArray<T> extends observable.Observable {
      * Reverses the elements in an Array. 
      */
     reverse(): T[];
+    
     /**
      * Removes the first element from an array and returns it.
      */
     shift(): T;
+    
     /** 
      * Returns a section of an array.
      * @param start The beginning of the specified portion of the array.
