@@ -624,19 +624,15 @@ export class TabView extends TabViewBase {
         }
     }
 
-    [tabTextFontSizeProperty.getDefault](): { nativeSize: number } {
-        const nativeSize = this._tabLayout.getTextViewForItemAt(0).getTextSize();
-        return { nativeSize: nativeSize };
+    [tabTextFontSizeProperty.getDefault](): number {
+        return this._tabLayout.getTabTextFontSize();
     }
     [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
-        this.items.forEach((item, i, arr) => {
-            const tv = this._tabLayout.getTextViewForItemAt(i);
-            if (typeof value === "number") {
-                tv.setTextSize(value);
-            } else {
-                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-            }
-        });
+        if (typeof value === "number") {
+            this._tabLayout.setTabTextFontSize(value);
+        } else {
+            this._tabLayout.setTabTextFontSize(value.nativeSize);
+        }
     }
 
     [tabTextColorProperty.getDefault](): number {
