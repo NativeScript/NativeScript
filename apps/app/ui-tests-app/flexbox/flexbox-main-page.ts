@@ -17,6 +17,7 @@ export function loadExamples() {
     examples.set("flexrepeat", "flexbox/flexbox-repeater");
     examples.set("flex-perf", "flexbox/flexbox-perf-comparison");
     examples.set("flexbox-4143", "flexbox/flexbox-4143");
+    examples.set("flexbox-4834", "flexbox/flexbox-4834");
 
     return examples;
 }

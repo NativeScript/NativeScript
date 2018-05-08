@@ -595,8 +595,25 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     } else {
                         accumulatedRoundError = rawCalculatedWidth - roundedCalculatedWidth;
                     }
-                    child.measure(makeMeasureSpec(roundedCalculatedWidth, EXACTLY), makeMeasureSpec(child.getMeasuredHeight(), EXACTLY));
+
+                    const childWidthMeasureSpec = makeMeasureSpec(roundedCalculatedWidth, EXACTLY);
+
+                    // NOTE: for controls that support internal content wrapping (e.g. UILabel) reducing the width 
+                    // might result in increased height e.g. text that could be shown on one line for larger 
+                    // width needs to be wrapped in two when width is reduced. 
+                    // As a result we cannot unconditionally measure with EXACTLY the current measured height
+                    const childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentHeightMeasureSpec,
+                        lp.effectivePaddingTop + lp.effectivePaddingBottom + lp.effectiveMarginTop
+                        + lp.effectiveMarginBottom, lp.effectiveHeight < 0 ? WRAP_CONTENT : lp.effectiveHeight);        
+
+                    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
                     child.effectiveMinWidth = minWidth;
+
+                    // make sure crossSize is up-to-date as child calculated height might have increased
+                    flexLine._crossSize = Math.max(
+                        flexLine._crossSize,
+                        child.getMeasuredHeight() + lp.effectiveMarginTop + lp.effectiveMarginBottom
+                    );
                 }
                 flexLine._mainSize += child.getMeasuredWidth() + lp.effectiveMarginLeft + lp.effectiveMarginRight;
             } else {

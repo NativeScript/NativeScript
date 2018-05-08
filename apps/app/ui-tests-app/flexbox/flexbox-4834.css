@@ -1,0 +1,14 @@
+image {
+    width: 40;
+    height: 40;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+Label {
+    border-width: 1;
+    border-color: black;
+    padding: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
