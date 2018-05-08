@@ -1071,9 +1071,24 @@ public class FlexboxLayout extends ViewGroup {
                     } else {
                         accumulatedRoundError = rawCalculatedWidth - roundedCalculatedWidth;
                     }
-                    child.measure(MeasureSpec.makeMeasureSpec(roundedCalculatedWidth, MeasureSpec.EXACTLY),
-                            MeasureSpec.makeMeasureSpec(child.getMeasuredHeight(),
-                                    MeasureSpec.EXACTLY));
+
+                    int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(roundedCalculatedWidth, MeasureSpec.EXACTLY);
+
+                    // NOTE: for controls that support internal content wrapping (e.g. TextView) reducing the width
+                    // might result in increased height e.g. text that could be shown on one line for larger
+                    // width needs to be wrapped in two when width is reduced.
+                    // As a result we cannot unconditionally measure with EXACTLY the current measured height
+                    int childHeightMeasureSpec = getChildMeasureSpec(this.getMeasuredHeightAndState(),
+                            getPaddingTop() + getPaddingBottom() + lp.topMargin
+                                    + lp.bottomMargin, lp.height < 0 ? LayoutParams.WRAP_CONTENT : lp.height);
+
+                    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+
+                    // make sure crossSize is up-to-date as child calculated height might have increased
+                    flexLine.mCrossSize = Math.max(
+                            flexLine.mCrossSize,
+                            child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin
+                    );
                 }
                 flexLine.mMainSize += child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
             } else {
