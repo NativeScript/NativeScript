@@ -68,7 +68,11 @@ export class Label extends TextBase implements LabelDefinition {
             this._fixedSize = (widthMode === layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
                 | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
-            const nativeSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
+            // NOTE: utils.measureNativeView(...) relies on UIView.sizeThatFits(...) that 
+            // seems to have various issues when laying out UILabel instances.
+            // We use custom measure logic here that relies on overriden 
+            // UILabel.textRectForBounds:limitedToNumberOfLines: in TNSLabel widget. 
+            const nativeSize = this._measureNativeView(width, widthMode, height, heightMode);
             let labelWidth = nativeSize.width;
 
             if (this.textWrap && widthMode === layout.AT_MOST) {
@@ -83,6 +87,22 @@ export class Label extends TextBase implements LabelDefinition {
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
+    }
+
+    private _measureNativeView(width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number } {
+        const view = <UILabel>this.nativeViewProtected;
+
+        const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(
+            CGRectMake(
+                0,
+                0,
+                widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width),
+                heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)
+            ), 0).size;
+
+        nativeSize.width = layout.round(layout.toDevicePixels(nativeSize.width));
+        nativeSize.height = layout.round(layout.toDevicePixels(nativeSize.height));
+        return nativeSize;
     }
 
     [whiteSpaceProperty.setNative](value: WhiteSpace) {
