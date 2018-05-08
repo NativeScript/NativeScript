@@ -820,7 +820,12 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _stretchViewVertically(view: View, crossSize: number) {
         let newHeight = crossSize - view.effectiveMarginTop - view.effectiveMarginBottom;
         newHeight = Math.max(newHeight, 0);
-        view.measure(makeMeasureSpec(view.getMeasuredWidth(), EXACTLY), makeMeasureSpec(newHeight, EXACTLY));
+
+        let childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentWidthMeasureSpec,
+            view.effectivePaddingLeft + view.effectivePaddingRight + view.effectiveMarginLeft
+            + view.effectiveMarginRight, view.effectiveWidth < 0 ? WRAP_CONTENT : view.effectiveWidth);
+
+        view.measure(childWidthMeasureSpec, makeMeasureSpec(newHeight, EXACTLY));
     }
 
     private _stretchViewHorizontally(view: View, crossSize: number) {
