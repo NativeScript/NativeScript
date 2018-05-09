@@ -103,6 +103,13 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
         this.style.androidSelectedTabHighlightColor = value;
     }
 
+    get tabTextFontSize(): number {
+        return this.style.tabTextFontSize;
+    }
+    set tabTextFontSize(value: number) {
+        this.style.tabTextFontSize = value;
+    }
+
     get tabTextColor(): Color {
         return this.style.tabTextColor;
     }
@@ -239,6 +246,9 @@ androidOffscreenTabLimitProperty.register(TabViewBase);
 
 export const androidTabsPositionProperty = new Property<TabViewBase, "top" | "bottom">({ name: "androidTabsPosition", defaultValue: "top" });
 androidTabsPositionProperty.register(TabViewBase);
+
+export const tabTextFontSizeProperty = new CssProperty<Style, number>({ name: "tabTextFontSize", cssName: "tab-text-font-size", valueConverter: (v) => parseFloat(v) });
+tabTextFontSizeProperty.register(Style);
 
 export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 tabTextColorProperty.register(Style);

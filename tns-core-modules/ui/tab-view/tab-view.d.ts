@@ -65,6 +65,11 @@ export class TabView extends View {
     selectedIndex: number;
 
     /**
+     * Gets or sets the font size of the tabs titles.
+     */
+    tabTextFontSize: number;
+
+    /**
      * Gets or sets the text color of the tabs titles.
      */
     tabTextColor: Color;
@@ -139,6 +144,7 @@ export class TabView extends View {
 export const itemsProperty: Property<TabView, TabViewItem[]>;
 export const selectedIndexProperty: Property<TabView, number>;
 
+export const tabTextFontSizeProperty: CssProperty<Style, number>;
 export const tabTextColorProperty: CssProperty<Style, Color>;
 export const tabBackgroundColorProperty: CssProperty<Style, Color>;
 export const selectedTabTextColorProperty: CssProperty<Style, Color>;
