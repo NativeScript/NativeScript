@@ -448,7 +448,7 @@ export class TabView extends TabViewBase {
         selectedIndexProperty.coerce(this);
     }
 
-    [tabTextFontSizeProperty.getDefault](): { nativeSize: number } {
+    [tabTextFontSizeProperty.getDefault](): number {
         return null;
     }
     [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
