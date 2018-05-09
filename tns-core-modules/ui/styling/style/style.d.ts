@@ -120,6 +120,7 @@ export class Style extends Observable {
     public verticalAlignment: VerticalAlignment;
 
     // TabView-specific props
+    public tabTextFontSize: number;
     public tabTextColor: Color;
     public tabBackgroundColor: Color;
     public selectedTabTextColor: Color;

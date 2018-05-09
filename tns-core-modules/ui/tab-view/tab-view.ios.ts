@@ -4,7 +4,7 @@ import { Font } from "../styling/font";
 import { ios as iosView, ViewBase } from "../core/view";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
-    tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
+    tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -448,6 +448,13 @@ export class TabView extends TabViewBase {
         selectedIndexProperty.coerce(this);
     }
 
+    [tabTextFontSizeProperty.getDefault](): number {
+        return null;
+    }
+    [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
+        this._updateIOSTabBarColorsAndFonts();
+    }
+
     [tabTextColorProperty.getDefault](): UIColor {
         return null;
     }
@@ -504,7 +511,9 @@ interface TabStates {
 function getTitleAttributesForStates(tabView: TabView): TabStates {
     const result: TabStates = {};
 
-    const font = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
+    const defaultTabItemFontSize = 10;
+    const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
+    const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
     result.normalState = { [NSFontAttributeName]: font }
