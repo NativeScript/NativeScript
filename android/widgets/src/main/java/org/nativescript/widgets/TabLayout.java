@@ -147,6 +147,14 @@ public class TabLayout extends HorizontalScrollView {
         return mTabStrip.getSelectedTabTextColor();
     }
 
+    public void setTabTextFontSize(float fontSize){
+        mTabStrip.setTabTextFontSize(fontSize);
+    }
+
+    public float getTabTextFontSize(){
+        return mTabStrip.getTabTextFontSize();
+    }
+
     /**
      * Set the {@link ViewPager.OnPageChangeListener}. When using
      * {@link TabLayout} you are required to set any

@@ -50,6 +50,7 @@ class TabStrip extends LinearLayout {
 
     private int mTabTextColor;
     private int mSelectedTabTextColor;
+    private float mTabTextFontSize;
 
     TabStrip(Context context) {
         this(context, null);
@@ -81,6 +82,7 @@ class TabStrip extends LinearLayout {
 
         TextView defaultTextView = new TextView(context);
         mTabTextColor = defaultTextView.getTextColors().getDefaultColor();
+        mTabTextFontSize = defaultTextView.getTextSize();
 
         // Default selected color is the same as mTabTextColor
         mSelectedTabTextColor = mTabTextColor;
@@ -129,6 +131,24 @@ class TabStrip extends LinearLayout {
             else {
                 textView.setTextColor(mTabTextColor);
             }
+        }
+    }
+
+    void setTabTextFontSize(float fontSize){
+        mTabTextFontSize = fontSize;
+        updateTabsTextFontSize();
+    }
+
+    float getTabTextFontSize(){
+        return mTabTextFontSize;
+    }
+
+    private void updateTabsTextFontSize(){
+        final int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++){
+            LinearLayout linearLayout = (LinearLayout)getChildAt(i);
+            TextView textView = (TextView)linearLayout.getChildAt(1);
+            textView.setTextSize(mTabTextFontSize);
         }
     }
 
