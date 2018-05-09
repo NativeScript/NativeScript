@@ -45,14 +45,14 @@ allTests["PLATFORM"] = platformTests;
 import * as fsTests from "./file-system/file-system-tests";
 allTests["FILE-SYSTEM"] = fsTests;
 
-import * as httpTests from "./http/http-tests";
-allTests["HTTP"] = httpTests;
+// import * as httpTests from "./http/http-tests";
+// allTests["HTTP"] = httpTests;
 
-import * as xhrTests from "./xhr/xhr-tests";
-allTests["XHR"] = xhrTests;
+// import * as xhrTests from "./xhr/xhr-tests";
+// allTests["XHR"] = xhrTests;
 
-import * as fetchTests from "./fetch/fetch-tests";
-allTests["FETCH"] = fetchTests;
+// import * as fetchTests from "./fetch/fetch-tests";
+// allTests["FETCH"] = fetchTests;
 
 import * as appSettingsTests from "./application-settings/application-settings-tests";
 allTests["APPLICATION-SETTINGS"] = appSettingsTests;
