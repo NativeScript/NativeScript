@@ -843,16 +843,25 @@ function initDefaultAnimations(manager: android.support.v4.app.FragmentManager):
         const zero = java.lang.Integer.valueOf(0);
         const fragment = new android.support.v4.app.Fragment();
 
+        let animatorField;
         let animationOrAnimator = loadAnimatorMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.TRUE, zero));
-        const animatorField = animationOrAnimator.getClass().getDeclaredField("animation");
-        animatorField.setAccessible(true);
-
-        // Get default enter transition.
-        defaultEnterAnimationStatic = animatorField.get(animationOrAnimator);
+        if (animationOrAnimator instanceof android.view.animation.AnimationSet) {
+            defaultEnterAnimationStatic = animationOrAnimator;
+        } else {
+            animatorField = animationOrAnimator.getClass().getDeclaredField("animation");
+            animatorField.setAccessible(true);
+    
+            // Get default enter transition.
+            defaultEnterAnimationStatic = animatorField.get(animationOrAnimator);
+        }
 
         // Get default exit transition.
         animationOrAnimator = loadAnimatorMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.FALSE, zero));
-        defaultExitAnimationStatic = animatorField.get(animationOrAnimator);
+        if (animationOrAnimator instanceof android.view.animation.AnimationSet) {
+            defaultExitAnimationStatic = animationOrAnimator;
+        } else {
+            defaultExitAnimationStatic = animatorField.get(animationOrAnimator);
+        }
 
         console.log(`initDefaultAnimations ${defaultEnterAnimationStatic} ${defaultExitAnimationStatic}`);
     }
