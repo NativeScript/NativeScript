@@ -568,16 +568,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.scaleY = value;
     }
 
-    get transitionName(): string {
-        return this.style.transitionName;
-    }
-    set transitionName(value: string) {
-        this.style.transitionName = value;
-    }
-
     //END Style property shortcuts
 
     public automationText: string;
+    public transitionName: string;
     public originX: number;
     public originY: number;
     public isEnabled: boolean;
@@ -1018,3 +1012,6 @@ isEnabledProperty.register(ViewCommon);
 
 export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true, valueConverter: booleanConverter });
 isUserInteractionEnabledProperty.register(ViewCommon);
+
+export const transitionNameProperty = new Property<ViewCommon, string>({ name: "transitionNameProperty" });
+transitionNameProperty.register(ViewCommon);

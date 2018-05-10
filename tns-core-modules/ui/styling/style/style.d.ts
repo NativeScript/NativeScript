@@ -119,9 +119,6 @@ export class Style extends Observable {
     public horizontalAlignment: HorizontalAlignment;
     public verticalAlignment: VerticalAlignment;
 
-    //android specific props
-    public transitionName:string;
-
     // TabView-specific props
     public tabTextColor: Color;
     public tabBackgroundColor: Color;

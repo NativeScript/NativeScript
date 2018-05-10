@@ -7,7 +7,7 @@ import { AndroidActivityBackPressedEventData } from "../../../application";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, transitionNameProperty,
     Color
 } from "./view-common";
 
@@ -17,7 +17,7 @@ import {
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
-    zIndexProperty, backgroundInternalProperty, transitionNameProperty
+    zIndexProperty, backgroundInternalProperty
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
@@ -729,7 +729,6 @@ export class View extends ViewCommon {
         }
     }
     [transitionNameProperty.setNative](value: string) {
-        console.log(`setTransitionNameNative ${this.nativeViewProtected} ${value}`);
         (android.support.v4.view.ViewCompat as any).setTransitionName(this.nativeViewProtected, value);
     }
 
