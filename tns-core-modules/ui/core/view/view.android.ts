@@ -1,5 +1,4 @@
 // Definitions.
-import { ViewBase } from "../view-base";
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 import { AndroidActivityBackPressedEventData } from "../../../application";
@@ -34,7 +33,6 @@ const modalMap = new Map<number, DialogOptions>();
 let TouchListener: TouchListener;
 let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
 let DialogFragment: DialogFragment;
-let Dialog: android.app.Dialog;
 
 interface DialogOptions {
     owner: View;

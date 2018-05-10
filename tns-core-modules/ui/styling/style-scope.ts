@@ -73,7 +73,6 @@ const pattern: RegExp = /('|")(.*?)\1/;
 
 class CSSSource {
     private _selectors: RuleSet[] = [];
-    private static cssFilesCache: { [path: string]: CSSSource } = {};
 
     private constructor(private _ast: SyntaxTree, private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source: string) {
         this.parse();
@@ -480,13 +479,7 @@ CssState.prototype._matchInvalid = true;
 export class StyleScope {
 
     private _selectors: SelectorsMap;
-
-    // caches all the visual states by the key of the visual state selectors
-    private _statesByKey = {};
-    private _viewIdToKey = {};
-
     private _css: string = "";
-    private _cssFileName: string;
     private _mergedCssSelectors: RuleSet[];
     private _localCssSelectors: RuleSet[] = [];
     private _localCssSelectorVersion: number = 0;
@@ -499,7 +492,6 @@ export class StyleScope {
     }
 
     set css(value: string) {
-        this._cssFileName = undefined;
         this.setCss(value);
     }
 
@@ -514,7 +506,6 @@ export class StyleScope {
     @profile
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;
-        this._reset();
 
         const cssFile = CSSSource.fromSource(cssString, this._keyframes, cssFileName);
         this._localCssSelectors = cssFile.selectors;
@@ -528,7 +519,6 @@ export class StyleScope {
             return;
         }
 
-        this._reset();
         let parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
         this._css = this._css + parsedCssSelectors.source;
         this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors.selectors); 
@@ -589,11 +579,6 @@ export class StyleScope {
     public query(node: Node): SelectorCore[] {
         this.ensureSelectors();
         return this._selectors.query(node).selectors;
-    }
-
-    private _reset() {
-        this._statesByKey = {};
-        this._viewIdToKey = {};
     }
 
     private _getSelectorsVersion() {
@@ -676,14 +661,14 @@ function isKeyframe(node: CssNode): node is KeyframesDefinition {
     return node.type === "keyframes";
 }
 
-class InlineSelector implements SelectorCore {
-    constructor(ruleSet: RuleSet) {
-        this.ruleset = ruleSet;
-    }
+// class InlineSelector implements SelectorCore {
+//     constructor(ruleSet: RuleSet) {
+//         this.ruleset = ruleSet;
+//     }
 
-    public specificity = 0x01000000;
-    public rarity = 0;
-    public dynamic: boolean = false;
-    public ruleset: RuleSet;
-    public match(node: Node): boolean { return true; }
-}
+//     public specificity = 0x01000000;
+//     public rarity = 0;
+//     public dynamic: boolean = false;
+//     public ruleset: RuleSet;
+//     public match(node: Node): boolean { return true; }
+// }

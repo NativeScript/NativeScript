@@ -3,9 +3,6 @@ var inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBacken
 // var inspectorCommandTypes: any = inspectorCommands;
 
 import * as debuggerDomains from "./debugger";
-import * as devToolsElements from "./devtools-elements";
-
-declare var __inspectorSendEvent;
 
 import { attachDOMInspectorEventCallbacks, attachDOMInspectorCommandCallbacks } from "./devtools-elements";
 

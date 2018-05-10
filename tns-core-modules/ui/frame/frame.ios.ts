@@ -1,14 +1,12 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition, NavigationEntry } from ".";
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
 //Types.
-import { FrameBase, View, topmost, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
+import { FrameBase, View, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
-// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
-// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
-import * as uiUtils from "../../ui/utils";
+
 import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
@@ -569,14 +567,12 @@ class iOSFrame implements iOSFrameDefinition {
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;
     private _navBarVisibility: "auto" | "never" | "always" = "auto";
-    private _frame: Frame;
 
     // TabView uses this flag to disable animation while showing/hiding the navigation bar because of the "< More" bar.
     // See the TabView._handleTwoNavigationBars method for more details.
     public _disableNavBarAnimation: boolean;
 
     constructor(frame: Frame) {
-        this._frame = frame;
         this._controller = UINavigationControllerImpl.initWithOwner(new WeakRef(frame));
     }
 
@@ -589,14 +585,7 @@ class iOSFrame implements iOSFrameDefinition {
     }
     public set showNavigationBar(value: boolean) {
         this._showNavigationBar = value;
-
-        const viewController = this._controller.viewControllers;
-        const length = viewController ? viewController.count : 0;
-        const animated = length > 0 && !this._disableNavBarAnimation;
-
         this._controller.setNavigationBarHiddenAnimated(!value, true);
-        // this._controller.view.setNeedsLayout();
-        // this._controller.view.layoutIfNeeded();
     }
 
     public get navBarVisibility(): "auto" | "never" | "always" {

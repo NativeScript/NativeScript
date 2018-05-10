@@ -4,21 +4,13 @@ import { Frame } from "../frame";
 // Types.
 import { ios as iosView } from "../core/view";
 import {
-    PageBase, View, ViewBase, layout,
-    actionBarHiddenProperty, statusBarStyleProperty,
-    traceEnabled, traceWrite, traceCategories, PercentLength, Color
+    PageBase, View, layout,
+    actionBarHiddenProperty, statusBarStyleProperty, Color
 } from "./page-common";
-import { ios as iosApp } from "../../application";
-import { device } from "../../platform";
-// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
-// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
-import * as uiUtils from "../../ui/utils";
+
 import { profile } from "../../profiling";
 
 export * from "./page-common";
-
-import { ios } from "../../utils/utils";
-import getter = ios.getter;
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
@@ -82,7 +74,6 @@ class UIViewControllerImpl extends UIViewController {
 
         const frame = this.navigationController ? (<any>this.navigationController).owner : null;
         const newEntry = this[ENTRY];
-        const modalParent = owner._modalParent;
 
         // Don't raise event if currentPage was showing modal page.
         if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {

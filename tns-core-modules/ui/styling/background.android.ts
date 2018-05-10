@@ -1,4 +1,6 @@
 import { View } from "../core/view";
+import { LinearGradient } from "./linear-gradient";
+
 import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
 import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
@@ -104,6 +106,38 @@ function fromBase64(source: string): android.graphics.Bitmap {
     return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
 }
 
+function fromGradient(gradient: LinearGradient): org.nativescript.widgets.LinearGradientDefinition {
+    const colors = Array.create("int", gradient.colorStops.length);
+    const stops = Array.create("float", gradient.colorStops.length);
+    let hasStops = false;
+    gradient.colorStops.forEach((stop, index) => {
+        colors[index] = stop.color.android;
+        if (stop.offset) {
+            stops[index] = stop.offset.value;
+            hasStops = true;
+        }
+    });
+
+    const alpha = gradient.angle / (Math.PI * 2);
+    const startX = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.75)),
+      2
+    );
+    const startY = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.5)),
+      2
+    );
+    const endX = Math.pow(
+      Math.sin(Math.PI * (alpha + 0.25)),
+      2
+    );
+    const endY = Math.pow(
+      Math.sin(Math.PI * alpha),
+      2
+    );
+    return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
+}
+
 const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
     const nativeView = <android.view.View>view.nativeViewProtected;
@@ -115,8 +149,9 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
         const backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size);
         const blackColor = -16777216; //android.graphics.Color.BLACK;
 
-        let imageUri = background.image;
-        if (imageUri) {
+        let imageUri: string;
+        if (background.image && typeof background.image === "string") {
+            imageUri = background.image;
             const match = imageUri.match(pattern);
             if (match && match[2]) {
                 imageUri = match[2];
@@ -141,6 +176,11 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
             }
         }
 
+        let gradient: org.nativescript.widgets.LinearGradientDefinition = null;
+        if (background.image && background.image instanceof LinearGradient) {
+            gradient = fromGradient(background.image);
+        }
+
         borderDrawable.refresh(
             background.borderTopColor ? background.borderTopColor.android : blackColor,
             background.borderRightColor ? background.borderRightColor.android : blackColor,
@@ -162,6 +202,7 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
             background.color ? background.color.android : 0,
             imageUri,
             bitmap,
+            gradient,
             context,
             background.repeat,
             background.position,

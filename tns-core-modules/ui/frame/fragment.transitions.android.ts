@@ -1,5 +1,5 @@
 // Definitions.
-import { NavigationTransition, BackstackEntry, Frame } from "../frame";
+import { NavigationTransition, BackstackEntry } from "../frame";
 import { AnimationType } from "./fragment.transitions";
 
 // Types.
@@ -44,11 +44,6 @@ interface ExpandedEntry extends BackstackEntry {
     transition: Transition;
     transitionName: string;
     frameId: number
-}
-
-interface FragmentCallbacks {
-    frame: Frame;
-    entry: ExpandedEntry;
 }
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));

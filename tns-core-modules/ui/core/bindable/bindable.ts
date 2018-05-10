@@ -91,8 +91,6 @@ export class Binding {
     private sourceOptions: { instance: WeakRef<any>; property: string };
     private targetOptions: { instance: WeakRef<Object>; property: string };
 
-    private sourcesAndProperties: Array<{ instance: Object; property: string }>;
-
     private sourceProperties: Array<string>;
     private propertyChangeListeners: Map<string, Observable> = new Map<string, Observable>();
 
@@ -140,7 +138,6 @@ export class Binding {
         });
 
         this.propertyChangeListeners.clear();
-        this.sourcesAndProperties = null;
 
         if (this.source) {
             this.source.clear();

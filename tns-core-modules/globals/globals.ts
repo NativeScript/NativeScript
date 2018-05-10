@@ -126,8 +126,6 @@ global.registerModule("fetch", () => require("fetch"));
     }
 }
 
-const __tnsGlobalMergedModules = new Map<string, boolean>();
-
 function registerOnGlobalContext(name: string, module: string): void {
 
     Object.defineProperty(global, name, {

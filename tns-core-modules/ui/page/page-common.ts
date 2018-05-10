@@ -1,12 +1,11 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
 import {
-    ContentView, View, eachDescendant, Property, CssProperty, Color, isIOS,
-    booleanConverter, resetCSSProperties, Style, EventData, CSSType
+    ContentView, View, Property, CssProperty, Color, isIOS,
+    booleanConverter, Style, EventData, CSSType
 } from "../content-view";
-import { Frame, topmost as topmostFrame } from "../frame";
+import { Frame } from "../frame";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
-import { File, path, knownFolders } from "../../file-system";
 import { profile } from "../../profiling";
 
 export * from "../content-view";

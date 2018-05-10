@@ -670,7 +670,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
 
     public _valueConverter?: (value: string) => any;
 
-    constructor(private options: definitions.CssAnimationPropertyOptions<T, U>) {
+    constructor(options: definitions.CssAnimationPropertyOptions<T, U>) {
         const { valueConverter, equalityComparer, valueChanged, defaultValue } = options;
         const propertyName = options.name;
         this.name = propertyName;

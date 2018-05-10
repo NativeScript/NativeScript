@@ -6,6 +6,7 @@ if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
     globals.install();
 }
 
+//@ts-ignore
 @JavaProxy("com.tns.NativeScriptActivity")
 class NativeScriptActivity extends android.app.Activity {
     private _callbacks: AndroidActivityCallbacks;

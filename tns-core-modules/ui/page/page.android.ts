@@ -1,4 +1,4 @@
-﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty, EventData } from "./page-common";
+﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
 import { ActionBar } from "../action-bar";
 import { GridLayout } from "../layouts/grid-layout";
 import { device } from "../../platform";
