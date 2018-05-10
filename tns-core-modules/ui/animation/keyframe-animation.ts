@@ -12,7 +12,7 @@ import { View, Color } from "../core/view";
 
 import { AnimationCurve } from "../enums";
 
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
+import { write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
 
 // Types.
 import { unsetValue } from "../core/properties";

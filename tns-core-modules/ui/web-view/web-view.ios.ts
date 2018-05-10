@@ -1,6 +1,5 @@
 import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
 import { profile } from "../../profiling";
-import { layout } from "../core/view";
 export * from "./web-view-common";
 
 class WKNavigationDelegateImpl extends NSObject

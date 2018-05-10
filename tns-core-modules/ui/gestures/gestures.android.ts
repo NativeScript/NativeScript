@@ -81,14 +81,12 @@ function initializePinchGestureListener() {
         private _observer: GesturesObserver;
         private _target: View;
         private _scale: number;
-        private _density: number;
 
         constructor(observer: GesturesObserver, target: View) {
             super();
 
             this._observer = observer;
             this._target = target;
-            this._density = layout.getDisplayDensity();
 
             return global.__native(this);
         }

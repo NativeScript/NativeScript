@@ -9,15 +9,10 @@ import {
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
-import { Page } from "../page";
 import { profile } from "../../profiling";
-import * as uiUtils from "../utils";
-import * as utils from "../../utils/utils";
 import { Frame } from "../frame";
 
 export * from "./tab-view-common";
-
-const getter = utils.ios.getter;
 
 class UITabBarControllerImpl extends UITabBarController {
 
@@ -203,8 +198,6 @@ export class TabView extends TabViewBase {
     public _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
-    private _tabBarHeight: number = 0;
-    private _navBarHeight: number = 0;
     private _iconsCache = {};
 
     constructor() {

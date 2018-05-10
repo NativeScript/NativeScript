@@ -1,7 +1,5 @@
 export type Parsed<V> = { start: number, end: number, value: V };
 
-import * as reworkcss from "./reworkcss";
-
 // Values
 export type ARGB = number;
 export type URL = string;
@@ -833,7 +831,7 @@ const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?)
 const commentRegEx = /(\/\*(?:[^\*]|\*[^\/])*\*\/)/gym;
 const numberRegEx = /[\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?/gym;
 const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9\-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gym;
-const nonQuoteURLRegEx = /(:?[^\)\s\t\n\r\f\'\"\(]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*/gym; // TODO: non-printable code points omitted
+// const nonQuoteURLRegEx = /(:?[^\)\s\t\n\r\f\'\"\(]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*/gym; // TODO: non-printable code points omitted
 
 type InputToken = "(" | ")" | "{" | "}" | "[" | "]" | ":" | ";" | "," | " " | "^=" | "|=" | "$=" | "*=" | "~=" | "<!--" | "-->" | undefined /* <EOF-token> */ | InputTokenObject | FunctionInputToken | FunctionToken | SimpleBlock | AtKeywordToken;
 
@@ -1025,7 +1023,7 @@ export class CSS3Parser {
 
     private consumeAWhitespace(): InputToken {
         whitespaceRegEx.lastIndex = this.nextInputCodePointIndex;
-        const result = whitespaceRegEx.exec(this.text);
+        whitespaceRegEx.exec(this.text);
         this.nextInputCodePointIndex = whitespaceRegEx.lastIndex;
         return " ";
     }

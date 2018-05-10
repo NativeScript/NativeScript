@@ -5,7 +5,7 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, View, layout, traceCategory, traceEnabled,
+    fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
     traceWrite, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -15,7 +15,6 @@ import { Frame } from "../frame";
 
 export * from "./tab-view-common";
 
-const VIEWS_STATES = "_viewStates";
 const ACCENT_COLOR = "colorAccent";
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
