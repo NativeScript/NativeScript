@@ -378,7 +378,7 @@ export class AndroidApplication extends Observable {
     /**
      * The currently active (loaded) [android Activity](http://developer.android.com/reference/android/app/Activity.html). This property is automatically updated upon Activity events.
      */
-    foregroundActivity: any /* android.support.v7.app.AppCompatActivity */;
+    foregroundActivity: any /* android.app.Activity */;
 
     /**
      * Deprecated. Please use startActivity, foregroundActivity or context property.
@@ -388,7 +388,7 @@ export class AndroidApplication extends Observable {
     /**
      * The main (start) Activity for the application.
      */
-    startActivity: any /* android.support.v7.app.AppCompatActivity */;
+    startActivity: any /* android.app.Activity */;
 
     /**
      * The name of the application package.
