@@ -34,9 +34,6 @@ e2e/**/test-results.xml
 
 # Webpack configuration files
 webpack.config.js
-vendor.ts
-vendor-platform.android.ts
-vendor-platform.ios.ts
 
 # Generated files
 *.map
