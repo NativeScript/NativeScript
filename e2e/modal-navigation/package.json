@@ -19,10 +19,7 @@
   "devDependencies": {
     "nativescript-dev-appium": "next",
     "nativescript-dev-typescript": "next",
-    "nativescript-dev-webpack": "next",
-    "@types/chai": "^4.0.2",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.5"
+    "nativescript-dev-webpack": "next"
   },
   "scripts": {
     "e2e": "tsc -p e2e && mocha --opts ./e2e/config/mocha.opts",
