@@ -695,6 +695,14 @@ function addNativeTransitionListener(entry: ExpandedEntry, nativeTransition: and
 function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
     const frameId = entry.frameId;
     const entries = waitingQueue.get(frameId);
+    // https://github.com/NativeScript/NativeScript/issues/5759
+    // https://github.com/NativeScript/NativeScript/issues/5780
+    // transitionOrAnimationCompleted fires again (probably bug in android)
+    // NOTE: we cannot reproduce this issue so this is a blind fix
+    if (!entries) {
+        return;
+    }
+
     entries.delete(entry);
     if (entries.size === 0) {
         const frame = entry.resolvedPage.frame;
@@ -707,7 +715,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
         let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
         current = current || entry;
         // Will be null if Frame is shown modally...
-        // AnimationCompleted fires again (probably bug in android).
+        // transitionOrAnimationCompleted fires again (probably bug in android).
         if (current) {
             const isBack = frame._isBack;
             setTimeout(() => frame.setCurrent(current, isBack));
