@@ -1,4 +1,41 @@
-# generated files
+# Folders
+dist
+hooks
+libs
+node_modules
+package
+platforms
+reports
+tags
+
+# Files
+package-lock.json
+.DS_Store
+.nsbuildinfo
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Appium files
+e2e/**/*.trace/
+e2e/**/test-results.xml
+
+# Webpack configuration files
+webpack.config.js
+
+# Generated files
 *.map
 *.tgz
 .baseDir.ts
@@ -6,10 +43,7 @@
 tscommand*.tmp.txt
 .tscache
 
-node_modules/
-dist/
-package/
-
+# Other
 *.js
 !tests/hooks/**/*.*
 !gruntfile.js
@@ -19,19 +53,10 @@ package/
 !fetch/**/*.*
 !apps/TelerikNEXT/lib/**/*.*
 !build/**/*.*
-CrossPlatformModules.sln.ide/
-*.suo
-CrossPlatformModules.suo
-CrossPlatformModules.v14.suo
-CrossPlatformModules.csproj.user
-bin/
-obj/
 .vs/
-.idea/
 
 .baseDir.ts
 .ctags-exclude
-tags
 
 TestRunResult.txt
 .testsapprun
@@ -39,24 +64,3 @@ TestRunResult.txt
 tns-core-modules.base.d.ts
 tns-core-modules.d.ts
 tns-core-modules.es6.d.ts
-
-tests/platforms/
-tests/lib/
-*.log
-
-.DS_Store
-
-apps/platforms/
-apps/lib/
-apps/hooks/
-apps/node_modules/
-
-e2e/**/platforms
-!e2e/**/webpack.config.js
-e2e/**/reports/
-e2e/**/*.trace/
-e2e/**/test-results.xml
-
-package-lock.json
-
-.nsbuildinfo
