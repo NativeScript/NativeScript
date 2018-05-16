@@ -115,12 +115,8 @@ function initializeEditTextListeners(): void {
                 return false;
             }
 
-            if (actionId === android.view.inputmethod.EditorInfo.IME_NULL ||
+            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED ||
-                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
-                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
-                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
                 (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
                 // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
                 // https://github.com/NativeScript/NativeScript/issues/3111
@@ -129,11 +125,9 @@ function initializeEditTextListeners(): void {
                 }
 
                 owner._onReturnPress();
-            }
-
-            // If action is ACTION_NEXT then do not close keyboard
-            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT
-                || actionId === android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS) {
+            } else if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS) {
+                // do not close keyboard for ACTION_NEXT or ACTION_PREVIOUS
                 owner._onReturnPress();
             }
 
