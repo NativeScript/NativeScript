@@ -37,7 +37,7 @@ export function getColor(uiColor: UIColor): Color {
     return new Color(alpha, red, green, blue);
 }
 
-function clearPage(): void {
+export function clearPage(): void {
     let newPage = getCurrentPage();
     if (!newPage) {
         throw new Error("NO CURRENT PAGE!!!!");
