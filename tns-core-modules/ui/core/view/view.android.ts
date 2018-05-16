@@ -229,6 +229,8 @@ export class View extends ViewCommon {
     private _isClickable: boolean;
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
+    private layoutChangeListenerIsSet: boolean;
+    private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: android.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
@@ -305,6 +307,17 @@ export class View extends ViewCommon {
     public initNativeView(): void {
         super.initNativeView();
         this._isClickable = this.nativeViewProtected.isClickable();
+
+        this.setOnLayoutChangeListener();
+    }
+
+    public disposeNativeView(): void {
+        super.disposeNativeView();
+
+        if (this.layoutChangeListenerIsSet) {
+            this.layoutChangeListenerIsSet = false;
+            this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
+        }
     }
 
     private setOnTouchListener() {
@@ -317,6 +330,25 @@ export class View extends ViewCommon {
             initializeTouchListener();
             this.touchListener = this.touchListener || new TouchListener(this);
             this.nativeViewProtected.setOnTouchListener(this.touchListener);
+        }
+    }
+
+    private setOnLayoutChangeListener() {
+        if (this.nativeViewProtected) {
+            const owner = this;
+            this.layoutChangeListenerIsSet = true;
+            this.layoutChangeListener = this.layoutChangeListener || new android.view.View.OnLayoutChangeListener({
+                onLayoutChange(
+                    v: android.view.View,
+                    left: number, top: number, right: number, bottom: number,
+                    oldLeft: number, oldTop: number, oldRight: number, oldBottom: number): void {
+                    if (left !== oldLeft || top !== oldTop || right !== oldRight || bottom !== oldBottom) {
+                        owner._raiseLayoutChangedEvent();
+                    }
+                }
+            });
+
+            this.nativeViewProtected.addOnLayoutChangeListener(this.layoutChangeListener);
         }
     }
 
