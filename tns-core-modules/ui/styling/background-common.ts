@@ -1,7 +1,7 @@
 // Deifinitions.
 import { Background as BackgroundDefinition } from "./background";
 import { BackgroundRepeat } from "../core/view";
-
+import { LinearGradient } from "./linear-gradient";
 // Types.
 import { Color } from "../../color";
 
@@ -9,7 +9,7 @@ export class Background implements BackgroundDefinition {
     public static default = new Background();
 
     public color: Color;
-    public image: string;
+    public image: string | LinearGradient;
     public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
@@ -58,7 +58,7 @@ export class Background implements BackgroundDefinition {
         return clone;
     }
 
-    public withImage(value: string): Background {
+    public withImage(value: string | LinearGradient): Background {
         const clone = this.clone();
         clone.image = value;
         return clone;
@@ -179,8 +179,15 @@ export class Background implements BackgroundDefinition {
             return false;
         }
 
+        let imagesEqual = false;
+        if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
+            imagesEqual = LinearGradient.equals(value1, value2);
+        } else {
+            imagesEqual = value1.image === value2.image;
+        }
+
         return Color.equals(value1.color, value2.color)
-            && value1.image === value2.image
+            && imagesEqual
             && value1.position === value2.position
             && value1.repeat === value2.repeat
             && value1.size === value2.size

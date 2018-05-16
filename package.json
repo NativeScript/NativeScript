@@ -55,7 +55,7 @@
     "unit-test": "tsc -p tsconfig.unit-tests.json && mocha --opts unit-tests/mocha.opts",
     "unit-test-watch": "mocha-typescript-watch -p tsconfig.unit-tests.json --opts unit-tests/mocha.opts",
     "compile-all": "npm run tsc -- -p tsconfig.json --outDir bin/dist",
-    "compile-modules": "npm run tsc -- -p tsconfig-modules.json --outDir bin/dist",
+    "compile-modules": "npm run tsc -- -p tsconfig.modules.json --outDir bin/dist",
     "compile-check-base-dts": "npm run tsc -- -p tsconfig.base-dts.json",
     "compile-unit-tests": "npm run tsc -- -p tsconfig.unit-tests.json --outDir bin/dist/unit-tests",
     "compile-check-combined-dts": "npm run tsc -- -p tsconfig.combined-dts.json",

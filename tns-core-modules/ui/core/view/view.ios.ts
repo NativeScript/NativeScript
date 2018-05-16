@@ -8,9 +8,6 @@ import {
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
-// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
-// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
-import * as uiUtils from "tns-core-modules/ui/utils";
 import { ios as iosUtils } from "../../../utils/utils";
 import {
     Visibility,
@@ -650,9 +647,6 @@ export namespace ios {
         const navBarHidden = navController ? navController.navigationBarHidden : true;
         const scrollable = isContentScrollable(controller, owner);
         const hasChildControllers = controller.childViewControllers.count > 0;
-
-        const safeAreaTopLength = safeOrigin.y - fullscreenOrigin.y;
-        const safeAreaBottomLength = fullscreenSize.height - safeAreaSize.height - safeAreaTopLength;
 
         if (!(controller.edgesForExtendedLayout & UIRectEdge.Top)) {
             const statusBarHeight = getStatusBarHeight(controller);

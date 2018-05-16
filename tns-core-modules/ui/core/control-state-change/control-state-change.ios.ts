@@ -3,7 +3,7 @@ import { ControlStateChangeListener as ControlStateChangeListenerDefinition } fr
 
 class ObserverClass extends NSObject {
     // NOTE: Refactor this - use Typescript property instead of strings....
-    observeValueForKeyPathOfObjectChangeContext(path: string, obj: Object, change: NSDictionary<any, any>, context: any) {
+    observeValueForKeyPathOfObjectChangeContext(path: string) {
         if (path === "selected") {
             this["_owner"]._onSelectedChanged();
         } else if (path === "enabled") {
@@ -16,7 +16,6 @@ class ObserverClass extends NSObject {
 
 export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {
     private _observer: NSObject;
-    private _states: string[];
     private _control: UIControl;
     private _observing: boolean = false;
 
@@ -44,14 +43,17 @@ export class ControlStateChangeListener implements ControlStateChangeListenerDef
         }
     }
 
+    //@ts-ignore
     private _onEnabledChanged() {
         this._updateState();
     }
 
+    //@ts-ignore
     private _onSelectedChanged() {
         this._updateState();
     }
 
+    //@ts-ignore
     private _onHighlightedChanged() {
         this._updateState();
     }

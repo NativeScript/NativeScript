@@ -1,4 +1,4 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData, TabViewItem } from ".";
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType
@@ -101,6 +101,13 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     }
     set androidSelectedTabHighlightColor(value: Color) {
         this.style.androidSelectedTabHighlightColor = value;
+    }
+
+    get tabTextFontSize(): number {
+        return this.style.tabTextFontSize;
+    }
+    set tabTextFontSize(value: number) {
+        this.style.tabTextFontSize = value;
     }
 
     get tabTextColor(): Color {
@@ -239,6 +246,9 @@ androidOffscreenTabLimitProperty.register(TabViewBase);
 
 export const androidTabsPositionProperty = new Property<TabViewBase, "top" | "bottom">({ name: "androidTabsPosition", defaultValue: "top" });
 androidTabsPositionProperty.register(TabViewBase);
+
+export const tabTextFontSizeProperty = new CssProperty<Style, number>({ name: "tabTextFontSize", cssName: "tab-text-font-size", valueConverter: (v) => parseFloat(v) });
+tabTextFontSizeProperty.register(Style);
 
 export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 tabTextColorProperty.register(Style);

@@ -8,7 +8,6 @@ import {
     CSSType
 } from "../editable-text-base";
 
-import { ios } from "../../utils/utils";
 import { profile } from "../../profiling";
 
 export * from "../editable-text-base";

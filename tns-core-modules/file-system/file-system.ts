@@ -137,9 +137,7 @@ export class FileSystemEntity {
         var path = parentFolder.path;
         var newPath = fileAccess.joinPath(path, newName);
 
-        var hasError = false;
         var localError = function (error) {
-            hasError = true;
             if (onError) {
                 onError(error);
             }

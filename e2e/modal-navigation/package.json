@@ -17,29 +17,9 @@
     "tns-core-modules": "next"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "~3.1.3",
-    "babel-traverse": "6.26.0",
-    "babel-types": "6.26.0",
-    "babylon": "6.18.0",
-    "copy-webpack-plugin": "~4.3.0",
-    "css-loader": "~0.28.7",
-    "extract-text-webpack-plugin": "~3.0.2",
-    "lazy": "1.0.11",
     "nativescript-dev-appium": "next",
     "nativescript-dev-typescript": "next",
-    "nativescript-dev-webpack": "next",
-    "nativescript-worker-loader": "~0.8.1",
-    "raw-loader": "~0.5.1",
-    "resolve-url-loader": "~2.2.1",
-    "typescript": "~2.4.2",
-    "uglifyjs-webpack-plugin": "~1.1.6",
-    "webpack": "~3.10.0",
-    "webpack-bundle-analyzer": "^2.9.1",
-    "webpack-sources": "~1.1.0",
-    "@types/chai": "^4.0.2",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.5",
-    "clean-webpack-plugin": "~0.1.19"
+    "nativescript-dev-webpack": "next"
   },
   "scripts": {
     "e2e": "tsc -p e2e && mocha --opts ./e2e/config/mocha.opts",

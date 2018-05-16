@@ -1,5 +1,4 @@
-﻿import * as fsModule from "../file-system";
-import {
+﻿import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "../trace";
 

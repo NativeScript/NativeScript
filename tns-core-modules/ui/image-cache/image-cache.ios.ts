@@ -66,6 +66,7 @@ class MemmoryWarningHandler extends NSObject {
 export class Cache extends common.Cache {
     private _cache: NSCache<any, any>;
     //private _delegate: NSCacheDelegate;
+    //@ts-ignore
     private _memoryWarningHandler: MemmoryWarningHandler;
 
     constructor() {
