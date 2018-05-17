@@ -308,7 +308,9 @@ export class View extends ViewCommon {
         super.initNativeView();
         this._isClickable = this.nativeViewProtected.isClickable();
 
-        this.setOnLayoutChangeListener();
+        if (this.hasListeners(ViewCommon.layoutChangedEvent)) {
+            this.setOnLayoutChangeListener();
+        }
     }
 
     public disposeNativeView(): void {

@@ -7,6 +7,23 @@ import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
 import * as utils from "tns-core-modules/utils/utils";
 
+export function test_event_LayoutChanged_Listeners() {
+    const test = function (views: Array<View>) {
+        let stackLayoutChanged = false;
+        let buttonLayoutChanged = false;
+
+        views[1].on(View.layoutChangedEvent, (data) => {
+            buttonLayoutChanged = true;
+        });
+
+        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.assertFalse(views[0].hasListeners(View.layoutChangedEvent));
+        TKUnit.assert(views[1].hasListeners(View.layoutChangedEvent));
+    };
+
+    helper.do_PageTest_WithStackLayout_AndButton(test);
+};
+
 export function test_event_LayoutChanged_IsRaised() {
     helper.clearPage();
     let newPage = helper.getCurrentPage();
