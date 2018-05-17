@@ -66,7 +66,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
         this.context = nativeApp.getApplicationContext();
 
         // we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
-        this.callbacks.lifecycleCallbacks = initLifecycleCallbacks(() => this.callbacks = {});
+        this.callbacks.lifecycleCallbacks = initLifecycleCallbacks();
         this.callbacks.componentCallbacks = initComponentCallbacks();
         this.nativeApp.registerActivityLifecycleCallbacks(this.callbacks.lifecycleCallbacks);
         this.nativeApp.registerComponentCallbacks(this.callbacks.componentCallbacks);
@@ -220,7 +220,7 @@ global.__onLiveSync = function () {
     livesync();
 };
 
-function initLifecycleCallbacks(clearCallbacks: () => void) {
+function initLifecycleCallbacks() {
     const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: android.app.Activity) => {
         // Set app theme after launch screen was used during startup
         const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
@@ -244,7 +244,6 @@ function initLifecycleCallbacks(clearCallbacks: () => void) {
                 notify({ eventName: displayedEvent, object: androidApp, activity });
                 let viewTreeObserver = rootView.getViewTreeObserver();
                 viewTreeObserver.removeOnGlobalLayoutListener(this.onGlobalLayoutListener);
-                clearCallbacks();
             }
         });
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(this.onGlobalLayoutListener);
