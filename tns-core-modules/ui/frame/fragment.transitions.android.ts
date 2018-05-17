@@ -55,10 +55,6 @@ export const completedEntries = new Map<number, ExpandedEntry>();
 
 let TransitionListener: TransitionListener;
 let AnimationListener: android.animation.Animator.AnimatorListener;
-let loadAnimatorMethod: java.lang.reflect.Method;
-let reflectionDone: boolean;
-let defaultEnterAnimatorStatic: android.animation.Animator;
-let defaultExitAnimatorStatic: android.animation.Animator;
 
 export function _setAndroidFragmentTransitions(
     animated: boolean,
@@ -75,8 +71,6 @@ export function _setAndroidFragmentTransitions(
     if (entries && entries.size > 0) {
         throw new Error("Calling navigation before previous navigation finish.");
     }
-
-    initDefaultAnimations(manager);
 
     if (sdkVersion() >= 21) {
         allowTransitionOverlap(currentFragment);
@@ -116,7 +110,7 @@ export function _setAndroidFragmentTransitions(
     if (name === "none") {
         transition = new NoTransition(0, null);
     } else if (name === "default") {
-        transition = new DefaultTransition(0, null);
+        transition = new FadeTransition(0, null);
     } else if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
@@ -170,7 +164,7 @@ export function _setAndroidFragmentTransitions(
         }
     }
 
-    setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
+    setupDefaultAnimations(newEntry, new FadeTransition(0, null));
 
     printTransitions(currentEntry);
     printTransitions(newEntry);
@@ -735,40 +729,6 @@ function javaObjectArray(...params: java.lang.Object[]) {
     return nativeArray;
 }
 
-function javaClassArray(...params: java.lang.Class<any>[]) {
-    const nativeArray = Array.create(java.lang.Class, params.length);
-    params.forEach((value, i) => nativeArray[i] = value);
-    return nativeArray;
-}
-
-function initDefaultAnimations(manager: android.app.FragmentManager): void {
-    if (reflectionDone) {
-        return;
-    }
-
-    reflectionDone = true;
-
-    loadAnimatorMethod = manager.getClass().getDeclaredMethod("loadAnimator", javaClassArray(android.app.Fragment.class, java.lang.Integer.TYPE, java.lang.Boolean.TYPE, java.lang.Integer.TYPE));
-    if (loadAnimatorMethod != null) {
-        loadAnimatorMethod.setAccessible(true);
-
-        const fragment_open = java.lang.Integer.valueOf(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        const zero = java.lang.Integer.valueOf(0);
-        const fragment = new android.app.Fragment();
-
-        // Get default enter transition.
-        defaultEnterAnimatorStatic = loadAnimatorMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.TRUE, zero));
-
-        // Get default exit transition.
-        defaultExitAnimatorStatic = loadAnimatorMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.FALSE, zero));
-    }
-}
-
-function getDefaultAnimation(enter: boolean): android.animation.Animator {
-    const defaultAnimator = enter ? defaultEnterAnimatorStatic : defaultExitAnimatorStatic;
-    return defaultAnimator ? defaultAnimator.clone() : null;
-}
-
 function createDummyZeroDurationAnimator(): android.animation.Animator {
     const animator = android.animation.ValueAnimator.ofObject(intEvaluator(), javaObjectArray(java.lang.Integer.valueOf(0), java.lang.Integer.valueOf(1)));
     animator.setDuration(0);
@@ -802,19 +762,5 @@ function printTransitions(entry: ExpandedEntry) {
 class NoTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
         return createDummyZeroDurationAnimator();
-    }
-}
-
-class DefaultTransition extends Transition {
-    public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        switch (transitionType) {
-            case AndroidTransitionType.enter:
-            case AndroidTransitionType.popEnter:
-                return getDefaultAnimation(true);
-
-            case AndroidTransitionType.popExit:
-            case AndroidTransitionType.exit:
-                return getDefaultAnimation(false);
-        }
     }
 }
