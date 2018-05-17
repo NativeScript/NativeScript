@@ -45,6 +45,8 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public foregroundActivity: android.app.Activity;
     public startActivity: android.app.Activity;
     public packageName: string;
+    // we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
+    private callbacks: any = {};
 
     public get currentContext(): android.content.Context {
         return this.foregroundActivity;
@@ -63,10 +65,11 @@ export class AndroidApplication extends Observable implements AndroidApplication
         this.packageName = nativeApp.getPackageName();
         this.context = nativeApp.getApplicationContext();
 
-        let lifecycleCallbacks = initLifecycleCallbacks();
-        let componentCallbacks = initComponentCallbacks();
-        this.nativeApp.registerActivityLifecycleCallbacks(lifecycleCallbacks);
-        this.nativeApp.registerComponentCallbacks(componentCallbacks);
+        // we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
+        this.callbacks.lifecycleCallbacks = initLifecycleCallbacks();
+        this.callbacks.componentCallbacks = initComponentCallbacks();
+        this.nativeApp.registerActivityLifecycleCallbacks(this.callbacks.lifecycleCallbacks);
+        this.nativeApp.registerComponentCallbacks(this.callbacks.componentCallbacks);
 
         this._registerPendingReceivers();
     }
@@ -190,7 +193,7 @@ export function getNativeApplication(): android.app.Application {
 
         // the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
         if (!nativeApp) {
-            // TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module? 
+            // TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
             const clazz = java.lang.Class.forName("android.app.ActivityThread");
             if (clazz) {
                 const method = clazz.getMethod("currentApplication", null);
@@ -235,14 +238,15 @@ function initLifecycleCallbacks() {
 
     const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: android.app.Activity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
-        let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+        // store the listener not to trigger GC collection before collecting the method
+        this.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
             onGlobalLayout() {
                 notify({ eventName: displayedEvent, object: androidApp, activity });
                 let viewTreeObserver = rootView.getViewTreeObserver();
-                viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener);
+                viewTreeObserver.removeOnGlobalLayoutListener(this.onGlobalLayoutListener);
             }
         });
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this.onGlobalLayoutListener);
     });
 
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
