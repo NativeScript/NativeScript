@@ -1,6 +1,13 @@
 Cross Platform Modules Changelog
 ==============================
 
+# 4.0.1 (2018, May 18)
+
+### Bug Fixes
+
+* feat(builder): enable reading xml from bundle (#5668) ([1e682bf](https://github.com/NativeScript/NativeScript/commit/1e682bf)), closes [#5668](https://github.com/NativeScript/NativeScript/issues/5668)
+* fix(layout): IOS Layout not invalidated with custom root (#5724) ([f1c0b85](https://github.com/NativeScript/NativeScript/commit/f1c0b85)), closes [#5724](https://github.com/NativeScript/NativeScript/issues/5724)
+
 # 4.0.0 (2018, April 10)
 
 A detailed list of the new features and changes coming with NativeScript 4.0 ca be found [here](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit?usp=sharing).
