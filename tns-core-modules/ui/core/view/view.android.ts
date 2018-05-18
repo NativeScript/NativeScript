@@ -7,7 +7,7 @@ import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Color
+    Color, EventData
 } from "./view-common";
 
 import {
@@ -240,6 +240,26 @@ export class View extends ViewCommon {
         super.observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
             this.setOnTouchListener();
+        }
+    }
+
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+        super.on(eventNames, callback, thisArg);
+        const isLayoutEvent = typeof eventNames === "string" ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
+
+        if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
+            this.setOnLayoutChangeListener();
+        }
+    }
+
+    off(eventNames: string, callback?: any, thisArg?: any) {
+        super.off(eventNames, callback, thisArg);
+        const isLayoutEvent = typeof eventNames === "string" ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
+
+        // Remove native listener only if there are no more user listeners for LayoutChanged event
+        if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.hasListeners(ViewCommon.layoutChangedEvent)) {
+            this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
+            this.layoutChangeListenerIsSet = false;
         }
     }
 

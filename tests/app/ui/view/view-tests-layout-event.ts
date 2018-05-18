@@ -7,6 +7,22 @@ import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
 import * as utils from "tns-core-modules/utils/utils";
 
+export function test_event_LayoutChanged_GetActualSize() {
+    const test = function (views: Array<View>) {
+        let buttonLayoutChanged = false;
+
+        views[1].on(View.layoutChangedEvent, (data) => {
+            buttonLayoutChanged = true;
+        });
+
+        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.assert(views[1].getActualSize().height > 0);
+        TKUnit.assert(views[1].getActualSize().width > 0);
+    };
+
+    helper.do_PageTest_WithStackLayout_AndButton(test);
+};
+
 export function test_event_LayoutChanged_Listeners() {
     const test = function (views: Array<View>) {
         let stackLayoutChanged = false;
