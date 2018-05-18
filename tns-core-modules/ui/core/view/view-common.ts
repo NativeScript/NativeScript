@@ -232,14 +232,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    public closeModal() {
+    public closeModal(...args) {
         let closeCallback = this._closeModalCallback;
         if (closeCallback) {
             closeCallback.apply(undefined, arguments);
         } else {
             let parent = this.parent;
             if (parent) {
-                parent.closeModal();
+                parent.closeModal(...args);
             }
         }
     }
