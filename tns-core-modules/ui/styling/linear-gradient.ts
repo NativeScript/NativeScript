@@ -1,12 +1,13 @@
 import { LengthPercentUnit } from "./style-properties";
-import * as parser from "../../css/parser";
 import { Color } from "../../color";
+import { ColorStop } from "./gradient";
+import * as parser from "../../css/parser";
 
 export class LinearGradient {
     public angle: number;
     public colorStops: ColorStop[];
 
-    static parse(value: parser.LinearGradient): LinearGradient {
+    public static parse(value: parser.LinearGradient): LinearGradient {
         const result = new LinearGradient();
         result.angle = value.angle;
         result.colorStops = value.colors.map(color => {
@@ -28,7 +29,7 @@ export class LinearGradient {
         return result;
     }
 
-    static equals(first: LinearGradient, second: LinearGradient): boolean {
+    public static equals(first: LinearGradient, second: LinearGradient): boolean {
         if (!first && !second) {
             return true;
         } else if (!first || !second) {
@@ -56,9 +57,4 @@ export class LinearGradient {
 
         return true;
     }
-}
-
-export interface ColorStop {
-    color: Color;
-    offset?: LengthPercentUnit;
 }
