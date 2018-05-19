@@ -36,7 +36,7 @@ function dismissSoftInput(owner: EditableTextBase): void {
     if (!dismissKeyboardTimeoutId) {
         dismissKeyboardTimeoutId = setTimeout(() => {
             const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
-            const activity = (owner && owner._context) as android.app.Activity;
+            const activity = (owner && owner._context) as android.support.v7.app.AppCompatActivity;
             const nativeView = owner && owner.nativeViewProtected;
             dismissKeyboardTimeoutId = null;
             dismissKeyboardOwner = null;

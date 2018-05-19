@@ -142,6 +142,11 @@ export class Page extends ContentView {
      */
     _frame: Frame;
 
+        /**
+     * @private
+     */
+    _fragment: any;
+
     /**
      * A method called before navigating to the page.
      * @private

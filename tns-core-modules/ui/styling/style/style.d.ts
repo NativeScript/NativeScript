@@ -152,6 +152,7 @@ export class Style extends Observable {
     public flexWrapBefore: FlexWrapBefore;
     public alignSelf: AlignSelf;
 
+
     /**
      * The property bag is a simple class that is paired with the Style class.
      * Setting regular css properties on the PropertyBag should simply preserve their values.

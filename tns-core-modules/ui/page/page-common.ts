@@ -22,6 +22,7 @@ export class PageBase extends ContentView implements PageDefinition {
     private _actionBar: ActionBar;
 
     public _frame: Frame;
+    public _fragment: any;
     
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;

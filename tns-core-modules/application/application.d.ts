@@ -288,7 +288,7 @@ export interface AndroidActivityEventData {
     /**
      * The activity.
      */
-    activity: any /* android.app.Activity */;
+    activity: any /* android.support.v7.app.AppCompatActivity */;
 
     /**
      * The name of the event.

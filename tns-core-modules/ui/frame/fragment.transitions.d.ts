@@ -24,12 +24,16 @@ export function _setAndroidFragmentTransitions(
     currentEntry: BackstackEntry,
     newEntry: BackstackEntry,
     fragmentTransaction: any,
-    manager: any /* android.app.FragmentManager */,
+    manager: any /* android.support.v4.app.FragmentManager */,
     frameId: number): void;
 /**
  * @private
  */
 export function _onFragmentCreateAnimator(entry: BackstackEntry, fragment: any, nextAnim: number, enter: boolean): any;
+/**
+ * @private
+ */
+export function _onFragmentCreateAnimation(entry: BackstackEntry, fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
 /**
  * @private
  */
