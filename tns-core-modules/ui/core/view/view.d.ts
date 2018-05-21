@@ -104,6 +104,10 @@ export interface ShownModallyData extends EventData {
  */
 export abstract class View extends ViewBase {
     /**
+     * String value used when hooking to layoutChanged event.
+     */
+    public static layoutChangedEvent: string;
+    /**
      * String value used when hooking to showingModally event.
      */
     public static showingModallyEvent: string;
