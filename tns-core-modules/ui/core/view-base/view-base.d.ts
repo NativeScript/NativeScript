@@ -141,8 +141,9 @@ export abstract class ViewBase extends Observable {
 
     /**
      * Closes the current modal view that this page is showing.
+     * @param context - Any context you want to pass back to the host when closing the modal view.
      */
-    closeModal(): void;
+    closeModal(context?: any): void;
 
     public effectiveMinWidth: number;
     public effectiveMinHeight: number;

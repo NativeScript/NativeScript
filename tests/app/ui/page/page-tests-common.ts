@@ -24,6 +24,7 @@ import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
 import { _resetRootView, getRootView } from "tns-core-modules/application";
+import { Button } from "tns-core-modules/ui/button/button";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();
@@ -419,6 +420,84 @@ export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage(
 
     helper.navigate(pageFactory);
     page.off(Label.loadedEvent, navigatedEventHandler);
+}
+
+export function test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult() {
+    _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) =>
+    {
+        const page = <Page>args.object;
+        const button = <Button>page.content;
+        return button.closeModal.bind(button);
+    }, "return value");
+}
+
+export function test_WhenInnerViewCallsCloseModal_WithoutArguments_ShouldWork() {
+    _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) =>
+    {
+        const page = <Page>args.object;
+        const button = <Button>page.content;
+        return button.closeModal.bind(button);
+    });
+}
+
+export function test_WhenInnerViewCallsCloseCallback_WithArguments_ShouldPassResult() {
+    _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) =>
+    {
+        return args.closeCallback;
+    }, "return value");
+}
+
+export function test_WhenInnerViewCallsCloseCallback_WithoutArguments_ShouldWork() {
+    _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) =>
+    {
+        return args.closeCallback;
+    });
+}
+
+function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData) => Function, result?: any) {
+    let modalClosedWithResult = false;
+
+    const modalCloseCallback = function (returnValue: any) {
+        modalClosedWithResult = returnValue === result;
+    }
+
+    const modalPageShownModallyEventHandler = function(args: ShownModallyData) {
+        const page = <Page>args.object;
+        page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
+        
+        closeModalGetter(args)(result);
+    }
+
+    const hostNavigatedToEventHandler = function(args: NavigatedData) {
+        const page = <Page>args.object;
+        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
+
+        const modalPage = new Page();
+        modalPage.id = "modalPage_test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult";
+        modalPage.on(View.shownModallyEvent, modalPageShownModallyEventHandler);
+
+        const button = new Button();
+        button.text = "CLOSE MODAL";
+        modalPage.content = button;
+
+        (<Button>page.content).showModal(modalPage, {}, modalCloseCallback);
+    }
+
+    const masterPageFactory = function(): Page {
+        const masterPage = new Page();
+        masterPage.id = "masterPage_test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult";
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        
+        const button = new Button();
+        button.text = "TAP";
+        masterPage.content = button;
+
+        return masterPage;
+    };
+
+    helper.navigate(masterPageFactory);
+
+    TKUnit.waitUntilReady(() => modalClosedWithResult);
 }
 
 export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() {
