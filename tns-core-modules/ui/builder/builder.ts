@@ -169,7 +169,8 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
 
     let result: ComponentModule;
     componentPath = componentPath.replace("~/", "");
-    const moduleName = componentPath + "/" + componentName;
+    const moduleName = `${componentPath}/${componentName}`;
+    const xmlModuleName = `${moduleName}.xml`;
 
     let fullComponentPathFilePathWithoutExt = componentPath;
 
@@ -178,8 +179,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     }
 
     const xmlFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "xml");
-
-    if (xmlFilePath) {
+    if (xmlFilePath || global.moduleExists(xmlModuleName)) {
         // Custom components with XML
 
         let subExports = context;
@@ -202,7 +202,9 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
 
         subExports["_parentPage"] = parentPage;
 
-        result = loadInternal(xmlFilePath, subExports);
+        result = xmlFilePath ?
+            loadInternal(xmlFilePath, subExports) :
+            loadInternal(xmlFilePath, subExports, moduleName);
 
         // Attributes will be transfered to the custom component
         if (isDefined(result) && isDefined(result.component) && isDefined(attributes)) {
