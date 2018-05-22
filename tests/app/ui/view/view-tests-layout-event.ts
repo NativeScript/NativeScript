@@ -15,7 +15,7 @@ export function test_event_LayoutChanged_GetActualSize() {
             buttonLayoutChanged = true;
         });
 
-        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.waitUntilReady(() => buttonLayoutChanged, 5);
         TKUnit.assert(views[1].getActualSize().height > 0);
         TKUnit.assert(views[1].getActualSize().width > 0);
     };
@@ -32,7 +32,7 @@ export function test_event_LayoutChanged_Listeners() {
             buttonLayoutChanged = true;
         });
 
-        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.waitUntilReady(() => buttonLayoutChanged, 5);
         TKUnit.assertFalse(views[0].hasListeners(View.layoutChangedEvent));
         TKUnit.assert(views[1].hasListeners(View.layoutChangedEvent));
     };
@@ -61,50 +61,9 @@ export function test_event_LayoutChanged_IsRaised() {
     stackLayout.addChild(button);
     newPage.content = stackLayout;
 
-    TKUnit.waitUntilReady(() => stackLayoutChanged && buttonLayoutChanged);
+    TKUnit.waitUntilReady(() => stackLayoutChanged && buttonLayoutChanged, 5);
     TKUnit.assert(stackLayoutChanged);
     TKUnit.assert(buttonLayoutChanged);
-
-    newPage.content = null;
-};
-
-export function test_event_LayoutChanged_IsRaised_StackLayout_ChildAdded() {
-    helper.clearPage();
-    let newPage = helper.getCurrentPage();
-
-    let stackLayoutChangedCount = 0;
-    let button1LayoutChangedCount = 0;
-    let button2LayoutChanged = false;
-
-    let stackLayout = new StackLayout();
-
-    // StackLayout should not be stretched in order to layout again when new button added.
-    stackLayout.verticalAlignment = "top";
-    let button1 = new Button();
-    let button2 = new Button();
-
-    stackLayout.on(View.layoutChangedEvent, (data) => {
-        stackLayoutChangedCount++;
-    });
-
-    button1.on(View.layoutChangedEvent, (data) => {
-        button1LayoutChangedCount++;
-    });
-
-    button2.on(View.layoutChangedEvent, (data) => {
-        button2LayoutChanged = true;
-    });
-
-    stackLayout.addChild(button1);
-    newPage.content = stackLayout;
-
-    TKUnit.waitUntilReady(() => stackLayout.isLoaded);
-    stackLayout.addChild(button2);
-    
-    TKUnit.waitUntilReady(() => button2LayoutChanged);
-    TKUnit.assertEqual(stackLayoutChangedCount, 2);
-    TKUnit.assertEqual(button1LayoutChangedCount, 1);
-    TKUnit.assert(button2LayoutChanged);
 
     newPage.content = null;
 };
@@ -124,7 +83,7 @@ export function test_event_LayoutChanged_IsRaised_ChildMarginChanged() {
 
         (<Button>views[2]).marginTop = 50;
 
-        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.waitUntilReady(() => buttonLayoutChanged, 5);
 
         TKUnit.assert(stackLayoutChanged);
         TKUnit.assert(buttonLayoutChanged);
@@ -148,7 +107,7 @@ export function test_event_LayoutChanged_IsRaised_ParentMarginChanged() {
 
         (<Button>views[2]).marginTop = 50;
 
-        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.waitUntilReady(() => buttonLayoutChanged, 5);
 
         TKUnit.assert(stackLayoutChanged);
         TKUnit.assert(buttonLayoutChanged);
@@ -176,7 +135,7 @@ export function test_event_LayoutChanged_IsNotRaised_TransformChanged() {
         button.rotate += 50;
         button.height = 200;
 
-        TKUnit.waitUntilReady(() => button.height === 200);
+        TKUnit.waitUntilReady(() => button.height === 200, 5);
 
         TKUnit.assertEqual(stackLayoutChangedCount, 1);
         TKUnit.assertEqual(buttonLayoutChangedCount, 1);
@@ -200,7 +159,7 @@ export function test_event_LayoutChanged_IsRaised_StackLayout_SizeChanged() {
 
         (<StackLayout>views[1]).height = 100;
 
-        TKUnit.waitUntilReady(() => buttonLayoutChanged);
+        TKUnit.waitUntilReady(() => buttonLayoutChanged, 5);
 
         TKUnit.assert(stackLayoutChanged);
         TKUnit.assert(buttonLayoutChanged);
