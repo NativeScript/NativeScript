@@ -19,6 +19,7 @@ export function loadExamples() {
     examples.set("i61", "events/i61");
     examples.set("i73", "events/i73");
     examples.set("i86", "events/i86");
+    examples.set("layout changed", "events/layout-changed-event");
 
     return examples;
 }

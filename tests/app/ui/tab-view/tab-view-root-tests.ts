@@ -15,7 +15,7 @@ function waitUntilNavigatedTo(pages: Page[], action: Function) {
 
     pages.forEach(page => page.on("navigatedTo", navigatedTo));
     action();
-    TKUnit.waitUntilReady(() => completed === pages.length, 100);
+    TKUnit.waitUntilReady(() => completed === pages.length, 5);
 }
 
 function createPage(i: number) {
