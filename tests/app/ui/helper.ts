@@ -163,7 +163,7 @@ export function waitUntilNavigatedTo(page: Page, action: Function) {
 
     page.on("navigatedTo", navigatedTo);
     action();
-    TKUnit.waitUntilReady(() => completed, 100);
+    TKUnit.waitUntilReady(() => completed, 5);
 }
 
 export function waitUntilNavigatedFrom(action: Function) {
