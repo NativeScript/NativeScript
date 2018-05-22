@@ -28,6 +28,7 @@ export class View extends ViewCommon {
     nativeViewProtected: UIView;
     viewController: UIViewController;
 
+    private _isLaidOut = false;
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
@@ -160,6 +161,11 @@ export class View extends ViewCommon {
 
             const boundsOrigin = nativeView.bounds.origin;
             nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
+            this._raiseLayoutChangedEvent();
+            this._isLaidOut = true;
+        } else if (!this._isLaidOut) {
+            // Rects could be equal on the first layout and an event should be raised.
+            this._raiseLayoutChangedEvent();
         }
     }
 

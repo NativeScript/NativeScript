@@ -141,6 +141,9 @@ allTests["FRAME"] = frameTests;
 import * as viewTests from "./ui/view/view-tests";
 allTests["VIEW"] = viewTests;
 
+import * as viewLayoutChangedEventTests from "./ui/view/view-tests-layout-event";
+allTests["VIEW-LAYOUT-EVENT"] = viewLayoutChangedEventTests;
+
 import * as styleTests from "./ui/styling/style-tests";
 allTests["STYLE"] = styleTests;
 
