@@ -7,7 +7,7 @@ import { ViewBase, Property, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
-import { LinearGradient } from "../../styling/linear-gradient";
+import { LinearGradient } from "../../styling/gradient";
 
 export * from "../view-base";
 export * from "../../styling/style-properties";
