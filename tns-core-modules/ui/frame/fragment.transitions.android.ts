@@ -50,6 +50,10 @@ const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 const intEvaluator = lazy(() => new android.animation.IntEvaluator());
 const defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
+// NOTE: Android P Beta SDK version returns 27, which is API level for Android 8.1
+// TODO: Update condition when Android P SDK version returns 28
+const isAndroidP = lazy(() => sdkVersion() >= 27);
+
 export const waitingQueue = new Map<number, Set<ExpandedEntry>>();
 export const completedEntries = new Map<number, ExpandedEntry>();
 
@@ -76,7 +80,9 @@ export function _setAndroidFragmentTransitions(
         throw new Error("Calling navigation before previous navigation finish.");
     }
 
-    initDefaultAnimations(manager);
+    if (!isAndroidP()) {
+        initDefaultAnimations(manager);
+    }
 
     if (sdkVersion() >= 21) {
         allowTransitionOverlap(currentFragment);
@@ -116,7 +122,11 @@ export function _setAndroidFragmentTransitions(
     if (name === "none") {
         transition = new NoTransition(0, null);
     } else if (name === "default") {
-        transition = new DefaultTransition(0, null);
+        if (isAndroidP()) {
+            transition = new FadeTransition(150, null);
+        } else {
+            transition = new DefaultTransition(0, null);
+        }
     } else if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
@@ -170,7 +180,11 @@ export function _setAndroidFragmentTransitions(
         }
     }
 
-    setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
+    if (isAndroidP()) {
+        setupDefaultAnimations(newEntry, new FadeTransition(150, null));
+    } else {
+        setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
+    }
 
     printTransitions(currentEntry);
     printTransitions(newEntry);
