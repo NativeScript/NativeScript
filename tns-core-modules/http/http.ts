@@ -33,7 +33,7 @@ export function getJSON<T>(arg: any): Promise<T> {
 export function getImage(arg: any): Promise<ImageSource> {
     return httpRequest
         .request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
-        .then(responce => responce.content.toImage());
+        .then(response => response.content.toImage());
 }
 
 export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
