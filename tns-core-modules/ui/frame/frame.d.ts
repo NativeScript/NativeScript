@@ -72,6 +72,11 @@ export class Frame extends View {
     currentEntry: NavigationEntry;
 
     /**
+     * Gets or sets default page.
+     */
+    defaultPage: string;
+
+    /**
      * Gets or sets if navigation transitions should be animated.
      */
     animated: boolean;
