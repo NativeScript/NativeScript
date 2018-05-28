@@ -9,7 +9,7 @@ import {
     testNestedModalPageBackground
 } from "./shared.e2e-spec"
 
-describe("modal layout:", () => {
+describe("modal-layout:", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
