@@ -14,7 +14,6 @@ Cross Platform Modules Changelog
 * **flexbox:** label text wrapping inside flexbox layout ([#5781](https://github.com/NativeScript/NativeScript/issues/5781)) ([481043f](https://github.com/NativeScript/NativeScript/commit/481043f))
 * **ios-image-asset:** getImageAsync() can retrieve assets stored remotely in iCloud ([#5705](https://github.com/NativeScript/NativeScript/issues/5705)) ([9e3da8e](https://github.com/NativeScript/NativeScript/commit/9e3da8e))
 * **ios-searchbar:** fix searchbar auto sizing in iOS11 ([#5658](https://github.com/NativeScript/NativeScript/issues/5658)) ([555e592](https://github.com/NativeScript/NativeScript/commit/555e592))
-* **layout:** IOS Layout not invalidated with custom root ([#5724](https://github.com/NativeScript/NativeScript/issues/5724)) ([49ea10b](https://github.com/NativeScript/NativeScript/commit/49ea10b))
 * **list-view-ios:** fix rowHeight property to apply proper item size for iOS ([#5693](https://github.com/NativeScript/NativeScript/issues/5693)) ([b9806ba](https://github.com/NativeScript/NativeScript/commit/b9806ba))
 * **modal:** exception when calling ViewBase.showModal(...) ([#5737](https://github.com/NativeScript/NativeScript/issues/5737)) ([451589d](https://github.com/NativeScript/NativeScript/commit/451589d))
 * **modal:** innerView.closeModal(...) not passing back context ([#5833](https://github.com/NativeScript/NativeScript/issues/5833)) ([1365f13](https://github.com/NativeScript/NativeScript/commit/1365f13))
@@ -23,11 +22,10 @@ Cross Platform Modules Changelog
 
 ### Features
 
-* **builder:** enable reading xml from bundle ([#5668](https://github.com/NativeScript/NativeScript/issues/5668)) ([6fb7481](https://github.com/NativeScript/NativeScript/commit/6fb7481))
 * **file-system:** add ability to retrieve file size ([#5710](https://github.com/NativeScript/NativeScript/issues/5710)) ([6bdb5b5](https://github.com/NativeScript/NativeScript/commit/6bdb5b5))
 * **tabview:** add tab text font size property ([#5752](https://github.com/NativeScript/NativeScript/issues/5752)) ([11f0d6e](https://github.com/NativeScript/NativeScript/commit/11f0d6e))
 * **view:** introduce LayoutChanged event on every View component ([#5825](https://github.com/NativeScript/NativeScript/issues/5825)) ([0fc1547](https://github.com/NativeScript/NativeScript/commit/0fc1547))
-* CSS gradients ([#5534](https://github.com/NativeScript/NativeScript/issues/5534)) ([5a83a1c](https://github.com/NativeScript/NativeScript/commit/5a83a1c))
+* **css:** linear-gradient support for background and backgroundImage ([#5534](https://github.com/NativeScript/NativeScript/issues/5534)) ([5a83a1c](https://github.com/NativeScript/NativeScript/commit/5a83a1c))
 
 
 # 4.0.1 (2018, May 18)
