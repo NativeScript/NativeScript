@@ -42,7 +42,7 @@ export function onModalPage(args: EventData) {
 
 export function onModalLayout(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-layout/modal-layout",
+    view.showModal("modal-layout/modal-layout-root",
         "context",
         () => console.log("home-page modal layout closed"),
         false);
