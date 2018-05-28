@@ -1,7 +1,7 @@
 {
   "name": "tns-core-modules",
   "description": "Telerik NativeScript Core Modules",
-  "version": "4.0.0",
+  "version": "4.2.0",
   "homepage": "https://www.nativescript.org",
   "repository": {
     "type": "git",
@@ -33,8 +33,8 @@
   },
   "nativescript": {
     "platforms": {
-      "ios": "3.0.0",
-      "android": "3.0.0"
+      "ios": "4.0.0",
+      "android": "4.0.0"
     }
   },
   "snapshot": {

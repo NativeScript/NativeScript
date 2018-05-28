@@ -604,7 +604,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     // As a result we cannot unconditionally measure with EXACTLY the current measured height
                     const childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentHeightMeasureSpec,
                         lp.effectivePaddingTop + lp.effectivePaddingBottom + lp.effectiveMarginTop
-                        + lp.effectiveMarginBottom, lp.effectiveHeight < 0 ? WRAP_CONTENT : lp.effectiveHeight);        
+                        + lp.effectiveMarginBottom, lp.effectiveHeight < 0 ? WRAP_CONTENT : lp.effectiveHeight);
 
                     child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
                     child.effectiveMinWidth = minWidth;
@@ -820,7 +820,17 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _stretchViewVertically(view: View, crossSize: number) {
         let newHeight = crossSize - view.effectiveMarginTop - view.effectiveMarginBottom;
         newHeight = Math.max(newHeight, 0);
-        view.measure(makeMeasureSpec(view.getMeasuredWidth(), EXACTLY), makeMeasureSpec(newHeight, EXACTLY));
+        let originalMeasuredWidth = view.getMeasuredWidth();
+        let childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentWidthMeasureSpec,
+            view.effectivePaddingLeft + view.effectivePaddingRight + view.effectiveMarginLeft
+            + view.effectiveMarginRight, view.effectiveWidth < 0 ? WRAP_CONTENT : Math.min(view.effectiveWidth, originalMeasuredWidth));
+
+        view.measure(childWidthMeasureSpec, makeMeasureSpec(newHeight, EXACTLY));
+
+        if (originalMeasuredWidth > view.getMeasuredWidth()) {
+            childWidthMeasureSpec = makeMeasureSpec(originalMeasuredWidth, EXACTLY);
+            view.measure(childWidthMeasureSpec, makeMeasureSpec(newHeight, EXACTLY));
+        }
     }
 
     private _stretchViewHorizontally(view: View, crossSize: number) {
