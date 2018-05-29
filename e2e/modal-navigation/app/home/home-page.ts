@@ -20,6 +20,15 @@ export function onNavigatedFrom(args: NavigatedData) {
     console.log("home-page onNavigatedFrom");
 }
 
+export function onModalNoPage(args: EventData) {
+    const view = args.object as View;
+
+    view.showModal("modal-no-page/modal-no-page",
+        "context",
+        () => console.log("home-page modal frame closed"),
+        false);
+}
+
 export function onModalFrame(args: EventData) {
     const view = args.object as View;
 

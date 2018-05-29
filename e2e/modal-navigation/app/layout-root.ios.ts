@@ -1,4 +1,5 @@
 export {
+    onModalNoPage,
     onModalFrame,
     onModalPage,
     onModalLayout,
