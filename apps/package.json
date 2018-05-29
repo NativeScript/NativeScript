@@ -5,11 +5,11 @@
   "repository": "<fill-your-repository-here>",
   "nativescript": {
     "id": "org.nativescript.apps",
-    "tns-ios": {
-      "version": "3.4.1"
-    },
     "tns-android": {
-      "version": "3.4.1"
+      "version": "next"
+    },
+    "tns-ios": {
+      "version": "next"
     }
   },
   "dependencies": {
@@ -20,8 +20,8 @@
     "babel-types": "6.11.1",
     "babylon": "6.8.3",
     "lazy": "1.0.11",
-    "nativescript-dev-typescript": "^0.5.0",
+    "nativescript-dev-typescript": "^0.7.1",
     "tns-platform-declarations": "*",
-    "typescript": "^2.6.1"
+    "typescript": "^2.7.2"
   }
 }

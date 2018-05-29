@@ -3,5 +3,21 @@
     "exclude": [
         "node_modules",
         "platforms"
-    ]
+    ],
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "./node_modules/tns-core-modules/*",
+                "./node_modules/*"
+            ],
+            "~/*": [
+                "app/*"
+            ]
+        },
+        "lib": [
+            "es6",
+            "dom"
+        ]
+    }
 }
