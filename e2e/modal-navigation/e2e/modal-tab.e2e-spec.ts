@@ -11,7 +11,7 @@ import {
     testSecondItemBackground
 } from "./shared.e2e-spec"
 
-describe("modal tab:", () => {
+describe("modal-tab:", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;

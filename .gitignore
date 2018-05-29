@@ -34,6 +34,7 @@ e2e/**/test-results.xml
 
 # Webpack configuration files
 webpack.config.js
+tsconfig.esm.json
 
 # Generated files
 *.map
