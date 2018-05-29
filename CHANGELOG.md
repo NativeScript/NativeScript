@@ -1,6 +1,33 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="4.1.0"></a>
+# [4.1.0](https://github.com/NativeScript/NativeScript/compare/4.0.1...4.1.0) (2018-05-28)
+
+### Bug Fixes
+
+* **android:** fix sporadic issue with transition cleanup logic called twice ([#5805](https://github.com/NativeScript/NativeScript/issues/5805)) ([a86d41e](https://github.com/NativeScript/NativeScript/commit/a86d41e))
+* **android:** lollipop crash on changing activity context after navigation w/transition ([#5700](https://github.com/NativeScript/NativeScript/issues/5700)) ([4f5887b](https://github.com/NativeScript/NativeScript/commit/4f5887b))
+* **android-connectivity:** add ethernet connection type ([#5670](https://github.com/NativeScript/NativeScript/issues/5670)) ([1536d15](https://github.com/NativeScript/NativeScript/commit/1536d15))
+* **android-textfield:** returnPress fired twice for GO/SEARCH/SEND ([#5727](https://github.com/NativeScript/NativeScript/issues/5727)) ([ca444aa](https://github.com/NativeScript/NativeScript/commit/ca444aa))
+* **flexbox-ios:** resolve text size issue for ListView with flexbox layout template ([#5799](https://github.com/NativeScript/NativeScript/issues/5799)) ([a03065c](https://github.com/NativeScript/NativeScript/commit/a03065c))
+* **flexbox:** label text wrapping inside flexbox layout ([#5781](https://github.com/NativeScript/NativeScript/issues/5781)) ([481043f](https://github.com/NativeScript/NativeScript/commit/481043f))
+* **ios-image-asset:** getImageAsync() can retrieve assets stored remotely in iCloud ([#5705](https://github.com/NativeScript/NativeScript/issues/5705)) ([9e3da8e](https://github.com/NativeScript/NativeScript/commit/9e3da8e))
+* **ios-searchbar:** fix searchbar auto sizing in iOS11 ([#5658](https://github.com/NativeScript/NativeScript/issues/5658)) ([555e592](https://github.com/NativeScript/NativeScript/commit/555e592))
+* **list-view-ios:** fix rowHeight property to apply proper item size for iOS ([#5693](https://github.com/NativeScript/NativeScript/issues/5693)) ([b9806ba](https://github.com/NativeScript/NativeScript/commit/b9806ba))
+* **modal:** exception when calling ViewBase.showModal(...) ([#5737](https://github.com/NativeScript/NativeScript/issues/5737)) ([451589d](https://github.com/NativeScript/NativeScript/commit/451589d))
+* **modal:** innerView.closeModal(...) not passing back context ([#5833](https://github.com/NativeScript/NativeScript/issues/5833)) ([1365f13](https://github.com/NativeScript/NativeScript/commit/1365f13))
+* **navigation:** fix frame.navigate call inside page.navigatedTo handler ([#5649](https://github.com/NativeScript/NativeScript/issues/5649)) ([cf950e1](https://github.com/NativeScript/NativeScript/commit/cf950e1))
+* crash at application launch on Android P ([#5831](https://github.com/NativeScript/NativeScript/issues/5831)) ([7851629](https://github.com/NativeScript/NativeScript/commit/7851629))
+
+### Features
+
+* **file-system:** add ability to retrieve file size ([#5710](https://github.com/NativeScript/NativeScript/issues/5710)) ([6bdb5b5](https://github.com/NativeScript/NativeScript/commit/6bdb5b5))
+* **tabview:** add tab text font size property ([#5752](https://github.com/NativeScript/NativeScript/issues/5752)) ([11f0d6e](https://github.com/NativeScript/NativeScript/commit/11f0d6e))
+* **view:** introduce LayoutChanged event on every View component ([#5825](https://github.com/NativeScript/NativeScript/issues/5825)) ([0fc1547](https://github.com/NativeScript/NativeScript/commit/0fc1547))
+* **css:** linear-gradient support for background and backgroundImage ([#5534](https://github.com/NativeScript/NativeScript/issues/5534)) ([5a83a1c](https://github.com/NativeScript/NativeScript/commit/5a83a1c))
+
+
 # 4.0.1 (2018, May 18)
 
 ### Bug Fixes
