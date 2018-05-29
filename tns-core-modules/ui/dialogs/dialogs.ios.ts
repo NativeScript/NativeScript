@@ -1,7 +1,7 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-
+import { View, ios as iosView } from "../core/view";
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
 import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
@@ -42,7 +42,7 @@ export function alert(arg: any): Promise<void> {
         try {
             let options = !isDialogOptions(arg) ? { title: ALERT, okButtonText: OK, message: arg + "" } : arg;
             let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
-            
+
             addButtonsToAlertController(alertController, options, () => { resolve(); });
 
             showUIAlertController(alertController);
@@ -157,7 +157,7 @@ export function login(): Promise<LoginResult> {
             let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
             let textFieldColor = getTextFieldColor();
-            
+
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Login";
                 arg.text = isString(options.userName) ? options.userName : "";
@@ -185,7 +185,7 @@ export function login(): Promise<LoginResult> {
                     resolve({
                         result: r,
                         userName:
-                        userNameTextField.text,
+                            userNameTextField.text,
                         password: passwordTextField.text
                     });
                 });
@@ -200,7 +200,19 @@ export function login(): Promise<LoginResult> {
 function showUIAlertController(alertController: UIAlertController) {
     let currentPage = getCurrentPage();
     if (currentPage) {
-        let viewController: UIViewController = currentPage.modal ? currentPage.modal.ios : currentPage.ios;
+        let view: View = currentPage;
+        let viewController: UIViewController = currentPage.ios;
+
+        if (currentPage.modal) {
+            view = currentPage.modal;
+
+            if (view.ios instanceof UIViewController) {
+                viewController = view.ios;
+            } else {
+                viewController = iosView.getParentWithViewController(view).viewController;
+            }
+        }
+
         if (viewController) {
             if (alertController.popoverPresentationController) {
                 alertController.popoverPresentationController.sourceView = viewController.view;

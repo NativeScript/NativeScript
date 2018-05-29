@@ -775,6 +775,7 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 
 export namespace ios {
+    export function getParentWithViewController(parent: View): View
     export function isContentScrollable(controller: any /* UIViewController */, owner: View): boolean
     export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void
     export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
