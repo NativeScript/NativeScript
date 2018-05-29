@@ -207,7 +207,7 @@ function showUIAlertController(alertController: UIAlertController) {
             view = currentPage.modal;
 
             if (view.ios instanceof UIViewController) {
-                viewController = view.ios;
+                viewController = currentPage.modal.ios;
             } else {
                 viewController = iosView.getParentWithViewController(view).viewController;
             }
