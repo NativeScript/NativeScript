@@ -308,18 +308,8 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
-    private getParentWithViewController(parent: View): View {
-        let view = parent;
-        let controller = view.viewController;
-        while (!controller) {
-            view = view.parent as View;
-            controller = view.viewController;
-        }
-
-        return view;
-    }
     protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
-        let parentWithController = this.getParentWithViewController(parent);
+        let parentWithController = ios.getParentWithViewController(parent);
 
         super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
@@ -592,6 +582,17 @@ export class CustomLayoutView extends View {
 }
 
 export namespace ios {
+    export function getParentWithViewController(parent: View): View {
+        let view = parent;
+        let controller = view.viewController;
+        while (!controller) {
+            view = view.parent as View;
+            controller = view.viewController;
+        }
+
+        return view;
+    }
+
     export function isContentScrollable(controller: UIViewController, owner: View): boolean {
         let scrollableContent = (<any>owner).scrollableContent;
         if (scrollableContent === undefined) {
