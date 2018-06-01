@@ -615,7 +615,7 @@ export namespace ios {
     export function updateConstraints(controller: UIViewController, owner: View): void {
         const root = controller.view;
         if (!root.safeAreaLayoutGuide) {
-            const layoutGuide = (<any>root).safeAreaLayoutGuide = UILayoutGuide.alloc().init();
+            const layoutGuide = (<any>root).safeAreaLayoutGuide = getSafeAreaLayoutGuide(root);
             root.addLayoutGuide(layoutGuide);
             NSLayoutConstraint.activateConstraints(<any>[
                 layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor),
@@ -623,6 +623,15 @@ export namespace ios {
                 layoutGuide.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor),
                 layoutGuide.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor)
             ]);
+        }
+    }
+
+    export function getSafeAreaLayoutGuide(view: UIView) {
+        if (view && view.safeAreaLayoutGuide) {
+            return view.safeAreaLayoutGuide;
+        } else {
+            // return dummy layout guide
+            return UILayoutGuide.alloc().init();
         }
     }
 
@@ -646,7 +655,8 @@ export namespace ios {
         const frame = controller.view.frame;
         const fullscreenOrigin = frame.origin;
         const fullscreenSize = frame.size;
-        const safeArea = controller.view.safeAreaLayoutGuide.layoutFrame;
+        const layoutGuide = getSafeAreaLayoutGuide(controller.view);
+        const safeArea = layoutGuide.layoutFrame;
         const safeOrigin = safeArea.origin;
         const safeAreaSize = safeArea.size;
 
