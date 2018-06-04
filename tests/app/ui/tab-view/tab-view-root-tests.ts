@@ -2,7 +2,7 @@ import * as helper from "../helper";
 import TKUnit = require("../../TKUnit");
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { _resetRootView } from "tns-core-modules/application/";
-import { Frame, NavigationEntry } from "tns-core-modules/ui/frame";
+import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 
@@ -56,7 +56,26 @@ function createTabItemsWithFrames(count: number) {
     return items;
 }
 
-export function test_ios_and_android_offset_zero_should_raise_same_events() {
+export function test_frame_topmost_matches_selectedIndex() {
+    const items = createTabItemsWithFrames(3);
+    const tabView = new TabView();
+    tabView.items = items.map(item => item.tabItem);
+    tabView.selectedIndex = 0;
+
+    const entry: NavigationEntry = {
+        create: () => tabView
+    };
+
+    helper.waitUntilNavigatedTo(items[0].page, () => _resetRootView(entry));
+
+    TKUnit.assertEqual(topmost().id, "Tab0 Frame0");
+
+    helper.waitUntilNavigatedTo(items[1].page, () => tabView.selectedIndex = 1);
+
+    TKUnit.assertEqual(topmost().id, "Tab1 Frame1");
+}
+
+export function test_offset_zero_should_raise_same_events() {
     let actualEventsRaised = [];
 
     function resetActualEventsRaised() {
