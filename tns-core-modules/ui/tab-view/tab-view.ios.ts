@@ -213,6 +213,13 @@ export class TabView extends TabViewBase {
     @profile
     public onLoaded() {
         super.onLoaded();
+
+        const selectedIndex = this.selectedIndex;
+        const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].view;
+        if (selectedView instanceof Frame) {
+            selectedView._pushInFrameStack();
+        }
+
         this._ios.delegate = this._delegate;
     }
 

@@ -6,10 +6,10 @@
   "nativescript": {
     "id": "org.nativescript.UnitTestApp",
     "tns-ios": {
-      "version": "3.4.1"
+      "version": "4.1.0"
     },
     "tns-android": {
-      "version": "3.4.1"
+      "version": "4.1.1"
     }
   },
   "dependencies": {
