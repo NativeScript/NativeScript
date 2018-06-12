@@ -8,7 +8,8 @@ import {
     testSecondPageClose,
     testNestedModalFrameBackground,
     testNestedModalPageBackground,
-    testSecondItemBackground
+    testSecondItemBackground,
+    testDialogBackground
 } from "./shared.e2e-spec"
 
 describe("modal-tab:", () => {
@@ -47,6 +48,10 @@ describe("modal-tab:", () => {
             after(async () => {
                 await screen.closeModal();
                 await screen.loadedHome();
+            });
+
+            it("should show dialog confirm, run in background", async () => {
+                await testDialogBackground(driver, screen);
             });
 
             it("should run modal tab view in background", async () => {
