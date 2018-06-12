@@ -12,6 +12,7 @@ import { device } from "../../platform";
 import lazy from "../../utils/lazy";
 
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
+import { ad } from "../../utils/utils";
 
 interface TransitionListener {
     new(entry: ExpandedEntry, transition: android.transition.Transition): ExpandedTransitionListener;
@@ -50,10 +51,6 @@ const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 const intEvaluator = lazy(() => new android.animation.IntEvaluator());
 const defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
-// NOTE: Android P Beta SDK version returns 27, which is API level for Android 8.1
-// TODO: Update condition when Android P SDK version returns 28
-const isAndroidP = lazy(() => sdkVersion() >= 27);
-
 export const waitingQueue = new Map<number, Set<ExpandedEntry>>();
 export const completedEntries = new Map<number, ExpandedEntry>();
 
@@ -80,9 +77,7 @@ export function _setAndroidFragmentTransitions(
         throw new Error("Calling navigation before previous navigation finish.");
     }
 
-    if (!isAndroidP()) {
-        initDefaultAnimations(manager);
-    }
+    initDefaultAnimations(manager);
 
     if (sdkVersion() >= 21) {
         allowTransitionOverlap(currentFragment);
@@ -122,11 +117,7 @@ export function _setAndroidFragmentTransitions(
     if (name === "none") {
         transition = new NoTransition(0, null);
     } else if (name === "default") {
-        if (isAndroidP()) {
-            transition = new FadeTransition(150, null);
-        } else {
-            transition = new DefaultTransition(0, null);
-        }
+        transition = new DefaultTransition(0, null);
     } else if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
@@ -180,11 +171,7 @@ export function _setAndroidFragmentTransitions(
         }
     }
 
-    if (isAndroidP()) {
-        setupDefaultAnimations(newEntry, new FadeTransition(150, null));
-    } else {
-        setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
-    }
+    setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
 
     printTransitions(currentEntry);
     printTransitions(newEntry);
@@ -756,26 +743,39 @@ function javaClassArray(...params: java.lang.Class<any>[]) {
 }
 
 function initDefaultAnimations(manager: android.app.FragmentManager): void {
-    if (reflectionDone) {
-        return;
+    let enterAnimatorStyleIndex = transitToStyleIndex(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN, true);
+    let exitAnimatorStyleIndex = transitToStyleIndex(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN, false);
+
+    let animatorInflater = android.animation.AnimatorInflater;
+    let context = ad.getApplicationContext();
+
+    // Get default enter transition.
+    defaultEnterAnimatorStatic = animatorInflater.loadAnimator(context, enterAnimatorStyleIndex);
+
+    // Get default exit transition.
+    defaultExitAnimatorStatic = animatorInflater.loadAnimator(context, exitAnimatorStyleIndex);
+}
+
+function transitToStyleIndex(transit: number, enter: boolean): number {
+    let animAttr = -1;
+    switch (transit) {
+        case android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN:
+            animAttr = enter
+                ? 0  // com.android.internal.R.styleable.FragmentAnimation_fragmentOpenEnterAnimation
+                : 1; // com.android.internal.R.styleable.FragmentAnimation_fragmentOpenExitAnimation
+            break;
+        case android.app.FragmentTransaction.TRANSIT_FRAGMENT_CLOSE:
+            animAttr = enter
+                ? 2  // com.android.internal.R.styleable.FragmentAnimation_fragmentCloseEnterAnimation
+                : 3; // com.android.internal.R.styleable.FragmentAnimation_fragmentCloseExitAnimation
+            break;
+        case android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE:
+            animAttr = enter
+                ? 4  // com.android.internal.R.styleable.FragmentAnimation_fragmentFadeEnterAnimation
+                : 5; // com.android.internal.R.styleable.FragmentAnimation_fragmentFadeExitAnimation
+            break;
     }
-
-    reflectionDone = true;
-
-    loadAnimatorMethod = manager.getClass().getDeclaredMethod("loadAnimator", javaClassArray(android.app.Fragment.class, java.lang.Integer.TYPE, java.lang.Boolean.TYPE, java.lang.Integer.TYPE));
-    if (loadAnimatorMethod != null) {
-        loadAnimatorMethod.setAccessible(true);
-
-        const fragment_open = java.lang.Integer.valueOf(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        const zero = java.lang.Integer.valueOf(0);
-        const fragment = new android.app.Fragment();
-
-        // Get default enter transition.
-        defaultEnterAnimatorStatic = loadAnimatorMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.TRUE, zero));
-
-        // Get default exit transition.
-        defaultExitAnimatorStatic = loadAnimatorMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.FALSE, zero));
-    }
+    return animAttr;
 }
 
 function getDefaultAnimation(enter: boolean): android.animation.Animator {
