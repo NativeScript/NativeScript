@@ -90,7 +90,15 @@ export class View extends ViewCommon {
         }
 
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
-            this.onLayout(left, top, right, bottom);
+            let insetLeft = 0;
+            let insetTop = 0;
+
+            if (this.nativeViewProtected.safeAreaInsets) {
+                insetLeft = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.left);
+                insetTop = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.top);
+            }
+
+            this.onLayout(left, top, right, bottom, insetLeft, insetTop);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
         }
 
@@ -138,7 +146,7 @@ export class View extends ViewCommon {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
         //
     }
 
@@ -159,8 +167,30 @@ export class View extends ViewCommon {
                 nativeView.frame = frame;
             }
 
-            const boundsOrigin = nativeView.bounds.origin;
-            nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
+            if (nativeView.safeAreaInsets) {
+                const leftInset = layout.toDevicePixels(nativeView.safeAreaInsets.left);
+                const topInset = layout.toDevicePixels(nativeView.safeAreaInsets.top);
+
+                const left = layout.toDevicePixels(frame.origin.x);
+                const top = layout.toDevicePixels(frame.origin.y);
+                const right = layout.toDevicePixels(frame.origin.x + frame.size.width);
+                const bottom = layout.toDevicePixels(frame.origin.y + frame.size.height);
+                if (leftInset || topInset) {
+                    const frameNew = CGRectMake(layout.toDeviceIndependentPixels(left + leftInset), layout.toDeviceIndependentPixels(top + topInset), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
+                    nativeView.frame = frameNew;
+                    const boundsOrigin = nativeView.bounds.origin;
+                    nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frameNew.size.width, frameNew.size.height);
+                }
+                else {
+                    const boundsOrigin = nativeView.bounds.origin;
+                    nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
+                }
+            }
+            else {
+                const boundsOrigin = nativeView.bounds.origin;
+                nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
+            }
+
             this._raiseLayoutChangedEvent();
             this._isLaidOut = true;
         } else if (!this._isLaidOut) {
@@ -201,6 +231,16 @@ export class View extends ViewCommon {
         }
 
         return false;
+    }
+
+    public getFullscreenArea(): any {
+        const parentWithController = ios.getParentWithViewController(this);
+        return parentWithController.viewController.view.frame;
+    }
+
+    public getSafeArea(): any {
+        const parentWithController = ios.getParentWithViewController(this);
+        return parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
     }
 
     public getLocationInWindow(): Point {
@@ -688,34 +728,44 @@ export namespace ios {
             fullscreenSize.height -= (statusBarHeight + navBarHeight);
         }
 
-        left = safeOrigin.x;
-        width = safeAreaSize.width;
+        // left = safeOrigin.x;
+        // width = safeAreaSize.width;
+        // top = safeOrigin.y;
+        // height = safeAreaSize.height;
 
-        if (hasChildControllers) {
-            // If not inner most extend to fullscreen
-            top = fullscreenOrigin.y;
-            height = fullscreenSize.height;
-        } else if (!scrollable) {
-            // If not scrollable dock under safe area
-            top = safeOrigin.y;
-            height = safeAreaSize.height;
-        } else if (navBarHidden) {
-            // If scrollable but no navigation bar dock under safe area
-            top = safeOrigin.y;
-            height = navController ? (fullscreenSize.height - top) : safeAreaSize.height;
-        } else {
-            // If scrollable and navigation bar extend to fullscreen
-            top = fullscreenOrigin.y;
-            height = fullscreenSize.height;
-        }
+        left = fullscreenOrigin.x;
+        width = fullscreenSize.width;
+        top = fullscreenOrigin.y;
+        height = fullscreenSize.height;
+
+        // if (hasChildControllers) {
+        //     // If not inner most extend to fullscreen
+        //     top = fullscreenOrigin.y;
+        //     height = fullscreenSize.height;
+        // } else if (!scrollable) {
+        //     // If not scrollable dock under safe area
+        //     top = safeOrigin.y;
+        //     height = safeAreaSize.height;
+        // } else if (navBarHidden) {
+        //     // If scrollable but no navigation bar dock under safe area
+        //     top = safeOrigin.y;
+        //     height = navController ? (fullscreenSize.height - top) : safeAreaSize.height;
+        // } else {
+        //     // If scrollable and navigation bar extend to fullscreen
+        //     top = fullscreenOrigin.y;
+        //     height = fullscreenSize.height;
+        // }
 
         left = layout.toDevicePixels(left);
         top = layout.toDevicePixels(top);
         width = layout.toDevicePixels(width);
         height = layout.toDevicePixels(height);
 
-        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
-        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+        const safeAreaWidth = layout.toDevicePixels(safeAreaSize.width);
+        const safeAreaHeight = layout.toDevicePixels(safeAreaSize.height);
+
+        const widthSpec = layout.makeMeasureSpec(safeAreaWidth, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(safeAreaHeight, layout.EXACTLY);
 
         View.measureChild(null, owner, widthSpec, heightSpec);
         View.layoutChild(null, owner, left, top, width + left, height + top);

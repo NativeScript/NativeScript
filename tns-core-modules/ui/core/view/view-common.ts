@@ -641,7 +641,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
-    public abstract onLayout(left: number, top: number, right: number, bottom: number): void;
+    public abstract onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void;
     public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
@@ -876,6 +876,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public focus(): boolean {
+        return undefined;
+    }
+
+    public getFullscreenArea(): any {
+        return undefined;
+    }
+
+    public getSafeArea(): any {
         return undefined;
     }
 
