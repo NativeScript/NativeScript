@@ -1,0 +1,126 @@
+{
+    "android19": {
+        "platformName": "Android",
+        "platformVersion": "4.4",
+        "deviceName": "Emulator-Api19-Default",
+        "avd": "Emulator-Api19-Default",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "android21": {
+        "platformName": "Android",
+        "platformVersion": "5.0",
+        "deviceName": "Emulator-Api21-Default",
+        "avd": "Emulator-Api21-Default",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "android23": {
+        "platformName": "Android",
+        "platformVersion": "6.0",
+        "deviceName": "Emulator-Api23-Default",
+        "avd": "Emulator-Api23-Default",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "android24": {
+        "platformName": "Android",
+        "platformVersion": "7.0",
+        "deviceName": "Emulator-Api24-Default",
+        "avd": "Emulator-Api24-Default",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "android25": {
+        "platformName": "Android",
+        "platformVersion": "7.1",
+        "deviceName": "Emulator-Api25-Google",
+        "avd": "Emulator-Api25-Google",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "android26": {
+        "platformName": "Android",
+        "platformVersion": "8.0",
+        "deviceName": "Emulator-Api26-Google",
+        "avd": "Emulator-Api26-Google",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "android27": {
+        "platformName": "Android",
+        "platformVersion": "8.1",
+        "deviceName": "Emulator-Api27-Google",
+        "avd": "Emulator-Api27-Google",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhone7.iOS110": {
+        "platformName": "iOS",
+        "platformVersion": "11.2",
+        "deviceName": "iPhone 7 110",
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhone8.iOS110": {
+        "platformName": "iOS",
+        "platformVersion": "11.0",
+        "deviceName": "iPhone 8 110",
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhoneX.iOS110": {
+        "platformName": "iOS",
+        "platformVersion": "11.0",
+        "deviceName": "iPhone X",
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhoneX.iOS112": {
+        "platformName": "iOS",
+        "platformVersion": "11.2",
+        "deviceName": "iPhone X",
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhoneX.iOS113": {
+        "platformName": "iOS",
+        "platformVersion": "11.3",
+        "deviceName": "iPhone X",
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    }
+}
