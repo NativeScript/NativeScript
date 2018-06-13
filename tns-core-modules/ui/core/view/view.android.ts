@@ -22,6 +22,7 @@ import {
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
+import { screen } from '../../../platform';
 
 export * from "./view-common";
 
@@ -724,7 +725,9 @@ export class View extends ViewCommon {
     }
     
     [cameraDistanceProperty.setNative](value: number) {
-       org.nativescript.widgets.ViewHelper.setCameraDistance(this.nativeViewProtected, float(value));
+       const scale = screen.mainScreen.scale;
+       const distance = value * scale;
+       org.nativescript.widgets.ViewHelper.setCameraDistance(this.nativeViewProtected, float(distance));
     }
 
     [scaleXProperty.setNative](value: number) {
