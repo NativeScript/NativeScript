@@ -64,7 +64,7 @@ export function isCategorySet(category: string): boolean;
 export function write(message: any, category: string, type?: number);
 
 /**
- * Passes an error ot the registered ErrorHandler
+ * Passes an error to the registered ErrorHandler
  * @param error The error to be handled.
  */
 export function error(error: string | Error);

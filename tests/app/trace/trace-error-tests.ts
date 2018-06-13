@@ -3,8 +3,6 @@
     error as traceError
 } from "tns-core-modules/trace";
 import * as TKUnit from "../TKUnit";
-import { constants } from "zlib";
-import { trace } from "tns-core-modules/profiling/profiling";
 
 let cachedErrorHandler: ErrorHandler;
 export function setUpModule() {
@@ -37,28 +35,33 @@ export function test_trace_error_should_call_handler() {
 
 export function test_trace_error_should_create_error_from_string() {
     let called = false;
+    let actualError: Error;
     setErrorHandler({
         handlerError(error) {
             called = true;
-            TKUnit.assert(error instanceof Error, "trace.error() wrap string in error")
+            actualError = error;
         }
     });
     traceError("TEST");
 
     TKUnit.assert(called, "trace.error() should call handler;")
+    TKUnit.assert(actualError instanceof Error, "trace.error() wrap string in error")
 }
 
 export function test_trace_error_should_pass_errors() {
     let called = false;
     let testError = new Error("TEST");
-    
+    let actualError: Error;
+
     setErrorHandler({
         handlerError(error) {
             called = true;
-            TKUnit.assertDeepEqual(error, testError)
+            actualError = error;
+
         }
     });
     traceError(testError);
-
+    
     TKUnit.assert(called, "trace.error() should call handler;")
+    TKUnit.assertDeepEqual(actualError, testError)
 }
