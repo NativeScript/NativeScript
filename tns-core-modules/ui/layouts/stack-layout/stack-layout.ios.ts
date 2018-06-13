@@ -81,25 +81,26 @@ export class StackLayout extends StackLayoutBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
         super.onLayout(left, top, right, bottom);
         if (this.orientation === "vertical") {
-            this.layoutVertical(left, top, right, bottom);
+            this.layoutVertical(left, top, right, bottom, insetLeft, insetTop);
         }
         else {
             this.layoutHorizontal(left, top, right, bottom);
         }
     }
 
-    private layoutVertical(left: number, top: number, right: number, bottom: number): void {
-        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+    private layoutVertical(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insetLeft;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insetTop;
         const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
         const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
 
         let childTop: number;
         let childLeft: number = paddingLeft;
         let childRight = right - left - paddingRight;
+        // let childRight = right - paddingRight;
 
         switch (this.verticalAlignment) {
             case VerticalAlignment.MIDDLE:

@@ -404,7 +404,7 @@ export abstract class View extends ViewBase {
      * @param right     Right position, relative to parent
      * @param bottom    Bottom position, relative to parent
      */
-    public onLayout(left: number, top: number, right: number, bottom: number): void;
+    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void;
 
     /**
      * This method must be called by onMeasure(int, int) to store the measured width and measured height. Failing to do so will trigger an exception at measurement time.
@@ -528,6 +528,16 @@ export abstract class View extends ViewBase {
     public createAnimation(options: AnimationDefinition): Animation;
 
     /**
+     * Returns the iOS safe area frame of the closest parent with UIViewController.
+     */
+    public getSafeArea(): any;
+
+    /**
+     * Returns the iOS frame of the closest parent with UIViewController.
+     */
+    public getFullscreenArea(): any;
+
+    /**
      * Returns the location of this view in the window coordinate system.
      */
     public getLocationInWindow(): Point;
@@ -605,7 +615,7 @@ export abstract class View extends ViewBase {
      * Called by layout method to cache view bounds.
      * @private
      */
-    _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): void;
+    _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean, sizeChanged: boolean };
     /**
      * Return view bounds.
      * @private

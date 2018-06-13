@@ -156,11 +156,11 @@ export class GridLayout extends GridLayoutBase {
         this.setMeasuredDimension(widthSizeAndState, heightSizeAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
         super.onLayout(left, top, right, bottom);
 
-        let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+        let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insetLeft;
+        let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insetTop;
 
         this.columnOffsets.length = 0;
         this.rowOffsets.length = 0;
