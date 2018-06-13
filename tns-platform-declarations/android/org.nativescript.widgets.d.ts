@@ -501,7 +501,9 @@
                 public static setPaddingBottom(view: android.view.View, value: number): void;
 
                 public static getRotate(view: android.view.View): number;
-                public static setRotate(view: android.view.View, value: number): void;
+                public static setRotate(view: android.view.View, value: number, axis: string): void;
+
+                public static setCameraDistance(view: android.view.View, value: number): void;
 
                 public static getScaleX(view: android.view.View): number;
                 public static setScaleX(view: android.view.View, value: number): void;

@@ -11,11 +11,11 @@ import {
 } from "./view-common";
 
 import {
-    Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
+    cameraDistanceProperty, Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
     visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
-    rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
+    rotateProperty, rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty
 } from "../../styling/style-properties";
 
@@ -716,7 +716,15 @@ export class View extends ViewCommon {
     }
 
     [rotateProperty.setNative](value: number) {
-        org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, float(value));
+        org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, float(value), this.rotateAxis);
+    }
+    
+    [rotateAxisProperty.setNative](value: string) {
+        org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, this.rotate, value);
+    }
+    
+    [cameraDistanceProperty.setNative](value: number) {
+       org.nativescript.widgets.ViewHelper.setCameraDistance(this.nativeViewProtected, float(value));
     }
 
     [scaleXProperty.setNative](value: number) {
@@ -802,6 +810,7 @@ export class View extends ViewCommon {
             (<any>nativeView).background = undefined;
         }
     }
+
 }
 
 export class CustomLayoutView extends View implements CustomLayoutViewDefinition {

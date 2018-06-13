@@ -10,9 +10,10 @@ import {
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
 import {
-    Visibility,
+    cameraDistanceProperty, Visibility,
     visibilityProperty, opacityProperty,
-    rotateProperty, scaleXProperty, scaleYProperty,
+    rotateProperty, rotateAxisProperty,
+    scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
@@ -268,17 +269,33 @@ export class View extends ViewCommon {
         const scaleX = this.scaleX || 1e-6;
         const scaleY = this.scaleY || 1e-6;
         const rotate = this.rotate || 0;
-        let newTransform = CGAffineTransformIdentity;
-        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
-        newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
-        if (!CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, newTransform)) {
+        let rotateAxis = {x: 0, y: 0, z: 0};
+
+        switch (this.axis.toUpperCase()) {
+            case 'X':
+                rotateAxis.x = this.cameraDistance;
+                break;
+            case 'Y':
+                rotateAxis.y = this.cameraDistance;
+                break;
+            case 'Z':
+                rotateAxis.z = this.cameraDistance;
+                break;
+        }
+
+        let transform = CATransform3DIdentity;
+        transform.m34 = -1 / perspective;
+        transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
+        transform = CATransform3DRotate(transform, rotate * Math.PI / 180, rotateAxis.x, rotateAxis.y, rotateAxis.z);
+        transform = CATransform3DScale(transform, scaleX, scaleY, 1);
+        this.ios.layer.transform = transform;
+        if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
             const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
-            this.nativeViewProtected.transform = newTransform;
-            this._hasTransfrom = this.nativeViewProtected && !CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, CGAffineTransformIdentity);
+            this.ios.layer.transform = transform;
+            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, CATransform3DIdentity);
             if (!updateSuspended) {
                 CATransaction.commit();
             }
@@ -439,6 +456,20 @@ export class View extends ViewCommon {
         return 0;
     }
     [rotateProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+    
+    [rotateAxisProperty.getDefault](): number {
+        return 'Z';
+    }
+    [rotateAxisProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+    
+    [cameraDistanceProperty.getDefault](): number {
+        return 300;
+    }
+    [cameraDistanceProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 

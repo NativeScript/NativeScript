@@ -391,6 +391,12 @@ function convertToPaddings(this: void, value: string | Length): [CssProperty<any
 export const rotateProperty = new CssAnimationProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0, valueConverter: parseFloat });
 rotateProperty.register(Style);
 
+export const rotateAxisProperty = new CssAnimationProperty<Style, string>({ name: "rotateAxis", cssName: "rotate-axis", defaultValue: 'Z'});
+rotateAxisProperty.register(Style);
+
+export const cameraDistanceProperty = new CssAnimationProperty<Style, number>({ name: "cameraDistance", cssName: "camera-distance", defaultValue: 1000, valueConverter: parseFloat});
+cameraDistanceProperty.register(Style);
+
 export const scaleXProperty = new CssAnimationProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1, valueConverter: parseFloat });
 scaleXProperty.register(Style);
 
