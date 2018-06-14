@@ -261,7 +261,10 @@ export class Frame extends FrameBase {
                 }
 
                 entry.recreated = false;
-                current.recreated = false;
+
+                if (current) {
+                    current.recreated = false;
+                }
             }
 
             super.setCurrent(entry, isBack);
