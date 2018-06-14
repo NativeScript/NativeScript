@@ -6,5 +6,5 @@
         <Label class="action-bar-title" text="Home"></Label>
     </ActionBar>
 
-    <fragments:gridlayout-3x3-fragment></fragments:gridlayout-3x3-fragment>
+    <fragments:grid-3x3-fragment></fragments:grid-3x3-fragment>
 </Page>
