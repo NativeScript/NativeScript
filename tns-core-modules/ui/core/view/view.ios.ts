@@ -10,9 +10,9 @@ import {
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
 import {
-    cameraDistanceProperty, Visibility,
+    perspectiveProperty, Visibility,
     visibilityProperty, opacityProperty,
-    rotateProperty, rotateAxisProperty,
+    rotateProperty, rotateXProperty, rotateYProperty,
     scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
@@ -268,19 +268,19 @@ export class View extends ViewCommon {
     public updateNativeTransform() {
         const scaleX = this.scaleX || 1e-6;
         const scaleY = this.scaleY || 1e-6;
-        const rotate = this.rotate || 0;
+        let rotate = 0;
         let rotateAxis = {x: 0, y: 0, z: 0};
+        let perspective = this.perspective || 300;
 
-        switch (this.axis.toUpperCase()) {
-            case 'X':
-                rotateAxis.x = this.cameraDistance;
-                break;
-            case 'Y':
-                rotateAxis.y = this.cameraDistance;
-                break;
-            case 'Z':
-                rotateAxis.z = this.cameraDistance;
-                break;
+        if (this.rotate) {
+            rotateAxis.z = 1;
+            rotate = this.rotate;
+        }else if (this.rotateX) {
+            rotateAxis.x = 1;
+            rotate = this.rotateX;
+        }else if (this.rotateY) {
+            rotateAxis.y = 1;
+            rotate = this.rotateY;
         }
 
         let transform = CATransform3DIdentity;
@@ -458,18 +458,25 @@ export class View extends ViewCommon {
     [rotateProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
-    
-    [rotateAxisProperty.getDefault](): number {
-        return 'Z';
+
+    [rotateXProperty.getDefault](): number {
+        return 0;
     }
-    [rotateAxisProperty.setNative](value: number) {
+    [rotateXProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
+    [rotateYProperty.getDefault](): number {
+        return 0;
+    }
+    [rotateYProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
     
-    [cameraDistanceProperty.getDefault](): number {
+    [perspectiveProperty.getDefault](): number {
         return 300;
     }
-    [cameraDistanceProperty.setNative](value: number) {
+    [perspectiveProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 

@@ -63,6 +63,11 @@ export interface Point {
      * Represents the y coordinate of the location.
      */
     y: number;
+
+    /**
+     * Represents the z coordinate of the location.
+     */
+    z?: number;
 }
 
 /**

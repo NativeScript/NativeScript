@@ -3,7 +3,7 @@ import { View } from "../core/view";
 
 import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
-    opacityProperty, backgroundColorProperty, rotateProperty,
+    opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
 } from "../styling/style-properties";
 
@@ -76,7 +76,9 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
                 targetStyle[setLocal ? opacityProperty.name : opacityProperty.keyframe] = value;
                 break;
             case Properties.rotate:
-                targetStyle[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value;
+                targetStyle[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value.z;
+                targetStyle[setLocal ? rotateXProperty.name : rotateXProperty.keyframe] = value.x;
+                targetStyle[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = value.y;
                 break;
             case Properties.translate:
                 targetStyle[setLocal ? translateXProperty.name : translateXProperty.keyframe] = value;
@@ -297,7 +299,9 @@ export class Animation extends AnimationBase {
             case Properties.rotate:
                 animation._originalValue = animation.target.rotate !== undefined ? animation.target.rotate : 0;
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value;
+                    animation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value.z;
+                    animation.target.style[setLocal ? rotateXProperty.name : rotateXProperty.keyframe] = value.x;
+                    animation.target.style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = value.y;
                 };
                 propertyNameToAnimate = "transform.rotation";
                 originalValue = nativeView.layer.valueForKeyPath("transform.rotation");

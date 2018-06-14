@@ -4,7 +4,7 @@ import { View } from "../core/view";
 
 import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
-    opacityProperty, backgroundColorProperty, rotateProperty,
+    opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
 } from "../styling/style-properties";
 
@@ -424,6 +424,8 @@ export class Animation extends AnimationBase {
 
                     if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
+                        propertyAnimation.target[rotateXProperty.setNative](propertyAnimation.target.style.rotateX);
+                        propertyAnimation.target[rotateYProperty.setNative](propertyAnimation.target.style.rotateY);
                     }
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
