@@ -223,6 +223,9 @@ export class ActionBar extends ActionBarBase {
                 this.nativeViewProtected.setNavigationIcon(drawableOrId);
             }
 
+            // Set navigation content descripion, used by screen readers for the vision-impaired users
+            this.nativeViewProtected.setNavigationContentDescription(navButton.text || null);
+
             let navBtn = new WeakRef(navButton);
             this.nativeViewProtected.setNavigationOnClickListener(new android.view.View.OnClickListener({
                 onClick: function (v) {
@@ -285,7 +288,7 @@ export class ActionBar extends ActionBarBase {
             let menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + "");
 
             if (item.actionView && item.actionView.android) {
-                // With custom action view, the menuitem cannot be displayed in a popup menu. 
+                // With custom action view, the menuitem cannot be displayed in a popup menu.
                 item.android.position = "actionBar";
                 menuItem.setActionView(item.actionView.android);
                 ActionBar._setOnClickListener(item);
@@ -376,7 +379,7 @@ export class ActionBar extends ActionBarBase {
             }
 
             // Fallback to hardcoded falue if we don't find TextView instance...
-            // using new TextView().getTextColors().getDefaultColor() returns different value: -1979711488 
+            // using new TextView().getTextColors().getDefaultColor() returns different value: -1979711488
             defaultTitleTextColor = tv ? tv.getTextColors().getDefaultColor() : -570425344;
         }
 
