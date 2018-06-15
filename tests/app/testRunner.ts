@@ -135,6 +135,9 @@ allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
 allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 
+import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
+allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
+
 import * as frameTests from "./ui/frame/frame-tests";
 allTests["FRAME"] = frameTests;
 
@@ -167,9 +170,6 @@ allTests["TAB-VIEW"] = tabViewTests;
 
 import * as tabViewNavigationTests from "./ui/tab-view/tab-view-navigation-tests";
 allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
-
-import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
-allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 
 import * as imageTests from "./ui/image/image-tests";
 allTests["IMAGE"] = imageTests;
