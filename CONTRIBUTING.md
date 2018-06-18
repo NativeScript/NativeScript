@@ -61,11 +61,12 @@ git checkout -b <my-fix-branch> master
 
 4. The fun part! Make your code changes. Make sure you:
     - Follow the [code conventions guide](CodingConvention.md).
+    - Follow the [guide on handling errors and exceptions](HandlingErrors.md).
     - Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
 
 5. Before you submit your PR:
     - Rebase your changes to the latest master: `git pull --rebase upstream master`.
-    - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
+    - Ensure all unit test are green for Android and iOS. Check [running unit   tests](DevelopmentWorkflow.md#running-unit-tests).
     - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
 
 6. Push your fork. If you have rebased you might have to use force-push your branch:
