@@ -4,7 +4,7 @@ import { FontStyle, FontWeight } from "../styling/font";
 import { PropertyChangeData } from "../../data/observable";
 
 // Types.
-import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "../core/view";
+import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isAndroid, isIOS, Observable, makeValidator, makeParser, Length } from "../core/view";
 import { FormattedString, Span } from "../../text/formatted-string";
 
 export { FormattedString, Span };
@@ -169,10 +169,10 @@ export function isBold(fontWeight: FontWeight): boolean {
     return fontWeight === "bold" || fontWeight === "700" || fontWeight === "800" || fontWeight === "900";
 }
 
-export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
+export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "", affectsLayout: isAndroid });
 textProperty.register(TextBaseCommon);
 
-export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
+export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: true, valueChanged: onFormattedTextPropertyChanged });
 formattedTextProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {

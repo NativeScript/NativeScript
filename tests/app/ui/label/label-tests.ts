@@ -20,6 +20,7 @@ import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 import * as helper from "../helper";
+import { Span, FormattedString } from "tns-core-modules/text/formatted-string";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
@@ -135,6 +136,102 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const actualNative = labelTestsNative.getNativeBackgroundColor(testLabel);
 
         TKUnit.assertEqual(actualNative, expectedValue);
+    }
+
+    public test_label_shrinks_on_text_change() {
+        const label = this.testView;
+        label.horizontalAlignment = "left";
+        this.waitUntilTestElementIsLoaded();
+
+        label.text = "long label long label";
+        this.waitUntilTestElementLayoutIsValid();
+        const longLabelWidth = label.getActualSize().width;
+
+        label.text = "short label";
+        this.waitUntilTestElementLayoutIsValid();
+        const shortLabelWidth = label.getActualSize().width;
+
+        TKUnit.assert(longLabelWidth > shortLabelWidth, "label width should shrink on text change.");
+    }
+
+    public test_label_shrinks_on_formatted_text_change() {
+        const label = this.testView;
+        label.horizontalAlignment = "left";
+        this.waitUntilTestElementIsLoaded();
+
+        const span = new Span();
+        span.text = "long label";
+        span.fontWeight = "bold";
+    
+        const span2 = new Span();
+        span2.text = "long label";
+    
+        const formattedString = new FormattedString();
+        formattedString.spans.push(span);
+        formattedString.spans.push(span2);
+        label.formattedText = formattedString;
+        this.waitUntilTestElementLayoutIsValid();
+        const longLabelWidth = label.getActualSize().width;
+
+        const span3 = new Span();
+        span3.text = "short label";
+        span3.fontWeight = "bold";
+    
+        const formattedString2 = new FormattedString();
+        formattedString2.spans.push(span3);
+        label.formattedText = formattedString2;
+        this.waitUntilTestElementLayoutIsValid();
+        const shortLabelWidth = label.getActualSize().width;
+
+        TKUnit.assert(longLabelWidth > shortLabelWidth, "label width should shrink on formatted text change.");
+    }
+
+    public test_label_grows_on_text_change() {
+        const label = this.testView;
+        label.horizontalAlignment = "left";
+        this.waitUntilTestElementIsLoaded();
+
+        label.text = "short label";
+        this.waitUntilTestElementLayoutIsValid();
+        const shortLabelWidth = label.getActualSize().width;
+
+        label.text = "long label long label";
+        this.waitUntilTestElementLayoutIsValid();
+        const longLabelWidth = label.getActualSize().width;
+
+        TKUnit.assert(longLabelWidth > shortLabelWidth, "label width should grow on text change.");
+    }
+
+    public test_label_grows_on_formatted_text_change() {
+        const label = this.testView;
+        label.horizontalAlignment = "left";
+        this.waitUntilTestElementIsLoaded();
+
+        const span = new Span();
+        span.text = "short label";
+        span.fontWeight = "bold";
+    
+        const formattedString = new FormattedString();
+        formattedString.spans.push(span);
+        label.formattedText = formattedString;
+        this.waitUntilTestElementLayoutIsValid();
+        const shortLabelWidth = label.getActualSize().width;
+
+        const span2 = new Span();
+        span2.text = "long label";
+        span2.fontWeight = "bold";
+    
+        const span3 = new Span();
+        span3.text = "long label";
+    
+        const formattedString2 = new FormattedString();
+        formattedString2.spans.push(span2);
+        formattedString2.spans.push(span3);
+        label.formattedText = formattedString2;
+        this.waitUntilTestElementLayoutIsValid();
+        const longLabelWidth = label.getActualSize().width;
+
+        TKUnit.assert(longLabelWidth > shortLabelWidth, "label width should grow on formatted text change.");
     }
 
     public test_measuredWidth_is_not_clipped() {
@@ -539,7 +636,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         if (expectRequestLayout) {
             TKUnit.assertTrue(called, "label.requestLayout should be called.");
         } else {
-            TKUnit.assertFalse(called, "image.requestLayout should not be called.");
+            TKUnit.assertFalse(called, "label.requestLayout should not be called.");
         }
     }
 

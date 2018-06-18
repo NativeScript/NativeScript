@@ -32,6 +32,19 @@ export function test_navigationButton_visibility() {
     TKUnit.assertNull(toolbar.getNavigationIcon(), "Visibility does not work");
 }
 
+export function test_navigationButton_contentDecription() {
+    const actionItem = new ActionItem();
+    actionItem.icon = "~/small-image.png";
+    const actionItemText = "NavButton with small-image";
+    actionItem.text = actionItemText;
+    const page = actionTestsCommon.createPageAndNavigate();
+    page.actionBar.navigationButton = actionItem;
+
+    const toolbar = <android.support.v7.widget.Toolbar>page.actionBar.nativeViewProtected;
+
+    TKUnit.assertEqual(toolbar.getNavigationContentDescription(), actionItemText, "Navigation Button should have an content decription");
+}
+
 export function test_set_actionView_to_attached_actionItem_propagates_context() {
     const actionItem = new ActionItem();
     const actionButton = new Button();
