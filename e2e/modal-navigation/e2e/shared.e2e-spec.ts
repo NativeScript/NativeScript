@@ -10,6 +10,19 @@ export async function modalFrameBackground(driver: AppiumDriver, screen: Screen)
     await screen.loadedModalFrame();
 }
 
+export async function testDialogBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
+    await screen.showDialogConfirm();
+    await screen.loadedConfirmDialog();
+
+    await driver.backgroundApp(time);
+    await screen.loadedConfirmDialog();
+
+    await screen.closeDialog();
+    if (isInFrame) {
+        await screen.loadedModalFrame();
+    }
+}
+
 export async function testSecondPageBackground(driver: AppiumDriver, screen: Screen) {
     await screen.navigateToSecondPage();
     await screen.loadedSecondPage();

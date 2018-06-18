@@ -5,6 +5,7 @@ const home = "Home"
 const first = "First"
 const modal = "Modal";
 const modalFirst = "Modal First";
+const dialogConfirm = "Dialog";
 const modalSecond = "Modal Second";
 const modalNested = "Modal Nested";
 
@@ -13,6 +14,7 @@ const modalPage = "Show Modal Page";
 const modalLayout = "Show Modal Layout";
 const modalTabView = "Show Modal TabView";
 const navToSecondPage = "Navigate To Second Page";
+const showDialog = "Show Dialog";
 const resetFrameRootView = "Reset Frame Root View";
 const resetTabRootView = "Reset Tab Root View";
 const resetLayoutRootView = "Reset Layout Root View";
@@ -20,6 +22,8 @@ const resetLayoutRootView = "Reset Layout Root View";
 const showNestedModalFrame = "Show Nested Modal Page With Frame";
 const showNestedModalPage = "Show Nested Modal Page";
 
+const confirmDialog = "Yes";
+const confirmDialogMessage = "Message";
 const closeModalNested = "Close Modal Nested";
 const closeModal = "Close Modal";
 const goBack = "Go Back";
@@ -131,6 +135,11 @@ export class Screen {
         await btnNavToSecondPage.tap();
     }
 
+    showDialogConfirm = async () => {
+        const btnShowDialogConfirm = await this._driver.findElementByText(showDialog);
+        await btnShowDialogConfirm.tap();
+    }
+
     navigateToFirstItem = async () => {
         const itemModalFirst = await this._driver.findElementByText(modalFirst);
         await itemModalFirst.tap();
@@ -139,6 +148,12 @@ export class Screen {
     navigateToSecondItem = async () => {
         const itemModalSecond = await this._driver.findElementByText(modalSecond);
         await itemModalSecond.tap();
+    }
+
+    loadedConfirmDialog = async () => {
+        const lblDialogMessage = await this._driver.findElementByText(confirmDialogMessage);
+        assert.isTrue(await lblDialogMessage.isDisplayed());
+        console.log(dialogConfirm + " shown!");
     }
 
     loadedSecondPage = async () => {
@@ -157,6 +172,11 @@ export class Screen {
         const btnGoBack = await this._driver.findElementByText(goBack);
         assert.isTrue(await btnGoBack.isDisplayed());
         console.log("Second Item loaded!");
+    }
+
+    closeDialog = async () => {
+        const btnYesDialog = await this._driver.findElementByText(confirmDialog);
+        await btnYesDialog.tap();
     }
 
     goBackFromSecondPage = async () => {
