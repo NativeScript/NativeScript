@@ -4,7 +4,7 @@ import { ViewBase } from "../view-base";
 
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, traceMessageType
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
@@ -615,15 +615,22 @@ export namespace ios {
     export function updateConstraints(controller: UIViewController, owner: View): void {
         const root = controller.view;
         if (!root.safeAreaLayoutGuide) {
-            const layoutGuide = (<any>root).safeAreaLayoutGuide = UILayoutGuide.alloc().init();
-            root.addLayoutGuide(layoutGuide);
-            NSLayoutConstraint.activateConstraints(<any>[
-                layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor),
-                layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor),
-                layoutGuide.leadingAnchor.constraintEqualToAnchor(root.leadingAnchor),
-                layoutGuide.trailingAnchor.constraintEqualToAnchor(root.trailingAnchor)
-            ]);
+            const layoutGuide = initLayoutGuide(controller);
+            (<any>controller.view).safeAreaLayoutGuide = layoutGuide;
         }
+    }
+
+    function initLayoutGuide(controller: UIViewController) {
+        const rootView = controller.view;
+        const layoutGuide = UILayoutGuide.alloc().init();
+        rootView.addLayoutGuide(layoutGuide);
+        NSLayoutConstraint.activateConstraints(<any>[
+            layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor),
+            layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor),
+            layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor),
+            layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)
+        ]);
+        return layoutGuide;
     }
 
     function getStatusBarHeight(viewController?: UIViewController): number {
@@ -646,7 +653,15 @@ export namespace ios {
         const frame = controller.view.frame;
         const fullscreenOrigin = frame.origin;
         const fullscreenSize = frame.size;
-        const safeArea = controller.view.safeAreaLayoutGuide.layoutFrame;
+
+        let layoutGuide = controller.view.safeAreaLayoutGuide;
+        if (!layoutGuide) {
+            traceWrite(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,
+                traceCategories.Layout, traceMessageType.error);
+
+            layoutGuide = initLayoutGuide(controller);
+        }
+        const safeArea = layoutGuide.layoutFrame;
         const safeOrigin = safeArea.origin;
         const safeAreaSize = safeArea.size;
 
