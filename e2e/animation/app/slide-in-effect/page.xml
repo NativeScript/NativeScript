@@ -1,0 +1,11 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+
+  <ActionBar title="Slide in Effect" />
+
+  <StackLayout>
+    <Button text="Add Item" tap="onAddItem" />
+    <Button text="Clear" tap="onClear" />
+    <WrapLayout id="wrapLayout" width="305" height="305" clipToBounds="true" backgroundColor="LightGray" padding="5,0,5,5" />
+  </StackLayout>
+
+</Page>
