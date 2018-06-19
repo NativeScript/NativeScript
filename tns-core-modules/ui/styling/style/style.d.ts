@@ -11,7 +11,7 @@ import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "../../layouts/flexbox-layout";
-import { LinearGradient } from "../linear-gradient";
+import { LinearGradient } from "../gradient";
 
 export interface Thickness {
     left: number;

@@ -1,5 +1,6 @@
 <StackLayout>
     <Label text="Home" horizontalAlignment="center" />
+    <Button text="Show Modal Without Page" tap="onModalNoPage" />
     <Button text="Show Modal Page With Frame" tap="onModalFrame" />
     <Button text="Show Modal Page" tap="onModalPage" />
     <Button text="Show Modal Layout" tap="onModalLayout" />

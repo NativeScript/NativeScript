@@ -61,6 +61,7 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 export const _rootModalViews = new Array<ViewBase>();
 
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
+    public static layoutChangedEvent = "layoutChanged";
     public static shownModallyEvent = "shownModally";
     public static showingModallyEvent = "showingModally";
 
@@ -275,6 +276,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     protected _hideNativeModalView(parent: ViewCommon) {
         //
+    }
+
+    protected _raiseLayoutChangedEvent() {
+        const args: EventData = {
+            eventName: ViewCommon.layoutChangedEvent,
+            object: this
+        };
+        this.notify(args);
     }
 
     protected _raiseShownModallyEvent() {

@@ -3,6 +3,7 @@ import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { View, EventData } from "tns-core-modules/ui/core/view";
 import { Frame, ShownModallyData } from "tns-core-modules/ui/frame";
 import { fromObject } from "tns-core-modules/data/observable";
+import { confirm } from "ui/dialogs";
 
 export function onShowingModally(args: ShownModallyData) {
     console.log("modal-page showingModally");
@@ -64,4 +65,18 @@ export function onNavigate(args: EventData) {
     const view = args.object as View;
     const page = view.page as Page;
     page.frame.navigate("modal-second/modal-second-page");
+}
+
+export function showDialog(args: EventData) {
+    let options = {
+        title: "Dialog",
+        message: "Message",
+        okButtonText: "Yes",
+        cancelButtonText: "No"
+
+    }
+
+    confirm(options).then((result: boolean) => {
+        console.log(result);
+    })
 }

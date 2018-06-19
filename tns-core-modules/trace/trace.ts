@@ -1,9 +1,10 @@
-﻿import * as definition from ".";
+﻿import { EventListener, TraceWriter, ErrorHandler } from ".";
 
 let enabled = false;
 let _categories = {};
-let _writers: Array<definition.TraceWriter> = [];
-let _eventListeners: Array<definition.EventListener> = [];
+let _writers: Array<TraceWriter> = [];
+let _eventListeners: Array<EventListener> = [];
+let _errorHandler: ErrorHandler;
 
 export function enable() {
     enabled = true;
@@ -21,11 +22,11 @@ export function isCategorySet(category: string): boolean {
     return category in _categories;
 }
 
-export function addWriter(writer: definition.TraceWriter) {
+export function addWriter(writer: TraceWriter) {
     _writers.push(writer);
 }
 
-export function removeWriter(writer: definition.TraceWriter) {
+export function removeWriter(writer: TraceWriter) {
     let index = _writers.indexOf(writer);
     if (index >= 0) {
         _writers.splice(index, 1);
@@ -79,7 +80,7 @@ export function notifyEvent(object: Object, name: string, data?: any) {
     }
 
     let i,
-        listener: definition.EventListener,
+        listener: EventListener,
         filters: Array<string>;
     for (i = 0; i < _eventListeners.length; i++) {
         listener = _eventListeners[i];
@@ -96,11 +97,11 @@ export function notifyEvent(object: Object, name: string, data?: any) {
     }
 }
 
-export function addEventListener(listener: definition.EventListener) {
+export function addEventListener(listener: EventListener) {
     _eventListeners.push(listener);
 }
 
-export function removeEventListener(listener: definition.EventListener) {
+export function removeEventListener(listener: EventListener) {
     var index = _eventListeners.indexOf(listener);
     if (index >= 0) {
         _eventListeners.splice(index, 1);
@@ -148,7 +149,7 @@ export module categories {
     }
 }
 
-class ConsoleWriter implements definition.TraceWriter {
+class ConsoleWriter implements TraceWriter {
     public write(message: any, category: string, type?: number) {
         if (!console) {
             return;
@@ -177,6 +178,31 @@ class ConsoleWriter implements definition.TraceWriter {
         }
     }
 }
-
 // register a ConsoleWriter by default
 addWriter(new ConsoleWriter());
+
+export class DefaultErrorHandler implements ErrorHandler {
+    handlerError(error) {
+        throw error;
+    }
+}
+setErrorHandler(new DefaultErrorHandler());
+
+export function getErrorHandler(): ErrorHandler {
+    return _errorHandler;
+}
+
+export function setErrorHandler(handler: ErrorHandler) {
+    _errorHandler = handler;
+}
+export function error(error: string | Error) {
+    if (!_errorHandler) {
+        return;
+    }
+
+    if (typeof error === "string") {
+        error = new Error(error);
+    }
+
+    _errorHandler.handlerError(error);
+}

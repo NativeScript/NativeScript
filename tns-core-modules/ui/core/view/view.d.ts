@@ -7,7 +7,7 @@ import { ViewBase, Property, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
-import { LinearGradient } from "../../styling/linear-gradient";
+import { LinearGradient } from "../../styling/gradient";
 
 export * from "../view-base";
 export * from "../../styling/style-properties";
@@ -103,6 +103,10 @@ export interface ShownModallyData extends EventData {
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
  */
 export abstract class View extends ViewBase {
+    /**
+     * String value used when hooking to layoutChanged event.
+     */
+    public static layoutChangedEvent: string;
     /**
      * String value used when hooking to showingModally event.
      */
@@ -771,6 +775,7 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 
 export namespace ios {
+    export function getParentWithViewController(parent: View): View
     export function isContentScrollable(controller: any /* UIViewController */, owner: View): boolean
     export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void
     export function updateConstraints(controller: any /* UIViewController */, owner: View): void;

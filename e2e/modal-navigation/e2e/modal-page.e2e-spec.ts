@@ -5,10 +5,11 @@ import {
     modalPageBackground,
     testSecondPageBackground,
     testNestedModalFrameBackground,
-    testNestedModalPageBackground
+    testNestedModalPageBackground,
+    testDialogBackground
 } from "./shared.e2e-spec"
 
-describe("modal page:", () => {
+describe("modal-page:", () => {
 
     let driver: AppiumDriver;
     let screen: Screen;
@@ -44,6 +45,10 @@ describe("modal page:", () => {
             after(async () => {
                 await screen.closeModal();
                 await screen.loadedHome();
+            });
+
+            it("should show dialog confirm, run in background", async () => {
+                await testDialogBackground(driver, screen, false);
             });
 
             it("should run modal page in background", async () => {

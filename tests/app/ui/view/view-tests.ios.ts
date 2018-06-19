@@ -1,15 +1,16 @@
 import * as commonTests from "./view-tests-common";
-import * as view from "tns-core-modules/ui/core/view";
-import * as grid from "tns-core-modules/ui/layouts/grid-layout";
-import * as color from "tns-core-modules/color";
+
+import { View } from "tns-core-modules/ui/core/view";
+import { Button } from "tns-core-modules/ui/button";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { Color } from "tns-core-modules/color";
 import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
-import * as button from "tns-core-modules/ui/button";
 import * as utils from "tns-core-modules/utils/utils";
 
 global.moduleMerge(commonTests, exports);
 
-class MyGrid extends grid.GridLayout {
+class MyGrid extends GridLayout {
     public backgroundDrawCount: number = 0;
 
     _redrawNativeBackground(background: any) {
@@ -18,33 +19,33 @@ class MyGrid extends grid.GridLayout {
     }
 }
 
-export function getUniformNativeBorderWidth(v: view.View): number {
+export function getUniformNativeBorderWidth(v: View): number {
     return utils.layout.toDevicePixels((<UIView>v.ios).layer.borderWidth);
 }
 
-export function checkUniformNativeBorderColor(v: view.View): boolean {
-    if (v.borderColor instanceof color.Color) {
-        return (<UIView>v.ios).layer.borderColor === (<color.Color>v.borderColor).ios.CGColor;
+export function checkUniformNativeBorderColor(v: View): boolean {
+    if (v.borderColor instanceof Color) {
+        return (<UIView>v.ios).layer.borderColor === (<Color>v.borderColor).ios.CGColor;
     }
 
     return undefined;
 }
 
-export function getUniformNativeCornerRadius(v: view.View): number {
+export function getUniformNativeCornerRadius(v: View): number {
     return utils.layout.toDevicePixels((<UIView>v.ios).layer.cornerRadius);
 }
 
-export function checkNativeBackgroundColor(v: view.View): boolean {
+export function checkNativeBackgroundColor(v: View): boolean {
     if (v.ios instanceof UILabel) {
         var cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
-        var cgColor2 = (<UIColor>(<color.Color>v.backgroundColor).ios).CGColor;
+        var cgColor2 = (<UIColor>(<Color>v.backgroundColor).ios).CGColor;
         return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
     }
 
-    return v.backgroundColor && (<UIView>v.ios).backgroundColor.isEqual((<color.Color>v.backgroundColor).ios);
+    return v.backgroundColor && (<UIView>v.ios).backgroundColor.isEqual((<Color>v.backgroundColor).ios);
 }
 
-export function checkNativeBackgroundImage(v: view.View): boolean {
+export function checkNativeBackgroundImage(v: View): boolean {
     return (<UIView>v.ios).backgroundColor !== undefined;
 }
 
@@ -53,7 +54,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
     let root = helper.getCurrentPage();
     let layout = new MyGrid();
     layout.className = "myClass";
-    layout.backgroundColor = new color.Color(255, 255, 0, 0);
+    layout.backgroundColor = new Color(255, 255, 0, 0);
 
     root.css = ".myClass { background-image: url('~/logo.png') }";
     root.content = layout;
@@ -82,7 +83,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
 }
 
 export function test_automation_text_set_to_native() {
-    var newButton = new button.Button();
+    var newButton = new Button();
     newButton.automationText = "Button1";
     helper.getCurrentPage().content = newButton;
     TKUnit.assertEqual((<UIView>newButton.ios).accessibilityIdentifier, "Button1", "accessibilityIdentifier not set to native view.");
