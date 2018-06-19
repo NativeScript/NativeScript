@@ -4,7 +4,7 @@
   "readme": "NativeScript Application",
   "repository": "<fill-your-repository-here>",
   "nativescript": {
-    "id": "org.nativescript.modalnavigation",
+    "id": "org.nativescript.animation",
     "tns-ios": {
       "version": "next"
     },

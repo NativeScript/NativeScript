@@ -1,0 +1,16 @@
+<Page class="page"
+    navigatedTo="onNavigatedTo"
+    xmlns="http://schemas.nativescript.org/tns.xsd">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="Home"></Label>
+    </ActionBar>
+
+    <StackLayout>
+        <Label text="Home loaded!" />
+        <Button text="Play Sequential Animation With Translate" tap="onPlaySequentially" />
+        <Button text="Play Simultaneous Animation With Translate" tap="onPlaySimultaneously" />
+        <Label id="Label1" text="Label1" backgroundColor="hotpink" horizontalAlignment="left" />
+        <Label id="Label2" text="Label2" backgroundColor="beige" horizontalAlignment="left" />
+    </StackLayout>
+</Page>
