@@ -311,8 +311,8 @@ export function start(entry?: string | NavigationEntry) {
                 if (topViewController) {
                     const controller = getViewController(rootView);
                     rootView._setupAsRootView({});
-                    if (topViewController.respondsToSelector('presentNativeScriptApp:')) {
-                        topViewController.performSelectorWithObject('presentNativeScriptApp:', controller);
+                    if (topViewController.respondsToSelector("presentNativeScriptApp:")) {
+                        topViewController.performSelectorWithObject("presentNativeScriptApp:", controller);
                     } else {
                         topViewController.presentViewControllerAnimatedCompletion(controller, true, null);
                     }
