@@ -235,6 +235,20 @@ class IOSApplication implements IOSApplicationDefinition {
             this._window.makeKeyAndVisible();
         }
     }
+
+    public getTopmostViewController(rootViewController: UIViewController): UIViewController {
+        if (!rootViewController.presentedViewController) {
+            return rootViewController;
+        }
+        if (rootViewController.presentedViewController.isMemberOfClass(UINavigationController.class())) {
+            let navigationController = <UINavigationController>rootViewController.presentedViewController;
+            let lastViewController = navigationController.viewControllers.lastObject;
+            return this.getTopmostViewController(lastViewController);
+        }
+
+        let presentedViewController = <UIViewController>rootViewController.presentedViewController;
+        return this.getTopmostViewController(presentedViewController);
+    }
 }
 
 const iosApp = new IOSApplication();
@@ -293,10 +307,16 @@ export function start(entry?: string | NavigationEntry) {
             const window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
             if (window) {
                 const rootController = window.rootViewController;
-                if (rootController) {
+                const topViewController = iosApp.getTopmostViewController(rootController);
+                if (topViewController) {
                     const controller = getViewController(rootView);
                     rootView._setupAsRootView({});
-                    rootController.presentViewControllerAnimatedCompletion(controller, true, null);
+                    if (topViewController.respondsToSelector('presentNativeScriptApp:')) {
+                        topViewController.performSelectorWithObject('presentNativeScriptApp:', controller);
+                    } else {
+                        topViewController.presentViewControllerAnimatedCompletion(controller, true, null);
+                    }
+                    
                 }
             }
         }
