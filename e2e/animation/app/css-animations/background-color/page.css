@@ -1,0 +1,14 @@
+.button {
+    background-color: green;
+}
+
+.button_selected {
+    animation-name: button_selected;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes button_selected {
+    from { background-color: yellow; }
+    to { background-color: red; }
+}
