@@ -26,23 +26,32 @@ describe("animation:", () => {
         }
     });
 
-    it("should play sequentially", async () => {
+    it("should navigate to chaining with animation set example", async () => {
         await screen.loadedHome();
-
-        const button = await driver.findElementByText("Play Sequential Animation With Translate", SearchOptions.exact);
-        await button.click();
-
-        const label = await driver.findElementByText("Label1 animated sequentially!", SearchOptions.exact);
-        assert.isTrue(await label.isDisplayed()); 
+        await screen.loadedChainingWithAnimationSet();
     });
 
-    it("should play simultaneously", async () => {
-        await screen.loadedHome();
+    it("should play animation sequentially", async () => {    
+        const buttonAnimate = await driver.findElementByText("Animate Sequentially", SearchOptions.exact);
+        await buttonAnimate.click();
 
-        const button = await driver.findElementByText("Play Simultaneous Animation With Translate", SearchOptions.exact);
+        const label = await driver.findElementByText("{{N4}}", SearchOptions.exact);
+        assert.isTrue(await label.isDisplayed());
+    });
+
+    it ("should reset example", async() => {
+        const buttonReset = await driver.findElementByText("Reset", SearchOptions.exact);
+        await buttonReset.click();
+
+        const label = await driver.findElementByText("{N4}", SearchOptions.exact);
+        assert.isTrue(await label.isDisplayed());
+    });
+
+    it("should play animation simultaneously", async () => {
+        const button = await driver.findElementByText("Animate Simultaneously", SearchOptions.exact);
         await button.click();
 
-        const label = await driver.findElementByText("Label2 animated simultaneously!", SearchOptions.exact);
-        assert.isTrue(await label.isDisplayed()); 
+        const label = await driver.findElementByText("{{N4}}", SearchOptions.exact);
+        assert.isTrue(await label.isDisplayed());
     });
 });
