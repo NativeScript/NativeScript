@@ -99,6 +99,9 @@ allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
 import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
 allTests["WEAK-EVENTS"] = weakEventsTests;
 
+import * as traceErrorTests from "./trace/trace-error-tests";
+allTests["TRACE-ERROR"] = traceErrorTests;
+
 import * as connectivityTests from "./connectivity/connectivity-tests";
 allTests["CONNECTIVITY"] = connectivityTests;
 

@@ -64,6 +64,11 @@ export function isCategorySet(category: string): boolean;
 export function write(message: any, category: string, type?: number);
 
 /**
+ * Passes an error to the registered ErrorHandler
+ * @param error The error to be handled.
+ */
+export function error(error: string | Error);
+/**
  * Notifies all the attached listeners for an event that has occurred in the sender object.
  * @param object The Object instance that raised the event.
  * @param name The name of the raised event.
@@ -74,6 +79,10 @@ export function notifyEvent(object: Object, name: string, data?: any);
 export function addEventListener(listener: EventListener);
 
 export function removeEventListener(listener: EventListener);
+
+export function getErrorHandler(): ErrorHandler;
+
+export function setErrorHandler(handler: ErrorHandler);
 
 /**
  * An enum that defines all predefined categories.
@@ -121,4 +130,15 @@ export interface TraceWriter {
 export interface EventListener {
     filter: string;
     on(object: Object, name: string, data?: any);
+}
+
+/**
+ * An interface used to for handling trace error  
+ */
+export interface ErrorHandler {
+    handlerError(error: Error);
+}
+
+export class DefaultErrorHandler implements ErrorHandler {
+    handlerError(error);
 }
