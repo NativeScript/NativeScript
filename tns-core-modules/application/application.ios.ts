@@ -311,7 +311,7 @@ export function start(entry?: string | NavigationEntry) {
                 if (topViewController) {
                     const controller = getViewController(rootView);
                     rootView._setupAsRootView({});
-                    if (topViewController.respondsToSelector("presentNativeScriptApp:")) {
+                    if (topViewController.conformsToProtocol(NSProtocolFromString("NativeScriptEmbedder"))) {
                         topViewController.performSelectorWithObject("presentNativeScriptApp:", controller);
                     } else {
                         topViewController.presentViewControllerAnimatedCompletion(controller, true, null);
