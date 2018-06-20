@@ -1,0 +1,14 @@
+.opaque {
+    opacity: 1;
+}
+
+.transparent {
+    animation-name: transparent;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes transparent {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}

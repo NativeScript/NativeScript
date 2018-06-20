@@ -8,7 +8,7 @@
 android {  
   defaultConfig {  
     generatedDensities = []
-    applicationId = "org.nativescript.modalnavigation"
+    applicationId = "org.nativescript.animation"
   }  
   aaptOptions {  
     additionalParameters "--no-version-vectors"  
