@@ -1,0 +1,26 @@
+@keyframes entry {
+    0% {
+        transform: translate(-200, 0);
+        opacity: 0;
+    }
+    30% {
+        transform: translate(-200, 0);
+        opacity: 0;
+    }
+    70% {
+        transform: translate(200, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(200, 0);
+        opacity: 1;
+    }
+}
+
+.entry {
+    animation-name: entry;
+    animation-duration: 3;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
