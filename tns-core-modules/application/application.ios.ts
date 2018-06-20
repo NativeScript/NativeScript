@@ -307,16 +307,15 @@ export function start(entry?: string | NavigationEntry) {
             const window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
             if (window) {
                 const rootController = window.rootViewController;
-                const topViewController = iosApp.getTopmostViewController(rootController);
-                if (topViewController) {
+                if (rootController) {
+                    const topViewController = iosApp.getTopmostViewController(rootController);
                     const controller = getViewController(rootView);
                     rootView._setupAsRootView({});
                     if (topViewController.conformsToProtocol(NSProtocolFromString("NativeScriptEmbedder"))) {
                         topViewController.performSelectorWithObject("presentNativeScriptApp:", controller);
                     } else {
                         topViewController.presentViewControllerAnimatedCompletion(controller, true, null);
-                    }
-                    
+                    }         
                 }
             }
         }
