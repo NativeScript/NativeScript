@@ -6,7 +6,15 @@ import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../.
 import { addWeakEventListener, removeWeakEventListener } from "../weak-event-listener";
 import { bindingConstants, parentsRegex } from "../../builder/binding-builder";
 import { escapeRegexSymbols } from "../../../utils/utils";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet, messageType as traceMessageType } from "../../../trace";
+import {
+    isEnabled as traceEnabled,
+    write as traceWrite,
+    error as traceError,
+    categories as traceCategories,
+    notifyEvent as traceNotifyEvent,
+    isCategorySet,
+    messageType as traceMessageType
+} from "../../../trace";
 import * as types from "../../../utils/types";
 
 import * as applicationCommon from "../../../application/application-common";
@@ -14,7 +22,7 @@ import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
 export {
     Observable, WrappedValue, PropertyChangeData, EventData,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet
+    traceEnabled, traceWrite, traceError, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet
 };
 
 const contextKey = "context";

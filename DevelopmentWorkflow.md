@@ -143,4 +143,4 @@ If you want to improve on the documentation you can also build and start up dev 
 npm run dev-typedoc
 ```
 
-The terminal will point the address you can open in your web browsed.
+The terminal will point the address you can open in your web browser.
