@@ -116,6 +116,25 @@ export module ios {
 
         return NSString.stringWithString(NSString.pathWithComponents(<any>paths)).stringByStandardizingPath;
     }
+
+    export function getVisibleViewController(rootViewController: UIViewController): UIViewController {
+        if (rootViewController.presentedViewController) {
+            return getVisibleViewController(rootViewController.presentedViewController);
+        }
+
+        if (rootViewController.isKindOfClass(UINavigationController.class())) {
+            return getVisibleViewController((<UINavigationController>rootViewController).visibleViewController);
+        }
+
+        if (rootViewController.isKindOfClass(UITabBarController.class())) {
+            let selectedTab = (<UITabBarController>rootViewController).selectedViewController;
+            return getVisibleViewController(<UITabBarController>rootViewController);
+        }
+
+        return rootViewController;
+
+    }
+
 }
 
 export function GC() {
