@@ -4,7 +4,7 @@ import { ViewBase } from "../view-base";
 
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceMessageType
+    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
@@ -309,7 +309,19 @@ export class View extends ViewCommon {
     }
 
     protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
-        let parentWithController = ios.getParentWithViewController(parent);
+        const parentWithController = ios.getParentWithViewController(parent);
+        if (!parentWithController) {
+            traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
+                traceCategories.ViewHierarchy, traceMessageType.error)
+            return;
+        }
+
+        const parentController = parentWithController.viewController;
+        if (!parentController.view || !parentController.view.window) {
+            traceWrite("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!",
+                traceCategories.ViewHierarchy, traceMessageType.error);
+            return;
+        }
 
         super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
@@ -326,11 +338,6 @@ export class View extends ViewCommon {
 
         this._setupAsRootView({});
 
-        const parentController = parentWithController.viewController;
-        if (!parentController.view.window) {
-            throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
-        }
-
         if (fullscreen) {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
         } else {
@@ -346,7 +353,8 @@ export class View extends ViewCommon {
         parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
         const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
         if (transitionCoordinator) {
-            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
+            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
+                .call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
         } else {
             // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
             // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
@@ -356,6 +364,11 @@ export class View extends ViewCommon {
     }
 
     protected _hideNativeModalView(parent: View) {
+        if (!parent || !parent.viewController) {
+            traceError("Trying to hide modal view but no parent with viewController specified.")
+            return; 
+        }
+
         const parentController = parent.viewController;
         const animated = (<any>this.viewController).animated;
 
@@ -582,14 +595,12 @@ export class CustomLayoutView extends View {
 }
 
 export namespace ios {
-    export function getParentWithViewController(parent: View): View {
-        let view = parent;
-        let controller = view.viewController;
-        while (!controller) {
+    export function getParentWithViewController(view: View): View {
+        while (view && !view.viewController) {
             view = view.parent as View;
-            controller = view.viewController;
         }
 
+        // Note: Might return undefined if no parent with viewController is found
         return view;
     }
 

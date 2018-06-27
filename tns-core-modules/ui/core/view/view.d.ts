@@ -775,7 +775,11 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 
 export namespace ios {
-    export function getParentWithViewController(parent: View): View
+    /**
+     * Returns a view with viewController or undefined if no such found along the view's parent chain.
+     * @param view The view form which to start the search.
+     */
+    export function getParentWithViewController(view: View): View
     export function isContentScrollable(controller: any /* UIViewController */, owner: View): boolean
     export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void
     export function updateConstraints(controller: any /* UIViewController */, owner: View): void;

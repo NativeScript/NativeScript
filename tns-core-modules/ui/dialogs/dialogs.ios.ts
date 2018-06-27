@@ -209,7 +209,8 @@ function showUIAlertController(alertController: UIAlertController) {
             if (view.ios instanceof UIViewController) {
                 viewController = view.ios;
             } else {
-                viewController = iosView.getParentWithViewController(view).viewController;
+                const parentWithController = iosView.getParentWithViewController(view);
+                viewController = parentWithController ? parentWithController.viewController : undefined;
             }
         }
 
