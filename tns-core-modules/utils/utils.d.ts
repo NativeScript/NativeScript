@@ -247,6 +247,13 @@ export module ios {
      * iOS - this folder is read-only and contains the app and all its resources.
      */
     export function getCurrentAppPath(): string;
+
+    /**
+     * Gets the currently visible(topmost) UIViewController.
+     * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
+     * Returns the visible UIViewController.
+     */
+    export function getVisibleViewController(rootViewController: any/* UIViewController*/ ): any/* UIViewController*/;
 }
 
 /**
