@@ -6,7 +6,8 @@ import {
     testSecondPageBackground,
     testSecondPageClose,
     testNestedModalFrameBackground,
-    testNestedModalPageBackground
+    testNestedModalPageBackground,
+    testDialogBackground
 } from "./shared.e2e-spec"
 
 describe("modal-frame:", () => {
@@ -42,6 +43,10 @@ describe("modal-frame:", () => {
             after(async () => {
                 await screen.closeModal();
                 await screen.loadedHome();
+            });
+
+            it("should show dialog confirm, run in background", async () => {
+                await testDialogBackground(driver, screen);
             });
 
             it("should run modal page with frame in background", async () => {

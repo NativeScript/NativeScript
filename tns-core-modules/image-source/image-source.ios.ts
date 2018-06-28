@@ -131,7 +131,7 @@ export class ImageSource implements ImageSourceDefinition {
         }
 
         if (quality) {
-            quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
+            quality = (quality - 0) / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
         const data = getImageData(this.ios, format, quality);
@@ -149,7 +149,7 @@ export class ImageSource implements ImageSourceDefinition {
         }
 
         if (quality) {
-            quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
+            quality = (quality - 0) / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
         const data = getImageData(this.ios, format, quality);

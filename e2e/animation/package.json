@@ -1,0 +1,32 @@
+{
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "readme": "NativeScript Application",
+  "repository": "<fill-your-repository-here>",
+  "nativescript": {
+    "id": "org.nativescript.animation",
+    "tns-ios": {
+      "version": "next"
+    },
+    "tns-android": {
+      "version": "next"
+    }
+  },
+  "dependencies": {
+    "nativescript-theme-core": "~1.0.4",
+    "tns-core-modules": "next"
+  },
+  "devDependencies": {
+    "babel-traverse": "6.26.0",
+    "babel-types": "6.26.0",
+    "babylon": "6.18.0",
+    "lazy": "1.0.11",
+    "nativescript-dev-appium": "next",
+    "nativescript-dev-typescript": "next",
+    "nativescript-dev-webpack": "next"
+  },
+  "scripts": {
+    "e2e": "tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
+    "e2e-watch": "tsc -p e2e --watch"
+  }
+}

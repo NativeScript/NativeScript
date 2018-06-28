@@ -52,7 +52,7 @@ export class Property<T extends ViewBase, U> {
     public readonly setNative: symbol;
     public readonly defaultValue: U;
     public register(cls: { prototype: T }): void;
-    public nativeValueChange(T, U): void;
+    public nativeValueChange(owner: T, value: U): void;
     public isSet(instance: T): boolean;
 }
 export interface Property<T extends ViewBase, U> extends TypedPropertyDescriptor<U> {
