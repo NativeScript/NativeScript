@@ -79,14 +79,8 @@ class CSSSource {
     }
 
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
-        // webpack modules require all file paths to be relative to /app folder.
-        let appRelativeUri = uri;
-        if (appRelativeUri.startsWith("/")) {
-            var app = knownFolders.currentApp().path + "/";
-            if (appRelativeUri.startsWith(app)) {
-                appRelativeUri = "./" + appRelativeUri.substr(app.length);
-            }
-        }
+        // webpack modules require all file paths to be relative to /app folder
+        let appRelativeUri = CSSSource.uriToRelativePath(uri);
 
         try {
             const cssOrAst = global.loadModule(appRelativeUri);
@@ -109,6 +103,17 @@ class CSSSource {
         return CSSSource.fromFile(appRelativeUri, keyframes);
     }
 
+    private static uriToRelativePath(uri: string): string {
+        let appRelativeUri = uri;
+        if (appRelativeUri.startsWith("/")) {
+            var app = knownFolders.currentApp().path + "/";
+            if (appRelativeUri.startsWith(app)) {
+                appRelativeUri = "./" + appRelativeUri.substr(app.length);
+            }
+        }
+        return appRelativeUri;
+    }
+
     public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
         // .scss, .sass, etc. css files in vanilla app are usually compiled to .css so we will try to load a compiled file first.
         let cssFileUrl = url.replace(/\..\w+$/, ".css");
@@ -124,9 +129,9 @@ class CSSSource {
     }
 
     @profile
-    public static resolveCSSPathFromURL(url: string): string {
+    public static resolveCSSPathFromURL(url: string, importSource?: string): string {
         const app = knownFolders.currentApp().path;
-        const file = resolveFileNameFromUrl(url, app, File.exists);
+        const file = resolveFileNameFromUrl(url, app, File.exists, importSource);
         return file;
     }
 
@@ -201,12 +206,13 @@ class CSSSource {
         const imports = this._ast["stylesheet"]["rules"].filter(r => r.type === "import");
         for (let i = 0; i < imports.length; i++) {
             const importItem = imports[i]["import"];
-
+            const importItemSource = imports[i]["position"]["source"];
             const match = importItem && (<string>importItem).match(pattern);
             const url = match && match[2];
 
             if (url !== null && url !== undefined) {
-                const cssFile = CSSSource.fromURI(url, this._keyframes);
+                const file = CSSSource.resolveCSSPathFromURL(url, importItemSource);
+                const cssFile = new CSSSource(undefined, url, file, this._keyframes, undefined);
                 selectors = selectors.concat(cssFile.selectors);
             }
         }
@@ -521,13 +527,13 @@ export class StyleScope {
 
         let parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
         this._css = this._css + parsedCssSelectors.source;
-        this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors.selectors); 
+        this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors.selectors);
         this._localCssSelectorVersion++;
         this.ensureSelectors();
     }
 
     public getKeyframeAnimationWithName(animationName: string): kam.KeyframeAnimationInfo {
-        const cssKeyframes  = this._keyframes[animationName];
+        const cssKeyframes = this._keyframes[animationName];
         if (!cssKeyframes) {
             return;
         }
@@ -611,9 +617,9 @@ export class StyleScope {
 
 type KeyframesMap = Map<string, Keyframes>;
 
-export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean): string {
-    let fileName: string = typeof url === "string" ? url.trim() : "";
+export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean, importSource?: string): string {
 
+    let fileName: string = typeof url === "string" ? url.trim() : "";
     if (fileName.indexOf("~/") === 0) {
         fileName = fileName.replace("~/", "");
     }
@@ -628,6 +634,14 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
         if (fileName[0] === "~" && fileName[1] !== "/" && fileName[1] !== "\"") {
             fileName = fileName.substr(1);
         }
+
+        if (importSource) {
+            const importFile = resolveFileNameFromImport(importSource, fileName);
+            if (fileExists(importFile)) {
+                return importFile;
+            }
+        }
+
         const external = path.join(appDirectory, "tns_modules", fileName);
         if (fileExists(external)) {
             return external;
@@ -635,6 +649,24 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     }
 
     return null;
+}
+
+function resolveFileNameFromImport(importSource: string, fileName: string): string {
+    let stack = importSource.split(path.separator),
+        parts = fileName.split(path.separator);
+
+    stack.pop()
+    for (let i = 0; i < parts.length; i++) {
+        if (parts[i] === ".") {
+            continue;
+        } if (parts[i] === "..") {
+            stack.pop();
+        } else {
+            stack.push(parts[i]);
+        }
+    }
+
+    return stack.join(path.separator);
 }
 
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
