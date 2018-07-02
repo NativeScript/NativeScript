@@ -70,7 +70,7 @@ function initializeWebViewClient(): void {
                 let request: any = arguments[1];
                 let error: any = arguments[2];
 
-                super.onReceivedError(view, request, error);
+                super.onReceivedError(view, request, error, null);
                 const owner = this.owner;
                 if (owner) {
                     if (traceEnabled()) {

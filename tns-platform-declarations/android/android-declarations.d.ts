@@ -12,6 +12,6 @@ interface ArrayConstructor {
     create(type: any, count: number): any;
 }
 
-declare module native {	export class Array<T> {	public constructor(); } }
+declare module native {	export class Array<T> {	constructor(); length: number; [index: number]: T; } }
 
 import globalAndroid = android;

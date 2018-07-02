@@ -1,7 +1,7 @@
 ﻿import * as common from "./application-settings-common";
 import { getNativeApplication } from "../application";
 
-var sharedPreferences: android.content.ISharedPreferences;
+var sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
     if (!sharedPreferences) {
         sharedPreferences = (<android.app.Application>getNativeApplication()).getApplicationContext().getSharedPreferences("prefs.db", 0);

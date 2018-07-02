@@ -332,7 +332,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: android.transit
     return new TransitionListener(entry, transition);
 }
 
-function getAnimationListener(): android.animation.Animator.IAnimatorListener {
+function getAnimationListener(): android.animation.Animator.AnimatorListener {
     if (!AnimationListener) {
         @Interfaces([android.animation.Animator.AnimatorListener])
         class AnimationListnerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
@@ -387,7 +387,7 @@ function addToWaitingQueue(entry: ExpandedEntry): void {
     entries.add(entry);
 }
 
-function clearAnimationListener(animator: ExpandedAnimator, listener: android.animation.Animator.IAnimatorListener): void {
+function clearAnimationListener(animator: ExpandedAnimator, listener: android.animation.Animator.AnimatorListener): void {
     if (!animator) {
         return;
     }
@@ -660,7 +660,7 @@ function setupAllAnimation(entry: ExpandedEntry, transition: Transition): void {
     setupExitAndPopEnterAnimation(entry, transition);
     const listener = getAnimationListener();
 
-    // setupAllAnimation is called only for new fragments so we don't 
+    // setupAllAnimation is called only for new fragments so we don't
     // need to clearAnimationListener for enter & popExit animators.
     const enterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.enter);
     enterAnimator.transitionType = AndroidTransitionType.enter;
@@ -721,7 +721,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
     if (entries.size === 0) {
         const frame = entry.resolvedPage.frame;
         // We have 0 or 1 entry per frameId in completedEntries
-        // So there is no need to make it to Set like waitingQueue 
+        // So there is no need to make it to Set like waitingQueue
         const previousCompletedAnimationEntry = completedEntries.get(frameId);
         completedEntries.delete(frameId);
         waitingQueue.delete(frameId);
