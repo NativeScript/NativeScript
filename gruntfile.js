@@ -32,7 +32,7 @@ module.exports = function(grunt) {
         if (blockCommentPrivate.test(content)) {
             return false;
         }
-        
+
         var processed = content;
         processed = processed.replace(/\/\/[\/\s]*@private[^]*?\/\/[\/\s]*?@endprivate/gm, "");
         return processed;
@@ -106,7 +106,7 @@ module.exports = function(grunt) {
         copyAppsSrc.push("!" + localCfg.srcAppDirs[i] + "/**/*.map");
         copyAppsSrc.push("!" + localCfg.srcAppDirs[i] + "/**/*.ts");
     }
-    
+
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
     nodeTestEnv.NODE_PATH = localCfg.outTnsCoreModules;
     localCfg.nodeTestsDir = path.join(localCfg.outDir, 'unit-tests');
@@ -236,6 +236,11 @@ module.exports = function(grunt) {
                 ],
                 dest: localCfg.outDir + "/"
             },
+            platformsFiles: {
+                expand: true,
+                src: "tns-core-modules/platforms/**/*.*",
+                dest: localCfg.outDir + "/"
+            },
             apps: {
                 expand: true,
                 src: copyAppsSrc,
@@ -321,6 +326,7 @@ module.exports = function(grunt) {
     // Register Tasks
     grunt.registerTask("collect-modules-raw-files", [
         "copy:jsLibs",
+        "copy:platformsFiles",
         "copy:license"
     ]);
 
@@ -372,7 +378,7 @@ module.exports = function(grunt) {
         "copy:modulesPackageDef",
         "exec:packModules"
     ]);
-    
+
     grunt.registerTask("compile-modules", [
         "clean:build",
         "shell:getGitSHA",
@@ -446,7 +452,7 @@ module.exports = function(grunt) {
             shelljs.exec("npm pack", {cwd: outAppDir});
         });
     });
-    
+
     grunt.registerTask("get-ready-packages", ["copy:readyPackages"]);
 
     grunt.registerTask("default", (skipTsLint ? [] : ["shell:tslint"]).concat([
