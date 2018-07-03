@@ -13,7 +13,10 @@ import lazy from "../../utils/lazy";
 
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
 
+// NOTE: we have ignored typescript errors for missing transition functionality as we use it only in android API level >= 21
+
 interface TransitionListener {
+    //@ts-ignore TS2694: API level < 21 does not have transition
     new(entry: ExpandedEntry, transition: android.transition.Transition): ExpandedTransitionListener;
 }
 
@@ -22,8 +25,10 @@ interface ExpandedAnimator extends android.animation.Animator {
     transitionType?: string;
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 interface ExpandedTransitionListener extends android.transition.Transition.TransitionListener {
     entry: ExpandedEntry;
+    //@ts-ignore TS2694: API level < 21 does not have transition
     transition: android.transition.Transition;
 }
 
@@ -280,15 +285,19 @@ export function _reverseTransitions(previousEntry: ExpandedEntry, currentEntry: 
 
 // Transition listener can't be static because
 // android is cloning transitions and we can't expand them :(
+//@ts-ignore TS2694: API level < 21 does not have transition
 function getTransitionListener(entry: ExpandedEntry, transition: android.transition.Transition): ExpandedTransitionListener {
     if (!TransitionListener) {
         @Interfaces([(<any>android).transition.Transition.TransitionListener])
+        //@ts-ignore TS2694: API level < 21 does not have transition
         class TransitionListenerImpl extends java.lang.Object implements android.transition.Transition.TransitionListener {
+            //@ts-ignore TS2694: API level < 21 does not have transition
             constructor(public entry: ExpandedEntry, public transition: android.transition.Transition) {
                 super();
                 return global.__native(this);
             }
 
+            //@ts-ignore TS2694: API level < 21 does not have transition
             public onTransitionStart(transition: android.transition.Transition): void {
                 const entry = this.entry;
                 addToWaitingQueue(entry);
@@ -297,6 +306,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: android.transit
                 }
             }
 
+            //@ts-ignore TS2694: API level < 21 does not have transition
             onTransitionEnd(transition: android.transition.Transition): void {
                 const entry = this.entry;
                 if (traceEnabled()) {
@@ -306,6 +316,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: android.transit
                 transitionOrAnimationCompleted(entry);
             }
 
+            //@ts-ignore TS2694: API level < 21 does not have transition
             onTransitionResume(transition: android.transition.Transition): void {
                 if (traceEnabled()) {
                     const fragment = this.entry.fragmentTag;
@@ -313,12 +324,14 @@ function getTransitionListener(entry: ExpandedEntry, transition: android.transit
                 }
             }
 
+            //@ts-ignore TS2694: API level < 21 does not have transition
             onTransitionPause(transition: android.transition.Transition): void {
                 if (traceEnabled()) {
                     traceWrite(`PAUSE ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, traceCategories.Transition);
                 }
             }
 
+            //@ts-ignore TS2694: API level < 21 does not have transition
             onTransitionCancel(transition: android.transition.Transition): void {
                 if (traceEnabled()) {
                     traceWrite(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, traceCategories.Transition);
@@ -407,12 +420,14 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
         const fragment: android.app.Fragment = entry.fragment;
         const exitListener = entry.exitTransitionListener;
         if (exitListener) {
+            //@ts-ignore TS2339: API level < 21 does not have transition
             const exitTransition = fragment.getExitTransition();
             if (exitTransition) {
                 if (removeListener) {
                     exitTransition.removeListener(exitListener);
                 }
 
+                //@ts-ignore TS2339: API level < 21 does not have transition
                 fragment.setExitTransition(null);
                 if (traceEnabled()) {
                     traceWrite(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
@@ -426,12 +441,14 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
 
         const reenterListener = entry.reenterTransitionListener;
         if (reenterListener) {
+            //@ts-ignore TS2339: API level < 21 does not have transition
             const reenterTransition = fragment.getReenterTransition();
             if (reenterTransition) {
                 if (removeListener) {
                     reenterTransition.removeListener(reenterListener);
                 }
 
+                //@ts-ignore TS2339: API level < 21 does not have transition
                 fragment.setReenterTransition(null);
                 if (traceEnabled()) {
                     traceWrite(`Cleared Reenter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
@@ -460,12 +477,14 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
         const fragment: android.app.Fragment = entry.fragment;
         const enterListener = entry.enterTransitionListener;
         if (enterListener) {
+            //@ts-ignore TS2339: API level < 21 does not have transition
             const enterTransition = fragment.getEnterTransition();
             if (enterTransition) {
                 if (removeListener) {
                     enterTransition.removeListener(enterListener);
                 }
 
+                //@ts-ignore TS2339: API level < 21 does not have transition
                 fragment.setEnterTransition(null);
                 if (traceEnabled()) {
                     traceWrite(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
@@ -479,12 +498,14 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
 
         const returnListener = entry.returnTransitionListener;
         if (returnListener) {
+            //@ts-ignore TS2339: API level < 21 does not have transition
             const returnTransition = fragment.getReturnTransition();
             if (returnTransition) {
                 if (removeListener) {
                     returnTransition.removeListener(returnListener);
                 }
 
+                //@ts-ignore TS2339: API level < 21 does not have transition
                 fragment.setReturnTransition(null);
                 if (traceEnabled()) {
                     traceWrite(`Cleared Return ${returnTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
@@ -508,11 +529,14 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
 
 function allowTransitionOverlap(fragment: android.app.Fragment): void {
     if (fragment) {
+        //@ts-ignore TS2339: API level < 21 does not have transition
         fragment.setAllowEnterTransitionOverlap(true);
+        //@ts-ignore TS2339: API level < 21 does not have transition
         fragment.setAllowReturnTransitionOverlap(true);
     }
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function setEnterTransition(navigationTransition: NavigationTransition, entry: ExpandedEntry, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
     const listener = addNativeTransitionListener(entry, transition);
@@ -520,9 +544,11 @@ function setEnterTransition(navigationTransition: NavigationTransition, entry: E
     // attach listener to JS object so that it will be alive as long as entry.
     entry.enterTransitionListener = listener;
     const fragment: android.app.Fragment = entry.fragment;
+    //@ts-ignore TS2339: API level < 21 does not have transition
     fragment.setEnterTransition(transition);
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function setExitTransition(navigationTransition: NavigationTransition, entry: ExpandedEntry, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
     const listener = addNativeTransitionListener(entry, transition);
@@ -530,9 +556,11 @@ function setExitTransition(navigationTransition: NavigationTransition, entry: Ex
     // attach listener to JS object so that it will be alive as long as entry.
     entry.exitTransitionListener = listener;
     const fragment: android.app.Fragment = entry.fragment;
+    //@ts-ignore TS2339: API level < 21 does not have transition
     fragment.setExitTransition(transition);
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function setReenterTransition(navigationTransition: NavigationTransition, entry: ExpandedEntry, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
     const listener = addNativeTransitionListener(entry, transition);
@@ -540,9 +568,11 @@ function setReenterTransition(navigationTransition: NavigationTransition, entry:
     // attach listener to JS object so that it will be alive as long as entry.
     entry.reenterTransitionListener = listener;
     const fragment: android.app.Fragment = entry.fragment;
+    //@ts-ignore TS2339: API level < 21 does not have transition
     fragment.setReenterTransition(transition);
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function setReturnTransition(navigationTransition: NavigationTransition, entry: ExpandedEntry, transition: android.transition.Transition): void {
     setUpNativeTransition(navigationTransition, transition);
     const listener = addNativeTransitionListener(entry, transition);
@@ -550,6 +580,7 @@ function setReturnTransition(navigationTransition: NavigationTransition, entry: 
     // attach listener to JS object so that it will be alive as long as entry.
     entry.returnTransitionListener = listener;
     const fragment: android.app.Fragment = entry.fragment;
+    //@ts-ignore TS2339: API level < 21 does not have transition
     fragment.setReturnTransition(transition);
 }
 
@@ -558,22 +589,30 @@ function setupNewFragmentSlideTransition(navTransition: NavigationTransition, en
     const direction = name.substr("slide".length) || "left"; //Extract the direction from the string
     switch (direction) {
         case "left":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setEnterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.RIGHT));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReturnTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.RIGHT));
             break;
 
         case "right":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setEnterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.LEFT));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReturnTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.LEFT));
             break;
 
         case "top":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setEnterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.BOTTOM));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReturnTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.BOTTOM));
             break;
 
         case "bottom":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setEnterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.TOP));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReturnTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.TOP));
             break;
     }
@@ -583,22 +622,30 @@ function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition
     const direction = name.substr("slide".length) || "left"; //Extract the direction from the string
     switch (direction) {
         case "left":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setExitTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.LEFT));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReenterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.LEFT));
             break;
 
         case "right":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setExitTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.RIGHT));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReenterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.RIGHT));
             break;
 
         case "top":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setExitTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.TOP));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReenterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.TOP));
             break;
 
         case "bottom":
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setExitTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.BOTTOM));
+            //@ts-ignore TS2694: API level < 21 does not have transition
             setReenterTransition(navTransition, entry, new android.transition.Slide(android.view.Gravity.BOTTOM));
             break;
     }
@@ -607,32 +654,40 @@ function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition
 function setupNewFragmentFadeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
     setupCurrentFragmentFadeTransition(navTransition, entry);
 
+    //@ts-ignore TS2694: API level < 21 does not have transition
     const fadeInEnter = new android.transition.Fade(android.transition.Fade.IN);
     setEnterTransition(navTransition, entry, fadeInEnter);
 
+    //@ts-ignore TS2694: API level < 21 does not have transition
     const fadeOutReturn = new android.transition.Fade(android.transition.Fade.OUT);
     setReturnTransition(navTransition, entry, fadeOutReturn);
 }
 
 function setupCurrentFragmentFadeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
+    //@ts-ignore TS2694: API level < 21 does not have transition
     const fadeOutExit = new android.transition.Fade(android.transition.Fade.OUT);
     setExitTransition(navTransition, entry, fadeOutExit);
 
     // NOTE: There is a bug in Fade transition so we need to set all 4
     // otherwise back navigation will complete immediately (won't run the reverse transition).
+    //@ts-ignore TS2694: API level < 21 does not have transition
     const fadeInReenter = new android.transition.Fade(android.transition.Fade.IN);
     setReenterTransition(navTransition, entry, fadeInReenter);
 }
 
 function setupCurrentFragmentExplodeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
+    //@ts-ignore TS2694: API level < 21 does not have transition
     setExitTransition(navTransition, entry, new android.transition.Explode());
+    //@ts-ignore TS2694: API level < 21 does not have transition
     setReenterTransition(navTransition, entry, new android.transition.Explode());
 }
 
 function setupNewFragmentExplodeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
     setupCurrentFragmentExplodeTransition(navTransition, entry);
 
+    //@ts-ignore TS2694: API level < 21 does not have transition
     setEnterTransition(navTransition, entry, new android.transition.Explode());
+    //@ts-ignore TS2694: API level < 21 does not have transition
     setReturnTransition(navTransition, entry, new android.transition.Explode());
 }
 
@@ -691,6 +746,7 @@ function setupDefaultAnimations(entry: ExpandedEntry, transition: Transition): v
     entry.defaultExitAnimator = exitAnimator;
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: android.transition.Transition) {
     if (navigationTransition.duration) {
         nativeTransition.setDuration(navigationTransition.duration);
@@ -700,6 +756,7 @@ function setUpNativeTransition(navigationTransition: NavigationTransition, nativ
     nativeTransition.setInterpolator(interpolator);
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function addNativeTransitionListener(entry: ExpandedEntry, nativeTransition: android.transition.Transition): ExpandedTransitionListener {
     const listener = getTransitionListener(entry, nativeTransition);
     nativeTransition.addListener(listener);
@@ -739,6 +796,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
     }
 }
 
+//@ts-ignore TS2694: API level < 21 does not have transition
 function toShortString(nativeTransition: android.transition.Transition): string {
     return `${nativeTransition.getClass().getSimpleName()}@${nativeTransition.hashCode().toString(16)}`;
 }
