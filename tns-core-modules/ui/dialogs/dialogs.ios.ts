@@ -5,6 +5,7 @@ import { View, ios as iosView } from "../core/view";
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
 import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
+import { getRootView } from "../../application";
 
 export * from "./dialogs-common";
 
@@ -198,20 +199,16 @@ export function login(): Promise<LoginResult> {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-    let currentPage = getCurrentPage();
-    if (currentPage) {
-        let view: View = currentPage;
-        let viewController: UIViewController = currentPage.ios;
+    let currentView = getCurrentPage() || getRootView();
 
-        if (currentPage.modal) {
-            view = currentPage.modal;
+    if (currentView) {
+        currentView = currentView.modal || currentView;
 
-            if (view.ios instanceof UIViewController) {
-                viewController = view.ios;
-            } else {
-                const parentWithController = iosView.getParentWithViewController(view);
-                viewController = parentWithController ? parentWithController.viewController : undefined;
-            }
+        let viewController: UIViewController = currentView.ios;
+
+        if (!(currentView.ios instanceof UIViewController)) {
+            const parentWithController = iosView.getParentWithViewController(currentView);
+            viewController = parentWithController ? parentWithController.viewController : undefined;
         }
 
         if (viewController) {
