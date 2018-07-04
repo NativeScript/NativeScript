@@ -1,4 +1,8 @@
-// Transition definitions
+/**
+ * @private
+ */ /** */
+
+// Definitions for Android API lvl 21 transitions
 declare module android {
     export module transition {
         export abstract class Transition extends java.lang.Object {

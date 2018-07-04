@@ -1,4 +1,4 @@
-/// <reference path="transition-definitions.d.ts"/>
+/// <reference path="transition-definitions.android.d.ts"/>
 
 // Definitions.
 import { NavigationTransition, BackstackEntry } from "../frame";
