@@ -129,7 +129,7 @@ export class ActionBar extends ActionBarBase {
         }
 
         // Find previous ViewController in the navigation stack
-        const indexOfViewController = navController.viewControllers.indexOfObject(viewController);
+        const indexOfViewController = navController ? navController.viewControllers.indexOfObject(viewController) : null;
         if (indexOfViewController > 0 && indexOfViewController < navController.viewControllers.count) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
