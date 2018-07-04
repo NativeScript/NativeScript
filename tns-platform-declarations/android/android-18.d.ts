@@ -2266,9 +2266,7 @@ declare module android {
 			public static AUTHENTICATOR_META_DATA_NAME: string;
 			public static AUTHENTICATOR_ATTRIBUTES_NAME: string;
 			public static LOGIN_ACCOUNTS_CHANGED_ACTION: string;
-			public getAuthToken(param0: android.accounts.Account, param1: string, param2: boolean, param3: android.accounts.AccountManagerCallback<any>, param4: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
 			public getAuthenticatorTypes(): native.Array<android.accounts.AuthenticatorDescription>;
-			public getAuthToken(param0: android.accounts.Account, param1: string, param2: android.os.Bundle, param3: boolean, param4: android.accounts.AccountManagerCallback<any>, param5: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
 			public removeOnAccountsUpdatedListener(param0: android.accounts.OnAccountsUpdateListener): void;
 			public addOnAccountsUpdatedListener(param0: android.accounts.OnAccountsUpdateListener, param1: android.os.Handler, param2: boolean): void;
 			public getAuthToken(param0: android.accounts.Account, param1: string, param2: android.os.Bundle, param3: android.app.Activity, param4: android.accounts.AccountManagerCallback<android.os.Bundle>, param5: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
@@ -2278,20 +2276,22 @@ declare module android {
 			public addAccount(param0: string, param1: string, param2: native.Array<string>, param3: android.os.Bundle, param4: android.app.Activity, param5: android.accounts.AccountManagerCallback<android.os.Bundle>, param6: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
 			public blockingGetAuthToken(param0: android.accounts.Account, param1: string, param2: boolean): string;
 			public getAccountsByTypeForPackage(param0: string, param1: string): native.Array<android.accounts.Account>;
+			public getAuthToken(param0: android.accounts.Account, param1: string, param2: boolean, param3: android.accounts.AccountManagerCallback<android.os.Bundle>, param4: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
 			public hasFeatures(param0: android.accounts.Account, param1: native.Array<string>, param2: android.accounts.AccountManagerCallback<java.lang.Boolean>, param3: android.os.Handler): android.accounts.AccountManagerFuture<java.lang.Boolean>;
 			public confirmCredentials(param0: android.accounts.Account, param1: android.os.Bundle, param2: android.app.Activity, param3: android.accounts.AccountManagerCallback<android.os.Bundle>, param4: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
-			public static newChooseAccountIntent(param0: android.accounts.Account, param1: java.util.ArrayList<any>, param2: native.Array<string>, param3: boolean, param4: string, param5: string, param6: native.Array<string>, param7: android.os.Bundle): android.content.Intent;
 			public addAccountExplicitly(param0: android.accounts.Account, param1: string, param2: android.os.Bundle): boolean;
 			public invalidateAuthToken(param0: string, param1: string): void;
 			public setPassword(param0: android.accounts.Account, param1: string): void;
 			public getAccountsByType(param0: string): native.Array<android.accounts.Account>;
 			public setUserData(param0: android.accounts.Account, param1: string, param2: string): void;
+			public getAuthToken(param0: android.accounts.Account, param1: string, param2: android.os.Bundle, param3: boolean, param4: android.accounts.AccountManagerCallback<android.os.Bundle>, param5: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
 			public getPassword(param0: android.accounts.Account): string;
 			public peekAuthToken(param0: android.accounts.Account, param1: string): string;
 			public getUserData(param0: android.accounts.Account, param1: string): string;
 			public getAccounts(): native.Array<android.accounts.Account>;
 			public getAccountsByTypeAndFeatures(param0: string, param1: native.Array<string>, param2: android.accounts.AccountManagerCallback<native.Array<android.accounts.Account>>, param3: android.os.Handler): android.accounts.AccountManagerFuture<native.Array<android.accounts.Account>>;
 			public static get(param0: android.content.Context): android.accounts.AccountManager;
+			public static newChooseAccountIntent(param0: android.accounts.Account, param1: java.util.ArrayList<android.accounts.Account>, param2: native.Array<string>, param3: boolean, param4: string, param5: string, param6: native.Array<string>, param7: android.os.Bundle): android.content.Intent;
 			public removeAccount(param0: android.accounts.Account, param1: android.accounts.AccountManagerCallback<java.lang.Boolean>, param2: android.os.Handler): android.accounts.AccountManagerFuture<java.lang.Boolean>;
 			public editProperties(param0: string, param1: android.app.Activity, param2: android.accounts.AccountManagerCallback<android.os.Bundle>, param3: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
 			public getAuthTokenByFeatures(param0: string, param1: string, param2: native.Array<string>, param3: android.app.Activity, param4: android.os.Bundle, param5: android.os.Bundle, param6: android.accounts.AccountManagerCallback<android.os.Bundle>, param7: android.os.Handler): android.accounts.AccountManagerFuture<android.os.Bundle>;
@@ -2768,9 +2768,9 @@ declare module android {
 			 * Constructs a new instance of the android.animation.TypeEvaluator<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				evaluate(param0: number, param1: any, param2: any): T;
+				evaluate(param0: number, param1: T, param2: T): T;
 			});
-			public evaluate(param0: number, param1: any, param2: any): T;
+			public evaluate(param0: number, param1: T, param2: T): T;
 		}
 	}
 }
@@ -8203,7 +8203,7 @@ declare module android {
 			public static class: java.lang.Class<android.content.Loader<any>>;
 			public unregisterOnLoadCanceledListener(param0: android.content.Loader.OnLoadCanceledListener<D>): void;
 			public rollbackContentChanged(): void;
-			public registerListener(param0: number, param1: android.content.Loader.OnLoadCompleteListener<any>): void;
+			public registerListener(param0: number, param1: android.content.Loader.OnLoadCompleteListener<D>): void;
 			public onStartLoading(): void;
 			public onForceLoad(): void;
 			public isReset(): boolean;
@@ -11073,10 +11073,10 @@ declare module android {
 				public setProjectionMap(param0: java.util.Map<string,string>): void;
 				public buildUnionQuery(param0: native.Array<string>, param1: string, param2: string): string;
 				public setStrict(param0: boolean): void;
-				public buildUnionSubQuery(param0: string, param1: native.Array<string>, param2: java.util.Set<any>, param3: number, param4: string, param5: string, param6: native.Array<string>, param7: string, param8: string): string;
 				public setCursorFactory(param0: android.database.sqlite.SQLiteDatabase.CursorFactory): void;
 				public setTables(param0: string): void;
-				public buildUnionSubQuery(param0: string, param1: native.Array<string>, param2: java.util.Set<any>, param3: number, param4: string, param5: string, param6: string, param7: string): string;
+				public buildUnionSubQuery(param0: string, param1: native.Array<string>, param2: java.util.Set<string>, param3: number, param4: string, param5: string, param6: string, param7: string): string;
+				public buildUnionSubQuery(param0: string, param1: native.Array<string>, param2: java.util.Set<string>, param3: number, param4: string, param5: string, param6: native.Array<string>, param7: string, param8: string): string;
 				public getTables(): string;
 				public setDistinct(param0: boolean): void;
 				public appendWhere(param0: string): void;
@@ -11182,8 +11182,8 @@ declare module android {
 			public static TYPE_PROCESS_DRM_INFO_FAILED: number;
 			public static TYPE_REMOVE_ALL_RIGHTS_FAILED: number;
 			public static TYPE_ACQUIRE_DRM_INFO_FAILED: number;
-			public constructor(param0: number, param1: number, param2: string, param3: java.util.HashMap<any,any>);
 			public constructor(param0: number, param1: number, param2: string);
+			public constructor(param0: number, param1: number, param2: string, param3: java.util.HashMap<string,any>);
 		}
 	}
 }
@@ -11200,8 +11200,8 @@ declare module android {
 			public getType(): number;
 			public getUniqueId(): number;
 			public getAttribute(param0: string): any;
-			public constructor(param0: number, param1: number, param2: string, param3: java.util.HashMap<any,any>);
 			public constructor(param0: number, param1: number, param2: string);
+			public constructor(param0: number, param1: number, param2: string, param3: java.util.HashMap<string,any>);
 		}
 	}
 }
@@ -11233,8 +11233,8 @@ declare module android {
 			public static TYPE_WAIT_FOR_RIGHTS: number;
 			public static TYPE_ACCOUNT_ALREADY_REGISTERED: number;
 			public static TYPE_RIGHTS_REMOVED: number;
-			public constructor(param0: number, param1: number, param2: string, param3: java.util.HashMap<any,any>);
 			public constructor(param0: number, param1: number, param2: string);
+			public constructor(param0: number, param1: number, param2: string, param3: java.util.HashMap<string,any>);
 		}
 	}
 }
@@ -16400,8 +16400,8 @@ declare module android {
 			public setOnEventListener(param0: android.media.MediaDrm.OnEventListener): void;
 			public removeKeys(param0: native.Array<number>): void;
 			public getProvisionRequest(): android.media.MediaDrm.ProvisionRequest;
-			public getKeyRequest(param0: native.Array<number>, param1: native.Array<number>, param2: string, param3: number, param4: java.util.HashMap<any,any>): android.media.MediaDrm.KeyRequest;
 			public provideProvisionResponse(param0: native.Array<number>): void;
+			public getKeyRequest(param0: native.Array<number>, param1: native.Array<number>, param2: string, param3: number, param4: java.util.HashMap<string,string>): android.media.MediaDrm.KeyRequest;
 			public finalize(): void;
 			public release(): void;
 		}
@@ -24287,6 +24287,7 @@ declare module android {
 			public static EXTRA_NO_HEADERS: string;
 			public static HEADER_ID_UNDEFINED: number;
 			public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
+			public loadHeadersFromResource(param0: number, param1: java.util.List<android.preference.PreferenceActivity.Header>): void;
 			public isMultiPane(): boolean;
 			public startPreferenceFragment(param0: android.app.Fragment, param1: boolean): void;
 			public onSearchRequested(): boolean;
@@ -24340,7 +24341,6 @@ declare module android {
 			public finishPreferencePanel(param0: android.app.Fragment, param1: number, param2: android.content.Intent): void;
 			public onGetNewHeader(): android.preference.PreferenceActivity.Header;
 			public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-			public loadHeadersFromResource(param0: number, param1: java.util.List<any>): void;
 			public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
 			public onIsMultiPane(): boolean;
 			public onHeaderClick(param0: android.preference.PreferenceActivity.Header, param1: number): void;
@@ -24525,6 +24525,7 @@ declare module android {
 			public onClick(): void;
 			public onRestoreInstanceState(param0: android.os.Parcelable): void;
 			public getRootAdapter(): android.widget.ListAdapter;
+			public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 			public isOnSameScreenAsChildren(): boolean;
 			public getDialog(): android.app.Dialog;
 			public onDismiss(param0: android.content.DialogInterface): void;
@@ -28996,8 +28997,8 @@ declare module android {
 				public setEngineByPackageName(param0: string): number;
 				public addSpeech(param0: string, param1: string, param2: number): number;
 				public addEarcon(param0: string, param1: string): number;
+				public speak(param0: string, param1: number, param2: java.util.HashMap<string,string>): number;
 				public shutdown(): void;
-				public speak(param0: string, param1: number, param2: java.util.HashMap<any,any>): number;
 				public isSpeaking(): boolean;
 				public getDefaultEngine(): string;
 				public setPitch(param0: number): number;
@@ -29005,13 +29006,13 @@ declare module android {
 				public addEarcon(param0: string, param1: string, param2: number): number;
 				public getFeatures(param0: java.util.Locale): java.util.Set<string>;
 				public areDefaultsEnforced(): boolean;
-				public playSilence(param0: number, param1: number, param2: java.util.HashMap<any,any>): number;
+				public playEarcon(param0: string, param1: number, param2: java.util.HashMap<string,string>): number;
 				public getLanguage(): java.util.Locale;
 				public getEngines(): java.util.List<android.speech.tts.TextToSpeech.EngineInfo>;
 				public synthesizeToFile(param0: string, param1: java.util.HashMap<string,string>, param2: string): number;
 				public constructor(param0: android.content.Context, param1: android.speech.tts.TextToSpeech.OnInitListener);
-				public playEarcon(param0: string, param1: number, param2: java.util.HashMap<any,any>): number;
 				public setLanguage(param0: java.util.Locale): number;
+				public playSilence(param0: number, param1: number, param2: java.util.HashMap<string,string>): number;
 				public addSpeech(param0: string, param1: string): number;
 				public constructor(param0: android.content.Context, param1: android.speech.tts.TextToSpeech.OnInitListener, param2: string);
 				public isLanguageAvailable(param0: java.util.Locale): number;
@@ -29855,12 +29856,12 @@ declare module android {
 	export module test {
 		export abstract class ActivityInstrumentationTestCase<T>  extends android.test.ActivityTestCase {
 			public static class: java.lang.Class<android.test.ActivityInstrumentationTestCase<any>>;
+			public constructor(param0: string, param1: java.lang.Class<any>, param2: boolean);
 			public countTestCases(): number;
 			public setUp(): void;
 			public tearDown(): void;
 			public testActivityTestCaseSetUpProperly(): void;
 			public constructor(param0: string, param1: java.lang.Class<any>);
-			public constructor(param0: string, param1: java.lang.Class<any>, param2: boolean);
 			public getActivity(): android.app.Activity;
 			public run(param0: junit.framework.TestResult): void;
 			public run(): junit.framework.TestResult;
@@ -32299,6 +32300,7 @@ declare module android {
 				public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
 				public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 				public onContentChanged(): void;
+				public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 				public constructor(param0: android.content.Context);
 				public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 				public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
@@ -33317,7 +33319,6 @@ declare module android {
 				public getSuggestions(): native.Array<string>;
 				public writeToParcel(param0: android.os.Parcel, param1: number): void;
 				public getSpanTypeId(): number;
-				public constructor(param0: android.content.Context, param1: java.util.Locale, param2: native.Array<string>, param3: number, param4: java.lang.Class<any>);
 				public getLocale(): string;
 				public setFlags(param0: number): void;
 				public constructor();
@@ -33326,6 +33327,7 @@ declare module android {
 				public constructor(param0: android.os.Parcel);
 				public constructor(param0: android.content.Context, param1: native.Array<string>, param2: number);
 				public hashCode(): number;
+				public constructor(param0: android.content.Context, param1: java.util.Locale, param2: native.Array<string>, param3: number, param4: java.lang.Class<any>);
 				public describeContents(): number;
 				public equals(param0: any): boolean;
 				public getFlags(): number;
@@ -33981,22 +33983,22 @@ declare module android {
 		export class LongSparseArray<E>  extends java.lang.Object{
 			public static class: java.lang.Class<android.util.LongSparseArray<any>>;
 			public indexOfValue(param0: E): number;
-			public append(param0: number, param1: any): void;
 			public clear(): void;
+			public get(param0: number, param1: E): E;
 			public clone(): android.util.LongSparseArray<E>;
-			public put(param0: number, param1: any): void;
 			public size(): number;
+			public setValueAt(param0: number, param1: E): void;
 			public delete(param0: number): void;
 			public constructor(param0: number);
 			public constructor();
 			public get(param0: number): E;
 			public remove(param0: number): void;
 			public keyAt(param0: number): number;
+			public append(param0: number, param1: E): void;
 			public clone(): any;
-			public get(param0: number, param1: any): E;
+			public put(param0: number, param1: E): void;
 			public valueAt(param0: number): E;
 			public removeAt(param0: number): void;
-			public setValueAt(param0: number, param1: any): void;
 			public indexOfKey(param0: number): number;
 		}
 	}
@@ -34017,7 +34019,7 @@ declare module android {
 			public create(param0: K): V;
 			public hitCount(): number;
 			public snapshot(): java.util.Map<K,V>;
-			public entryRemoved(param0: boolean, param1: any, param2: any, param3: any): void;
+			public entryRemoved(param0: boolean, param1: K, param2: V, param3: V): void;
 			public toString(): string;
 			public sizeOf(param0: K, param1: V): number;
 			public trimToSize(param0: number): void;
@@ -34163,10 +34165,10 @@ declare module android {
 		export class SparseArray<E>  extends java.lang.Object{
 			public static class: java.lang.Class<android.util.SparseArray<any>>;
 			public indexOfValue(param0: E): number;
-			public append(param0: number, param1: any): void;
 			public clear(): void;
-			public put(param0: number, param1: any): void;
+			public get(param0: number, param1: E): E;
 			public size(): number;
+			public setValueAt(param0: number, param1: E): void;
 			public clone(): android.util.SparseArray<E>;
 			public delete(param0: number): void;
 			public constructor(param0: number);
@@ -34174,11 +34176,11 @@ declare module android {
 			public get(param0: number): E;
 			public remove(param0: number): void;
 			public keyAt(param0: number): number;
+			public append(param0: number, param1: E): void;
 			public clone(): any;
-			public get(param0: number, param1: any): E;
+			public put(param0: number, param1: E): void;
 			public valueAt(param0: number): E;
 			public removeAt(param0: number): void;
-			public setValueAt(param0: number, param1: any): void;
 			public indexOfKey(param0: number): number;
 		}
 	}
@@ -36481,7 +36483,6 @@ declare module android {
 			public measure(param0: number, param1: number): void;
 			public setFilterTouchesWhenObscured(param0: boolean): void;
 			public addOnAttachStateChangeListener(param0: android.view.View.OnAttachStateChangeListener): void;
-			public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 			public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
 			public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 			public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
@@ -36495,7 +36496,6 @@ declare module android {
 			public requestFocusFromTouch(): boolean;
 			public setId(param0: number): void;
 			public dispatchHoverEvent(param0: android.view.MotionEvent): boolean;
-			public findViewsWithText(param0: java.util.ArrayList<any>, param1: string, param2: number): void;
 			public overScrollBy(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number, param6: number, param7: number, param8: boolean): boolean;
 			public onPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
 			public getSuggestedMinimumHeight(): number;
@@ -36581,7 +36581,6 @@ declare module android {
 			public performAccessibilityAction(param0: number, param1: android.os.Bundle): boolean;
 			public onGenericMotionEvent(param0: android.view.MotionEvent): boolean;
 			public setSaveFromParentEnabled(param0: boolean): void;
-			public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
 			public setScrollbarFadingEnabled(param0: boolean): void;
 			public getScrollBarStyle(): number;
 			public getRootView(): android.view.View;
@@ -36754,11 +36753,13 @@ declare module android {
 			public getDrawingCache(): android.graphics.Bitmap;
 			public setOnDragListener(param0: android.view.View.OnDragListener): void;
 			public setHasTransientState(param0: boolean): void;
+			public findViewsWithText(param0: java.util.ArrayList<android.view.View>, param1: string, param2: number): void;
 			public setAlpha(param0: number): void;
 			public fitSystemWindows(param0: android.graphics.Rect): boolean;
 			public getClipBounds(): android.graphics.Rect;
 			public getOverScrollMode(): number;
 			public getMeasuredWidthAndState(): number;
+			public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
 			public onRtlPropertiesChanged(param0: number): void;
 			public getTopPaddingOffset(): number;
 			public isHorizontalScrollBarEnabled(): boolean;
@@ -36813,6 +36814,7 @@ declare module android {
 			public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 			public onAttachedToWindow(): void;
 			public dispatchUnhandledMove(param0: android.view.View, param1: number): boolean;
+			public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
 			public getLocationInWindow(param0: native.Array<number>): void;
 		}
 		export module View {
@@ -37183,7 +37185,6 @@ declare module android {
 			public addViewInLayout(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): boolean;
 			public dispatchHoverEvent(param0: android.view.MotionEvent): boolean;
 			public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
-			public findViewsWithText(param0: java.util.ArrayList<any>, param1: string, param2: number): void;
 			public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 			public setChildrenDrawingCacheEnabled(param0: boolean): void;
 			public requestFocus(): boolean;
@@ -37243,6 +37244,7 @@ declare module android {
 			public getPersistentDrawingCache(): number;
 			public debug(param0: number): void;
 			public findFocus(): android.view.View;
+			public findViewsWithText(param0: java.util.ArrayList<android.view.View>, param1: string, param2: number): void;
 			public addTouchables(param0: java.util.ArrayList<android.view.View>): void;
 			public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 			public requestLayout(): void;
@@ -37255,6 +37257,7 @@ declare module android {
 			public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 			public offsetRectIntoDescendantCoords(param0: android.view.View, param1: android.graphics.Rect): void;
 			public constructor(param0: android.content.Context);
+			public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
 			public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 			public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 			public requestFitSystemWindows(): void;
@@ -37307,7 +37310,6 @@ declare module android {
 			public getLayoutAnimation(): android.view.animation.LayoutAnimationController;
 			public onCreateDrawableState(param0: number): native.Array<number>;
 			public getChildCount(): number;
-			public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
 			public onAnimationStart(): void;
 			public addStatesFromChildren(): boolean;
 			public removeViewAt(param0: number): void;
@@ -37332,7 +37334,6 @@ declare module android {
 			public onRequestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 			public requestDisallowInterceptTouchEvent(param0: boolean): void;
 			public dispatchSystemUiVisibilityChanged(param0: number): void;
-			public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 			public setAlwaysDrawnWithCacheEnabled(param0: boolean): void;
 			public measureChild(param0: android.view.View, param1: number, param2: number): void;
 			public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -37344,6 +37345,7 @@ declare module android {
 			public dispatchSetActivated(param0: boolean): void;
 			public dispatchUnhandledMove(param0: android.view.View, param1: number): boolean;
 			public setDescendantFocusability(param0: number): void;
+			public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
 			public addView(param0: android.view.View, param1: number): void;
 		}
 		export module ViewGroup {
@@ -40042,7 +40044,6 @@ declare module android {
 			public reload(): void;
 			public requestFocus(): boolean;
 			public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-			public saveWebArchive(param0: string, param1: boolean, param2: android.webkit.ValueCallback<any>): void;
 			public addView(param0: android.view.View, param1: number, param2: number): void;
 			public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 			public requestFocusNodeHref(param0: android.os.Message): void;
@@ -40167,6 +40168,7 @@ declare module android {
 			public onChildViewRemoved(param0: android.view.View, param1: android.view.View): void;
 			public requestImageRef(param0: android.os.Message): void;
 			public getScale(): number;
+			public saveWebArchive(param0: string, param1: boolean, param2: android.webkit.ValueCallback<string>): void;
 			public isPrivateBrowsingEnabled(): boolean;
 			public onPause(): void;
 			public computeHorizontalScrollOffset(): number;
@@ -40881,8 +40883,8 @@ declare module android {
 					onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					onNothingSelected(param0: android.widget.AdapterView<any>): void;
 				});
-				public onNothingSelected(param0: android.widget.AdapterView<any>): void;
 				public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
+				public onNothingSelected(param0: android.widget.AdapterView<any>): void;
 			}
 		}
 	}
@@ -41110,21 +41112,21 @@ declare module android {
 			public getFilter(): android.widget.Filter;
 			public getPosition(param0: any): number;
 			public getItemId(param0: number): number;
+			public constructor(param0: android.content.Context, param1: number, param2: java.util.List<any>);
 			public add(param0: any): void;
 			public addAll(param0: native.Array<any>): void;
 			public remove(param0: any): void;
 			public sort(param0: java.util.Comparator<any>): void;
-			public constructor(param0: android.content.Context, param1: number, param2: number, param3: java.util.List<any>);
 			public static createFromResource(param0: android.content.Context, param1: number, param2: number): android.widget.ArrayAdapter<string>;
 			public addAll(param0: java.util.Collection<any>): void;
 			public isEnabled(param0: number): boolean;
 			public getContext(): android.content.Context;
 			public getCount(): number;
 			public setNotifyOnChange(param0: boolean): void;
+			public constructor(param0: android.content.Context, param1: number, param2: number, param3: java.util.List<any>);
 			public clear(): void;
 			public insert(param0: any, param1: number): void;
 			public getDropDownView(param0: number, param1: android.view.View, param2: android.view.ViewGroup): android.view.View;
-			public constructor(param0: android.content.Context, param1: number, param2: java.util.List<any>);
 			public constructor(param0: android.content.Context, param1: number, param2: native.Array<any>);
 			public constructor();
 			public constructor(param0: android.content.Context, param1: number, param2: number, param3: native.Array<any>);
@@ -44500,8 +44502,8 @@ declare module android {
 			public setViewText(param0: android.widget.TextView, param1: string): void;
 			public constructor();
 			public setViewBinder(param0: android.widget.SimpleAdapter.ViewBinder): void;
-			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: native.Array<string>, param4: native.Array<number>);
 			public getView(param0: number, param1: android.view.View, param2: android.view.ViewGroup): android.view.View;
+			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: native.Array<string>, param4: native.Array<number>);
 			public setViewImage(param0: android.widget.ImageView, param1: number): void;
 			public setViewImage(param0: android.widget.ImageView, param1: string): void;
 			public areAllItemsEnabled(): boolean;
@@ -44644,14 +44646,13 @@ declare module android {
 		export class SimpleExpandableListAdapter extends android.widget.BaseExpandableListAdapter {
 			public static class: java.lang.Class<android.widget.SimpleExpandableListAdapter>;
 			public registerDataSetObserver(param0: android.database.DataSetObserver): void;
-			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: number, param4: native.Array<string>, param5: native.Array<number>, param6: java.util.List<any>, param7: number, param8: number, param9: native.Array<string>, param10: native.Array<number>);
 			public getChildrenCount(param0: number): number;
 			public hasStableIds(): boolean;
 			public getChildTypeCount(): number;
 			public onGroupCollapsed(param0: number): void;
+			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: number, param4: native.Array<string>, param5: native.Array<number>, param6: java.util.List<any>, param7: number, param8: number, param9: native.Array<string>, param10: native.Array<number>);
 			public getGroupView(param0: number, param1: boolean, param2: android.view.View, param3: android.view.ViewGroup): android.view.View;
 			public getCombinedGroupId(param0: number): number;
-			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: native.Array<string>, param4: native.Array<number>, param5: java.util.List<any>, param6: number, param7: native.Array<string>, param8: native.Array<number>);
 			public getChild(param0: number, param1: number): any;
 			public getChildView(param0: number, param1: number, param2: boolean, param3: android.view.View, param4: android.view.ViewGroup): android.view.View;
 			public unregisterDataSetObserver(param0: android.database.DataSetObserver): void;
@@ -44661,12 +44662,13 @@ declare module android {
 			public getCombinedChildId(param0: number, param1: number): number;
 			public getGroupCount(): number;
 			public isEmpty(): boolean;
+			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: number, param4: native.Array<string>, param5: native.Array<number>, param6: java.util.List<any>, param7: number, param8: native.Array<string>, param9: native.Array<number>);
 			public getChildId(param0: number, param1: number): number;
 			public constructor();
-			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: number, param4: native.Array<string>, param5: native.Array<number>, param6: java.util.List<any>, param7: number, param8: native.Array<string>, param9: native.Array<number>);
 			public newGroupView(param0: boolean, param1: android.view.ViewGroup): android.view.View;
 			public onGroupExpanded(param0: number): void;
 			public isChildSelectable(param0: number, param1: number): boolean;
+			public constructor(param0: android.content.Context, param1: java.util.List<any>, param2: number, param3: native.Array<string>, param4: native.Array<number>, param5: java.util.List<any>, param6: number, param7: native.Array<string>, param8: native.Array<number>);
 			public getGroup(param0: number): any;
 			public getGroupTypeCount(): number;
 			public areAllItemsEnabled(): boolean;
@@ -45617,7 +45619,6 @@ declare module android {
 			public setMovementMethod(param0: android.text.method.MovementMethod): void;
 			public getDefaultMovementMethod(): android.text.method.MovementMethod;
 			public append(param0: string): void;
-			public findViewsWithText(param0: java.util.ArrayList<any>, param1: string, param2: number): void;
 			public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 			public setFrame(param0: number, param1: number, param2: number, param3: number): boolean;
 			public getLineCount(): number;
@@ -45663,6 +45664,7 @@ declare module android {
 			public setCompoundDrawablesRelative(param0: android.graphics.drawable.Drawable, param1: android.graphics.drawable.Drawable, param2: android.graphics.drawable.Drawable, param3: android.graphics.drawable.Drawable): void;
 			public setCursorVisible(param0: boolean): void;
 			public getUrls(): native.Array<android.text.style.URLSpan>;
+			public findViewsWithText(param0: java.util.ArrayList<android.view.View>, param1: string, param2: number): void;
 			public getLineSpacingMultiplier(): number;
 			public setTextIsSelectable(param0: boolean): void;
 			public setText(param0: string): void;
@@ -48197,6 +48199,7 @@ declare module java {
 	export module io {
 		export class ObjectStreamField extends java.lang.Object{
 			public static class: java.lang.Class<java.io.ObjectStreamField>;
+			public constructor(param0: string, param1: java.lang.Class<any>, param2: boolean);
 			public isUnshared(): boolean;
 			public compareTo(param0: any): number;
 			public toString(): string;
@@ -48204,7 +48207,6 @@ declare module java {
 			public constructor(param0: string, param1: java.lang.Class<any>);
 			public getTypeCode(): string;
 			public isPrimitive(): boolean;
-			public constructor(param0: string, param1: java.lang.Class<any>, param2: boolean);
 			public getOffset(): number;
 			public setOffset(param0: number): void;
 			public getType(): java.lang.Class<any>;
@@ -50317,13 +50319,13 @@ declare module java {
 			public checkWrite(param0: java.io.FileDescriptor): void;
 			public inClassLoader(): boolean;
 			public classLoaderDepth(): number;
+			public checkMemberAccess(param0: java.lang.Class<any>, param1: number): void;
 			public checkPermission(param0: java.security.Permission, param1: any): void;
 			public checkPackageDefinition(param0: string): void;
 			public checkMulticast(param0: java.net.InetAddress): void;
 			public checkRead(param0: java.io.FileDescriptor): void;
 			public checkExit(param0: number): void;
 			public checkRead(param0: string): void;
-			public checkMemberAccess(param0: java.lang.Class<any>, param1: number): void;
 			public checkPropertiesAccess(): void;
 			public checkSystemClipboardAccess(): void;
 			public checkCreateClassLoader(): void;
@@ -51290,6 +51292,7 @@ declare module java {
 				public static get(param0: any, param1: number): any;
 				public static getInt(param0: any, param1: number): number;
 				public static setFloat(param0: any, param1: number, param2: number): void;
+				public static newInstance(param0: java.lang.Class<any>, param1: number): any;
 				public static setShort(param0: any, param1: number, param2: number): void;
 				public static setLong(param0: any, param1: number, param2: number): void;
 				public static newInstance(param0: java.lang.Class<any>, param1: native.Array<number>): any;
@@ -51298,7 +51301,6 @@ declare module java {
 				public static getBoolean(param0: any, param1: number): boolean;
 				public static getChar(param0: any, param1: number): string;
 				public static set(param0: any, param1: number, param2: any): void;
-				public static newInstance(param0: java.lang.Class<any>, param1: number): any;
 				public static setByte(param0: any, param1: number, param2: number): void;
 				public static getShort(param0: any, param1: number): number;
 				public static setDouble(param0: any, param1: number, param2: number): void;
@@ -57598,24 +57600,24 @@ declare module java {
 			public constructor(implementation: {
 				getArray(): any;
 				getArray(param0: number, param1: number): any;
-				getArray(param0: number, param1: number, param2: java.util.Map<any,any>): any;
+				getArray(param0: number, param1: number, param2: java.util.Map<string,java.lang.Class<any>>): any;
 				getArray(param0: java.util.Map<string,java.lang.Class<any>>): any;
 				getBaseType(): number;
 				getBaseTypeName(): string;
 				getResultSet(): java.sql.ResultSet;
 				getResultSet(param0: number, param1: number): java.sql.ResultSet;
-				getResultSet(param0: number, param1: number, param2: java.util.Map<any,any>): java.sql.ResultSet;
+				getResultSet(param0: number, param1: number, param2: java.util.Map<string,java.lang.Class<any>>): java.sql.ResultSet;
 				getResultSet(param0: java.util.Map<string,java.lang.Class<any>>): java.sql.ResultSet;
 				free(): void;
 			});
-			public getArray(param0: number, param1: number, param2: java.util.Map<any,any>): any;
 			public getArray(param0: number, param1: number): any;
 			public free(): void;
 			public getResultSet(): java.sql.ResultSet;
+			public getResultSet(param0: number, param1: number, param2: java.util.Map<string,java.lang.Class<any>>): java.sql.ResultSet;
 			public getResultSet(param0: java.util.Map<string,java.lang.Class<any>>): java.sql.ResultSet;
 			public getArray(): any;
 			public getArray(param0: java.util.Map<string,java.lang.Class<any>>): any;
-			public getResultSet(param0: number, param1: number, param2: java.util.Map<any,any>): java.sql.ResultSet;
+			public getArray(param0: number, param1: number, param2: java.util.Map<string,java.lang.Class<any>>): any;
 			public getBaseType(): number;
 			public getResultSet(param0: number, param1: number): java.sql.ResultSet;
 			public getBaseTypeName(): string;
@@ -57721,7 +57723,7 @@ declare module java {
 				getLong(param0: number): number;
 				getLong(param0: string): number;
 				getObject(param0: number): any;
-				getObject(param0: number, param1: java.util.Map<any,any>): any;
+				getObject(param0: number, param1: java.util.Map<string,java.lang.Class<any>>): any;
 				getObject(param0: string): any;
 				getObject(param0: string, param1: java.util.Map<string,java.lang.Class<any>>): any;
 				getRef(param0: number): java.sql.Ref;
@@ -57934,6 +57936,7 @@ declare module java {
 			public setLong(param0: string, param1: number): void;
 			public getRef(param0: number): java.sql.Ref;
 			public isClosed(): boolean;
+			public getObject(param0: number, param1: java.util.Map<string,java.lang.Class<any>>): any;
 			public setDate(param0: string, param1: java.sql.Date, param2: java.util.Calendar): void;
 			public clearParameters(): void;
 			public setDate(param0: string, param1: java.sql.Date): void;
@@ -57997,7 +58000,6 @@ declare module java {
 			public execute(): boolean;
 			public getLong(param0: number): number;
 			public execute(param0: string, param1: native.Array<number>): boolean;
-			public getObject(param0: number, param1: java.util.Map<any,any>): any;
 			public getQueryTimeout(): number;
 			public setAsciiStream(param0: number, param1: java.io.InputStream): void;
 			public getClob(param0: string): java.sql.Clob;
@@ -59186,7 +59188,7 @@ declare module java {
 				getLong(param0: string): number;
 				getMetaData(): java.sql.ResultSetMetaData;
 				getObject(param0: number): any;
-				getObject(param0: number, param1: java.util.Map<any,any>): any;
+				getObject(param0: number, param1: java.util.Map<string,java.lang.Class<any>>): any;
 				getObject(param0: string): any;
 				getObject(param0: string, param1: java.util.Map<string,java.lang.Class<any>>): any;
 				getRef(param0: number): java.sql.Ref;
@@ -59376,6 +59378,7 @@ declare module java {
 			public getRef(param0: number): java.sql.Ref;
 			public getType(): number;
 			public isClosed(): boolean;
+			public getObject(param0: number, param1: java.util.Map<string,java.lang.Class<any>>): any;
 			public updateBlob(param0: number, param1: java.sql.Blob): void;
 			public updateAsciiStream(param0: number, param1: java.io.InputStream, param2: number): void;
 			public updateBytes(param0: string, param1: native.Array<number>): void;
@@ -59515,7 +59518,6 @@ declare module java {
 			public updateBlob(param0: number, param1: java.io.InputStream, param2: number): void;
 			public getBigDecimal(param0: string): java.math.BigDecimal;
 			public getLong(param0: number): number;
-			public getObject(param0: number, param1: java.util.Map<any,any>): any;
 			public updateRowId(param0: number, param1: java.sql.RowId): void;
 			public updateNCharacterStream(param0: number, param1: java.io.Reader): void;
 			public updateObject(param0: string, param1: any, param2: number): void;
@@ -59627,17 +59629,17 @@ declare module java {
 	export module sql {
 		export class SQLClientInfoException extends java.sql.SQLException {
 			public static class: java.lang.Class<java.sql.SQLClientInfoException>;
+			public constructor(param0: string, param1: string, param2: number, param3: java.util.Map<string,java.sql.ClientInfoStatus>, param4: java.lang.Throwable);
 			public constructor(param0: java.lang.Throwable);
 			public constructor(param0: java.util.Map<string,java.sql.ClientInfoStatus>, param1: java.lang.Throwable);
-			public constructor(param0: string, param1: string, param2: number, param3: java.util.Map<any,any>, param4: java.lang.Throwable);
 			public constructor();
-			public constructor(param0: string, param1: string, param2: number, param3: java.util.Map<any,any>);
 			public constructor(param0: string, param1: string, param2: java.lang.Throwable);
 			public constructor(param0: string, param1: java.util.Map<string,java.sql.ClientInfoStatus>);
 			public getFailedProperties(): java.util.Map<string,java.sql.ClientInfoStatus>;
 			public constructor(param0: string, param1: string);
 			public constructor(param0: string, param1: java.util.Map<string,java.sql.ClientInfoStatus>, param2: java.lang.Throwable);
 			public constructor(param0: string, param1: string, param2: number, param3: java.lang.Throwable);
+			public constructor(param0: string, param1: string, param2: number, param3: java.util.Map<string,java.sql.ClientInfoStatus>);
 			public constructor(param0: java.util.Map<string,java.sql.ClientInfoStatus>);
 			public constructor(param0: string, param1: java.lang.Throwable);
 			public constructor(param0: string, param1: string, param2: java.util.Map<string,java.sql.ClientInfoStatus>, param3: java.lang.Throwable);
@@ -60441,13 +60443,13 @@ declare module java {
 		export class AttributedString extends java.lang.Object {
 			public static class: java.lang.Class<java.text.AttributedString>;
 			public constructor(param0: java.text.AttributedCharacterIterator);
+			public addAttributes(param0: java.util.Map<any,any>, param1: number, param2: number): void;
 			public getIterator(): java.text.AttributedCharacterIterator;
 			public constructor(param0: java.text.AttributedCharacterIterator, param1: number, param2: number, param3: native.Array<java.text.AttributedCharacterIterator.Attribute>);
 			public addAttribute(param0: java.text.AttributedCharacterIterator.Attribute, param1: any): void;
 			public addAttribute(param0: java.text.AttributedCharacterIterator.Attribute, param1: any, param2: number, param3: number): void;
 			public getIterator(param0: native.Array<java.text.AttributedCharacterIterator.Attribute>): java.text.AttributedCharacterIterator;
 			public constructor(param0: java.text.AttributedCharacterIterator, param1: number, param2: number);
-			public addAttributes(param0: java.util.Map<any,any>, param1: number, param2: number): void;
 			public getIterator(param0: native.Array<java.text.AttributedCharacterIterator.Attribute>, param1: number, param2: number): java.text.AttributedCharacterIterator;
 			public constructor(param0: string);
 			public constructor(param0: string, param1: java.util.Map<any,any>);
@@ -61171,13 +61173,13 @@ declare module java {
 		export abstract class AbstractList<E>  extends java.util.AbstractCollection<any> {
 			public static class: java.lang.Class<java.util.AbstractList<any>>;
 			public modCount: number;
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public remove(param0: number): any;
 			public contains(param0: any): boolean;
 			public removeRange(param0: number, param1: number): void;
 			public get(param0: number): any;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public add(param0: number, param1: any): void;
 			public iterator(): java.util.Iterator<any>;
 			public clear(): void;
@@ -61284,12 +61286,12 @@ declare module java {
 	export module util {
 		export abstract class AbstractSequentialList<E>  extends java.util.AbstractList<any> {
 			public static class: java.lang.Class<java.util.AbstractSequentialList<any>>;
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public remove(param0: number): any;
 			public contains(param0: any): boolean;
 			public get(param0: number): any;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public add(param0: number, param1: any): void;
 			public iterator(): java.util.Iterator<any>;
 			public clear(): void;
@@ -61392,6 +61394,7 @@ declare module java {
 	export module util {
 		export class ArrayList<E>  extends java.util.AbstractList<any> {
 			public static class: java.lang.Class<java.util.ArrayList<any>>;
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public remove(param0: number): any;
@@ -61400,7 +61403,6 @@ declare module java {
 			public contains(param0: any): boolean;
 			public removeRange(param0: number, param1: number): void;
 			public get(param0: number): any;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public add(param0: number, param1: any): void;
 			public iterator(): java.util.Iterator<any>;
 			public clear(): void;
@@ -61685,6 +61687,8 @@ declare module java {
 			public static sort(param0: java.util.List<any>, param1: java.util.Comparator<any>): void;
 			public static lastIndexOfSubList(param0: java.util.List<any>, param1: java.util.List<any>): number;
 			public static enumeration(param0: java.util.Collection<any>): java.util.Enumeration<any>;
+			public static swap(param0: java.util.List<any>, param1: number, param2: number): void;
+			public static rotate(param0: java.util.List<any>, param1: number): void;
 			public static unmodifiableSortedSet(param0: java.util.SortedSet<any>): java.util.SortedSet<any>;
 			public static singletonMap(param0: any, param1: any): java.util.Map<any,any>;
 			public static max(param0: java.util.Collection<any>): any;
@@ -61728,11 +61732,9 @@ declare module java {
 			public static shuffle(param0: java.util.List<any>): void;
 			public static reverseOrder(): java.util.Comparator<any>;
 			public static replaceAll(param0: java.util.List<any>, param1: any, param2: any): boolean;
-			public static swap(param0: java.util.List<any>, param1: number, param2: number): void;
 			public static sort(param0: java.util.List<any>): void;
 			public static binarySearch(param0: java.util.List<any>, param1: any): number;
 			public static copy(param0: java.util.List<any>, param1: java.util.List<any>): void;
-			public static rotate(param0: java.util.List<any>, param1: number): void;
 			public static synchronizedList(param0: java.util.List<any>): java.util.List<any>;
 		}
 	}
@@ -62345,8 +62347,8 @@ declare module java {
 			public getConversion(): string;
 			public getArgumentClass(): java.lang.Class<any>;
 			public constructor(param0: java.lang.Throwable);
-			public constructor(param0: string, param1: java.lang.Throwable);
 			public constructor(param0: string, param1: java.lang.Class<any>);
+			public constructor(param0: string, param1: java.lang.Throwable);
 			public constructor();
 			public constructor(param0: string);
 		}
@@ -62507,6 +62509,7 @@ declare module java {
 	export module util {
 		export class LinkedList<E>  extends java.util.AbstractSequentialList<any> {
 			public static class: java.lang.Class<java.util.LinkedList<any>>;
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public peekLast(): any;
 			public removeLast(): any;
 			public push(param0: any): void;
@@ -62537,7 +62540,6 @@ declare module java {
 			public removeFirstOccurrence(param0: any): boolean;
 			public contains(param0: any): boolean;
 			public get(param0: number): any;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public peekFirst(): any;
 			public addLast(param0: any): void;
 			public add(param0: number, param1: any): void;
@@ -62569,7 +62571,7 @@ declare module java {
 			 * Constructs a new instance of the java.util.List<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				add(param0: number, param1: any): void;
+				add(param0: number, param1: E): void;
 				add(param0: E): boolean;
 				addAll(param0: number, param1: java.util.Collection<any>): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
@@ -62589,7 +62591,7 @@ declare module java {
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
-				set(param0: number, param1: any): E;
+				set(param0: number, param1: E): E;
 				size(): number;
 				subList(param0: number, param1: number): java.util.List<E>;
 				toArray(): native.Array<any>;
@@ -62611,6 +62613,7 @@ declare module java {
 				toArray(param0: native.Array<any>): native.Array<any>;
 				iterator(): java.util.Iterator<any>;
 			});
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public iterator(): java.util.Iterator<E>;
@@ -62618,15 +62621,14 @@ declare module java {
 			public contains(param0: any): boolean;
 			public listIterator(param0: number): java.util.ListIterator<E>;
 			public subList(param0: number, param1: number): java.util.List<E>;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
-			public add(param0: number, param1: any): void;
 			public iterator(): java.util.Iterator<any>;
 			public clear(): void;
 			public isEmpty(): boolean;
 			public size(): number;
-			public set(param0: number, param1: any): E;
+			public add(param0: number, param1: E): void;
 			public add(param0: E): boolean;
 			public toArray(param0: native.Array<any>): native.Array<any>;
+			public set(param0: number, param1: E): E;
 			public listIterator(): java.util.ListIterator<E>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
@@ -62867,9 +62869,9 @@ declare module java {
 				descendingMap(): java.util.NavigableMap<K,V>;
 				navigableKeySet(): java.util.NavigableSet<K>;
 				descendingKeySet(): java.util.NavigableSet<K>;
-				subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableMap<K,V>;
-				headMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
-				tailMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
+				subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.NavigableMap<K,V>;
+				headMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
+				tailMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
 				subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
 				headMap(param0: K): java.util.SortedMap<K,V>;
 				tailMap(param0: K): java.util.SortedMap<K,V>;
@@ -62899,14 +62901,12 @@ declare module java {
 			public lastKey(): K;
 			public put(param0: K, param1: V): V;
 			public containsValue(param0: any): boolean;
-			public headMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
 			public pollFirstEntry(): java.util.Map.Entry<K,V>;
-			public tailMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
+			public tailMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
 			public descendingKeySet(): java.util.NavigableSet<K>;
 			public floorKey(param0: K): K;
 			public ceilingEntry(param0: K): java.util.Map.Entry<K,V>;
 			public higherKey(param0: K): K;
-			public subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableMap<K,V>;
 			public keySet(): java.util.Set<K>;
 			public putAll(param0: java.util.Map<any,any>): void;
 			public tailMap(param0: K): java.util.SortedMap<K,V>;
@@ -62914,10 +62914,12 @@ declare module java {
 			public values(): java.util.Collection<V>;
 			public higherEntry(param0: K): java.util.Map.Entry<K,V>;
 			public lowerEntry(param0: K): java.util.Map.Entry<K,V>;
+			public headMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
 			public navigableKeySet(): java.util.NavigableSet<K>;
 			public clear(): void;
 			public isEmpty(): boolean;
 			public size(): number;
+			public subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.NavigableMap<K,V>;
 			public comparator(): java.util.Comparator<any>;
 			public firstKey(): K;
 			public get(param0: any): V;
@@ -62953,9 +62955,9 @@ declare module java {
 				iterator(): java.util.Iterator<E>;
 				descendingSet(): java.util.NavigableSet<E>;
 				descendingIterator(): java.util.Iterator<E>;
-				subSet(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableSet<E>;
-				headSet(param0: any, param1: boolean): java.util.NavigableSet<E>;
-				tailSet(param0: any, param1: boolean): java.util.NavigableSet<E>;
+				subSet(param0: E, param1: boolean, param2: E, param3: boolean): java.util.NavigableSet<E>;
+				headSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
+				tailSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
 				subSet(param0: E, param1: E): java.util.SortedSet<E>;
 				headSet(param0: E): java.util.SortedSet<E>;
 				tailSet(param0: E): java.util.SortedSet<E>;
@@ -63002,12 +63004,12 @@ declare module java {
 			public last(): E;
 			public toArray(): native.Array<any>;
 			public iterator(): java.util.Iterator<E>;
-			public subSet(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableSet<E>;
+			public subSet(param0: E, param1: boolean, param2: E, param3: boolean): java.util.NavigableSet<E>;
 			public first(): E;
 			public ceiling(param0: E): E;
 			public contains(param0: any): boolean;
 			public descendingIterator(): java.util.Iterator<E>;
-			public tailSet(param0: any, param1: boolean): java.util.NavigableSet<E>;
+			public headSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
 			public floor(param0: E): E;
 			public iterator(): java.util.Iterator<any>;
 			public higher(param0: E): E;
@@ -63015,7 +63017,6 @@ declare module java {
 			public descendingSet(): java.util.NavigableSet<E>;
 			public isEmpty(): boolean;
 			public size(): number;
-			public headSet(param0: any, param1: boolean): java.util.NavigableSet<E>;
 			public comparator(): java.util.Comparator<any>;
 			public add(param0: E): boolean;
 			public toArray(param0: native.Array<any>): native.Array<any>;
@@ -63024,6 +63025,7 @@ declare module java {
 			public retainAll(param0: java.util.Collection<any>): boolean;
 			public remove(param0: any): boolean;
 			public containsAll(param0: java.util.Collection<any>): boolean;
+			public tailSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
 			public removeAll(param0: java.util.Collection<any>): boolean;
 			public lower(param0: E): E;
 			public pollFirst(): E;
@@ -63089,9 +63091,9 @@ declare module java {
 			public constructor(param0: java.util.Collection<any>);
 			public contains(param0: any): boolean;
 			public constructor(param0: java.util.SortedSet<any>);
+			public constructor(param0: number, param1: java.util.Comparator<any>);
 			public iterator(): java.util.Iterator<any>;
 			public element(): any;
-			public constructor(param0: number, param1: java.util.Comparator<any>);
 			public clear(): void;
 			public size(): number;
 			public isEmpty(): boolean;
@@ -63645,6 +63647,7 @@ declare module java {
 	export module util {
 		export class Stack<E>  extends java.util.Vector<any> {
 			public static class: java.lang.Class<java.util.Stack<any>>;
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public remove(param0: number): any;
@@ -63652,7 +63655,6 @@ declare module java {
 			public constructor(param0: java.util.Collection<any>);
 			public contains(param0: any): boolean;
 			public get(param0: number): any;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public constructor(param0: number, param1: number);
 			public add(param0: number, param1: any): void;
 			public iterator(): java.util.Iterator<any>;
@@ -63931,6 +63933,7 @@ declare module java {
 			public elementCount: number;
 			public elementData: native.Array<any>;
 			public capacityIncrement: number;
+			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public constructor(param0: java.util.Collection<any>);
 			public removeElementAt(param0: number): void;
 			public removeAllElements(): void;
@@ -63960,7 +63963,6 @@ declare module java {
 			public contains(param0: any): boolean;
 			public setSize(param0: number): void;
 			public get(param0: number): any;
-			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public constructor(param0: number, param1: number);
 			public add(param0: number, param1: any): void;
 			public insertElementAt(param0: any, param1: number): void;
@@ -64044,6 +64046,7 @@ declare module java {
 				public peek(): any;
 				public addAll(param0: java.util.Collection<any>): boolean;
 				public offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+				public constructor(param0: number, param1: boolean, param2: java.util.Collection<any>);
 				public constructor();
 				public toArray(): native.Array<any>;
 				public containsAll(param0: java.util.Collection<any>): boolean;
@@ -64057,10 +64060,10 @@ declare module java {
 				public remove(param0: any): boolean;
 				public remove(): any;
 				public element(): any;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
 				public constructor(param0: number, param1: boolean);
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
 				public toString(): string;
 				public retainAll(param0: java.util.Collection<any>): boolean;
@@ -64069,7 +64072,6 @@ declare module java {
 				public poll(): any;
 				public size(): number;
 				public put(param0: any): void;
-				public constructor(param0: number, param1: boolean, param2: java.util.Collection<any>);
 				public remainingCapacity(): number;
 				public removeAll(param0: java.util.Collection<any>): boolean;
 				public constructor(param0: number);
@@ -64093,8 +64095,8 @@ declare module java {
 					offerLast(param0: E): boolean;
 					putFirst(param0: E): void;
 					putLast(param0: E): void;
-					offerFirst(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
-					offerLast(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+					offerFirst(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+					offerLast(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 					takeFirst(): E;
 					takeLast(): E;
 					pollFirst(param0: number, param1: java.util.concurrent.TimeUnit): E;
@@ -64104,7 +64106,7 @@ declare module java {
 					add(param0: E): boolean;
 					offer(param0: E): boolean;
 					put(param0: E): void;
-					offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+					offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 					remove(): E;
 					poll(): E;
 					take(): E;
@@ -64119,7 +64121,7 @@ declare module java {
 					add(param0: E): boolean;
 					offer(param0: E): boolean;
 					put(param0: E): void;
-					offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+					offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 					take(): E;
 					poll(param0: number, param1: java.util.concurrent.TimeUnit): E;
 					remainingCapacity(): number;
@@ -64199,9 +64201,11 @@ declare module java {
 					iterator(): java.util.Iterator<any>;
 					iterator(): java.util.Iterator<any>;
 				});
+				public offerFirst(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public put(param0: E): void;
 				public addAll(param0: java.util.Collection<any>): boolean;
 				public removeFirst(): E;
+				public offerLast(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public getFirst(): E;
 				public offerFirst(param0: E): boolean;
 				public removeLastOccurrence(param0: any): boolean;
@@ -64210,7 +64214,6 @@ declare module java {
 				public equals(param0: any): boolean;
 				public isEmpty(): boolean;
 				public push(param0: E): void;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public iterator(): java.util.Iterator<any>;
 				public getLast(): E;
@@ -64218,17 +64221,16 @@ declare module java {
 				public retainAll(param0: java.util.Collection<any>): boolean;
 				public size(): number;
 				public removeLast(): E;
+				public offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public remainingCapacity(): number;
 				public removeAll(param0: java.util.Collection<any>): boolean;
 				public peek(): E;
 				public pollLast(): E;
 				public takeFirst(): E;
-				public offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public descendingIterator(): java.util.Iterator<E>;
 				public offerLast(param0: E): boolean;
 				public addLast(param0: E): void;
 				public element(): E;
-				public offerFirst(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public take(): E;
 				public containsAll(param0: java.util.Collection<any>): boolean;
 				public peekFirst(): E;
@@ -64242,9 +64244,9 @@ declare module java {
 				public pop(): E;
 				public pollLast(param0: number, param1: java.util.concurrent.TimeUnit): E;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public drainTo(param0: java.util.Collection<any>): number;
 				public putLast(param0: E): void;
-				public offerLast(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public peekLast(): E;
 				public add(param0: E): boolean;
 				public removeFirstOccurrence(param0: any): boolean;
@@ -64269,7 +64271,7 @@ declare module java {
 					add(param0: E): boolean;
 					offer(param0: E): boolean;
 					put(param0: E): void;
-					offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+					offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 					take(): E;
 					poll(param0: number, param1: java.util.concurrent.TimeUnit): E;
 					remainingCapacity(): number;
@@ -64302,7 +64304,6 @@ declare module java {
 				});
 				public put(param0: E): void;
 				public addAll(param0: java.util.Collection<any>): boolean;
-				public offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public element(): E;
 				public toArray(): native.Array<any>;
 				public take(): E;
@@ -64315,15 +64316,16 @@ declare module java {
 				public isEmpty(): boolean;
 				public remove(param0: any): boolean;
 				public poll(): E;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
 				public remove(): E;
 				public retainAll(param0: java.util.Collection<any>): boolean;
 				public drainTo(param0: java.util.Collection<any>): number;
 				public size(): number;
 				public add(param0: E): boolean;
+				public offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public remainingCapacity(): number;
 				public removeAll(param0: java.util.Collection<any>): boolean;
 				public offer(param0: E): boolean;
@@ -64531,9 +64533,9 @@ declare module java {
 				 * Constructs a new instance of the java.util.concurrent.ConcurrentNavigableMap<any,any> interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
-					headMap(param0: any, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
-					tailMap(param0: any, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
+					subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
+					headMap(param0: K, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
+					tailMap(param0: K, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 					subMap(param0: K, param1: K): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 					headMap(param0: K): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 					tailMap(param0: K): java.util.concurrent.ConcurrentNavigableMap<K,V>;
@@ -64560,9 +64562,9 @@ declare module java {
 					descendingMap(): java.util.NavigableMap<K,V>;
 					navigableKeySet(): java.util.NavigableSet<K>;
 					descendingKeySet(): java.util.NavigableSet<K>;
-					subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableMap<K,V>;
-					headMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
-					tailMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
+					subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.NavigableMap<K,V>;
+					headMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
+					tailMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
 					subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
 					headMap(param0: K): java.util.SortedMap<K,V>;
 					tailMap(param0: K): java.util.SortedMap<K,V>;
@@ -64604,7 +64606,7 @@ declare module java {
 				public floorEntry(param0: K): java.util.Map.Entry<K,V>;
 				public entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
 				public putAll(param0: java.util.Map<any,any>): void;
-				public tailMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
+				public subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 				public keySet(): java.util.Set<K>;
 				public lastKey(): K;
 				public remove(param0: any, param1: any): boolean;
@@ -64622,8 +64624,8 @@ declare module java {
 				public values(): java.util.Collection<V>;
 				public floorKey(param0: K): K;
 				public size(): number;
-				public subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 				public tailMap(param0: K): java.util.concurrent.ConcurrentNavigableMap<K,V>;
+				public subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.NavigableMap<K,V>;
 				public lowerKey(param0: K): K;
 				public ceilingEntry(param0: K): java.util.Map.Entry<K,V>;
 				public headMap(param0: K): java.util.SortedMap<K,V>;
@@ -64635,22 +64637,22 @@ declare module java {
 				public descendingKeySet(): java.util.NavigableSet<K>;
 				public containsKey(param0: any): boolean;
 				public put(param0: K, param1: V): V;
-				public headMap(param0: any, param1: boolean): java.util.NavigableMap<K,V>;
 				public descendingMap(): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 				public clear(): void;
 				public higherEntry(param0: K): java.util.Map.Entry<K,V>;
-				public subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableMap<K,V>;
 				public lastEntry(): java.util.Map.Entry<K,V>;
-				public tailMap(param0: any, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 				public firstEntry(): java.util.Map.Entry<K,V>;
 				public navigableKeySet(): java.util.NavigableSet<K>;
+				public headMap(param0: K, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 				public higherKey(param0: K): K;
 				public headMap(param0: K): java.util.concurrent.ConcurrentNavigableMap<K,V>;
 				public putIfAbsent(param0: K, param1: V): V;
+				public tailMap(param0: K, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
+				public headMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
 				public get(param0: any): V;
 				public firstKey(): K;
 				public descendingMap(): java.util.NavigableMap<K,V>;
-				public headMap(param0: any, param1: boolean): java.util.concurrent.ConcurrentNavigableMap<K,V>;
+				public tailMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
 			}
 		}
 	}
@@ -64782,9 +64784,7 @@ declare module java {
 				public indexOf(param0: any): number;
 				public addAllAbsent(param0: java.util.Collection<any>): number;
 				public addAll(param0: java.util.Collection<any>): boolean;
-				public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 				public listIterator(): java.util.ListIterator<E>;
-				public add(param0: number, param1: any): void;
 				public addIfAbsent(param0: E): boolean;
 				public constructor();
 				public toArray(): native.Array<any>;
@@ -64795,10 +64795,10 @@ declare module java {
 				public equals(param0: any): boolean;
 				public clear(): void;
 				public iterator(): java.util.Iterator<E>;
-				public set(param0: number, param1: any): E;
-				public indexOf(param0: any, param1: number): number;
+				public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 				public lastIndexOf(param0: any): number;
 				public isEmpty(): boolean;
+				public set(param0: number, param1: E): E;
 				public remove(param0: any): boolean;
 				public get(param0: number): E;
 				public contains(param0: any): boolean;
@@ -64808,11 +64808,13 @@ declare module java {
 				public iterator(): java.util.Iterator<any>;
 				public subList(param0: number, param1: number): java.util.List<E>;
 				public toString(): string;
-				public lastIndexOf(param0: any, param1: number): number;
 				public retainAll(param0: java.util.Collection<any>): boolean;
 				public size(): number;
+				public add(param0: number, param1: E): void;
+				public indexOf(param0: E, param1: number): number;
 				public add(param0: E): boolean;
 				public removeAll(param0: java.util.Collection<any>): boolean;
+				public lastIndexOf(param0: E, param1: number): number;
 			}
 		}
 	}
@@ -64901,10 +64903,9 @@ declare module java {
 				public remove(param0: any): boolean;
 				public remove(): any;
 				public element(): any;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
-				public offer(param0: java.util.concurrent.Delayed, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
 				public retainAll(param0: java.util.Collection<any>): boolean;
 				public poll(param0: number, param1: java.util.concurrent.TimeUnit): any;
@@ -64942,7 +64943,7 @@ declare module java {
 			export class Exchanger<V>  extends java.lang.Object{
 				public static class: java.lang.Class<java.util.concurrent.Exchanger<any>>;
 				public exchange(param0: V): V;
-				public exchange(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): V;
+				public exchange(param0: V, param1: number, param2: java.util.concurrent.TimeUnit): V;
 				public constructor();
 			}
 		}
@@ -65134,7 +65135,6 @@ declare module java {
 				public addLast(param0: any): void;
 				public isEmpty(): boolean;
 				public offerFirst(param0: any): boolean;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public offerLast(param0: any): boolean;
 				public iterator(): java.util.Iterator<any>;
@@ -65167,6 +65167,7 @@ declare module java {
 				public getLast(): any;
 				public element(): any;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public getFirst(): any;
 				public removeFirst(): any;
 				public drainTo(param0: java.util.Collection<any>): number;
@@ -65203,9 +65204,9 @@ declare module java {
 				public remove(param0: any): boolean;
 				public remove(): any;
 				public element(): any;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
 				public toString(): string;
 				public retainAll(param0: java.util.Collection<any>): boolean;
@@ -65230,8 +65231,8 @@ declare module java {
 				public peek(): any;
 				public addAll(param0: java.util.Collection<any>): boolean;
 				public offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
-				public constructor(param0: number, param1: java.util.Comparator<any>);
 				public constructor();
+				public constructor(param0: number, param1: java.util.Comparator<any>);
 				public toArray(): native.Array<any>;
 				public constructor(param0: java.util.Collection<any>);
 				public containsAll(param0: java.util.Collection<any>): boolean;
@@ -65246,9 +65247,9 @@ declare module java {
 				public remove(param0: any): boolean;
 				public remove(): any;
 				public element(): any;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
 				public toString(): string;
 				public retainAll(param0: java.util.Collection<any>): boolean;
@@ -65445,15 +65446,15 @@ declare module java {
 				public decorateTask(param0: java.lang.Runnable, param1: java.util.concurrent.RunnableScheduledFuture<any>): java.util.concurrent.RunnableScheduledFuture<any>;
 				public isTerminated(): boolean;
 				public submit(param0: java.lang.Runnable, param1: any): java.util.concurrent.Future<any>;
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>, param5: java.util.concurrent.ThreadFactory, param6: java.util.concurrent.RejectedExecutionHandler);
 				public constructor();
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>, param5: java.util.concurrent.RejectedExecutionHandler);
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>);
 				public submit(param0: java.util.concurrent.Callable<any>): java.util.concurrent.Future<any>;
 				public getExecuteExistingDelayedTasksAfterShutdownPolicy(): boolean;
 				public awaitTermination(param0: number, param1: java.util.concurrent.TimeUnit): boolean;
 				public decorateTask(param0: java.util.concurrent.Callable<any>, param1: java.util.concurrent.RunnableScheduledFuture<any>): java.util.concurrent.RunnableScheduledFuture<any>;
 				public shutdown(): void;
 				public isShutdown(): boolean;
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>, param5: java.util.concurrent.ThreadFactory);
 				public constructor(param0: number, param1: java.util.concurrent.RejectedExecutionHandler);
 				public invokeAny(param0: java.util.Collection<any>, param1: number, param2: java.util.concurrent.TimeUnit): any;
 				public constructor(param0: number, param1: java.util.concurrent.ThreadFactory);
@@ -65462,8 +65463,8 @@ declare module java {
 				public setContinueExistingPeriodicTasksAfterShutdownPolicy(param0: boolean): void;
 				public schedule(param0: java.lang.Runnable, param1: number, param2: java.util.concurrent.TimeUnit): java.util.concurrent.ScheduledFuture<any>;
 				public submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>;
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>);
 				public getContinueExistingPeriodicTasksAfterShutdownPolicy(): boolean;
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>, param5: java.util.concurrent.ThreadFactory);
 				public invokeAny(param0: java.util.Collection<any>): any;
 				public scheduleAtFixedRate(param0: java.lang.Runnable, param1: number, param2: number, param3: java.util.concurrent.TimeUnit): java.util.concurrent.ScheduledFuture<any>;
 				public setExecuteExistingDelayedTasksAfterShutdownPolicy(param0: boolean): void;
@@ -65473,7 +65474,7 @@ declare module java {
 				public constructor(param0: number, param1: java.util.concurrent.ThreadFactory, param2: java.util.concurrent.RejectedExecutionHandler);
 				public constructor(param0: number);
 				public invokeAll(param0: java.util.Collection<any>): java.util.List<any>;
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>, param5: java.util.concurrent.ThreadFactory, param6: java.util.concurrent.RejectedExecutionHandler);
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>, param5: java.util.concurrent.RejectedExecutionHandler);
 				public getQueue(): java.util.concurrent.BlockingQueue<java.lang.Runnable>;
 			}
 		}
@@ -65532,9 +65533,9 @@ declare module java {
 				public remove(param0: any): boolean;
 				public remove(): any;
 				public element(): any;
-				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public contains(param0: any): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
+				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
 				public retainAll(param0: java.util.Collection<any>): boolean;
 				public poll(param0: number, param1: java.util.concurrent.TimeUnit): any;
@@ -65580,15 +65581,15 @@ declare module java {
 				public allowCoreThreadTimeOut(param0: boolean): void;
 				public finalize(): void;
 				public submit(param0: java.lang.Runnable, param1: any): java.util.concurrent.Future<any>;
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>, param5: java.util.concurrent.ThreadFactory, param6: java.util.concurrent.RejectedExecutionHandler);
 				public isTerminating(): boolean;
 				public constructor();
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>, param5: java.util.concurrent.RejectedExecutionHandler);
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>);
 				public awaitTermination(param0: number, param1: java.util.concurrent.TimeUnit): boolean;
 				public submit(param0: java.util.concurrent.Callable<any>): java.util.concurrent.Future<any>;
 				public shutdown(): void;
 				public getActiveCount(): number;
 				public isShutdown(): boolean;
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>, param5: java.util.concurrent.ThreadFactory);
 				public remove(param0: java.lang.Runnable): boolean;
 				public beforeExecute(param0: java.lang.Thread, param1: java.lang.Runnable): void;
 				public getPoolSize(): number;
@@ -65596,10 +65597,10 @@ declare module java {
 				public setKeepAliveTime(param0: number, param1: java.util.concurrent.TimeUnit): void;
 				public invokeAll(param0: java.util.Collection<any>, param1: number, param2: java.util.concurrent.TimeUnit): java.util.List<any>;
 				public submit(param0: java.lang.Runnable): java.util.concurrent.Future<any>;
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>);
 				public getCorePoolSize(): number;
 				public prestartAllCoreThreads(): number;
 				public toString(): string;
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>, param5: java.util.concurrent.ThreadFactory);
 				public getMaximumPoolSize(): number;
 				public getKeepAliveTime(param0: java.util.concurrent.TimeUnit): number;
 				public invokeAny(param0: java.util.Collection<any>): any;
@@ -65613,7 +65614,7 @@ declare module java {
 				public getTaskCount(): number;
 				public invokeAll(param0: java.util.Collection<any>): java.util.List<any>;
 				public prestartCoreThread(): boolean;
-				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<any>, param5: java.util.concurrent.ThreadFactory, param6: java.util.concurrent.RejectedExecutionHandler);
+				public constructor(param0: number, param1: number, param2: number, param3: java.util.concurrent.TimeUnit, param4: java.util.concurrent.BlockingQueue<java.lang.Runnable>, param5: java.util.concurrent.RejectedExecutionHandler);
 				public getRejectedExecutionHandler(): java.util.concurrent.RejectedExecutionHandler;
 				public getThreadFactory(): java.util.concurrent.ThreadFactory;
 				public getQueue(): java.util.concurrent.BlockingQueue<java.lang.Runnable>;
@@ -65775,20 +65776,20 @@ declare module java {
 			export module atomic {
 				export abstract class AtomicIntegerFieldUpdater<T>  extends java.lang.Object{
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicIntegerFieldUpdater<any>>;
-					public lazySet(param0: any, param1: number): void;
-					public weakCompareAndSet(param0: any, param1: number, param2: number): boolean;
-					public addAndGet(param0: any, param1: number): number;
-					public compareAndSet(param0: any, param1: number, param2: number): boolean;
+					public getAndSet(param0: T, param1: number): number;
+					public getAndAdd(param0: T, param1: number): number;
 					public getAndIncrement(param0: T): number;
+					public lazySet(param0: T, param1: number): void;
 					public get(param0: T): number;
-					public set(param0: any, param1: number): void;
+					public set(param0: T, param1: number): void;
 					public getAndDecrement(param0: T): number;
-					public getAndSet(param0: any, param1: number): number;
-					public getAndAdd(param0: any, param1: number): number;
 					public decrementAndGet(param0: T): number;
+					public weakCompareAndSet(param0: T, param1: number, param2: number): boolean;
+					public addAndGet(param0: T, param1: number): number;
 					public constructor();
 					public incrementAndGet(param0: T): number;
 					public static newUpdater(param0: java.lang.Class<any>, param1: string): java.util.concurrent.atomic.AtomicIntegerFieldUpdater<any>;
+					public compareAndSet(param0: T, param1: number, param2: number): boolean;
 				}
 			}
 		}
@@ -65860,20 +65861,20 @@ declare module java {
 			export module atomic {
 				export abstract class AtomicLongFieldUpdater<T>  extends java.lang.Object{
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicLongFieldUpdater<any>>;
-					public lazySet(param0: any, param1: number): void;
-					public weakCompareAndSet(param0: any, param1: number, param2: number): boolean;
-					public addAndGet(param0: any, param1: number): number;
-					public compareAndSet(param0: any, param1: number, param2: number): boolean;
+					public getAndSet(param0: T, param1: number): number;
+					public getAndAdd(param0: T, param1: number): number;
 					public getAndIncrement(param0: T): number;
+					public lazySet(param0: T, param1: number): void;
 					public get(param0: T): number;
-					public set(param0: any, param1: number): void;
+					public set(param0: T, param1: number): void;
 					public getAndDecrement(param0: T): number;
-					public getAndSet(param0: any, param1: number): number;
 					public static newUpdater(param0: java.lang.Class<any>, param1: string): java.util.concurrent.atomic.AtomicLongFieldUpdater<any>;
-					public getAndAdd(param0: any, param1: number): number;
 					public decrementAndGet(param0: T): number;
+					public weakCompareAndSet(param0: T, param1: number, param2: number): boolean;
+					public addAndGet(param0: T, param1: number): number;
 					public constructor();
 					public incrementAndGet(param0: T): number;
+					public compareAndSet(param0: T, param1: number, param2: number): boolean;
 				}
 			}
 		}
@@ -65886,13 +65887,13 @@ declare module java {
 			export module atomic {
 				export class AtomicMarkableReference<V>  extends java.lang.Object{
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicMarkableReference<any>>;
-					public constructor(param0: any, param1: boolean);
-					public attemptMark(param0: any, param1: boolean): boolean;
+					public compareAndSet(param0: V, param1: V, param2: boolean, param3: boolean): boolean;
 					public getReference(): V;
-					public set(param0: any, param1: boolean): void;
+					public set(param0: V, param1: boolean): void;
 					public get(param0: native.Array<boolean>): V;
-					public weakCompareAndSet(param0: any, param1: any, param2: boolean, param3: boolean): boolean;
-					public compareAndSet(param0: any, param1: any, param2: boolean, param3: boolean): boolean;
+					public weakCompareAndSet(param0: V, param1: V, param2: boolean, param3: boolean): boolean;
+					public constructor(param0: V, param1: boolean);
+					public attemptMark(param0: V, param1: boolean): boolean;
 					public isMarked(): boolean;
 				}
 			}
@@ -65927,16 +65928,16 @@ declare module java {
 			export module atomic {
 				export class AtomicReferenceArray<E>  extends java.lang.Object{
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicReferenceArray<any>>;
-					public getAndSet(param0: number, param1: any): E;
+					public getAndSet(param0: number, param1: E): E;
 					public toString(): string;
+					public set(param0: number, param1: E): void;
 					public get(param0: number): E;
-					public lazySet(param0: number, param1: any): void;
-					public compareAndSet(param0: number, param1: any, param2: any): boolean;
-					public set(param0: number, param1: any): void;
+					public lazySet(param0: number, param1: E): void;
+					public weakCompareAndSet(param0: number, param1: E, param2: E): boolean;
 					public constructor(param0: number);
 					public constructor(param0: native.Array<E>);
 					public length(): number;
-					public weakCompareAndSet(param0: number, param1: any, param2: any): boolean;
+					public compareAndSet(param0: number, param1: E, param2: E): boolean;
 				}
 			}
 		}
@@ -65969,14 +65970,14 @@ declare module java {
 			export module atomic {
 				export class AtomicStampedReference<V>  extends java.lang.Object{
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicStampedReference<any>>;
-					public constructor(param0: any, param1: number);
-					public compareAndSet(param0: any, param1: any, param2: number, param3: number): boolean;
+					public constructor(param0: V, param1: number);
+					public set(param0: V, param1: number): void;
 					public getReference(): V;
-					public attemptStamp(param0: any, param1: number): boolean;
+					public attemptStamp(param0: V, param1: number): boolean;
 					public getStamp(): number;
-					public weakCompareAndSet(param0: any, param1: any, param2: number, param3: number): boolean;
-					public set(param0: any, param1: number): void;
+					public weakCompareAndSet(param0: V, param1: V, param2: number, param3: number): boolean;
 					public get(param0: native.Array<number>): V;
+					public compareAndSet(param0: V, param1: V, param2: number, param3: number): boolean;
 				}
 			}
 		}
@@ -71227,13 +71228,13 @@ declare module javax {
 				public constructor();
 				public static doAsPrivileged(param0: javax.security.auth.Subject, param1: java.security.PrivilegedAction<any>, param2: java.security.AccessControlContext): any;
 				public static doAsPrivileged(param0: javax.security.auth.Subject, param1: java.security.PrivilegedExceptionAction<any>, param2: java.security.AccessControlContext): any;
+				public constructor(param0: boolean, param1: java.util.Set<any>, param2: java.util.Set<any>, param3: java.util.Set<any>);
 				public getPrincipals(): java.util.Set<java.security.Principal>;
 				public static doAs(param0: javax.security.auth.Subject, param1: java.security.PrivilegedAction<any>): any;
 				public hashCode(): number;
 				public isReadOnly(): boolean;
 				public equals(param0: any): boolean;
 				public getPublicCredentials(): java.util.Set<any>;
-				public constructor(param0: boolean, param1: java.util.Set<any>, param2: java.util.Set<any>, param3: java.util.Set<any>);
 				public getPrincipals(param0: java.lang.Class<any>): java.util.Set<any>;
 			}
 		}
@@ -71781,7 +71782,7 @@ declare module javax {
 				getLong(param0: string): number;
 				getMetaData(): java.sql.ResultSetMetaData;
 				getObject(param0: number): any;
-				getObject(param0: number, param1: java.util.Map<any,any>): any;
+				getObject(param0: number, param1: java.util.Map<string,java.lang.Class<any>>): any;
 				getObject(param0: string): any;
 				getObject(param0: string, param1: java.util.Map<string,java.lang.Class<any>>): any;
 				getRef(param0: number): java.sql.Ref;
@@ -71966,6 +71967,7 @@ declare module javax {
 			public getRef(param0: number): java.sql.Ref;
 			public getType(): number;
 			public isClosed(): boolean;
+			public getObject(param0: number, param1: java.util.Map<string,java.lang.Class<any>>): any;
 			public updateBlob(param0: number, param1: java.sql.Blob): void;
 			public setDate(param0: string, param1: java.sql.Date, param2: java.util.Calendar): void;
 			public clearParameters(): void;
@@ -72069,7 +72071,6 @@ declare module javax {
 			public getLong(param0: number): number;
 			public getTransactionIsolation(): number;
 			public getQueryTimeout(): number;
-			public getObject(param0: number, param1: java.util.Map<any,any>): any;
 			public updateRowId(param0: number, param1: java.sql.RowId): void;
 			public updateNCharacterStream(param0: number, param1: java.io.Reader): void;
 			public isReadOnly(): boolean;
@@ -86679,6 +86680,7 @@ declare module org {
 	}
 }
 
+//Generics information:
 //android.accounts.AccountManagerCallback:1
 //android.accounts.AccountManagerFuture:1
 //android.animation.TypeEvaluator:1

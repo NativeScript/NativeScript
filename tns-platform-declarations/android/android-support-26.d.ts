@@ -9,10 +9,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.AnimRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -32,10 +32,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.AnimatorRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -55,10 +55,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.AnyRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -78,10 +78,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.AnyThread interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -101,10 +101,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.ArrayRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -124,10 +124,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.AttrRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -147,10 +147,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.BinderThread interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -170,10 +170,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.BoolRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -193,10 +193,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.CallSuper interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -217,10 +217,10 @@ declare module android {
 				 */
 				public constructor(implementation: {
 					suggest(): string;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public suggest(): string;
@@ -241,10 +241,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.ColorInt interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -264,10 +264,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.ColorLong interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -287,10 +287,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.ColorRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -310,10 +310,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.DimenRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -334,10 +334,10 @@ declare module android {
 				 */
 				public constructor(implementation: {
 					unit(): number;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public static PX: number;
 				public static SP: number;
@@ -361,10 +361,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.DrawableRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -388,10 +388,10 @@ declare module android {
 					to(): number;
 					fromInclusive(): boolean;
 					toInclusive(): boolean;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public toInclusive(): boolean;
 				public hashCode(): number;
@@ -415,10 +415,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.FontRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -438,10 +438,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.FractionRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -462,10 +462,10 @@ declare module android {
 				 */
 				public constructor(implementation: {
 					value(): string;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public value(): string;
@@ -486,10 +486,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.HalfFloat interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -509,10 +509,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.IdRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -534,10 +534,10 @@ declare module android {
 				public constructor(implementation: {
 					value(): native.Array<number>;
 					flag(): boolean;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public value(): native.Array<number>;
 				public hashCode(): number;
@@ -561,10 +561,10 @@ declare module android {
 				public constructor(implementation: {
 					from(): number;
 					to(): number;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -586,10 +586,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.IntegerRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -609,10 +609,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.InterpolatorRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -632,10 +632,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.Keep interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -655,10 +655,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.LayoutRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -678,10 +678,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.MainThread interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -701,10 +701,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.MenuRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -724,10 +724,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.NavigationRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -747,10 +747,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.NonNull interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -770,10 +770,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.Nullable interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -793,10 +793,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.PluralsRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -816,10 +816,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.Px interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -839,10 +839,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.RawRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -864,10 +864,10 @@ declare module android {
 				public constructor(implementation: {
 					value(): number;
 					api(): number;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public api(): number;
 				public hashCode(): number;
@@ -893,10 +893,10 @@ declare module android {
 					allOf(): native.Array<string>;
 					anyOf(): native.Array<string>;
 					conditional(): boolean;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public allOf(): native.Array<string>;
 				public conditional(): boolean;
@@ -915,10 +915,10 @@ declare module android {
 					 */
 					public constructor(implementation: {
 						value(): android.support.annotation.RequiresPermission;
-						annotationType(): java.lang.Class<any>;
 						equals(param0: any): boolean;
 						hashCode(): number;
 						toString(): string;
+						annotationType(): java.lang.Class<any>;
 					});
 					public equals(param0: any): boolean;
 					public toString(): string;
@@ -933,10 +933,10 @@ declare module android {
 					 */
 					public constructor(implementation: {
 						value(): android.support.annotation.RequiresPermission;
-						annotationType(): java.lang.Class<any>;
 						equals(param0: any): boolean;
 						hashCode(): number;
 						toString(): string;
+						annotationType(): java.lang.Class<any>;
 					});
 					public equals(param0: any): boolean;
 					public toString(): string;
@@ -959,10 +959,10 @@ declare module android {
 				 */
 				public constructor(implementation: {
 					value(): native.Array<android.support.annotation.RestrictTo.Scope>;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public value(): native.Array<android.support.annotation.RestrictTo.Scope>;
 				public hashCode(): number;
@@ -1000,10 +1000,10 @@ declare module android {
 					min(): number;
 					max(): number;
 					multiple(): number;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public max(): number;
 				public min(): number;
@@ -1028,10 +1028,10 @@ declare module android {
 				 */
 				public constructor(implementation: {
 					value(): native.Array<string>;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1052,10 +1052,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.StringRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1075,10 +1075,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.StyleRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1098,10 +1098,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.StyleableRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1121,10 +1121,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.TransitionRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1144,10 +1144,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.UiThread interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1168,10 +1168,10 @@ declare module android {
 				 */
 				public constructor(implementation: {
 					otherwise(): number;
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public static PROTECTED: number;
 				public static NONE: number;
@@ -1196,10 +1196,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.WorkerThread interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1219,10 +1219,10 @@ declare module android {
 				 * Constructs a new instance of the android.support.annotation.XmlRes interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					annotationType(): java.lang.Class<any>;
 					equals(param0: any): boolean;
 					hashCode(): number;
 					toString(): string;
+					annotationType(): java.lang.Class<any>;
 				});
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -1307,52 +1307,76 @@ declare module android {
 			export module internal {
 				export class BaselineLayout extends android.view.ViewGroup {
 					public static class: java.lang.Class<android.support.design.internal.BaselineLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public getBaseline(): number;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public getBaseline(): number;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public bringChildToFront(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public childDrawableStateChanged(param0: android.view.View): void;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
 				}
 			}
 		}
@@ -1366,39 +1390,57 @@ declare module android {
 				export class BottomNavigationItemView extends android.widget.FrameLayout implements android.support.v7.view.menu.MenuView.ItemView {
 					public static class: java.lang.Class<android.support.design.internal.BottomNavigationItemView>;
 					public static INVALID_ITEM_POSITION: number;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setTitle(param0: string): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public showsIcon(): boolean;
 					public getItemPosition(): number;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setCheckable(param0: boolean): void;
 					public setIcon(param0: android.graphics.drawable.Drawable): void;
 					public setChecked(param0: boolean): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setEnabled(param0: boolean): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public setIconTintList(param0: android.content.res.ColorStateList): void;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public setTextColor(param0: android.content.res.ColorStateList): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public getItemData(): android.support.v7.view.menu.MenuItemImpl;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public setItemPosition(param0: number): void;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public initialize(param0: android.support.v7.view.menu.MenuItemImpl, param1: number): void;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -1406,15 +1448,21 @@ declare module android {
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public prefersCondensedTitle(): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public onCreateDrawableState(param0: number): native.Array<number>;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public setItemBackground(param0: number): void;
 					public requestLayout(): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public setShiftingMode(param0: boolean): void;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public setShortcut(param0: boolean, param1: string): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -1457,36 +1505,54 @@ declare module android {
 			export module internal {
 				export class BottomNavigationMenuView extends android.view.ViewGroup implements android.support.v7.view.menu.MenuView {
 					public static class: java.lang.Class<android.support.design.internal.BottomNavigationMenuView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setItemTextColor(param0: android.content.res.ColorStateList): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public buildMenuView(): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public setIconTintList(param0: android.content.res.ColorStateList): void;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public getWindowAnimations(): number;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public getItemTextColor(): android.content.res.ColorStateList;
 					public setItemBackgroundRes(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public updateMenuView(): void;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public initialize(param0: android.support.v7.view.menu.MenuBuilder): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public getItemBackgroundRes(): number;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -1494,14 +1560,20 @@ declare module android {
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getSelectedItemId(): number;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setPresenter(param0: android.support.design.internal.BottomNavigationPresenter): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
@@ -1563,47 +1635,71 @@ declare module android {
 				export class ForegroundLinearLayout extends android.support.v7.widget.LinearLayoutCompat {
 					public static class: java.lang.Class<android.support.design.internal.ForegroundLinearLayout>;
 					public mForegroundInPadding: boolean;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public getForeground(): android.graphics.drawable.Drawable;
 					public clearChildFocus(param0: android.view.View): void;
 					public jumpDrawablesToCurrentState(): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setForeground(param0: android.graphics.drawable.Drawable): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public getForegroundGravity(): number;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public drawableStateChanged(): void;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setForegroundGravity(param0: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public draw(param0: android.graphics.Canvas): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
@@ -1646,39 +1742,57 @@ declare module android {
 			export module internal {
 				export class NavigationMenuItemView extends android.support.design.internal.ForegroundLinearLayout implements android.support.v7.view.menu.MenuView.ItemView {
 					public static class: java.lang.Class<android.support.design.internal.NavigationMenuItemView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public recycle(): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setTitle(param0: string): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public showsIcon(): boolean;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public setNeedsEmptyIcon(param0: boolean): void;
 					public addView(param0: android.view.View, param1: number): void;
 					public setCheckable(param0: boolean): void;
 					public setIcon(param0: android.graphics.drawable.Drawable): void;
 					public setChecked(param0: boolean): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setEnabled(param0: boolean): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public setTextColor(param0: android.content.res.ColorStateList): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public setTextAppearance(param0: number): void;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public getItemData(): android.support.v7.view.menu.MenuItemImpl;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public initialize(param0: android.support.v7.view.menu.MenuItemImpl, param1: number): void;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -1686,13 +1800,19 @@ declare module android {
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public prefersCondensedTitle(): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public onCreateDrawableState(param0: number): native.Array<number>;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public setShortcut(param0: boolean, param1: string): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -1756,18 +1876,18 @@ declare module android {
 						public onCreateViewHolder(param0: android.view.ViewGroup, param1: number): android.support.design.internal.NavigationMenuPresenter.ViewHolder;
 						public onViewRecycled(param0: android.support.design.internal.NavigationMenuPresenter.ViewHolder): void;
 						public getItemViewType(param0: number): number;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 						public onCreateViewHolder(param0: android.view.ViewGroup, param1: number): any;
 						public createInstanceState(): android.os.Bundle;
 						public restoreInstanceState(param0: android.os.Bundle): void;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number, param2: java.util.List<any>): void;
 						public onViewRecycled(param0: any): void;
 						public setCheckedItem(param0: android.support.v7.view.menu.MenuItemImpl): void;
+						public onBindViewHolder(param0: any, param1: number, param2: java.util.List<any>): void;
 						public setUpdateSuspended(param0: boolean): void;
 						public getItemId(param0: number): number;
 						public getItemCount(): number;
 						public onBindViewHolder(param0: android.support.design.internal.NavigationMenuPresenter.ViewHolder, param1: number): void;
 						public update(): void;
+						public onBindViewHolder(param0: any, param1: number): void;
 					}
 					export class NavigationMenuHeaderItem extends java.lang.Object implements android.support.design.internal.NavigationMenuPresenter.NavigationMenuItem {
 						public static class: java.lang.Class<android.support.design.internal.NavigationMenuPresenter.NavigationMenuHeaderItem>;
@@ -1821,51 +1941,75 @@ declare module android {
 			export module internal {
 				export class NavigationMenuView extends android.support.v7.widget.RecyclerView implements android.support.v7.view.menu.MenuView {
 					public static class: java.lang.Class<android.support.design.internal.NavigationMenuView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public computeHorizontalScrollRange(): number;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>, param4: number): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public computeVerticalScrollExtent(): number;
 					public stopNestedScroll(): void;
 					public computeHorizontalScrollExtent(): number;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public computeVerticalScrollOffset(): number;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public getWindowAnimations(): number;
 					public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public initialize(param0: android.support.v7.view.menu.MenuBuilder): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public stopNestedScroll(param0: number): void;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public hasNestedScrollingParent(param0: number): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public computeVerticalScrollRange(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -1938,53 +2082,77 @@ declare module android {
 			export module internal {
 				export class ScrimInsetsFrameLayout extends android.widget.FrameLayout {
 					public static class: java.lang.Class<android.support.design.internal.ScrimInsetsFrameLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public draw(param0: android.graphics.Canvas): void;
 					public onDetachedFromWindow(): void;
 					public onInsetsChanged(param0: android.support.v4.view.WindowInsetsCompat): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public bringChildToFront(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public childDrawableStateChanged(param0: android.view.View): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
 				}
 			}
 		}
@@ -1997,44 +2165,68 @@ declare module android {
 			export module internal {
 				export class SnackbarContentLayout extends android.widget.LinearLayout implements android.support.design.widget.BaseTransientBottomBar.ContentViewCallback {
 					public static class: java.lang.Class<android.support.design.internal.SnackbarContentLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public getActionView(): android.widget.Button;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public getMessageView(): android.widget.TextView;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public animateContentIn(param0: number, param1: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public onFinishInflate(): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
@@ -2088,56 +2280,80 @@ declare module android {
 			export module widget {
 				export class AppBarLayout extends android.widget.LinearLayout {
 					public static class: java.lang.Class<android.support.design.widget.AppBarLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public generateDefaultLayoutParams(): android.widget.LinearLayout.LayoutParams;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.widget.LinearLayout.LayoutParams;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.design.widget.AppBarLayout.LayoutParams;
 					public setTargetElevation(param0: number): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public generateDefaultLayoutParams(): android.support.design.widget.AppBarLayout.LayoutParams;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public removeOnOffsetChangedListener(param0: android.support.design.widget.AppBarLayout.OnOffsetChangedListener): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public setExpanded(param0: boolean, param1: boolean): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public setOrientation(param0: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setExpanded(param0: boolean): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public getTargetElevation(): number;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.support.design.widget.AppBarLayout.LayoutParams;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public onCreateDrawableState(param0: number): native.Array<number>;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.widget.LinearLayout.LayoutParams;
 					public onMeasure(param0: number, param1: number): void;
 					public getTotalScrollRange(): number;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -2156,28 +2372,28 @@ declare module android {
 				export module AppBarLayout {
 					export class Behavior extends android.support.design.widget.HeaderBehavior<android.support.design.widget.AppBarLayout> {
 						public static class: java.lang.Class<android.support.design.widget.AppBarLayout.Behavior>;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
+						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 						public constructor();
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
-						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number): void;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
-						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
-						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
 						public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout): android.os.Parcelable;
 						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: number, param3: number, param4: number, param5: number): boolean;
 						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: number): boolean;
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number): boolean;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
+						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any): android.os.Parcelable;
 						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 						public setDragCallback(param0: android.support.design.widget.AppBarLayout.Behavior.DragCallback): void;
 						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): void;
 						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: number): void;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
+						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number, param3: number, param4: number, param5: number): boolean;
 						public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.os.Parcelable): void;
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): boolean;
 						public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.os.Parcelable): void;
 					}
 					export module Behavior {
@@ -2222,10 +2438,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.design.widget.AppBarLayout$LayoutParams$ScrollFlags interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -2251,6 +2467,7 @@ declare module android {
 						public constructor();
 						public layoutDependsOn(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): boolean;
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View): boolean;
+						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.graphics.Rect, param3: boolean): boolean;
 						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.graphics.Rect, param3: boolean): boolean;
 					}
 				}
@@ -2288,8 +2505,8 @@ declare module android {
 						public static DISMISS_EVENT_TIMEOUT: number;
 						public static DISMISS_EVENT_MANUAL: number;
 						public static DISMISS_EVENT_CONSECUTIVE: number;
-						public onDismissed(param0: any, param1: number): void;
 						public constructor();
+						public onDismissed(param0: B, param1: number): void;
 						public onShown(param0: B): void;
 					}
 					export module BaseCallback {
@@ -2299,10 +2516,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$BaseCallback$DismissEvent interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -2334,10 +2551,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$Duration interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -2369,48 +2586,71 @@ declare module android {
 					export class SnackbarBaseLayout extends android.widget.FrameLayout {
 						public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.SnackbarBaseLayout>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-						public addView(param0: android.view.View, param1: number): void;
 						public sendAccessibilityEvent(param0: number): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-						public onAttachedToWindow(): void;
 						public requestTransparentRegion(param0: android.view.View): void;
 						public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-						public childDrawableStateChanged(param0: android.view.View): void;
 						public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public showContextMenuForChild(param0: android.view.View): boolean;
-						public requestFitSystemWindows(): void;
-						public clearChildFocus(param0: android.view.View): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
-						public onDetachedFromWindow(): void;
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
-						public bringChildToFront(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
+						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
+						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+						public addView(param0: android.view.View, param1: number): void;
+						public onAttachedToWindow(): void;
+						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+						public childDrawableStateChanged(param0: android.view.View): void;
+						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public requestFitSystemWindows(): void;
+						public clearChildFocus(param0: android.view.View): void;
+						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onDetachedFromWindow(): void;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+						public bringChildToFront(param0: android.view.View): void;
+						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
-						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 				}
 			}
@@ -2424,22 +2664,31 @@ declare module android {
 			export module widget {
 				export class BottomNavigationView extends android.widget.FrameLayout {
 					public static class: java.lang.Class<android.support.design.widget.BottomNavigationView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setItemTextColor(param0: android.content.res.ColorStateList): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setItemIconTintList(param0: android.content.res.ColorStateList): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setOnNavigationItemSelectedListener(param0: android.support.design.widget.BottomNavigationView.OnNavigationItemSelectedListener): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public inflateMenu(param0: number): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public setSelectedItemId(param0: number): void;
@@ -2447,15 +2696,24 @@ declare module android {
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public getItemTextColor(): android.content.res.ColorStateList;
 					public getMaxItemCount(): number;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onSaveInstanceState(): android.os.Parcelable;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public getItemIconTintList(): android.content.res.ColorStateList;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -2463,13 +2721,19 @@ declare module android {
 					public getSelectedItemId(): number;
 					public getMenu(): android.view.Menu;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
 					public setOnNavigationItemReselectedListener(param0: android.support.design.widget.BottomNavigationView.OnNavigationItemReselectedListener): void;
+					public getTextAlignment(): number;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -2534,22 +2798,22 @@ declare module android {
 					public setSkipCollapsed(param0: boolean): void;
 					public onTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.MotionEvent): boolean;
 					public onInterceptTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.MotionEvent): boolean;
-					public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number): boolean;
 					public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any): android.os.Parcelable;
-					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 					public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): void;
+					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 					public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.os.Parcelable): void;
+					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number): boolean;
 					public setPeekHeight(param0: number): void;
 					public getPeekHeight(): number;
-					public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number): void;
-					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
+					public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number): boolean;
+					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 					public static from(param0: android.view.View): android.support.design.widget.BottomSheetBehavior<any>;
-					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): boolean;
+					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 					public constructor();
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 					public isHideable(): boolean;
-					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
-					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
+					public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number): void;
 					public setState(param0: number): void;
 					public getSkipCollapsed(): boolean;
 					public setHideable(param0: boolean): void;
@@ -2583,10 +2847,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.BottomSheetBehavior$State interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -2610,6 +2874,7 @@ declare module android {
 					public onSearchRequested(): boolean;
 					public constructor(param0: android.content.Context, param1: number);
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onPointerCaptureChanged(param0: boolean): void;
 					public onAttachedToWindow(): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
@@ -2617,11 +2882,13 @@ declare module android {
 					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
 					public onCreate(param0: android.os.Bundle): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public setContentView(param0: number): void;
@@ -2636,6 +2903,7 @@ declare module android {
 					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
 					public setContentView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context);
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
 					public constructor(param0: android.content.Context, param1: boolean, param2: android.content.DialogInterface.OnCancelListener);
@@ -2693,6 +2961,7 @@ declare module android {
 					public sendAccessibilityEvent(param0: number): void;
 					public isChecked(): boolean;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public toggle(): void;
 					public setSupportImageTintList(param0: android.content.res.ColorStateList): void;
@@ -2765,28 +3034,37 @@ declare module android {
 				export class CollapsingToolbarLayout extends android.widget.FrameLayout {
 					public static class: java.lang.Class<android.support.design.widget.CollapsingToolbarLayout>;
 					public getTitle(): string;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.widget.FrameLayout.LayoutParams;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public getExpandedTitleMarginStart(): number;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setCollapsedTitleTextColor(param0: android.content.res.ColorStateList): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public setCollapsedTitleGravity(param0: number): void;
 					public getCollapsedTitleGravity(): number;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public focusSearch(param0: number): android.view.View;
 					public isTitleEnabled(): boolean;
 					public setExpandedTitleColor(param0: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public setStatusBarScrim(param0: android.graphics.drawable.Drawable): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public canResolveTextAlignment(): boolean;
 					public setScrimAnimationDuration(param0: number): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.widget.FrameLayout.LayoutParams;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
@@ -2796,7 +3074,10 @@ declare module android {
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
 					public setExpandedTitleMarginTop(param0: number): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public getExpandedTitleMarginEnd(): number;
@@ -2806,6 +3087,7 @@ declare module android {
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public setExpandedTitleMarginStart(param0: number): void;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setTitle(param0: string): void;
 					public generateDefaultLayoutParams(): android.support.design.widget.CollapsingToolbarLayout.LayoutParams;
 					public isLayoutRequested(): boolean;
@@ -2813,13 +3095,16 @@ declare module android {
 					public clearChildFocus(param0: android.view.View): void;
 					public getContentScrim(): android.graphics.drawable.Drawable;
 					public setCollapsedTitleTextAppearance(param0: number): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
 					public getExpandedTitleMarginTop(): number;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setExpandedTitleMarginEnd(param0: number): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public getExpandedTitleMarginBottom(): number;
 					public setStatusBarScrimColor(param0: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public setScrimsShown(param0: boolean): void;
 					public getExpandedTitleTypeface(): android.graphics.Typeface;
@@ -2828,26 +3113,34 @@ declare module android {
 					public setStatusBarScrimResource(param0: number): void;
 					public setTitleEnabled(param0: boolean): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public setContentScrim(param0: android.graphics.drawable.Drawable): void;
 					public drawableStateChanged(): void;
 					public requestFitSystemWindows(): void;
 					public setExpandedTitleTextAppearance(param0: number): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setExpandedTitleGravity(param0: number): void;
 					public getStatusBarScrim(): android.graphics.drawable.Drawable;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public setExpandedTitleMarginBottom(param0: number): void;
 					public getScrimVisibleHeightTrigger(): number;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setExpandedTitleTextColor(param0: android.content.res.ColorStateList): void;
 					public setContentScrimResource(param0: number): void;
 					public setContentScrimColor(param0: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public draw(param0: android.graphics.Canvas): void;
 					public setCollapsedTitleTextColor(param0: number): void;
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public getCollapsedTitleTypeface(): android.graphics.Typeface;
 					public setScrimVisibleHeightTrigger(param0: number): void;
@@ -2891,10 +3184,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.design.widget.CollapsingToolbarLayout$LayoutParams$CollapseMode interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -2921,131 +3214,148 @@ declare module android {
 					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public setStatusBarBackgroundResource(param0: number): void;
 					public onDraw(param0: android.graphics.Canvas): void;
 					public getDependencies(param0: android.view.View): java.util.List<android.view.View>;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public dispatchDependentViewsChanged(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public getSuggestedMinimumWidth(): number;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public onTouchEvent(param0: android.view.MotionEvent): boolean;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public doViewsOverlap(param0: android.view.View, param1: android.view.View): boolean;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number, param3: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public focusSearch(param0: number): android.view.View;
+					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
+					public isTextAlignmentResolved(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onMeasureChild(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public setStatusBarBackground(param0: android.graphics.drawable.Drawable): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number, param3: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public setOnHierarchyChangeListener(param0: android.view.ViewGroup.OnHierarchyChangeListener): void;
+					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
+					public generateDefaultLayoutParams(): android.support.design.widget.CoordinatorLayout.LayoutParams;
+					public sendAccessibilityEvent(param0: number): void;
+					public requestLayout(): void;
+					public setFitsSystemWindows(param0: boolean): void;
+					public onDetachedFromWindow(): void;
+					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public onRestoreInstanceState(param0: android.os.Parcelable): void;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public getStatusBarBackground(): android.graphics.drawable.Drawable;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.support.design.widget.CoordinatorLayout.LayoutParams;
+					public isPointInChildBounds(param0: android.view.View, param1: number, param2: number): boolean;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
-					public getSuggestedMinimumWidth(): number;
 					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
-					public showContextMenuForChild(param0: android.view.View): boolean;
-					public addView(param0: android.view.View, param1: number): void;
+					public isLayoutDirectionResolved(): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
-					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public bringChildToFront(param0: android.view.View): void;
 					public onStopNestedScroll(param0: android.view.View, param1: number): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public doViewsOverlap(param0: android.view.View, param1: android.view.View): boolean;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setVisibility(param0: number): void;
-					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number, param3: number): void;
-					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public drawableStateChanged(): void;
 					public requestFitSystemWindows(): void;
 					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
-					public focusSearch(param0: number): android.view.View;
-					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onSaveInstanceState(): android.os.Parcelable;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public requestTransparentRegion(param0: android.view.View): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public onMeasureChild(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
-					public setStatusBarBackground(param0: android.graphics.drawable.Drawable): void;
-					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number, param3: number): boolean;
 					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
-					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.design.widget.CoordinatorLayout.LayoutParams;
 					public getParent(): android.view.ViewParent;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public setOnHierarchyChangeListener(param0: android.view.ViewGroup.OnHierarchyChangeListener): void;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
-					public generateDefaultLayoutParams(): android.support.design.widget.CoordinatorLayout.LayoutParams;
 					public onStopNestedScroll(param0: android.view.View): void;
-					public sendAccessibilityEvent(param0: number): void;
-					public requestLayout(): void;
-					public setFitsSystemWindows(param0: boolean): void;
 					public getSuggestedMinimumHeight(): number;
 					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number, param5: number): void;
-					public onDetachedFromWindow(): void;
-					public onMeasure(param0: number, param1: number): void;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
-					public onRestoreInstanceState(param0: android.os.Parcelable): void;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public setStatusBarBackgroundColor(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public getStatusBarBackground(): android.graphics.drawable.Drawable;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public onLayoutChild(param0: android.view.View, param1: number): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public constructor(param0: android.content.Context);
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>, param4: number): void;
 					public getNestedScrollAxes(): number;
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public drawChild(param0: android.graphics.Canvas, param1: android.view.View, param2: number): boolean;
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 					public getDependents(param0: android.view.View): java.util.List<android.view.View>;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.support.design.widget.CoordinatorLayout.LayoutParams;
-					public isPointInChildBounds(param0: android.view.View, param1: number, param2: number): boolean;
 				}
 				export module CoordinatorLayout {
 					export abstract class Behavior<V>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.Behavior<any>>;
-						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): void;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.graphics.Rect): boolean;
-						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): void;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 						public onAttachedToLayoutParams(param0: android.support.design.widget.CoordinatorLayout.LayoutParams): void;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
-						public onNestedFling(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: boolean): boolean;
+						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number): void;
 						public onDetachedFromLayoutParams(): void;
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.MotionEvent): boolean;
+						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number): void;
 						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): void;
 						public onApplyWindowInsets(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.support.v4.view.WindowInsetsCompat): android.support.v4.view.WindowInsetsCompat;
-						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.graphics.Rect, param3: boolean): boolean;
+						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.graphics.Rect, param3: boolean): boolean;
+						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number, param5: number): void;
 						public constructor();
 						public onDependentViewRemoved(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): void;
-						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number): void;
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
-						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
-						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number): boolean;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
+						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: number, param3: number, param4: number, param5: number): boolean;
+						public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number): boolean;
 						public getScrimOpacity(param0: android.support.design.widget.CoordinatorLayout, param1: V): number;
 						public blocksInteractionBelow(param0: android.support.design.widget.CoordinatorLayout, param1: V): boolean;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
 						public static getTag(param0: android.view.View): any;
 						public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: V): android.os.Parcelable;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public layoutDependsOn(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): boolean;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 						public getScrimColor(param0: android.support.design.widget.CoordinatorLayout, param1: V): number;
 						public static setTag(param0: android.view.View, param1: any): void;
-						public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number): boolean;
 						public onInterceptTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.MotionEvent): boolean;
+						public onNestedFling(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: boolean): boolean;
+						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: number): boolean;
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): boolean;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.os.Parcelable): void;
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): boolean;
 					}
 					export class DefaultBehavior extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.DefaultBehavior>;
@@ -3054,10 +3364,10 @@ declare module android {
 						 */
 						public constructor(implementation: {
 							value(): java.lang.Class<any>;
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public value(): java.lang.Class<any>;
 						public equals(param0: any): boolean;
@@ -3071,10 +3381,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.CoordinatorLayout$DispatchChangeEvent interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -3118,9 +3428,25 @@ declare module android {
 					}
 					export class ViewElevationComparator extends java.lang.Object{
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.ViewElevationComparator>;
-						public compare(param0: android.view.View, param1: android.view.View): number;
+						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
 						public equals(param0: any): boolean;
+						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static reverseOrder(): java.util.Comparator<any>;
+						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public compare(param0: android.view.View, param1: android.view.View): number;
+						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public reversed(): java.util.Comparator<any>;
+						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -3187,6 +3513,7 @@ declare module android {
 					public setRippleColor(param0: number): void;
 					public show(): void;
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public setBackgroundColor(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -3206,6 +3533,7 @@ declare module android {
 				export module FloatingActionButton {
 					export class Behavior extends android.support.design.widget.CoordinatorLayout.Behavior<android.support.design.widget.FloatingActionButton> {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButton.Behavior>;
+						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): boolean;
 						public constructor();
@@ -3213,7 +3541,6 @@ declare module android {
 						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.FloatingActionButton, param2: number): boolean;
 						public onAttachedToLayoutParams(param0: android.support.design.widget.CoordinatorLayout.LayoutParams): void;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.FloatingActionButton, param2: android.graphics.Rect): boolean;
-						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.graphics.Rect): boolean;
 						public setAutoHideEnabled(param0: boolean): void;
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.FloatingActionButton, param2: android.view.View): boolean;
@@ -3237,10 +3564,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.FloatingActionButton$Size interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -3263,19 +3590,27 @@ declare module android {
 				export module FloatingActionButtonImpl {
 					export class DisabledElevationAnimation extends android.support.design.widget.FloatingActionButtonImpl.ShadowAnimatorImpl {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButtonImpl.DisabledElevationAnimation>;
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
 						public getTargetShadowSize(): number;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 						public onAnimationUpdate(param0: android.animation.ValueAnimator): void;
 					}
 					export class ElevateToTranslationZAnimation extends android.support.design.widget.FloatingActionButtonImpl.ShadowAnimatorImpl {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButtonImpl.ElevateToTranslationZAnimation>;
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
 						public getTargetShadowSize(): number;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 						public onAnimationUpdate(param0: android.animation.ValueAnimator): void;
 					}
@@ -3293,19 +3628,27 @@ declare module android {
 					}
 					export class ResetElevationAnimation extends android.support.design.widget.FloatingActionButtonImpl.ShadowAnimatorImpl {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButtonImpl.ResetElevationAnimation>;
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
 						public getTargetShadowSize(): number;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 						public onAnimationUpdate(param0: android.animation.ValueAnimator): void;
 					}
 					export abstract class ShadowAnimatorImpl extends android.animation.AnimatorListenerAdapter implements android.animation.ValueAnimator.AnimatorUpdateListener {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButtonImpl.ShadowAnimatorImpl>;
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
 						public getTargetShadowSize(): number;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 						public onAnimationUpdate(param0: android.animation.ValueAnimator): void;
 					}
@@ -3366,8 +3709,10 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public setOverlayTop(param0: number): void;
 					public getOverlayTop(): number;
+					public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number, param3: number, param4: number, param5: number): boolean;
 					public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
 					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): void;
+					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): void;
 				}
 			}
 		}
@@ -3380,55 +3725,79 @@ declare module android {
 			export module widget {
 				export class NavigationView extends android.support.design.internal.ScrimInsetsFrameLayout {
 					public static class: java.lang.Class<android.support.design.widget.NavigationView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public addHeaderView(param0: android.view.View): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setItemTextColor(param0: android.content.res.ColorStateList): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public setItemBackground(param0: android.graphics.drawable.Drawable): void;
 					public addView(param0: android.view.View, param1: number): void;
 					public setItemIconTintList(param0: android.content.res.ColorStateList): void;
 					public setCheckedItem(param0: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setNavigationItemSelectedListener(param0: android.support.design.widget.NavigationView.OnNavigationItemSelectedListener): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public inflateMenu(param0: number): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getItemBackground(): android.graphics.drawable.Drawable;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public getHeaderView(param0: number): android.view.View;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public getItemTextColor(): android.content.res.ColorStateList;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public getHeaderCount(): number;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onSaveInstanceState(): android.os.Parcelable;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public getItemIconTintList(): android.content.res.ColorStateList;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getMenu(): android.view.Menu;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onMeasure(param0: number, param1: number): void;
 					public onInsetsChanged(param0: android.support.v4.view.WindowInsetsCompat): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public removeHeaderView(param0: android.view.View): void;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
@@ -3567,49 +3936,73 @@ declare module android {
 					export class SnackbarLayout extends android.support.design.widget.BaseTransientBottomBar.SnackbarBaseLayout {
 						public static class: java.lang.Class<android.support.design.widget.Snackbar.SnackbarLayout>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-						public addView(param0: android.view.View, param1: number): void;
 						public sendAccessibilityEvent(param0: number): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public requestTransparentRegion(param0: android.view.View): void;
 						public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-						public childDrawableStateChanged(param0: android.view.View): void;
 						public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 						public constructor(param0: android.content.Context);
-						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public showContextMenuForChild(param0: android.view.View): boolean;
 						public onMeasure(param0: number, param1: number): void;
-						public requestFitSystemWindows(): void;
-						public clearChildFocus(param0: android.view.View): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
-						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
-						public bringChildToFront(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
+						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
+						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+						public addView(param0: android.view.View, param1: number): void;
+						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+						public childDrawableStateChanged(param0: android.view.View): void;
+						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public requestFitSystemWindows(): void;
+						public clearChildFocus(param0: android.view.View): void;
+						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+						public bringChildToFront(param0: android.view.View): void;
+						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
-						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 				}
 			}
@@ -3721,10 +4114,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.SwipeDismissBehavior$SwipeDirection interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -3748,6 +4141,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -3772,19 +4166,13 @@ declare module android {
 					public static MODE_FIXED: number;
 					public static GRAVITY_FILL: number;
 					public static GRAVITY_CENTER: number;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.widget.FrameLayout.LayoutParams;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public setSelectedTabIndicatorHeight(param0: number): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public onAttachedToWindow(): void;
-					public clearChildFocus(param0: android.view.View): void;
-					public setOnTabSelectedListener(param0: android.support.design.widget.TabLayout.OnTabSelectedListener): void;
-					public setupWithViewPager(param0: android.support.v4.view.ViewPager): void;
-					public addTab(param0: android.support.design.widget.TabLayout.Tab): void;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setScrollPosition(param0: number, param1: number, param2: boolean): void;
@@ -3792,64 +4180,94 @@ declare module android {
 					public removeOnTabSelectedListener(param0: android.support.design.widget.TabLayout.OnTabSelectedListener): void;
 					public getSelectedTabPosition(): number;
 					public clearOnTabSelectedListeners(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public removeTab(param0: android.support.design.widget.TabLayout.Tab): void;
-					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public getTabTextColors(): android.content.res.ColorStateList;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getTabGravity(): number;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
-					public setTabGravity(param0: number): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
+					public isTextAlignmentResolved(): boolean;
 					public getTabCount(): number;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public setTabsFromPagerAdapter(param0: android.support.v4.view.PagerAdapter): void;
-					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
-					public getTabMode(): number;
-					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public addOnTabSelectedListener(param0: android.support.design.widget.TabLayout.OnTabSelectedListener): void;
-					public getParent(): android.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setTabTextColors(param0: number, param1: number): void;
 					public sendAccessibilityEvent(param0: number): void;
-					public addTab(param0: android.support.design.widget.TabLayout.Tab, param1: number): void;
-					public setTabTextColors(param0: android.content.res.ColorStateList): void;
 					public requestLayout(): void;
 					public getTabAt(param0: number): android.support.design.widget.TabLayout.Tab;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public removeView(param0: android.view.View): void;
-					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
 					public newTab(): android.support.design.widget.TabLayout.Tab;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public addTab(param0: android.support.design.widget.TabLayout.Tab, param1: number, param2: boolean): void;
 					public removeTabAt(param0: number): void;
-					public recomputeViewAttributes(param0: android.view.View): void;
-					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public setTabMode(param0: number): void;
-					public shouldDelayChildPressedState(): boolean;
 					public constructor(param0: android.content.Context);
-					public addView(param0: android.view.View): void;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public removeAllTabs(): void;
 					public addTab(param0: android.support.design.widget.TabLayout.Tab, param1: boolean): void;
-					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 					public setSelectedTabIndicatorColor(param0: number): void;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public setSelectedTabIndicatorHeight(param0: number): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isLayoutRequested(): boolean;
+					public onAttachedToWindow(): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public setOnTabSelectedListener(param0: android.support.design.widget.TabLayout.OnTabSelectedListener): void;
+					public setupWithViewPager(param0: android.support.v4.view.ViewPager): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public addTab(param0: android.support.design.widget.TabLayout.Tab): void;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public getTabGravity(): number;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public setTabGravity(param0: number): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public setTabsFromPagerAdapter(param0: android.support.v4.view.PagerAdapter): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public getTabMode(): number;
+					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public addOnTabSelectedListener(param0: android.support.design.widget.TabLayout.OnTabSelectedListener): void;
+					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
+					public addTab(param0: android.support.design.widget.TabLayout.Tab, param1: number): void;
+					public setTabTextColors(param0: android.content.res.ColorStateList): void;
+					public canResolveLayoutDirection(): boolean;
+					public removeView(param0: android.view.View): void;
+					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
+					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
+					public recomputeViewAttributes(param0: android.view.View): void;
+					public focusableViewAvailable(param0: android.view.View): void;
+					public setTabMode(param0: number): void;
+					public shouldDelayChildPressedState(): boolean;
+					public addView(param0: android.view.View): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 				}
 				export module TabLayout {
 					export class AdapterChangeListener extends java.lang.Object implements android.support.v4.view.ViewPager.OnAdapterChangeListener {
@@ -3862,10 +4280,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.TabLayout$Mode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -3894,49 +4312,72 @@ declare module android {
 					export class SlidingTabStrip extends android.widget.LinearLayout {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.SlidingTabStrip>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-						public addView(param0: android.view.View, param1: number): void;
 						public sendAccessibilityEvent(param0: number): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public requestTransparentRegion(param0: android.view.View): void;
 						public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-						public childDrawableStateChanged(param0: android.view.View): void;
 						public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public showContextMenuForChild(param0: android.view.View): boolean;
 						public onMeasure(param0: number, param1: number): void;
-						public onRtlPropertiesChanged(param0: number): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 						public draw(param0: android.graphics.Canvas): void;
-						public requestFitSystemWindows(): void;
-						public clearChildFocus(param0: android.view.View): void;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
-						public bringChildToFront(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
+						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
+						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+						public addView(param0: android.view.View, param1: number): void;
+						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+						public childDrawableStateChanged(param0: android.view.View): void;
+						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onRtlPropertiesChanged(param0: number): void;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public requestFitSystemWindows(): void;
+						public clearChildFocus(param0: android.view.View): void;
+						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+						public bringChildToFront(param0: android.view.View): void;
+						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
-						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 					export class Tab extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.Tab>;
@@ -3965,10 +4406,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.design.widget.TabLayout$TabGravity interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -3986,6 +4427,8 @@ declare module android {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.TabView>;
 						public isLayoutRequested(): boolean;
 						public constructor(param0: android.support.design.widget.TabLayout, param1: android.content.Context);
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
@@ -3999,41 +4442,63 @@ declare module android {
 						public constructor(param0: android.content.Context);
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 						public onInitializeAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
 						public showContextMenuForChild(param0: android.view.View): boolean;
 						public onMeasure(param0: number, param1: number): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 						public childDrawableStateChanged(param0: android.view.View): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 						public setSelected(param0: boolean): void;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 						public requestFitSystemWindows(): void;
 						public clearChildFocus(param0: android.view.View): void;
 						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 						public getTab(): android.support.design.widget.TabLayout.Tab;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public bringChildToFront(param0: android.view.View): void;
 						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public onInitializeAccessibilityNodeInfo(param0: android.view.accessibility.AccessibilityNodeInfo): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 					export class ViewPagerOnTabSelectedListener extends java.lang.Object implements android.support.design.widget.TabLayout.OnTabSelectedListener {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.ViewPagerOnTabSelectedListener>;
@@ -4060,6 +4525,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
@@ -4085,85 +4551,109 @@ declare module android {
 			export module widget {
 				export class TextInputLayout extends android.widget.LinearLayout {
 					public static class: java.lang.Class<android.support.design.widget.TextInputLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public setErrorEnabled(param0: boolean): void;
-					public isPasswordVisibilityToggleEnabled(): boolean;
 					public setHintEnabled(param0: boolean): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public clearChildFocus(param0: android.view.View): void;
 					public dispatchRestoreInstanceState(param0: android.util.SparseArray<android.os.Parcelable>): void;
 					public isCounterEnabled(): boolean;
 					public getHint(): string;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public getTypeface(): android.graphics.Typeface;
 					public getCounterMaxLength(): number;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public setTypeface(param0: android.graphics.Typeface): void;
-					public setEnabled(param0: boolean): void;
-					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public dispatchProvideAutofillStructure(param0: any, param1: number): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public isErrorEnabled(): boolean;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
-					public setErrorTextAppearance(param0: number): void;
 					public isHintAnimationEnabled(): boolean;
 					public setPasswordVisibilityToggleContentDescription(param0: string): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getError(): string;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
+					public focusSearch(param0: number): android.view.View;
+					public isTextAlignmentResolved(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public setPasswordVisibilityToggleEnabled(param0: boolean): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public setHintAnimationEnabled(param0: boolean): void;
+					public sendAccessibilityEvent(param0: number): void;
+					public requestLayout(): void;
+					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public onRestoreInstanceState(param0: android.os.Parcelable): void;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public setPasswordVisibilityToggleTintList(param0: android.content.res.ColorStateList): void;
+					public setHintTextAppearance(param0: number): void;
+					public isHintEnabled(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public getPasswordVisibilityToggleDrawable(): android.graphics.drawable.Drawable;
+					public constructor(param0: android.content.Context);
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public getEditText(): android.widget.EditText;
+					public setError(param0: string): void;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isPasswordVisibilityToggleEnabled(): boolean;
+					public isLayoutRequested(): boolean;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public setEnabled(param0: boolean): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public dispatchProvideAutofillStructure(param0: any, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public setErrorTextAppearance(param0: number): void;
+					public getError(): string;
 					public setCounterMaxLength(param0: number): void;
 					public setPasswordVisibilityToggleContentDescription(param0: number): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public getPasswordVisibilityToggleContentDescription(): string;
 					public drawableStateChanged(): void;
 					public setCounterEnabled(param0: boolean): void;
 					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onSaveInstanceState(): android.os.Parcelable;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public setPasswordVisibilityToggleEnabled(param0: boolean): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public setPasswordVisibilityToggleTintMode(param0: android.graphics.PorterDuff.Mode): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public setHintAnimationEnabled(param0: boolean): void;
-					public sendAccessibilityEvent(param0: number): void;
-					public requestLayout(): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public draw(param0: android.graphics.Canvas): void;
-					public onMeasure(param0: number, param1: number): void;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
-					public onRestoreInstanceState(param0: android.os.Parcelable): void;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public setPasswordVisibilityToggleTintList(param0: android.content.res.ColorStateList): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public setHintTextAppearance(param0: number): void;
-					public isHintEnabled(): boolean;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public getPasswordVisibilityToggleDrawable(): android.graphics.drawable.Drawable;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public getEditText(): android.widget.EditText;
 					public setPasswordVisibilityToggleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public setError(param0: string): void;
 					public setPasswordVisibilityToggleDrawable(param0: number): void;
 					public setHint(param0: string): void;
 				}
@@ -4220,10 +4710,10 @@ declare module android {
 					public constructor();
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public setTopAndBottomOffset(param0: number): boolean;
-					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
 					public getLeftAndRightOffset(): number;
-					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): void;
 					public setLeftAndRightOffset(param0: number): boolean;
+					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
+					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): void;
 					public getTopAndBottomOffset(): number;
 				}
 			}
@@ -4286,6 +4776,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -4443,6 +4934,7 @@ declare module android {
 					public isRunning(): boolean;
 					public stop(): void;
 					public mutate(): android.graphics.drawable.Drawable;
+					public static createFromXmlInner(param0: android.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: android.util.AttributeSet, param3: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 					public static create(param0: android.content.Context, param1: number): android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 					public setColorFilter(param0: number, param1: android.graphics.PorterDuff.Mode): void;
 					public setTintList(param0: android.content.res.ColorStateList): void;
@@ -4451,6 +4943,7 @@ declare module android {
 					export class AnimatedVectorDrawableCompatState extends android.graphics.drawable.Drawable.ConstantState {
 						public static class: java.lang.Class<android.support.graphics.drawable.AnimatedVectorDrawableCompat.AnimatedVectorDrawableCompatState>;
 						public constructor();
+						public newDrawable(param0: android.content.res.Resources, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 						public getChangingConfigurations(): number;
 						public setupAnimatorSet(): void;
 						public newDrawable(): android.graphics.drawable.Drawable;
@@ -4626,6 +5119,7 @@ declare module android {
 					public isAutoMirrored(): boolean;
 					public setVisible(param0: boolean, param1: boolean): boolean;
 					public mutate(): android.graphics.drawable.Drawable;
+					public static createFromXmlInner(param0: android.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: android.util.AttributeSet, param3: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 					public setColorFilter(param0: number, param1: android.graphics.PorterDuff.Mode): void;
 					public setTintList(param0: android.content.res.ColorStateList): void;
 					public static createFromXmlInner(param0: android.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: android.util.AttributeSet, param3: android.content.res.Resources.Theme): android.support.graphics.drawable.VectorDrawableCompat;
@@ -4707,6 +5201,7 @@ declare module android {
 						public updateCacheStates(): void;
 						public newDrawable(param0: android.content.res.Resources): android.graphics.drawable.Drawable;
 						public createCachedBitmapIfNeeded(param0: number, param1: number): void;
+						public newDrawable(param0: android.content.res.Resources, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 						public drawCachedBitmapWithRootAlpha(param0: android.graphics.Canvas, param1: android.graphics.ColorFilter, param2: android.graphics.Rect): void;
 						public updateCachedBitmap(param0: number, param1: number): void;
 						public canReuseBitmap(param0: number, param1: number): boolean;
@@ -5136,8 +5631,12 @@ declare module android {
 					public static class: java.lang.Class<android.support.transition.Fade.FadeAnimatorListener>;
 					public onAnimationEnd(param0: android.animation.Animator): void;
 					public onAnimationCancel(param0: android.animation.Animator): void;
+					public onAnimationResume(param0: android.animation.Animator): void;
+					public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 					public onAnimationStart(param0: android.animation.Animator): void;
+					public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 					public onAnimationRepeat(param0: android.animation.Animator): void;
+					public onAnimationPause(param0: android.animation.Animator): void;
 				}
 			}
 		}
@@ -5573,10 +6072,10 @@ declare module android {
 					 * Constructs a new instance of the android.support.transition.Slide$GravityFlag interface with the provided implementation.
 					 */
 					public constructor(implementation: {
-						annotationType(): java.lang.Class<any>;
 						equals(param0: any): boolean;
 						hashCode(): number;
 						toString(): string;
+						annotationType(): java.lang.Class<any>;
 					});
 					public equals(param0: any): boolean;
 					public toString(): string;
@@ -5795,10 +6294,10 @@ declare module android {
 					 * Constructs a new instance of the android.support.transition.Transition$MatchOrder interface with the provided implementation.
 					 */
 					public constructor(implementation: {
-						annotationType(): java.lang.Class<any>;
 						equals(param0: any): boolean;
 						hashCode(): number;
 						toString(): string;
+						annotationType(): java.lang.Class<any>;
 					});
 					public equals(param0: any): boolean;
 					public toString(): string;
@@ -6023,7 +6522,9 @@ declare module android {
 					public onAnimationEnd(param0: android.animation.Animator): void;
 					public onAnimationCancel(param0: android.animation.Animator): void;
 					public onAnimationResume(param0: android.animation.Animator): void;
+					public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 					public onAnimationStart(param0: android.animation.Animator): void;
+					public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 					public onAnimationRepeat(param0: android.animation.Animator): void;
 					public onAnimationPause(param0: android.animation.Animator): void;
 				}
@@ -6153,46 +6654,69 @@ declare module android {
 			export module ViewOverlayApi14 {
 				export class OverlayViewGroup extends android.view.ViewGroup {
 					public static class: java.lang.Class<android.support.transition.ViewOverlayApi14.OverlayViewGroup>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public add(param0: android.view.View): void;
 					public invalidateChildInParentFast(param0: number, param1: number, param2: android.graphics.Rect): android.view.ViewParent;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public remove(param0: android.graphics.drawable.Drawable): void;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public clear(): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public dispatchDraw(param0: android.graphics.Canvas): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
 					public remove(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public invalidateChildFast(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -6430,16 +6954,18 @@ declare module android {
 				export class DisappearListener extends android.animation.AnimatorListenerAdapter implements android.support.transition.Transition.TransitionListener, android.support.transition.AnimatorUtilsApi14.AnimatorPauseListenerCompat {
 					public static class: java.lang.Class<android.support.transition.Visibility.DisappearListener>;
 					public onTransitionStart(param0: android.support.transition.Transition): void;
-					public onAnimationEnd(param0: android.animation.Animator): void;
 					public onAnimationCancel(param0: android.animation.Animator): void;
+					public onTransitionCancel(param0: android.support.transition.Transition): void;
+					public onAnimationRepeat(param0: android.animation.Animator): void;
+					public onTransitionEnd(param0: android.support.transition.Transition): void;
+					public onAnimationEnd(param0: android.animation.Animator): void;
 					public onTransitionResume(param0: android.support.transition.Transition): void;
 					public onAnimationResume(param0: android.animation.Animator): void;
-					public onTransitionCancel(param0: android.support.transition.Transition): void;
+					public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 					public onAnimationStart(param0: android.animation.Animator): void;
 					public onTransitionPause(param0: android.support.transition.Transition): void;
-					public onAnimationRepeat(param0: android.animation.Animator): void;
+					public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 					public onAnimationPause(param0: android.animation.Animator): void;
-					public onTransitionEnd(param0: android.support.transition.Transition): void;
 				}
 				export class Mode extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<android.support.transition.Visibility.Mode>;
@@ -6447,10 +6973,10 @@ declare module android {
 					 * Constructs a new instance of the android.support.transition.Visibility$Mode interface with the provided implementation.
 					 */
 					public constructor(implementation: {
-						annotationType(): java.lang.Class<any>;
 						equals(param0: any): boolean;
 						hashCode(): number;
 						toString(): string;
+						annotationType(): java.lang.Class<any>;
 					});
 					public equals(param0: any): boolean;
 					public toString(): string;
@@ -6684,10 +7210,11 @@ declare module android {
 						});
 						public validateRequestPermissionsRequestCode(param0: number): void;
 					}
-					export class SharedElementCallback21Impl {
+					export class SharedElementCallback21Impl extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.app.ActivityCompat.SharedElementCallback21Impl>;
 						public mCallback: android.support.v4.app.SharedElementCallback;
 						public onCaptureSharedElementSnapshot(param0: android.view.View, param1: android.graphics.Matrix, param2: android.graphics.RectF): android.os.Parcelable;
+						public constructor();
 						public onRejectSharedElements(param0: java.util.List<android.view.View>): void;
 						public onSharedElementStart(param0: java.util.List<string>, param1: java.util.List<android.view.View>, param2: java.util.List<android.view.View>): void;
 						public onCreateSnapshotView(param0: android.content.Context, param1: android.os.Parcelable): android.view.View;
@@ -6697,6 +7224,7 @@ declare module android {
 					}
 					export class SharedElementCallback23Impl extends android.support.v4.app.ActivityCompat.SharedElementCallback21Impl {
 						public static class: java.lang.Class<android.support.v4.app.ActivityCompat.SharedElementCallback23Impl>;
+						public constructor();
 						public onSharedElementsArrived(param0: java.util.List<string>, param1: java.util.List<android.view.View>, param2: any): void;
 						public constructor(param0: android.support.v4.app.SharedElementCallback);
 					}
@@ -6903,6 +7431,7 @@ declare module android {
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public onSearchRequested(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onPointerCaptureChanged(param0: boolean): void;
 					public startIntentSenderForResult(param0: android.content.IntentSender, param1: number, param2: android.content.Intent, param3: number, param4: number, param5: number): void;
 					public onAttachedToWindow(): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -6910,11 +7439,13 @@ declare module android {
 					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
 					public startIntentSenderForResult(param0: android.content.IntentSender, param1: number, param2: android.content.Intent, param3: number, param4: number, param5: number, param6: android.os.Bundle): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -6924,6 +7455,7 @@ declare module android {
 					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
 					public onCreateView(param0: android.view.View, param1: string, param2: android.content.Context, param3: android.util.AttributeSet): android.view.View;
 					public onTrimMemory(param0: number): void;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
 					public onWindowFocusChanged(param0: boolean): void;
@@ -6947,6 +7479,7 @@ declare module android {
 					public onSearchRequested(): boolean;
 					public startActivityForResult(param0: android.content.Intent, param1: number, param2: android.os.Bundle): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onPointerCaptureChanged(param0: boolean): void;
 					public startIntentSenderForResult(param0: android.content.IntentSender, param1: number, param2: android.content.Intent, param3: number, param4: number, param5: number): void;
 					public onAttachedToWindow(): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -6954,12 +7487,14 @@ declare module android {
 					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
 					public startActivityForResult(param0: android.content.Intent, param1: number): void;
 					public startIntentSenderForResult(param0: android.content.IntentSender, param1: number, param2: android.content.Intent, param3: number, param4: number, param5: number, param6: android.os.Bundle): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -6969,6 +7504,7 @@ declare module android {
 					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
 					public onCreateView(param0: android.view.View, param1: string, param2: android.content.Context, param3: android.util.AttributeSet): android.view.View;
 					public onTrimMemory(param0: number): void;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
 					public onWindowFocusChanged(param0: boolean): void;
@@ -7050,10 +7586,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.DialogFragment$DialogStyle interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -7193,6 +7729,7 @@ declare module android {
 						public constructor(param0: string, param1: java.lang.Exception);
 						public constructor(param0: java.lang.Throwable);
 						public constructor(param0: string, param1: java.lang.Throwable);
+						public constructor(param0: string, param1: java.lang.Throwable, param2: boolean, param3: boolean);
 						public constructor(param0: string);
 					}
 					export class OnStartEnterTransitionListener extends java.lang.Object {
@@ -7227,6 +7764,7 @@ declare module android {
 					public static class: java.lang.Class<android.support.v4.app.FragmentActivity>;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public constructor(param0: android.content.Context, param1: number);
+					public onSaveInstanceState(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
 					public onPictureInPictureModeChanged(param0: boolean): void;
 					public onDestroy(): void;
 					public onAttachedToWindow(): void;
@@ -7240,6 +7778,7 @@ declare module android {
 					public onStateNotSaved(): void;
 					public onRetainCustomNonConfigurationInstance(): any;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public validateRequestPermissionsRequestCode(param0: number): void;
 					public onNewIntent(param0: android.content.Intent): void;
@@ -7247,13 +7786,17 @@ declare module android {
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
 					public setEnterSharedElementCallback(param0: android.support.v4.app.SharedElementCallback): void;
+					public onCreate(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
 					public onResume(): void;
 					public getSupportLoaderManager(): android.support.v4.app.LoaderManager;
 					public onTrimMemory(param0: number): void;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
+					public onMultiWindowModeChanged(param0: boolean, param1: android.content.res.Configuration): void;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
 					public onMultiWindowModeChanged(param0: boolean): void;
 					public startActivityFromFragment(param0: android.support.v4.app.Fragment, param1: android.content.Intent, param2: number, param3: android.os.Bundle): void;
 					public onWindowFocusChanged(param0: boolean): void;
+					public setExitSharedElementCallback(param0: any): void;
 					public onContentChanged(): void;
 					public onActivityResult(param0: number, param1: number, param2: android.content.Intent): void;
 					public supportStartPostponedEnterTransition(): void;
@@ -7263,14 +7806,18 @@ declare module android {
 					public startActivityForResult(param0: android.content.Intent, param1: number, param2: android.os.Bundle): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public onBackPressed(): void;
+					public constructor(param0: android.content.Context, param1: android.content.res.Resources.Theme);
+					public onPointerCaptureChanged(param0: boolean): void;
 					public setExitSharedElementCallback(param0: android.support.v4.app.SharedElementCallback): void;
 					public startActivityFromFragment(param0: android.app.Fragment, param1: android.content.Intent, param2: number, param3: android.os.Bundle): void;
 					public supportInvalidateOptionsMenu(): void;
+					public setEnterSharedElementCallback(param0: any): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
 					public onCreate(param0: android.os.Bundle): void;
 					public onPostResume(): void;
 					public onAttachFragment(param0: android.support.v4.app.Fragment): void;
@@ -7297,6 +7844,7 @@ declare module android {
 					public onPause(): void;
 					public onRequestPermissionsResult(param0: number, param1: native.Array<string>, param2: native.Array<number>): void;
 					public onStop(): void;
+					public onPictureInPictureModeChanged(param0: boolean, param1: android.content.res.Configuration): void;
 					public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 					public startIntentSenderFromFragment(param0: android.support.v4.app.Fragment, param1: android.content.IntentSender, param2: number, param3: android.content.Intent, param4: number, param5: number, param6: number, param7: android.os.Bundle): void;
 				}
@@ -7616,9 +8164,13 @@ declare module android {
 					}
 					export class AnimatorOnHWLayerIfNeededListener extends android.animation.AnimatorListenerAdapter {
 						public static class: java.lang.Class<android.support.v4.app.FragmentManagerImpl.AnimatorOnHWLayerIfNeededListener>;
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 					}
 					export class FragmentTag extends java.lang.Object {
@@ -7764,49 +8316,73 @@ declare module android {
 			export module app {
 				export class FragmentTabHost extends android.widget.TabHost implements android.widget.TabHost.OnTabChangeListener {
 					public static class: java.lang.Class<android.support.v4.app.FragmentTabHost>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public setup(): void;
 					public addTab(param0: android.widget.TabHost.TabSpec): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
 					public setup(param0: android.app.LocalActivityManager): void;
 					public setOnTabChangedListener(param0: android.widget.TabHost.OnTabChangeListener): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setup(param0: android.content.Context, param1: android.support.v4.app.FragmentManager): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public onTabChanged(param0: string): void;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onSaveInstanceState(): android.os.Parcelable;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addTab(param0: android.widget.TabHost.TabSpec, param1: java.lang.Class<any>, param2: android.os.Bundle): void;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -7896,10 +8472,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.FragmentTransaction$Transit interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -7918,8 +8494,8 @@ declare module android {
 			export module app {
 				export class FragmentTransition extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.app.FragmentTransition>;
-					public static calculatePopFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<any>, param2: boolean): void;
-					public static calculateFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<any>, param2: boolean): void;
+					public static calculatePopFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<android.support.v4.app.FragmentTransition.FragmentContainerTransition>, param2: boolean): void;
+					public static calculateFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<android.support.v4.app.FragmentTransition.FragmentContainerTransition>, param2: boolean): void;
 				}
 				export module FragmentTransition {
 					export class FragmentContainerTransition extends java.lang.Object {
@@ -8053,10 +8629,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.FrameMetricsAggregator$MetricType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -8306,9 +8882,9 @@ declare module android {
 				export module LoaderManagerImpl {
 					export class LoaderInfo extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.app.LoaderManagerImpl.LoaderInfo>;
-						public constructor(param0: android.support.v4.app.LoaderManagerImpl, param1: number, param2: android.os.Bundle, param3: android.support.v4.app.LoaderManager.LoaderCallbacks<any>);
 						public onLoadCanceled(param0: android.support.v4.content.Loader<any>): void;
 						public onLoadComplete(param0: android.support.v4.content.Loader<any>, param1: any): void;
+						public constructor(param0: number, param1: android.os.Bundle, param2: android.support.v4.app.LoaderManager.LoaderCallbacks<any>);
 						public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 						public toString(): string;
 					}
@@ -8515,10 +9091,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$BadgeIconType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -8673,10 +9249,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$GroupAlertBehavior interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -8727,10 +9303,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$NotificationVisibility interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -8957,6 +9533,7 @@ declare module android {
 						public onServiceDisconnected(param0: android.content.ComponentName): void;
 						public constructor(param0: android.content.Context);
 						public handleMessage(param0: android.os.Message): boolean;
+						public onBindingDied(param0: android.content.ComponentName): void;
 						public queueTask(param0: android.support.v4.app.NotificationManagerCompat.Task): void;
 					}
 					export module SideChannelManager {
@@ -9066,11 +9643,11 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.app.RemoteInputCompatBase$RemoteInput$Factory interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<any>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
+								build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<string>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
 								newArray(param0: number): native.Array<android.support.v4.app.RemoteInputCompatBase.RemoteInput>;
 							});
 							public newArray(param0: number): native.Array<android.support.v4.app.RemoteInputCompatBase.RemoteInput>;
-							public build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<any>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
+							public build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<string>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
 						}
 					}
 				}
@@ -9097,10 +9674,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.app.ServiceCompat$StopForegroundFlags interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -9217,6 +9794,7 @@ declare module android {
 			export module app {
 				export class SuperNotCalledException extends android.util.AndroidRuntimeException {
 					public static class: java.lang.Class<android.support.v4.app.SuperNotCalledException>;
+					public constructor(param0: string, param1: java.lang.Throwable, param2: boolean, param3: boolean);
 					public constructor(param0: string, param1: java.lang.Throwable);
 					public constructor(param0: string);
 					public constructor(param0: java.lang.Throwable);
@@ -9238,30 +9816,37 @@ declare module android {
 					public onSearchRequested(): boolean;
 					public constructor(param0: android.content.Context, param1: number);
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onSaveInstanceState(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
+					public constructor(param0: android.content.Context, param1: android.content.res.Resources.Theme);
+					public onPointerCaptureChanged(param0: boolean): void;
 					public onAttachedToWindow(): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
 					public constructor();
 					public onCreate(param0: android.os.Bundle): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
 					public onCreateView(param0: string, param1: android.content.Context, param2: android.util.AttributeSet): android.view.View;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
+					public onCreate(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
 					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
 					public onCreateView(param0: android.view.View, param1: string, param2: android.content.Context, param3: android.util.AttributeSet): android.view.View;
 					public onSaveInstanceState(param0: android.os.Bundle): void;
 					public onTrimMemory(param0: number): void;
 					public constructor(param0: android.content.Context);
 					public putExtraData(param0: android.support.v4.app.SupportActivity.ExtraData): void;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public getLifecycle(): any;
 					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
@@ -9295,6 +9880,7 @@ declare module android {
 					public getIntents(): native.Array<android.content.Intent>;
 					public static create(param0: android.content.Context): android.support.v4.app.TaskStackBuilder;
 					public getPendingIntent(param0: number, param1: number): android.app.PendingIntent;
+					public spliterator(): java.util.Spliterator<any>;
 					public getIntent(param0: number): android.content.Intent;
 					public addNextIntentWithParentStack(param0: android.content.Intent): android.support.v4.app.TaskStackBuilder;
 					public addParentStack(param0: android.content.ComponentName): android.support.v4.app.TaskStackBuilder;
@@ -9306,6 +9892,7 @@ declare module android {
 					public addNextIntent(param0: android.content.Intent): android.support.v4.app.TaskStackBuilder;
 					public getIntentCount(): number;
 					public startActivities(): void;
+					public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
 				}
 				export module TaskStackBuilder {
 					export class SupportParentable extends java.lang.Object {
@@ -9452,16 +10039,18 @@ declare module android {
 					public static class: java.lang.Class<android.support.v4.content.FileProvider>;
 					public update(param0: android.net.Uri, param1: android.content.ContentValues, param2: string, param3: native.Array<string>): number;
 					public query(param0: android.net.Uri, param1: native.Array<string>, param2: string, param3: native.Array<string>, param4: string, param5: android.os.CancellationSignal): android.database.Cursor;
+					public openFile(param0: android.net.Uri, param1: string, param2: android.os.CancellationSignal): android.os.ParcelFileDescriptor;
+					public attachInfo(param0: android.content.Context, param1: android.content.pm.ProviderInfo): void;
+					public insert(param0: android.net.Uri, param1: android.content.ContentValues): android.net.Uri;
 					public onTrimMemory(param0: number): void;
+					public query(param0: android.net.Uri, param1: native.Array<string>, param2: android.os.Bundle, param3: android.os.CancellationSignal): android.database.Cursor;
 					public delete(param0: android.net.Uri, param1: string, param2: native.Array<string>): number;
 					public constructor();
 					public onCreate(): boolean;
 					public query(param0: android.net.Uri, param1: native.Array<string>, param2: string, param3: native.Array<string>, param4: string): android.database.Cursor;
 					public openFile(param0: android.net.Uri, param1: string): android.os.ParcelFileDescriptor;
-					public attachInfo(param0: android.content.Context, param1: android.content.pm.ProviderInfo): void;
 					public static getUriForFile(param0: android.content.Context, param1: string, param2: java.io.File): android.net.Uri;
 					public getType(param0: android.net.Uri): string;
-					public insert(param0: android.net.Uri, param1: android.content.ContentValues): android.net.Uri;
 				}
 				export module FileProvider {
 					export class PathStrategy extends java.lang.Object {
@@ -9525,6 +10114,7 @@ declare module android {
 					public onCancelLoad(): boolean;
 					public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 					public deliverResult(param0: D): void;
+					public registerListener(param0: number, param1: android.support.v4.content.Loader.OnLoadCompleteListener<D>): void;
 					public reset(): void;
 					public unregisterOnLoadCanceledListener(param0: android.support.v4.content.Loader.OnLoadCanceledListener<D>): void;
 					public getId(): number;
@@ -9537,7 +10127,6 @@ declare module android {
 					public commitContentChanged(): void;
 					public constructor(param0: android.content.Context);
 					public startLoading(): void;
-					public registerListener(param0: number, param1: android.support.v4.content.Loader.OnLoadCompleteListener<any>): void;
 					public onStartLoading(): void;
 					public stopLoading(): void;
 					public onContentChanged(): void;
@@ -9692,10 +10281,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.content.PermissionChecker$PermissionResult interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -9860,10 +10449,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.content.res.FontResourcesParserCompat$FetchStrategy interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -10310,12 +10899,14 @@ declare module android {
 					export module DrawableWrapperApi14 {
 						export abstract class DrawableWrapperState extends android.graphics.drawable.Drawable.ConstantState {
 							public static class: java.lang.Class<android.support.v4.graphics.drawable.DrawableWrapperApi14.DrawableWrapperState>;
+							public newDrawable(param0: android.content.res.Resources, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 							public newDrawable(): android.graphics.drawable.Drawable;
 							public newDrawable(param0: android.content.res.Resources): android.graphics.drawable.Drawable;
 							public getChangingConfigurations(): number;
 						}
 						export class DrawableWrapperStateBase extends android.support.v4.graphics.drawable.DrawableWrapperApi14.DrawableWrapperState {
 							public static class: java.lang.Class<android.support.v4.graphics.drawable.DrawableWrapperApi14.DrawableWrapperStateBase>;
+							public newDrawable(param0: android.content.res.Resources, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 							public newDrawable(): android.graphics.drawable.Drawable;
 							public newDrawable(param0: android.content.res.Resources): android.graphics.drawable.Drawable;
 						}
@@ -10347,6 +10938,7 @@ declare module android {
 					export module DrawableWrapperApi19 {
 						export class DrawableWrapperStateKitKat extends android.support.v4.graphics.drawable.DrawableWrapperApi14.DrawableWrapperState {
 							public static class: java.lang.Class<android.support.v4.graphics.drawable.DrawableWrapperApi19.DrawableWrapperStateKitKat>;
+							public newDrawable(param0: android.content.res.Resources, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 							public newDrawable(): android.graphics.drawable.Drawable;
 							public newDrawable(param0: android.content.res.Resources): android.graphics.drawable.Drawable;
 						}
@@ -10383,6 +10975,7 @@ declare module android {
 					export module DrawableWrapperApi21 {
 						export class DrawableWrapperStateLollipop extends android.support.v4.graphics.drawable.DrawableWrapperApi14.DrawableWrapperState {
 							public static class: java.lang.Class<android.support.v4.graphics.drawable.DrawableWrapperApi21.DrawableWrapperStateLollipop>;
+							public newDrawable(param0: android.content.res.Resources, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 							public newDrawable(): android.graphics.drawable.Drawable;
 							public newDrawable(param0: android.content.res.Resources): android.graphics.drawable.Drawable;
 						}
@@ -10727,13 +11320,22 @@ declare module android {
 							setIcon(param0: android.graphics.drawable.Drawable): android.view.MenuItem;
 							setIcon(param0: number): android.view.MenuItem;
 							getIcon(): android.graphics.drawable.Drawable;
+							setIconTintList(param0: android.content.res.ColorStateList): android.view.MenuItem;
+							getIconTintList(): android.content.res.ColorStateList;
+							setIconTintMode(param0: android.graphics.PorterDuff.Mode): android.view.MenuItem;
+							getIconTintMode(): android.graphics.PorterDuff.Mode;
 							setIntent(param0: android.content.Intent): android.view.MenuItem;
 							getIntent(): android.content.Intent;
 							setShortcut(param0: string, param1: string): android.view.MenuItem;
+							setShortcut(param0: string, param1: string, param2: number, param3: number): android.view.MenuItem;
 							setNumericShortcut(param0: string): android.view.MenuItem;
+							setNumericShortcut(param0: string, param1: number): android.view.MenuItem;
 							getNumericShortcut(): string;
+							getNumericModifiers(): number;
 							setAlphabeticShortcut(param0: string): android.view.MenuItem;
+							setAlphabeticShortcut(param0: string, param1: number): android.view.MenuItem;
 							getAlphabeticShortcut(): string;
+							getAlphabeticModifiers(): number;
 							setCheckable(param0: boolean): android.view.MenuItem;
 							isCheckable(): boolean;
 							setChecked(param0: boolean): android.view.MenuItem;
@@ -10757,6 +11359,10 @@ declare module android {
 							collapseActionView(): boolean;
 							isActionViewExpanded(): boolean;
 							setOnActionExpandListener(param0: android.view.MenuItem.OnActionExpandListener): android.view.MenuItem;
+							setContentDescription(param0: string): android.view.MenuItem;
+							getContentDescription(): string;
+							setTooltipText(param0: string): android.view.MenuItem;
+							getTooltipText(): string;
 						});
 						public static SHOW_AS_ACTION_WITH_TEXT: number;
 						public static SHOW_AS_ACTION_ALWAYS: number;
@@ -10767,6 +11373,7 @@ declare module android {
 						public setNumericShortcut(param0: string): android.view.MenuItem;
 						public getIconTintList(): android.content.res.ColorStateList;
 						public getSupportActionProvider(): android.support.v4.view.ActionProvider;
+						public setContentDescription(param0: string): android.view.MenuItem;
 						public getContentDescription(): string;
 						public setAlphabeticShortcut(param0: string, param1: number): android.view.MenuItem;
 						public setShortcut(param0: string, param1: string): android.view.MenuItem;
@@ -10790,6 +11397,7 @@ declare module android {
 						public setTitleCondensed(param0: string): android.view.MenuItem;
 						public getNumericShortcut(): string;
 						public isCheckable(): boolean;
+						public setTooltipText(param0: string): android.view.MenuItem;
 						public setIcon(param0: number): android.view.MenuItem;
 						public getSubMenu(): android.view.SubMenu;
 						public getItemId(): number;
@@ -11011,10 +11619,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.AudioAttributesCompat$AttributeContentType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -11027,10 +11635,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.AudioAttributesCompat$AttributeUsage interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -11298,6 +11906,7 @@ declare module android {
 							public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompat.MediaBrowserImplBase.MediaServiceConnection>;
 							public onServiceConnected(param0: android.content.ComponentName, param1: android.os.IBinder): void;
 							public onServiceDisconnected(param0: android.content.ComponentName): void;
+							public onBindingDied(param0: android.content.ComponentName): void;
 						}
 					}
 					export class MediaBrowserServiceCallbackImpl extends java.lang.Object {
@@ -11338,10 +11947,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaItem$Flags interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -11439,6 +12048,7 @@ declare module android {
 					export class ConnectionCallbackProxy<T>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi21.ConnectionCallbackProxy<any>>;
 						public mConnectionCallback: any;
+						public constructor();
 						public onConnected(): void;
 						public onConnectionFailed(): void;
 						public constructor(param0: any);
@@ -11464,7 +12074,10 @@ declare module android {
 					export class SubscriptionCallbackProxy<T>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi21.SubscriptionCallbackProxy<any>>;
 						public mSubscriptionCallback: any;
+						public constructor();
+						public onError(param0: string, param1: android.os.Bundle): void;
 						public onChildrenLoaded(param0: string, param1: java.util.List<any>): void;
+						public onChildrenLoaded(param0: string, param1: java.util.List<any>, param2: android.os.Bundle): void;
 						public constructor(param0: any);
 						public onError(param0: string): void;
 					}
@@ -11499,6 +12112,7 @@ declare module android {
 					export class ItemCallbackProxy<T>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi23.ItemCallbackProxy<any>>;
 						public mItemCallback: any;
+						public constructor();
 						public constructor(param0: any);
 						public onItemLoaded(param0: any): void;
 						public onError(param0: string): void;
@@ -11722,10 +12336,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$ResultFlags interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -11795,9 +12409,11 @@ declare module android {
 					export class BrowserRoot extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot>;
 					}
-					export class MediaBrowserServiceAdaptor {
+					export class MediaBrowserServiceAdaptor extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi21.MediaBrowserServiceAdaptor>;
 						public onGetRoot(param0: string, param1: number, param2: android.os.Bundle): any;
+						public onLoadChildren(param0: string, param1: any, param2: android.os.Bundle): void;
+						public onTrimMemory(param0: number): void;
 						public onLoadChildren(param0: string, param1: any): void;
 					}
 					export class ResultWrapper<T>  extends java.lang.Object{
@@ -11835,6 +12451,7 @@ declare module android {
 					export class MediaBrowserServiceAdaptor extends android.support.v4.media.MediaBrowserServiceCompatApi21.MediaBrowserServiceAdaptor {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi23.MediaBrowserServiceAdaptor>;
 						public onLoadItem(param0: string, param1: any): void;
+						public onTrimMemory(param0: number): void;
 					}
 					export class ServiceCompatProxy extends java.lang.Object implements android.support.v4.media.MediaBrowserServiceCompatApi21.ServiceCompatProxy {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi23.ServiceCompatProxy>;
@@ -11870,12 +12487,13 @@ declare module android {
 					export class MediaBrowserServiceAdaptor extends android.support.v4.media.MediaBrowserServiceCompatApi23.MediaBrowserServiceAdaptor {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi26.MediaBrowserServiceAdaptor>;
 						public onLoadChildren(param0: string, param1: any, param2: android.os.Bundle): void;
+						public onTrimMemory(param0: number): void;
 						public onLoadChildren(param0: string, param1: any): void;
 					}
 					export class ResultWrapper extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi26.ResultWrapper>;
-						public sendResult(param0: java.util.List<any>, param1: number): void;
 						public detach(): void;
+						public sendResult(param0: java.util.List<android.os.Parcel>, param1: number): void;
 					}
 					export class ServiceCompatProxy extends java.lang.Object implements android.support.v4.media.MediaBrowserServiceCompatApi23.ServiceCompatProxy {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi26.ServiceCompatProxy>;
@@ -12068,10 +12686,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$BitmapKey interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -12096,10 +12714,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$LongKey interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -12112,10 +12730,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$RatingKey interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -12128,10 +12746,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$TextKey interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -12226,10 +12844,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.RatingCompat$StarStyle interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -12242,10 +12860,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.RatingCompat$Style interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -12289,10 +12907,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.media.VolumeProviderCompat$ControlType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -13228,6 +13846,7 @@ declare module android {
 						export class CallbackProxy<T>  extends java.lang.Object{
 							public static class: java.lang.Class<android.support.v4.media.session.MediaControllerCompatApi21.CallbackProxy<any>>;
 							public mCallback: any;
+							public constructor();
 							public onQueueTitleChanged(param0: string): void;
 							public onPlaybackStateChanged(param0: any): void;
 							public onQueueChanged(param0: java.util.List<any>): void;
@@ -13822,10 +14441,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$SessionFlags interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -13924,6 +14543,7 @@ declare module android {
 						export class CallbackProxy<T>  extends java.lang.Object{
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi21.CallbackProxy<any>>;
 							public mCallback: any;
+							public constructor();
 							public onPlayFromSearch(param0: string, param1: android.os.Bundle): void;
 							public onSkipToQueueItem(param0: number): void;
 							public onRewind(): void;
@@ -14023,6 +14643,7 @@ declare module android {
 						}
 						export class CallbackProxy<T>  extends android.support.v4.media.session.MediaSessionCompatApi21.CallbackProxy<any> {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi23.CallbackProxy<any>>;
+							public constructor();
 							public onPlayFromUri(param0: android.net.Uri, param1: android.os.Bundle): void;
 							public constructor(param0: any);
 						}
@@ -14096,6 +14717,7 @@ declare module android {
 						}
 						export class CallbackProxy<T>  extends android.support.v4.media.session.MediaSessionCompatApi23.CallbackProxy<any> {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi24.CallbackProxy<any>>;
+							public constructor();
 							public onPrepareFromSearch(param0: string, param1: android.os.Bundle): void;
 							public onPrepareFromMediaId(param0: string, param1: android.os.Bundle): void;
 							public onPrepareFromUri(param0: android.net.Uri, param1: android.os.Bundle): void;
@@ -14222,10 +14844,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$Actions interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -14275,10 +14897,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$ErrorCode interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -14291,10 +14913,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$MediaKeyAction interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -14307,10 +14929,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$RepeatMode interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -14323,10 +14945,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$ShuffleMode interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -14339,10 +14961,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$State interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -14426,10 +15048,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.net.ConnectivityManagerCompat$RestrictBackgroundStatus interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -14448,6 +15070,7 @@ declare module android {
 			export module net {
 				export class DatagramSocketWrapper extends java.net.Socket {
 					public static class: java.lang.Class<android.support.v4.net.DatagramSocketWrapper>;
+					public close(): void;
 				}
 				export module DatagramSocketWrapper {
 					export class DatagramSocketImplWrapper extends java.net.SocketImpl {
@@ -14747,6 +15370,7 @@ declare module android {
 			export module os {
 				export class OperationCanceledException extends java.lang.RuntimeException {
 					public static class: java.lang.Class<android.support.v4.os.OperationCanceledException>;
+					public constructor(param0: string, param1: java.lang.Throwable, param2: boolean, param3: boolean);
 					public constructor(param0: string, param1: java.lang.Throwable);
 					public constructor(param0: string);
 					public constructor(param0: java.lang.Throwable);
@@ -14896,10 +15520,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.print.PrintHelper$ColorMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -14922,10 +15546,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.print.PrintHelper$Orientation interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -15021,10 +15645,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.print.PrintHelper$ScaleMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -15162,10 +15786,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.provider.FontsContractCompat$FontFamilyResult$FontResultStatus interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -15203,10 +15827,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.provider.FontsContractCompat$FontRequestCallback$FontRequestFailReason interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -15509,10 +16133,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.text.util.LinkifyCompat$LinkifyMask interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -15532,26 +16156,37 @@ declare module android {
 			export module util {
 				export class ArrayMap<K, V>  extends android.support.v4.util.SimpleArrayMap<any,any> {
 					public static class: java.lang.Class<android.support.v4.util.ArrayMap<any,any>>;
-					public removeAll(param0: java.util.Collection<any>): boolean;
+					public replace(param0: any, param1: any): any;
 					public isEmpty(): boolean;
-					public constructor(param0: android.support.v4.util.SimpleArrayMap<any,any>);
+					public computeIfPresent(param0: any, param1: any /* java.util.function.BiFunction<any,any,any>*/): any;
+					public forEach(param0: any /* java.util.function.BiConsumer<any,any>*/): void;
 					public containsAll(param0: java.util.Collection<any>): boolean;
-					public retainAll(param0: java.util.Collection<any>): boolean;
 					public size(): number;
-					public values(): java.util.Collection<any>;
+					public merge(param0: any, param1: any, param2: any /* java.util.function.BiFunction<any,any,any>*/): any;
 					public put(param0: any, param1: any): any;
-					public equals(param0: any): boolean;
+					public getOrDefault(param0: any, param1: any): any;
 					public putAll(param0: java.util.Map<any,any>): void;
-					public containsKey(param0: any): boolean;
+					public replace(param0: any, param1: any, param2: any): boolean;
 					public containsValue(param0: any): boolean;
 					public remove(param0: any): any;
-					public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 					public constructor();
 					public keySet(): java.util.Set<any>;
 					public clear(): void;
-					public putAll(param0: android.support.v4.util.SimpleArrayMap<any,any>): void;
 					public hashCode(): number;
+					public putIfAbsent(param0: any, param1: any): any;
+					public remove(param0: any, param1: any): boolean;
 					public constructor(param0: number);
+					public removeAll(param0: java.util.Collection<any>): boolean;
+					public constructor(param0: android.support.v4.util.SimpleArrayMap<any,any>);
+					public computeIfAbsent(param0: any, param1: any /* java.util.function.Function<any,any>*/): any;
+					public retainAll(param0: java.util.Collection<any>): boolean;
+					public values(): java.util.Collection<any>;
+					public equals(param0: any): boolean;
+					public containsKey(param0: any): boolean;
+					public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
+					public putAll(param0: android.support.v4.util.SimpleArrayMap<any,any>): void;
+					public compute(param0: any, param1: any /* java.util.function.BiFunction<any,any,any>*/): any;
+					public replaceAll(param0: any /* java.util.function.BiFunction<any,any,any>*/): void;
 					public constructor(param0: android.support.v4.util.SimpleArrayMap<any,any>);
 					public get(param0: any): any;
 				}
@@ -15568,6 +16203,7 @@ declare module android {
 					public static class: java.lang.Class<android.support.v4.util.ArraySet<any>>;
 					public addAll(param0: java.util.Collection<any>): boolean;
 					public isEmpty(): boolean;
+					public spliterator(): java.util.Spliterator<any>;
 					public containsAll(param0: java.util.Collection<any>): boolean;
 					public valueAt(param0: number): E;
 					public size(): number;
@@ -15585,9 +16221,12 @@ declare module android {
 					public removeAll(param0: android.support.v4.util.ArraySet<any>): boolean;
 					public constructor(param0: number);
 					public contains(param0: any): boolean;
+					public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
 					public constructor(param0: android.support.v4.util.ArraySet<E>);
 					public remove(param0: any): boolean;
 					public removeAll(param0: java.util.Collection<any>): boolean;
+					public parallelStream(): java.util.stream.Stream<E>;
+					public spliterator(): java.util.Spliterator<E>;
 					public retainAll(param0: java.util.Collection<any>): boolean;
 					public addAll(param0: android.support.v4.util.ArraySet<any>): void;
 					public indexOf(param0: any): number;
@@ -15595,6 +16234,8 @@ declare module android {
 					public equals(param0: any): boolean;
 					public add(param0: E): boolean;
 					public constructor(param0: java.util.Collection<E>);
+					public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
+					public stream(): java.util.stream.Stream<E>;
 				}
 			}
 		}
@@ -15735,23 +16376,23 @@ declare module android {
 			export module util {
 				export class LongSparseArray<E>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v4.util.LongSparseArray<any>>;
-					public get(param0: number, param1: any): E;
 					public clone(): android.support.v4.util.LongSparseArray<E>;
 					public keyAt(param0: number): number;
 					public indexOfValue(param0: E): number;
+					public setValueAt(param0: number, param1: E): void;
 					public get(param0: number): E;
 					public valueAt(param0: number): E;
-					public put(param0: number, param1: any): void;
 					public size(): number;
-					public append(param0: number, param1: any): void;
+					public append(param0: number, param1: E): void;
+					public put(param0: number, param1: E): void;
 					public toString(): string;
 					public clone(): any;
 					public constructor();
 					public delete(param0: number): void;
-					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
+					public get(param0: number, param1: E): E;
 					public constructor(param0: number);
 					public indexOfKey(param0: number): number;
 				}
@@ -15769,6 +16410,7 @@ declare module android {
 					public evictAll(): void;
 					public putCount(): number;
 					public evictionCount(): number;
+					public entryRemoved(param0: boolean, param1: K, param2: V, param3: V): void;
 					public size(): number;
 					public get(param0: K): V;
 					public trimToSize(param0: number): void;
@@ -15784,7 +16426,6 @@ declare module android {
 					public snapshot(): java.util.Map<K,V>;
 					public resize(param0: number): void;
 					public constructor(param0: number);
-					public entryRemoved(param0: boolean, param1: any, param2: any, param3: any): void;
 				}
 			}
 		}
@@ -15798,7 +16439,6 @@ declare module android {
 				export abstract class MapCollections<K, V>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v4.util.MapCollections<any,any>>;
 					public static containsAllHelper(param0: java.util.Map<any,any>, param1: java.util.Collection<any>): boolean;
-					public colSetValue(param0: number, param1: any): V;
 					public colGetSize(): number;
 					public colGetEntry(param0: number, param1: number): any;
 					public getValues(): java.util.Collection<V>;
@@ -15815,6 +16455,7 @@ declare module android {
 					public static retainAllHelper(param0: java.util.Map<any,any>, param1: java.util.Collection<any>): boolean;
 					public toArrayHelper(param0: number): native.Array<any>;
 					public colIndexOfKey(param0: any): number;
+					public colSetValue(param0: number, param1: V): V;
 				}
 				export module MapCollections {
 					export class ArrayIterator<T>  extends java.lang.Object{
@@ -15825,17 +16466,22 @@ declare module android {
 					}
 					export class EntrySet extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.EntrySet>;
+						public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
 						public iterator(): java.util.Iterator<java.util.Map.Entry<any,any>>;
 						public iterator(): java.util.Iterator<any>;
 						public contains(param0: any): boolean;
 						public add(param0: any): boolean;
+						public stream(): java.util.stream.Stream<any>;
 						public equals(param0: any): boolean;
 						public hashCode(): number;
+						public parallelStream(): java.util.stream.Stream<any>;
 						public remove(param0: any): boolean;
 						public add(param0: java.util.Map.Entry<any,any>): boolean;
 						public toArray(param0: native.Array<any>): native.Array<any>;
 						public addAll(param0: java.util.Collection<any>): boolean;
 						public retainAll(param0: java.util.Collection<any>): boolean;
+						public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+						public spliterator(): java.util.Spliterator<any>;
 						public isEmpty(): boolean;
 						public clear(): void;
 						public size(): number;
@@ -15845,15 +16491,20 @@ declare module android {
 					}
 					export class KeySet extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.KeySet>;
+						public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
 						public iterator(): java.util.Iterator<any>;
 						public add(param0: any): boolean;
 						public contains(param0: any): boolean;
+						public stream(): java.util.stream.Stream<any>;
 						public equals(param0: any): boolean;
 						public hashCode(): number;
+						public parallelStream(): java.util.stream.Stream<any>;
 						public remove(param0: any): boolean;
 						public toArray(param0: native.Array<any>): native.Array<any>;
 						public addAll(param0: java.util.Collection<any>): boolean;
 						public retainAll(param0: java.util.Collection<any>): boolean;
+						public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+						public spliterator(): java.util.Spliterator<any>;
 						public isEmpty(): boolean;
 						public clear(): void;
 						public size(): number;
@@ -15867,23 +16518,32 @@ declare module android {
 						public setValue(param0: any): any;
 						public getValue(): any;
 						public getKey(): any;
-						public hasNext(): boolean;
+						public static comparingByValue(): java.util.Comparator<any>;
 						public equals(param0: any): boolean;
 						public hashCode(): number;
+						public static comparingByValue(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public toString(): string;
+						public static comparingByKey(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public hasNext(): boolean;
+						public static comparingByKey(): java.util.Comparator<any>;
 						public remove(): void;
 					}
 					export class ValuesCollection extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.ValuesCollection>;
+						public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
 						public iterator(): java.util.Iterator<any>;
 						public add(param0: any): boolean;
 						public contains(param0: any): boolean;
+						public stream(): java.util.stream.Stream<any>;
 						public equals(param0: any): boolean;
 						public hashCode(): number;
+						public parallelStream(): java.util.stream.Stream<any>;
 						public remove(param0: any): boolean;
 						public toArray(param0: native.Array<any>): native.Array<any>;
 						public addAll(param0: java.util.Collection<any>): boolean;
 						public retainAll(param0: java.util.Collection<any>): boolean;
+						public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+						public spliterator(): java.util.Spliterator<any>;
 						public isEmpty(): boolean;
 						public clear(): void;
 						public size(): number;
@@ -16041,9 +16701,9 @@ declare module android {
 					public clear(): void;
 					public keyAt(param0: number): K;
 					public putAll(param0: android.support.v4.util.SimpleArrayMap<any,any>): void;
-					public setValueAt(param0: number, param1: any): V;
 					public hashCode(): number;
 					public constructor(param0: number);
+					public setValueAt(param0: number, param1: V): V;
 				}
 			}
 		}
@@ -16056,24 +16716,24 @@ declare module android {
 			export module util {
 				export class SparseArrayCompat<E>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v4.util.SparseArrayCompat<any>>;
-					public get(param0: number, param1: any): E;
 					public keyAt(param0: number): number;
 					public indexOfValue(param0: E): number;
+					public setValueAt(param0: number, param1: E): void;
 					public get(param0: number): E;
 					public valueAt(param0: number): E;
-					public put(param0: number, param1: any): void;
 					public size(): number;
 					public removeAtRange(param0: number, param1: number): void;
-					public append(param0: number, param1: any): void;
+					public append(param0: number, param1: E): void;
+					public put(param0: number, param1: E): void;
 					public toString(): string;
 					public clone(): any;
 					public constructor();
 					public clone(): android.support.v4.util.SparseArrayCompat<E>;
 					public delete(param0: number): void;
-					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
+					public get(param0: number, param1: E): E;
 					public constructor(param0: number);
 					public indexOfKey(param0: number): number;
 				}
@@ -16906,47 +17566,71 @@ declare module android {
 			export module view {
 				export class PagerTabStrip extends android.support.v4.view.PagerTitleStrip {
 					public static class: java.lang.Class<android.support.v4.view.PagerTabStrip>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onDraw(param0: android.graphics.Canvas): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public getTabIndicatorColor(): number;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setPadding(param0: number, param1: number, param2: number, param3: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public setTextSpacing(param0: number): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public setTabIndicatorColor(param0: number): void;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public setBackgroundResource(param0: number): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public setTabIndicatorColorResource(param0: number): void;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public setBackgroundColor(param0: number): void;
@@ -16973,46 +17657,70 @@ declare module android {
 			export module view {
 				export class PagerTitleStrip extends android.view.ViewGroup {
 					public static class: java.lang.Class<android.support.v4.view.PagerTitleStrip>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public setNonPrimaryAlpha(param0: number): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public setTextSpacing(param0: number): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setTextColor(param0: number): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public getTextSpacing(): number;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public setGravity(param0: number): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -17310,7 +18018,6 @@ declare module android {
 					public static setActivated(param0: android.view.View, param1: boolean): void;
 					public static getNextClusterForwardId(param0: android.view.View): number;
 					public static dispatchNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
-					public static addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<any>, param2: number): void;
 					public static getImportantForAccessibility(param0: android.view.View): number;
 					public static setRotationY(param0: android.view.View, param1: number): void;
 					public static setTooltipText(param0: android.view.View, param1: string): void;
@@ -17322,6 +18029,7 @@ declare module android {
 					public static combineMeasuredStates(param0: number, param1: number): number;
 					public static setX(param0: android.view.View, param1: number): void;
 					public static setPaddingRelative(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public static addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<android.view.View>, param2: number): void;
 					public static isImportantForAutofill(param0: android.view.View): boolean;
 					public static setBackgroundTintMode(param0: android.view.View, param1: android.graphics.PorterDuff.Mode): void;
 					public static resolveSizeAndState(param0: number, param1: number, param2: number): number;
@@ -17358,10 +18066,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$AccessibilityLiveRegion interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17374,10 +18082,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$AutofillImportance interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17390,10 +18098,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusDirection interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17406,10 +18114,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusRealDirection interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17422,10 +18130,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusRelativeDirection interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17438,10 +18146,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ImportantForAccessibility interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17454,10 +18162,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$LayerType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17470,10 +18178,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$LayoutDirectionMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17486,10 +18194,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$NestedScrollType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17502,10 +18210,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$OverScroll interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17518,10 +18226,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ResolvedLayoutDirectionMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17534,10 +18242,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ScrollAxis interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17550,10 +18258,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ScrollIndicators interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -17663,7 +18371,6 @@ declare module android {
 					}
 					export class ViewCompatApi26Impl extends android.support.v4.view.ViewCompat.ViewCompatApi24Impl {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.ViewCompatApi26Impl>;
-						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<any>, param2: number): void;
 						public isImportantForAutofill(param0: android.view.View): boolean;
 						public setTooltipText(param0: android.view.View, param1: string): void;
 						public isKeyboardNavigationCluster(param0: android.view.View): boolean;
@@ -17676,6 +18383,7 @@ declare module android {
 						public restoreDefaultFocus(param0: android.view.View): boolean;
 						public setAutofillHints(param0: android.view.View, param1: native.Array<string>): void;
 						public setKeyboardNavigationCluster(param0: android.view.View, param1: boolean): void;
+						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<android.view.View>, param2: number): void;
 						public getImportantForAutofill(param0: android.view.View): number;
 						public keyboardNavigationClusterSearch(param0: android.view.View, param1: android.view.View, param2: number): android.view.View;
 					}
@@ -17707,7 +18415,6 @@ declare module android {
 						public getFitsSystemWindows(param0: android.view.View): boolean;
 						public keyboardNavigationClusterSearch(param0: android.view.View, param1: android.view.View, param2: number): android.view.View;
 						public isNestedScrollingEnabled(param0: android.view.View): boolean;
-						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<any>, param2: number): void;
 						public startNestedScroll(param0: android.view.View, param1: number): boolean;
 						public setNextClusterForwardId(param0: android.view.View, param1: number): void;
 						public setElevation(param0: android.view.View, param1: number): void;
@@ -17769,6 +18476,7 @@ declare module android {
 						public setHasTransientState(param0: android.view.View, param1: boolean): void;
 						public dispatchNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public setKeyboardNavigationCluster(param0: android.view.View, param1: boolean): void;
+						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<android.view.View>, param2: number): void;
 						public setScrollIndicators(param0: android.view.View, param1: number, param2: number): void;
 						public getPaddingEnd(param0: android.view.View): number;
 						public setImportantForAccessibility(param0: android.view.View, param1: number): void;
@@ -17848,99 +18556,123 @@ declare module android {
 					public static SCROLL_STATE_IDLE: number;
 					public static SCROLL_STATE_DRAGGING: number;
 					public static SCROLL_STATE_SETTLING: number;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public onDraw(param0: android.graphics.Canvas): void;
 					public getChildDrawingOrder(param0: number, param1: number): number;
 					public setOffscreenPageLimit(param0: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public getAdapter(): android.support.v4.view.PagerAdapter;
-					public setCurrentItem(param0: number): void;
-					public isLayoutRequested(): boolean;
-					public onAttachedToWindow(): void;
-					public clearChildFocus(param0: android.view.View): void;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
-					public arrowScroll(param0: number): boolean;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public getPageMargin(): number;
-					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
-					public addOnAdapterChangeListener(param0: android.support.v4.view.ViewPager.OnAdapterChangeListener): void;
-					public bringChildToFront(param0: android.view.View): void;
-					public removeOnPageChangeListener(param0: android.support.v4.view.ViewPager.OnPageChangeListener): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public setPageMargin(param0: number): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public setPageMarginDrawable(param0: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
-					public executeKeyEvent(param0: android.view.KeyEvent): boolean;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public setPageTransformer(param0: boolean, param1: android.support.v4.view.ViewPager.PageTransformer): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getCurrentItem(): number;
-					public computeScroll(): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-					public drawableStateChanged(): void;
 					public addOnPageChangeListener(param0: android.support.v4.view.ViewPager.OnPageChangeListener): void;
-					public requestFitSystemWindows(): void;
 					public canScroll(param0: android.view.View, param1: boolean, param2: number, param3: number, param4: number): boolean;
-					public addTouchables(param0: java.util.ArrayList<android.view.View>): void;
 					public focusSearch(param0: number): android.view.View;
-					public onSaveInstanceState(): android.os.Parcelable;
 					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public setPageTransformer(param0: boolean, param1: android.support.v4.view.ViewPager.PageTransformer, param2: number): void;
 					public setAdapter(param0: android.support.v4.view.PagerAdapter): void;
 					public setOnPageChangeListener(param0: android.support.v4.view.ViewPager.OnPageChangeListener): void;
+					public canResolveTextAlignment(): boolean;
 					public getOffscreenPageLimit(): number;
-					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
-					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onRequestFocusInDescendants(param0: number, param1: android.graphics.Rect): boolean;
-					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public getParent(): android.view.ViewParent;
 					public onPageScrolled(param0: number, param1: number, param2: number): void;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public setPageMarginDrawable(param0: android.graphics.drawable.Drawable): void;
 					public fakeDragBy(param0: number): void;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
 					public clearOnPageChangeListeners(): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public draw(param0: android.graphics.Canvas): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public removeView(param0: android.view.View): void;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public endFakeDrag(): void;
-					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
+					public getTextAlignment(): number;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public canScrollHorizontally(param0: number): boolean;
+					public removeOnAdapterChangeListener(param0: android.support.v4.view.ViewPager.OnAdapterChangeListener): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public beginFakeDrag(): boolean;
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
+					public setCurrentItem(param0: number): void;
+					public isLayoutRequested(): boolean;
+					public onAttachedToWindow(): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public arrowScroll(param0: number): boolean;
+					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public addOnAdapterChangeListener(param0: android.support.v4.view.ViewPager.OnAdapterChangeListener): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public removeOnPageChangeListener(param0: android.support.v4.view.ViewPager.OnPageChangeListener): void;
+					public setPageMargin(param0: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public executeKeyEvent(param0: android.view.KeyEvent): boolean;
+					public setPageTransformer(param0: boolean, param1: android.support.v4.view.ViewPager.PageTransformer): void;
+					public computeScroll(): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public drawableStateChanged(): void;
+					public requestFitSystemWindows(): void;
+					public addTouchables(param0: java.util.ArrayList<android.view.View>): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public onSaveInstanceState(): android.os.Parcelable;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
+					public canResolveTextDirection(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
+					public draw(param0: android.graphics.Canvas): void;
+					public canResolveLayoutDirection(): boolean;
+					public removeView(param0: android.view.View): void;
+					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
-					public removeOnAdapterChangeListener(param0: android.support.v4.view.ViewPager.OnAdapterChangeListener): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public isFakeDragging(): boolean;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
-					public beginFakeDrag(): boolean;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public setCurrentItem(param0: number, param1: boolean): void;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
@@ -17952,10 +18684,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.view.ViewPager$DecorView interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -18038,9 +18770,25 @@ declare module android {
 					}
 					export class ViewPositionComparator extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.view.ViewPager.ViewPositionComparator>;
-						public compare(param0: android.view.View, param1: android.view.View): number;
+						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
 						public equals(param0: any): boolean;
+						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static reverseOrder(): java.util.Comparator<any>;
+						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public compare(param0: android.view.View, param1: android.view.View): number;
+						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public reversed(): java.util.Comparator<any>;
+						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -18357,7 +19105,7 @@ declare module android {
 							});
 							public onTouchExplorationStateChanged(param0: boolean): void;
 						}
-						export class TouchExplorationStateChangeListenerWrapper extends java.lang.Object {
+						export class TouchExplorationStateChangeListenerWrapper extends java.lang.Object implements android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener {
 							public static class: java.lang.Class<android.support.v4.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListenerWrapper>;
 							public hashCode(): number;
 							public onTouchExplorationStateChanged(param0: boolean): void;
@@ -19033,10 +19781,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.CircularProgressDrawable$ProgressDrawableSize interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -19103,6 +19851,7 @@ declare module android {
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public show(): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public onAttachedToWindow(): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -19227,99 +19976,123 @@ declare module android {
 					public static LOCK_MODE_LOCKED_OPEN: number;
 					public static LOCK_MODE_UNDEFINED: number;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public onDraw(param0: android.graphics.Canvas): void;
-					public setDrawerShadow(param0: number, param1: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public onAttachedToWindow(): void;
-					public clearChildFocus(param0: android.view.View): void;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
 					public addView(param0: android.view.View, param1: number): void;
-					public setDrawerShadow(param0: android.graphics.drawable.Drawable, param1: number): void;
 					public setDrawerTitle(param0: number, param1: string): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
-					public closeDrawer(param0: number): void;
 					public setDrawerLockMode(param0: number): void;
-					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
-					public openDrawer(param0: android.view.View, param1: boolean): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
-					public closeDrawer(param0: number, param1: boolean): void;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setDrawerLockMode(param0: number, param1: android.view.View): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
-					public computeScroll(): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public openDrawer(param0: number, param1: boolean): void;
-					public requestFitSystemWindows(): void;
-					public setDrawerElevation(param0: number): void;
 					public focusSearch(param0: number): android.view.View;
-					public getStatusBarBackgroundDrawable(): android.graphics.drawable.Drawable;
 					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
-					public onSaveInstanceState(): android.os.Parcelable;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public isDrawerVisible(param0: android.view.View): boolean;
 					public setStatusBarBackground(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
-					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public closeDrawer(param0: android.view.View, param1: boolean): void;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public setScrimColor(param0: number): void;
-					public getParent(): android.view.ViewParent;
-					public addDrawerListener(param0: android.support.v4.widget.DrawerLayout.DrawerListener): void;
 					public isDrawerVisible(param0: number): boolean;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public setDrawerListener(param0: android.support.v4.widget.DrawerLayout.DrawerListener): void;
 					public getDrawerLockMode(param0: number): number;
 					public openDrawer(param0: number): void;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public closeDrawer(param0: android.view.View): void;
 					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
 					public isDrawerOpen(param0: number): boolean;
 					public sendAccessibilityEvent(param0: number): void;
-					public getDrawerElevation(): number;
 					public requestLayout(): void;
 					public getDrawerLockMode(param0: android.view.View): number;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
 					public onRtlPropertiesChanged(param0: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public removeView(param0: android.view.View): void;
-					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public setDrawerLockMode(param0: number, param1: number): void;
+					public closeDrawers(): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public setStatusBarBackground(param0: number): void;
+					public isDrawerOpen(param0: android.view.View): boolean;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public setDrawerShadow(param0: number, param1: number): void;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
+					public isLayoutRequested(): boolean;
+					public onAttachedToWindow(): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
+					public setDrawerShadow(param0: android.graphics.drawable.Drawable, param1: number): void;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public closeDrawer(param0: number): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public openDrawer(param0: android.view.View, param1: boolean): void;
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public closeDrawer(param0: number, param1: boolean): void;
+					public computeScroll(): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public setDrawerElevation(param0: number): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public getStatusBarBackgroundDrawable(): android.graphics.drawable.Drawable;
+					public onSaveInstanceState(): android.os.Parcelable;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public isDrawerVisible(param0: android.view.View): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
+					public canResolveTextDirection(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public closeDrawer(param0: android.view.View, param1: boolean): void;
+					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+					public addDrawerListener(param0: android.support.v4.widget.DrawerLayout.DrawerListener): void;
+					public setDrawerListener(param0: android.support.v4.widget.DrawerLayout.DrawerListener): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public closeDrawer(param0: android.view.View): void;
+					public onStopNestedScroll(param0: android.view.View): void;
+					public getDrawerElevation(): number;
+					public canResolveLayoutDirection(): boolean;
+					public removeView(param0: android.view.View): void;
+					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
 					public setStatusBarBackgroundColor(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public setChildInsets(param0: any, param1: boolean): void;
-					public setDrawerLockMode(param0: number, param1: number): void;
 					public getDrawerTitle(param0: number): string;
-					public closeDrawers(): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public drawChild(param0: android.graphics.Canvas, param1: android.view.View, param2: number): boolean;
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public removeDrawerListener(param0: android.support.v4.widget.DrawerLayout.DrawerListener): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public setStatusBarBackground(param0: number): void;
 					public openDrawer(param0: android.view.View): void;
-					public isDrawerOpen(param0: android.view.View): boolean;
 				}
 				export module DrawerLayout {
 					export class androidsupportv4widgetDrawerLayoutAccessibilityDelegate extends android.support.v4.view.AccessibilityDelegateCompat {
@@ -19356,10 +20129,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$EdgeGravity interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -19382,10 +20155,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$LockMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -19415,10 +20188,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$State interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -19552,16 +20325,32 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$CollectionAdapter interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							get(param0: any, param1: number): V;
+							get(param0: T, param1: number): V;
 							size(param0: T): number;
 						});
-						public get(param0: any, param1: number): V;
+						public get(param0: T, param1: number): V;
 						public size(param0: T): number;
 					}
 					export class SequentialComparator<T>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.widget.FocusStrategy.SequentialComparator<any>>;
+						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<T>;
+						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<T>;
 						public compare(param0: T, param1: T): number;
 						public equals(param0: any): boolean;
+						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<T>;
+						public static reverseOrder(): java.util.Comparator<any>;
+						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<T>;
+						public reversed(): java.util.Comparator<T>;
+						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static naturalOrder(): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -19673,27 +20462,35 @@ declare module android {
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public isSmoothScrollingEnabled(): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isFillViewport(): boolean;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>, param4: number): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public setOnScrollChangeListener(param0: android.view.View.OnScrollChangeListener): void;
 					public stopNestedScroll(): void;
 					public computeHorizontalScrollExtent(): number;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public getTopFadingEdgeStrength(): number;
 					public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public scrollTo(param0: number, param1: number): void;
 					public onGenericMotionEvent(param0: android.view.MotionEvent): boolean;
 					public focusSearch(param0: number): android.view.View;
 					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public stopNestedScroll(param0: number): void;
+					public canResolveTextAlignment(): boolean;
 					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onRequestFocusInDescendants(param0: number, param1: android.graphics.Rect): boolean;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -19706,8 +20503,11 @@ declare module android {
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public computeVerticalScrollRange(): number;
+					public getTextAlignment(): number;
 					public setFillViewport(param0: boolean): void;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
@@ -19721,18 +20521,21 @@ declare module android {
 					public setOnScrollChangeListener(param0: android.support.v4.widget.NestedScrollView.OnScrollChangeListener): void;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public computeHorizontalScrollRange(): number;
 					public computeScrollDeltaToGetChildRectOnScreen(param0: android.graphics.Rect): number;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
 					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public computeVerticalScrollExtent(): number;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setSmoothScrollingEnabled(param0: boolean): void;
 					public arrowScroll(param0: number): boolean;
 					public fling(param0: number): void;
 					public bringChildToFront(param0: android.view.View): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public measureChildWithMargins(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public computeVerticalScrollOffset(): number;
@@ -19741,6 +20544,7 @@ declare module android {
 					public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
 					public computeScroll(): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public getBottomFadingEdgeStrength(): number;
@@ -19749,13 +20553,16 @@ declare module android {
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public requestTransparentRegion(param0: android.view.View): void;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public hasNestedScrollingParent(param0: number): boolean;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public onStopNestedScroll(param0: android.view.View): void;
 					public draw(param0: android.graphics.Canvas): void;
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public getMaxScrollAmount(): number;
 					public onOverScrolled(param0: number, param1: number, param2: boolean, param3: boolean): void;
@@ -19995,86 +20802,110 @@ declare module android {
 			export module widget {
 				export class SlidingPaneLayout extends android.view.ViewGroup {
 					public static class: java.lang.Class<android.support.v4.widget.SlidingPaneLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public setSliderFadeColor(param0: number): void;
 					public setShadowResourceRight(param0: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public getSliderFadeColor(): number;
 					public canSlide(): boolean;
-					public onAttachedToWindow(): void;
-					public clearChildFocus(param0: android.view.View): void;
 					public getParallaxDistance(): number;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setShadowDrawable(param0: android.graphics.drawable.Drawable): void;
 					public isSlideable(): boolean;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
-					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public smoothSlideClosed(): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
-					public setShadowDrawableLeft(param0: android.graphics.drawable.Drawable): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public setCoveredFadeColor(param0: number): void;
-					public setShadowDrawableRight(param0: android.graphics.drawable.Drawable): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
-					public computeScroll(): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-					public requestFitSystemWindows(): void;
 					public canScroll(param0: android.view.View, param1: boolean, param2: number, param3: number, param4: number): boolean;
 					public focusSearch(param0: number): android.view.View;
 					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
-					public onSaveInstanceState(): android.os.Parcelable;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public smoothSlideOpen(): void;
-					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public getParent(): android.view.ViewParent;
 					public isOpen(): boolean;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public getCoveredFadeColor(): number;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
 					public setParallaxDistance(param0: number): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public draw(param0: android.graphics.Canvas): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public onRestoreInstanceState(param0: android.os.Parcelable): void;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public setShadowResourceLeft(param0: number): void;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isLayoutRequested(): boolean;
+					public getSliderFadeColor(): number;
+					public onAttachedToWindow(): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public setShadowDrawableLeft(param0: android.graphics.drawable.Drawable): void;
+					public setShadowDrawableRight(param0: android.graphics.drawable.Drawable): void;
+					public computeScroll(): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public onSaveInstanceState(): android.os.Parcelable;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+					public getCoveredFadeColor(): number;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
+					public draw(param0: android.graphics.Canvas): void;
 					public openPane(): boolean;
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
 					public closePane(): boolean;
 					public setPanelSlideListener(param0: android.support.v4.widget.SlidingPaneLayout.PanelSlideListener): void;
-					public onRestoreInstanceState(param0: android.os.Parcelable): void;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public setShadowResource(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public drawChild(param0: android.graphics.Canvas, param1: android.view.View, param2: number): boolean;
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public setShadowResourceLeft(param0: number): void;
 				}
 				export module SlidingPaneLayout {
 					export class androidsupportv4widgetSlidingPaneLayoutAccessibilityDelegate extends android.support.v4.view.AccessibilityDelegateCompat {
@@ -20178,6 +21009,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -20218,88 +21050,105 @@ declare module android {
 					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public getChildDrawingOrder(param0: number, param1: number): number;
-					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+					public isTextDirectionResolved(): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public stopNestedScroll(): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public onTouchEvent(param0: android.view.MotionEvent): boolean;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public getProgressViewEndOffset(): number;
+					public focusSearch(param0: number): android.view.View;
+					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
+					public isTextAlignmentResolved(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public setProgressBackgroundColor(param0: number): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public setNestedScrollingEnabled(param0: boolean): void;
+					public sendAccessibilityEvent(param0: number): void;
+					public requestLayout(): void;
+					public onDetachedFromWindow(): void;
+					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public isNestedScrollingEnabled(): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public dispatchNestedPreFling(param0: number, param1: number): boolean;
+					public setProgressViewOffset(param0: boolean, param1: number, param2: number): void;
+					public getProgressCircleDiameter(): number;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public isRefreshing(): boolean;
 					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
-					public addView(param0: android.view.View, param1: number): void;
-					public stopNestedScroll(): void;
+					public isLayoutDirectionResolved(): boolean;
 					public setOnRefreshListener(param0: android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setEnabled(param0: boolean): void;
-					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public setRefreshing(param0: boolean): void;
 					public bringChildToFront(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public setColorSchemeResources(param0: native.Array<number>): void;
 					public getProgressViewStartOffset(): number;
 					public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
-					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-					public getProgressViewEndOffset(): number;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
-					public focusSearch(param0: number): android.view.View;
 					public setProgressBackgroundColorSchemeColor(param0: number): void;
-					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
 					public setProgressViewEndTarget(param0: boolean, param1: number): void;
 					public setOnChildScrollUpCallback(param0: android.support.v4.widget.SwipeRefreshLayout.OnChildScrollUpCallback): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public requestTransparentRegion(param0: android.view.View): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public setSize(param0: number): void;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
-					public setProgressBackgroundColor(param0: number): void;
 					public setColorScheme(param0: native.Array<number>): void;
-					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public setProgressBackgroundColorSchemeResource(param0: number): void;
 					public getParent(): android.view.ViewParent;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public setColorSchemeColors(param0: native.Array<number>): void;
-					public setNestedScrollingEnabled(param0: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setDistanceToTriggerSync(param0: number): void;
 					public onStopNestedScroll(param0: android.view.View): void;
-					public sendAccessibilityEvent(param0: number): void;
-					public requestLayout(): void;
-					public onDetachedFromWindow(): void;
-					public onMeasure(param0: number, param1: number): void;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public canChildScrollUp(): boolean;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public constructor(param0: android.content.Context);
 					public getNestedScrollAxes(): number;
-					public isNestedScrollingEnabled(): boolean;
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public dispatchNestedPreFling(param0: number, param1: number): boolean;
-					public setProgressViewOffset(param0: boolean, param1: number, param2: number): void;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 					public startNestedScroll(param0: number): boolean;
 					public hasNestedScrollingParent(): boolean;
-					public getProgressCircleDiameter(): number;
 				}
 				export module SwipeRefreshLayout {
 					export class OnChildScrollUpCallback extends java.lang.Object {
@@ -20359,10 +21208,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.TextViewCompat$AutoSizeTextType interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -20645,10 +21494,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.app.ActionBar$DisplayOptions interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -20672,10 +21521,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.app.ActionBar$NavigationMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -20953,6 +21802,8 @@ declare module android {
 						public constructor(param0: android.content.Context, param1: number, param2: number, param3: java.util.List<any>);
 						public hasStableIds(): boolean;
 						public getFilter(): android.widget.Filter;
+						public setDropDownViewTheme(param0: android.content.res.Resources.Theme): void;
+						public getDropDownViewTheme(): android.content.res.Resources.Theme;
 						public constructor(param0: android.content.Context, param1: number, param2: number, param3: native.Array<string>);
 						public getDropDownView(param0: number, param1: android.view.View, param2: android.view.ViewGroup): android.view.View;
 						public constructor(param0: android.content.Context, param1: number, param2: java.util.List<any>);
@@ -20963,6 +21814,8 @@ declare module android {
 					export class RecycleListView extends android.widget.ListView {
 						public static class: java.lang.Class<android.support.v7.app.AlertController.RecycleListView>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
@@ -20975,43 +21828,65 @@ declare module android {
 						public constructor(param0: android.content.Context);
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 						public showContextMenuForChild(param0: android.view.View): boolean;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
 						public onFilterComplete(param0: number): void;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public beforeTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
 						public afterTextChanged(param0: android.text.Editable): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public onGlobalLayout(): void;
 						public onTouchModeChanged(param0: boolean): void;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 						public childDrawableStateChanged(param0: android.view.View): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 						public requestFitSystemWindows(): void;
 						public clearChildFocus(param0: android.view.View): void;
 						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 						public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public bringChildToFront(param0: android.view.View): void;
 						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public setHasDecor(param0: boolean, param1: boolean): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 				}
 			}
@@ -21026,53 +21901,57 @@ declare module android {
 				export class AlertDialog extends android.support.v7.app.AppCompatDialog implements android.content.DialogInterface {
 					public static class: java.lang.Class<android.support.v7.app.AlertDialog>;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public onSupportActionModeFinished(param0: android.support.v7.view.ActionMode): void;
-					public onSearchRequested(): boolean;
 					public constructor(param0: android.content.Context, param1: number);
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public setTitle(param0: string): void;
 					public onAttachedToWindow(): void;
 					public setMessage(param0: string): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
-					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
-					public setButton(param0: number, param1: string, param2: android.content.DialogInterface.OnClickListener): void;
-					public onCreate(param0: android.os.Bundle): void;
 					public setIcon(param0: android.graphics.drawable.Drawable): void;
-					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
-					public onCreatePanelView(param0: number): android.view.View;
-					public onActionModeFinished(param0: android.view.ActionMode): void;
-					public setButton(param0: number, param1: string, param2: android.os.Message): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
-					public onActionModeStarted(param0: android.view.ActionMode): void;
-					public setView(param0: android.view.View): void;
-					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-					public cancel(): void;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
-					public onWindowStartingSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
-					public onSupportActionModeStarted(param0: android.support.v7.view.ActionMode): void;
 					public setTitle(param0: number): void;
-					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
-					public constructor(param0: android.content.Context);
 					public setIcon(param0: number): void;
-					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
 					public setCustomTitle(param0: android.view.View): void;
-					public getButton(param0: number): android.widget.Button;
-					public setIconAttribute(param0: number): void;
 					public constructor(param0: android.content.Context, param1: boolean, param2: android.content.DialogInterface.OnCancelListener);
 					public onWindowFocusChanged(param0: boolean): void;
-					public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 					public dismiss(): void;
 					public onContentChanged(): void;
 					public dispatchGenericMotionEvent(param0: android.view.MotionEvent): boolean;
 					public getListView(): android.widget.ListView;
 					public setView(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
+					public onSupportActionModeFinished(param0: android.support.v7.view.ActionMode): void;
+					public onSearchRequested(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onPointerCaptureChanged(param0: boolean): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
+					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
+					public setButton(param0: number, param1: string, param2: android.content.DialogInterface.OnClickListener): void;
+					public onCreate(param0: android.os.Bundle): void;
+					public onDetachedFromWindow(): void;
+					public onCreatePanelView(param0: number): android.view.View;
+					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public setButton(param0: number, param1: string, param2: android.os.Message): void;
+					public onActionModeStarted(param0: android.view.ActionMode): void;
+					public setView(param0: android.view.View): void;
+					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
+					public cancel(): void;
+					public onWindowStartingSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
+					public onSupportActionModeStarted(param0: android.support.v7.view.ActionMode): void;
+					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
+					public constructor(param0: android.content.Context);
+					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
+					public getButton(param0: number): android.widget.Button;
+					public setIconAttribute(param0: number): void;
+					public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 				}
 				export module AlertDialog {
 					export class Builder extends java.lang.Object {
@@ -21134,6 +22013,7 @@ declare module android {
 					public onSupportNavigateUp(): boolean;
 					public constructor(param0: android.content.Context, param1: number);
 					public getSupportActionBar(): android.support.v7.app.ActionBar;
+					public onSaveInstanceState(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
 					public onDestroy(): void;
 					public onAttachedToWindow(): void;
 					public getMenuInflater(): android.view.MenuInflater;
@@ -21146,15 +22026,18 @@ declare module android {
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
 					public addContentView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public validateRequestPermissionsRequestCode(param0: number): void;
 					public findViewById(param0: number): android.view.View;
 					public onPrepareSupportNavigateUpTaskStack(param0: android.support.v4.app.TaskStackBuilder): void;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
+					public onCreate(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
 					public getSupportParentActivityIntent(): android.content.Intent;
 					public setContentView(param0: android.view.View): void;
 					public onTrimMemory(param0: number): void;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
 					public closeOptionsMenu(): void;
 					public setTheme(param0: number): void;
@@ -21168,9 +22051,11 @@ declare module android {
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public supportNavigateUpTo(param0: android.content.Intent): void;
 					public setSupportProgressBarIndeterminate(param0: boolean): void;
+					public constructor(param0: android.content.Context, param1: android.content.res.Resources.Theme);
 					public invalidateOptionsMenu(): void;
 					public supportRequestWindowFeature(param0: number): boolean;
 					public startSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
+					public onPointerCaptureChanged(param0: boolean): void;
 					public supportInvalidateOptionsMenu(): void;
 					public onCreateSupportNavigateUpTaskStack(param0: android.support.v4.app.TaskStackBuilder): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -21179,9 +22064,11 @@ declare module android {
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public getDrawerToggleDelegate(): android.support.v7.app.ActionBarDrawerToggle.Delegate;
+					public onSearchRequested(param0: any): boolean;
 					public onCreate(param0: android.os.Bundle): void;
 					public getResources(): android.content.res.Resources;
 					public onPostResume(): void;
+					public onPostCreate(param0: android.os.Bundle, param1: android.os.PersistableBundle): void;
 					public onDetachedFromWindow(): void;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
@@ -21289,10 +22176,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.app.AppCompatDelegate$ApplyableNightMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -21305,10 +22192,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.app.AppCompatDelegate$NightMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -21352,28 +22239,30 @@ declare module android {
 					export class AppCompatWindowCallbackBase extends android.support.v7.view.WindowCallbackWrapper {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplBase.AppCompatWindowCallbackBase>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onContentChanged(): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
 						public onAttachedToWindow(): void;
-						public onPanelClosed(param0: number, param1: android.view.Menu): void;
-						public onDetachedFromWindow(): void;
 						public onSearchRequested(): boolean;
 						public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
-						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
-						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
-						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onPointerCaptureChanged(param0: boolean): void;
 						public onCreatePanelView(param0: number): android.view.View;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 						public onSearchRequested(param0: any): boolean;
 						public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 						public dispatchGenericMotionEvent(param0: android.view.MotionEvent): boolean;
-						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
-						public onWindowFocusChanged(param0: boolean): void;
 						public onActionModeStarted(param0: android.view.ActionMode): void;
 						public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 						public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+						public onContentChanged(): void;
+						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onDetachedFromWindow(): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
+						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
+						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
+						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
+						public onWindowFocusChanged(param0: boolean): void;
 					}
 				}
 			}
@@ -21396,29 +22285,30 @@ declare module android {
 					export class AppCompatWindowCallbackN extends android.support.v7.app.AppCompatDelegateImplV23.AppCompatWindowCallbackV23 {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplN.AppCompatWindowCallbackN>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
-						public onContentChanged(): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
 						public onAttachedToWindow(): void;
-						public onDetachedFromWindow(): void;
-						public onPanelClosed(param0: number, param1: android.view.Menu): void;
 						public onSearchRequested(): boolean;
 						public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
-						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
-						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
-						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onPointerCaptureChanged(param0: boolean): void;
 						public onCreatePanelView(param0: number): android.view.View;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 						public onSearchRequested(param0: any): boolean;
 						public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 						public dispatchGenericMotionEvent(param0: android.view.MotionEvent): boolean;
-						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
-						public onWindowFocusChanged(param0: boolean): void;
 						public onActionModeStarted(param0: android.view.ActionMode): void;
 						public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 						public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+						public onContentChanged(): void;
+						public onDetachedFromWindow(): void;
+						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
+						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
+						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
+						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
+						public onWindowFocusChanged(param0: boolean): void;
 					}
 				}
 			}
@@ -21467,28 +22357,30 @@ declare module android {
 					export class AppCompatWindowCallbackV14 extends android.support.v7.app.AppCompatDelegateImplBase.AppCompatWindowCallbackBase {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV14.AppCompatWindowCallbackV14>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onContentChanged(): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
 						public onAttachedToWindow(): void;
-						public onDetachedFromWindow(): void;
-						public onPanelClosed(param0: number, param1: android.view.Menu): void;
 						public onSearchRequested(): boolean;
 						public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
-						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
-						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
-						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onPointerCaptureChanged(param0: boolean): void;
 						public onCreatePanelView(param0: number): android.view.View;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 						public onSearchRequested(param0: any): boolean;
 						public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 						public dispatchGenericMotionEvent(param0: android.view.MotionEvent): boolean;
-						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
-						public onWindowFocusChanged(param0: boolean): void;
 						public onActionModeStarted(param0: android.view.ActionMode): void;
 						public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 						public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+						public onContentChanged(): void;
+						public onDetachedFromWindow(): void;
+						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
+						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
+						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
+						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
+						public onWindowFocusChanged(param0: boolean): void;
 					}
 					export class AutoNightModeManager extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV14.AutoNightModeManager>;
@@ -21514,28 +22406,30 @@ declare module android {
 					export class AppCompatWindowCallbackV23 extends android.support.v7.app.AppCompatDelegateImplV14.AppCompatWindowCallbackV14 {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV23.AppCompatWindowCallbackV23>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onContentChanged(): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
 						public onAttachedToWindow(): void;
-						public onDetachedFromWindow(): void;
-						public onPanelClosed(param0: number, param1: android.view.Menu): void;
 						public onSearchRequested(): boolean;
 						public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
-						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
-						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
-						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onPointerCaptureChanged(param0: boolean): void;
 						public onCreatePanelView(param0: number): android.view.View;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 						public onSearchRequested(param0: any): boolean;
 						public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
 						public dispatchGenericMotionEvent(param0: android.view.MotionEvent): boolean;
-						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
-						public onWindowFocusChanged(param0: boolean): void;
 						public onActionModeStarted(param0: android.view.ActionMode): void;
 						public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 						public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+						public onContentChanged(): void;
+						public onDetachedFromWindow(): void;
+						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
+						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
+						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
+						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
+						public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
+						public onWindowFocusChanged(param0: boolean): void;
 					}
 				}
 			}
@@ -21591,52 +22485,76 @@ declare module android {
 					export class ListMenuDecorView extends android.support.v7.widget.ContentFrameLayout {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV9.ListMenuDecorView>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-						public addView(param0: android.view.View, param1: number): void;
 						public sendAccessibilityEvent(param0: number): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public requestTransparentRegion(param0: android.view.View): void;
 						public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-						public childDrawableStateChanged(param0: android.view.View): void;
 						public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 						public constructor(param0: android.content.Context);
-						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public showContextMenuForChild(param0: android.view.View): boolean;
+						public getTextDirection(): number;
 						public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
-						public requestFitSystemWindows(): void;
-						public clearChildFocus(param0: android.view.View): void;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-						public setBackgroundResource(param0: number): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
-						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+						public canResolveTextDirection(): boolean;
 						public constructor(param0: android.support.v7.app.AppCompatDelegateImplV9, param1: android.content.Context);
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
-						public bringChildToFront(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
+						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
+						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+						public addView(param0: android.view.View, param1: number): void;
+						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+						public childDrawableStateChanged(param0: android.view.View): void;
+						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public requestFitSystemWindows(): void;
+						public clearChildFocus(param0: android.view.View): void;
+						public setBackgroundResource(param0: number): void;
+						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+						public bringChildToFront(param0: android.view.View): void;
+						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
-						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 					export class PanelFeatureState extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV9.PanelFeatureState>;
@@ -21670,52 +22588,56 @@ declare module android {
 				export class AppCompatDialog extends android.app.Dialog implements android.support.v7.app.AppCompatCallback {
 					public static class: java.lang.Class<android.support.v7.app.AppCompatDialog>;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public onSupportActionModeFinished(param0: android.support.v7.view.ActionMode): void;
-					public onSearchRequested(): boolean;
 					public constructor(param0: android.content.Context, param1: number);
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public getSupportActionBar(): android.support.v7.app.ActionBar;
 					public setTitle(param0: string): void;
-					public invalidateOptionsMenu(): void;
-					public supportRequestWindowFeature(param0: number): boolean;
 					public onAttachedToWindow(): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
-					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
 					public getDelegate(): android.support.v7.app.AppCompatDelegate;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
-					public onCreate(param0: android.os.Bundle): void;
 					public addContentView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
-					public onCreatePanelView(param0: number): android.view.View;
-					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
-					public onActionModeStarted(param0: android.view.ActionMode): void;
-					public setContentView(param0: number): void;
-					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
 					public findViewById(param0: number): android.view.View;
-					public cancel(): void;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
-					public onWindowStartingSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
-					public onSupportActionModeStarted(param0: android.support.v7.view.ActionMode): void;
 					public setTitle(param0: number): void;
-					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
 					public setContentView(param0: android.view.View): void;
-					public constructor(param0: android.content.Context);
-					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 					public onPanelClosed(param0: number, param1: android.view.Menu): void;
-					public onStop(): void;
 					public constructor(param0: android.content.Context, param1: boolean, param2: android.content.DialogInterface.OnCancelListener);
 					public setContentView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public onWindowFocusChanged(param0: boolean): void;
-					public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 					public dismiss(): void;
 					public onContentChanged(): void;
 					public dispatchGenericMotionEvent(param0: android.view.MotionEvent): boolean;
 					public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
+					public onSupportActionModeFinished(param0: android.support.v7.view.ActionMode): void;
+					public onSearchRequested(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public invalidateOptionsMenu(): void;
+					public supportRequestWindowFeature(param0: number): boolean;
+					public onPointerCaptureChanged(param0: boolean): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
+					public onCreateContextMenu(param0: android.view.ContextMenu, param1: android.view.View, param2: android.view.ContextMenu.ContextMenuInfo): void;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
+					public onSearchRequested(param0: any): boolean;
+					public onCreate(param0: android.os.Bundle): void;
+					public onDetachedFromWindow(): void;
+					public onCreatePanelView(param0: number): android.view.View;
+					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onActionModeStarted(param0: android.view.ActionMode): void;
+					public setContentView(param0: number): void;
+					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
+					public cancel(): void;
+					public onWindowStartingSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
+					public onSupportActionModeStarted(param0: android.support.v7.view.ActionMode): void;
+					public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
+					public constructor(param0: android.content.Context);
+					public dispatchKeyShortcutEvent(param0: android.view.KeyEvent): boolean;
+					public onStop(): void;
+					public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 				}
 			}
 		}
@@ -21768,8 +22690,8 @@ declare module android {
 			export module app {
 				export class NavItemSelectedListener extends java.lang.Object implements android.widget.AdapterView.OnItemSelectedListener {
 					public static class: java.lang.Class<android.support.v7.app.NavItemSelectedListener>;
-					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					public onNothingSelected(param0: android.widget.AdapterView<any>): void;
+					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					public constructor(param0: android.support.v7.app.ActionBar.OnNavigationListener);
 				}
 			}
@@ -21888,6 +22810,7 @@ declare module android {
 						public onSearchRequested(): boolean;
 						public onMenuOpened(param0: number, param1: android.view.Menu): boolean;
 						public constructor(param0: android.support.v7.app.ToolbarActionBar, param1: android.view.Window.Callback);
+						public onPointerCaptureChanged(param0: boolean): void;
 						public onCreatePanelView(param0: number): android.view.View;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback, param1: number): android.view.ActionMode;
 						public onSearchRequested(param0: any): boolean;
@@ -21900,6 +22823,7 @@ declare module android {
 						public onContentChanged(): void;
 						public onDetachedFromWindow(): void;
 						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -22271,10 +23195,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v7.graphics.drawable.DrawerArrowDrawable$ArrowDirection interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -22329,7 +23253,7 @@ declare module android {
 				export class AsyncListUtil<T>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v7.util.AsyncListUtil<any>>;
 					public refresh(): void;
-					public constructor(param0: java.lang.Class<any>, param1: number, param2: android.support.v7.util.AsyncListUtil.DataCallback<any>, param3: android.support.v7.util.AsyncListUtil.ViewCallback);
+					public constructor(param0: java.lang.Class<T>, param1: number, param2: android.support.v7.util.AsyncListUtil.DataCallback<T>, param3: android.support.v7.util.AsyncListUtil.ViewCallback);
 					public getItem(param0: number): T;
 					public getItemCount(): number;
 					public onRangeChanged(): void;
@@ -22338,9 +23262,9 @@ declare module android {
 					export abstract class DataCallback<T>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v7.util.AsyncListUtil.DataCallback<any>>;
 						public constructor();
+						public recycleData(param0: native.Array<T>, param1: number): void;
 						public refreshData(): number;
-						public fillData(param0: native.Array<any>, param1: number, param2: number): void;
-						public recycleData(param0: native.Array<any>, param1: number): void;
+						public fillData(param0: native.Array<T>, param1: number, param2: number): void;
 						public getMaxCachedTiles(): number;
 					}
 					export abstract class ViewCallback extends java.lang.Object {
@@ -22484,7 +23408,6 @@ declare module android {
 					public remove(param0: T): boolean;
 					public addAll(param0: java.util.Collection<T>): void;
 					public removeItemAt(param0: number): T;
-					public updateItemAt(param0: number, param1: any): void;
 					public beginBatchedUpdates(): void;
 					public indexOf(param0: T): number;
 					public size(): number;
@@ -22492,41 +23415,74 @@ declare module android {
 					public recalculatePositionOfItemAt(param0: number): void;
 					public constructor(param0: java.lang.Class<T>, param1: android.support.v7.util.SortedList.Callback<T>);
 					public clear(): void;
-					public constructor(param0: java.lang.Class<any>, param1: android.support.v7.util.SortedList.Callback<any>, param2: number);
+					public addAll(param0: native.Array<T>, param1: boolean): void;
+					public updateItemAt(param0: number, param1: T): void;
 					public addAll(param0: native.Array<T>): void;
 					public endBatchedUpdates(): void;
-					public addAll(param0: native.Array<any>, param1: boolean): void;
+					public constructor(param0: java.lang.Class<T>, param1: android.support.v7.util.SortedList.Callback<T>, param2: number);
 					public add(param0: T): number;
 				}
 				export module SortedList {
 					export class BatchedCallback<T2>  extends android.support.v7.util.SortedList.Callback<any> {
 						public static class: java.lang.Class<android.support.v7.util.SortedList.BatchedCallback<any>>;
-						public areItemsTheSame(param0: any, param1: any): boolean;
-						public constructor();
+						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public areContentsTheSame(param0: any, param1: any): boolean;
+						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number): void;
 						public equals(param0: any): boolean;
+						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static reverseOrder(): java.util.Comparator<any>;
+						public reversed(): java.util.Comparator<any>;
+						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
 						public onRemoved(param0: number, param1: number): void;
+						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static naturalOrder(): java.util.Comparator<any>;
+						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public constructor();
+						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public onMoved(param0: number, param1: number): void;
+						public constructor(param0: android.support.v7.util.SortedList.Callback<any>);
+						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public areItemsTheSame(param0: any, param1: any): boolean;
+						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
 						public onInserted(param0: number, param1: number): void;
 						public dispatchLastEvent(): void;
-						public onMoved(param0: number, param1: number): void;
-						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number, param2: any): void;
-						public constructor(param0: android.support.v7.util.SortedList.Callback<any>);
+						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
 					}
 					export abstract class Callback<T2>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v7.util.SortedList.Callback<any>>;
-						public constructor();
-						public areContentsTheSame(param0: T2, param1: T2): boolean;
-						public compare(param0: T2, param1: T2): number;
+						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number): void;
 						public equals(param0: any): boolean;
+						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static reverseOrder(): java.util.Comparator<any>;
+						public reversed(): java.util.Comparator<any>;
+						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public onRemoved(param0: number, param1: number): void;
-						public onInserted(param0: number, param1: number): void;
 						public areItemsTheSame(param0: T2, param1: T2): boolean;
-						public onMoved(param0: number, param1: number): void;
-						public onChanged(param0: number, param1: number, param2: any): void;
+						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public constructor();
+						public areContentsTheSame(param0: T2, param1: T2): boolean;
+						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public onMoved(param0: number, param1: number): void;
+						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public compare(param0: T2, param1: T2): number;
+						public onInserted(param0: number, param1: number): void;
+						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public onChanged(param0: number, param1: number, param2: any): void;
+						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -22574,11 +23530,11 @@ declare module android {
 						 */
 						public constructor(implementation: {
 							updateItemCount(param0: number, param1: number): void;
-							addTile(param0: number, param1: android.support.v7.util.TileList.Tile<any>): void;
+							addTile(param0: number, param1: android.support.v7.util.TileList.Tile<T>): void;
 							removeTile(param0: number, param1: number): void;
 						});
+						public addTile(param0: number, param1: android.support.v7.util.TileList.Tile<T>): void;
 						public updateItemCount(param0: number, param1: number): void;
-						public addTile(param0: number, param1: android.support.v7.util.TileList.Tile<any>): void;
 						public removeTile(param0: number, param1: number): void;
 					}
 				}
@@ -22607,7 +23563,7 @@ declare module android {
 						public mItems: native.Array<T>;
 						public mStartPosition: number;
 						public mItemCount: number;
-						public constructor(param0: java.lang.Class<any>, param1: number);
+						public constructor(param0: java.lang.Class<T>, param1: number);
 					}
 				}
 			}
@@ -22720,6 +23676,7 @@ declare module android {
 					public applyOverrideConfiguration(param0: android.content.res.Configuration): void;
 					public getAssets(): android.content.res.AssetManager;
 					public getThemeResId(): number;
+					public getSystemService(param0: java.lang.Class<any>): any;
 					public constructor(param0: android.content.Context);
 					public constructor();
 					public getResources(): android.content.res.Resources;
@@ -22870,11 +23827,11 @@ declare module android {
 					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onSearchRequested(param0: any): boolean;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -22908,6 +23865,7 @@ declare module android {
 						public setNumericShortcut(param0: string): android.view.MenuItem;
 						public getIconTintList(): android.content.res.ColorStateList;
 						public getSupportActionProvider(): android.support.v4.view.ActionProvider;
+						public setContentDescription(param0: string): android.view.MenuItem;
 						public getContentDescription(): string;
 						public setAlphabeticShortcut(param0: string, param1: number): android.view.MenuItem;
 						public setAlphabeticShortcut(param0: string): android.view.MenuItem;
@@ -22934,6 +23892,7 @@ declare module android {
 						public setTitleCondensed(param0: string): android.view.MenuItem;
 						public getNumericShortcut(): string;
 						public isCheckable(): boolean;
+						public setTooltipText(param0: string): android.view.MenuItem;
 						public getSubMenu(): android.view.SubMenu;
 						public setIcon(param0: number): android.view.MenuItem;
 						public getItemId(): number;
@@ -22985,35 +23944,22 @@ declare module android {
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public showsIcon(): boolean;
 						public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-						public getAutoSizeTextAvailableSizes(): native.Array<number>;
 						public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 						public constructor(param0: android.content.Context);
-						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-						public setExpandedFormat(param0: boolean): void;
-						public setItemInvoker(param0: android.support.v7.view.menu.MenuBuilder.ItemInvoker): void;
 						public prefersCondensedTitle(): boolean;
 						public needsDividerAfter(): boolean;
-						public initialize(param0: android.support.v7.view.menu.MenuItemImpl, param1: number): void;
-						public getItemData(): android.support.v7.view.menu.MenuItemImpl;
 						public hasText(): boolean;
 						public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
 						public onClick(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public setPopupCallback(param0: android.support.v7.view.menu.ActionMenuItemView.PopupCallback): void;
-						public setAutoSizeTextTypeUniformWithPresetSizes(param0: native.Array<number>, param1: number): void;
 						public onMeasure(param0: number, param1: number): void;
 						public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 						public setChecked(param0: boolean): void;
 						public onConfigurationChanged(param0: android.content.res.Configuration): void;
-						public getAutoSizeStepGranularity(): number;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public setIcon(param0: android.graphics.drawable.Drawable): void;
-						public setAutoSizeTextTypeWithDefaults(param0: number): void;
-						public getAutoSizeMinTextSize(): number;
-						public setEnabled(param0: boolean): void;
-						public getAutoSizeTextType(): number;
-						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public setTitle(param0: string): void;
 						public getAutoSizeMaxTextSize(): number;
 						public onTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -23022,10 +23968,24 @@ declare module android {
 						public onPreDraw(): boolean;
 						public setCheckable(param0: boolean): void;
 						public getSupportBackgroundTintList(): android.content.res.ColorStateList;
-						public setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						public setPadding(param0: number, param1: number, param2: number, param3: number): void;
-						public onRestoreInstanceState(param0: android.os.Parcelable): void;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public getAutoSizeTextAvailableSizes(): native.Array<number>;
+						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public setExpandedFormat(param0: boolean): void;
+						public setItemInvoker(param0: android.support.v7.view.menu.MenuBuilder.ItemInvoker): void;
+						public initialize(param0: android.support.v7.view.menu.MenuItemImpl, param1: number): void;
+						public getItemData(): android.support.v7.view.menu.MenuItemImpl;
+						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public setAutoSizeTextTypeUniformWithPresetSizes(param0: native.Array<number>, param1: number): void;
+						public getAutoSizeStepGranularity(): number;
+						public setAutoSizeTextTypeWithDefaults(param0: number): void;
+						public getAutoSizeMinTextSize(): number;
+						public setEnabled(param0: boolean): void;
+						public getAutoSizeTextType(): number;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
+						public onRestoreInstanceState(param0: android.os.Parcelable): void;
 						public setAutoSizeTextTypeUniformWithConfiguration(param0: number, param1: number, param2: number, param3: number): void;
 					}
 					export module ActionMenuItemView {
@@ -23131,6 +24091,7 @@ declare module android {
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
 						public flagActionItems(): boolean;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public dismiss(): void;
 						public getListView(): android.widget.ListView;
 						public closeMenuOnSubMenuOpened(): boolean;
@@ -23145,7 +24106,6 @@ declare module android {
 						public setGravity(param0: number): void;
 						public setShowTitle(param0: boolean): void;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public getId(): number;
 						public onDismiss(): void;
 						public setAnchorView(param0: android.view.View): void;
@@ -23173,10 +24133,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v7.view.menu.CascadingMenuPopup$HorizPosition interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -23198,6 +24158,8 @@ declare module android {
 					export class ExpandedMenuView extends android.widget.ListView implements android.support.v7.view.menu.MenuBuilder.ItemInvoker, android.support.v7.view.menu.MenuView, android.widget.AdapterView.OnItemClickListener {
 						public static class: java.lang.Class<android.support.v7.view.menu.ExpandedMenuView>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
@@ -23210,46 +24172,69 @@ declare module android {
 						public constructor(param0: android.content.Context);
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 						public showContextMenuForChild(param0: android.view.View): boolean;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
 						public onFilterComplete(param0: number): void;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public beforeTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
 						public getWindowAnimations(): number;
 						public removeView(param0: android.view.View): void;
 						public afterTextChanged(param0: android.text.Editable): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public onGlobalLayout(): void;
 						public onTouchModeChanged(param0: boolean): void;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 						public childDrawableStateChanged(param0: android.view.View): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 						public requestFitSystemWindows(): void;
 						public clearChildFocus(param0: android.view.View): void;
 						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 						public onDetachedFromWindow(): void;
 						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public bringChildToFront(param0: android.view.View): void;
 						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public initialize(param0: android.support.v7.view.menu.MenuBuilder): void;
 						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 						public invokeItem(param0: android.support.v7.view.menu.MenuItemImpl): boolean;
 					}
 				}
@@ -23266,6 +24251,8 @@ declare module android {
 					export class ListMenuItemView extends android.widget.LinearLayout implements android.support.v7.view.menu.MenuView.ItemView {
 						public static class: java.lang.Class<android.support.v7.view.menu.ListMenuItemView>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
@@ -23282,45 +24269,67 @@ declare module android {
 						public prefersCondensedTitle(): boolean;
 						public setForceShowIcon(param0: boolean): void;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 						public showContextMenuForChild(param0: android.view.View): boolean;
 						public onMeasure(param0: number, param1: number): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 						public setChecked(param0: boolean): void;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public setIcon(param0: android.graphics.drawable.Drawable): void;
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public setTitle(param0: string): void;
 						public getParent(): android.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
 						public setShortcut(param0: boolean, param1: string): void;
 						public removeView(param0: android.view.View): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public setCheckable(param0: boolean): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 						public childDrawableStateChanged(param0: android.view.View): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 						public initialize(param0: android.support.v7.view.menu.MenuItemImpl, param1: number): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 						public getItemData(): android.support.v7.view.menu.MenuItemImpl;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 						public requestFitSystemWindows(): void;
 						public clearChildFocus(param0: android.view.View): void;
 						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 						public setEnabled(param0: boolean): void;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public bringChildToFront(param0: android.view.View): void;
 						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 				}
 			}
@@ -23339,11 +24348,11 @@ declare module android {
 						public constructor(param0: android.content.Context, param1: number);
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public flagActionItems(): boolean;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
 						public onSubMenuSelected(param0: android.support.v7.view.menu.SubMenuBuilder): boolean;
 						public saveHierarchyState(param0: android.os.Bundle): void;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public setId(param0: number): void;
 						public getId(): number;
 						public onSaveInstanceState(): android.os.Parcelable;
@@ -23573,6 +24582,7 @@ declare module android {
 						public setNumericShortcut(param0: string): android.view.MenuItem;
 						public getIconTintList(): android.content.res.ColorStateList;
 						public getSupportActionProvider(): android.support.v4.view.ActionProvider;
+						public setContentDescription(param0: string): android.view.MenuItem;
 						public getOrdering(): number;
 						public getContentDescription(): string;
 						public isExclusiveCheckable(): boolean;
@@ -23605,6 +24615,7 @@ declare module android {
 						public getNumericShortcut(): string;
 						public actionFormatChanged(): void;
 						public isCheckable(): boolean;
+						public setTooltipText(param0: string): android.view.MenuItem;
 						public getSubMenu(): android.view.SubMenu;
 						public setIcon(param0: number): android.view.MenuItem;
 						public getItemId(): number;
@@ -23725,47 +24736,70 @@ declare module android {
 						}
 						export class CollapsibleActionViewWrapper extends android.widget.FrameLayout implements android.support.v7.view.CollapsibleActionView {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuItemWrapperICS.CollapsibleActionViewWrapper>;
-							public focusSearch(param0: android.view.View, param1: number): android.view.View;
+							public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 							public focusSearch(param0: number): android.view.View;
 							public getParentForAccessibility(): android.view.ViewParent;
+							public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 							public onActionViewCollapsed(): void;
-							public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
-							public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-							public requestFitSystemWindows(): void;
-							public addView(param0: android.view.View): void;
+							public getTextDirection(): number;
 							public addView(param0: android.view.View, param1: number): void;
-							public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
-							public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 							public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 							public isLayoutRequested(): boolean;
 							public onActionViewExpanded(): void;
-							public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+							public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 							public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-							public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 							public removeView(param0: android.view.View): void;
 							public requestLayout(): void;
-							public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-							public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+							public isTextDirectionResolved(): boolean;
+							public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+							public onStopNestedScroll(param0: android.view.View): void;
+							public isLayoutDirectionResolved(): boolean;
 							public childDrawableStateChanged(param0: android.view.View): void;
-							public getParent(): android.view.ViewParent;
-							public focusableViewAvailable(param0: android.view.View): void;
 							public addView(param0: android.view.View, param1: number, param2: number): void;
 							public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+							public canResolveTextDirection(): boolean;
 							public clearChildFocus(param0: android.view.View): void;
+							public canResolveLayoutDirection(): boolean;
+							public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+							public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+							public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+							public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+							public isTextAlignmentResolved(): boolean;
+							public requestDisallowInterceptTouchEvent(param0: boolean): void;
+							public recomputeViewAttributes(param0: android.view.View): void;
+							public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+							public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+							public bringChildToFront(param0: android.view.View): void;
+							public focusSearch(param0: android.view.View, param1: number): android.view.View;
+							public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+							public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+							public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+							public requestFitSystemWindows(): void;
+							public addView(param0: android.view.View): void;
+							public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+							public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+							public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+							public canResolveTextAlignment(): boolean;
+							public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+							public getTextAlignment(): number;
+							public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+							public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+							public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+							public getParent(): android.view.ViewParent;
+							public focusableViewAvailable(param0: android.view.View): void;
+							public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 							public createContextMenu(param0: android.view.ContextMenu): void;
 							public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 							public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+							public getLayoutDirection(): number;
 							public showContextMenuForChild(param0: android.view.View): boolean;
+							public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 							public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 							public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-							public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 							public sendAccessibilityEvent(param0: number): void;
-							public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 							public requestTransparentRegion(param0: android.view.View): void;
-							public requestDisallowInterceptTouchEvent(param0: boolean): void;
-							public recomputeViewAttributes(param0: android.view.View): void;
-							public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-							public bringChildToFront(param0: android.view.View): void;
+							public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+							public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 							public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						}
 						export class OnActionExpandListenerWrapper extends android.support.v7.view.menu.BaseWrapper<android.view.MenuItem.OnActionExpandListener> {
@@ -23791,50 +24825,60 @@ declare module android {
 				export module menu {
 					export class MenuItemWrapperJB extends android.support.v7.view.menu.MenuItemWrapperICS {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuItemWrapperJB>;
+						public getGroupId(): number;
+						public setNumericShortcut(param0: string): android.view.MenuItem;
+						public getIconTintList(): android.content.res.ColorStateList;
+						public setContentDescription(param0: string): android.view.MenuItem;
+						public getContentDescription(): string;
+						public setAlphabeticShortcut(param0: string, param1: number): android.view.MenuItem;
+						public setShortcut(param0: string, param1: string): android.view.MenuItem;
+						public setAlphabeticShortcut(param0: string): android.view.MenuItem;
+						public setCheckable(param0: boolean): android.view.MenuItem;
+						public getMenuInfo(): android.view.ContextMenu.ContextMenuInfo;
+						public setOnActionExpandListener(param0: android.view.MenuItem.OnActionExpandListener): android.view.MenuItem;
+						public setShowAsActionFlags(param0: number): android.view.MenuItem;
+						public getIntent(): android.content.Intent;
+						public isEnabled(): boolean;
+						public setNumericShortcut(param0: string, param1: number): android.view.MenuItem;
+						public collapseActionView(): boolean;
+						public setTitle(param0: number): android.view.MenuItem;
+						public getNumericModifiers(): number;
+						public setIcon(param0: android.graphics.drawable.Drawable): android.view.MenuItem;
+						public setActionProvider(param0: android.view.ActionProvider): android.view.MenuItem;
+						public getAlphabeticShortcut(): string;
+						public getTooltipText(): string;
+						public hasSubMenu(): boolean;
 						public setActionView(param0: number): android.view.MenuItem;
 						public setTitleCondensed(param0: string): android.view.MenuItem;
 						public getNumericShortcut(): string;
-						public getGroupId(): number;
 						public isCheckable(): boolean;
+						public setTooltipText(param0: string): android.view.MenuItem;
 						public setIcon(param0: number): android.view.MenuItem;
 						public getSubMenu(): android.view.SubMenu;
 						public getItemId(): number;
-						public setNumericShortcut(param0: string): android.view.MenuItem;
+						public setIconTintList(param0: android.content.res.ColorStateList): android.view.MenuItem;
 						public setShortcut(param0: string, param1: string, param2: number, param3: number): android.view.MenuItem;
 						public isChecked(): boolean;
 						public setEnabled(param0: boolean): android.view.MenuItem;
+						public setIconTintMode(param0: android.graphics.PorterDuff.Mode): android.view.MenuItem;
 						public isVisible(): boolean;
 						public setVisible(param0: boolean): android.view.MenuItem;
 						public setShowAsAction(param0: number): void;
 						public getIcon(): android.graphics.drawable.Drawable;
 						public getOrder(): number;
-						public setAlphabeticShortcut(param0: string, param1: number): android.view.MenuItem;
-						public setShortcut(param0: string, param1: string): android.view.MenuItem;
-						public setAlphabeticShortcut(param0: string): android.view.MenuItem;
 						public setTitle(param0: string): android.view.MenuItem;
 						public getActionView(): android.view.View;
 						public isActionViewExpanded(): boolean;
-						public setCheckable(param0: boolean): android.view.MenuItem;
-						public getMenuInfo(): android.view.ContextMenu.ContextMenuInfo;
-						public setOnActionExpandListener(param0: android.view.MenuItem.OnActionExpandListener): android.view.MenuItem;
-						public setShowAsActionFlags(param0: number): android.view.MenuItem;
 						public setOnMenuItemClickListener(param0: android.view.MenuItem.OnMenuItemClickListener): android.view.MenuItem;
-						public getIntent(): android.content.Intent;
-						public isEnabled(): boolean;
-						public setNumericShortcut(param0: string, param1: number): android.view.MenuItem;
 						public setChecked(param0: boolean): android.view.MenuItem;
-						public collapseActionView(): boolean;
-						public setTitle(param0: number): android.view.MenuItem;
 						public getTitleCondensed(): string;
 						public expandActionView(): boolean;
 						public getTitle(): string;
 						public setActionView(param0: android.view.View): android.view.MenuItem;
 						public getActionProvider(): android.view.ActionProvider;
-						public setIcon(param0: android.graphics.drawable.Drawable): android.view.MenuItem;
-						public setActionProvider(param0: android.view.ActionProvider): android.view.MenuItem;
-						public getAlphabeticShortcut(): string;
+						public getIconTintMode(): android.graphics.PorterDuff.Mode;
 						public setIntent(param0: android.content.Intent): android.view.MenuItem;
-						public hasSubMenu(): boolean;
+						public getAlphabeticModifiers(): number;
 					}
 					export module MenuItemWrapperJB {
 						export class ActionProviderWrapperJB extends android.support.v7.view.menu.MenuItemWrapperICS.ActionProviderWrapper implements android.view.ActionProvider.VisibilityListener {
@@ -23866,6 +24910,7 @@ declare module android {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuPopup>;
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public static shouldPreserveIconSpacing(param0: android.support.v7.view.menu.MenuBuilder): boolean;
 						public flagActionItems(): boolean;
 						public dismiss(): void;
@@ -23882,7 +24927,6 @@ declare module android {
 						public setShowTitle(param0: boolean): void;
 						public static toMenuAdapter(param0: android.widget.ListAdapter): android.support.v7.view.menu.MenuAdapter;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public getId(): number;
 						public setAnchorView(param0: android.view.View): void;
 						public setVerticalOffset(param0: number): void;
@@ -24136,6 +25180,7 @@ declare module android {
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
 						public flagActionItems(): boolean;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public dismiss(): void;
 						public getListView(): android.widget.ListView;
 						public onSubMenuSelected(param0: android.support.v7.view.menu.SubMenuBuilder): boolean;
@@ -24148,7 +25193,6 @@ declare module android {
 						public setGravity(param0: number): void;
 						public setShowTitle(param0: boolean): void;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public getId(): number;
 						public onDismiss(): void;
 						public setAnchorView(param0: android.view.View): void;
@@ -24288,17 +25332,24 @@ declare module android {
 					public mActionMenuPresenter: android.support.v7.widget.ActionMenuPresenter;
 					public mContentHeight: number;
 					public mVisibilityAnim: android.support.v4.view.ViewPropertyAnimatorCompat;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onHoverEvent(param0: android.view.MotionEvent): boolean;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public measureChildView(param0: android.view.View, param1: number, param2: number, param3: number): number;
 					public hideOverflowMenu(): boolean;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
 					public canShowOverflowMenu(): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
@@ -24307,6 +25358,7 @@ declare module android {
 					public isOverflowMenuShowPending(): boolean;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
@@ -24314,29 +25366,44 @@ declare module android {
 					public setContentHeight(param0: number): void;
 					public animateToVisibility(param0: number): void;
 					public setVisibility(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public showOverflowMenu(): boolean;
 					public isOverflowMenuShowing(): boolean;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public getAnimatedVisibility(): number;
 					public positionChild(param0: android.view.View, param1: number, param2: number, param3: number, param4: boolean): number;
 					public isOverflowReserved(): boolean;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public dismissPopupMenus(): void;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public getContentHeight(): number;
 					public postShowOverflowMenu(): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
@@ -24404,52 +25471,75 @@ declare module android {
 			export module widget {
 				export class ActionBarContainer extends android.widget.FrameLayout {
 					public static class: java.lang.Class<android.support.v7.widget.ActionBarContainer>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onHoverEvent(param0: android.view.MotionEvent): boolean;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
 					public jumpDrawablesToCurrentState(): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public setPrimaryBackground(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setVisibility(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public drawableStateChanged(): void;
 					public requestFitSystemWindows(): void;
 					public setTabContainer(param0: android.support.v7.widget.ScrollingTabContainerView): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public onFinishInflate(): void;
 					public getTabContainer(): android.view.View;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public setSplitBackground(param0: android.graphics.drawable.Drawable): void;
 					public setStackedBackground(param0: android.graphics.drawable.Drawable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
@@ -24477,54 +25567,78 @@ declare module android {
 				export class ActionBarContextView extends android.support.v7.widget.AbsActionBarView {
 					public static class: java.lang.Class<android.support.v7.widget.ActionBarContextView>;
 					public getTitle(): string;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setTitle(param0: string): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public isTitleOptional(): boolean;
 					public hideOverflowMenu(): boolean;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public killMode(): void;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setContentHeight(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public setCustomView(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public showOverflowMenu(): boolean;
 					public isOverflowMenuShowing(): boolean;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public closeMode(): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
 					public onInitializeAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public initForMode(param0: android.support.v7.view.ActionMode): void;
 					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -24555,99 +25669,116 @@ declare module android {
 					public static class: java.lang.Class<android.support.v7.widget.ActionBarOverlayLayout>;
 					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public getTitle(): string;
-					public setLogo(param0: number): void;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public fitSystemWindows(param0: android.graphics.Rect): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public setUiOptions(param0: number): void;
-					public clearChildFocus(param0: android.view.View): void;
 					public setMenu(param0: android.view.Menu, param1: android.support.v7.view.menu.MenuPresenter.Callback): void;
-					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
-					public isHideOnContentScrollEnabled(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
-					public setOverlayMode(param0: boolean): void;
 					public restoreToolbarHierarchyState(param0: android.util.SparseArray<android.os.Parcelable>): void;
-					public getActionBarHideOffset(): number;
 					public hideOverflowMenu(): boolean;
-					public setWindowCallback(param0: android.view.Window.Callback): void;
 					public setIcon(param0: android.graphics.drawable.Drawable): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
 					public canShowOverflowMenu(): boolean;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public onWindowSystemUiVisibilityChanged(param0: number): void;
-					public isOverflowMenuShowPending(): boolean;
-					public setHideOnContentScrollEnabled(param0: boolean): void;
-					public bringChildToFront(param0: android.view.View): void;
-					public initFeature(param0: number): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
-					public hasLogo(): boolean;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public setMenuPrepared(): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public setHasNonEmbeddedTabs(param0: boolean): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public setIcon(param0: number): void;
 					public onWindowVisibilityChanged(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public setActionBarVisibilityCallback(param0: android.support.v7.widget.ActionBarOverlayLayout.ActionBarVisibilityCallback): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.support.v7.widget.ActionBarOverlayLayout.LayoutParams;
+					public isOverflowMenuShowing(): boolean;
+					public focusSearch(param0: number): android.view.View;
+					public isTextAlignmentResolved(): boolean;
+					public saveToolbarHierarchyState(param0: android.util.SparseArray<android.os.Parcelable>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public generateDefaultLayoutParams(): android.support.v7.widget.ActionBarOverlayLayout.LayoutParams;
+					public setShowingForActionMode(param0: boolean): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
+					public sendAccessibilityEvent(param0: number): void;
+					public requestLayout(): void;
+					public onDetachedFromWindow(): void;
+					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public dismissPopups(): void;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public setWindowTitle(param0: string): void;
+					public setLogo(param0: number): void;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isLayoutRequested(): boolean;
+					public setUiOptions(param0: number): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isHideOnContentScrollEnabled(): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public setOverlayMode(param0: boolean): void;
+					public getActionBarHideOffset(): number;
+					public setWindowCallback(param0: android.view.Window.Callback): void;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public isOverflowMenuShowPending(): boolean;
+					public setHideOnContentScrollEnabled(param0: boolean): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public initFeature(param0: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public hasLogo(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public setIcon(param0: number): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
-					public isOverflowMenuShowing(): boolean;
 					public showOverflowMenu(): boolean;
-					public focusSearch(param0: number): android.view.View;
 					public isInOverlayMode(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public requestTransparentRegion(param0: android.view.View): void;
-					public saveToolbarHierarchyState(param0: android.util.SparseArray<android.os.Parcelable>): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
-					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
-					public generateDefaultLayoutParams(): android.support.v7.widget.ActionBarOverlayLayout.LayoutParams;
-					public setShowingForActionMode(param0: boolean): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public setActionBarHideOffset(param0: number): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
 					public onStopNestedScroll(param0: android.view.View): void;
-					public sendAccessibilityEvent(param0: number): void;
-					public requestLayout(): void;
 					public draw(param0: android.graphics.Canvas): void;
-					public onDetachedFromWindow(): void;
-					public onMeasure(param0: number, param1: number): void;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public dismissPopups(): void;
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public shouldDelayChildPressedState(): boolean;
-					public constructor(param0: android.content.Context);
 					public getNestedScrollAxes(): number;
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public hasIcon(): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public setWindowTitle(param0: string): void;
 				}
 				export module ActionBarOverlayLayout {
 					export class ActionBarVisibilityCallback extends java.lang.Object {
@@ -24766,6 +25897,7 @@ declare module android {
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 						public constructor(param0: android.support.v7.widget.ActionMenuPresenter, param1: android.content.Context);
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public setSupportImageTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						public setFrame(param0: number, param1: number, param2: number, param3: number): boolean;
@@ -24809,83 +25941,107 @@ declare module android {
 			export module widget {
 				export class ActionMenuView extends android.support.v7.widget.LinearLayoutCompat implements android.support.v7.view.menu.MenuBuilder.ItemInvoker, android.support.v7.view.menu.MenuView {
 					public static class: java.lang.Class<android.support.v7.widget.ActionMenuView>;
-					public generateOverflowButtonLayoutParams(): android.support.v7.widget.ActionMenuView.LayoutParams;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public invokeItem(param0: android.support.v7.view.menu.MenuItemImpl): boolean;
-					public isLayoutRequested(): boolean;
-					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
 					public setOverflowIcon(param0: android.graphics.drawable.Drawable): void;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public hideOverflowMenu(): boolean;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.v7.widget.ActionMenuView.LayoutParams;
+					public getWindowAnimations(): number;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public setPresenter(param0: android.support.v7.widget.ActionMenuPresenter): void;
+					public generateDefaultLayoutParams(): android.support.v7.widget.ActionMenuView.LayoutParams;
+					public isOverflowMenuShowing(): boolean;
+					public focusSearch(param0: number): android.view.View;
+					public isTextAlignmentResolved(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public canResolveTextAlignment(): boolean;
+					public setPopupTheme(param0: number): void;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public getPopupTheme(): number;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+					public getMenu(): android.view.Menu;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public setOnMenuItemClickListener(param0: android.support.v7.widget.ActionMenuView.OnMenuItemClickListener): void;
+					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
+					public sendAccessibilityEvent(param0: number): void;
+					public requestLayout(): void;
+					public onDetachedFromWindow(): void;
+					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public generateDefaultLayoutParams(): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public generateOverflowButtonLayoutParams(): android.support.v7.widget.ActionMenuView.LayoutParams;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public invokeItem(param0: android.support.v7.view.menu.MenuItemImpl): boolean;
+					public isLayoutRequested(): boolean;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
 					public isOverflowMenuShowPending(): boolean;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public setExpandedActionViewsExclusive(param0: boolean): void;
 					public bringChildToFront(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
-					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.v7.widget.ActionMenuView.LayoutParams;
-					public getWindowAnimations(): number;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public childDrawableStateChanged(param0: android.view.View): void;
 					public hasSupportDividerBeforeChildAt(param0: number): boolean;
-					public setPresenter(param0: android.support.v7.widget.ActionMenuPresenter): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-					public generateDefaultLayoutParams(): android.support.v7.widget.ActionMenuView.LayoutParams;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public showOverflowMenu(): boolean;
-					public isOverflowMenuShowing(): boolean;
-					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public getOverflowIcon(): android.graphics.drawable.Drawable;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public initialize(param0: android.support.v7.view.menu.MenuBuilder): void;
 					public requestTransparentRegion(param0: android.view.View): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public setMenuCallbacks(param0: android.support.v7.view.menu.MenuPresenter.Callback, param1: android.support.v7.view.menu.MenuBuilder.Callback): void;
-					public setPopupTheme(param0: number): void;
-					public getPopupTheme(): number;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public getMenu(): android.view.Menu;
 					public getParent(): android.view.ViewParent;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public setOnMenuItemClickListener(param0: android.support.v7.widget.ActionMenuView.OnMenuItemClickListener): void;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
 					public setOverflowReserved(param0: boolean): void;
-					public sendAccessibilityEvent(param0: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.support.v7.widget.ActionMenuView.LayoutParams;
-					public requestLayout(): void;
-					public onDetachedFromWindow(): void;
-					public onMeasure(param0: number, param1: number): void;
 					public isOverflowReserved(): boolean;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
 					public dismissPopupMenus(): void;
 					public removeView(param0: android.view.View): void;
 					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public generateDefaultLayoutParams(): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 					public peekMenu(): android.support.v7.view.menu.MenuBuilder;
@@ -25040,50 +26196,74 @@ declare module android {
 			export module widget {
 				export class ActivityChooserView extends android.view.ViewGroup implements android.support.v7.widget.ActivityChooserModel.ActivityChooserModelClient {
 					public static class: java.lang.Class<android.support.v7.widget.ActivityChooserView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public setExpandActivityOverflowButtonContentDescription(param0: number): void;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public setProvider(param0: android.support.v4.view.ActionProvider): void;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public getDataModel(): android.support.v7.widget.ActivityChooserModel;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public showPopup(): boolean;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public setOnDismissListener(param0: android.widget.PopupWindow.OnDismissListener): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setDefaultActionButtonContentDescription(param0: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public setExpandActivityOverflowButtonDrawable(param0: android.graphics.drawable.Drawable): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public setActivityChooserModel(param0: android.support.v7.widget.ActivityChooserModel): void;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
@@ -25127,55 +26307,79 @@ declare module android {
 					export class Callbacks extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener, android.view.View.OnClickListener, android.view.View.OnLongClickListener, android.widget.PopupWindow.OnDismissListener {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserView.Callbacks>;
 						public onDismiss(): void;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public onLongClick(param0: android.view.View): boolean;
 						public onClick(param0: android.view.View): void;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					}
 					export class InnerLayout extends android.support.v7.widget.LinearLayoutCompat {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserView.InnerLayout>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-						public addView(param0: android.view.View, param1: number): void;
 						public sendAccessibilityEvent(param0: number): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public requestTransparentRegion(param0: android.view.View): void;
 						public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-						public childDrawableStateChanged(param0: android.view.View): void;
 						public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 						public constructor(param0: android.content.Context);
-						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public showContextMenuForChild(param0: android.view.View): boolean;
-						public requestFitSystemWindows(): void;
-						public clearChildFocus(param0: android.view.View): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
-						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
-						public bringChildToFront(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
-						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
+						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
+						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+						public addView(param0: android.view.View, param1: number): void;
+						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+						public childDrawableStateChanged(param0: android.view.View): void;
+						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public requestFitSystemWindows(): void;
+						public clearChildFocus(param0: android.view.View): void;
+						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+						public bringChildToFront(param0: android.view.View): void;
+						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
-						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 				}
 			}
@@ -25236,51 +26440,75 @@ declare module android {
 			export module widget {
 				export class AlertDialogLayout extends android.support.v7.widget.LinearLayoutCompat {
 					public static class: java.lang.Class<android.support.v7.widget.AlertDialogLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public bringChildToFront(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public childDrawableStateChanged(param0: android.view.View): void;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
 				}
 			}
 		}
@@ -25295,28 +26523,31 @@ declare module android {
 					public static class: java.lang.Class<android.support.v7.widget.AppCompatAutoCompleteTextView>;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public onPreDraw(): boolean;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
-					public setTextAppearance(param0: android.content.Context, param1: number): void;
-					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public setDropDownBackgroundResource(param0: number): void;
+					public getSupportBackgroundTintList(): android.content.res.ColorStateList;
+					public sendAccessibilityEvent(param0: number): void;
+					public onPreDraw(): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number, param4: android.content.res.Resources.Theme);
+					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
+					public setTextAppearance(param0: android.content.Context, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public setTextAppearance(param0: number): void;
+					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public constructor(param0: android.content.Context);
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setBackgroundResource(param0: number): void;
-					public setDropDownBackgroundResource(param0: number): void;
 					public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 					public drawableStateChanged(): void;
 					public onFilterComplete(param0: number): void;
-					public getSupportBackgroundTintList(): android.content.res.ColorStateList;
-					public sendAccessibilityEvent(param0: number): void;
 				}
 			}
 		}
@@ -25363,6 +26594,8 @@ declare module android {
 					public onInitializeAccessibilityNodeInfo(param0: android.view.accessibility.AccessibilityNodeInfo): void;
 					public getAutoSizeTextType(): number;
 					public setTextAppearance(param0: android.content.Context, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public setTextAppearance(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setAutoSizeTextTypeWithDefaults(param0: number): void;
 					public setTextSize(param0: number, param1: number): void;
@@ -25390,30 +26623,31 @@ declare module android {
 			export module widget {
 				export class AppCompatCheckBox extends android.widget.CheckBox implements android.support.v4.widget.TintableCompoundButton {
 					public static class: java.lang.Class<android.support.v7.widget.AppCompatCheckBox>;
-					public getSupportButtonTintMode(): android.graphics.PorterDuff.Mode;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public onPreDraw(): boolean;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public getCompoundPaddingLeft(): number;
 					public setButtonDrawable(param0: number): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public setButtonDrawable(param0: android.graphics.drawable.Drawable): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public setChecked(param0: boolean): void;
+					public sendAccessibilityEvent(param0: number): void;
+					public isChecked(): boolean;
+					public getSupportButtonTintMode(): android.graphics.PorterDuff.Mode;
+					public onPreDraw(): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public toggle(): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public constructor(param0: android.content.Context);
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public setSupportButtonTintMode(param0: android.graphics.PorterDuff.Mode): void;
-					public setButtonDrawable(param0: android.graphics.drawable.Drawable): void;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public getSupportButtonTintList(): android.content.res.ColorStateList;
-					public setChecked(param0: boolean): void;
-					public sendAccessibilityEvent(param0: number): void;
 					public setSupportButtonTintList(param0: android.content.res.ColorStateList): void;
-					public isChecked(): boolean;
 				}
 			}
 		}
@@ -25434,6 +26668,8 @@ declare module android {
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public setCheckMarkDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setTextAppearance(param0: android.content.Context, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public setTextAppearance(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public toggle(): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -25532,6 +26768,8 @@ declare module android {
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setTextAppearance(param0: android.content.Context, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public setTextAppearance(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -25576,6 +26814,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public hasOverlappingRendering(): boolean;
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportImageTintList(param0: android.content.res.ColorStateList): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -25632,6 +26871,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public hasOverlappingRendering(): boolean;
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportImageTintList(param0: android.content.res.ColorStateList): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -25657,28 +26897,31 @@ declare module android {
 					public static class: java.lang.Class<android.support.v7.widget.AppCompatMultiAutoCompleteTextView>;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public onPreDraw(): boolean;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
-					public setTextAppearance(param0: android.content.Context, param1: number): void;
-					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public setDropDownBackgroundResource(param0: number): void;
+					public getSupportBackgroundTintList(): android.content.res.ColorStateList;
+					public sendAccessibilityEvent(param0: number): void;
+					public onPreDraw(): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number, param4: android.content.res.Resources.Theme);
+					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
+					public setTextAppearance(param0: android.content.Context, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public setTextAppearance(param0: number): void;
+					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public constructor(param0: android.content.Context);
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setBackgroundResource(param0: number): void;
-					public setDropDownBackgroundResource(param0: number): void;
 					public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 					public drawableStateChanged(): void;
 					public onFilterComplete(param0: number): void;
-					public getSupportBackgroundTintList(): android.content.res.ColorStateList;
-					public sendAccessibilityEvent(param0: number): void;
 				}
 			}
 		}
@@ -25733,30 +26976,31 @@ declare module android {
 			export module widget {
 				export class AppCompatRadioButton extends android.widget.RadioButton implements android.support.v4.widget.TintableCompoundButton {
 					public static class: java.lang.Class<android.support.v7.widget.AppCompatRadioButton>;
-					public getSupportButtonTintMode(): android.graphics.PorterDuff.Mode;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public onPreDraw(): boolean;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public getCompoundPaddingLeft(): number;
 					public setButtonDrawable(param0: number): void;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public setButtonDrawable(param0: android.graphics.drawable.Drawable): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public setChecked(param0: boolean): void;
+					public sendAccessibilityEvent(param0: number): void;
+					public isChecked(): boolean;
+					public getSupportButtonTintMode(): android.graphics.PorterDuff.Mode;
+					public onPreDraw(): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public toggle(): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public constructor(param0: android.content.Context);
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public setSupportButtonTintMode(param0: android.graphics.PorterDuff.Mode): void;
-					public setButtonDrawable(param0: android.graphics.drawable.Drawable): void;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public getSupportButtonTintList(): android.content.res.ColorStateList;
-					public setChecked(param0: boolean): void;
-					public sendAccessibilityEvent(param0: number): void;
 					public setSupportButtonTintList(param0: android.content.res.ColorStateList): void;
-					public isChecked(): boolean;
 				}
 			}
 		}
@@ -25775,6 +27019,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -25801,6 +27046,7 @@ declare module android {
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onDraw(param0: android.graphics.Canvas): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public jumpDrawablesToCurrentState(): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -25835,77 +27081,102 @@ declare module android {
 			export module widget {
 				export class AppCompatSpinner extends android.widget.Spinner implements android.support.v4.view.TintableBackgroundView {
 					public static class: java.lang.Class<android.support.v7.widget.AppCompatSpinner>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public constructor(param0: android.content.Context, param1: number);
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public setAdapter(param0: android.widget.SpinnerAdapter): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public clearChildFocus(param0: android.view.View): void;
-					public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
-					public setDropDownWidth(param0: number): void;
 					public getPopupContext(): android.content.Context;
 					public setDropDownHorizontalOffset(param0: number): void;
 					public getSupportBackgroundTintList(): android.content.res.ColorStateList;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
-					public bringChildToFront(param0: android.view.View): void;
-					public performClick(): boolean;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getPopupBackground(): android.graphics.drawable.Drawable;
 					public setBackgroundResource(param0: number): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
-					public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
-					public drawableStateChanged(): void;
-					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public getPrompt(): string;
-					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
-					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public getParent(): android.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public setPopupBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
-					public setAdapter(param0: any): void;
 					public setDropDownVerticalOffset(param0: number): void;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public setPopupBackgroundResource(param0: number): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public setPrompt(param0: string): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number, param4: android.content.res.Resources.Theme);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public getDropDownWidth(): number;
+					public onClick(param0: android.content.DialogInterface, param1: number): void;
+					public constructor(param0: android.content.Context, param1: number);
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public setAdapter(param0: android.widget.SpinnerAdapter): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isLayoutRequested(): boolean;
+					public clearChildFocus(param0: android.view.View): void;
+					public setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public setDropDownWidth(param0: number): void;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public performClick(): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number, param4: number);
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
+					public drawableStateChanged(): void;
+					public requestFitSystemWindows(): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public getPrompt(): string;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+					public setAdapter(param0: any): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public setPopupBackgroundResource(param0: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number, param4: number, param5: android.content.res.Resources.Theme);
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public getDropDownHorizontalOffset(): number;
 					public getDropDownVerticalOffset(): number;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public getDropDownWidth(): number;
-					public onClick(param0: android.content.DialogInterface, param1: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 				}
 				export module AppCompatSpinner {
@@ -25917,6 +27188,7 @@ declare module android {
 						public unregisterDataSetObserver(param0: android.database.DataSetObserver): void;
 						public registerDataSetObserver(param0: android.database.DataSetObserver): void;
 						public getItemViewType(param0: number): number;
+						public getAutofillOptions(): native.Array<string>;
 						public getCount(): number;
 						public getItem(param0: number): any;
 						public hasStableIds(): boolean;
@@ -25998,6 +27270,8 @@ declare module android {
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
 					public getAutoSizeTextType(): number;
 					public setTextAppearance(param0: android.content.Context, param1: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public setTextAppearance(param0: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setAutoSizeTextTypeWithDefaults(param0: number): void;
 					public setTextSize(param0: number, param1: number): void;
@@ -26036,52 +27310,76 @@ declare module android {
 			export module widget {
 				export class ButtonBarLayout extends android.widget.LinearLayout {
 					public static class: java.lang.Class<android.support.v7.widget.ButtonBarLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public getMinimumHeight(): number;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number): void;
 					public setAllowStacking(param0: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public getMinimumHeight(): number;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public bringChildToFront(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public childDrawableStateChanged(param0: android.view.View): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
 				}
 			}
 		}
@@ -26143,48 +27441,72 @@ declare module android {
 			export module widget {
 				export class ContentFrameLayout extends android.widget.FrameLayout {
 					public static class: java.lang.Class<android.support.v7.widget.ContentFrameLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
 					public getMinWidthMajor(): android.util.TypedValue;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setDecorPadding(param0: number, param1: number, param2: number, param3: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public setAttachListener(param0: android.support.v7.widget.ContentFrameLayout.OnAttachListener): void;
 					public getFixedHeightMinor(): android.util.TypedValue;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public getFixedWidthMinor(): android.util.TypedValue;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public getFixedHeightMajor(): android.util.TypedValue;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public getMinWidthMinor(): android.util.TypedValue;
@@ -26464,6 +27786,7 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -26522,49 +27845,73 @@ declare module android {
 			export module widget {
 				export class DropDownListView extends android.support.v7.widget.ListViewCompat {
 					public static class: java.lang.Class<android.support.v7.widget.DropDownListView>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public onForwardedEvent(param0: android.view.MotionEvent, param1: number): boolean;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public onGlobalLayout(): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public afterTextChanged(param0: android.text.Editable): void;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public beforeTextChanged(param0: string, param1: number, param2: number, param3: number): void;
 					public onFilterComplete(param0: number): void;
 					public requestFitSystemWindows(): void;
 					public hasFocus(): boolean;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
 					public isFocused(): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public hasWindowFocus(): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public isInTouchMode(): boolean;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public touchModeDrawsInPressedStateCompat(): boolean;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -26607,10 +27954,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.FastScroller$AnimationState interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -26619,9 +27966,13 @@ declare module android {
 					}
 					export class AnimatorListener extends android.animation.AnimatorListenerAdapter {
 						public static class: java.lang.Class<android.support.v7.widget.FastScroller.AnimatorListener>;
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 					}
 					export class AnimatorUpdater extends java.lang.Object implements android.animation.ValueAnimator.AnimatorUpdateListener {
@@ -26634,10 +27985,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.FastScroller$DragState interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -26650,10 +28001,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.FastScroller$State interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -26672,51 +28023,75 @@ declare module android {
 			export module widget {
 				export class FitWindowsFrameLayout extends android.widget.FrameLayout implements android.support.v7.widget.FitWindowsViewGroup {
 					public static class: java.lang.Class<android.support.v7.widget.FitWindowsFrameLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public fitSystemWindows(param0: android.graphics.Rect): boolean;
-					public requestTransparentRegion(param0: android.view.View): void;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public setOnFitSystemWindowsListener(param0: android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public bringChildToFront(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public childDrawableStateChanged(param0: android.view.View): void;
-					public setOnFitSystemWindowsListener(param0: android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
 				}
 			}
 		}
@@ -26729,51 +28104,75 @@ declare module android {
 			export module widget {
 				export class FitWindowsLinearLayout extends android.widget.LinearLayout implements android.support.v7.widget.FitWindowsViewGroup {
 					public static class: java.lang.Class<android.support.v7.widget.FitWindowsLinearLayout>;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public fitSystemWindows(param0: android.graphics.Rect): boolean;
-					public requestTransparentRegion(param0: android.view.View): void;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
+					public addView(param0: android.view.View, param1: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public bringChildToFront(param0: android.view.View): void;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public setOnFitSystemWindowsListener(param0: android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public showContextMenuForChild(param0: android.view.View): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public addView(param0: android.view.View, param1: number): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public bringChildToFront(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public getParentForAccessibility(): android.view.ViewParent;
+					public getTextAlignment(): number;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
-					public childDrawableStateChanged(param0: android.view.View): void;
-					public setOnFitSystemWindowsListener(param0: android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
-					public requestFitSystemWindows(): void;
-					public focusSearch(param0: number): android.view.View;
 				}
 			}
 		}
@@ -26971,83 +28370,107 @@ declare module android {
 					public static SHOW_DIVIDER_BEGINNING: number;
 					public static SHOW_DIVIDER_MIDDLE: number;
 					public static SHOW_DIVIDER_END: number;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
-					public setShowDividers(param0: number): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public onDraw(param0: android.graphics.Canvas): void;
 					public getShowDividers(): number;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isBaselineAligned(): boolean;
-					public isLayoutRequested(): boolean;
-					public setBaselineAligned(param0: boolean): void;
-					public clearChildFocus(param0: android.view.View): void;
 					public setBaselineAlignedChildIndex(param0: number): void;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public hasDividerBeforeChildAt(param0: number): boolean;
 					public isMeasureWithLargestChildEnabled(): boolean;
-					public setHorizontalGravity(param0: number): void;
-					public getOrientation(): number;
-					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
-					public generateLayoutParams(param0: android.util.AttributeSet): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
-					public bringChildToFront(param0: android.view.View): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public setDividerDrawable(param0: android.graphics.drawable.Drawable): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
-					public setOrientation(param0: number): void;
-					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
-					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
-					public setWeightSum(param0: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
-					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 					public setMeasureWithLargestChildEnabled(param0: boolean): void;
-					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
 					public getGravity(): number;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-					public requestTransparentRegion(param0: android.view.View): void;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public getBaseline(): number;
-					public onInitializeAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
-					public getBaselineAlignedChildIndex(): number;
-					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
-					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
-					public getParent(): android.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
-					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public generateDefaultLayoutParams(): android.view.ViewGroup.LayoutParams;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public getDividerWidth(): number;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
-					public removeView(param0: android.view.View): void;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public getDividerDrawable(): android.graphics.drawable.Drawable;
+					public getTextAlignment(): number;
 					public setGravity(param0: number): void;
 					public onInitializeAccessibilityNodeInfo(param0: android.view.accessibility.AccessibilityNodeInfo): void;
-					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
-					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public generateDefaultLayoutParams(): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
-					public setDividerPadding(param0: number): void;
 					public getWeightSum(): number;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public setShowDividers(param0: number): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isBaselineAligned(): boolean;
+					public isLayoutRequested(): boolean;
+					public setBaselineAligned(param0: boolean): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
+					public setHorizontalGravity(param0: number): void;
+					public getOrientation(): number;
+					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
+					public generateLayoutParams(param0: android.util.AttributeSet): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
+					public bringChildToFront(param0: android.view.View): void;
+					public setDividerDrawable(param0: android.graphics.drawable.Drawable): void;
+					public setOrientation(param0: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+					public addView(param0: android.view.View, param1: number, param2: number): void;
+					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.support.v7.widget.LinearLayoutCompat.LayoutParams;
+					public setWeightSum(param0: number): void;
+					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
+					public requestFitSystemWindows(): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public getBaseline(): number;
+					public onInitializeAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
+					public getBaselineAlignedChildIndex(): number;
+					public canResolveTextDirection(): boolean;
+					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
+					public requestDisallowInterceptTouchEvent(param0: boolean): void;
+					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
+					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
+					public canResolveLayoutDirection(): boolean;
+					public removeView(param0: android.view.View): void;
+					public generateLayoutParams(param0: android.view.ViewGroup.LayoutParams): android.view.ViewGroup.LayoutParams;
+					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
+					public setDividerPadding(param0: number): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public getDividerPadding(): number;
 					public setVerticalGravity(param0: number): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
 					public shouldDelayChildPressedState(): boolean;
-					public constructor(param0: android.content.Context);
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public checkLayoutParams(param0: android.view.ViewGroup.LayoutParams): boolean;
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
 				}
@@ -27058,10 +28481,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.LinearLayoutCompat$DividerMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -27085,10 +28508,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.LinearLayoutCompat$OrientationMode interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -27360,54 +28783,78 @@ declare module android {
 					public static NO_POSITION: number;
 					public mMotionPosition: number;
 					public lookForSelectablePosition(param0: number, param1: boolean): number;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public drawSelectorCompat(param0: android.graphics.Canvas): void;
 					public clearChildFocus(param0: android.view.View): void;
 					public positionSelectorLikeTouchCompat(param0: number, param1: android.view.View, param2: number, param3: number): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setSelector(param0: android.graphics.drawable.Drawable): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public updateSelectorStateCompat(): void;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public onGlobalLayout(): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public afterTextChanged(param0: android.text.Editable): void;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public beforeTextChanged(param0: string, param1: number, param2: number, param3: number): void;
 					public drawableStateChanged(): void;
 					public onFilterComplete(param0: number): void;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public setSelector(param0: number): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public measureHeightOfChildrenCompat(param0: number, param1: number, param2: number, param3: number, param4: number): number;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public positionSelectorLikeFocusCompat(param0: number, param1: android.view.View): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public dispatchDraw(param0: android.graphics.Canvas): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public touchModeDrawsInPressedStateCompat(): boolean;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -27490,6 +28937,8 @@ declare module android {
 					export class MenuDropDownListView extends android.support.v7.widget.DropDownListView {
 						public static class: java.lang.Class<android.support.v7.widget.MenuPopupWindow.MenuDropDownListView>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
@@ -27503,45 +28952,67 @@ declare module android {
 						public constructor(param0: android.content.Context);
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 						public showContextMenuForChild(param0: android.view.View): boolean;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
 						public onFilterComplete(param0: number): void;
 						public onHoverEvent(param0: android.view.MotionEvent): boolean;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public beforeTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
 						public removeView(param0: android.view.View): void;
 						public afterTextChanged(param0: android.text.Editable): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public onGlobalLayout(): void;
 						public onTouchModeChanged(param0: boolean): void;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 						public childDrawableStateChanged(param0: android.view.View): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 						public constructor(param0: android.content.Context, param1: boolean);
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public clearSelection(): void;
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 						public requestFitSystemWindows(): void;
 						public clearChildFocus(param0: android.view.View): void;
 						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 						public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public bringChildToFront(param0: android.view.View): void;
 						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 				}
 			}
@@ -27680,25 +29151,25 @@ declare module android {
 			export module widget {
 				export class PositionMap<E>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v7.widget.PositionMap<any>>;
-					public get(param0: number, param1: any): E;
 					public keyAt(param0: number): number;
 					public insertKeyRange(param0: number, param1: number): void;
 					public indexOfValue(param0: E): number;
+					public setValueAt(param0: number, param1: E): void;
 					public get(param0: number): E;
 					public valueAt(param0: number): E;
-					public put(param0: number, param1: any): void;
+					public removeKeyRange(param0: java.util.ArrayList<E>, param1: number, param2: number): void;
 					public size(): number;
 					public clone(): android.support.v7.widget.PositionMap<E>;
 					public removeAtRange(param0: number, param1: number): void;
-					public append(param0: number, param1: any): void;
+					public append(param0: number, param1: E): void;
+					public put(param0: number, param1: E): void;
 					public toString(): string;
 					public clone(): any;
-					public removeKeyRange(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public delete(param0: number): void;
-					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
+					public get(param0: number, param1: E): E;
 					public indexOfKey(param0: number): number;
 				}
 				export module PositionMap {
@@ -27727,8 +29198,10 @@ declare module android {
 					public static SCROLL_STATE_IDLE: number;
 					public static SCROLL_STATE_DRAGGING: number;
 					public static SCROLL_STATE_SETTLING: number;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public onDraw(param0: android.graphics.Canvas): void;
 					public getChildDrawingOrder(param0: number, param1: number): number;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
@@ -27736,6 +29209,7 @@ declare module android {
 					public addItemDecoration(param0: android.support.v7.widget.RecyclerView.ItemDecoration): void;
 					public getChildAdapterPosition(param0: android.view.View): number;
 					public scrollToPosition(param0: number): void;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public removeItemDecoration(param0: android.support.v7.widget.RecyclerView.ItemDecoration): void;
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>, param4: number): boolean;
@@ -27745,6 +29219,7 @@ declare module android {
 					public computeHorizontalScrollExtent(): number;
 					public smoothScrollBy(param0: number, param1: number, param2: android.view.animation.Interpolator): void;
 					public getMinFlingVelocity(): number;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public setAdapter(param0: android.support.v7.widget.RecyclerView.Adapter<any>): void;
 					public getAdapter(): android.support.v7.widget.RecyclerView.Adapter<any>;
 					public removeOnChildAttachStateChangeListener(param0: android.support.v7.widget.RecyclerView.OnChildAttachStateChangeListener): void;
@@ -27753,16 +29228,17 @@ declare module android {
 					public offsetChildrenHorizontal(param0: number): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public isComputingLayout(): boolean;
+					public getLayoutDirection(): number;
 					public addItemDecoration(param0: android.support.v7.widget.RecyclerView.ItemDecoration, param1: number): void;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public onChildAttachedToWindow(param0: android.view.View): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public removeDetachedView(param0: android.view.View, param1: boolean): void;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public offsetChildrenVertical(param0: number): void;
 					public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
 					public getPreserveFocusAfterLayout(): boolean;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public setScrollingTouchSlop(param0: number): void;
 					public scrollTo(param0: number, param1: number): void;
@@ -27771,11 +29247,14 @@ declare module android {
 					public getRecycledViewPool(): android.support.v7.widget.RecyclerView.RecycledViewPool;
 					public onInterceptTouchEvent(param0: android.view.MotionEvent): boolean;
 					public removeOnItemTouchListener(param0: android.support.v7.widget.RecyclerView.OnItemTouchListener): void;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public invalidateItemDecorations(): void;
 					public isAnimating(): boolean;
 					public getChildItemId(param0: android.view.View): number;
 					public stopNestedScroll(param0: number): void;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public onRequestFocusInDescendants(param0: number, param1: android.graphics.Rect): boolean;
 					public findViewHolderForLayoutPosition(param0: number): android.support.v7.widget.RecyclerView.ViewHolder;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
@@ -27793,10 +29272,13 @@ declare module android {
 					public getClipToPadding(): boolean;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public getItemAnimator(): android.support.v7.widget.RecyclerView.ItemAnimator;
 					public removeItemDecorationAt(param0: number): void;
 					public computeVerticalScrollRange(): number;
+					public getTextAlignment(): number;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public onScrolled(param0: number, param1: number): void;
 					public setItemAnimator(param0: android.support.v7.widget.RecyclerView.ItemAnimator): void;
@@ -27816,15 +29298,18 @@ declare module android {
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public getScrollState(): number;
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public computeHorizontalScrollRange(): number;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
 					public setAccessibilityDelegateCompat(param0: android.support.v7.widget.RecyclerViewAccessibilityDelegate): void;
 					public findViewHolderForItemId(param0: number): android.support.v7.widget.RecyclerView.ViewHolder;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public swapAdapter(param0: android.support.v7.widget.RecyclerView.Adapter<any>, param1: boolean): void;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
+					public isLayoutDirectionResolved(): boolean;
 					public setItemViewCacheSize(param0: number): void;
 					public computeVerticalScrollExtent(): number;
 					public setChildDrawingOrderCallback(param0: android.support.v7.widget.RecyclerView.ChildDrawingOrderCallback): void;
@@ -27832,6 +29317,7 @@ declare module android {
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public onScrollStateChanged(param0: number): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public getCompatAccessibilityDelegate(): android.support.v7.widget.RecyclerViewAccessibilityDelegate;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public getLayoutManager(): android.support.v7.widget.RecyclerView.LayoutManager;
@@ -27841,29 +29327,38 @@ declare module android {
 					public setLayoutFrozen(param0: boolean): void;
 					public clearOnChildAttachStateChangeListeners(): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public setLayoutManager(param0: android.support.v7.widget.RecyclerView.LayoutManager): void;
 					public requestFitSystemWindows(): void;
 					public findViewHolderForAdapterPosition(param0: number): android.support.v7.widget.RecyclerView.ViewHolder;
 					public dispatchSaveInstanceState(param0: android.util.SparseArray<android.os.Parcelable>): void;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onSaveInstanceState(): android.os.Parcelable;
 					public isAttachedToWindow(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public scrollBy(param0: number, param1: number): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public getBaseline(): number;
 					public findChildViewUnder(param0: number, param1: number): android.view.View;
 					public clearOnScrollListeners(): void;
 					public addOnScrollListener(param0: android.support.v7.widget.RecyclerView.OnScrollListener): void;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public hasNestedScrollingParent(param0: number): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public setClipToPadding(param0: boolean): void;
 					public getDecoratedBoundsWithMargins(param0: android.view.View, param1: android.graphics.Rect): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public fling(param0: number, param1: number): boolean;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public getItemDecorationAt(param0: number): android.support.v7.widget.RecyclerView.ItemDecoration;
 					public draw(param0: android.graphics.Canvas): void;
+					public canResolveLayoutDirection(): boolean;
 					public findViewHolderForPosition(param0: number): android.support.v7.widget.RecyclerView.ViewHolder;
 					public removeView(param0: android.view.View): void;
 					public hasFixedSize(): boolean;
@@ -27900,8 +29395,9 @@ declare module android {
 						public setHasStableIds(param0: boolean): void;
 						public onViewRecycled(param0: VH): void;
 						public unregisterAdapterDataObserver(param0: android.support.v7.widget.RecyclerView.AdapterDataObserver): void;
+						public onBindViewHolder(param0: VH, param1: number, param2: java.util.List<any>): void;
 						public hasStableIds(): boolean;
-						public bindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
+						public onBindViewHolder(param0: VH, param1: number): void;
 						public onCreateViewHolder(param0: android.view.ViewGroup, param1: number): VH;
 						public getItemId(param0: number): number;
 						public notifyItemChanged(param0: number): void;
@@ -27911,10 +29407,8 @@ declare module android {
 						public constructor();
 						public hasObservers(): boolean;
 						public createViewHolder(param0: android.view.ViewGroup, param1: number): VH;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 						public getItemViewType(param0: number): number;
 						public notifyItemRangeChanged(param0: number, param1: number): void;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number, param2: java.util.List<any>): void;
 						public onFailedToRecycleView(param0: VH): boolean;
 						public notifyItemRangeRemoved(param0: number, param1: number): void;
 						public notifyItemChanged(param0: number, param1: any): void;
@@ -27925,6 +29419,7 @@ declare module android {
 						public getItemCount(): number;
 						public notifyItemRemoved(param0: number): void;
 						public registerAdapterDataObserver(param0: android.support.v7.widget.RecyclerView.AdapterDataObserver): void;
+						public bindViewHolder(param0: VH, param1: number): void;
 					}
 					export class AdapterDataObservable extends android.database.Observable<android.support.v7.widget.RecyclerView.AdapterDataObserver> {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.AdapterDataObservable>;
@@ -27964,7 +29459,6 @@ declare module android {
 						public static FLAG_MOVED: number;
 						public static FLAG_APPEARED_IN_PRE_LAYOUT: number;
 						public setMoveDuration(param0: number): void;
-						public recordPreLayoutInformation(param0: android.support.v7.widget.RecyclerView.State, param1: android.support.v7.widget.RecyclerView.ViewHolder, param2: number, param3: java.util.List<any>): android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo;
 						public animatePersistence(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo, param2: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo): boolean;
 						public dispatchAnimationStarted(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						public getMoveDuration(): number;
@@ -27983,6 +29477,7 @@ declare module android {
 						public getChangeDuration(): number;
 						public constructor();
 						public obtainHolderInfo(): android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo;
+						public recordPreLayoutInformation(param0: android.support.v7.widget.RecyclerView.State, param1: android.support.v7.widget.RecyclerView.ViewHolder, param2: number, param3: java.util.List<any>): android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo;
 						public dispatchAnimationFinished(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						public canReuseUpdatedViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder): boolean;
 						public endAnimation(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
@@ -27999,10 +29494,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$AdapterChanges interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -28121,7 +29616,6 @@ declare module android {
 						public startSmoothScroll(param0: android.support.v7.widget.RecyclerView.SmoothScroller): void;
 						public getLayoutDirection(): number;
 						public getPosition(param0: android.view.View): number;
-						public onAddFocusables(param0: android.support.v7.widget.RecyclerView, param1: java.util.ArrayList<any>, param2: number, param3: number): boolean;
 						public checkLayoutParams(param0: android.support.v7.widget.RecyclerView.LayoutParams): boolean;
 						public detachAndScrapViewAt(param0: number, param1: android.support.v7.widget.RecyclerView.Recycler): void;
 						public setMeasurementCacheEnabled(param0: boolean): void;
@@ -28146,6 +29640,7 @@ declare module android {
 						public layoutDecoratedWithMargins(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public onFocusSearchFailed(param0: android.view.View, param1: number, param2: android.support.v7.widget.RecyclerView.Recycler, param3: android.support.v7.widget.RecyclerView.State): android.view.View;
 						public onAdapterChanged(param0: android.support.v7.widget.RecyclerView.Adapter<any>, param1: android.support.v7.widget.RecyclerView.Adapter<any>): void;
+						public onAddFocusables(param0: android.support.v7.widget.RecyclerView, param1: java.util.ArrayList<android.view.View>, param2: number, param3: number): boolean;
 						public removeView(param0: android.view.View): void;
 						public detachAndScrapView(param0: android.view.View, param1: android.support.v7.widget.RecyclerView.Recycler): void;
 						public onInitializeAccessibilityNodeInfo(param0: android.support.v7.widget.RecyclerView.Recycler, param1: android.support.v7.widget.RecyclerView.State, param2: android.support.v4.view.accessibility.AccessibilityNodeInfoCompat): void;
@@ -28278,10 +29773,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$Orientation interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -28419,10 +29914,10 @@ declare module android {
 							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$State$LayoutState interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								annotationType(): java.lang.Class<any>;
 								equals(param0: any): boolean;
 								hashCode(): number;
 								toString(): string;
+								annotationType(): java.lang.Class<any>;
 							});
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
@@ -28525,12 +30020,14 @@ declare module android {
 					public getXml(param0: number): android.content.res.XmlResourceParser;
 					public getQuantityText(param0: number, param1: number): string;
 					public getDrawable(param0: number): android.graphics.drawable.Drawable;
+					public getColorStateList(param0: number, param1: android.content.res.Resources.Theme): android.content.res.ColorStateList;
 					public getDisplayMetrics(): android.util.DisplayMetrics;
 					public getDrawableForDensity(param0: number, param1: number): android.graphics.drawable.Drawable;
 					public openRawResource(param0: number): java.io.InputStream;
 					public constructor(param0: android.content.res.Resources);
 					public getString(param0: number): string;
 					public getConfiguration(): android.content.res.Configuration;
+					public getColor(param0: number, param1: android.content.res.Resources.Theme): number;
 					public getAnimation(param0: number): android.content.res.XmlResourceParser;
 					public parseBundleExtras(param0: android.content.res.XmlResourceParser, param1: android.os.Bundle): void;
 					public getResourceEntryName(param0: number): string;
@@ -28591,22 +30088,31 @@ declare module android {
 					public static class: java.lang.Class<android.support.v7.widget.ScrollingTabContainerView>;
 					public mVisibilityAnim: android.view.ViewPropertyAnimator;
 					public mVisAnimListener: android.support.v7.widget.ScrollingTabContainerView.VisibilityAnimListener;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public addTab(param0: android.support.v7.app.ActionBar.Tab, param1: number, param2: boolean): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
+					public isTextDirectionResolved(): boolean;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
+					public isLayoutDirectionResolved(): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setTabSelected(param0: number): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addTab(param0: android.support.v7.app.ActionBar.Tab, param1: boolean): void;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public setAllowCollapse(param0: boolean): void;
@@ -28614,28 +30120,42 @@ declare module android {
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setContentHeight(param0: number): void;
 					public animateToVisibility(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public requestFitSystemWindows(): void;
 					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isTextAlignmentResolved(): boolean;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public onNothingSelected(param0: android.widget.AdapterView<any>): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
 					public onDetachedFromWindow(): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public canResolveLayoutDirection(): boolean;
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 					public removeView(param0: android.view.View): void;
+					public getTextAlignment(): number;
 					public animateToTab(param0: number): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
@@ -28650,6 +30170,7 @@ declare module android {
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public removeAllTabs(): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 				}
 				export module ScrollingTabContainerView {
 					export class TabAdapter extends android.widget.BaseAdapter {
@@ -28669,6 +30190,8 @@ declare module android {
 					export class TabView extends android.support.v7.widget.LinearLayoutCompat {
 						public static class: java.lang.Class<android.support.v7.widget.ScrollingTabContainerView.TabView>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
+						public onStopNestedScroll(param0: android.view.View): void;
 						public getParentForAccessibility(): android.view.ViewParent;
 						public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
 						public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
@@ -28681,37 +30204,57 @@ declare module android {
 						public constructor(param0: android.content.Context);
 						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
 						public recomputeViewAttributes(param0: android.view.View): void;
+						public isTextAlignmentResolved(): boolean;
 						public addView(param0: android.view.View, param1: number, param2: number): void;
 						public addView(param0: android.view.View): void;
+						public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 						public focusableViewAvailable(param0: android.view.View): void;
 						public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 						public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 						public onInitializeAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
 						public showContextMenuForChild(param0: android.view.View): boolean;
 						public onMeasure(param0: number, param1: number): void;
+						public getTextDirection(): number;
+						public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+						public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+						public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
 						public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+						public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 						public focusSearch(param0: number): android.view.View;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
+						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public getParent(): android.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
 						public getTab(): android.support.v7.app.ActionBar.Tab;
 						public removeView(param0: android.view.View): void;
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public requestLayout(): void;
+						public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+						public isTextDirectionResolved(): boolean;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
 						public childDrawableStateChanged(param0: android.view.View): void;
 						public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+						public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+						public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 						public setSelected(param0: boolean): void;
 						public update(): void;
+						public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public constructor(param0: android.support.v7.widget.ScrollingTabContainerView, param1: android.content.Context, param2: android.support.v7.app.ActionBar.Tab, param3: boolean);
+						public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 						public requestFitSystemWindows(): void;
 						public clearChildFocus(param0: android.view.View): void;
 						public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
+						public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+						public getTextAlignment(): number;
+						public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public bringChildToFront(param0: android.view.View): void;
 						public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 						public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
@@ -28719,14 +30262,20 @@ declare module android {
 						public bindTab(param0: android.support.v7.app.ActionBar.Tab): void;
 						public focusSearch(param0: android.view.View, param1: number): android.view.View;
 						public createContextMenu(param0: android.view.ContextMenu): void;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 					export class VisibilityAnimListener extends android.animation.AnimatorListenerAdapter {
 						public static class: java.lang.Class<android.support.v7.widget.ScrollingTabContainerView.VisibilityAnimListener>;
 						public constructor();
 						public constructor(param0: android.support.v7.widget.ScrollingTabContainerView);
+						public onAnimationResume(param0: android.animation.Animator): void;
+						public onAnimationPause(param0: android.animation.Animator): void;
 						public onAnimationEnd(param0: android.animation.Animator): void;
 						public onAnimationRepeat(param0: android.animation.Animator): void;
 						public onAnimationCancel(param0: android.animation.Animator): void;
+						public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
+						public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 						public onAnimationStart(param0: android.animation.Animator): void;
 						public withFinalVisibility(param0: android.view.ViewPropertyAnimator, param1: number): android.support.v7.widget.ScrollingTabContainerView.VisibilityAnimListener;
 					}
@@ -28742,83 +30291,107 @@ declare module android {
 			export module widget {
 				export class SearchView extends android.support.v7.widget.LinearLayoutCompat implements android.support.v7.view.CollapsibleActionView {
 					public static class: java.lang.Class<android.support.v7.widget.SearchView>;
-					public setQuery(param0: string, param1: boolean): void;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
-					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public setOnQueryTextListener(param0: android.support.v7.widget.SearchView.OnQueryTextListener): void;
-					public onActionViewCollapsed(): void;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
-					public isLayoutRequested(): boolean;
-					public onActionViewExpanded(): void;
-					public clearChildFocus(param0: android.view.View): void;
-					public setIconifiedByDefault(param0: boolean): void;
+					public isTextDirectionResolved(): boolean;
 					public showContextMenuForChild(param0: android.view.View): boolean;
 					public addView(param0: android.view.View, param1: number): void;
 					public setOnCloseListener(param0: android.support.v7.widget.SearchView.OnCloseListener): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
+					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
+					public getParentForAccessibility(): android.view.ViewParent;
+					public getSuggestionsAdapter(): android.support.v4.widget.CursorAdapter;
+					public setSearchableInfo(param0: android.app.SearchableInfo): void;
+					public createContextMenu(param0: android.view.ContextMenu): void;
+					public isIconfiedByDefault(): boolean;
+					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public setImeOptions(param0: number): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
+					public childDrawableStateChanged(param0: android.view.View): void;
+					public focusSearch(param0: number): android.view.View;
+					public getMaxWidth(): number;
+					public isTextAlignmentResolved(): boolean;
+					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
+					public requestFocus(): boolean;
+					public canResolveTextAlignment(): boolean;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public getQueryHint(): string;
+					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
+					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
+					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public sendAccessibilityEvent(param0: number): void;
+					public requestLayout(): void;
+					public onDetachedFromWindow(): void;
+					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
+					public onRestoreInstanceState(param0: android.os.Parcelable): void;
+					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
+					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
+					public constructor(param0: android.content.Context);
+					public isSubmitButtonEnabled(): boolean;
+					public focusSearch(param0: android.view.View, param1: number): android.view.View;
+					public setQuery(param0: string, param1: boolean): void;
+					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public onActionViewCollapsed(): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public isLayoutRequested(): boolean;
+					public onActionViewExpanded(): void;
+					public clearChildFocus(param0: android.view.View): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
+					public setIconifiedByDefault(param0: boolean): void;
+					public isLayoutDirectionResolved(): boolean;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setAppSearchData(param0: android.os.Bundle): void;
 					public bringChildToFront(param0: android.view.View): void;
 					public setMaxWidth(param0: number): void;
-					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setQueryRefinementEnabled(param0: boolean): void;
-					public getParentForAccessibility(): android.view.ViewParent;
-					public getSuggestionsAdapter(): android.support.v4.widget.CursorAdapter;
-					public setSearchableInfo(param0: android.app.SearchableInfo): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public addView(param0: android.view.View, param1: number, param2: number): void;
-					public createContextMenu(param0: android.view.ContextMenu): void;
-					public isIconfiedByDefault(): boolean;
 					public setInputType(param0: number): void;
-					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
-					public setImeOptions(param0: number): void;
-					public childDrawableStateChanged(param0: android.view.View): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public clearFocus(): void;
 					public onWindowFocusChanged(param0: boolean): void;
 					public requestFitSystemWindows(): void;
 					public isIconified(): boolean;
-					public focusSearch(param0: number): android.view.View;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public requestFocus(param0: number): boolean;
 					public isQueryRefinementEnabled(): boolean;
 					public onSaveInstanceState(): android.os.Parcelable;
-					public getMaxWidth(): number;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
-					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
-					public requestFocus(): boolean;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
 					public setOnQueryTextFocusChangeListener(param0: android.view.View.OnFocusChangeListener): void;
-					public getQueryHint(): string;
 					public setQueryHint(param0: string): void;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
-					public onKeyMultiple(param0: number, param1: number, param2: android.view.KeyEvent): boolean;
-					public requestChildRectangleOnScreen(param0: android.view.View, param1: android.graphics.Rect, param2: boolean): boolean;
 					public setSuggestionsAdapter(param0: android.support.v4.widget.CursorAdapter): void;
 					public getParent(): android.view.ViewParent;
-					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public setIconified(param0: boolean): void;
-					public sendAccessibilityEvent(param0: number): void;
-					public requestLayout(): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public requestFocus(param0: number, param1: android.graphics.Rect): boolean;
-					public onDetachedFromWindow(): void;
-					public onMeasure(param0: number, param1: number): void;
-					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
 					public setOnSearchClickListener(param0: android.view.View.OnClickListener): void;
+					public canResolveLayoutDirection(): boolean;
 					public removeView(param0: android.view.View): void;
 					public setSubmitButtonEnabled(param0: boolean): void;
-					public onRestoreInstanceState(param0: android.os.Parcelable): void;
-					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public setOnSuggestionListener(param0: android.support.v7.widget.SearchView.OnSuggestionListener): void;
 					public recomputeViewAttributes(param0: android.view.View): void;
 					public focusableViewAvailable(param0: android.view.View): void;
-					public unscheduleDrawable(param0: android.graphics.drawable.Drawable): void;
-					public constructor(param0: android.content.Context);
-					public isSubmitButtonEnabled(): boolean;
 					public addView(param0: android.view.View): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public getQuery(): string;
 					public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
@@ -28892,8 +30465,10 @@ declare module android {
 						public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 						public enoughToFilter(): boolean;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number, param4: android.content.res.Resources.Theme);
 						public setThreshold(param0: number): void;
 						public onFilterComplete(param0: number): void;
+						public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 						public onPreDraw(): boolean;
@@ -29221,6 +30796,7 @@ declare module android {
 					public setSwitchTypeface(param0: android.graphics.Typeface): void;
 					public onPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): void;
 					public setThumbTintList(param0: android.content.res.ColorStateList): void;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public getTextOff(): string;
 					public getTrackTintMode(): android.graphics.PorterDuff.Mode;
 					public getTrackTintList(): android.content.res.ColorStateList;
@@ -29312,6 +30888,7 @@ declare module android {
 						getItemViewType(param0: number): number;
 						getViewTypeCount(): number;
 						isEmpty(): boolean;
+						getAutofillOptions(): native.Array<string>;
 					});
 					public static NO_SELECTION: number;
 					public static IGNORE_ITEM_VIEW_TYPE: number;
@@ -29325,6 +30902,7 @@ declare module android {
 					public hasStableIds(): boolean;
 					public setDropDownViewTheme(param0: android.content.res.Resources.Theme): void;
 					public unregisterDataSetObserver(param0: android.database.DataSetObserver): void;
+					public getAutofillOptions(): native.Array<string>;
 					public getItemViewType(param0: number): number;
 					public registerDataSetObserver(param0: android.database.DataSetObserver): void;
 					public getItemId(param0: number): number;
@@ -29446,12 +31024,15 @@ declare module android {
 				export class Toolbar extends android.view.ViewGroup {
 					public static class: java.lang.Class<android.support.v7.widget.Toolbar>;
 					public getTitle(): string;
+					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback): android.view.ActionMode;
+					public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 					public invalidateChildInParent(param0: native.Array<number>, param1: android.graphics.Rect): android.view.ViewParent;
 					public getTitleMarginBottom(): number;
 					public getContentInsetLeft(): number;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.support.v7.widget.Toolbar.LayoutParams;
+					public isTextDirectionResolved(): boolean;
 					public setOverflowIcon(param0: android.graphics.drawable.Drawable): void;
 					public setOnMenuItemClickListener(param0: android.support.v7.widget.Toolbar.OnMenuItemClickListener): void;
 					public showContextMenuForChild(param0: android.view.View): boolean;
@@ -29460,25 +31041,31 @@ declare module android {
 					public hideOverflowMenu(): boolean;
 					public setMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.widget.ActionMenuPresenter): void;
 					public setCollapsible(param0: boolean): void;
+					public showContextMenuForChild(param0: android.view.View, param1: number, param2: number): boolean;
 					public canShowOverflowMenu(): boolean;
 					public getTitleMarginTop(): number;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
 					public setContentInsetsRelative(param0: number, param1: number): void;
 					public updateViewLayout(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
+					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public setTitle(param0: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setLogo(param0: android.graphics.drawable.Drawable): void;
+					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
 					public setSubtitleTextAppearance(param0: android.content.Context, param1: number): void;
 					public isOverflowMenuShowing(): boolean;
 					public focusSearch(param0: number): android.view.View;
 					public getContentInsetEnd(): number;
+					public isTextAlignmentResolved(): boolean;
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public getContentInsetRight(): number;
 					public setTitleMarginBottom(param0: number): void;
+					public canResolveTextAlignment(): boolean;
 					public setPopupTheme(param0: number): void;
+					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getPopupTheme(): number;
 					public setNavigationContentDescription(param0: number): void;
 					public getCurrentContentInsetStart(): number;
@@ -29498,7 +31085,10 @@ declare module android {
 					public onDetachedFromWindow(): void;
 					public onRtlPropertiesChanged(param0: number): void;
 					public onMeasure(param0: number, param1: number): void;
+					public keyboardNavigationClusterSearch(param0: android.view.View, param1: number): android.view.View;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public onNestedPrePerformAccessibilityAction(param0: android.view.View, param1: number, param2: android.os.Bundle): boolean;
+					public getTextAlignment(): number;
 					public setTitleTextColor(param0: number): void;
 					public onRestoreInstanceState(param0: android.os.Parcelable): void;
 					public invalidateChild(param0: android.view.View, param1: android.graphics.Rect): void;
@@ -29513,6 +31103,7 @@ declare module android {
 					public setContentInsetsAbsolute(param0: number, param1: number): void;
 					public setLogo(param0: number): void;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
+					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setTitle(param0: string): void;
 					public onHoverEvent(param0: android.view.MotionEvent): boolean;
 					public setLogoDescription(param0: number): void;
@@ -29522,7 +31113,9 @@ declare module android {
 					public clearChildFocus(param0: android.view.View): void;
 					public setContentInsetStartWithNavigation(param0: number): void;
 					public setTitleTextAppearance(param0: android.content.Context, param1: number): void;
+					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
+					public isLayoutDirectionResolved(): boolean;
 					public getNavigationIcon(): android.graphics.drawable.Drawable;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public setSubtitleTextColor(param0: number): void;
@@ -29532,29 +31125,38 @@ declare module android {
 					public bringChildToFront(param0: android.view.View): void;
 					public inflateMenu(param0: number): void;
 					public getContentInsetStartWithNavigation(): number;
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public getNavigationContentDescription(): string;
 					public addView(param0: android.view.View, param1: number, param2: number): void;
 					public isTitleTruncated(): boolean;
 					public setNavigationIcon(param0: android.graphics.drawable.Drawable): void;
 					public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
+					public getTextDirection(): number;
 					public hasExpandedActionView(): boolean;
 					public requestFitSystemWindows(): void;
 					public showOverflowMenu(): boolean;
+					public onNestedScrollAccepted(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public onSaveInstanceState(): android.os.Parcelable;
 					public setTitleMargin(param0: number, param1: number, param2: number, param3: number): void;
 					public getOverflowIcon(): android.graphics.drawable.Drawable;
 					public unscheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: android.view.View): void;
+					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public getCurrentContentInsetRight(): number;
 					public setMenuCallbacks(param0: android.support.v7.view.menu.MenuPresenter.Callback, param1: android.support.v7.view.menu.MenuBuilder.Callback): void;
+					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public canResolveTextDirection(): boolean;
 					public setSubtitle(param0: number): void;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
 					public getWrapper(): android.support.v7.widget.DecorToolbar;
 					public getParent(): android.view.ViewParent;
+					public childHasTransientStateChanged(param0: android.view.View, param1: boolean): void;
 					public scheduleDrawable(param0: android.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public onStopNestedScroll(param0: android.view.View): void;
 					public setTitleMarginStart(param0: number): void;
 					public generateDefaultLayoutParams(): android.support.v7.widget.Toolbar.LayoutParams;
+					public canResolveLayoutDirection(): boolean;
 					public dismissPopupMenus(): void;
 					public removeView(param0: android.view.View): void;
 					public collapseActionView(): void;
@@ -29762,6 +31364,7 @@ declare module android {
 				export class VectorEnabledTintResources extends android.content.res.Resources {
 					public static class: java.lang.Class<android.support.v7.widget.VectorEnabledTintResources>;
 					public static MAX_SDK_WHERE_REQUIRED: number;
+					public getDrawable(param0: number, param1: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 					public constructor(param0: android.content.res.AssetManager, param1: android.util.DisplayMetrics, param2: android.content.res.Configuration);
 					public getDrawable(param0: number): android.graphics.drawable.Drawable;
 					public static shouldBeUsed(): boolean;
@@ -29811,10 +31414,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v7.widget.ViewBoundsCheck$ViewBounds interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							annotationType(): java.lang.Class<any>;
 							equals(param0: any): boolean;
 							hashCode(): number;
 							toString(): string;
+							annotationType(): java.lang.Class<any>;
 						});
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -29884,6 +31487,7 @@ declare module android {
 					public draw(param0: android.graphics.Canvas): void;
 					public onMeasure(param0: number, param1: number): void;
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number);
+					public constructor(param0: android.content.Context, param1: android.util.AttributeSet, param2: number, param3: number);
 					public setLayoutInflater(param0: android.view.LayoutInflater): void;
 					public invalidateDrawable(param0: android.graphics.drawable.Drawable): void;
 					public getLayoutInflater(): android.view.LayoutInflater;
@@ -29969,6 +31573,7 @@ declare module android {
 							public static makeMovementFlags(param0: number, param1: number): number;
 							public getSwipeVelocityThreshold(param0: number): number;
 							public getMovementFlags(param0: android.support.v7.widget.RecyclerView, param1: android.support.v7.widget.RecyclerView.ViewHolder): number;
+							public chooseDropTarget(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: java.util.List<android.support.v7.widget.RecyclerView.ViewHolder>, param2: number, param3: number): android.support.v7.widget.RecyclerView.ViewHolder;
 							public onChildDraw(param0: android.graphics.Canvas, param1: android.support.v7.widget.RecyclerView, param2: android.support.v7.widget.RecyclerView.ViewHolder, param3: number, param4: number, param5: number, param6: boolean): void;
 							public getSwipeEscapeVelocity(param0: number): number;
 							public isItemViewSwipeEnabled(): boolean;
@@ -29978,7 +31583,6 @@ declare module android {
 							public onSelectedChanged(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 							public onSwiped(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 							public static getDefaultUIUtil(): android.support.v7.widget.helper.ItemTouchUIUtil;
-							public chooseDropTarget(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: java.util.List<any>, param2: number, param3: number): android.support.v7.widget.RecyclerView.ViewHolder;
 							public static makeFlag(param0: number, param1: number): number;
 							public getBoundingBoxMargin(): number;
 							public canDropOver(param0: android.support.v7.widget.RecyclerView, param1: android.support.v7.widget.RecyclerView.ViewHolder, param2: android.support.v7.widget.RecyclerView.ViewHolder): boolean;
@@ -29994,6 +31598,7 @@ declare module android {
 							public static class: java.lang.Class<android.support.v7.widget.helper.ItemTouchHelper.ItemTouchHelperGestureListener>;
 							public onFling(param0: android.view.MotionEvent, param1: android.view.MotionEvent, param2: number, param3: number): boolean;
 							public onDoubleTapEvent(param0: android.view.MotionEvent): boolean;
+							public onContextClick(param0: android.view.MotionEvent): boolean;
 							public onSingleTapUp(param0: android.view.MotionEvent): boolean;
 							public onScroll(param0: android.view.MotionEvent, param1: android.view.MotionEvent, param2: number, param3: number): boolean;
 							public onSingleTapConfirmed(param0: android.view.MotionEvent): boolean;
@@ -30007,10 +31612,12 @@ declare module android {
 							public mIsPendingCleanup: boolean;
 							public cancel(): void;
 							public setFraction(param0: number): void;
+							public onAnimationEnd(param0: android.animation.Animator, param1: boolean): void;
 							public setDuration(param0: number): void;
 							public start(): void;
 							public onAnimationEnd(param0: android.animation.Animator): void;
 							public onAnimationRepeat(param0: android.animation.Animator): void;
+							public onAnimationStart(param0: android.animation.Animator, param1: boolean): void;
 							public onAnimationCancel(param0: android.animation.Animator): void;
 							public onAnimationStart(param0: android.animation.Animator): void;
 							public update(): void;
@@ -30106,15 +31713,31 @@ declare module android {
 				export module util {
 					export abstract class SortedListAdapterCallback<T2>  extends android.support.v7.util.SortedList.Callback<any> {
 						public static class: java.lang.Class<android.support.v7.widget.util.SortedListAdapterCallback<any>>;
-						public constructor();
+						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public constructor(param0: android.support.v7.widget.RecyclerView.Adapter<any>);
+						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number): void;
 						public equals(param0: any): boolean;
+						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static reverseOrder(): java.util.Comparator<any>;
+						public reversed(): java.util.Comparator<any>;
+						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
 						public onRemoved(param0: number, param1: number): void;
-						public onInserted(param0: number, param1: number): void;
-						public onMoved(param0: number, param1: number): void;
-						public onChanged(param0: number, param1: number, param2: any): void;
+						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public constructor();
+						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public onMoved(param0: number, param1: number): void;
+						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public onInserted(param0: number, param1: number): void;
+						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public onChanged(param0: number, param1: number, param2: any): void;
+						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -30122,6 +31745,7 @@ declare module android {
 	}
 }
 
+//Generics information:
 //android.support.design.widget.BaseTransientBottomBar:1
 //android.support.design.widget.BaseTransientBottomBar.BaseCallback:1
 //android.support.design.widget.BottomSheetBehavior:1

@@ -1876,18 +1876,18 @@ declare module android {
 						public onCreateViewHolder(param0: android.view.ViewGroup, param1: number): android.support.design.internal.NavigationMenuPresenter.ViewHolder;
 						public onViewRecycled(param0: android.support.design.internal.NavigationMenuPresenter.ViewHolder): void;
 						public getItemViewType(param0: number): number;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 						public onCreateViewHolder(param0: android.view.ViewGroup, param1: number): any;
 						public createInstanceState(): android.os.Bundle;
 						public restoreInstanceState(param0: android.os.Bundle): void;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number, param2: java.util.List<any>): void;
 						public onViewRecycled(param0: any): void;
 						public setCheckedItem(param0: android.support.v7.view.menu.MenuItemImpl): void;
+						public onBindViewHolder(param0: any, param1: number, param2: java.util.List<any>): void;
 						public setUpdateSuspended(param0: boolean): void;
 						public getItemId(param0: number): number;
 						public getItemCount(): number;
 						public onBindViewHolder(param0: android.support.design.internal.NavigationMenuPresenter.ViewHolder, param1: number): void;
 						public update(): void;
+						public onBindViewHolder(param0: any, param1: number): void;
 					}
 					export class NavigationMenuHeaderItem extends java.lang.Object implements android.support.design.internal.NavigationMenuPresenter.NavigationMenuItem {
 						public static class: java.lang.Class<android.support.design.internal.NavigationMenuPresenter.NavigationMenuHeaderItem>;
@@ -2372,28 +2372,28 @@ declare module android {
 				export module AppBarLayout {
 					export class Behavior extends android.support.design.widget.HeaderBehavior<android.support.design.widget.AppBarLayout> {
 						public static class: java.lang.Class<android.support.design.widget.AppBarLayout.Behavior>;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
+						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 						public constructor();
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
-						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number): void;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
-						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
-						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
 						public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout): android.os.Parcelable;
 						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: number, param3: number, param4: number, param5: number): boolean;
 						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: number): boolean;
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number): boolean;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
+						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number): void;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any): android.os.Parcelable;
 						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 						public setDragCallback(param0: android.support.design.widget.AppBarLayout.Behavior.DragCallback): void;
 						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): void;
 						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.view.View, param3: number): void;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
+						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number, param3: number, param4: number, param5: number): boolean;
 						public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.os.Parcelable): void;
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): boolean;
 						public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.AppBarLayout, param2: android.os.Parcelable): void;
 					}
 					export module Behavior {
@@ -2467,6 +2467,7 @@ declare module android {
 						public constructor();
 						public layoutDependsOn(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): boolean;
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View): boolean;
+						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.graphics.Rect, param3: boolean): boolean;
 						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.graphics.Rect, param3: boolean): boolean;
 					}
 				}
@@ -2504,8 +2505,8 @@ declare module android {
 						public static DISMISS_EVENT_TIMEOUT: number;
 						public static DISMISS_EVENT_MANUAL: number;
 						public static DISMISS_EVENT_CONSECUTIVE: number;
-						public onDismissed(param0: any, param1: number): void;
 						public constructor();
+						public onDismissed(param0: B, param1: number): void;
 						public onShown(param0: B): void;
 					}
 					export module BaseCallback {
@@ -2797,22 +2798,22 @@ declare module android {
 					public setSkipCollapsed(param0: boolean): void;
 					public onTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.MotionEvent): boolean;
 					public onInterceptTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.MotionEvent): boolean;
-					public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number): boolean;
 					public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any): android.os.Parcelable;
-					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 					public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): void;
+					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 					public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.os.Parcelable): void;
+					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number): boolean;
 					public setPeekHeight(param0: number): void;
 					public getPeekHeight(): number;
-					public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number): void;
-					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
+					public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number): boolean;
+					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 					public static from(param0: android.view.View): android.support.design.widget.BottomSheetBehavior<any>;
-					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): boolean;
+					public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 					public constructor();
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
+					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 					public isHideable(): boolean;
-					public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
-					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
+					public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View, param3: number): void;
 					public setState(param0: number): void;
 					public getSkipCollapsed(): boolean;
 					public setHideable(param0: boolean): void;
@@ -2883,11 +2884,11 @@ declare module android {
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onSearchRequested(param0: any): boolean;
 					public onCreate(param0: android.os.Bundle): void;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public setContentView(param0: number): void;
@@ -3322,39 +3323,39 @@ declare module android {
 				export module CoordinatorLayout {
 					export abstract class Behavior<V>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.Behavior<any>>;
-						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): void;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.graphics.Rect): boolean;
-						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): void;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 						public onAttachedToLayoutParams(param0: android.support.design.widget.CoordinatorLayout.LayoutParams): void;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
-						public onNestedFling(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: boolean): boolean;
+						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number): void;
 						public onDetachedFromLayoutParams(): void;
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.MotionEvent): boolean;
+						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number): void;
 						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): void;
 						public onApplyWindowInsets(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.support.v4.view.WindowInsetsCompat): android.support.v4.view.WindowInsetsCompat;
-						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.graphics.Rect, param3: boolean): boolean;
+						public onRequestChildRectangleOnScreen(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.graphics.Rect, param3: boolean): boolean;
+						public onNestedScrollAccepted(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number, param5: number): void;
 						public constructor();
 						public onDependentViewRemoved(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): void;
-						public onStopNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number): void;
-						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
-						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
-						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
-						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number): boolean;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
+						public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: number, param3: number, param4: number, param5: number): boolean;
+						public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number): boolean;
 						public getScrimOpacity(param0: android.support.design.widget.CoordinatorLayout, param1: V): number;
 						public blocksInteractionBelow(param0: android.support.design.widget.CoordinatorLayout, param1: V): boolean;
+						public onNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: number, param6: number): void;
 						public static getTag(param0: android.view.View): any;
 						public onSaveInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: V): android.os.Parcelable;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public layoutDependsOn(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): boolean;
+						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 						public getScrimColor(param0: android.support.design.widget.CoordinatorLayout, param1: V): number;
 						public static setTag(param0: android.view.View, param1: any): void;
-						public onNestedPreFling(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: number, param4: number): boolean;
 						public onInterceptTouchEvent(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.MotionEvent): boolean;
+						public onNestedFling(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: boolean): boolean;
+						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: number): boolean;
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View): boolean;
+						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: android.view.View, param4: number, param5: number): boolean;
 						public onRestoreInstanceState(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.os.Parcelable): void;
-						public onStartNestedScroll(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: android.view.View, param3: android.view.View, param4: number): boolean;
 					}
 					export class DefaultBehavior extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.DefaultBehavior>;
@@ -3532,6 +3533,7 @@ declare module android {
 				export module FloatingActionButton {
 					export class Behavior extends android.support.design.widget.CoordinatorLayout.Behavior<android.support.design.widget.FloatingActionButton> {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButton.Behavior>;
+						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 						public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.view.View): boolean;
 						public constructor();
@@ -3539,7 +3541,6 @@ declare module android {
 						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.FloatingActionButton, param2: number): boolean;
 						public onAttachedToLayoutParams(param0: android.support.design.widget.CoordinatorLayout.LayoutParams): void;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.FloatingActionButton, param2: android.graphics.Rect): boolean;
-						public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: android.graphics.Rect): boolean;
 						public setAutoHideEnabled(param0: boolean): void;
 						public onDependentViewChanged(param0: android.support.design.widget.CoordinatorLayout, param1: android.support.design.widget.FloatingActionButton, param2: android.view.View): boolean;
@@ -3708,8 +3709,10 @@ declare module android {
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public setOverlayTop(param0: number): void;
 					public getOverlayTop(): number;
+					public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number, param3: number, param4: number, param5: number): boolean;
 					public onMeasureChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
 					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): void;
+					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): void;
 				}
 			}
 		}
@@ -4707,10 +4710,10 @@ declare module android {
 					public constructor();
 					public constructor(param0: android.content.Context, param1: android.util.AttributeSet);
 					public setTopAndBottomOffset(param0: number): boolean;
-					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): boolean;
 					public getLeftAndRightOffset(): number;
-					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: android.view.View, param2: number): void;
 					public setLeftAndRightOffset(param0: number): boolean;
+					public onLayoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): boolean;
+					public layoutChild(param0: android.support.design.widget.CoordinatorLayout, param1: any, param2: number): void;
 					public getTopAndBottomOffset(): number;
 				}
 			}
@@ -7437,12 +7440,12 @@ declare module android {
 					public onKeyLongPress(param0: number, param1: android.view.KeyEvent): boolean;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onSearchRequested(param0: any): boolean;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public startIntentSenderForResult(param0: android.content.IntentSender, param1: number, param2: android.content.Intent, param3: number, param4: number, param5: number, param6: android.os.Bundle): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -7486,12 +7489,12 @@ declare module android {
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onSearchRequested(param0: any): boolean;
 					public startActivityForResult(param0: android.content.Intent, param1: number): void;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public startIntentSenderForResult(param0: android.content.IntentSender, param1: number, param2: android.content.Intent, param3: number, param4: number, param5: number, param6: android.os.Bundle): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -7773,9 +7776,9 @@ declare module android {
 					public getLastCustomNonConfigurationInstance(): any;
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
 					public onStateNotSaved(): void;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onRetainCustomNonConfigurationInstance(): any;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public validateRequestPermissionsRequestCode(param0: number): void;
 					public onNewIntent(param0: android.content.Intent): void;
@@ -8491,8 +8494,8 @@ declare module android {
 			export module app {
 				export class FragmentTransition extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.app.FragmentTransition>;
-					public static calculatePopFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<any>, param2: boolean): void;
-					public static calculateFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<any>, param2: boolean): void;
+					public static calculatePopFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<android.support.v4.app.FragmentTransition.FragmentContainerTransition>, param2: boolean): void;
+					public static calculateFragments(param0: android.support.v4.app.BackStackRecord, param1: android.util.SparseArray<android.support.v4.app.FragmentTransition.FragmentContainerTransition>, param2: boolean): void;
 				}
 				export module FragmentTransition {
 					export class FragmentContainerTransition extends java.lang.Object {
@@ -8879,9 +8882,9 @@ declare module android {
 				export module LoaderManagerImpl {
 					export class LoaderInfo extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v4.app.LoaderManagerImpl.LoaderInfo>;
-						public constructor(param0: android.support.v4.app.LoaderManagerImpl, param1: number, param2: android.os.Bundle, param3: android.support.v4.app.LoaderManager.LoaderCallbacks<any>);
 						public onLoadCanceled(param0: android.support.v4.content.Loader<any>): void;
 						public onLoadComplete(param0: android.support.v4.content.Loader<any>, param1: any): void;
+						public constructor(param0: number, param1: android.os.Bundle, param2: android.support.v4.app.LoaderManager.LoaderCallbacks<any>);
 						public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 						public toString(): string;
 					}
@@ -9640,11 +9643,11 @@ declare module android {
 							 * Constructs a new instance of the android.support.v4.app.RemoteInputCompatBase$RemoteInput$Factory interface with the provided implementation.
 							 */
 							public constructor(implementation: {
-								build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<any>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
+								build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<string>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
 								newArray(param0: number): native.Array<android.support.v4.app.RemoteInputCompatBase.RemoteInput>;
 							});
 							public newArray(param0: number): native.Array<android.support.v4.app.RemoteInputCompatBase.RemoteInput>;
-							public build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<any>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
+							public build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<string>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
 						}
 					}
 				}
@@ -9825,11 +9828,11 @@ declare module android {
 					public onSearchRequested(param0: any): boolean;
 					public constructor();
 					public onCreate(param0: android.os.Bundle): void;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -10111,6 +10114,7 @@ declare module android {
 					public onCancelLoad(): boolean;
 					public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 					public deliverResult(param0: D): void;
+					public registerListener(param0: number, param1: android.support.v4.content.Loader.OnLoadCompleteListener<D>): void;
 					public reset(): void;
 					public unregisterOnLoadCanceledListener(param0: android.support.v4.content.Loader.OnLoadCanceledListener<D>): void;
 					public getId(): number;
@@ -10123,7 +10127,6 @@ declare module android {
 					public commitContentChanged(): void;
 					public constructor(param0: android.content.Context);
 					public startLoading(): void;
-					public registerListener(param0: number, param1: android.support.v4.content.Loader.OnLoadCompleteListener<any>): void;
 					public onStartLoading(): void;
 					public stopLoading(): void;
 					public onContentChanged(): void;
@@ -12489,8 +12492,8 @@ declare module android {
 					}
 					export class ResultWrapper extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi26.ResultWrapper>;
-						public sendResult(param0: java.util.List<any>, param1: number): void;
 						public detach(): void;
+						public sendResult(param0: java.util.List<android.os.Parcel>, param1: number): void;
 					}
 					export class ServiceCompatProxy extends java.lang.Object implements android.support.v4.media.MediaBrowserServiceCompatApi23.ServiceCompatProxy {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi26.ServiceCompatProxy>;
@@ -16373,23 +16376,23 @@ declare module android {
 			export module util {
 				export class LongSparseArray<E>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v4.util.LongSparseArray<any>>;
-					public get(param0: number, param1: any): E;
 					public clone(): android.support.v4.util.LongSparseArray<E>;
 					public keyAt(param0: number): number;
 					public indexOfValue(param0: E): number;
+					public setValueAt(param0: number, param1: E): void;
 					public get(param0: number): E;
 					public valueAt(param0: number): E;
-					public put(param0: number, param1: any): void;
 					public size(): number;
-					public append(param0: number, param1: any): void;
+					public append(param0: number, param1: E): void;
+					public put(param0: number, param1: E): void;
 					public toString(): string;
 					public clone(): any;
 					public constructor();
 					public delete(param0: number): void;
-					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
+					public get(param0: number, param1: E): E;
 					public constructor(param0: number);
 					public indexOfKey(param0: number): number;
 				}
@@ -16407,6 +16410,7 @@ declare module android {
 					public evictAll(): void;
 					public putCount(): number;
 					public evictionCount(): number;
+					public entryRemoved(param0: boolean, param1: K, param2: V, param3: V): void;
 					public size(): number;
 					public get(param0: K): V;
 					public trimToSize(param0: number): void;
@@ -16422,7 +16426,6 @@ declare module android {
 					public snapshot(): java.util.Map<K,V>;
 					public resize(param0: number): void;
 					public constructor(param0: number);
-					public entryRemoved(param0: boolean, param1: any, param2: any, param3: any): void;
 				}
 			}
 		}
@@ -16436,7 +16439,6 @@ declare module android {
 				export abstract class MapCollections<K, V>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v4.util.MapCollections<any,any>>;
 					public static containsAllHelper(param0: java.util.Map<any,any>, param1: java.util.Collection<any>): boolean;
-					public colSetValue(param0: number, param1: any): V;
 					public colGetSize(): number;
 					public colGetEntry(param0: number, param1: number): any;
 					public getValues(): java.util.Collection<V>;
@@ -16453,6 +16455,7 @@ declare module android {
 					public static retainAllHelper(param0: java.util.Map<any,any>, param1: java.util.Collection<any>): boolean;
 					public toArrayHelper(param0: number): native.Array<any>;
 					public colIndexOfKey(param0: any): number;
+					public colSetValue(param0: number, param1: V): V;
 				}
 				export module MapCollections {
 					export class ArrayIterator<T>  extends java.lang.Object{
@@ -16698,9 +16701,9 @@ declare module android {
 					public clear(): void;
 					public keyAt(param0: number): K;
 					public putAll(param0: android.support.v4.util.SimpleArrayMap<any,any>): void;
-					public setValueAt(param0: number, param1: any): V;
 					public hashCode(): number;
 					public constructor(param0: number);
+					public setValueAt(param0: number, param1: V): V;
 				}
 			}
 		}
@@ -16713,24 +16716,24 @@ declare module android {
 			export module util {
 				export class SparseArrayCompat<E>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v4.util.SparseArrayCompat<any>>;
-					public get(param0: number, param1: any): E;
 					public keyAt(param0: number): number;
 					public indexOfValue(param0: E): number;
+					public setValueAt(param0: number, param1: E): void;
 					public get(param0: number): E;
 					public valueAt(param0: number): E;
-					public put(param0: number, param1: any): void;
 					public size(): number;
 					public removeAtRange(param0: number, param1: number): void;
-					public append(param0: number, param1: any): void;
+					public append(param0: number, param1: E): void;
+					public put(param0: number, param1: E): void;
 					public toString(): string;
 					public clone(): any;
 					public constructor();
 					public clone(): android.support.v4.util.SparseArrayCompat<E>;
 					public delete(param0: number): void;
-					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
+					public get(param0: number, param1: E): E;
 					public constructor(param0: number);
 					public indexOfKey(param0: number): number;
 				}
@@ -18015,7 +18018,6 @@ declare module android {
 					public static setActivated(param0: android.view.View, param1: boolean): void;
 					public static getNextClusterForwardId(param0: android.view.View): number;
 					public static dispatchNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
-					public static addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<any>, param2: number): void;
 					public static getImportantForAccessibility(param0: android.view.View): number;
 					public static setRotationY(param0: android.view.View, param1: number): void;
 					public static setTooltipText(param0: android.view.View, param1: string): void;
@@ -18027,6 +18029,7 @@ declare module android {
 					public static combineMeasuredStates(param0: number, param1: number): number;
 					public static setX(param0: android.view.View, param1: number): void;
 					public static setPaddingRelative(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
+					public static addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<android.view.View>, param2: number): void;
 					public static isImportantForAutofill(param0: android.view.View): boolean;
 					public static setBackgroundTintMode(param0: android.view.View, param1: android.graphics.PorterDuff.Mode): void;
 					public static resolveSizeAndState(param0: number, param1: number, param2: number): number;
@@ -18368,7 +18371,6 @@ declare module android {
 					}
 					export class ViewCompatApi26Impl extends android.support.v4.view.ViewCompat.ViewCompatApi24Impl {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.ViewCompatApi26Impl>;
-						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<any>, param2: number): void;
 						public isImportantForAutofill(param0: android.view.View): boolean;
 						public setTooltipText(param0: android.view.View, param1: string): void;
 						public isKeyboardNavigationCluster(param0: android.view.View): boolean;
@@ -18381,6 +18383,7 @@ declare module android {
 						public restoreDefaultFocus(param0: android.view.View): boolean;
 						public setAutofillHints(param0: android.view.View, param1: native.Array<string>): void;
 						public setKeyboardNavigationCluster(param0: android.view.View, param1: boolean): void;
+						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<android.view.View>, param2: number): void;
 						public getImportantForAutofill(param0: android.view.View): number;
 						public keyboardNavigationClusterSearch(param0: android.view.View, param1: android.view.View, param2: number): android.view.View;
 					}
@@ -18412,7 +18415,6 @@ declare module android {
 						public getFitsSystemWindows(param0: android.view.View): boolean;
 						public keyboardNavigationClusterSearch(param0: android.view.View, param1: android.view.View, param2: number): android.view.View;
 						public isNestedScrollingEnabled(param0: android.view.View): boolean;
-						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<any>, param2: number): void;
 						public startNestedScroll(param0: android.view.View, param1: number): boolean;
 						public setNextClusterForwardId(param0: android.view.View, param1: number): void;
 						public setElevation(param0: android.view.View, param1: number): void;
@@ -18474,6 +18476,7 @@ declare module android {
 						public setHasTransientState(param0: android.view.View, param1: boolean): void;
 						public dispatchNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public setKeyboardNavigationCluster(param0: android.view.View, param1: boolean): void;
+						public addKeyboardNavigationClusters(param0: android.view.View, param1: java.util.Collection<android.view.View>, param2: number): void;
 						public setScrollIndicators(param0: android.view.View, param1: number, param2: number): void;
 						public getPaddingEnd(param0: android.view.View): number;
 						public setImportantForAccessibility(param0: android.view.View, param1: number): void;
@@ -18573,7 +18576,6 @@ declare module android {
 					public getParentForAccessibility(): android.view.ViewParent;
 					public setPageMarginDrawable(param0: number): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 					public childDrawableStateChanged(param0: android.view.View): void;
@@ -18620,6 +18622,7 @@ declare module android {
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
 					public setCurrentItem(param0: number): void;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
@@ -18627,7 +18630,6 @@ declare module android {
 					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
 					public isLayoutDirectionResolved(): boolean;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public arrowScroll(param0: number): boolean;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
@@ -18652,6 +18654,7 @@ declare module android {
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public verifyDrawable(param0: android.graphics.drawable.Drawable): boolean;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
 					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -19989,7 +19992,6 @@ declare module android {
 					public getLayoutDirection(): number;
 					public getParentForAccessibility(): android.view.ViewParent;
 					public createContextMenu(param0: android.view.ContextMenu): void;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public setDrawerLockMode(param0: number, param1: android.view.View): void;
 					public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
@@ -20034,13 +20036,13 @@ declare module android {
 					public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public setDrawerShadow(param0: number, param1: number): void;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
 					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
 					public isLayoutDirectionResolved(): boolean;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
 					public setDrawerShadow(param0: android.graphics.drawable.Drawable, param1: number): void;
 					public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 					public closeDrawer(param0: number): void;
@@ -20062,6 +20064,7 @@ declare module android {
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public isDrawerVisible(param0: android.view.View): boolean;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
 					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -20322,10 +20325,10 @@ declare module android {
 						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$CollectionAdapter interface with the provided implementation.
 						 */
 						public constructor(implementation: {
-							get(param0: any, param1: number): V;
+							get(param0: T, param1: number): V;
 							size(param0: T): number;
 						});
-						public get(param0: any, param1: number): V;
+						public get(param0: T, param1: number): V;
 						public size(param0: T): number;
 					}
 					export class SequentialComparator<T>  extends java.lang.Object{
@@ -21903,8 +21906,8 @@ declare module android {
 					public onAttachedToWindow(): void;
 					public setMessage(param0: string): void;
 					public setIcon(param0: android.graphics.drawable.Drawable): void;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
 					public onMenuItemSelected(param0: number, param1: android.view.MenuItem): boolean;
@@ -22021,9 +22024,9 @@ declare module android {
 					public setSupportProgressBarIndeterminateVisibility(param0: boolean): void;
 					public openOptionsMenu(): void;
 					public onConfigurationChanged(param0: android.content.res.Configuration): void;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public addContentView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public validateRequestPermissionsRequestCode(param0: number): void;
 					public findViewById(param0: number): android.view.View;
@@ -22236,7 +22239,6 @@ declare module android {
 					export class AppCompatWindowCallbackBase extends android.support.v7.view.WindowCallbackWrapper {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplBase.AppCompatWindowCallbackBase>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
@@ -22255,6 +22257,7 @@ declare module android {
 						public onContentChanged(): void;
 						public onPanelClosed(param0: number, param1: android.view.Menu): void;
 						public onDetachedFromWindow(): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -22282,7 +22285,6 @@ declare module android {
 					export class AppCompatWindowCallbackN extends android.support.v7.app.AppCompatDelegateImplV23.AppCompatWindowCallbackV23 {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplN.AppCompatWindowCallbackN>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
@@ -22301,6 +22303,7 @@ declare module android {
 						public onContentChanged(): void;
 						public onDetachedFromWindow(): void;
 						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -22354,7 +22357,6 @@ declare module android {
 					export class AppCompatWindowCallbackV14 extends android.support.v7.app.AppCompatDelegateImplBase.AppCompatWindowCallbackBase {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV14.AppCompatWindowCallbackV14>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
@@ -22373,6 +22375,7 @@ declare module android {
 						public onContentChanged(): void;
 						public onDetachedFromWindow(): void;
 						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -22403,7 +22406,6 @@ declare module android {
 					export class AppCompatWindowCallbackV23 extends android.support.v7.app.AppCompatDelegateImplV14.AppCompatWindowCallbackV14 {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegateImplV23.AppCompatWindowCallbackV23>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
@@ -22422,6 +22424,7 @@ declare module android {
 						public onContentChanged(): void;
 						public onDetachedFromWindow(): void;
 						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -22590,9 +22593,9 @@ declare module android {
 					public setTitle(param0: string): void;
 					public onAttachedToWindow(): void;
 					public getDelegate(): android.support.v7.app.AppCompatDelegate;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public addContentView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public findViewById(param0: number): android.view.View;
 					public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -22687,8 +22690,8 @@ declare module android {
 			export module app {
 				export class NavItemSelectedListener extends java.lang.Object implements android.widget.AdapterView.OnItemSelectedListener {
 					public static class: java.lang.Class<android.support.v7.app.NavItemSelectedListener>;
-					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					public onNothingSelected(param0: android.widget.AdapterView<any>): void;
+					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					public constructor(param0: android.support.v7.app.ActionBar.OnNavigationListener);
 				}
 			}
@@ -22800,7 +22803,6 @@ declare module android {
 					export class ToolbarCallbackWrapper extends android.support.v7.view.WindowCallbackWrapper {
 						public static class: java.lang.Class<android.support.v7.app.ToolbarActionBar.ToolbarCallbackWrapper>;
 						public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
-						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onPreparePanel(param0: number, param1: android.view.View, param2: android.view.Menu): boolean;
 						public onActionModeFinished(param0: android.view.ActionMode): void;
 						public onWindowAttributesChanged(param0: android.view.WindowManager.LayoutParams): void;
@@ -22821,6 +22823,7 @@ declare module android {
 						public onContentChanged(): void;
 						public onDetachedFromWindow(): void;
 						public onPanelClosed(param0: number, param1: android.view.Menu): void;
+						public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 						public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 						public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 						public dispatchTouchEvent(param0: android.view.MotionEvent): boolean;
@@ -23250,7 +23253,7 @@ declare module android {
 				export class AsyncListUtil<T>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v7.util.AsyncListUtil<any>>;
 					public refresh(): void;
-					public constructor(param0: java.lang.Class<any>, param1: number, param2: android.support.v7.util.AsyncListUtil.DataCallback<any>, param3: android.support.v7.util.AsyncListUtil.ViewCallback);
+					public constructor(param0: java.lang.Class<T>, param1: number, param2: android.support.v7.util.AsyncListUtil.DataCallback<T>, param3: android.support.v7.util.AsyncListUtil.ViewCallback);
 					public getItem(param0: number): T;
 					public getItemCount(): number;
 					public onRangeChanged(): void;
@@ -23259,9 +23262,9 @@ declare module android {
 					export abstract class DataCallback<T>  extends java.lang.Object{
 						public static class: java.lang.Class<android.support.v7.util.AsyncListUtil.DataCallback<any>>;
 						public constructor();
+						public recycleData(param0: native.Array<T>, param1: number): void;
 						public refreshData(): number;
-						public fillData(param0: native.Array<any>, param1: number, param2: number): void;
-						public recycleData(param0: native.Array<any>, param1: number): void;
+						public fillData(param0: native.Array<T>, param1: number, param2: number): void;
 						public getMaxCachedTiles(): number;
 					}
 					export abstract class ViewCallback extends java.lang.Object {
@@ -23405,7 +23408,6 @@ declare module android {
 					public remove(param0: T): boolean;
 					public addAll(param0: java.util.Collection<T>): void;
 					public removeItemAt(param0: number): T;
-					public updateItemAt(param0: number, param1: any): void;
 					public beginBatchedUpdates(): void;
 					public indexOf(param0: T): number;
 					public size(): number;
@@ -23413,10 +23415,11 @@ declare module android {
 					public recalculatePositionOfItemAt(param0: number): void;
 					public constructor(param0: java.lang.Class<T>, param1: android.support.v7.util.SortedList.Callback<T>);
 					public clear(): void;
-					public constructor(param0: java.lang.Class<any>, param1: android.support.v7.util.SortedList.Callback<any>, param2: number);
+					public addAll(param0: native.Array<T>, param1: boolean): void;
+					public updateItemAt(param0: number, param1: T): void;
 					public addAll(param0: native.Array<T>): void;
 					public endBatchedUpdates(): void;
-					public addAll(param0: native.Array<any>, param1: boolean): void;
+					public constructor(param0: java.lang.Class<T>, param1: android.support.v7.util.SortedList.Callback<T>, param2: number);
 					public add(param0: T): number;
 				}
 				export module SortedList {
@@ -23527,11 +23530,11 @@ declare module android {
 						 */
 						public constructor(implementation: {
 							updateItemCount(param0: number, param1: number): void;
-							addTile(param0: number, param1: android.support.v7.util.TileList.Tile<any>): void;
+							addTile(param0: number, param1: android.support.v7.util.TileList.Tile<T>): void;
 							removeTile(param0: number, param1: number): void;
 						});
+						public addTile(param0: number, param1: android.support.v7.util.TileList.Tile<T>): void;
 						public updateItemCount(param0: number, param1: number): void;
-						public addTile(param0: number, param1: android.support.v7.util.TileList.Tile<any>): void;
 						public removeTile(param0: number, param1: number): void;
 					}
 				}
@@ -23560,7 +23563,7 @@ declare module android {
 						public mItems: native.Array<T>;
 						public mStartPosition: number;
 						public mItemCount: number;
-						public constructor(param0: java.lang.Class<any>, param1: number);
+						public constructor(param0: java.lang.Class<T>, param1: number);
 					}
 				}
 			}
@@ -23824,11 +23827,11 @@ declare module android {
 					public onWindowStartingActionMode(param0: android.view.ActionMode.Callback): android.view.ActionMode;
 					public dispatchKeyEvent(param0: android.view.KeyEvent): boolean;
 					public onSearchRequested(param0: any): boolean;
-					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onDetachedFromWindow(): void;
 					public dispatchPopulateAccessibilityEvent(param0: android.view.accessibility.AccessibilityEvent): boolean;
 					public onCreatePanelView(param0: number): android.view.View;
 					public onActionModeFinished(param0: android.view.ActionMode): void;
+					public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: android.view.Menu, param2: number): void;
 					public onCreatePanelMenu(param0: number, param1: android.view.Menu): boolean;
 					public onActionModeStarted(param0: android.view.ActionMode): void;
 					public dispatchTrackballEvent(param0: android.view.MotionEvent): boolean;
@@ -24088,6 +24091,7 @@ declare module android {
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
 						public flagActionItems(): boolean;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public dismiss(): void;
 						public getListView(): android.widget.ListView;
 						public closeMenuOnSubMenuOpened(): boolean;
@@ -24102,7 +24106,6 @@ declare module android {
 						public setGravity(param0: number): void;
 						public setShowTitle(param0: boolean): void;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public getId(): number;
 						public onDismiss(): void;
 						public setAnchorView(param0: android.view.View): void;
@@ -24203,6 +24206,7 @@ declare module android {
 						public sendAccessibilityEventUnchecked(param0: android.view.accessibility.AccessibilityEvent): void;
 						public onDescendantInvalidated(param0: android.view.View, param1: android.view.View): void;
 						public isTextDirectionResolved(): boolean;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public requestChildFocus(param0: android.view.View, param1: android.view.View): void;
 						public addView(param0: android.view.View, param1: number): void;
 						public getChildVisibleRect(param0: android.view.View, param1: android.graphics.Rect, param2: android.graphics.Point): boolean;
@@ -24344,11 +24348,11 @@ declare module android {
 						public constructor(param0: android.content.Context, param1: number);
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public flagActionItems(): boolean;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
 						public onSubMenuSelected(param0: android.support.v7.view.menu.SubMenuBuilder): boolean;
 						public saveHierarchyState(param0: android.os.Bundle): void;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public setId(param0: number): void;
 						public getId(): number;
 						public onSaveInstanceState(): android.os.Parcelable;
@@ -24906,6 +24910,7 @@ declare module android {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuPopup>;
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public static shouldPreserveIconSpacing(param0: android.support.v7.view.menu.MenuBuilder): boolean;
 						public flagActionItems(): boolean;
 						public dismiss(): void;
@@ -24922,7 +24927,6 @@ declare module android {
 						public setShowTitle(param0: boolean): void;
 						public static toMenuAdapter(param0: android.widget.ListAdapter): android.support.v7.view.menu.MenuAdapter;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public getId(): number;
 						public setAnchorView(param0: android.view.View): void;
 						public setVerticalOffset(param0: number): void;
@@ -25176,6 +25180,7 @@ declare module android {
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
 						public flagActionItems(): boolean;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public dismiss(): void;
 						public getListView(): android.widget.ListView;
 						public onSubMenuSelected(param0: android.support.v7.view.menu.SubMenuBuilder): boolean;
@@ -25188,7 +25193,6 @@ declare module android {
 						public setGravity(param0: number): void;
 						public setShowTitle(param0: boolean): void;
 						public collapseItemActionView(param0: android.support.v7.view.menu.MenuBuilder, param1: android.support.v7.view.menu.MenuItemImpl): boolean;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public getId(): number;
 						public onDismiss(): void;
 						public setAnchorView(param0: android.view.View): void;
@@ -26303,9 +26307,9 @@ declare module android {
 					export class Callbacks extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener, android.view.View.OnClickListener, android.view.View.OnLongClickListener, android.widget.PopupWindow.OnDismissListener {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserView.Callbacks>;
 						public onDismiss(): void;
+						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 						public onLongClick(param0: android.view.View): boolean;
 						public onClick(param0: android.view.View): void;
-						public onItemClick(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					}
 					export class InnerLayout extends android.support.v7.widget.LinearLayoutCompat {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserView.InnerLayout>;
@@ -29147,25 +29151,25 @@ declare module android {
 			export module widget {
 				export class PositionMap<E>  extends java.lang.Object{
 					public static class: java.lang.Class<android.support.v7.widget.PositionMap<any>>;
-					public get(param0: number, param1: any): E;
 					public keyAt(param0: number): number;
 					public insertKeyRange(param0: number, param1: number): void;
 					public indexOfValue(param0: E): number;
+					public setValueAt(param0: number, param1: E): void;
 					public get(param0: number): E;
 					public valueAt(param0: number): E;
-					public put(param0: number, param1: any): void;
+					public removeKeyRange(param0: java.util.ArrayList<E>, param1: number, param2: number): void;
 					public size(): number;
 					public clone(): android.support.v7.widget.PositionMap<E>;
 					public removeAtRange(param0: number, param1: number): void;
-					public append(param0: number, param1: any): void;
+					public append(param0: number, param1: E): void;
+					public put(param0: number, param1: E): void;
 					public toString(): string;
 					public clone(): any;
-					public removeKeyRange(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public delete(param0: number): void;
-					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
+					public get(param0: number, param1: E): E;
 					public indexOfKey(param0: number): number;
 				}
 				export module PositionMap {
@@ -29230,7 +29234,6 @@ declare module android {
 					public onChildAttachedToWindow(param0: android.view.View): void;
 					public createContextMenu(param0: android.view.ContextMenu): void;
 					public removeDetachedView(param0: android.view.View, param1: boolean): void;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
 					public addView(param0: android.view.View, param1: android.view.ViewGroup.LayoutParams): void;
 					public offsetChildrenVertical(param0: number): void;
 					public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
@@ -29297,6 +29300,7 @@ declare module android {
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
 					public notifySubtreeAccessibilityStateChanged(param0: android.view.View, param1: android.view.View, param2: number): void;
 					public computeHorizontalScrollRange(): number;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number): void;
 					public isLayoutRequested(): boolean;
 					public onAttachedToWindow(): void;
 					public clearChildFocus(param0: android.view.View): void;
@@ -29306,7 +29310,6 @@ declare module android {
 					public swapAdapter(param0: android.support.v7.widget.RecyclerView.Adapter<any>, param1: boolean): void;
 					public generateLayoutParams(param0: android.util.AttributeSet): android.view.ViewGroup.LayoutParams;
 					public isLayoutDirectionResolved(): boolean;
-					public addFocusables(param0: java.util.ArrayList<any>, param1: number): void;
 					public setItemViewCacheSize(param0: number): void;
 					public computeVerticalScrollExtent(): number;
 					public setChildDrawingOrderCallback(param0: android.support.v7.widget.RecyclerView.ChildDrawingOrderCallback): void;
@@ -29341,6 +29344,7 @@ declare module android {
 					public findChildViewUnder(param0: number, param1: number): android.view.View;
 					public clearOnScrollListeners(): void;
 					public addOnScrollListener(param0: android.support.v7.widget.RecyclerView.OnScrollListener): void;
+					public addFocusables(param0: java.util.ArrayList<android.view.View>, param1: number, param2: number): void;
 					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
 					public requestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -29391,8 +29395,9 @@ declare module android {
 						public setHasStableIds(param0: boolean): void;
 						public onViewRecycled(param0: VH): void;
 						public unregisterAdapterDataObserver(param0: android.support.v7.widget.RecyclerView.AdapterDataObserver): void;
+						public onBindViewHolder(param0: VH, param1: number, param2: java.util.List<any>): void;
 						public hasStableIds(): boolean;
-						public bindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
+						public onBindViewHolder(param0: VH, param1: number): void;
 						public onCreateViewHolder(param0: android.view.ViewGroup, param1: number): VH;
 						public getItemId(param0: number): number;
 						public notifyItemChanged(param0: number): void;
@@ -29402,10 +29407,8 @@ declare module android {
 						public constructor();
 						public hasObservers(): boolean;
 						public createViewHolder(param0: android.view.ViewGroup, param1: number): VH;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 						public getItemViewType(param0: number): number;
 						public notifyItemRangeChanged(param0: number, param1: number): void;
-						public onBindViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number, param2: java.util.List<any>): void;
 						public onFailedToRecycleView(param0: VH): boolean;
 						public notifyItemRangeRemoved(param0: number, param1: number): void;
 						public notifyItemChanged(param0: number, param1: any): void;
@@ -29416,6 +29419,7 @@ declare module android {
 						public getItemCount(): number;
 						public notifyItemRemoved(param0: number): void;
 						public registerAdapterDataObserver(param0: android.support.v7.widget.RecyclerView.AdapterDataObserver): void;
+						public bindViewHolder(param0: VH, param1: number): void;
 					}
 					export class AdapterDataObservable extends android.database.Observable<android.support.v7.widget.RecyclerView.AdapterDataObserver> {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.AdapterDataObservable>;
@@ -29455,7 +29459,6 @@ declare module android {
 						public static FLAG_MOVED: number;
 						public static FLAG_APPEARED_IN_PRE_LAYOUT: number;
 						public setMoveDuration(param0: number): void;
-						public recordPreLayoutInformation(param0: android.support.v7.widget.RecyclerView.State, param1: android.support.v7.widget.RecyclerView.ViewHolder, param2: number, param3: java.util.List<any>): android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo;
 						public animatePersistence(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo, param2: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo): boolean;
 						public dispatchAnimationStarted(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						public getMoveDuration(): number;
@@ -29474,6 +29477,7 @@ declare module android {
 						public getChangeDuration(): number;
 						public constructor();
 						public obtainHolderInfo(): android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo;
+						public recordPreLayoutInformation(param0: android.support.v7.widget.RecyclerView.State, param1: android.support.v7.widget.RecyclerView.ViewHolder, param2: number, param3: java.util.List<any>): android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo;
 						public dispatchAnimationFinished(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						public canReuseUpdatedViewHolder(param0: android.support.v7.widget.RecyclerView.ViewHolder): boolean;
 						public endAnimation(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
@@ -29612,7 +29616,6 @@ declare module android {
 						public startSmoothScroll(param0: android.support.v7.widget.RecyclerView.SmoothScroller): void;
 						public getLayoutDirection(): number;
 						public getPosition(param0: android.view.View): number;
-						public onAddFocusables(param0: android.support.v7.widget.RecyclerView, param1: java.util.ArrayList<any>, param2: number, param3: number): boolean;
 						public checkLayoutParams(param0: android.support.v7.widget.RecyclerView.LayoutParams): boolean;
 						public detachAndScrapViewAt(param0: number, param1: android.support.v7.widget.RecyclerView.Recycler): void;
 						public setMeasurementCacheEnabled(param0: boolean): void;
@@ -29637,6 +29640,7 @@ declare module android {
 						public layoutDecoratedWithMargins(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public onFocusSearchFailed(param0: android.view.View, param1: number, param2: android.support.v7.widget.RecyclerView.Recycler, param3: android.support.v7.widget.RecyclerView.State): android.view.View;
 						public onAdapterChanged(param0: android.support.v7.widget.RecyclerView.Adapter<any>, param1: android.support.v7.widget.RecyclerView.Adapter<any>): void;
+						public onAddFocusables(param0: android.support.v7.widget.RecyclerView, param1: java.util.ArrayList<android.view.View>, param2: number, param3: number): boolean;
 						public removeView(param0: android.view.View): void;
 						public detachAndScrapView(param0: android.view.View, param1: android.support.v7.widget.RecyclerView.Recycler): void;
 						public onInitializeAccessibilityNodeInfo(param0: android.support.v7.widget.RecyclerView.Recycler, param1: android.support.v7.widget.RecyclerView.State, param2: android.support.v4.view.accessibility.AccessibilityNodeInfoCompat): void;
@@ -30130,7 +30134,6 @@ declare module android {
 					public onKeyDown(param0: number, param1: android.view.KeyEvent): boolean;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
 					public canResolveTextAlignment(): boolean;
-					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 					public onNestedScroll(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public canResolveTextDirection(): boolean;
 					public addView(param0: android.view.View, param1: number, param2: android.view.ViewGroup.LayoutParams): void;
@@ -30167,6 +30170,7 @@ declare module android {
 					public focusSearch(param0: android.view.View, param1: number): android.view.View;
 					public removeAllTabs(): void;
 					public requestSendAccessibilityEvent(param0: android.view.View, param1: android.view.accessibility.AccessibilityEvent): boolean;
+					public onItemSelected(param0: android.widget.AdapterView<any>, param1: android.view.View, param2: number, param3: number): void;
 				}
 				export module ScrollingTabContainerView {
 					export class TabAdapter extends android.widget.BaseAdapter {
@@ -31569,6 +31573,7 @@ declare module android {
 							public static makeMovementFlags(param0: number, param1: number): number;
 							public getSwipeVelocityThreshold(param0: number): number;
 							public getMovementFlags(param0: android.support.v7.widget.RecyclerView, param1: android.support.v7.widget.RecyclerView.ViewHolder): number;
+							public chooseDropTarget(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: java.util.List<android.support.v7.widget.RecyclerView.ViewHolder>, param2: number, param3: number): android.support.v7.widget.RecyclerView.ViewHolder;
 							public onChildDraw(param0: android.graphics.Canvas, param1: android.support.v7.widget.RecyclerView, param2: android.support.v7.widget.RecyclerView.ViewHolder, param3: number, param4: number, param5: number, param6: boolean): void;
 							public getSwipeEscapeVelocity(param0: number): number;
 							public isItemViewSwipeEnabled(): boolean;
@@ -31578,7 +31583,6 @@ declare module android {
 							public onSelectedChanged(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 							public onSwiped(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: number): void;
 							public static getDefaultUIUtil(): android.support.v7.widget.helper.ItemTouchUIUtil;
-							public chooseDropTarget(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: java.util.List<any>, param2: number, param3: number): android.support.v7.widget.RecyclerView.ViewHolder;
 							public static makeFlag(param0: number, param1: number): number;
 							public getBoundingBoxMargin(): number;
 							public canDropOver(param0: android.support.v7.widget.RecyclerView, param1: android.support.v7.widget.RecyclerView.ViewHolder, param2: android.support.v7.widget.RecyclerView.ViewHolder): boolean;
@@ -31741,6 +31745,7 @@ declare module android {
 	}
 }
 
+//Generics information:
 //android.support.design.widget.BaseTransientBottomBar:1
 //android.support.design.widget.BaseTransientBottomBar.BaseCallback:1
 //android.support.design.widget.BottomSheetBehavior:1
