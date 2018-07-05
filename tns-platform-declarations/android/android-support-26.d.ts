@@ -1,5 +1,4 @@
-/// <reference path="android-declarations.d.ts"/>
-
+// Android support version 27.0.1
 declare module android {
 	export module support {
 		export module annotation {
@@ -2062,7 +2061,7 @@ declare module android {
 	export module support {
 		export module design {
 			export module internal {
-				export class ParcelableSparseArray extends android.util.SparseArray<android.os.Parcelable> {
+				export class ParcelableSparseArray extends android.util.SparseArray<android.os.Parcelable> implements android.os.Parcelable  {
 					public static class: java.lang.Class<android.support.design.internal.ParcelableSparseArray>;
 					public static CREATOR: android.os.Parcelable.Creator<android.support.design.internal.ParcelableSparseArray>;
 					public constructor();
@@ -2480,7 +2479,7 @@ declare module android {
 	export module support {
 		export module design {
 			export module widget {
-				export abstract class BaseTransientBottomBar<B>  extends java.lang.Object{
+				export abstract class BaseTransientBottomBar<B>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar<any>>;
 					public static LENGTH_INDEFINITE: number;
 					public static LENGTH_SHORT: number;
@@ -2498,7 +2497,7 @@ declare module android {
 					public getContext(): android.content.Context;
 				}
 				export module BaseTransientBottomBar {
-					export abstract class BaseCallback<B>  extends java.lang.Object{
+					export abstract class BaseCallback<B>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.BaseCallback<any>>;
 						public static DISMISS_EVENT_SWIPE: number;
 						public static DISMISS_EVENT_ACTION: number;
@@ -3321,7 +3320,7 @@ declare module android {
 					public getDependents(param0: android.view.View): java.util.List<android.view.View>;
 				}
 				export module CoordinatorLayout {
-					export abstract class Behavior<V>  extends java.lang.Object{
+					export abstract class Behavior<V>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.Behavior<any>>;
 						public getInsetDodgeRect(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.graphics.Rect): boolean;
 						public onNestedPreScroll(param0: android.support.design.widget.CoordinatorLayout, param1: V, param2: android.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
@@ -3426,27 +3425,27 @@ declare module android {
 						public writeToParcel(param0: android.os.Parcel, param1: number): void;
 						public constructor(param0: android.os.Parcel, param1: java.lang.ClassLoader);
 					}
-					export class ViewElevationComparator extends java.lang.Object{
+					export class ViewElevationComparator extends java.util.Comparator<android.view.View> {
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.ViewElevationComparator>;
-						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* any*/): java.util.Comparator<any>;
 						public equals(param0: any): boolean;
-						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
-						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static comparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static reverseOrder(): java.util.Comparator<any>;
-						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/): java.util.Comparator<any>;
 						public compare(param0: android.view.View, param1: android.view.View): number;
-						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* any*/): java.util.Comparator<any>;
 						public reversed(): java.util.Comparator<any>;
 						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/): java.util.Comparator<any>;
 						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
 						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* any*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -3458,7 +3457,7 @@ declare module android {
 	export module support {
 		export module design {
 			export module widget {
-				export class DirectedAcyclicGraph<T>  extends java.lang.Object{
+				export class DirectedAcyclicGraph<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.design.widget.DirectedAcyclicGraph<any>>;
 				}
 			}
@@ -4992,7 +4991,7 @@ declare module android {
 					public static loadAnimator(param0: android.content.Context, param1: android.content.res.Resources, param2: android.content.res.Resources.Theme, param3: number, param4: number): android.animation.Animator;
 				}
 				export module AnimatorInflaterCompat {
-					export class PathDataEvaluator extends java.lang.Object{
+					export class PathDataEvaluator extends android.animation.TypeEvaluator<native.Array<android.support.v4.graphics.PathParser.PathDataNode>> {
 						public static class: java.lang.Class<android.support.graphics.drawable.AnimatorInflaterCompat.PathDataEvaluator>;
 						public evaluate(param0: number, param1: native.Array<android.support.v4.graphics.PathParser.PathDataNode>, param2: native.Array<android.support.v4.graphics.PathParser.PathDataNode>): native.Array<android.support.v4.graphics.PathParser.PathDataNode>;
 					}
@@ -5646,7 +5645,7 @@ declare module android {
 declare module android {
 	export module support {
 		export module transition {
-			export class FloatArrayEvaluator extends java.lang.Object{
+			export class FloatArrayEvaluator extends android.animation.TypeEvaluator<native.Array<number>> {
 				public static class: java.lang.Class<android.support.transition.FloatArrayEvaluator>;
 				public evaluate(param0: number, param1: native.Array<number>, param2: native.Array<number>): native.Array<number>;
 			}
@@ -5986,7 +5985,7 @@ declare module android {
 declare module android {
 	export module support {
 		export module transition {
-			export class RectEvaluator extends java.lang.Object{
+			export class RectEvaluator extends android.animation.TypeEvaluator<android.graphics.Rect> {
 				public static class: java.lang.Class<android.support.transition.RectEvaluator>;
 				public evaluate(param0: number, param1: android.graphics.Rect, param2: android.graphics.Rect): android.graphics.Rect;
 			}
@@ -6475,7 +6474,7 @@ declare module android {
 				public static class: java.lang.Class<android.support.transition.TransitionUtils>;
 			}
 			export module TransitionUtils {
-				export class MatrixEvaluator extends java.lang.Object{
+				export class MatrixEvaluator extends android.animation.TypeEvaluator<android.graphics.Matrix> {
 					public static class: java.lang.Class<android.support.transition.TransitionUtils.MatrixEvaluator>;
 					public evaluate(param0: number, param1: android.graphics.Matrix, param2: android.graphics.Matrix): android.graphics.Matrix;
 				}
@@ -7210,7 +7209,7 @@ declare module android {
 						});
 						public validateRequestPermissionsRequestCode(param0: number): void;
 					}
-					export class SharedElementCallback21Impl extends java.lang.Object{
+					export class SharedElementCallback21Impl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.ActivityCompat.SharedElementCallback21Impl>;
 						public mCallback: android.support.v4.app.SharedElementCallback;
 						public onCaptureSharedElementSnapshot(param0: android.view.View, param1: android.graphics.Matrix, param2: android.graphics.RectF): android.os.Parcelable;
@@ -8845,7 +8844,7 @@ declare module android {
 					public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				}
 				export module LoaderManager {
-					export class LoaderCallbacks<D>  extends java.lang.Object{
+					export class LoaderCallbacks<D>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.LoaderManager.LoaderCallbacks<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.app.LoaderManager$LoaderCallbacks interface with the provided implementation.
@@ -8880,7 +8879,7 @@ declare module android {
 					public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				}
 				export module LoaderManagerImpl {
-					export class LoaderInfo extends java.lang.Object{
+					export class LoaderInfo extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.LoaderManagerImpl.LoaderInfo>;
 						public onLoadCanceled(param0: android.support.v4.content.Loader<any>): void;
 						public onLoadComplete(param0: android.support.v4.content.Loader<any>, param1: any): void;
@@ -9872,7 +9871,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module app {
-				export class TaskStackBuilder extends java.lang.Object{
+				export class TaskStackBuilder extends java.lang.Iterable<android.content.Intent> {
 					public static class: java.lang.Class<android.support.v4.app.TaskStackBuilder>;
 					public iterator(): java.util.Iterator<android.content.Intent>;
 					public getPendingIntent(param0: number, param1: number, param2: android.os.Bundle): android.app.PendingIntent;
@@ -9892,7 +9891,7 @@ declare module android {
 					public addNextIntent(param0: android.content.Intent): android.support.v4.app.TaskStackBuilder;
 					public getIntentCount(): number;
 					public startActivities(): void;
-					public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
+					public forEach(param0: any /* any*/): void;
 				}
 				export module TaskStackBuilder {
 					export class SupportParentable extends java.lang.Object {
@@ -9938,7 +9937,7 @@ declare module android {
 					public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				}
 				export module AsyncTaskLoader {
-					export class LoadTask extends android.support.v4.content.ModernAsyncTask<java.lang.Void,java.lang.Void,any> {
+					export class LoadTask extends android.support.v4.content.ModernAsyncTask<java.lang.Void,java.lang.Void,any> implements java.lang.Runnable  {
 						public static class: java.lang.Class<android.support.v4.content.AsyncTaskLoader.LoadTask>;
 						public doInBackground(param0: native.Array<java.lang.Void>): any;
 						public run(): void;
@@ -10098,7 +10097,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module content {
-				export class Loader<D>  extends java.lang.Object{
+				export class Loader<D>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.content.Loader<any>>;
 					public rollbackContentChanged(): void;
 					public onStopLoading(): void;
@@ -10141,7 +10140,7 @@ declare module android {
 						public constructor(param0: android.os.Handler);
 						public constructor(param0: android.support.v4.content.Loader<any>);
 					}
-					export class OnLoadCanceledListener<D>  extends java.lang.Object{
+					export class OnLoadCanceledListener<D>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.content.Loader.OnLoadCanceledListener<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.content.Loader$OnLoadCanceledListener interface with the provided implementation.
@@ -10151,7 +10150,7 @@ declare module android {
 						});
 						public onLoadCanceled(param0: android.support.v4.content.Loader<D>): void;
 					}
-					export class OnLoadCompleteListener<D>  extends java.lang.Object{
+					export class OnLoadCompleteListener<D>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.content.Loader.OnLoadCompleteListener<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.content.Loader$OnLoadCompleteListener interface with the provided implementation.
@@ -10213,7 +10212,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module content {
-				export abstract class ModernAsyncTask<Params, Progress, Result>  extends java.lang.Object{
+				export abstract class ModernAsyncTask<Params, Progress, Result>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.content.ModernAsyncTask<any,any,any>>;
 					public static THREAD_POOL_EXECUTOR: java.util.concurrent.Executor;
 					public doInBackground(param0: native.Array<Params>): Result;
@@ -10234,7 +10233,7 @@ declare module android {
 					public onPostExecute(param0: Result): void;
 				}
 				export module ModernAsyncTask {
-					export class AsyncTaskResult<Data>  extends java.lang.Object{
+					export class AsyncTaskResult<Data>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.content.ModernAsyncTask.AsyncTaskResult<any>>;
 					}
 					export class InternalHandler extends android.os.Handler {
@@ -10250,7 +10249,7 @@ declare module android {
 						public static valueOf(param0: java.lang.Class<any>, param1: string): java.lang.Enum<any>;
 						public static values(): native.Array<android.support.v4.content.ModernAsyncTask.Status>;
 					}
-					export abstract class WorkerRunnable<Params, Result>  extends java.lang.Object{
+					export abstract class WorkerRunnable<Params, Result>  extends java.util.concurrent.Callable<any> {
 						public static class: java.lang.Class<android.support.v4.content.ModernAsyncTask.WorkerRunnable<any,any>>;
 						public call(): any;
 					}
@@ -10762,7 +10761,7 @@ declare module android {
 					public createFromResourcesFontFile(param0: android.content.Context, param1: android.content.res.Resources, param2: number, param3: string, param4: number): android.graphics.Typeface;
 				}
 				export module TypefaceCompatBaseImpl {
-					export class StyleExtractor<T>  extends java.lang.Object{
+					export class StyleExtractor<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.graphics.TypefaceCompatBaseImpl.StyleExtractor<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.graphics.TypefaceCompatBaseImpl$StyleExtractor interface with the provided implementation.
@@ -12045,7 +12044,7 @@ declare module android {
 						public onConnectionFailed(): void;
 						public onConnectionSuspended(): void;
 					}
-					export class ConnectionCallbackProxy<T>  extends java.lang.Object{
+					export class ConnectionCallbackProxy<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi21.ConnectionCallbackProxy<any>>;
 						public mConnectionCallback: any;
 						public constructor();
@@ -12071,7 +12070,7 @@ declare module android {
 						public onChildrenLoaded(param0: string, param1: java.util.List<any>): void;
 						public onError(param0: string): void;
 					}
-					export class SubscriptionCallbackProxy<T>  extends java.lang.Object{
+					export class SubscriptionCallbackProxy<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi21.SubscriptionCallbackProxy<any>>;
 						public mSubscriptionCallback: any;
 						public constructor();
@@ -12109,7 +12108,7 @@ declare module android {
 						public onItemLoaded(param0: android.os.Parcel): void;
 						public onError(param0: string): void;
 					}
-					export class ItemCallbackProxy<T>  extends java.lang.Object{
+					export class ItemCallbackProxy<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi23.ItemCallbackProxy<any>>;
 						public mItemCallback: any;
 						public constructor();
@@ -12323,7 +12322,7 @@ declare module android {
 						public onBind(param0: android.content.Intent): android.os.IBinder;
 						public getBrowserRootHints(): android.os.Bundle;
 					}
-					export class Result<T>  extends java.lang.Object{
+					export class Result<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompat.Result<any>>;
 						public sendResult(param0: T): void;
 						public sendError(param0: android.os.Bundle): void;
@@ -12409,14 +12408,14 @@ declare module android {
 					export class BrowserRoot extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot>;
 					}
-					export class MediaBrowserServiceAdaptor extends java.lang.Object{
+					export class MediaBrowserServiceAdaptor extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi21.MediaBrowserServiceAdaptor>;
 						public onGetRoot(param0: string, param1: number, param2: android.os.Bundle): any;
 						public onLoadChildren(param0: string, param1: any, param2: android.os.Bundle): void;
 						public onTrimMemory(param0: number): void;
 						public onLoadChildren(param0: string, param1: any): void;
 					}
-					export class ResultWrapper<T>  extends java.lang.Object{
+					export class ResultWrapper<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<any>>;
 						public sendResult(param0: T): void;
 						public detach(): void;
@@ -13843,7 +13842,7 @@ declare module android {
 							public onQueueChanged(param0: java.util.List<any>): void;
 							public onSessionDestroyed(): void;
 						}
-						export class CallbackProxy<T>  extends java.lang.Object{
+						export class CallbackProxy<T>  extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaControllerCompatApi21.CallbackProxy<any>>;
 							public mCallback: any;
 							public constructor();
@@ -14540,7 +14539,7 @@ declare module android {
 							public onSetRating(param0: any, param1: android.os.Bundle): void;
 							public onMediaButtonEvent(param0: android.content.Intent): boolean;
 						}
-						export class CallbackProxy<T>  extends java.lang.Object{
+						export class CallbackProxy<T>  extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi21.CallbackProxy<any>>;
 							public mCallback: any;
 							public constructor();
@@ -15390,11 +15389,11 @@ declare module android {
 					public static newCreator(param0: android.support.v4.os.ParcelableCompatCreatorCallbacks<any>): android.os.Parcelable.Creator<any>;
 				}
 				export module ParcelableCompat {
-					export class ParcelableCompatCreatorHoneycombMR2<T>  extends java.lang.Object{
+					export class ParcelableCompatCreatorHoneycombMR2<T>  extends android.os.Parcelable.ClassLoaderCreator<any> {
 						public static class: java.lang.Class<android.support.v4.os.ParcelableCompat.ParcelableCompatCreatorHoneycombMR2<any>>;
-						public createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): T;
-						public newArray(param0: number): native.Array<T>;
-						public createFromParcel(param0: android.os.Parcel): T;
+						public createFromParcel(param0: android.os.Parcel): any;
+						public createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): any;
+						public newArray(param0: number): native.Array<any>;
 					}
 				}
 			}
@@ -15406,7 +15405,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module os {
-				export class ParcelableCompatCreatorCallbacks<T>  extends java.lang.Object{
+				export class ParcelableCompatCreatorCallbacks<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.os.ParcelableCompatCreatorCallbacks<any>>;
 					/**
 					 * Constructs a new instance of the android.support.v4.os.ParcelableCompatCreatorCallbacks<any> interface with the provided implementation.
@@ -15888,7 +15887,7 @@ declare module android {
 					public constructor(param0: string, param1: number, param2: number);
 				}
 				export module SelfDestructiveThread {
-					export class ReplyCallback<T>  extends java.lang.Object{
+					export class ReplyCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.provider.SelfDestructiveThread.ReplyCallback<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.provider.SelfDestructiveThread$ReplyCallback interface with the provided implementation.
@@ -16154,15 +16153,15 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class ArrayMap<K, V>  extends android.support.v4.util.SimpleArrayMap<any,any> {
+				export class ArrayMap<K, V>  extends android.support.v4.util.SimpleArrayMap<any,any> implements java.util.Map<any,any>  {
 					public static class: java.lang.Class<android.support.v4.util.ArrayMap<any,any>>;
 					public replace(param0: any, param1: any): any;
 					public isEmpty(): boolean;
-					public computeIfPresent(param0: any, param1: any /* java.util.function.BiFunction<any,any,any>*/): any;
-					public forEach(param0: any /* java.util.function.BiConsumer<any,any>*/): void;
+					public computeIfPresent(param0: any, param1: any /* any<any,any,any>*/): any;
+					public forEach(param0: any /* any<any,any>*/): void;
 					public containsAll(param0: java.util.Collection<any>): boolean;
 					public size(): number;
-					public merge(param0: any, param1: any, param2: any /* java.util.function.BiFunction<any,any,any>*/): any;
+					public merge(param0: any, param1: any, param2: any /* any<any,any,any>*/): any;
 					public put(param0: any, param1: any): any;
 					public getOrDefault(param0: any, param1: any): any;
 					public putAll(param0: java.util.Map<any,any>): void;
@@ -16178,15 +16177,15 @@ declare module android {
 					public constructor(param0: number);
 					public removeAll(param0: java.util.Collection<any>): boolean;
 					public constructor(param0: android.support.v4.util.SimpleArrayMap<any,any>);
-					public computeIfAbsent(param0: any, param1: any /* java.util.function.Function<any,any>*/): any;
+					public computeIfAbsent(param0: any, param1: any /* any<any,any>*/): any;
 					public retainAll(param0: java.util.Collection<any>): boolean;
 					public values(): java.util.Collection<any>;
 					public equals(param0: any): boolean;
 					public containsKey(param0: any): boolean;
 					public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 					public putAll(param0: android.support.v4.util.SimpleArrayMap<any,any>): void;
-					public compute(param0: any, param1: any /* java.util.function.BiFunction<any,any,any>*/): any;
-					public replaceAll(param0: any /* java.util.function.BiFunction<any,any,any>*/): void;
+					public compute(param0: any, param1: any /* any<any,any,any>*/): any;
+					public replaceAll(param0: any /* any<any,any,any>*/): void;
 					public constructor(param0: android.support.v4.util.SimpleArrayMap<any,any>);
 					public get(param0: any): any;
 				}
@@ -16199,7 +16198,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class ArraySet<E>  extends java.lang.Object{
+				export class ArraySet<E>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.util.ArraySet<any>>;
 					public addAll(param0: java.util.Collection<any>): boolean;
 					public isEmpty(): boolean;
@@ -16221,7 +16220,7 @@ declare module android {
 					public removeAll(param0: android.support.v4.util.ArraySet<any>): boolean;
 					public constructor(param0: number);
 					public contains(param0: any): boolean;
-					public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+					public removeIf(param0: any /* any*/): boolean;
 					public constructor(param0: android.support.v4.util.ArraySet<E>);
 					public remove(param0: any): boolean;
 					public removeAll(param0: java.util.Collection<any>): boolean;
@@ -16234,7 +16233,7 @@ declare module android {
 					public equals(param0: any): boolean;
 					public add(param0: E): boolean;
 					public constructor(param0: java.util.Collection<E>);
-					public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
+					public forEach(param0: any /* any*/): void;
 					public stream(): java.util.stream.Stream<E>;
 				}
 			}
@@ -16266,7 +16265,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class CircularArray<E>  extends java.lang.Object{
+				export class CircularArray<E>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.util.CircularArray<any>>;
 					public popFirst(): E;
 					public getFirst(): E;
@@ -16374,25 +16373,25 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class LongSparseArray<E>  extends java.lang.Object{
+				export class LongSparseArray<E>  extends java.lang.Cloneable {
 					public static class: java.lang.Class<android.support.v4.util.LongSparseArray<any>>;
-					public clone(): android.support.v4.util.LongSparseArray<E>;
 					public keyAt(param0: number): number;
-					public indexOfValue(param0: E): number;
-					public setValueAt(param0: number, param1: E): void;
-					public get(param0: number): E;
-					public valueAt(param0: number): E;
+					public valueAt(param0: number): any;
+					public get(param0: number, param1: any): any;
+					public put(param0: number, param1: any): void;
 					public size(): number;
-					public append(param0: number, param1: E): void;
-					public put(param0: number, param1: E): void;
+					public append(param0: number, param1: any): void;
+					public clone(): android.support.v4.util.LongSparseArray<any>;
 					public toString(): string;
 					public clone(): any;
 					public constructor();
 					public delete(param0: number): void;
+					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
+					public get(param0: number): any;
+					public indexOfValue(param0: any): number;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
-					public get(param0: number, param1: E): E;
 					public constructor(param0: number);
 					public indexOfKey(param0: number): number;
 				}
@@ -16405,7 +16404,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class LruCache<K, V>  extends java.lang.Object{
+				export class LruCache<K, V>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.util.LruCache<any,any>>;
 					public evictAll(): void;
 					public putCount(): number;
@@ -16436,7 +16435,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export abstract class MapCollections<K, V>  extends java.lang.Object{
+				export abstract class MapCollections<K, V>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.util.MapCollections<any,any>>;
 					public static containsAllHelper(param0: java.util.Map<any,any>, param1: java.util.Collection<any>): boolean;
 					public colGetSize(): number;
@@ -16458,15 +16457,15 @@ declare module android {
 					public colSetValue(param0: number, param1: V): V;
 				}
 				export module MapCollections {
-					export class ArrayIterator<T>  extends java.lang.Object{
+					export class ArrayIterator<T>  extends java.util.Iterator<any> {
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.ArrayIterator<any>>;
+						public next(): any;
 						public hasNext(): boolean;
-						public next(): T;
 						public remove(): void;
 					}
-					export class EntrySet extends java.lang.Object{
+					export class EntrySet extends java.util.Set<java.util.Map.Entry<any,any>> {
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.EntrySet>;
-						public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
+						public forEach(param0: any /* any*/): void;
 						public iterator(): java.util.Iterator<java.util.Map.Entry<any,any>>;
 						public iterator(): java.util.Iterator<any>;
 						public contains(param0: any): boolean;
@@ -16480,7 +16479,7 @@ declare module android {
 						public toArray(param0: native.Array<any>): native.Array<any>;
 						public addAll(param0: java.util.Collection<any>): boolean;
 						public retainAll(param0: java.util.Collection<any>): boolean;
-						public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+						public removeIf(param0: any /* any*/): boolean;
 						public spliterator(): java.util.Spliterator<any>;
 						public isEmpty(): boolean;
 						public clear(): void;
@@ -16489,9 +16488,9 @@ declare module android {
 						public containsAll(param0: java.util.Collection<any>): boolean;
 						public toArray(): native.Array<any>;
 					}
-					export class KeySet extends java.lang.Object{
+					export class KeySet extends java.util.Set<any> {
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.KeySet>;
-						public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
+						public forEach(param0: any /* any*/): void;
 						public iterator(): java.util.Iterator<any>;
 						public add(param0: any): boolean;
 						public contains(param0: any): boolean;
@@ -16503,7 +16502,7 @@ declare module android {
 						public toArray(param0: native.Array<any>): native.Array<any>;
 						public addAll(param0: java.util.Collection<any>): boolean;
 						public retainAll(param0: java.util.Collection<any>): boolean;
-						public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+						public removeIf(param0: any /* any*/): boolean;
 						public spliterator(): java.util.Spliterator<any>;
 						public isEmpty(): boolean;
 						public clear(): void;
@@ -16512,7 +16511,7 @@ declare module android {
 						public containsAll(param0: java.util.Collection<any>): boolean;
 						public toArray(): native.Array<any>;
 					}
-					export class MapIterator extends java.lang.Object{
+					export class MapIterator extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.MapIterator>;
 						public next(): java.util.Map.Entry<any,any>;
 						public setValue(param0: any): any;
@@ -16528,9 +16527,9 @@ declare module android {
 						public static comparingByKey(): java.util.Comparator<any>;
 						public remove(): void;
 					}
-					export class ValuesCollection extends java.lang.Object{
+					export class ValuesCollection extends java.util.Collection<any> {
 						public static class: java.lang.Class<android.support.v4.util.MapCollections.ValuesCollection>;
-						public forEach(param0: any /* java.util.function.Consumer<any>*/): void;
+						public forEach(param0: any /* any*/): void;
 						public iterator(): java.util.Iterator<any>;
 						public add(param0: any): boolean;
 						public contains(param0: any): boolean;
@@ -16542,7 +16541,7 @@ declare module android {
 						public toArray(param0: native.Array<any>): native.Array<any>;
 						public addAll(param0: java.util.Collection<any>): boolean;
 						public retainAll(param0: java.util.Collection<any>): boolean;
-						public removeIf(param0: any /* java.util.function.Predicate<any>*/): boolean;
+						public removeIf(param0: any /* any*/): boolean;
 						public spliterator(): java.util.Spliterator<any>;
 						public isEmpty(): boolean;
 						public clear(): void;
@@ -16575,7 +16574,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class Pair<F, S>  extends java.lang.Object{
+				export class Pair<F, S>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.util.Pair<any,any>>;
 					public first: F;
 					public second: S;
@@ -16616,7 +16615,7 @@ declare module android {
 					public static class: java.lang.Class<android.support.v4.util.Pools>;
 				}
 				export module Pools {
-					export class Pool<T>  extends java.lang.Object{
+					export class Pool<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.util.Pools.Pool<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.util.Pools$Pool interface with the provided implementation.
@@ -16628,11 +16627,11 @@ declare module android {
 						public release(param0: T): boolean;
 						public acquire(): T;
 					}
-					export class SimplePool<T>  extends java.lang.Object{
+					export class SimplePool<T>  extends android.support.v4.util.Pools.Pool<any> {
 						public static class: java.lang.Class<android.support.v4.util.Pools.SimplePool<any>>;
-						public release(param0: T): boolean;
 						public constructor(param0: number);
-						public acquire(): T;
+						public release(param0: any): boolean;
+						public acquire(): any;
 					}
 					export class SynchronizedPool<T>  extends android.support.v4.util.Pools.SimplePool<any> {
 						public static class: java.lang.Class<android.support.v4.util.Pools.SynchronizedPool<any>>;
@@ -16681,7 +16680,7 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class SimpleArrayMap<K, V>  extends java.lang.Object{
+				export class SimpleArrayMap<K, V>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.util.SimpleArrayMap<any,any>>;
 					public isEmpty(): boolean;
 					public remove(param0: any): V;
@@ -16714,26 +16713,26 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module util {
-				export class SparseArrayCompat<E>  extends java.lang.Object{
+				export class SparseArrayCompat<E>  extends java.lang.Cloneable {
 					public static class: java.lang.Class<android.support.v4.util.SparseArrayCompat<any>>;
 					public keyAt(param0: number): number;
-					public indexOfValue(param0: E): number;
-					public setValueAt(param0: number, param1: E): void;
-					public get(param0: number): E;
-					public valueAt(param0: number): E;
+					public valueAt(param0: number): any;
+					public clone(): android.support.v4.util.SparseArrayCompat<any>;
+					public get(param0: number, param1: any): any;
+					public put(param0: number, param1: any): void;
 					public size(): number;
 					public removeAtRange(param0: number, param1: number): void;
-					public append(param0: number, param1: E): void;
-					public put(param0: number, param1: E): void;
+					public append(param0: number, param1: any): void;
 					public toString(): string;
 					public clone(): any;
 					public constructor();
-					public clone(): android.support.v4.util.SparseArrayCompat<E>;
 					public delete(param0: number): void;
+					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
+					public get(param0: number): any;
+					public indexOfValue(param0: any): number;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
-					public get(param0: number, param1: E): E;
 					public constructor(param0: number);
 					public indexOfKey(param0: number): number;
 				}
@@ -16911,13 +16910,16 @@ declare module android {
 	export module support {
 		export module v4 {
 			export module view {
-				export class GestureDetectorCompat extends java.lang.Object {
+				export class GestureDetectorCompat extends android.view.GestureDetector {
 					public static class: java.lang.Class<android.support.v4.view.GestureDetectorCompat>;
 					public onTouchEvent(param0: android.view.MotionEvent): boolean;
+					public constructor(param0: android.content.Context, param1: android.view.GestureDetector.OnGestureListener, param2: android.os.Handler, param3: boolean);
 					public isLongpressEnabled(): boolean;
 					public constructor(param0: android.content.Context, param1: android.view.GestureDetector.OnGestureListener, param2: android.os.Handler);
+					public constructor(param0: android.view.GestureDetector.OnGestureListener);
 					public setIsLongpressEnabled(param0: boolean): void;
 					public setOnDoubleTapListener(param0: android.view.GestureDetector.OnDoubleTapListener): void;
+					public constructor(param0: android.view.GestureDetector.OnGestureListener, param1: android.os.Handler);
 					public constructor(param0: android.content.Context, param1: android.view.GestureDetector.OnGestureListener);
 				}
 				export module GestureDetectorCompat {
@@ -18768,27 +18770,27 @@ declare module android {
 						public onPageScrolled(param0: number, param1: number, param2: number): void;
 						public onPageScrollStateChanged(param0: number): void;
 					}
-					export class ViewPositionComparator extends java.lang.Object{
+					export class ViewPositionComparator extends java.util.Comparator<android.view.View> {
 						public static class: java.lang.Class<android.support.v4.view.ViewPager.ViewPositionComparator>;
-						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* any*/): java.util.Comparator<any>;
 						public equals(param0: any): boolean;
-						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
-						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static comparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static reverseOrder(): java.util.Comparator<any>;
-						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/): java.util.Comparator<any>;
 						public compare(param0: android.view.View, param1: android.view.View): number;
-						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* any*/): java.util.Comparator<any>;
 						public reversed(): java.util.Comparator<any>;
 						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/): java.util.Comparator<any>;
 						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
 						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* any*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -20309,7 +20311,7 @@ declare module android {
 					public static findNextFocusInRelativeDirection(param0: any, param1: android.support.v4.widget.FocusStrategy.CollectionAdapter<any,any>, param2: android.support.v4.widget.FocusStrategy.BoundsAdapter<any>, param3: any, param4: number, param5: boolean, param6: boolean): any;
 				}
 				export module FocusStrategy {
-					export class BoundsAdapter<T>  extends java.lang.Object{
+					export class BoundsAdapter<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.FocusStrategy.BoundsAdapter<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$BoundsAdapter interface with the provided implementation.
@@ -20319,7 +20321,7 @@ declare module android {
 						});
 						public obtainBounds(param0: T, param1: android.graphics.Rect): void;
 					}
-					export class CollectionAdapter<T, V>  extends java.lang.Object{
+					export class CollectionAdapter<T, V>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.FocusStrategy.CollectionAdapter<any,any>>;
 						/**
 						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$CollectionAdapter interface with the provided implementation.
@@ -20331,26 +20333,26 @@ declare module android {
 						public get(param0: T, param1: number): V;
 						public size(param0: T): number;
 					}
-					export class SequentialComparator<T>  extends java.lang.Object{
+					export class SequentialComparator<T>  extends java.util.Comparator<any> {
 						public static class: java.lang.Class<android.support.v4.widget.FocusStrategy.SequentialComparator<any>>;
-						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<T>;
-						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<T>;
-						public compare(param0: T, param1: T): number;
+						public thenComparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* any*/): java.util.Comparator<any>;
 						public equals(param0: any): boolean;
-						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
-						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
-						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<T>;
+						public static comparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static reverseOrder(): java.util.Comparator<any>;
-						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public reversed(): java.util.Comparator<any>;
 						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<T>;
-						public reversed(): java.util.Comparator<T>;
+						public thenComparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/): java.util.Comparator<any>;
 						public static naturalOrder(): java.util.Comparator<any>;
-						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
+						public compare(param0: any, param1: any): number;
+						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* any*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -23250,7 +23252,7 @@ declare module android {
 	export module support {
 		export module v7 {
 			export module util {
-				export class AsyncListUtil<T>  extends java.lang.Object{
+				export class AsyncListUtil<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.util.AsyncListUtil<any>>;
 					public refresh(): void;
 					public constructor(param0: java.lang.Class<T>, param1: number, param2: android.support.v7.util.AsyncListUtil.DataCallback<T>, param3: android.support.v7.util.AsyncListUtil.ViewCallback);
@@ -23259,7 +23261,7 @@ declare module android {
 					public onRangeChanged(): void;
 				}
 				export module AsyncListUtil {
-					export abstract class DataCallback<T>  extends java.lang.Object{
+					export abstract class DataCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.AsyncListUtil.DataCallback<any>>;
 						public constructor();
 						public recycleData(param0: native.Array<T>, param1: number): void;
@@ -23373,10 +23375,10 @@ declare module android {
 	export module support {
 		export module v7 {
 			export module util {
-				export class MessageThreadUtil<T>  extends java.lang.Object{
+				export class MessageThreadUtil<T>  extends android.support.v7.util.ThreadUtil<any> {
 					public static class: java.lang.Class<android.support.v7.util.MessageThreadUtil<any>>;
-					public getBackgroundProxy(param0: android.support.v7.util.ThreadUtil.BackgroundCallback<T>): android.support.v7.util.ThreadUtil.BackgroundCallback<T>;
-					public getMainThreadProxy(param0: android.support.v7.util.ThreadUtil.MainThreadCallback<T>): android.support.v7.util.ThreadUtil.MainThreadCallback<T>;
+					public getBackgroundProxy(param0: android.support.v7.util.ThreadUtil.BackgroundCallback<any>): android.support.v7.util.ThreadUtil.BackgroundCallback<any>;
+					public getMainThreadProxy(param0: android.support.v7.util.ThreadUtil.MainThreadCallback<any>): android.support.v7.util.ThreadUtil.MainThreadCallback<any>;
 				}
 				export module MessageThreadUtil {
 					export class MessageQueue extends java.lang.Object {
@@ -23402,7 +23404,7 @@ declare module android {
 	export module support {
 		export module v7 {
 			export module util {
-				export class SortedList<T>  extends java.lang.Object{
+				export class SortedList<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.util.SortedList<any>>;
 					public static INVALID_POSITION: number;
 					public remove(param0: T): boolean;
@@ -23425,47 +23427,47 @@ declare module android {
 				export module SortedList {
 					export class BatchedCallback<T2>  extends android.support.v7.util.SortedList.Callback<any> {
 						public static class: java.lang.Class<android.support.v7.util.SortedList.BatchedCallback<any>>;
-						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public areContentsTheSame(param0: any, param1: any): boolean;
-						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* any*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number): void;
 						public equals(param0: any): boolean;
-						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
-						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static comparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static reverseOrder(): java.util.Comparator<any>;
 						public reversed(): java.util.Comparator<any>;
 						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public onRemoved(param0: number, param1: number): void;
 						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
 						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public constructor();
-						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public onMoved(param0: number, param1: number): void;
 						public constructor(param0: android.support.v7.util.SortedList.Callback<any>);
-						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/): java.util.Comparator<any>;
 						public areItemsTheSame(param0: any, param1: any): boolean;
-						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* any*/): java.util.Comparator<any>;
 						public onInserted(param0: number, param1: number): void;
 						public dispatchLastEvent(): void;
-						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number, param2: any): void;
-						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* any*/): java.util.Comparator<any>;
 					}
-					export abstract class Callback<T2>  extends java.lang.Object{
+					export abstract class Callback<T2>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.SortedList.Callback<any>>;
-						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* any*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number): void;
 						public equals(param0: any): boolean;
-						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
-						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static comparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static reverseOrder(): java.util.Comparator<any>;
 						public reversed(): java.util.Comparator<any>;
 						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public onRemoved(param0: number, param1: number): void;
 						public areItemsTheSame(param0: T2, param1: T2): boolean;
@@ -23474,15 +23476,15 @@ declare module android {
 						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public constructor();
 						public areContentsTheSame(param0: T2, param1: T2): boolean;
-						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public onMoved(param0: number, param1: number): void;
-						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
-						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* any*/): java.util.Comparator<any>;
 						public compare(param0: T2, param1: T2): number;
 						public onInserted(param0: number, param1: number): void;
-						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number, param2: any): void;
-						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* any*/): java.util.Comparator<any>;
 					}
 				}
 			}
@@ -23494,7 +23496,7 @@ declare module android {
 	export module support {
 		export module v7 {
 			export module util {
-				export class ThreadUtil<T>  extends java.lang.Object{
+				export class ThreadUtil<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.util.ThreadUtil<any>>;
 					/**
 					 * Constructs a new instance of the android.support.v7.util.ThreadUtil<any> interface with the provided implementation.
@@ -23507,7 +23509,7 @@ declare module android {
 					public getMainThreadProxy(param0: android.support.v7.util.ThreadUtil.MainThreadCallback<T>): android.support.v7.util.ThreadUtil.MainThreadCallback<T>;
 				}
 				export module ThreadUtil {
-					export class BackgroundCallback<T>  extends java.lang.Object{
+					export class BackgroundCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.ThreadUtil.BackgroundCallback<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v7.util.ThreadUtil$BackgroundCallback interface with the provided implementation.
@@ -23523,7 +23525,7 @@ declare module android {
 						public updateRange(param0: number, param1: number, param2: number, param3: number, param4: number): void;
 						public loadTile(param0: number, param1: number): void;
 					}
-					export class MainThreadCallback<T>  extends java.lang.Object{
+					export class MainThreadCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.ThreadUtil.MainThreadCallback<any>>;
 						/**
 						 * Constructs a new instance of the android.support.v7.util.ThreadUtil$MainThreadCallback interface with the provided implementation.
@@ -23547,7 +23549,7 @@ declare module android {
 	export module support {
 		export module v7 {
 			export module util {
-				export class TileList<T>  extends java.lang.Object{
+				export class TileList<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.util.TileList<any>>;
 					public removeAtPos(param0: number): android.support.v7.util.TileList.Tile<T>;
 					public getAtIndex(param0: number): android.support.v7.util.TileList.Tile<T>;
@@ -23558,7 +23560,7 @@ declare module android {
 					public getItemAt(param0: number): T;
 				}
 				export module TileList {
-					export class Tile<T>  extends java.lang.Object{
+					export class Tile<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.TileList.Tile<any>>;
 						public mItems: native.Array<T>;
 						public mStartPosition: number;
@@ -24071,7 +24073,7 @@ declare module android {
 		export module v7 {
 			export module view {
 				export module menu {
-					export class BaseWrapper<T>  extends java.lang.Object{
+					export class BaseWrapper<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.view.menu.BaseWrapper<any>>;
 						public getWrappedObject(): T;
 					}
@@ -24665,7 +24667,7 @@ declare module android {
 		export module v7 {
 			export module view {
 				export module menu {
-					export class MenuItemWrapperICS extends android.support.v7.view.menu.BaseMenuWrapper<android.support.v4.internal.view.SupportMenuItem> {
+					export class MenuItemWrapperICS extends android.support.v7.view.menu.BaseMenuWrapper<android.support.v4.internal.view.SupportMenuItem> implements android.view.MenuItem  {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuItemWrapperICS>;
 						public getGroupId(): number;
 						public setNumericShortcut(param0: string): android.view.MenuItem;
@@ -24802,12 +24804,12 @@ declare module android {
 							public startActionModeForChild(param0: android.view.View, param1: android.view.ActionMode.Callback, param2: number): android.view.ActionMode;
 							public onKeyUp(param0: number, param1: android.view.KeyEvent): boolean;
 						}
-						export class OnActionExpandListenerWrapper extends android.support.v7.view.menu.BaseWrapper<android.view.MenuItem.OnActionExpandListener> {
+						export class OnActionExpandListenerWrapper extends android.support.v7.view.menu.BaseWrapper<android.view.MenuItem.OnActionExpandListener> implements android.view.MenuItem.OnActionExpandListener  {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuItemWrapperICS.OnActionExpandListenerWrapper>;
 							public onMenuItemActionCollapse(param0: android.view.MenuItem): boolean;
 							public onMenuItemActionExpand(param0: android.view.MenuItem): boolean;
 						}
-						export class OnMenuItemClickListenerWrapper extends android.support.v7.view.menu.BaseWrapper<android.view.MenuItem.OnMenuItemClickListener> {
+						export class OnMenuItemClickListenerWrapper extends android.support.v7.view.menu.BaseWrapper<android.view.MenuItem.OnMenuItemClickListener> implements android.view.MenuItem.OnMenuItemClickListener  {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuItemWrapperICS.OnMenuItemClickListenerWrapper>;
 							public onMenuItemClick(param0: android.view.MenuItem): boolean;
 						}
@@ -25110,7 +25112,7 @@ declare module android {
 		export module v7 {
 			export module view {
 				export module menu {
-					export class MenuWrapperICS extends android.support.v7.view.menu.BaseMenuWrapper<android.support.v4.internal.view.SupportMenu> {
+					export class MenuWrapperICS extends android.support.v7.view.menu.BaseMenuWrapper<android.support.v4.internal.view.SupportMenu> implements android.view.Menu  {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuWrapperICS>;
 						public setQwertyMode(param0: boolean): void;
 						public add(param0: number, param1: number, param2: number, param3: string): android.view.MenuItem;
@@ -26134,7 +26136,7 @@ declare module android {
 						});
 						public setActivityChooserModel(param0: android.support.v7.widget.ActivityChooserModel): void;
 					}
-					export class ActivityResolveInfo extends java.lang.Object{
+					export class ActivityResolveInfo extends java.lang.Comparable<android.support.v7.widget.ActivityChooserModel.ActivityResolveInfo> {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserModel.ActivityResolveInfo>;
 						public resolveInfo: android.content.pm.ResolveInfo;
 						public weight: number;
@@ -29149,27 +29151,27 @@ declare module android {
 	export module support {
 		export module v7 {
 			export module widget {
-				export class PositionMap<E>  extends java.lang.Object{
+				export class PositionMap<E>  extends java.lang.Cloneable {
 					public static class: java.lang.Class<android.support.v7.widget.PositionMap<any>>;
 					public keyAt(param0: number): number;
+					public valueAt(param0: number): any;
 					public insertKeyRange(param0: number, param1: number): void;
-					public indexOfValue(param0: E): number;
-					public setValueAt(param0: number, param1: E): void;
-					public get(param0: number): E;
-					public valueAt(param0: number): E;
-					public removeKeyRange(param0: java.util.ArrayList<E>, param1: number, param2: number): void;
+					public get(param0: number, param1: any): any;
+					public put(param0: number, param1: any): void;
 					public size(): number;
-					public clone(): android.support.v7.widget.PositionMap<E>;
 					public removeAtRange(param0: number, param1: number): void;
-					public append(param0: number, param1: E): void;
-					public put(param0: number, param1: E): void;
+					public append(param0: number, param1: any): void;
 					public toString(): string;
 					public clone(): any;
 					public delete(param0: number): void;
+					public setValueAt(param0: number, param1: any): void;
 					public clear(): void;
+					public clone(): android.support.v7.widget.PositionMap<any>;
+					public get(param0: number): any;
+					public removeKeyRange(param0: java.util.ArrayList<any>, param1: number, param2: number): void;
+					public indexOfValue(param0: any): number;
 					public remove(param0: number): void;
 					public removeAt(param0: number): void;
-					public get(param0: number, param1: E): E;
 					public indexOfKey(param0: number): number;
 				}
 				export module PositionMap {
@@ -29388,7 +29390,7 @@ declare module android {
 					public removeOnScrollListener(param0: android.support.v7.widget.RecyclerView.OnScrollListener): void;
 				}
 				export module RecyclerView {
-					export abstract class Adapter<VH>  extends java.lang.Object{
+					export abstract class Adapter<VH>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.Adapter<any>>;
 						public notifyItemMoved(param0: number, param1: number): void;
 						public notifyItemRangeChanged(param0: number, param1: number, param2: any): void;
@@ -31713,31 +31715,31 @@ declare module android {
 				export module util {
 					export abstract class SortedListAdapterCallback<T2>  extends android.support.v7.util.SortedList.Callback<any> {
 						public static class: java.lang.Class<android.support.v7.widget.util.SortedListAdapterCallback<any>>;
-						public thenComparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public constructor(param0: android.support.v7.widget.RecyclerView.Adapter<any>);
-						public thenComparingLong(param0: any /* java.util.function.ToLongFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingLong(param0: any /* any*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number): void;
 						public equals(param0: any): boolean;
-						public static comparingInt(param0: any /* java.util.function.ToIntFunction*/): java.util.Comparator<any>;
-						public static comparingDouble(param0: any /* java.util.function.ToDoubleFunction*/): java.util.Comparator<any>;
+						public static comparingInt(param0: any /* any*/): java.util.Comparator<any>;
+						public static comparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public static reverseOrder(): java.util.Comparator<any>;
 						public reversed(): java.util.Comparator<any>;
 						public static nullsFirst(param0: java.util.Comparator<any>): java.util.Comparator<any>;
-						public thenComparingDouble(param0: any /* java.util.function.ToDoubleFunction<any>*/): java.util.Comparator<any>;
+						public thenComparingDouble(param0: any /* any*/): java.util.Comparator<any>;
 						public onRemoved(param0: number, param1: number): void;
 						public static nullsLast(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public static naturalOrder(): java.util.Comparator<any>;
 						public compare(param0: any, param1: any): number;
 						public thenComparing(param0: java.util.Comparator<any>): java.util.Comparator<any>;
 						public constructor();
-						public static comparing(param0: any /* java.util.function.Function*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/, param1: java.util.Comparator<any>): java.util.Comparator<any>;
 						public onMoved(param0: number, param1: number): void;
-						public static comparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
-						public thenComparingInt(param0: any /* java.util.function.ToIntFunction<any>*/): java.util.Comparator<any>;
+						public static comparing(param0: any /* any*/): java.util.Comparator<any>;
+						public thenComparingInt(param0: any /* any*/): java.util.Comparator<any>;
 						public onInserted(param0: number, param1: number): void;
-						public thenComparing(param0: any /* java.util.function.Function*/): java.util.Comparator<any>;
+						public thenComparing(param0: any /* any*/): java.util.Comparator<any>;
 						public onChanged(param0: number, param1: number, param2: any): void;
-						public static comparingLong(param0: any /* java.util.function.ToLongFunction*/): java.util.Comparator<any>;
+						public static comparingLong(param0: any /* any*/): java.util.Comparator<any>;
 					}
 				}
 			}

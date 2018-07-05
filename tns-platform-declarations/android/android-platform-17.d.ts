@@ -2262,7 +2262,7 @@ declare module android {
 
 declare module android {
 	export module accounts {
-		export class AccountManagerCallback<V>  extends java.lang.Object{
+		export class AccountManagerCallback<V>  extends java.lang.Object {
 			public static class: java.lang.Class<android.accounts.AccountManagerCallback<any>>;
 			/**
 			 * Constructs a new instance of the android.accounts.AccountManagerCallback<any> interface with the provided implementation.
@@ -2277,7 +2277,7 @@ declare module android {
 
 declare module android {
 	export module accounts {
-		export class AccountManagerFuture<V>  extends java.lang.Object{
+		export class AccountManagerFuture<V>  extends java.lang.Object {
 			public static class: java.lang.Class<android.accounts.AccountManagerFuture<any>>;
 			/**
 			 * Constructs a new instance of the android.accounts.AccountManagerFuture<any> interface with the provided implementation.
@@ -2507,7 +2507,7 @@ declare module android {
 
 declare module android {
 	export module animation {
-		export class FloatEvaluator extends java.lang.Object{
+		export class FloatEvaluator extends android.animation.TypeEvaluator<java.lang.Number> {
 			public static class: java.lang.Class<android.animation.FloatEvaluator>;
 			public evaluate(param0: number, param1: java.lang.Number, param2: java.lang.Number): java.lang.Float;
 			public constructor();
@@ -2517,7 +2517,7 @@ declare module android {
 
 declare module android {
 	export module animation {
-		export class IntEvaluator extends java.lang.Object{
+		export class IntEvaluator extends android.animation.TypeEvaluator<java.lang.Integer> {
 			public static class: java.lang.Class<android.animation.IntEvaluator>;
 			public evaluate(param0: number, param1: java.lang.Integer, param2: java.lang.Integer): java.lang.Integer;
 			public constructor();
@@ -2710,7 +2710,7 @@ declare module android {
 
 declare module android {
 	export module animation {
-		export class TypeEvaluator<T>  extends java.lang.Object{
+		export class TypeEvaluator<T>  extends java.lang.Object {
 			public static class: java.lang.Class<android.animation.TypeEvaluator<any>>;
 			/**
 			 * Constructs a new instance of the android.animation.TypeEvaluator<any> interface with the provided implementation.
@@ -4564,7 +4564,7 @@ declare module android {
 			public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 		}
 		export module LoaderManager {
-			export class LoaderCallbacks<D>  extends java.lang.Object{
+			export class LoaderCallbacks<D>  extends java.lang.Object {
 				public static class: java.lang.Class<android.app.LoaderManager.LoaderCallbacks<any>>;
 				/**
 				 * Constructs a new instance of the android.app.LoaderManager$LoaderCallbacks interface with the provided implementation.
@@ -6646,7 +6646,7 @@ declare module android {
 
 declare module android {
 	export module content {
-		export class ComponentName extends java.lang.Object{
+		export class ComponentName extends java.lang.Object {
 			public static class: java.lang.Class<android.content.ComponentName>;
 			public static CREATOR: android.os.Parcelable.Creator<android.content.ComponentName>;
 			public equals(param0: any): boolean;
@@ -6710,7 +6710,7 @@ declare module android {
 			public bulkInsert(param0: android.net.Uri, param1: native.Array<android.content.ContentValues>): number;
 		}
 		export module ContentProvider {
-			export class PipeDataWriter<T>  extends java.lang.Object{
+			export class PipeDataWriter<T>  extends java.lang.Object {
 				public static class: java.lang.Class<android.content.ContentProvider.PipeDataWriter<any>>;
 				/**
 				 * Constructs a new instance of the android.content.ContentProvider$PipeDataWriter interface with the provided implementation.
@@ -7337,7 +7337,7 @@ declare module android {
 
 declare module android {
 	export module content {
-		export class EntityIterator extends java.lang.Object{
+		export class EntityIterator extends java.util.Iterator<android.content.Entity> {
 			public static class: java.lang.Class<android.content.EntityIterator>;
 			/**
 			 * Constructs a new instance of the android.content.EntityIterator interface with the provided implementation.
@@ -7842,7 +7842,7 @@ declare module android {
 
 declare module android {
 	export module content {
-		export class Loader<D>  extends java.lang.Object{
+		export class Loader<D>  extends java.lang.Object {
 			public static class: java.lang.Class<android.content.Loader<any>>;
 			public unregisterOnLoadCanceledListener(param0: android.content.Loader.OnLoadCanceledListener<D>): void;
 			public registerListener(param0: number, param1: android.content.Loader.OnLoadCompleteListener<D>): void;
@@ -7883,7 +7883,7 @@ declare module android {
 				public constructor(param0: android.os.Handler);
 				public onChange(param0: boolean): void;
 			}
-			export class OnLoadCanceledListener<D>  extends java.lang.Object{
+			export class OnLoadCanceledListener<D>  extends java.lang.Object {
 				public static class: java.lang.Class<android.content.Loader.OnLoadCanceledListener<any>>;
 				/**
 				 * Constructs a new instance of the android.content.Loader$OnLoadCanceledListener interface with the provided implementation.
@@ -7893,7 +7893,7 @@ declare module android {
 				});
 				public onLoadCanceled(param0: android.content.Loader<D>): void;
 			}
-			export class OnLoadCompleteListener<D>  extends java.lang.Object{
+			export class OnLoadCompleteListener<D>  extends java.lang.Object {
 				public static class: java.lang.Class<android.content.Loader.OnLoadCompleteListener<any>>;
 				/**
 				 * Constructs a new instance of the android.content.Loader$OnLoadCompleteListener interface with the provided implementation.
@@ -8341,7 +8341,7 @@ declare module android {
 				public constructor();
 			}
 			export module ApplicationInfo {
-				export class DisplayNameComparator extends java.lang.Object{
+				export class DisplayNameComparator extends java.util.Comparator<android.content.pm.ApplicationInfo> {
 					public static class: java.lang.Class<android.content.pm.ApplicationInfo.DisplayNameComparator>;
 					public equals(param0: any): boolean;
 					public compare(param0: any, param1: any): number;
@@ -8540,7 +8540,7 @@ declare module android {
 				public constructor();
 			}
 			export module PackageItemInfo {
-				export class DisplayNameComparator extends java.lang.Object{
+				export class DisplayNameComparator extends java.util.Comparator<android.content.pm.PackageItemInfo> {
 					public static class: java.lang.Class<android.content.pm.PackageItemInfo.DisplayNameComparator>;
 					public equals(param0: any): boolean;
 					public compare(param0: any, param1: any): number;
@@ -8875,7 +8875,7 @@ declare module android {
 				public constructor();
 			}
 			export module ResolveInfo {
-				export class DisplayNameComparator extends java.lang.Object{
+				export class DisplayNameComparator extends java.util.Comparator<android.content.pm.ResolveInfo> {
 					public static class: java.lang.Class<android.content.pm.ResolveInfo.DisplayNameComparator>;
 					public equals(param0: any): boolean;
 					public compare(param0: android.content.pm.ResolveInfo, param1: android.content.pm.ResolveInfo): number;
@@ -9058,7 +9058,7 @@ declare module android {
 declare module android {
 	export module content {
 		export module res {
-			export class Configuration extends java.lang.Object{
+			export class Configuration extends java.lang.Object {
 				public static class: java.lang.Class<android.content.res.Configuration>;
 				public fontScale: number;
 				public mcc: number;
@@ -9862,7 +9862,7 @@ declare module android {
 
 declare module android {
 	export module database {
-		export class CursorJoiner extends java.lang.Object{
+		export class CursorJoiner extends java.lang.Object {
 			public static class: java.lang.Class<android.database.CursorJoiner>;
 			public constructor(param0: android.database.Cursor, param1: native.Array<string>, param2: android.database.Cursor, param3: native.Array<string>);
 			public iterator(): java.util.Iterator<android.database.CursorJoiner.Result>;
@@ -10177,7 +10177,7 @@ declare module android {
 
 declare module android {
 	export module database {
-		export abstract class Observable<T>  extends java.lang.Object{
+		export abstract class Observable<T>  extends java.lang.Object {
 			public static class: java.lang.Class<android.database.Observable<any>>;
 			public mObservers: java.util.ArrayList<T>;
 			public registerObserver(param0: T): void;
@@ -17631,7 +17631,7 @@ declare module android {
 
 declare module android {
 	export module net {
-		export abstract class Uri extends java.lang.Object{
+		export abstract class Uri extends java.lang.Object {
 			public static class: java.lang.Class<android.net.Uri>;
 			public static EMPTY: android.net.Uri;
 			public static CREATOR: android.os.Parcelable.Creator<android.net.Uri>;
@@ -18389,7 +18389,7 @@ declare module android {
 declare module android {
 	export module net {
 		export module wifi {
-			export class SupplicantState {
+			export class SupplicantState extends android.os.Parcelable {
 				public static class: java.lang.Class<android.net.wifi.SupplicantState>;
 				public static ASSOCIATED: android.net.wifi.SupplicantState;
 				public static ASSOCIATING: android.net.wifi.SupplicantState;
@@ -21240,7 +21240,7 @@ declare module android {
 
 declare module android {
 	export module os {
-		export abstract class AsyncTask<Params, Progress, Result>  extends java.lang.Object{
+		export abstract class AsyncTask<Params, Progress, Result>  extends java.lang.Object {
 			public static class: java.lang.Class<android.os.AsyncTask<any,any,any>>;
 			public static THREAD_POOL_EXECUTOR: java.util.concurrent.Executor;
 			public static SERIAL_EXECUTOR: java.util.concurrent.Executor;
@@ -22284,21 +22284,21 @@ declare module android {
 			public writeToParcel(param0: android.os.Parcel, param1: number): void;
 		}
 		export module Parcelable {
-			export class ClassLoaderCreator<T>  extends java.lang.Object{
+			export class ClassLoaderCreator<T>  extends android.os.Parcelable.Creator<any> {
 				public static class: java.lang.Class<android.os.Parcelable.ClassLoaderCreator<any>>;
 				/**
 				 * Constructs a new instance of the android.os.Parcelable$ClassLoaderCreator interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): T;
-					createFromParcel(param0: android.os.Parcel): T;
-					newArray(param0: number): native.Array<T>;
+					createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): any;
+					createFromParcel(param0: android.os.Parcel): any;
+					newArray(param0: number): native.Array<any>;
 				});
-				public createFromParcel(param0: android.os.Parcel): T;
-				public createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): T;
-				public newArray(param0: number): native.Array<T>;
+				public newArray(param0: number): native.Array<any>;
+				public createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): any;
+				public createFromParcel(param0: android.os.Parcel): any;
 			}
-			export class Creator<T>  extends java.lang.Object{
+			export class Creator<T>  extends java.lang.Object {
 				public static class: java.lang.Class<android.os.Parcelable.Creator<any>>;
 				/**
 				 * Constructs a new instance of the android.os.Parcelable$Creator interface with the provided implementation.
@@ -22434,7 +22434,7 @@ declare module android {
 
 declare module android {
 	export module os {
-		export class RemoteCallbackList<E>  extends java.lang.Object{
+		export class RemoteCallbackList<E>  extends java.lang.Object {
 			public static class: java.lang.Class<android.os.RemoteCallbackList<any>>;
 			public unregister(param0: E): boolean;
 			public onCallbackDied(param0: E, param1: any): void;
@@ -22849,7 +22849,7 @@ declare module android {
 
 declare module android {
 	export module preference {
-		export class Preference extends java.lang.Object{
+		export class Preference extends java.lang.Comparable<android.preference.Preference> {
 			public static class: java.lang.Class<android.preference.Preference>;
 			public static DEFAULT_ORDER: number;
 			public onBindView(param0: android.view.View): void;
@@ -30734,7 +30734,7 @@ declare module android {
 				});
 				public ellipsized(param0: number, param1: number): void;
 			}
-			export class SimpleStringSplitter extends java.lang.Object{
+			export class SimpleStringSplitter extends java.lang.Object {
 				public static class: java.lang.Class<android.text.TextUtils.SimpleStringSplitter>;
 				public remove(): void;
 				public setString(param0: string): void;
@@ -30744,7 +30744,7 @@ declare module android {
 				public iterator(): java.util.Iterator<any>;
 				public constructor(param0: string);
 			}
-			export class StringSplitter extends java.lang.Object{
+			export class StringSplitter extends java.lang.Iterable<string> {
 				public static class: java.lang.Class<android.text.TextUtils.StringSplitter>;
 				/**
 				 * Constructs a new instance of the android.text.TextUtils$StringSplitter interface with the provided implementation.
@@ -32772,25 +32772,25 @@ declare module android {
 
 declare module android {
 	export module util {
-		export class LongSparseArray<E>  extends java.lang.Object{
+		export class LongSparseArray<E>  extends java.lang.Cloneable {
 			public static class: java.lang.Class<android.util.LongSparseArray<any>>;
-			public indexOfValue(param0: E): number;
+			public append(param0: number, param1: any): void;
 			public clear(): void;
-			public get(param0: number, param1: E): E;
-			public clone(): android.util.LongSparseArray<E>;
+			public put(param0: number, param1: any): void;
 			public size(): number;
-			public setValueAt(param0: number, param1: E): void;
 			public delete(param0: number): void;
+			public indexOfValue(param0: any): number;
 			public constructor(param0: number);
 			public constructor();
-			public get(param0: number): E;
 			public remove(param0: number): void;
+			public clone(): android.util.LongSparseArray<any>;
 			public keyAt(param0: number): number;
-			public append(param0: number, param1: E): void;
 			public clone(): any;
-			public put(param0: number, param1: E): void;
-			public valueAt(param0: number): E;
+			public valueAt(param0: number): any;
+			public get(param0: number): any;
 			public removeAt(param0: number): void;
+			public get(param0: number, param1: any): any;
+			public setValueAt(param0: number, param1: any): void;
 			public indexOfKey(param0: number): number;
 		}
 	}
@@ -32798,7 +32798,7 @@ declare module android {
 
 declare module android {
 	export module util {
-		export class LruCache<K, V>  extends java.lang.Object{
+		export class LruCache<K, V>  extends java.lang.Object {
 			public static class: java.lang.Class<android.util.LruCache<any,any>>;
 			public put(param0: K, param1: V): V;
 			public size(): number;
@@ -32871,7 +32871,7 @@ declare module android {
 
 declare module android {
 	export module util {
-		export class Pair<F, S>  extends java.lang.Object{
+		export class Pair<F, S>  extends java.lang.Object {
 			public static class: java.lang.Class<android.util.Pair<any,any>>;
 			public first: F;
 			public second: S;
@@ -32939,7 +32939,7 @@ declare module android {
 
 declare module android {
 	export module util {
-		export abstract class Property<T, V>  extends java.lang.Object{
+		export abstract class Property<T, V>  extends java.lang.Object {
 			public static class: java.lang.Class<android.util.Property<any,any>>;
 			public isReadOnly(): boolean;
 			public set(param0: T, param1: V): void;
@@ -32954,25 +32954,25 @@ declare module android {
 
 declare module android {
 	export module util {
-		export class SparseArray<E>  extends java.lang.Object{
+		export class SparseArray<E>  extends java.lang.Cloneable {
 			public static class: java.lang.Class<android.util.SparseArray<any>>;
-			public indexOfValue(param0: E): number;
+			public append(param0: number, param1: any): void;
 			public clear(): void;
-			public get(param0: number, param1: E): E;
+			public put(param0: number, param1: any): void;
 			public size(): number;
-			public setValueAt(param0: number, param1: E): void;
-			public clone(): android.util.SparseArray<E>;
 			public delete(param0: number): void;
+			public indexOfValue(param0: any): number;
 			public constructor(param0: number);
 			public constructor();
-			public get(param0: number): E;
 			public remove(param0: number): void;
 			public keyAt(param0: number): number;
-			public append(param0: number, param1: E): void;
 			public clone(): any;
-			public put(param0: number, param1: E): void;
-			public valueAt(param0: number): E;
+			public valueAt(param0: number): any;
+			public get(param0: number): any;
 			public removeAt(param0: number): void;
+			public get(param0: number, param1: any): any;
+			public clone(): android.util.SparseArray<any>;
+			public setValueAt(param0: number, param1: any): void;
 			public indexOfKey(param0: number): number;
 		}
 	}
@@ -38343,7 +38343,7 @@ declare module android {
 
 declare module android {
 	export module webkit {
-		export class ValueCallback<T>  extends java.lang.Object{
+		export class ValueCallback<T>  extends java.lang.Object {
 			public static class: java.lang.Class<android.webkit.ValueCallback<any>>;
 			/**
 			 * Constructs a new instance of the android.webkit.ValueCallback<any> interface with the provided implementation.
@@ -39545,7 +39545,7 @@ declare module android {
 
 declare module android {
 	export module widget {
-		export abstract class AdapterViewAnimator extends android.widget.AdapterView<android.widget.Adapter> {
+		export abstract class AdapterViewAnimator extends android.widget.AdapterView<android.widget.Adapter> implements android.widget.Advanceable  {
 			public static class: java.lang.Class<android.widget.AdapterViewAnimator>;
 			public setInAnimation(param0: android.content.Context, param1: number): void;
 			public deferNotifyDataSetChanged(): void;
@@ -39759,7 +39759,7 @@ declare module android {
 
 declare module android {
 	export module widget {
-		export class ArrayAdapter<T>  extends android.widget.BaseAdapter {
+		export class ArrayAdapter<T>  extends android.widget.BaseAdapter implements android.widget.Filterable  {
 			public static class: java.lang.Class<android.widget.ArrayAdapter<any>>;
 			public getItem(param0: number): any;
 			public getFilter(): android.widget.Filter;
@@ -45026,7 +45026,7 @@ declare module com {
 	export module android {
 		export module internal {
 			export module util {
-				export class Predicate<T>  extends java.lang.Object{
+				export class Predicate<T>  extends java.lang.Object {
 					public static class: java.lang.Class<com.android.internal.util.Predicate<any>>;
 					/**
 					 * Constructs a new instance of the com.android.internal.util.Predicate<any> interface with the provided implementation.
@@ -46047,7 +46047,7 @@ declare module java {
 
 declare module java {
 	export module io {
-		export class File extends java.lang.Object{
+		export class File extends java.lang.Object {
 			public static class: java.lang.Class<java.io.File>;
 			public static separatorChar: string;
 			public static separator: string;
@@ -46839,7 +46839,7 @@ declare module java {
 
 declare module java {
 	export module io {
-		export class ObjectStreamField extends java.lang.Object{
+		export class ObjectStreamField extends java.lang.Comparable<any> {
 			public static class: java.lang.Class<java.io.ObjectStreamField>;
 			public constructor(param0: string, param1: java.lang.Class<any>, param2: boolean);
 			public isUnshared(): boolean;
@@ -47543,7 +47543,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Boolean extends java.lang.Object{
+		export class Boolean extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.Boolean>;
 			public static TYPE: java.lang.Class<java.lang.Boolean>;
 			public static TRUE: java.lang.Boolean;
@@ -47566,7 +47566,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Byte extends java.lang.Number {
+		export class Byte extends java.lang.Number implements java.lang.Comparable<java.lang.Byte>  {
 			public static class: java.lang.Class<java.lang.Byte>;
 			public static MAX_VALUE: number;
 			public static MIN_VALUE: number;
@@ -47619,7 +47619,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Character extends java.lang.Object{
+		export class Character extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.Character>;
 			public static MIN_VALUE: string;
 			public static MAX_VALUE: string;
@@ -47911,7 +47911,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Class<T>  extends java.lang.Object{
+		export class Class<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.Class<any>>;
 			public getMethod(param0: string, param1: native.Array<java.lang.Class<any>>): java.lang.reflect.Method;
 			public getEnclosingClass(): java.lang.Class<any>;
@@ -48091,7 +48091,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Comparable<T>  extends java.lang.Object{
+		export class Comparable<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.Comparable<any>>;
 			/**
 			 * Constructs a new instance of the java.lang.Comparable<any> interface with the provided implementation.
@@ -48140,7 +48140,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Double extends java.lang.Number {
+		export class Double extends java.lang.Number implements java.lang.Comparable<java.lang.Double>  {
 			public static class: java.lang.Class<java.lang.Double>;
 			public static MAX_VALUE: number;
 			public static MIN_VALUE: number;
@@ -48184,7 +48184,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export abstract class Enum<E>  extends java.lang.Object{
+		export abstract class Enum<E>  extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.Enum<any>>;
 			public equals(param0: any): boolean;
 			public toString(): string;
@@ -48256,7 +48256,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Float extends java.lang.Number {
+		export class Float extends java.lang.Number implements java.lang.Comparable<java.lang.Float>  {
 			public static class: java.lang.Class<java.lang.Float>;
 			public static MAX_VALUE: number;
 			public static MIN_VALUE: number;
@@ -48430,7 +48430,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Integer extends java.lang.Number {
+		export class Integer extends java.lang.Number implements java.lang.Comparable<java.lang.Integer>  {
 			public static class: java.lang.Class<java.lang.Integer>;
 			public static MAX_VALUE: number;
 			public static MIN_VALUE: number;
@@ -48503,7 +48503,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Iterable<T>  extends java.lang.Object{
+		export class Iterable<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.Iterable<any>>;
 			/**
 			 * Constructs a new instance of the java.lang.Iterable<any> interface with the provided implementation.
@@ -48530,7 +48530,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Long extends java.lang.Number {
+		export class Long extends java.lang.Number implements java.lang.Comparable<java.lang.Long>  {
 			public static class: java.lang.Class<java.lang.Long>;
 			public static MAX_VALUE: number;
 			public static MIN_VALUE: number;
@@ -49000,7 +49000,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class Short extends java.lang.Number {
+		export class Short extends java.lang.Number implements java.lang.Comparable<java.lang.Short>  {
 			public static class: java.lang.Class<java.lang.Short>;
 			public static MAX_VALUE: number;
 			public static MIN_VALUE: number;
@@ -49109,7 +49109,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class String extends java.lang.Object{
+		export class String extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.String>;
 			public static CASE_INSENSITIVE_ORDER: java.util.Comparator<string>;
 			public getBytes(param0: java.nio.charset.Charset): native.Array<number>;
@@ -49486,7 +49486,7 @@ declare module java {
 
 declare module java {
 	export module lang {
-		export class ThreadLocal<T>  extends java.lang.Object{
+		export class ThreadLocal<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.lang.ThreadLocal<any>>;
 			public initialValue(): T;
 			public constructor();
@@ -49833,7 +49833,7 @@ declare module java {
 declare module java {
 	export module lang {
 		export module ref {
-			export abstract class Reference<T>  extends java.lang.Object{
+			export abstract class Reference<T>  extends java.lang.Object {
 				public static class: java.lang.Class<java.lang.ref.Reference<any>>;
 				public enqueue(): boolean;
 				public get(): T;
@@ -49847,7 +49847,7 @@ declare module java {
 declare module java {
 	export module lang {
 		export module ref {
-			export class ReferenceQueue<T>  extends java.lang.Object{
+			export class ReferenceQueue<T>  extends java.lang.Object {
 				public static class: java.lang.Class<java.lang.ref.ReferenceQueue<any>>;
 				public remove(): java.lang.ref.Reference<any>;
 				public remove(param0: number): java.lang.ref.Reference<any>;
@@ -50291,19 +50291,19 @@ declare module java {
 declare module java {
 	export module lang {
 		export module reflect {
-			export class TypeVariable<D>  extends java.lang.Object{
+			export class TypeVariable<D>  extends java.lang.reflect.Type {
 				public static class: java.lang.Class<java.lang.reflect.TypeVariable<any>>;
 				/**
 				 * Constructs a new instance of the java.lang.reflect.TypeVariable<any> interface with the provided implementation.
 				 */
 				public constructor(implementation: {
 					getBounds(): native.Array<java.lang.reflect.Type>;
-					getGenericDeclaration(): D;
+					getGenericDeclaration(): any;
 					getName(): string;
 				});
 				public getBounds(): native.Array<java.lang.reflect.Type>;
+				public getGenericDeclaration(): any;
 				public getName(): string;
-				public getGenericDeclaration(): D;
 			}
 		}
 	}
@@ -51522,7 +51522,7 @@ declare module java {
 
 declare module java {
 	export module net {
-		export class URI extends java.lang.Object{
+		export class URI extends java.lang.Object {
 			public static class: java.lang.Class<java.net.URI>;
 			public constructor(param0: string, param1: string, param2: string, param3: string, param4: string);
 			public equals(param0: any): boolean;
@@ -51841,7 +51841,7 @@ declare module java {
 
 declare module java {
 	export module nio {
-		export abstract class ByteBuffer extends java.nio.Buffer {
+		export abstract class ByteBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.ByteBuffer>  {
 			public static class: java.lang.Class<java.nio.ByteBuffer>;
 			public putShort(param0: number, param1: number): java.nio.ByteBuffer;
 			public asIntBuffer(): java.nio.IntBuffer;
@@ -51963,7 +51963,7 @@ declare module java {
 
 declare module java {
 	export module nio {
-		export abstract class DoubleBuffer extends java.nio.Buffer {
+		export abstract class DoubleBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.DoubleBuffer>  {
 			public static class: java.lang.Class<java.nio.DoubleBuffer>;
 			public asReadOnlyBuffer(): java.nio.DoubleBuffer;
 			public equals(param0: any): boolean;
@@ -51996,7 +51996,7 @@ declare module java {
 
 declare module java {
 	export module nio {
-		export abstract class FloatBuffer extends java.nio.Buffer {
+		export abstract class FloatBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.FloatBuffer>  {
 			public static class: java.lang.Class<java.nio.FloatBuffer>;
 			public equals(param0: any): boolean;
 			public static wrap(param0: native.Array<number>): java.nio.FloatBuffer;
@@ -52029,7 +52029,7 @@ declare module java {
 
 declare module java {
 	export module nio {
-		export abstract class IntBuffer extends java.nio.Buffer {
+		export abstract class IntBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.IntBuffer>  {
 			public static class: java.lang.Class<java.nio.IntBuffer>;
 			public asReadOnlyBuffer(): java.nio.IntBuffer;
 			public equals(param0: any): boolean;
@@ -52074,7 +52074,7 @@ declare module java {
 
 declare module java {
 	export module nio {
-		export abstract class LongBuffer extends java.nio.Buffer {
+		export abstract class LongBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.LongBuffer>  {
 			public static class: java.lang.Class<java.nio.LongBuffer>;
 			public equals(param0: any): boolean;
 			public asReadOnlyBuffer(): java.nio.LongBuffer;
@@ -52130,7 +52130,7 @@ declare module java {
 
 declare module java {
 	export module nio {
-		export abstract class ShortBuffer extends java.nio.Buffer {
+		export abstract class ShortBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.ShortBuffer>  {
 			public static class: java.lang.Class<java.nio.ShortBuffer>;
 			public equals(param0: any): boolean;
 			public isDirect(): boolean;
@@ -52959,7 +52959,7 @@ declare module java {
 declare module java {
 	export module nio {
 		export module charset {
-			export abstract class Charset extends java.lang.Object{
+			export abstract class Charset extends java.lang.Comparable<java.nio.charset.Charset> {
 				public static class: java.lang.Class<java.nio.charset.Charset>;
 				public displayName(): string;
 				public encode(param0: java.nio.CharBuffer): java.nio.ByteBuffer;
@@ -54081,7 +54081,7 @@ declare module java {
 
 declare module java {
 	export module security {
-		export class PrivilegedAction<T>  extends java.lang.Object{
+		export class PrivilegedAction<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.security.PrivilegedAction<any>>;
 			/**
 			 * Constructs a new instance of the java.security.PrivilegedAction<any> interface with the provided implementation.
@@ -54110,7 +54110,7 @@ declare module java {
 
 declare module java {
 	export module security {
-		export class PrivilegedExceptionAction<T>  extends java.lang.Object{
+		export class PrivilegedExceptionAction<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.security.PrivilegedExceptionAction<any>>;
 			/**
 			 * Constructs a new instance of the java.security.PrivilegedExceptionAction<any> interface with the provided implementation.
@@ -59245,7 +59245,7 @@ declare module java {
 
 declare module java {
 	export module text {
-		export abstract class CollationKey extends java.lang.Object{
+		export abstract class CollationKey extends java.lang.Comparable<java.text.CollationKey> {
 			public static class: java.lang.Class<java.text.CollationKey>;
 			public toByteArray(): native.Array<number>;
 			public compareTo(param0: java.text.CollationKey): number;
@@ -59257,7 +59257,7 @@ declare module java {
 
 declare module java {
 	export module text {
-		export abstract class Collator extends java.lang.Object{
+		export abstract class Collator extends java.lang.Object {
 			public static class: java.lang.Class<java.text.Collator>;
 			public static NO_DECOMPOSITION: number;
 			public static CANONICAL_DECOMPOSITION: number;
@@ -59786,15 +59786,13 @@ declare module java {
 
 declare module java {
 	export module util {
-		export abstract class AbstractCollection<E>  extends java.lang.Object{
+		export abstract class AbstractCollection<E>  extends java.util.Collection<any> {
 			public static class: java.lang.Class<java.util.AbstractCollection<any>>;
 			public clear(): void;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public isEmpty(): boolean;
-			public iterator(): java.util.Iterator<E>;
 			public size(): number;
-			public add(param0: E): boolean;
 			public toArray(param0: native.Array<any>): native.Array<any>;
 			public constructor();
 			public addAll(param0: java.util.Collection<any>): boolean;
@@ -59803,16 +59801,17 @@ declare module java {
 			public containsAll(param0: java.util.Collection<any>): boolean;
 			public contains(param0: any): boolean;
 			public toString(): string;
+			public add(param0: any): boolean;
 			public removeAll(param0: java.util.Collection<any>): boolean;
-			public hashCode(): number;
 			public iterator(): java.util.Iterator<any>;
+			public hashCode(): number;
 		}
 	}
 }
 
 declare module java {
 	export module util {
-		export abstract class AbstractList<E>  extends java.util.AbstractCollection<any> {
+		export abstract class AbstractList<E>  extends java.util.AbstractCollection<any> implements java.util.List<any>  {
 			public static class: java.lang.Class<java.util.AbstractList<any>>;
 			public modCount: number;
 			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
@@ -59848,28 +59847,28 @@ declare module java {
 
 declare module java {
 	export module util {
-		export abstract class AbstractMap<K, V>  extends java.lang.Object{
+		export abstract class AbstractMap<K, V>  extends java.util.Map<any,any> {
 			public static class: java.lang.Class<java.util.AbstractMap<any,any>>;
 			public clear(): void;
 			public equals(param0: any): boolean;
+			public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 			public isEmpty(): boolean;
-			public put(param0: K, param1: V): V;
+			public keySet(): java.util.Set<any>;
 			public size(): number;
 			public containsValue(param0: any): boolean;
 			public constructor();
-			public get(param0: any): V;
+			public get(param0: any): any;
+			public put(param0: any, param1: any): any;
 			public toString(): string;
 			public clone(): any;
-			public keySet(): java.util.Set<K>;
+			public remove(param0: any): any;
 			public putAll(param0: java.util.Map<any,any>): void;
-			public remove(param0: any): V;
 			public containsKey(param0: any): boolean;
-			public values(): java.util.Collection<V>;
-			public entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
+			public values(): java.util.Collection<any>;
 			public hashCode(): number;
 		}
 		export module AbstractMap {
-			export class SimpleEntry<K, V>  extends java.lang.Object{
+			export class SimpleEntry<K, V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.AbstractMap.SimpleEntry<any,any>>;
 				public constructor(param0: K, param1: V);
 				public constructor(param0: java.util.Map.Entry<any,any>);
@@ -59880,7 +59879,7 @@ declare module java {
 				public getKey(): K;
 				public toString(): string;
 			}
-			export class SimpleImmutableEntry<K, V>  extends java.lang.Object{
+			export class SimpleImmutableEntry<K, V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.AbstractMap.SimpleImmutableEntry<any,any>>;
 				public constructor(param0: K, param1: V);
 				public constructor(param0: java.util.Map.Entry<any,any>);
@@ -59897,7 +59896,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export abstract class AbstractQueue<E>  extends java.util.AbstractCollection<any> {
+		export abstract class AbstractQueue<E>  extends java.util.AbstractCollection<any> implements java.util.Queue<any>  {
 			public static class: java.lang.Class<java.util.AbstractQueue<any>>;
 			public clear(): void;
 			public equals(param0: any): boolean;
@@ -59960,7 +59959,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export abstract class AbstractSet<E>  extends java.util.AbstractCollection<any> {
+		export abstract class AbstractSet<E>  extends java.util.AbstractCollection<any> implements java.util.Set<any>  {
 			public static class: java.lang.Class<java.util.AbstractSet<any>>;
 			public equals(param0: any): boolean;
 			public clear(): void;
@@ -60171,7 +60170,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export abstract class Calendar extends java.lang.Object{
+		export abstract class Calendar extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Calendar>;
 			public areFieldsSet: boolean;
 			public fields: native.Array<number>;
@@ -60276,13 +60275,13 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Collection<E>  extends java.lang.Object{
+		export class Collection<E>  extends java.lang.Iterable<any> {
 			public static class: java.lang.Class<java.util.Collection<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Collection<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				add(param0: E): boolean;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -60290,7 +60289,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -60303,15 +60302,14 @@ declare module java {
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public isEmpty(): boolean;
-			public iterator(): java.util.Iterator<E>;
 			public size(): number;
-			public add(param0: E): boolean;
 			public toArray(param0: native.Array<any>): native.Array<any>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
 			public remove(param0: any): boolean;
 			public containsAll(param0: java.util.Collection<any>): boolean;
 			public contains(param0: any): boolean;
+			public add(param0: any): boolean;
 			public removeAll(param0: java.util.Collection<any>): boolean;
 			public hashCode(): number;
 			public iterator(): java.util.Iterator<any>;
@@ -60384,7 +60382,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Comparator<T>  extends java.lang.Object{
+		export class Comparator<T>  extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Comparator<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Comparator<any> interface with the provided implementation.
@@ -60428,7 +60426,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Date extends java.lang.Object{
+		export class Date extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Date>;
 			public constructor(param0: number, param1: number, param2: number);
 			public equals(param0: any): boolean;
@@ -60469,46 +60467,46 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Deque<E>  extends java.lang.Object{
+		export class Deque<E>  extends java.util.Queue<any> {
 			public static class: java.lang.Class<java.util.Deque<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Deque<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				addFirst(param0: E): void;
-				addLast(param0: E): void;
-				offerFirst(param0: E): boolean;
-				offerLast(param0: E): boolean;
-				removeFirst(): E;
-				removeLast(): E;
-				pollFirst(): E;
-				pollLast(): E;
-				getFirst(): E;
-				getLast(): E;
-				peekFirst(): E;
-				peekLast(): E;
+				addFirst(param0: any): void;
+				addLast(param0: any): void;
+				offerFirst(param0: any): boolean;
+				offerLast(param0: any): boolean;
+				removeFirst(): any;
+				removeLast(): any;
+				pollFirst(): any;
+				pollLast(): any;
+				getFirst(): any;
+				getLast(): any;
+				peekFirst(): any;
+				peekLast(): any;
 				removeFirstOccurrence(param0: any): boolean;
 				removeLastOccurrence(param0: any): boolean;
-				add(param0: E): boolean;
-				offer(param0: E): boolean;
-				remove(): E;
-				poll(): E;
-				element(): E;
-				peek(): E;
-				push(param0: E): void;
-				pop(): E;
+				add(param0: any): boolean;
+				offer(param0: any): boolean;
+				remove(): any;
+				poll(): any;
+				element(): any;
+				peek(): any;
+				push(param0: any): void;
+				pop(): any;
 				remove(param0: any): boolean;
 				contains(param0: any): boolean;
 				size(): number;
-				iterator(): java.util.Iterator<E>;
-				descendingIterator(): java.util.Iterator<E>;
-				add(param0: E): boolean;
-				offer(param0: E): boolean;
-				remove(): E;
-				poll(): E;
-				element(): E;
-				peek(): E;
-				add(param0: E): boolean;
+				iterator(): java.util.Iterator<any>;
+				descendingIterator(): java.util.Iterator<any>;
+				add(param0: any): boolean;
+				offer(param0: any): boolean;
+				remove(): any;
+				poll(): any;
+				element(): any;
+				peek(): any;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -60516,7 +60514,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -60526,42 +60524,41 @@ declare module java {
 				iterator(): java.util.Iterator<any>;
 			});
 			public equals(param0: any): boolean;
-			public removeLast(): E;
-			public pollLast(): E;
+			public pollLast(): any;
 			public toArray(): native.Array<any>;
-			public iterator(): java.util.Iterator<E>;
-			public pop(): E;
+			public peekLast(): any;
+			public removeLast(): any;
 			public removeFirstOccurrence(param0: any): boolean;
-			public offer(param0: E): boolean;
-			public getLast(): E;
-			public offerFirst(param0: E): boolean;
+			public descendingIterator(): java.util.Iterator<any>;
+			public push(param0: any): void;
 			public contains(param0: any): boolean;
-			public peek(): E;
-			public descendingIterator(): java.util.Iterator<E>;
-			public getFirst(): E;
-			public element(): E;
+			public offerLast(param0: any): boolean;
+			public peekFirst(): any;
+			public addLast(param0: any): void;
+			public element(): any;
 			public iterator(): java.util.Iterator<any>;
-			public addFirst(param0: E): void;
 			public clear(): void;
 			public size(): number;
 			public isEmpty(): boolean;
-			public poll(): E;
-			public add(param0: E): boolean;
+			public poll(): any;
 			public toArray(param0: native.Array<any>): native.Array<any>;
+			public pop(): any;
+			public getFirst(): any;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
-			public peekFirst(): E;
+			public pollFirst(): any;
+			public peek(): any;
 			public remove(param0: any): boolean;
+			public offerFirst(param0: any): boolean;
+			public getLast(): any;
 			public containsAll(param0: java.util.Collection<any>): boolean;
-			public peekLast(): E;
-			public remove(): E;
-			public removeFirst(): E;
+			public addFirst(param0: any): void;
+			public offer(param0: any): boolean;
+			public remove(): any;
+			public add(param0: any): boolean;
+			public removeFirst(): any;
 			public removeAll(param0: java.util.Collection<any>): boolean;
-			public addLast(param0: E): void;
-			public pollFirst(): E;
 			public removeLastOccurrence(param0: any): boolean;
-			public offerLast(param0: E): boolean;
-			public push(param0: E): void;
 			public hashCode(): number;
 		}
 	}
@@ -60569,7 +60566,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export abstract class Dictionary<K, V>  extends java.lang.Object{
+		export abstract class Dictionary<K, V>  extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Dictionary<any,any>>;
 			public elements(): java.util.Enumeration<V>;
 			public isEmpty(): boolean;
@@ -60676,7 +60673,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Enumeration<E>  extends java.lang.Object{
+		export class Enumeration<E>  extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Enumeration<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Enumeration<any> interface with the provided implementation.
@@ -61075,7 +61072,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Iterator<E>  extends java.lang.Object{
+		export class Iterator<E>  extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Iterator<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Iterator<any> interface with the provided implementation.
@@ -61207,38 +61204,38 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class List<E>  extends java.lang.Object{
+		export class List<E>  extends java.util.Collection<any> {
 			public static class: java.lang.Class<java.util.List<any>>;
 			/**
 			 * Constructs a new instance of the java.util.List<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				add(param0: number, param1: E): void;
-				add(param0: E): boolean;
+				add(param0: number, param1: any): void;
+				add(param0: any): boolean;
 				addAll(param0: number, param1: java.util.Collection<any>): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
 				containsAll(param0: java.util.Collection<any>): boolean;
 				equals(param0: any): boolean;
-				get(param0: number): E;
+				get(param0: number): any;
 				hashCode(): number;
 				indexOf(param0: any): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				lastIndexOf(param0: any): number;
-				listIterator(): java.util.ListIterator<E>;
-				listIterator(param0: number): java.util.ListIterator<E>;
-				remove(param0: number): E;
+				listIterator(): java.util.ListIterator<any>;
+				listIterator(param0: number): java.util.ListIterator<any>;
+				remove(param0: number): any;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
-				set(param0: number, param1: E): E;
+				set(param0: number, param1: any): any;
 				size(): number;
-				subList(param0: number, param1: number): java.util.List<E>;
+				subList(param0: number, param1: number): java.util.List<any>;
 				toArray(): native.Array<any>;
 				toArray(param0: native.Array<any>): native.Array<any>;
-				add(param0: E): boolean;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -61246,7 +61243,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -61258,26 +61255,25 @@ declare module java {
 			public addAll(param0: number, param1: java.util.Collection<any>): boolean;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
-			public iterator(): java.util.Iterator<E>;
-			public get(param0: number): E;
+			public remove(param0: number): any;
 			public contains(param0: any): boolean;
-			public listIterator(param0: number): java.util.ListIterator<E>;
-			public subList(param0: number, param1: number): java.util.List<E>;
+			public get(param0: number): any;
+			public add(param0: number, param1: any): void;
 			public iterator(): java.util.Iterator<any>;
 			public clear(): void;
 			public isEmpty(): boolean;
 			public size(): number;
-			public add(param0: number, param1: E): void;
-			public add(param0: E): boolean;
+			public listIterator(param0: number): java.util.ListIterator<any>;
 			public toArray(param0: native.Array<any>): native.Array<any>;
-			public set(param0: number, param1: E): E;
-			public listIterator(): java.util.ListIterator<E>;
+			public subList(param0: number, param1: number): java.util.List<any>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
+			public set(param0: number, param1: any): any;
 			public remove(param0: any): boolean;
 			public containsAll(param0: java.util.Collection<any>): boolean;
 			public lastIndexOf(param0: any): number;
-			public remove(param0: number): E;
+			public add(param0: any): boolean;
+			public listIterator(): java.util.ListIterator<any>;
 			public removeAll(param0: java.util.Collection<any>): boolean;
 			public indexOf(param0: any): number;
 			public hashCode(): number;
@@ -61287,31 +61283,31 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class ListIterator<E>  extends java.lang.Object{
+		export class ListIterator<E>  extends java.util.Iterator<any> {
 			public static class: java.lang.Class<java.util.ListIterator<any>>;
 			/**
 			 * Constructs a new instance of the java.util.ListIterator<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				add(param0: E): void;
+				add(param0: any): void;
 				hasNext(): boolean;
 				hasPrevious(): boolean;
-				next(): E;
+				next(): any;
 				nextIndex(): number;
-				previous(): E;
+				previous(): any;
 				previousIndex(): number;
 				remove(): void;
-				set(param0: E): void;
+				set(param0: any): void;
 			});
-			public set(param0: E): void;
-			public next(): E;
+			public next(): any;
+			public previous(): any;
 			public hasPrevious(): boolean;
 			public previousIndex(): number;
-			public add(param0: E): void;
-			public previous(): E;
 			public hasNext(): boolean;
+			public set(param0: any): void;
 			public nextIndex(): number;
 			public remove(): void;
+			public add(param0: any): void;
 		}
 	}
 }
@@ -61386,7 +61382,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Map<K, V>  extends java.lang.Object{
+		export class Map<K, V>  extends java.lang.Object {
 			public static class: java.lang.Class<java.util.Map<any,any>>;
 			/**
 			 * Constructs a new instance of the java.util.Map<any,any> interface with the provided implementation.
@@ -61423,7 +61419,7 @@ declare module java {
 			public hashCode(): number;
 		}
 		export module Map {
-			export class Entry<K, V>  extends java.lang.Object{
+			export class Entry<K, V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.Map.Entry<any,any>>;
 				/**
 				 * Constructs a new instance of the java.util.Map$Entry interface with the provided implementation.
@@ -61490,91 +61486,91 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class NavigableMap<K, V>  extends java.lang.Object{
+		export class NavigableMap<K, V>  extends java.util.SortedMap<any,any> {
 			public static class: java.lang.Class<java.util.NavigableMap<any,any>>;
 			/**
 			 * Constructs a new instance of the java.util.NavigableMap<any,any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				lowerEntry(param0: K): java.util.Map.Entry<K,V>;
-				lowerKey(param0: K): K;
-				floorEntry(param0: K): java.util.Map.Entry<K,V>;
-				floorKey(param0: K): K;
-				ceilingEntry(param0: K): java.util.Map.Entry<K,V>;
-				ceilingKey(param0: K): K;
-				higherEntry(param0: K): java.util.Map.Entry<K,V>;
-				higherKey(param0: K): K;
-				firstEntry(): java.util.Map.Entry<K,V>;
-				lastEntry(): java.util.Map.Entry<K,V>;
-				pollFirstEntry(): java.util.Map.Entry<K,V>;
-				pollLastEntry(): java.util.Map.Entry<K,V>;
-				descendingMap(): java.util.NavigableMap<K,V>;
-				navigableKeySet(): java.util.NavigableSet<K>;
-				descendingKeySet(): java.util.NavigableSet<K>;
-				subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.NavigableMap<K,V>;
-				headMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
-				tailMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
-				subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
-				headMap(param0: K): java.util.SortedMap<K,V>;
-				tailMap(param0: K): java.util.SortedMap<K,V>;
+				lowerEntry(param0: any): java.util.Map.Entry<any,any>;
+				lowerKey(param0: any): any;
+				floorEntry(param0: any): java.util.Map.Entry<any,any>;
+				floorKey(param0: any): any;
+				ceilingEntry(param0: any): java.util.Map.Entry<any,any>;
+				ceilingKey(param0: any): any;
+				higherEntry(param0: any): java.util.Map.Entry<any,any>;
+				higherKey(param0: any): any;
+				firstEntry(): java.util.Map.Entry<any,any>;
+				lastEntry(): java.util.Map.Entry<any,any>;
+				pollFirstEntry(): java.util.Map.Entry<any,any>;
+				pollLastEntry(): java.util.Map.Entry<any,any>;
+				descendingMap(): java.util.NavigableMap<any,any>;
+				navigableKeySet(): java.util.NavigableSet<any>;
+				descendingKeySet(): java.util.NavigableSet<any>;
+				subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableMap<any,any>;
+				headMap(param0: any, param1: boolean): java.util.NavigableMap<any,any>;
+				tailMap(param0: any, param1: boolean): java.util.NavigableMap<any,any>;
+				subMap(param0: any, param1: any): java.util.SortedMap<any,any>;
+				headMap(param0: any): java.util.SortedMap<any,any>;
+				tailMap(param0: any): java.util.SortedMap<any,any>;
 				comparator(): java.util.Comparator<any>;
-				firstKey(): K;
-				headMap(param0: K): java.util.SortedMap<K,V>;
-				lastKey(): K;
-				subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
-				tailMap(param0: K): java.util.SortedMap<K,V>;
+				firstKey(): any;
+				headMap(param0: any): java.util.SortedMap<any,any>;
+				lastKey(): any;
+				subMap(param0: any, param1: any): java.util.SortedMap<any,any>;
+				tailMap(param0: any): java.util.SortedMap<any,any>;
 				clear(): void;
 				containsKey(param0: any): boolean;
 				containsValue(param0: any): boolean;
-				entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
+				entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 				equals(param0: any): boolean;
-				get(param0: any): V;
+				get(param0: any): any;
 				hashCode(): number;
 				isEmpty(): boolean;
-				keySet(): java.util.Set<K>;
-				put(param0: K, param1: V): V;
+				keySet(): java.util.Set<any>;
+				put(param0: any, param1: any): any;
 				putAll(param0: java.util.Map<any,any>): void;
-				remove(param0: any): V;
+				remove(param0: any): any;
 				size(): number;
-				values(): java.util.Collection<V>;
+				values(): java.util.Collection<any>;
 			});
-			public firstEntry(): java.util.Map.Entry<K,V>;
 			public equals(param0: any): boolean;
-			public lastKey(): K;
-			public put(param0: K, param1: V): V;
+			public ceilingKey(param0: any): any;
+			public floorKey(param0: any): any;
 			public containsValue(param0: any): boolean;
-			public pollFirstEntry(): java.util.Map.Entry<K,V>;
-			public tailMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
-			public descendingKeySet(): java.util.NavigableSet<K>;
-			public floorKey(param0: K): K;
-			public ceilingEntry(param0: K): java.util.Map.Entry<K,V>;
-			public higherKey(param0: K): K;
-			public keySet(): java.util.Set<K>;
+			public firstKey(): any;
+			public get(param0: any): any;
+			public headMap(param0: any): java.util.SortedMap<any,any>;
+			public lastKey(): any;
+			public remove(param0: any): any;
+			public firstEntry(): java.util.Map.Entry<any,any>;
+			public tailMap(param0: any, param1: boolean): java.util.NavigableMap<any,any>;
 			public putAll(param0: java.util.Map<any,any>): void;
-			public tailMap(param0: K): java.util.SortedMap<K,V>;
-			public subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
-			public values(): java.util.Collection<V>;
-			public higherEntry(param0: K): java.util.Map.Entry<K,V>;
-			public lowerEntry(param0: K): java.util.Map.Entry<K,V>;
-			public headMap(param0: K, param1: boolean): java.util.NavigableMap<K,V>;
-			public navigableKeySet(): java.util.NavigableSet<K>;
+			public descendingKeySet(): java.util.NavigableSet<any>;
+			public lowerKey(param0: any): any;
+			public tailMap(param0: any): java.util.SortedMap<any,any>;
+			public values(): java.util.Collection<any>;
+			public ceilingEntry(param0: any): java.util.Map.Entry<any,any>;
+			public pollFirstEntry(): java.util.Map.Entry<any,any>;
+			public descendingMap(): java.util.NavigableMap<any,any>;
+			public higherEntry(param0: any): java.util.Map.Entry<any,any>;
 			public clear(): void;
+			public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 			public isEmpty(): boolean;
+			public keySet(): java.util.Set<any>;
 			public size(): number;
-			public subMap(param0: K, param1: boolean, param2: K, param3: boolean): java.util.NavigableMap<K,V>;
+			public floorEntry(param0: any): java.util.Map.Entry<any,any>;
 			public comparator(): java.util.Comparator<any>;
-			public firstKey(): K;
-			public get(param0: any): V;
-			public floorEntry(param0: K): java.util.Map.Entry<K,V>;
-			public pollLastEntry(): java.util.Map.Entry<K,V>;
-			public headMap(param0: K): java.util.SortedMap<K,V>;
-			public remove(param0: any): V;
+			public navigableKeySet(): java.util.NavigableSet<any>;
+			public lastEntry(): java.util.Map.Entry<any,any>;
+			public subMap(param0: any, param1: any): java.util.SortedMap<any,any>;
+			public put(param0: any, param1: any): any;
+			public headMap(param0: any, param1: boolean): java.util.NavigableMap<any,any>;
+			public higherKey(param0: any): any;
+			public lowerEntry(param0: any): java.util.Map.Entry<any,any>;
 			public containsKey(param0: any): boolean;
-			public ceilingKey(param0: K): K;
-			public entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
-			public descendingMap(): java.util.NavigableMap<K,V>;
-			public lastEntry(): java.util.Map.Entry<K,V>;
-			public lowerKey(param0: K): K;
+			public pollLastEntry(): java.util.Map.Entry<any,any>;
+			public subMap(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableMap<any,any>;
 			public hashCode(): number;
 		}
 	}
@@ -61582,34 +61578,34 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class NavigableSet<E>  extends java.lang.Object{
+		export class NavigableSet<E>  extends java.util.SortedSet<any> {
 			public static class: java.lang.Class<java.util.NavigableSet<any>>;
 			/**
 			 * Constructs a new instance of the java.util.NavigableSet<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				lower(param0: E): E;
-				floor(param0: E): E;
-				ceiling(param0: E): E;
-				higher(param0: E): E;
-				pollFirst(): E;
-				pollLast(): E;
-				iterator(): java.util.Iterator<E>;
-				descendingSet(): java.util.NavigableSet<E>;
-				descendingIterator(): java.util.Iterator<E>;
-				subSet(param0: E, param1: boolean, param2: E, param3: boolean): java.util.NavigableSet<E>;
-				headSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
-				tailSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
-				subSet(param0: E, param1: E): java.util.SortedSet<E>;
-				headSet(param0: E): java.util.SortedSet<E>;
-				tailSet(param0: E): java.util.SortedSet<E>;
+				lower(param0: any): any;
+				floor(param0: any): any;
+				ceiling(param0: any): any;
+				higher(param0: any): any;
+				pollFirst(): any;
+				pollLast(): any;
+				iterator(): java.util.Iterator<any>;
+				descendingSet(): java.util.NavigableSet<any>;
+				descendingIterator(): java.util.Iterator<any>;
+				subSet(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableSet<any>;
+				headSet(param0: any, param1: boolean): java.util.NavigableSet<any>;
+				tailSet(param0: any, param1: boolean): java.util.NavigableSet<any>;
+				subSet(param0: any, param1: any): java.util.SortedSet<any>;
+				headSet(param0: any): java.util.SortedSet<any>;
+				tailSet(param0: any): java.util.SortedSet<any>;
 				comparator(): java.util.Comparator<any>;
-				first(): E;
-				headSet(param0: E): java.util.SortedSet<E>;
-				last(): E;
-				subSet(param0: E, param1: E): java.util.SortedSet<E>;
-				tailSet(param0: E): java.util.SortedSet<E>;
-				add(param0: E): boolean;
+				first(): any;
+				headSet(param0: any): java.util.SortedSet<any>;
+				last(): any;
+				subSet(param0: any, param1: any): java.util.SortedSet<any>;
+				tailSet(param0: any): java.util.SortedSet<any>;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -61617,14 +61613,14 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
 				size(): number;
 				toArray(): native.Array<any>;
 				toArray(param0: native.Array<any>): native.Array<any>;
-				add(param0: E): boolean;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -61632,7 +61628,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -61642,37 +61638,36 @@ declare module java {
 				iterator(): java.util.Iterator<any>;
 			});
 			public equals(param0: any): boolean;
-			public pollLast(): E;
-			public last(): E;
+			public pollLast(): any;
 			public toArray(): native.Array<any>;
-			public iterator(): java.util.Iterator<E>;
-			public subSet(param0: E, param1: boolean, param2: E, param3: boolean): java.util.NavigableSet<E>;
-			public first(): E;
-			public ceiling(param0: E): E;
+			public higher(param0: any): any;
+			public descendingIterator(): java.util.Iterator<any>;
+			public subSet(param0: any, param1: any): java.util.SortedSet<any>;
+			public tailSet(param0: any, param1: boolean): java.util.NavigableSet<any>;
+			public first(): any;
 			public contains(param0: any): boolean;
-			public descendingIterator(): java.util.Iterator<E>;
-			public headSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
-			public floor(param0: E): E;
+			public ceiling(param0: any): any;
+			public last(): any;
+			public floor(param0: any): any;
+			public lower(param0: any): any;
 			public iterator(): java.util.Iterator<any>;
-			public higher(param0: E): E;
+			public headSet(param0: any): java.util.SortedSet<any>;
 			public clear(): void;
-			public descendingSet(): java.util.NavigableSet<E>;
 			public isEmpty(): boolean;
 			public size(): number;
 			public comparator(): java.util.Comparator<any>;
-			public add(param0: E): boolean;
 			public toArray(param0: native.Array<any>): native.Array<any>;
-			public subSet(param0: E, param1: E): java.util.SortedSet<E>;
+			public subSet(param0: any, param1: boolean, param2: any, param3: boolean): java.util.NavigableSet<any>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
+			public pollFirst(): any;
+			public tailSet(param0: any): java.util.SortedSet<any>;
 			public remove(param0: any): boolean;
 			public containsAll(param0: java.util.Collection<any>): boolean;
-			public tailSet(param0: E, param1: boolean): java.util.NavigableSet<E>;
+			public headSet(param0: any, param1: boolean): java.util.NavigableSet<any>;
+			public add(param0: any): boolean;
 			public removeAll(param0: java.util.Collection<any>): boolean;
-			public lower(param0: E): E;
-			public pollFirst(): E;
-			public tailSet(param0: E): java.util.SortedSet<E>;
-			public headSet(param0: E): java.util.SortedSet<E>;
+			public descendingSet(): java.util.NavigableSet<any>;
 			public hashCode(): number;
 		}
 	}
@@ -61725,7 +61720,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class PriorityQueue<E>  extends java.util.AbstractQueue<any> {
+		export class PriorityQueue<E>  extends java.util.AbstractQueue<any> implements java.io.Serializable  {
 			public static class: java.lang.Class<java.util.PriorityQueue<any>>;
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
@@ -61830,19 +61825,19 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Queue<E>  extends java.lang.Object{
+		export class Queue<E>  extends java.util.Collection<any> {
 			public static class: java.lang.Class<java.util.Queue<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Queue<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				add(param0: E): boolean;
-				offer(param0: E): boolean;
-				remove(): E;
-				poll(): E;
-				element(): E;
-				peek(): E;
-				add(param0: E): boolean;
+				add(param0: any): boolean;
+				offer(param0: any): boolean;
+				remove(): any;
+				poll(): any;
+				element(): any;
+				peek(): any;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -61850,7 +61845,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -61863,21 +61858,20 @@ declare module java {
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public isEmpty(): boolean;
-			public iterator(): java.util.Iterator<E>;
 			public size(): number;
-			public poll(): E;
-			public add(param0: E): boolean;
-			public offer(param0: E): boolean;
+			public poll(): any;
 			public toArray(param0: native.Array<any>): native.Array<any>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
+			public peek(): any;
 			public remove(param0: any): boolean;
 			public containsAll(param0: java.util.Collection<any>): boolean;
 			public contains(param0: any): boolean;
-			public peek(): E;
-			public element(): E;
-			public remove(): E;
+			public offer(param0: any): boolean;
+			public remove(): any;
+			public add(param0: any): boolean;
 			public removeAll(param0: java.util.Collection<any>): boolean;
+			public element(): any;
 			public hashCode(): number;
 			public iterator(): java.util.Iterator<any>;
 		}
@@ -61968,7 +61962,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class Scanner extends java.lang.Object{
+		export class Scanner extends java.util.Iterator<string> {
 			public static class: java.lang.Class<java.util.Scanner>;
 			public ioException(): java.io.IOException;
 			public match(): java.util.regex.MatchResult;
@@ -62051,28 +62045,27 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class ServiceLoader<S>  extends java.lang.Object{
+		export class ServiceLoader<S>  extends java.lang.Iterable<any> {
 			public static class: java.lang.Class<java.util.ServiceLoader<any>>;
 			public static load(param0: java.lang.Class<any>, param1: java.lang.ClassLoader): java.util.ServiceLoader<any>;
 			public static load(param0: java.lang.Class<any>): java.util.ServiceLoader<any>;
 			public toString(): string;
-			public iterator(): java.util.Iterator<S>;
 			public reload(): void;
-			public static loadInstalled(param0: java.lang.Class<any>): java.util.ServiceLoader<any>;
 			public iterator(): java.util.Iterator<any>;
+			public static loadInstalled(param0: java.lang.Class<any>): java.util.ServiceLoader<any>;
 		}
 	}
 }
 
 declare module java {
 	export module util {
-		export class Set<E>  extends java.lang.Object{
+		export class Set<E>  extends java.util.Collection<any> {
 			public static class: java.lang.Class<java.util.Set<any>>;
 			/**
 			 * Constructs a new instance of the java.util.Set<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
-				add(param0: E): boolean;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -62080,14 +62073,14 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
 				size(): number;
 				toArray(): native.Array<any>;
 				toArray(param0: native.Array<any>): native.Array<any>;
-				add(param0: E): boolean;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -62095,7 +62088,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -62108,15 +62101,14 @@ declare module java {
 			public equals(param0: any): boolean;
 			public toArray(): native.Array<any>;
 			public isEmpty(): boolean;
-			public iterator(): java.util.Iterator<E>;
 			public size(): number;
-			public add(param0: E): boolean;
 			public toArray(param0: native.Array<any>): native.Array<any>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
 			public remove(param0: any): boolean;
 			public containsAll(param0: java.util.Collection<any>): boolean;
 			public contains(param0: any): boolean;
+			public add(param0: any): boolean;
 			public removeAll(param0: java.util.Collection<any>): boolean;
 			public hashCode(): number;
 			public iterator(): java.util.Iterator<any>;
@@ -62162,52 +62154,52 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class SortedMap<K, V>  extends java.lang.Object{
+		export class SortedMap<K, V>  extends java.util.Map<any,any> {
 			public static class: java.lang.Class<java.util.SortedMap<any,any>>;
 			/**
 			 * Constructs a new instance of the java.util.SortedMap<any,any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
 				comparator(): java.util.Comparator<any>;
-				firstKey(): K;
-				headMap(param0: K): java.util.SortedMap<K,V>;
-				lastKey(): K;
-				subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
-				tailMap(param0: K): java.util.SortedMap<K,V>;
+				firstKey(): any;
+				headMap(param0: any): java.util.SortedMap<any,any>;
+				lastKey(): any;
+				subMap(param0: any, param1: any): java.util.SortedMap<any,any>;
+				tailMap(param0: any): java.util.SortedMap<any,any>;
 				clear(): void;
 				containsKey(param0: any): boolean;
 				containsValue(param0: any): boolean;
-				entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
+				entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 				equals(param0: any): boolean;
-				get(param0: any): V;
+				get(param0: any): any;
 				hashCode(): number;
 				isEmpty(): boolean;
-				keySet(): java.util.Set<K>;
-				put(param0: K, param1: V): V;
+				keySet(): java.util.Set<any>;
+				put(param0: any, param1: any): any;
 				putAll(param0: java.util.Map<any,any>): void;
-				remove(param0: any): V;
+				remove(param0: any): any;
 				size(): number;
-				values(): java.util.Collection<V>;
+				values(): java.util.Collection<any>;
 			});
 			public clear(): void;
 			public equals(param0: any): boolean;
-			public lastKey(): K;
+			public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 			public isEmpty(): boolean;
-			public put(param0: K, param1: V): V;
+			public keySet(): java.util.Set<any>;
 			public size(): number;
 			public containsValue(param0: any): boolean;
 			public comparator(): java.util.Comparator<any>;
-			public firstKey(): K;
-			public get(param0: any): V;
-			public headMap(param0: K): java.util.SortedMap<K,V>;
-			public keySet(): java.util.Set<K>;
+			public firstKey(): any;
+			public get(param0: any): any;
+			public subMap(param0: any, param1: any): java.util.SortedMap<any,any>;
+			public put(param0: any, param1: any): any;
+			public headMap(param0: any): java.util.SortedMap<any,any>;
+			public lastKey(): any;
+			public remove(param0: any): any;
 			public putAll(param0: java.util.Map<any,any>): void;
-			public remove(param0: any): V;
-			public tailMap(param0: K): java.util.SortedMap<K,V>;
-			public subMap(param0: K, param1: K): java.util.SortedMap<K,V>;
 			public containsKey(param0: any): boolean;
-			public values(): java.util.Collection<V>;
-			public entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
+			public tailMap(param0: any): java.util.SortedMap<any,any>;
+			public values(): java.util.Collection<any>;
 			public hashCode(): number;
 		}
 	}
@@ -62215,19 +62207,19 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class SortedSet<E>  extends java.lang.Object{
+		export class SortedSet<E>  extends java.util.Set<any> {
 			public static class: java.lang.Class<java.util.SortedSet<any>>;
 			/**
 			 * Constructs a new instance of the java.util.SortedSet<any> interface with the provided implementation.
 			 */
 			public constructor(implementation: {
 				comparator(): java.util.Comparator<any>;
-				first(): E;
-				headSet(param0: E): java.util.SortedSet<E>;
-				last(): E;
-				subSet(param0: E, param1: E): java.util.SortedSet<E>;
-				tailSet(param0: E): java.util.SortedSet<E>;
-				add(param0: E): boolean;
+				first(): any;
+				headSet(param0: any): java.util.SortedSet<any>;
+				last(): any;
+				subSet(param0: any, param1: any): java.util.SortedSet<any>;
+				tailSet(param0: any): java.util.SortedSet<any>;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -62235,14 +62227,14 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
 				size(): number;
 				toArray(): native.Array<any>;
 				toArray(param0: native.Array<any>): native.Array<any>;
-				add(param0: E): boolean;
+				add(param0: any): boolean;
 				addAll(param0: java.util.Collection<any>): boolean;
 				clear(): void;
 				contains(param0: any): boolean;
@@ -62250,7 +62242,7 @@ declare module java {
 				equals(param0: any): boolean;
 				hashCode(): number;
 				isEmpty(): boolean;
-				iterator(): java.util.Iterator<E>;
+				iterator(): java.util.Iterator<any>;
 				remove(param0: any): boolean;
 				removeAll(param0: java.util.Collection<any>): boolean;
 				retainAll(param0: java.util.Collection<any>): boolean;
@@ -62261,24 +62253,23 @@ declare module java {
 			});
 			public clear(): void;
 			public equals(param0: any): boolean;
-			public last(): E;
 			public toArray(): native.Array<any>;
 			public isEmpty(): boolean;
-			public iterator(): java.util.Iterator<E>;
 			public size(): number;
 			public comparator(): java.util.Comparator<any>;
-			public add(param0: E): boolean;
+			public subSet(param0: any, param1: any): java.util.SortedSet<any>;
 			public toArray(param0: native.Array<any>): native.Array<any>;
-			public first(): E;
-			public subSet(param0: E, param1: E): java.util.SortedSet<E>;
 			public addAll(param0: java.util.Collection<any>): boolean;
 			public retainAll(param0: java.util.Collection<any>): boolean;
+			public tailSet(param0: any): java.util.SortedSet<any>;
 			public remove(param0: any): boolean;
+			public first(): any;
 			public containsAll(param0: java.util.Collection<any>): boolean;
 			public contains(param0: any): boolean;
+			public add(param0: any): boolean;
+			public last(): any;
 			public removeAll(param0: java.util.Collection<any>): boolean;
-			public tailSet(param0: E): java.util.SortedSet<E>;
-			public headSet(param0: E): java.util.SortedSet<E>;
+			public headSet(param0: any): java.util.SortedSet<any>;
 			public hashCode(): number;
 			public iterator(): java.util.Iterator<any>;
 		}
@@ -62331,7 +62322,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class StringTokenizer extends java.lang.Object{
+		export class StringTokenizer extends java.util.Enumeration<any> {
 			public static class: java.lang.Class<java.util.StringTokenizer>;
 			public constructor(param0: string, param1: string);
 			public nextToken(): string;
@@ -62519,7 +62510,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class UUID extends java.lang.Object{
+		export class UUID extends java.lang.Object {
 			public static class: java.lang.Class<java.util.UUID>;
 			public equals(param0: any): boolean;
 			public clockSequence(): number;
@@ -62630,7 +62621,7 @@ declare module java {
 
 declare module java {
 	export module util {
-		export class WeakHashMap<K, V>  extends java.util.AbstractMap<any,any> {
+		export class WeakHashMap<K, V>  extends java.util.AbstractMap<any,any> implements java.util.Map<any,any>  {
 			public static class: java.lang.Class<java.util.WeakHashMap<any,any>>;
 			public clear(): void;
 			public equals(param0: any): boolean;
@@ -62725,7 +62716,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class BlockingDeque<E>  extends java.lang.Object{
+			export class BlockingDeque<E>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.BlockingDeque<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.BlockingDeque<any> interface with the provided implementation.
@@ -62904,30 +62895,30 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class BlockingQueue<E>  extends java.lang.Object{
+			export class BlockingQueue<E>  extends java.util.Queue<any> {
 				public static class: java.lang.Class<java.util.concurrent.BlockingQueue<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.BlockingQueue<any> interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					add(param0: E): boolean;
-					offer(param0: E): boolean;
-					put(param0: E): void;
-					offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
-					take(): E;
-					poll(param0: number, param1: java.util.concurrent.TimeUnit): E;
+					add(param0: any): boolean;
+					offer(param0: any): boolean;
+					put(param0: any): void;
+					offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+					take(): any;
+					poll(param0: number, param1: java.util.concurrent.TimeUnit): any;
 					remainingCapacity(): number;
 					remove(param0: any): boolean;
 					contains(param0: any): boolean;
 					drainTo(param0: java.util.Collection<any>): number;
 					drainTo(param0: java.util.Collection<any>, param1: number): number;
-					add(param0: E): boolean;
-					offer(param0: E): boolean;
-					remove(): E;
-					poll(): E;
-					element(): E;
-					peek(): E;
-					add(param0: E): boolean;
+					add(param0: any): boolean;
+					offer(param0: any): boolean;
+					remove(): any;
+					poll(): any;
+					element(): any;
+					peek(): any;
+					add(param0: any): boolean;
 					addAll(param0: java.util.Collection<any>): boolean;
 					clear(): void;
 					contains(param0: any): boolean;
@@ -62935,7 +62926,7 @@ declare module java {
 					equals(param0: any): boolean;
 					hashCode(): number;
 					isEmpty(): boolean;
-					iterator(): java.util.Iterator<E>;
+					iterator(): java.util.Iterator<any>;
 					remove(param0: any): boolean;
 					removeAll(param0: java.util.Collection<any>): boolean;
 					retainAll(param0: java.util.Collection<any>): boolean;
@@ -62944,34 +62935,33 @@ declare module java {
 					toArray(param0: native.Array<any>): native.Array<any>;
 					iterator(): java.util.Iterator<any>;
 				});
-				public put(param0: E): void;
+				public peek(): any;
 				public addAll(param0: java.util.Collection<any>): boolean;
-				public element(): E;
+				public offer(param0: any, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
 				public toArray(): native.Array<any>;
-				public take(): E;
 				public containsAll(param0: java.util.Collection<any>): boolean;
-				public poll(param0: number, param1: java.util.concurrent.TimeUnit): E;
+				public take(): any;
+				public add(param0: any): boolean;
 				public hashCode(): number;
+				public offer(param0: any): boolean;
 				public clear(): void;
 				public equals(param0: any): boolean;
-				public iterator(): java.util.Iterator<E>;
 				public isEmpty(): boolean;
 				public remove(param0: any): boolean;
-				public poll(): E;
+				public remove(): any;
+				public element(): any;
 				public contains(param0: any): boolean;
 				public toArray(param0: native.Array<any>): native.Array<any>;
 				public drainTo(param0: java.util.Collection<any>, param1: number): number;
 				public iterator(): java.util.Iterator<any>;
-				public remove(): E;
 				public retainAll(param0: java.util.Collection<any>): boolean;
+				public poll(param0: number, param1: java.util.concurrent.TimeUnit): any;
 				public drainTo(param0: java.util.Collection<any>): number;
+				public poll(): any;
 				public size(): number;
-				public add(param0: E): boolean;
-				public offer(param0: E, param1: number, param2: java.util.concurrent.TimeUnit): boolean;
+				public put(param0: any): void;
 				public remainingCapacity(): number;
 				public removeAll(param0: java.util.Collection<any>): boolean;
-				public offer(param0: E): boolean;
-				public peek(): E;
 			}
 		}
 	}
@@ -62994,7 +62984,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class Callable<V>  extends java.lang.Object{
+			export class Callable<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.Callable<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.Callable<any> interface with the provided implementation.
@@ -63025,7 +63015,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class CompletionService<V>  extends java.lang.Object{
+			export class CompletionService<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.CompletionService<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.CompletionService<any> interface with the provided implementation.
@@ -63118,49 +63108,49 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class ConcurrentMap<K, V>  extends java.lang.Object{
+			export class ConcurrentMap<K, V>  extends java.util.Map<any,any> {
 				public static class: java.lang.Class<java.util.concurrent.ConcurrentMap<any,any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.ConcurrentMap<any,any> interface with the provided implementation.
 				 */
 				public constructor(implementation: {
-					putIfAbsent(param0: K, param1: V): V;
+					putIfAbsent(param0: any, param1: any): any;
 					remove(param0: any, param1: any): boolean;
-					replace(param0: K, param1: V, param2: V): boolean;
-					replace(param0: K, param1: V): V;
+					replace(param0: any, param1: any, param2: any): boolean;
+					replace(param0: any, param1: any): any;
 					clear(): void;
 					containsKey(param0: any): boolean;
 					containsValue(param0: any): boolean;
-					entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
+					entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 					equals(param0: any): boolean;
-					get(param0: any): V;
+					get(param0: any): any;
 					hashCode(): number;
 					isEmpty(): boolean;
-					keySet(): java.util.Set<K>;
-					put(param0: K, param1: V): V;
+					keySet(): java.util.Set<any>;
+					put(param0: any, param1: any): any;
 					putAll(param0: java.util.Map<any,any>): void;
-					remove(param0: any): V;
+					remove(param0: any): any;
 					size(): number;
-					values(): java.util.Collection<V>;
+					values(): java.util.Collection<any>;
 				});
-				public entrySet(): java.util.Set<java.util.Map.Entry<K,V>>;
+				public values(): java.util.Collection<any>;
+				public get(param0: any): any;
+				public replace(param0: any, param1: any): any;
 				public putAll(param0: java.util.Map<any,any>): void;
-				public putIfAbsent(param0: K, param1: V): V;
-				public replace(param0: K, param1: V): V;
-				public keySet(): java.util.Set<K>;
+				public entrySet(): java.util.Set<java.util.Map.Entry<any,any>>;
 				public containsKey(param0: any): boolean;
-				public put(param0: K, param1: V): V;
-				public values(): java.util.Collection<V>;
+				public keySet(): java.util.Set<any>;
 				public remove(param0: any, param1: any): boolean;
 				public size(): number;
-				public replace(param0: K, param1: V, param2: V): boolean;
-				public remove(param0: any): V;
-				public get(param0: any): V;
+				public putIfAbsent(param0: any, param1: any): any;
+				public put(param0: any, param1: any): any;
+				public remove(param0: any): any;
 				public hashCode(): number;
 				public clear(): void;
 				public equals(param0: any): boolean;
 				public isEmpty(): boolean;
 				public containsValue(param0: any): boolean;
+				public replace(param0: any, param1: any, param2: any): boolean;
 			}
 		}
 	}
@@ -63169,7 +63159,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class ConcurrentNavigableMap<K, V>  extends java.lang.Object{
+			export class ConcurrentNavigableMap<K, V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.ConcurrentNavigableMap<any,any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.ConcurrentNavigableMap<any,any> interface with the provided implementation.
@@ -63420,7 +63410,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class CopyOnWriteArrayList<E>  extends java.lang.Object{
+			export class CopyOnWriteArrayList<E>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.CopyOnWriteArrayList<any>>;
 				public constructor(param0: native.Array<E>);
 				public indexOf(param0: any): number;
@@ -63465,7 +63455,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class CopyOnWriteArraySet<E>  extends java.util.AbstractSet<any> {
+			export class CopyOnWriteArraySet<E>  extends java.util.AbstractSet<any> implements java.io.Serializable  {
 				public static class: java.lang.Class<java.util.concurrent.CopyOnWriteArraySet<any>>;
 				public contains(param0: any): boolean;
 				public addAll(param0: java.util.Collection<any>): boolean;
@@ -63526,7 +63516,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class DelayQueue<E>  extends java.util.AbstractQueue<any> {
+			export class DelayQueue<E>  extends java.util.AbstractQueue<any> implements java.util.concurrent.BlockingQueue<any>  {
 				public static class: java.lang.Class<java.util.concurrent.DelayQueue<any>>;
 				public peek(): any;
 				public addAll(param0: java.util.Collection<any>): boolean;
@@ -63565,7 +63555,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class Delayed extends java.lang.Object{
+			export class Delayed extends java.lang.Comparable<java.util.concurrent.Delayed> {
 				public static class: java.lang.Class<java.util.concurrent.Delayed>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.Delayed interface with the provided implementation.
@@ -63582,7 +63572,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class Exchanger<V>  extends java.lang.Object{
+			export class Exchanger<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.Exchanger<any>>;
 				public exchange(param0: V): V;
 				public exchange(param0: V, param1: number, param2: java.util.concurrent.TimeUnit): V;
@@ -63626,15 +63616,15 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class ExecutorCompletionService<V>  extends java.lang.Object{
+			export class ExecutorCompletionService<V>  extends java.util.concurrent.CompletionService<any> {
 				public static class: java.lang.Class<java.util.concurrent.ExecutorCompletionService<any>>;
-				public take(): java.util.concurrent.Future<V>;
-				public submit(param0: java.lang.Runnable, param1: V): java.util.concurrent.Future<V>;
+				public submit(param0: java.lang.Runnable, param1: any): java.util.concurrent.Future<any>;
+				public poll(): java.util.concurrent.Future<any>;
+				public take(): java.util.concurrent.Future<any>;
 				public constructor(param0: java.util.concurrent.Executor);
-				public constructor(param0: java.util.concurrent.Executor, param1: java.util.concurrent.BlockingQueue<java.util.concurrent.Future<V>>);
-				public submit(param0: java.util.concurrent.Callable<V>): java.util.concurrent.Future<V>;
-				public poll(): java.util.concurrent.Future<V>;
-				public poll(param0: number, param1: java.util.concurrent.TimeUnit): java.util.concurrent.Future<V>;
+				public poll(param0: number, param1: java.util.concurrent.TimeUnit): java.util.concurrent.Future<any>;
+				public constructor(param0: java.util.concurrent.Executor, param1: java.util.concurrent.BlockingQueue<java.util.concurrent.Future<any>>);
+				public submit(param0: java.util.concurrent.Callable<any>): java.util.concurrent.Future<any>;
 			}
 		}
 	}
@@ -63714,7 +63704,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class Future<V>  extends java.lang.Object{
+			export class Future<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.Future<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.Future<any> interface with the provided implementation.
@@ -63739,20 +63729,20 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class FutureTask<V>  extends java.lang.Object{
+			export class FutureTask<V>  extends java.util.concurrent.RunnableFuture<any> {
 				public static class: java.lang.Class<java.util.concurrent.FutureTask<any>>;
-				public constructor(param0: java.lang.Runnable, param1: V);
-				public get(): V;
 				public isDone(): boolean;
-				public get(param0: number, param1: java.util.concurrent.TimeUnit): V;
 				public done(): void;
 				public setException(param0: java.lang.Throwable): void;
 				public run(): void;
-				public set(param0: V): void;
+				public constructor(param0: java.lang.Runnable, param1: any);
+				public set(param0: any): void;
 				public runAndReset(): boolean;
+				public get(): any;
 				public cancel(param0: boolean): boolean;
+				public constructor(param0: java.util.concurrent.Callable<any>);
 				public isCancelled(): boolean;
-				public constructor(param0: java.util.concurrent.Callable<V>);
+				public get(param0: number, param1: java.util.concurrent.TimeUnit): any;
 			}
 		}
 	}
@@ -63942,7 +63932,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class RunnableFuture<V>  extends java.lang.Object{
+			export class RunnableFuture<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.RunnableFuture<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.RunnableFuture<any> interface with the provided implementation.
@@ -63970,7 +63960,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class RunnableScheduledFuture<V>  extends java.lang.Object{
+			export class RunnableScheduledFuture<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.RunnableScheduledFuture<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.RunnableScheduledFuture<any> interface with the provided implementation.
@@ -64056,7 +64046,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module concurrent {
-			export class ScheduledFuture<V>  extends java.lang.Object{
+			export class ScheduledFuture<V>  extends java.lang.Object {
 				public static class: java.lang.Class<java.util.concurrent.ScheduledFuture<any>>;
 				/**
 				 * Constructs a new instance of the java.util.concurrent.ScheduledFuture<any> interface with the provided implementation.
@@ -64416,7 +64406,7 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export abstract class AtomicIntegerFieldUpdater<T>  extends java.lang.Object{
+				export abstract class AtomicIntegerFieldUpdater<T>  extends java.lang.Object {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicIntegerFieldUpdater<any>>;
 					public getAndSet(param0: T, param1: number): number;
 					public getAndAdd(param0: T, param1: number): number;
@@ -64501,7 +64491,7 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export abstract class AtomicLongFieldUpdater<T>  extends java.lang.Object{
+				export abstract class AtomicLongFieldUpdater<T>  extends java.lang.Object {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicLongFieldUpdater<any>>;
 					public getAndSet(param0: T, param1: number): number;
 					public getAndAdd(param0: T, param1: number): number;
@@ -64527,7 +64517,7 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export class AtomicMarkableReference<V>  extends java.lang.Object{
+				export class AtomicMarkableReference<V>  extends java.lang.Object {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicMarkableReference<any>>;
 					public compareAndSet(param0: V, param1: V, param2: boolean, param3: boolean): boolean;
 					public getReference(): V;
@@ -64547,17 +64537,17 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export class AtomicReference<V>  extends java.lang.Object{
+				export class AtomicReference<V>  extends java.io.Serializable {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicReference<any>>;
+					public set(param0: any): void;
 					public toString(): string;
+					public get(): any;
+					public lazySet(param0: any): void;
 					public constructor();
-					public set(param0: V): void;
-					public constructor(param0: V);
-					public getAndSet(param0: V): V;
-					public lazySet(param0: V): void;
-					public compareAndSet(param0: V, param1: V): boolean;
-					public weakCompareAndSet(param0: V, param1: V): boolean;
-					public get(): V;
+					public weakCompareAndSet(param0: any, param1: any): boolean;
+					public constructor(param0: any);
+					public compareAndSet(param0: any, param1: any): boolean;
+					public getAndSet(param0: any): any;
 				}
 			}
 		}
@@ -64568,18 +64558,18 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export class AtomicReferenceArray<E>  extends java.lang.Object{
+				export class AtomicReferenceArray<E>  extends java.io.Serializable {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicReferenceArray<any>>;
-					public getAndSet(param0: number, param1: E): E;
+					public getAndSet(param0: number, param1: any): any;
 					public toString(): string;
-					public set(param0: number, param1: E): void;
-					public get(param0: number): E;
-					public lazySet(param0: number, param1: E): void;
-					public weakCompareAndSet(param0: number, param1: E, param2: E): boolean;
+					public get(param0: number): any;
+					public lazySet(param0: number, param1: any): void;
+					public compareAndSet(param0: number, param1: any, param2: any): boolean;
+					public constructor(param0: native.Array<any>);
+					public set(param0: number, param1: any): void;
 					public constructor(param0: number);
-					public constructor(param0: native.Array<E>);
 					public length(): number;
-					public compareAndSet(param0: number, param1: E, param2: E): boolean;
+					public weakCompareAndSet(param0: number, param1: any, param2: any): boolean;
 				}
 			}
 		}
@@ -64590,7 +64580,7 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export abstract class AtomicReferenceFieldUpdater<T, V>  extends java.lang.Object{
+				export abstract class AtomicReferenceFieldUpdater<T, V>  extends java.lang.Object {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicReferenceFieldUpdater<any,any>>;
 					public set(param0: T, param1: V): void;
 					public getAndSet(param0: T, param1: V): V;
@@ -64610,7 +64600,7 @@ declare module java {
 	export module util {
 		export module concurrent {
 			export module atomic {
-				export class AtomicStampedReference<V>  extends java.lang.Object{
+				export class AtomicStampedReference<V>  extends java.lang.Object {
 					public static class: java.lang.Class<java.util.concurrent.atomic.AtomicStampedReference<any>>;
 					public constructor(param0: V, param1: number);
 					public set(param0: V, param1: number): void;
@@ -64955,7 +64945,7 @@ declare module java {
 declare module java {
 	export module util {
 		export module jar {
-			export class Attributes extends java.lang.Object{
+			export class Attributes extends java.lang.Object {
 				public static class: java.lang.Class<java.util.jar.Attributes>;
 				public map: java.util.Map<any,any>;
 				public values(): java.util.Collection<any>;
@@ -74264,7 +74254,7 @@ declare module org {
 	export module apache {
 		export module http {
 			export module client {
-				export class ResponseHandler<T>  extends java.lang.Object{
+				export class ResponseHandler<T>  extends java.lang.Object {
 					public static class: java.lang.Class<org.apache.http.client.ResponseHandler<any>>;
 					/**
 					 * Constructs a new instance of the org.apache.http.client.ResponseHandler<any> interface with the provided implementation.
@@ -76435,7 +76425,7 @@ declare module org {
 	export module apache {
 		export module http {
 			export module cookie {
-				export class CookieIdentityComparator extends java.lang.Object{
+				export class CookieIdentityComparator extends java.lang.Object {
 					public static class: java.lang.Class<org.apache.http.cookie.CookieIdentityComparator>;
 					public equals(param0: any): boolean;
 					public compare(param0: any, param1: any): number;
@@ -76469,7 +76459,7 @@ declare module org {
 	export module apache {
 		export module http {
 			export module cookie {
-				export class CookiePathComparator extends java.lang.Object{
+				export class CookiePathComparator extends java.lang.Object {
 					public static class: java.lang.Class<org.apache.http.cookie.CookiePathComparator>;
 					public equals(param0: any): boolean;
 					public compare(param0: any, param1: any): number;
@@ -77671,7 +77661,7 @@ declare module org {
 		export module http {
 			export module impl {
 				export module client {
-					export class BasicResponseHandler extends java.lang.Object{
+					export class BasicResponseHandler extends org.apache.http.client.ResponseHandler<string> {
 						public static class: java.lang.Class<org.apache.http.impl.client.BasicResponseHandler>;
 						public constructor();
 						public handleResponse(param0: org.apache.http.HttpResponse): string;
