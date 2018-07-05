@@ -16,9 +16,9 @@ class NativeScriptActivity extends android.app.Activity {
         return global.__native(this);
     }
 
-    protected onCreate(savedInstanceState: android.os.Bundle): void {
+    public onCreate(savedInstanceState: android.os.Bundle): void {
         appModule.android.init(this.getApplication());
-        
+
         // Set isNativeScriptActivity in onCreate.
         // The JS constructor might not be called because the activity is created from Android.
         this.isNativeScriptActivity = true;
@@ -29,24 +29,24 @@ class NativeScriptActivity extends android.app.Activity {
         this._callbacks.onCreate(this, savedInstanceState, super.onCreate);
     }
 
-    protected onNewIntent(intent: android.content.Intent): void {
+    public onNewIntent(intent: android.content.Intent): void {
         super.onNewIntent(intent);
         super.setIntent(intent);
     }
 
-    protected onSaveInstanceState(outState: android.os.Bundle): void {
+    public onSaveInstanceState(outState: android.os.Bundle): void {
         this._callbacks.onSaveInstanceState(this, outState, super.onSaveInstanceState);
     }
 
-    protected onStart(): void {
+    public onStart(): void {
         this._callbacks.onStart(this, super.onStart);
     }
 
-    protected onStop(): void {
+    public onStop(): void {
         this._callbacks.onStop(this, super.onStop);
     }
 
-    protected onDestroy(): void {
+    public onDestroy(): void {
         this._callbacks.onDestroy(this, super.onDestroy);
     }
 
@@ -58,7 +58,7 @@ class NativeScriptActivity extends android.app.Activity {
         this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
     }
 
-    protected onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
+    public onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
         this._callbacks.onActivityResult(this, requestCode, resultCode, data, super.onActivityResult);
     }
 }

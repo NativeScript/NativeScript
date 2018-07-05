@@ -27,3 +27,8 @@ Create `reference.d.ts`and add the following content:
 ```
 
 d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option to tsconfig file.
+
+## Generate android .d.ts files
+* To generate android dependencies use [android-dts-generator](https://github.com/NativeScript/android-dts-generator) with the appropriate android version and android support jars
+* To regenerate android-*.d.ts file use the **android-dts-generator** passing the corresponding android jar (described [here](https://github.com/NativeScript/android-dts-generator/blob/master/README.md#generate-definitons-for-android-sdk))
+* Run the **android-dts-generator** for every support jar if needed. You can check [here](https://github.com/NativeScript/android-dts-generator/blob/master/README.md#support-libraries) where you can find that jar files. Rename the ouput .d.ts file with the library name and replace the existing android-support-* files in [android](android) folder.

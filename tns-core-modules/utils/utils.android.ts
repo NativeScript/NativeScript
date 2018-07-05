@@ -109,7 +109,7 @@ export module ad {
 
     export function dismissSoftInput(nativeView?: android.view.View): void {
         const inputManager = getInputMethodManager();
-        let windowToken: android.os.IIBinder;
+        let windowToken: android.os.IBinder;
 
         if (nativeView instanceof android.view.View) {
             windowToken = nativeView.getWindowToken()

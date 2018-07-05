@@ -145,9 +145,9 @@ function initializeDialogFragment() {
 
             const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
 
-            // do not override alignment unless fullscreen modal will be shown; 
+            // do not override alignment unless fullscreen modal will be shown;
             // otherwise we might break component-level layout:
-            // https://github.com/NativeScript/NativeScript/issues/5392 
+            // https://github.com/NativeScript/NativeScript/issues/5392
             if (!this._fullscreen && !this._stretched) {
                 this.owner.horizontalAlignment = "center";
                 this.owner.verticalAlignment = "middle";
@@ -185,7 +185,7 @@ function initializeDialogFragment() {
             this._shownCallback();
         }
 
-        public onDismiss(dialog: android.content.IDialogInterface): void {
+        public onDismiss(dialog: android.content.DialogInterface): void {
             super.onDismiss(dialog);
             const manager = this.getFragmentManager();
             if (manager) {

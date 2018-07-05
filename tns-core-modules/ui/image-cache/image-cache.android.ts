@@ -12,7 +12,7 @@ function ensureLruBitmapCacheClass() {
             return global.__native(this);
         }
 
-        protected sizeOf(key: string, bitmap: android.graphics.Bitmap): number {
+        public sizeOf(key: string, bitmap: android.graphics.Bitmap): number {
             // The cache size will be measured in kilobytes rather than
             // number of items.
             var result = Math.round(bitmap.getByteCount() / 1024);

@@ -8,7 +8,7 @@ export function getNativeText(button: buttonModule.Button): string {
 }
 
 export function getNativeTextWrap(button: buttonModule.Button): boolean {
-    return (<android.widget.Button>button.android).isSingleLine();
+    return ((<android.widget.Button>button.android).getLineCount() === 1);
 }
 
 export function getNativeFontSize(button: buttonModule.Button): number {
