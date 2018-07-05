@@ -1,6 +1,6 @@
-import { EventData } from "data/observable";
-import { Page } from "ui/page";
-import { Observable } from "data/observable";
+import { EventData } from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
+import { Observable } from "tns-core-modules/data/observable";
 
 export class ListPickerJsonArrayModel extends Observable {
   public items = [
