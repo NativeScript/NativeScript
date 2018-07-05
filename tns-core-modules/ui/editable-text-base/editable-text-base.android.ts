@@ -71,7 +71,7 @@ function initializeEditTextListeners(): void {
             // owner.android.setSelection(selectionStart);
         }
 
-        public afterTextChanged(editable: android.text.IEditable): void {
+        public afterTextChanged(editable: android.text.Editable): void {
             const owner = this.owner;
             if (!owner || owner._changeFromCode) {
                 return;

@@ -1,3 +1,5 @@
+/// <reference path="transition-definitions.android.d.ts"/>
+
 // Definitions.
 import { NavigationTransition, BackstackEntry } from "../frame";
 import { AnimationType } from "./fragment.transitions";
@@ -332,7 +334,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: android.transit
     return new TransitionListener(entry, transition);
 }
 
-function getAnimationListener(): android.animation.Animator.IAnimatorListener {
+function getAnimationListener(): android.animation.Animator.AnimatorListener {
     if (!AnimationListener) {
         @Interfaces([android.animation.Animator.AnimatorListener])
         class AnimationListnerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
@@ -375,7 +377,7 @@ function getAnimationListener(): android.animation.Animator.IAnimatorListener {
 
     return AnimationListener;
 }
-
+ 
 function addToWaitingQueue(entry: ExpandedEntry): void {
     const frameId = entry.frameId;
     let entries = waitingQueue.get(frameId);
@@ -387,7 +389,7 @@ function addToWaitingQueue(entry: ExpandedEntry): void {
     entries.add(entry);
 }
 
-function clearAnimationListener(animator: ExpandedAnimator, listener: android.animation.Animator.IAnimatorListener): void {
+function clearAnimationListener(animator: ExpandedAnimator, listener: android.animation.Animator.AnimatorListener): void {
     if (!animator) {
         return;
     }
