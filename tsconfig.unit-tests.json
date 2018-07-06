@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
         "sourceMap": true,
-        "inlineSourceMap": false
+        "inlineSourceMap": false,
+        "target": "es5",
+        "module": "commonjs"
     },
     "extends": "./tsconfig.shared",
     "include": [

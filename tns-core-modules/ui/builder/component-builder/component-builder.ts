@@ -8,7 +8,7 @@ import { File, path, knownFolders } from "../../../file-system";
 import { getBindingOptions, bindingConstants } from "../binding-builder";
 import { resolveFileName } from "../../../file-system/file-name-resolver";
 import { profile } from "../../../profiling";
-import * as debugModule from "../../../utils/debug";
+import { ScopeError } from "../../../utils/debug";
 import * as platform from "../../../platform";
 
 import * as filesystem from "../../../file-system";
@@ -64,8 +64,7 @@ const createComponentInstance = profile("createComponentInstance", (elementName:
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        const debug: typeof debugModule = require("utils/debug");
-        throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
+        throw new ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
     return { instance, instanceModule };

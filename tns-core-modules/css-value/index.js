@@ -1,10 +1,4 @@
 
-exports.parse = parse;
-
-function parse(str) {
-  return new Parser(str).parse();
-}
-
 function Parser(str) {
   this.str = str;
 }
@@ -111,3 +105,7 @@ Parser.prototype.parse = function(){
 
   return vals;
 };
+
+export function parse(str) {
+  return new Parser(str).parse();
+}

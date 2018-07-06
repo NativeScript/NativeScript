@@ -1,8 +1,8 @@
-import tabViewModule = require("tns-core-modules/ui/tab-view");
+import { TabView } from "tns-core-modules/ui/tab-view";
 import * as utils from "tns-core-modules/utils/utils";
 import getter = utils.ios.getter;
 
-export function getNativeTabCount(tabView: tabViewModule.TabView): number {
+export function getNativeTabCount(tabView: TabView): number {
     if (!tabView.ios.viewControllers) {
         return 0;
     }
@@ -10,16 +10,16 @@ export function getNativeTabCount(tabView: tabViewModule.TabView): number {
     return tabView.ios.viewControllers.count;
 }
 
-export function selectNativeTab(tabView: tabViewModule.TabView, index: number): void {
+export function selectNativeTab(tabView: TabView, index: number): void {
     tabView.ios.selectedIndex = index;
     tabView.ios.delegate.tabBarControllerDidSelectViewController(tabView.ios, tabView.ios.selectedViewController);
 }
 
-export function getNativeSelectedIndex(tabView: tabViewModule.TabView): number {
+export function getNativeSelectedIndex(tabView: TabView): number {
     return tabView.ios.selectedIndex;
 }
 
-export function getNativeFont(tabView: tabViewModule.TabView): UIFont {
+export function getNativeFont(tabView: TabView): UIFont {
     const tabBar = <UITabBar>tabView.ios.tabBar;
     if (tabBar.items.count > 0) {
         const currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
@@ -31,6 +31,6 @@ export function getNativeFont(tabView: tabViewModule.TabView): UIFont {
     return null;
 }
 
-export function getOriginalFont(tabView: tabViewModule.TabView): UIFont {
+export function getOriginalFont(tabView: TabView): UIFont {
     return tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
 }

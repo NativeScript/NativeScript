@@ -1,5 +1,5 @@
 import * as helper from "../helper";
-import TKUnit = require("../../TKUnit");
+import * as TKUnit from "../../TKUnit";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { _resetRootView } from "tns-core-modules/application/";
 import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";

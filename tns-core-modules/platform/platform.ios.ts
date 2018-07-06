@@ -128,3 +128,4 @@ export module screen {
 }
 
 export const isIOS = true;
+export const isAndroid = false;

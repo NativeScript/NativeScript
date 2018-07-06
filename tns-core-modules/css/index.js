@@ -1,1 +1,1 @@
-exports.parse = require('./lib/parse');
+export { parse } from "./lib/parse";
