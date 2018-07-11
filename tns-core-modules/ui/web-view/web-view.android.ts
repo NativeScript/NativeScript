@@ -69,11 +69,12 @@ function initializeWebViewClient(): void {
             } else {
                 let request: any = arguments[1];
                 let error: any = arguments[2];
-                
+
                 // before API version 23 there's no onReceiveError with 3 parameters, so it shouldn't come here
-                // but we don't have the onReceivedError with 3 parameters there and that's why we are using "as any" to avoid typescript errors
-                (super as any).onReceivedError(view, request, error);
-                
+                // but we don't have the onReceivedError with 3 parameters there and that's why we are ignorint tye typescript error
+                // @ts-ignore TS2554
+                super.onReceivedError(view, request, error);
+
                 const owner = this.owner;
                 if (owner) {
                     if (traceEnabled()) {
