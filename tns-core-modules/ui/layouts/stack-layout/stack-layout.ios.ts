@@ -81,21 +81,21 @@ export class StackLayout extends StackLayoutBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
         super.onLayout(left, top, right, bottom);
         if (this.orientation === "vertical") {
-            this.layoutVertical(left, top, right, bottom, insetLeft, insetTop);
+            this.layoutVertical(left, top, right, bottom, insets);
         }
         else {
-            this.layoutHorizontal(left, top, right, bottom);
+            this.layoutHorizontal(left, top, right, bottom, insets);
         }
     }
 
-    private layoutVertical(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
-        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insetLeft;
-        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insetTop;
-        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
-        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
+    private layoutVertical(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
         let childTop: number;
         let childLeft: number = paddingLeft;
@@ -126,11 +126,11 @@ export class StackLayout extends StackLayoutBase {
         })
     }
 
-    private layoutHorizontal(left: number, top: number, right: number, bottom: number): void {
-        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
-        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
-        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
+    private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
         let childTop: number = paddingTop;
         let childLeft: number;

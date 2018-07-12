@@ -92,16 +92,16 @@ export class View extends ViewCommon {
         }
 
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
-            let insetLeft = 0;
-            let insetTop = 0;
+            let insets = { left: 0, top: 0, right: 0, bottom: 0};
 
             if (this.nativeViewProtected.safeAreaInsets) {
-                insetLeft = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.left);
-                insetTop = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.top);
+                insets.left = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.left);
+                insets.top = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.top);
+                insets.right = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.right);
+                insets.bottom = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.bottom);
             }
 
-            // this.onLayout(actualPosition.left, actualPosition.top, actualPosition.right, actualPosition.bottom, insetLeft, insetTop, insetRight, insetBottom);
-            this.onLayout(actualPosition.left, actualPosition.top, actualPosition.right, actualPosition.bottom, insetLeft, insetTop);
+            this.onLayout(actualPosition.left, actualPosition.top, actualPosition.right, actualPosition.bottom, insets);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
         }
 
@@ -149,7 +149,7 @@ export class View extends ViewCommon {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number,  insetRight?: number, insetBottom?: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insets?: {left, top, right, bottom}): void {
         //
     }
 

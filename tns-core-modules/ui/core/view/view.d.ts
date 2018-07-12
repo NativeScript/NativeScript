@@ -404,7 +404,7 @@ export abstract class View extends ViewBase {
      * @param right     Right position, relative to parent
      * @param bottom    Bottom position, relative to parent
      */
-    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void;
+    public onLayout(left: number, top: number, right: number, bottom: number, insets?: {left, top, right, bottom}): void;
 
     /**
      * This method must be called by onMeasure(int, int) to store the measured width and measured height. Failing to do so will trigger an exception at measurement time.

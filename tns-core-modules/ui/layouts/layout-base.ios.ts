@@ -73,11 +73,12 @@ export class LayoutBase extends LayoutBaseCommon {
                 newHeight = height + onScreenTop;
             }
 
-            if (onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
+            if (width && onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
                 newWidth = newWidth + (layout.toDevicePixels(fullscreen.size.width) - (onScreenLeft + width));
             }
 
-            if (onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
+            if (height && onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
+                // console.log(">>>>>>>> Bottom Layout: onScreenTop - " + onScreenTop + " height - " + height + " safeAreaOriginY - " + layout.toDevicePixels(safeArea.origin.y) + " safeAreaHeight - " + layout.toDevicePixels(safeArea.size.height));
                 newHeight = newHeight + (layout.toDevicePixels(fullscreen.size.height) - (onScreenTop + height));
             }
 
