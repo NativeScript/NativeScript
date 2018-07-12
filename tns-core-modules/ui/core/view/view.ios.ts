@@ -85,8 +85,10 @@ export class View extends ViewCommon {
     @profile
     public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
         const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+        let actualPosition = {left, top, right, bottom};
         if (setFrame) {
-            this.layoutNativeView(left, top, right, bottom);
+            // The actual position of a native view can change in case of safe area violation or expansion
+            actualPosition = this.layoutNativeView(left, top, right, bottom) || actualPosition;
         }
 
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
@@ -98,7 +100,8 @@ export class View extends ViewCommon {
                 insetTop = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.top);
             }
 
-            this.onLayout(left, top, right, bottom, insetLeft, insetTop);
+            // this.onLayout(actualPosition.left, actualPosition.top, actualPosition.right, actualPosition.bottom, insetLeft, insetTop, insetRight, insetBottom);
+            this.onLayout(actualPosition.left, actualPosition.top, actualPosition.right, actualPosition.bottom, insetLeft, insetTop);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
         }
 
@@ -146,11 +149,11 @@ export class View extends ViewCommon {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number,  insetRight?: number, insetBottom?: number): void {
         //
     }
 
-    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+    public _setNativeViewFrame(nativeView: UIView, frame: CGRect): CGRect {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
             if (traceEnabled()) {
                 traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
@@ -197,16 +200,25 @@ export class View extends ViewCommon {
             // Rects could be equal on the first layout and an event should be raised.
             this._raiseLayoutChangedEvent();
         }
+
+        return nativeView.frame;
     }
 
-    public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+    public layoutNativeView(left: number, top: number, right: number, bottom: number): any {
         if (!this.nativeViewProtected) {
             return;
         }
 
         const nativeView = this.nativeViewProtected;
         const frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
-        this._setNativeViewFrame(nativeView, frame);
+        const actualFrame = this._setNativeViewFrame(nativeView, frame);
+
+        const actualLeft = Math.round(layout.toDevicePixels(actualFrame.origin.x));
+        const actualTop = Math.round(layout.toDevicePixels(actualFrame.origin.y));
+        const actualRight = Math.round(layout.toDevicePixels(actualFrame.origin.x + actualFrame.size.width));
+        const actualBottom = Math.round(layout.toDevicePixels(actualFrame.origin.y + actualFrame.size.height));
+
+        return { left: actualLeft, top: actualTop, right: actualRight, bottom: actualBottom};
     }
 
     public _setLayoutFlags(left: number, top: number, right: number, bottom: number): void {

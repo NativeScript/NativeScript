@@ -95,6 +95,8 @@ export class LayoutBase extends LayoutBaseCommon {
                 nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frameNew.size.width, frameNew.size.height);
             // }
         // }
+
+            return frameNew;
     }
     
     [clipToBoundsProperty.getDefault](): boolean {
