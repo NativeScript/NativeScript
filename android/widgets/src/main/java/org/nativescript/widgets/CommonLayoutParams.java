@@ -118,7 +118,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
         int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
 
         // If we have explicit height and gravity is FILL we need to be centered otherwise our explicit height won't be taken into account.
-        if ((lp.height >= 0 || lp.heightPercent >= 0) && verticalGravity == Gravity.FILL_VERTICAL) {
+        if ((lp.height >= 0 || lp.heightPercent > 0) && verticalGravity == Gravity.FILL_VERTICAL) {
             verticalGravity = Gravity.CENTER_VERTICAL;
         }
 
@@ -145,7 +145,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
         int horizontalGravity = Gravity.getAbsoluteGravity(gravity, child.getLayoutDirection()) & Gravity.HORIZONTAL_GRAVITY_MASK;
 
         // If we have explicit width and gravity is FILL we need to be centered otherwise our explicit width won't be taken into account.
-        if ((lp.width >= 0 || lp.widthPercent >= 0) && horizontalGravity == Gravity.FILL_HORIZONTAL) {
+        if ((lp.width >= 0 || lp.widthPercent > 0) && horizontalGravity == Gravity.FILL_HORIZONTAL) {
             horizontalGravity = Gravity.CENTER_HORIZONTAL;
         }
 
