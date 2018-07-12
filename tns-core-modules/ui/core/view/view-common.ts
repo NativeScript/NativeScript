@@ -641,7 +641,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
-    public abstract onLayout(left: number, top: number, right: number, bottom: number, insetLeft?: number, insetTop?: number): void;
+    public abstract onLayout(left: number, top: number, right: number, bottom: number, insets?: {left, top, right, bottom}): void;
     public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
