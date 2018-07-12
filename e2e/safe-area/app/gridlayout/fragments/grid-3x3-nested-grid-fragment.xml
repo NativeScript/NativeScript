@@ -2,7 +2,7 @@
     <GridLayout row="0" col="0" backgroundColor="SkyBlue">
         <Label text="overflowing text, overflowing text"></Label>
     </GridLayout>
-    <GridLayout row="0" col="1" backgroundColor="Azure">
+    <GridLayout row="0" col="1" backgroundColor="Indigo">
         <Label text="overflowing text, overflowing text"></Label>
     </GridLayout>
     <GridLayout row="0" col="2" backgroundColor="Crimson">
@@ -23,7 +23,7 @@
     <GridLayout row="2" col="1" backgroundColor="Khaki">
         <Label text="overflowing text, overflowing text"></Label>
     </GridLayout>
-    <GridLayout row="2" col="2" backgroundColor="AliceBlue">
+    <GridLayout row="2" col="2" backgroundColor="IndianRed">
         <Label text="overflowing text, overflowing text"></Label>
     </GridLayout>
 </GridLayout>

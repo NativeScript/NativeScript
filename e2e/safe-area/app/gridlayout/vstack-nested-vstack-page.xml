@@ -6,5 +6,5 @@
         <Label class="action-bar-title" text="Home"></Label>
     </ActionBar>
 
-    <fragments:stack-nested-stack-fragment></fragments:stack-nested-stack-fragment>
+    <fragments:vstack-nested-vstack-fragment></fragments:vstack-nested-vstack-fragment>
 </Page>
