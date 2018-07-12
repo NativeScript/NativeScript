@@ -1,0 +1,101 @@
+<GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="CadetBlue">
+    <StackLayout row="0" col="0" orientation="horizontal" backgroundColor="SkyBlue">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="0" col="1" orientation="horizontal" backgroundColor="Indigo">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="0" col="2" orientation="horizontal" backgroundColor="Crimson">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="1" col="0" orientation="horizontal" backgroundColor="Chocolate">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="1" col="1" orientation="horizontal" backgroundColor="Cornsilk">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="1" col="2" orientation="horizontal" backgroundColor="BurlyWood">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="2" col="0" orientation="horizontal" backgroundColor="GoldenRod">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="2" col="1" orientation="horizontal" backgroundColor="Khaki">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+    <StackLayout row="2" col="2" orientation="horizontal" backgroundColor="IndianRed">
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+        <Label text="123"></Label>
+        <Label text="456"></Label>
+        <Label text="789"></Label>
+    </StackLayout>
+</GridLayout>
