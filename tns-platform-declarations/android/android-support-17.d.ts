@@ -1,11 +1,10 @@
-// Android support version 27.0.1
 declare module android {
 	export module support {
 		export module annotation {
 			export class AnimRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.AnimRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.AnimRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.AnimRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -13,6 +12,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -28,7 +28,7 @@ declare module android {
 			export class AnimatorRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.AnimatorRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.AnimatorRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.AnimatorRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -36,6 +36,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -51,7 +52,7 @@ declare module android {
 			export class AnyRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.AnyRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.AnyRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.AnyRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -59,6 +60,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -74,7 +76,7 @@ declare module android {
 			export class AnyThread extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.AnyThread>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.AnyThread interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.AnyThread interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -82,6 +84,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -97,7 +100,7 @@ declare module android {
 			export class ArrayRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.ArrayRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.ArrayRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.ArrayRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -105,6 +108,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -120,7 +124,7 @@ declare module android {
 			export class AttrRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.AttrRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.AttrRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.AttrRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -128,6 +132,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -143,7 +148,7 @@ declare module android {
 			export class BinderThread extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.BinderThread>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.BinderThread interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.BinderThread interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -151,6 +156,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -166,7 +172,7 @@ declare module android {
 			export class BoolRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.BoolRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.BoolRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.BoolRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -174,6 +180,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -189,7 +196,7 @@ declare module android {
 			export class CallSuper extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.CallSuper>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.CallSuper interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.CallSuper interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -197,6 +204,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -212,7 +220,7 @@ declare module android {
 			export class CheckResult extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.CheckResult>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.CheckResult interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.CheckResult interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					suggest(): string;
@@ -221,6 +229,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public suggest(): string;
 				public equals(param0: any): boolean;
@@ -237,7 +246,7 @@ declare module android {
 			export class ColorInt extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.ColorInt>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.ColorInt interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.ColorInt interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -245,6 +254,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -260,7 +270,7 @@ declare module android {
 			export class ColorLong extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.ColorLong>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.ColorLong interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.ColorLong interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -268,6 +278,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -283,7 +294,7 @@ declare module android {
 			export class ColorRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.ColorRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.ColorRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.ColorRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -291,6 +302,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -306,7 +318,7 @@ declare module android {
 			export class DimenRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.DimenRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.DimenRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.DimenRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -314,6 +326,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -329,7 +342,7 @@ declare module android {
 			export class Dimension extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.Dimension>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.Dimension interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.Dimension interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					unit(): number;
@@ -338,6 +351,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public static PX: number;
 				public static SP: number;
 				public static DP: number;
@@ -357,7 +371,7 @@ declare module android {
 			export class DrawableRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.DrawableRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.DrawableRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.DrawableRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -365,6 +379,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -380,7 +395,7 @@ declare module android {
 			export class FloatRange extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.FloatRange>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.FloatRange interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.FloatRange interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					from(): number;
@@ -392,6 +407,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public toInclusive(): boolean;
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -411,7 +427,7 @@ declare module android {
 			export class FontRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.FontRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.FontRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.FontRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -419,6 +435,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -434,7 +451,7 @@ declare module android {
 			export class FractionRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.FractionRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.FractionRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.FractionRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -442,6 +459,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -457,7 +475,7 @@ declare module android {
 			export class GuardedBy extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.GuardedBy>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.GuardedBy interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.GuardedBy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): string;
@@ -466,6 +484,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public value(): string;
 				public equals(param0: any): boolean;
@@ -482,7 +501,7 @@ declare module android {
 			export class HalfFloat extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.HalfFloat>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.HalfFloat interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.HalfFloat interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -490,6 +509,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -505,7 +525,7 @@ declare module android {
 			export class IdRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.IdRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.IdRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.IdRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -513,6 +533,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -528,7 +549,7 @@ declare module android {
 			export class IntDef extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.IntDef>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.IntDef interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.IntDef interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): native.Array<number>;
@@ -538,6 +559,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public value(): native.Array<number>;
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -555,7 +577,7 @@ declare module android {
 			export class IntRange extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.IntRange>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.IntRange interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.IntRange interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					from(): number;
@@ -565,6 +587,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -582,7 +605,7 @@ declare module android {
 			export class IntegerRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.IntegerRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.IntegerRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.IntegerRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -590,6 +613,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -605,7 +629,7 @@ declare module android {
 			export class InterpolatorRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.InterpolatorRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.InterpolatorRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.InterpolatorRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -613,6 +637,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -628,7 +653,7 @@ declare module android {
 			export class Keep extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.Keep>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.Keep interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.Keep interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -636,6 +661,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -651,7 +677,7 @@ declare module android {
 			export class LayoutRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.LayoutRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.LayoutRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.LayoutRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -659,6 +685,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -674,7 +701,7 @@ declare module android {
 			export class MainThread extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.MainThread>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.MainThread interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.MainThread interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -682,6 +709,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -697,7 +725,7 @@ declare module android {
 			export class MenuRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.MenuRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.MenuRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.MenuRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -705,6 +733,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -720,7 +749,7 @@ declare module android {
 			export class NavigationRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.NavigationRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.NavigationRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.NavigationRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -728,6 +757,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -743,7 +773,7 @@ declare module android {
 			export class NonNull extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.NonNull>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.NonNull interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.NonNull interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -751,6 +781,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -766,7 +797,7 @@ declare module android {
 			export class Nullable extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.Nullable>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.Nullable interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.Nullable interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -774,6 +805,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -789,7 +821,7 @@ declare module android {
 			export class PluralsRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.PluralsRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.PluralsRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.PluralsRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -797,6 +829,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -812,7 +845,7 @@ declare module android {
 			export class Px extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.Px>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.Px interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.Px interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -820,6 +853,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -835,7 +869,7 @@ declare module android {
 			export class RawRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.RawRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.RawRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.RawRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -843,6 +877,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -858,7 +893,7 @@ declare module android {
 			export class RequiresApi extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.RequiresApi>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.RequiresApi interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.RequiresApi interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): number;
@@ -868,6 +903,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public api(): number;
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -885,7 +921,7 @@ declare module android {
 			export class RequiresPermission extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.RequiresPermission>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.RequiresPermission interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.RequiresPermission interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): string;
@@ -897,6 +933,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public allOf(): native.Array<string>;
 				public conditional(): boolean;
 				public hashCode(): number;
@@ -910,7 +947,7 @@ declare module android {
 				export class Read extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<android.support.annotation.RequiresPermission.Read>;
 					/**
-					 * Constructs a new instance of the android.support.annotation.RequiresPermission$Read interface with the provided implementation.
+					 * Constructs a new instance of the android.support.annotation.RequiresPermission$Read interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						value(): android.support.annotation.RequiresPermission;
@@ -919,6 +956,7 @@ declare module android {
 						hashCode(): number;
 						toString(): string;
 					});
+					public constructor();
 					public equals(param0: any): boolean;
 					public toString(): string;
 					public annotationType(): java.lang.Class<any>;
@@ -928,7 +966,7 @@ declare module android {
 				export class Write extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<android.support.annotation.RequiresPermission.Write>;
 					/**
-					 * Constructs a new instance of the android.support.annotation.RequiresPermission$Write interface with the provided implementation.
+					 * Constructs a new instance of the android.support.annotation.RequiresPermission$Write interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						value(): android.support.annotation.RequiresPermission;
@@ -937,6 +975,7 @@ declare module android {
 						hashCode(): number;
 						toString(): string;
 					});
+					public constructor();
 					public equals(param0: any): boolean;
 					public toString(): string;
 					public annotationType(): java.lang.Class<any>;
@@ -954,7 +993,7 @@ declare module android {
 			export class RestrictTo extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.RestrictTo>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.RestrictTo interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.RestrictTo interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): native.Array<android.support.annotation.RestrictTo.Scope>;
@@ -963,6 +1002,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public value(): native.Array<android.support.annotation.RestrictTo.Scope>;
 				public hashCode(): number;
 				public equals(param0: any): boolean;
@@ -992,7 +1032,7 @@ declare module android {
 			export class Size extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.Size>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.Size interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.Size interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): number;
@@ -1004,6 +1044,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public max(): number;
 				public min(): number;
 				public multiple(): number;
@@ -1023,7 +1064,7 @@ declare module android {
 			export class StringDef extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.StringDef>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.StringDef interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.StringDef interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					value(): native.Array<string>;
@@ -1032,6 +1073,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1048,7 +1090,7 @@ declare module android {
 			export class StringRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.StringRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.StringRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.StringRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1056,6 +1098,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1071,7 +1114,7 @@ declare module android {
 			export class StyleRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.StyleRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.StyleRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.StyleRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1079,6 +1122,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1094,7 +1138,7 @@ declare module android {
 			export class StyleableRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.StyleableRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.StyleableRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.StyleableRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1102,6 +1146,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1117,7 +1162,7 @@ declare module android {
 			export class TransitionRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.TransitionRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.TransitionRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.TransitionRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1125,6 +1170,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1140,7 +1186,7 @@ declare module android {
 			export class UiThread extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.UiThread>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.UiThread interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.UiThread interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1148,6 +1194,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1163,7 +1210,7 @@ declare module android {
 			export class VisibleForTesting extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.VisibleForTesting>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.VisibleForTesting interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.VisibleForTesting interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					otherwise(): number;
@@ -1172,6 +1219,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public static PROTECTED: number;
 				public static NONE: number;
 				public static PRIVATE: number;
@@ -1192,7 +1240,7 @@ declare module android {
 			export class WorkerThread extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.WorkerThread>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.WorkerThread interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.WorkerThread interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1200,6 +1248,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1215,7 +1264,7 @@ declare module android {
 			export class XmlRes extends java.lang.Object implements java.lang.annotation.Annotation {
 				public static class: java.lang.Class<android.support.annotation.XmlRes>;
 				/**
-				 * Constructs a new instance of the android.support.annotation.XmlRes interface with the provided implementation.
+				 * Constructs a new instance of the android.support.annotation.XmlRes interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					annotationType(): java.lang.Class<any>;
@@ -1223,6 +1272,7 @@ declare module android {
 					hashCode(): number;
 					toString(): string;
 				});
+				public constructor();
 				public hashCode(): number;
 				public equals(param0: any): boolean;
 				public annotationType(): java.lang.Class<any>;
@@ -1774,10 +1824,11 @@ declare module android {
 					export class NavigationMenuItem extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.internal.NavigationMenuPresenter.NavigationMenuItem>;
 						/**
-						 * Constructs a new instance of the android.support.design.internal.NavigationMenuPresenter$NavigationMenuItem interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.internal.NavigationMenuPresenter$NavigationMenuItem interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 						});
+						public constructor();
 					}
 					export class NavigationMenuSeparatorItem extends java.lang.Object implements android.support.design.internal.NavigationMenuPresenter.NavigationMenuItem {
 						public static class: java.lang.Class<android.support.design.internal.NavigationMenuPresenter.NavigationMenuSeparatorItem>;
@@ -2218,7 +2269,7 @@ declare module android {
 						export class ScrollFlags extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.design.widget.AppBarLayout.LayoutParams.ScrollFlags>;
 							/**
-							 * Constructs a new instance of the android.support.design.widget.AppBarLayout$LayoutParams$ScrollFlags interface with the provided implementation.
+							 * Constructs a new instance of the android.support.design.widget.AppBarLayout$LayoutParams$ScrollFlags interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -2226,6 +2277,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -2235,11 +2287,12 @@ declare module android {
 					export class OnOffsetChangedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.AppBarLayout.OnOffsetChangedListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.AppBarLayout$OnOffsetChangedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.AppBarLayout$OnOffsetChangedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onOffsetChanged(param0: android.support.design.widget.AppBarLayout, param1: number): void;
 						});
+						public constructor();
 						public onOffsetChanged(param0: android.support.design.widget.AppBarLayout, param1: number): void;
 					}
 					export class ScrollingViewBehavior extends android.support.design.widget.HeaderScrollingViewBehavior {
@@ -2296,7 +2349,7 @@ declare module android {
 						export class DismissEvent extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.BaseCallback.DismissEvent>;
 							/**
-							 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$BaseCallback$DismissEvent interface with the provided implementation.
+							 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$BaseCallback$DismissEvent interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -2304,6 +2357,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -2319,19 +2373,20 @@ declare module android {
 					export class ContentViewCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.ContentViewCallback>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$ContentViewCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$ContentViewCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							animateContentIn(param0: number, param1: number): void;
 							animateContentOut(param0: number, param1: number): void;
 						});
+						public constructor();
 						public animateContentIn(param0: number, param1: number): void;
 						public animateContentOut(param0: number, param1: number): void;
 					}
 					export class Duration extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.Duration>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$Duration interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$Duration interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -2339,6 +2394,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -2347,23 +2403,25 @@ declare module android {
 					export class OnAttachStateChangeListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.OnAttachStateChangeListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$OnAttachStateChangeListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$OnAttachStateChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onViewAttachedToWindow(param0: android.view.View): void;
 							onViewDetachedFromWindow(param0: android.view.View): void;
 						});
+						public constructor();
 						public onViewAttachedToWindow(param0: android.view.View): void;
 						public onViewDetachedFromWindow(param0: android.view.View): void;
 					}
 					export class OnLayoutChangeListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.BaseTransientBottomBar.OnLayoutChangeListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$OnLayoutChangeListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BaseTransientBottomBar$OnLayoutChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onLayoutChange(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						});
+						public constructor();
 						public onLayoutChange(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					}
 					export class SnackbarBaseLayout extends android.widget.FrameLayout {
@@ -2487,21 +2545,23 @@ declare module android {
 					export class OnNavigationItemReselectedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.BottomNavigationView.OnNavigationItemReselectedListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BottomNavigationView$OnNavigationItemReselectedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BottomNavigationView$OnNavigationItemReselectedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onNavigationItemReselected(param0: android.view.MenuItem): void;
 						});
+						public constructor();
 						public onNavigationItemReselected(param0: android.view.MenuItem): void;
 					}
 					export class OnNavigationItemSelectedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.BottomNavigationView.OnNavigationItemSelectedListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BottomNavigationView$OnNavigationItemSelectedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BottomNavigationView$OnNavigationItemSelectedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onNavigationItemSelected(param0: android.view.MenuItem): boolean;
 						});
+						public constructor();
 						public onNavigationItemSelected(param0: android.view.MenuItem): boolean;
 					}
 					export class SavedState extends android.support.v4.view.AbsSavedState {
@@ -2580,7 +2640,7 @@ declare module android {
 					export class State extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.BottomSheetBehavior.State>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.BottomSheetBehavior$State interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.BottomSheetBehavior$State interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -2588,6 +2648,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -2888,7 +2949,7 @@ declare module android {
 						export class CollapseMode extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.design.widget.CollapsingToolbarLayout.LayoutParams.CollapseMode>;
 							/**
-							 * Constructs a new instance of the android.support.design.widget.CollapsingToolbarLayout$LayoutParams$CollapseMode interface with the provided implementation.
+							 * Constructs a new instance of the android.support.design.widget.CollapsingToolbarLayout$LayoutParams$CollapseMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -2896,6 +2957,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -3050,7 +3112,7 @@ declare module android {
 					export class DefaultBehavior extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.DefaultBehavior>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.CoordinatorLayout$DefaultBehavior interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.CoordinatorLayout$DefaultBehavior interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							value(): java.lang.Class<any>;
@@ -3059,6 +3121,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public value(): java.lang.Class<any>;
 						public equals(param0: any): boolean;
 						public hashCode(): number;
@@ -3068,7 +3131,7 @@ declare module android {
 					export class DispatchChangeEvent extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.CoordinatorLayout.DispatchChangeEvent>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.CoordinatorLayout$DispatchChangeEvent interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.CoordinatorLayout$DispatchChangeEvent interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -3076,6 +3139,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -3234,7 +3298,7 @@ declare module android {
 					export class Size extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButton.Size>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.FloatingActionButton$Size interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.FloatingActionButton$Size interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -3242,6 +3306,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -3282,12 +3347,13 @@ declare module android {
 					export class InternalVisibilityChangedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.FloatingActionButtonImpl.InternalVisibilityChangedListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.FloatingActionButtonImpl$InternalVisibilityChangedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.FloatingActionButtonImpl$InternalVisibilityChangedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onShown(): void;
 							onHidden(): void;
 						});
+						public constructor();
 						public onHidden(): void;
 						public onShown(): void;
 					}
@@ -3451,11 +3517,12 @@ declare module android {
 					export class OnNavigationItemSelectedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.NavigationView.OnNavigationItemSelectedListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.NavigationView$OnNavigationItemSelectedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.NavigationView$OnNavigationItemSelectedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onNavigationItemSelected(param0: android.view.MenuItem): boolean;
 						});
+						public constructor();
 						public onNavigationItemSelected(param0: android.view.MenuItem): boolean;
 					}
 					export class SavedState extends android.support.v4.view.AbsSavedState {
@@ -3515,7 +3582,7 @@ declare module android {
 				export class ShadowViewDelegate extends java.lang.Object {
 					public static class: java.lang.Class<android.support.design.widget.ShadowViewDelegate>;
 					/**
-					 * Constructs a new instance of the android.support.design.widget.ShadowViewDelegate interface with the provided implementation.
+					 * Constructs a new instance of the android.support.design.widget.ShadowViewDelegate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						getRadius(): number;
@@ -3523,6 +3590,7 @@ declare module android {
 						setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
 						isCompatPaddingEnabled(): boolean;
 					});
+					public constructor();
 					public setBackgroundDrawable(param0: android.graphics.drawable.Drawable): void;
 					public isCompatPaddingEnabled(): boolean;
 					public setShadowPadding(param0: number, param1: number, param2: number, param3: number): void;
@@ -3638,12 +3706,13 @@ declare module android {
 					export class Callback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.SnackbarManager.Callback>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.SnackbarManager$Callback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.SnackbarManager$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							show(): void;
 							dismiss(param0: number): void;
 						});
+						public constructor();
 						public show(): void;
 						public dismiss(param0: number): void;
 					}
@@ -3704,12 +3773,13 @@ declare module android {
 					export class OnDismissListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.SwipeDismissBehavior.OnDismissListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.SwipeDismissBehavior$OnDismissListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.SwipeDismissBehavior$OnDismissListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onDismiss(param0: android.view.View): void;
 							onDragStateChanged(param0: number): void;
 						});
+						public constructor();
 						public onDismiss(param0: android.view.View): void;
 						public onDragStateChanged(param0: number): void;
 					}
@@ -3720,7 +3790,7 @@ declare module android {
 					export class SwipeDirection extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.SwipeDismissBehavior.SwipeDirection>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.SwipeDismissBehavior$SwipeDirection interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.SwipeDismissBehavior$SwipeDirection interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -3728,6 +3798,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -3861,7 +3932,7 @@ declare module android {
 					export class Mode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.Mode>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.TabLayout$Mode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.TabLayout$Mode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -3869,6 +3940,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -3877,13 +3949,14 @@ declare module android {
 					export class OnTabSelectedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.OnTabSelectedListener>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.TabLayout$OnTabSelectedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.TabLayout$OnTabSelectedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onTabSelected(param0: android.support.design.widget.TabLayout.Tab): void;
 							onTabUnselected(param0: android.support.design.widget.TabLayout.Tab): void;
 							onTabReselected(param0: android.support.design.widget.TabLayout.Tab): void;
 						});
+						public constructor();
 						public onTabUnselected(param0: android.support.design.widget.TabLayout.Tab): void;
 						public onTabSelected(param0: android.support.design.widget.TabLayout.Tab): void;
 						public onTabReselected(param0: android.support.design.widget.TabLayout.Tab): void;
@@ -3964,7 +4037,7 @@ declare module android {
 					export class TabGravity extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.design.widget.TabLayout.TabGravity>;
 						/**
-						 * Constructs a new instance of the android.support.design.widget.TabLayout$TabGravity interface with the provided implementation.
+						 * Constructs a new instance of the android.support.design.widget.TabLayout$TabGravity interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -3972,6 +4045,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -4375,7 +4449,7 @@ declare module android {
 				export class Animatable2Compat extends java.lang.Object implements android.graphics.drawable.Animatable {
 					public static class: java.lang.Class<android.support.graphics.drawable.Animatable2Compat>;
 					/**
-					 * Constructs a new instance of the android.support.graphics.drawable.Animatable2Compat interface with the provided implementation.
+					 * Constructs a new instance of the android.support.graphics.drawable.Animatable2Compat interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						registerAnimationCallback(param0: android.support.graphics.drawable.Animatable2Compat.AnimationCallback): void;
@@ -4385,6 +4459,7 @@ declare module android {
 						stop(): void;
 						isRunning(): boolean;
 					});
+					public constructor();
 					public clearAnimationCallbacks(): void;
 					public isRunning(): boolean;
 					public stop(): void;
@@ -4880,12 +4955,13 @@ declare module android {
 				export class AnimatorPauseListenerCompat extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.AnimatorUtilsApi14.AnimatorPauseListenerCompat>;
 					/**
-					 * Constructs a new instance of the android.support.transition.AnimatorUtilsApi14$AnimatorPauseListenerCompat interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.AnimatorUtilsApi14$AnimatorPauseListenerCompat interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onAnimationPause(param0: android.animation.Animator): void;
 						onAnimationResume(param0: android.animation.Animator): void;
 					});
+					public constructor();
 					public onAnimationResume(param0: android.animation.Animator): void;
 					public onAnimationPause(param0: android.animation.Animator): void;
 				}
@@ -4913,13 +4989,14 @@ declare module android {
 			export class AnimatorUtilsImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.AnimatorUtilsImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.AnimatorUtilsImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.AnimatorUtilsImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					addPauseListener(param0: android.animation.Animator, param1: android.animation.AnimatorListenerAdapter): void;
 					pause(param0: android.animation.Animator): void;
 					resume(param0: android.animation.Animator): void;
 				});
+				public constructor();
 				public pause(param0: android.animation.Animator): void;
 				public addPauseListener(param0: android.animation.Animator, param1: android.animation.AnimatorListenerAdapter): void;
 				public resume(param0: android.animation.Animator): void;
@@ -5241,12 +5318,13 @@ declare module android {
 			export class GhostViewImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.GhostViewImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.GhostViewImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.GhostViewImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					setVisibility(param0: number): void;
 					reserveEndViewTransition(param0: android.view.ViewGroup, param1: android.view.View): void;
 				});
+				public constructor();
 				public reserveEndViewTransition(param0: android.view.ViewGroup, param1: android.view.View): void;
 				public setVisibility(param0: number): void;
 			}
@@ -5254,12 +5332,13 @@ declare module android {
 				export class Creator extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.GhostViewImpl.Creator>;
 					/**
-					 * Constructs a new instance of the android.support.transition.GhostViewImpl$Creator interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.GhostViewImpl$Creator interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						addGhost(param0: android.view.View, param1: android.view.ViewGroup, param2: android.graphics.Matrix): android.support.transition.GhostViewImpl;
 						removeGhost(param0: android.view.View): void;
 					});
+					public constructor();
 					public removeGhost(param0: android.view.View): void;
 					public addGhost(param0: android.view.View, param1: android.view.ViewGroup, param2: android.graphics.Matrix): android.support.transition.GhostViewImpl;
 				}
@@ -5320,13 +5399,14 @@ declare module android {
 			export class ImageViewUtilsImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.ImageViewUtilsImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.ImageViewUtilsImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.ImageViewUtilsImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					startAnimateTransform(param0: android.widget.ImageView): void;
 					animateTransform(param0: android.widget.ImageView, param1: android.graphics.Matrix): void;
 					reserveEndAnimateTransform(param0: android.widget.ImageView, param1: android.animation.Animator): void;
 				});
+				public constructor();
 				public reserveEndAnimateTransform(param0: android.widget.ImageView, param1: android.animation.Animator): void;
 				public startAnimateTransform(param0: android.widget.ImageView): void;
 				public animateTransform(param0: android.widget.ImageView, param1: android.graphics.Matrix): void;
@@ -5383,11 +5463,12 @@ declare module android {
 			export class ObjectAnimatorUtilsImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.ObjectAnimatorUtilsImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.ObjectAnimatorUtilsImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.ObjectAnimatorUtilsImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					ofPointF(param0: any, param1: android.util.Property<any,any>, param2: android.graphics.Path): android.animation.ObjectAnimator;
 				});
+				public constructor();
 				public ofPointF(param0: any, param1: android.util.Property<any,any>, param2: android.graphics.Path): android.animation.ObjectAnimator;
 			}
 		}
@@ -5475,11 +5556,12 @@ declare module android {
 			export class PropertyValuesHolderUtilsImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.PropertyValuesHolderUtilsImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.PropertyValuesHolderUtilsImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.PropertyValuesHolderUtilsImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					ofPointF(param0: android.util.Property<any,android.graphics.PointF>, param1: android.graphics.Path): android.animation.PropertyValuesHolder;
 				});
+				public constructor();
 				public ofPointF(param0: android.util.Property<any,android.graphics.PointF>, param1: android.graphics.Path): android.animation.PropertyValuesHolder;
 			}
 		}
@@ -5550,12 +5632,13 @@ declare module android {
 				export class CalculateSlide extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Slide.CalculateSlide>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Slide$CalculateSlide interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Slide$CalculateSlide interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						getGoneX(param0: android.view.ViewGroup, param1: android.view.View): number;
 						getGoneY(param0: android.view.ViewGroup, param1: android.view.View): number;
 					});
+					public constructor();
 					public getGoneX(param0: android.view.ViewGroup, param1: android.view.View): number;
 					public getGoneY(param0: android.view.ViewGroup, param1: android.view.View): number;
 				}
@@ -5572,7 +5655,7 @@ declare module android {
 				export class GravityFlag extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<android.support.transition.Slide.GravityFlag>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Slide$GravityFlag interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Slide$GravityFlag interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						annotationType(): java.lang.Class<any>;
@@ -5580,6 +5663,7 @@ declare module android {
 						hashCode(): number;
 						toString(): string;
 					});
+					public constructor();
 					public equals(param0: any): boolean;
 					public toString(): string;
 					public annotationType(): java.lang.Class<any>;
@@ -5600,10 +5684,11 @@ declare module android {
 				export class ArcMotion extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.ArcMotion>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$ArcMotion interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$ArcMotion interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static MINIMUM_VERTICAL_ANGLE: number;
 					public static MAXIMUM_ANGLE: number;
 					public static MINIMUM_HORIZONTAL_ANGLE: number;
@@ -5611,56 +5696,62 @@ declare module android {
 				export class ChangeBounds extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.ChangeBounds>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$ChangeBounds interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$ChangeBounds interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static RESIZE_CLIP: number;
 				}
 				export class ChangeTransform extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.ChangeTransform>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$ChangeTransform interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$ChangeTransform interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static REPARENT: number;
 					public static REPARENT_WITH_OVERLAY: number;
 				}
 				export class Fade extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.Fade>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$Fade interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$Fade interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static FADING_MODE: number;
 				}
 				export class PatternPathMotion extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.PatternPathMotion>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$PatternPathMotion interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$PatternPathMotion interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static PATTERN_PATH_DATA: number;
 				}
 				export class Slide extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.Slide>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$Slide interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$Slide interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static SLIDE_EDGE: number;
 				}
 				export class Transition extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.Transition>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$Transition interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$Transition interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static MATCH_ORDER: number;
 					public static DURATION: number;
 					public static START_DELAY: number;
@@ -5669,10 +5760,11 @@ declare module android {
 				export class TransitionManager extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.TransitionManager>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$TransitionManager interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$TransitionManager interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static FROM_SCENE: number;
 					public static TRANSITION: number;
 					public static TO_SCENE: number;
@@ -5680,19 +5772,21 @@ declare module android {
 				export class TransitionSet extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.TransitionSet>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$TransitionSet interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$TransitionSet interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static TRANSITION_ORDERING: number;
 				}
 				export class TransitionTarget extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.TransitionTarget>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$TransitionTarget interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$TransitionTarget interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static TARGET_NAME: number;
 					public static EXCLUDE_NAME: number;
 					public static TARGET_CLASS: number;
@@ -5703,10 +5797,11 @@ declare module android {
 				export class VisibilityTransition extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Styleable.VisibilityTransition>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Styleable$VisibilityTransition interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Styleable$VisibilityTransition interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 					});
+					public constructor();
 					public static TRANSITION_VISIBILITY_MODE: number;
 				}
 			}
@@ -5794,7 +5889,7 @@ declare module android {
 				export class MatchOrder extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<android.support.transition.Transition.MatchOrder>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Transition$MatchOrder interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Transition$MatchOrder interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						annotationType(): java.lang.Class<any>;
@@ -5802,6 +5897,7 @@ declare module android {
 						hashCode(): number;
 						toString(): string;
 					});
+					public constructor();
 					public equals(param0: any): boolean;
 					public toString(): string;
 					public annotationType(): java.lang.Class<any>;
@@ -5810,7 +5906,7 @@ declare module android {
 				export class TransitionListener extends java.lang.Object {
 					public static class: java.lang.Class<android.support.transition.Transition.TransitionListener>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Transition$TransitionListener interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Transition$TransitionListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onTransitionStart(param0: android.support.transition.Transition): void;
@@ -5819,6 +5915,7 @@ declare module android {
 						onTransitionPause(param0: android.support.transition.Transition): void;
 						onTransitionResume(param0: android.support.transition.Transition): void;
 					});
+					public constructor();
 					public onTransitionStart(param0: android.support.transition.Transition): void;
 					public onTransitionResume(param0: android.support.transition.Transition): void;
 					public onTransitionCancel(param0: android.support.transition.Transition): void;
@@ -6070,7 +6167,7 @@ declare module android {
 			export class ViewGroupOverlayImpl extends java.lang.Object implements android.support.transition.ViewOverlayImpl {
 				public static class: java.lang.Class<android.support.transition.ViewGroupOverlayImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.ViewGroupOverlayImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.ViewGroupOverlayImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					add(param0: android.view.View): void;
@@ -6079,6 +6176,7 @@ declare module android {
 					clear(): void;
 					remove(param0: android.graphics.drawable.Drawable): void;
 				});
+				public constructor();
 				public remove(param0: android.graphics.drawable.Drawable): void;
 				public clear(): void;
 				public add(param0: android.graphics.drawable.Drawable): void;
@@ -6129,12 +6227,13 @@ declare module android {
 			export class ViewGroupUtilsImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.ViewGroupUtilsImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.ViewGroupUtilsImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.ViewGroupUtilsImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					getOverlay(param0: android.view.ViewGroup): android.support.transition.ViewGroupOverlayImpl;
 					suppressLayout(param0: android.view.ViewGroup, param1: boolean): void;
 				});
+				public constructor();
 				public suppressLayout(param0: android.view.ViewGroup, param1: boolean): void;
 				public getOverlay(param0: android.view.ViewGroup): android.support.transition.ViewGroupOverlayImpl;
 			}
@@ -6246,13 +6345,14 @@ declare module android {
 			export class ViewOverlayImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.ViewOverlayImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.ViewOverlayImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.ViewOverlayImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					add(param0: android.graphics.drawable.Drawable): void;
 					clear(): void;
 					remove(param0: android.graphics.drawable.Drawable): void;
 				});
+				public constructor();
 				public remove(param0: android.graphics.drawable.Drawable): void;
 				public clear(): void;
 				public add(param0: android.graphics.drawable.Drawable): void;
@@ -6377,7 +6477,7 @@ declare module android {
 			export class ViewUtilsImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.ViewUtilsImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.ViewUtilsImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.ViewUtilsImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 					getOverlay(param0: android.view.View): android.support.transition.ViewOverlayImpl;
@@ -6391,6 +6491,7 @@ declare module android {
 					setAnimationMatrix(param0: android.view.View, param1: android.graphics.Matrix): void;
 					setLeftTopRightBottom(param0: android.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				});
+				public constructor();
 				public getWindowId(param0: android.view.View): android.support.transition.WindowIdImpl;
 				public saveNonTransitionAlpha(param0: android.view.View): void;
 				public transformMatrixToGlobal(param0: android.view.View, param1: android.graphics.Matrix): void;
@@ -6446,7 +6547,7 @@ declare module android {
 				export class Mode extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<android.support.transition.Visibility.Mode>;
 					/**
-					 * Constructs a new instance of the android.support.transition.Visibility$Mode interface with the provided implementation.
+					 * Constructs a new instance of the android.support.transition.Visibility$Mode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						annotationType(): java.lang.Class<any>;
@@ -6454,6 +6555,7 @@ declare module android {
 						hashCode(): number;
 						toString(): string;
 					});
+					public constructor();
 					public equals(param0: any): boolean;
 					public toString(): string;
 					public annotationType(): java.lang.Class<any>;
@@ -6513,10 +6615,11 @@ declare module android {
 			export class WindowIdImpl extends java.lang.Object {
 				public static class: java.lang.Class<android.support.transition.WindowIdImpl>;
 				/**
-				 * Constructs a new instance of the android.support.transition.WindowIdImpl interface with the provided implementation.
+				 * Constructs a new instance of the android.support.transition.WindowIdImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
 				});
+				public constructor();
 			}
 		}
 	}
@@ -6591,13 +6694,14 @@ declare module android {
 					export class Delegate extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.ActionBarDrawerToggle.Delegate>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.ActionBarDrawerToggle$Delegate interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.ActionBarDrawerToggle$Delegate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getThemeUpIndicator(): android.graphics.drawable.Drawable;
 							setActionBarUpIndicator(param0: android.graphics.drawable.Drawable, param1: number): void;
 							setActionBarDescription(param0: number): void;
 						});
+						public constructor();
 						public getThemeUpIndicator(): android.graphics.drawable.Drawable;
 						public setActionBarDescription(param0: number): void;
 						public setActionBarUpIndicator(param0: android.graphics.drawable.Drawable, param1: number): void;
@@ -6605,11 +6709,12 @@ declare module android {
 					export class DelegateProvider extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.ActionBarDrawerToggle.DelegateProvider>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.ActionBarDrawerToggle$DelegateProvider interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.ActionBarDrawerToggle$DelegateProvider interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getDrawerToggleDelegate(): android.support.v4.app.ActionBarDrawerToggle.Delegate;
 						});
+						public constructor();
 						public getDrawerToggleDelegate(): android.support.v4.app.ActionBarDrawerToggle.Delegate;
 					}
 					export class SetIndicatorInfo extends java.lang.Object {
@@ -6657,33 +6762,36 @@ declare module android {
 					export class OnRequestPermissionsResultCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.ActivityCompat$OnRequestPermissionsResultCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.ActivityCompat$OnRequestPermissionsResultCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onRequestPermissionsResult(param0: number, param1: native.Array<string>, param2: native.Array<number>): void;
 						});
+						public constructor();
 						public onRequestPermissionsResult(param0: number, param1: native.Array<string>, param2: native.Array<number>): void;
 					}
 					export class PermissionCompatDelegate extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.ActivityCompat.PermissionCompatDelegate>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.ActivityCompat$PermissionCompatDelegate interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.ActivityCompat$PermissionCompatDelegate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							requestPermissions(param0: android.app.Activity, param1: native.Array<string>, param2: number): boolean;
 							onActivityResult(param0: android.app.Activity, param1: number, param2: number, param3: android.content.Intent): boolean;
 						});
+						public constructor();
 						public requestPermissions(param0: android.app.Activity, param1: native.Array<string>, param2: number): boolean;
 						public onActivityResult(param0: android.app.Activity, param1: number, param2: number, param3: android.content.Intent): boolean;
 					}
 					export class RequestPermissionsRequestCodeValidator extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.ActivityCompat.RequestPermissionsRequestCodeValidator>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.ActivityCompat$RequestPermissionsRequestCodeValidator interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.ActivityCompat$RequestPermissionsRequestCodeValidator interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							validateRequestPermissionsRequestCode(param0: number): void;
 						});
+						public constructor();
 						public validateRequestPermissionsRequestCode(param0: number): void;
 					}
 					export class SharedElementCallback21Impl {
@@ -7049,7 +7157,7 @@ declare module android {
 					export class DialogStyle extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.DialogFragment.DialogStyle>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.DialogFragment$DialogStyle interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.DialogFragment$DialogStyle interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -7057,6 +7165,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -7200,12 +7309,13 @@ declare module android {
 					export class OnStartEnterTransitionListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.Fragment.OnStartEnterTransitionListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.Fragment$OnStartEnterTransitionListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.Fragment$OnStartEnterTransitionListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onStartEnterTransition(): void;
 							startListening(): void;
 						});
+						public constructor();
 						public startListening(): void;
 						public onStartEnterTransition(): void;
 					}
@@ -7470,7 +7580,7 @@ declare module android {
 					export class BackStackEntry extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.FragmentManager.BackStackEntry>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.FragmentManager$BackStackEntry interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.FragmentManager$BackStackEntry interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getId(): number;
@@ -7480,6 +7590,7 @@ declare module android {
 							getBreadCrumbTitle(): string;
 							getBreadCrumbShortTitle(): string;
 						});
+						public constructor();
 						public getBreadCrumbTitleRes(): number;
 						public getBreadCrumbShortTitleRes(): number;
 						public getBreadCrumbShortTitle(): string;
@@ -7508,11 +7619,12 @@ declare module android {
 					export class OnBackStackChangedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.FragmentManager.OnBackStackChangedListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.FragmentManager$OnBackStackChangedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.FragmentManager$OnBackStackChangedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onBackStackChanged(): void;
 						});
+						public constructor();
 						public onBackStackChanged(): void;
 					}
 				}
@@ -7633,11 +7745,12 @@ declare module android {
 					export class OpGenerator extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.FragmentManagerImpl.OpGenerator>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.FragmentManagerImpl$OpGenerator interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.FragmentManagerImpl$OpGenerator interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							generateOps(param0: java.util.ArrayList<android.support.v4.app.BackStackRecord>, param1: java.util.ArrayList<java.lang.Boolean>): boolean;
 						});
+						public constructor();
 						public generateOps(param0: java.util.ArrayList<android.support.v4.app.BackStackRecord>, param1: java.util.ArrayList<java.lang.Boolean>): boolean;
 					}
 					export class PopBackStackState extends java.lang.Object implements android.support.v4.app.FragmentManagerImpl.OpGenerator {
@@ -7895,7 +8008,7 @@ declare module android {
 					export class Transit extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.FragmentTransaction.Transit>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.FragmentTransaction$Transit interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.FragmentTransaction$Transit interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -7903,6 +8016,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -8052,7 +8166,7 @@ declare module android {
 					export class MetricType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.FrameMetricsAggregator.MetricType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.FrameMetricsAggregator$MetricType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.FrameMetricsAggregator$MetricType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -8060,6 +8174,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -8078,7 +8193,7 @@ declare module android {
 				export class INotificationSideChannel extends java.lang.Object implements android.os.IInterface {
 					public static class: java.lang.Class<android.support.v4.app.INotificationSideChannel>;
 					/**
-					 * Constructs a new instance of the android.support.v4.app.INotificationSideChannel interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.app.INotificationSideChannel interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						notify(param0: string, param1: number, param2: string, param3: android.app.Notification): void;
@@ -8086,6 +8201,7 @@ declare module android {
 						cancelAll(param0: string): void;
 						asBinder(): android.os.IBinder;
 					});
+					public constructor();
 					public notify(param0: string, param1: number, param2: string, param3: android.app.Notification): void;
 					public notify(): void;
 					public asBinder(): android.os.IBinder;
@@ -8165,12 +8281,13 @@ declare module android {
 					export class CompatJobEngine extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.JobIntentService.CompatJobEngine>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.JobIntentService$CompatJobEngine interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.JobIntentService$CompatJobEngine interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							compatGetBinder(): android.os.IBinder;
 							dequeueWork(): android.support.v4.app.JobIntentService.GenericWorkItem;
 						});
+						public constructor();
 						public dequeueWork(): android.support.v4.app.JobIntentService.GenericWorkItem;
 						public compatGetBinder(): android.os.IBinder;
 					}
@@ -8188,12 +8305,13 @@ declare module android {
 					export class GenericWorkItem extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.JobIntentService.GenericWorkItem>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.JobIntentService$GenericWorkItem interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.JobIntentService$GenericWorkItem interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getIntent(): android.content.Intent;
 							complete(): void;
 						});
+						public constructor();
 						public complete(): void;
 						public getIntent(): android.content.Intent;
 					}
@@ -8274,13 +8392,14 @@ declare module android {
 					export class LoaderCallbacks<D>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.LoaderManager.LoaderCallbacks<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.LoaderManager$LoaderCallbacks interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.LoaderManager$LoaderCallbacks interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onCreateLoader(param0: number, param1: android.os.Bundle): android.support.v4.content.Loader<D>;
 							onLoadFinished(param0: android.support.v4.content.Loader<D>, param1: D): void;
 							onLoaderReset(param0: android.support.v4.content.Loader<D>): void;
 						});
+						public constructor();
 						public onCreateLoader(param0: number, param1: android.os.Bundle): android.support.v4.content.Loader<D>;
 						public onLoadFinished(param0: android.support.v4.content.Loader<D>, param1: D): void;
 						public onLoaderReset(param0: android.support.v4.content.Loader<D>): void;
@@ -8348,11 +8467,12 @@ declare module android {
 				export class NotificationBuilderWithBuilderAccessor extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.app.NotificationBuilderWithBuilderAccessor>;
 					/**
-					 * Constructs a new instance of the android.support.v4.app.NotificationBuilderWithBuilderAccessor interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.app.NotificationBuilderWithBuilderAccessor interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						getBuilder(): android.app.Notification.Builder;
 					});
+					public constructor();
 					public getBuilder(): android.app.Notification.Builder;
 				}
 			}
@@ -8483,11 +8603,12 @@ declare module android {
 						export class Extender extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.app.NotificationCompat.Action.Extender>;
 							/**
-							 * Constructs a new instance of the android.support.v4.app.NotificationCompat$Action$Extender interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.app.NotificationCompat$Action$Extender interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								extend(param0: android.support.v4.app.NotificationCompat.Action.Builder): android.support.v4.app.NotificationCompat.Action.Builder;
 							});
+							public constructor();
 							public extend(param0: android.support.v4.app.NotificationCompat.Action.Builder): android.support.v4.app.NotificationCompat.Action.Builder;
 						}
 						export class WearableExtender extends java.lang.Object implements android.support.v4.app.NotificationCompat.Action.Extender {
@@ -8514,7 +8635,7 @@ declare module android {
 					export class BadgeIconType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.NotificationCompat.BadgeIconType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$BadgeIconType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$BadgeIconType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -8522,6 +8643,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -8662,17 +8784,18 @@ declare module android {
 					export class Extender extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.NotificationCompat.Extender>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$Extender interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$Extender interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							extend(param0: android.support.v4.app.NotificationCompat.Builder): android.support.v4.app.NotificationCompat.Builder;
 						});
+						public constructor();
 						public extend(param0: android.support.v4.app.NotificationCompat.Builder): android.support.v4.app.NotificationCompat.Builder;
 					}
 					export class GroupAlertBehavior extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.NotificationCompat.GroupAlertBehavior>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$GroupAlertBehavior interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$GroupAlertBehavior interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -8680,6 +8803,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -8726,7 +8850,7 @@ declare module android {
 					export class NotificationVisibility extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.NotificationCompat.NotificationVisibility>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$NotificationVisibility interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.NotificationCompat$NotificationVisibility interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -8734,6 +8858,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -8975,11 +9100,12 @@ declare module android {
 					export class Task extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.NotificationManagerCompat.Task>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.NotificationManagerCompat$Task interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.NotificationManagerCompat$Task interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							send(param0: android.support.v4.app.INotificationSideChannel): void;
 						});
+						public constructor();
 						public send(param0: android.support.v4.app.INotificationSideChannel): void;
 					}
 				}
@@ -9065,12 +9191,13 @@ declare module android {
 						export class Factory extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.app.RemoteInputCompatBase.RemoteInput.Factory>;
 							/**
-							 * Constructs a new instance of the android.support.v4.app.RemoteInputCompatBase$RemoteInput$Factory interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.app.RemoteInputCompatBase$RemoteInput$Factory interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<string>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
 								newArray(param0: number): native.Array<android.support.v4.app.RemoteInputCompatBase.RemoteInput>;
 							});
+							public constructor();
 							public newArray(param0: number): native.Array<android.support.v4.app.RemoteInputCompatBase.RemoteInput>;
 							public build(param0: string, param1: string, param2: native.Array<string>, param3: boolean, param4: android.os.Bundle, param5: java.util.Set<string>): android.support.v4.app.RemoteInputCompatBase.RemoteInput;
 						}
@@ -9096,7 +9223,7 @@ declare module android {
 					export class StopForegroundFlags extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.app.ServiceCompat.StopForegroundFlags>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.ServiceCompat$StopForegroundFlags interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.ServiceCompat$StopForegroundFlags interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -9104,6 +9231,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -9200,11 +9328,12 @@ declare module android {
 					export class OnSharedElementsReadyListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.SharedElementCallback.OnSharedElementsReadyListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.SharedElementCallback$OnSharedElementsReadyListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.SharedElementCallback$OnSharedElementsReadyListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onSharedElementsReady(): void;
 						});
+						public constructor();
 						public onSharedElementsReady(): void;
 					}
 				}
@@ -9313,11 +9442,12 @@ declare module android {
 					export class SupportParentable extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.app.TaskStackBuilder.SupportParentable>;
 						/**
-						 * Constructs a new instance of the android.support.v4.app.TaskStackBuilder$SupportParentable interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.app.TaskStackBuilder$SupportParentable interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getSupportParentActivityIntent(): android.content.Intent;
 						});
+						public constructor();
 						public getSupportParentActivityIntent(): android.content.Intent;
 					}
 					export class TaskStackBuilderApi16Impl extends android.support.v4.app.TaskStackBuilder.TaskStackBuilderBaseImpl {
@@ -9469,12 +9599,13 @@ declare module android {
 					export class PathStrategy extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.content.FileProvider.PathStrategy>;
 						/**
-						 * Constructs a new instance of the android.support.v4.content.FileProvider$PathStrategy interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.content.FileProvider$PathStrategy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getUriForFile(param0: java.io.File): android.net.Uri;
 							getFileForUri(param0: android.net.Uri): java.io.File;
 						});
+						public constructor();
 						public getFileForUri(param0: android.net.Uri): java.io.File;
 						public getUriForFile(param0: java.io.File): android.net.Uri;
 					}
@@ -9557,21 +9688,23 @@ declare module android {
 					export class OnLoadCanceledListener<D>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.content.Loader.OnLoadCanceledListener<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.content.Loader$OnLoadCanceledListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.content.Loader$OnLoadCanceledListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onLoadCanceled(param0: android.support.v4.content.Loader<D>): void;
 						});
+						public constructor();
 						public onLoadCanceled(param0: android.support.v4.content.Loader<D>): void;
 					}
 					export class OnLoadCompleteListener<D>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.content.Loader.OnLoadCompleteListener<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.content.Loader$OnLoadCompleteListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.content.Loader$OnLoadCompleteListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onLoadComplete(param0: android.support.v4.content.Loader<D>, param1: D): void;
 						});
+						public constructor();
 						public onLoadComplete(param0: android.support.v4.content.Loader<D>, param1: D): void;
 					}
 				}
@@ -9691,7 +9824,7 @@ declare module android {
 					export class PermissionResult extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.content.PermissionChecker.PermissionResult>;
 						/**
-						 * Constructs a new instance of the android.support.v4.content.PermissionChecker$PermissionResult interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.content.PermissionChecker$PermissionResult interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -9699,6 +9832,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -9851,15 +9985,16 @@ declare module android {
 						export class FamilyResourceEntry extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.content.res.FontResourcesParserCompat.FamilyResourceEntry>;
 							/**
-							 * Constructs a new instance of the android.support.v4.content.res.FontResourcesParserCompat$FamilyResourceEntry interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.content.res.FontResourcesParserCompat$FamilyResourceEntry interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 							});
+							public constructor();
 						}
 						export class FetchStrategy extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.content.res.FontResourcesParserCompat.FetchStrategy>;
 							/**
-							 * Constructs a new instance of the android.support.v4.content.res.FontResourcesParserCompat$FetchStrategy interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.content.res.FontResourcesParserCompat$FetchStrategy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -9867,6 +10002,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -10098,13 +10234,14 @@ declare module android {
 					export class TypefaceCompatImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.graphics.TypefaceCompat.TypefaceCompatImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.graphics.TypefaceCompat$TypefaceCompatImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.graphics.TypefaceCompat$TypefaceCompatImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							createFromFontFamilyFilesResourceEntry(param0: android.content.Context, param1: android.support.v4.content.res.FontResourcesParserCompat.FontFamilyFilesResourceEntry, param2: android.content.res.Resources, param3: number): android.graphics.Typeface;
 							createFromFontInfo(param0: android.content.Context, param1: android.os.CancellationSignal, param2: native.Array<android.support.v4.provider.FontsContractCompat.FontInfo>, param3: number): android.graphics.Typeface;
 							createFromResourcesFontFile(param0: android.content.Context, param1: android.content.res.Resources, param2: number, param3: string, param4: number): android.graphics.Typeface;
 						});
+						public constructor();
 						public createFromResourcesFontFile(param0: android.content.Context, param1: android.content.res.Resources, param2: number, param3: string, param4: number): android.graphics.Typeface;
 						public createFromFontFamilyFilesResourceEntry(param0: android.content.Context, param1: android.support.v4.content.res.FontResourcesParserCompat.FontFamilyFilesResourceEntry, param2: android.content.res.Resources, param3: number): android.graphics.Typeface;
 						public createFromFontInfo(param0: android.content.Context, param1: android.os.CancellationSignal, param2: native.Array<android.support.v4.provider.FontsContractCompat.FontInfo>, param3: number): android.graphics.Typeface;
@@ -10178,12 +10315,13 @@ declare module android {
 					export class StyleExtractor<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.graphics.TypefaceCompatBaseImpl.StyleExtractor<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.graphics.TypefaceCompatBaseImpl$StyleExtractor interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.graphics.TypefaceCompatBaseImpl$StyleExtractor interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getWeight(param0: T): number;
 							isItalic(param0: T): boolean;
 						});
+						public constructor();
 						public getWeight(param0: T): number;
 						public isItalic(param0: T): boolean;
 					}
@@ -10251,12 +10389,13 @@ declare module android {
 					export class DrawableWrapper extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.graphics.drawable.DrawableWrapper>;
 						/**
-						 * Constructs a new instance of the android.support.v4.graphics.drawable.DrawableWrapper interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.graphics.drawable.DrawableWrapper interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getWrappedDrawable(): android.graphics.drawable.Drawable;
 							setWrappedDrawable(param0: android.graphics.drawable.Drawable): void;
 						});
+						public constructor();
 						public getWrappedDrawable(): android.graphics.drawable.Drawable;
 						public setWrappedDrawable(param0: android.graphics.drawable.Drawable): void;
 					}
@@ -10509,13 +10648,14 @@ declare module android {
 					export class TintAwareDrawable extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.graphics.drawable.TintAwareDrawable>;
 						/**
-						 * Constructs a new instance of the android.support.v4.graphics.drawable.TintAwareDrawable interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.graphics.drawable.TintAwareDrawable interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setTint(param0: number): void;
 							setTintList(param0: android.content.res.ColorStateList): void;
 							setTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						});
+						public constructor();
 						public setTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						public setTintList(param0: android.content.res.ColorStateList): void;
 						public setTint(param0: number): void;
@@ -10610,7 +10750,7 @@ declare module android {
 					export class SupportMenu extends java.lang.Object implements android.view.Menu {
 						public static class: java.lang.Class<android.support.v4.internal.view.SupportMenu>;
 						/**
-						 * Constructs a new instance of the android.support.v4.internal.view.SupportMenu interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.internal.view.SupportMenu interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							add(param0: string): android.view.MenuItem;
@@ -10638,6 +10778,7 @@ declare module android {
 							performIdentifierAction(param0: number, param1: number): boolean;
 							setQwertyMode(param0: boolean): void;
 						});
+						public constructor();
 						public static FLAG_APPEND_TO_GROUP: number;
 						public static FLAG_KEEP_OPEN_ON_SUBMENU_OPENED: number;
 						public static FIRST: number;
@@ -10692,7 +10833,7 @@ declare module android {
 					export class SupportMenuItem extends java.lang.Object implements android.view.MenuItem {
 						public static class: java.lang.Class<android.support.v4.internal.view.SupportMenuItem>;
 						/**
-						 * Constructs a new instance of the android.support.v4.internal.view.SupportMenuItem interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.internal.view.SupportMenuItem interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setShowAsAction(param0: number): void;
@@ -10760,6 +10901,7 @@ declare module android {
 							isActionViewExpanded(): boolean;
 							setOnActionExpandListener(param0: android.view.MenuItem.OnActionExpandListener): android.view.MenuItem;
 						});
+						public constructor();
 						public static SHOW_AS_ACTION_WITH_TEXT: number;
 						public static SHOW_AS_ACTION_ALWAYS: number;
 						public static SHOW_AS_ACTION_NEVER: number;
@@ -10836,7 +10978,7 @@ declare module android {
 					export class SupportSubMenu extends java.lang.Object implements android.support.v4.internal.view.SupportMenu, android.view.SubMenu {
 						public static class: java.lang.Class<android.support.v4.internal.view.SupportSubMenu>;
 						/**
-						 * Constructs a new instance of the android.support.v4.internal.view.SupportSubMenu interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.internal.view.SupportSubMenu interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setHeaderTitle(param0: number): android.view.SubMenu;
@@ -10897,6 +11039,7 @@ declare module android {
 							performIdentifierAction(param0: number, param1: number): boolean;
 							setQwertyMode(param0: boolean): void;
 						});
+						public constructor();
 						public static FLAG_APPEND_TO_GROUP: number;
 						public static FLAG_KEEP_OPEN_ON_SUBMENU_OPENED: number;
 						public static FIRST: number;
@@ -11010,7 +11153,7 @@ declare module android {
 					export class AttributeContentType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.AudioAttributesCompat.AttributeContentType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.AudioAttributesCompat$AttributeContentType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.AudioAttributesCompat$AttributeContentType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -11018,6 +11161,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -11026,7 +11170,7 @@ declare module android {
 					export class AttributeUsage extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.AudioAttributesCompat.AttributeUsage>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.AudioAttributesCompat$AttributeUsage interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.AudioAttributesCompat$AttributeUsage interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -11034,6 +11178,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -11126,13 +11271,14 @@ declare module android {
 						export class ConnectionCallbackInternal extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompat.ConnectionCallback.ConnectionCallbackInternal>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$ConnectionCallback$ConnectionCallbackInternal interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$ConnectionCallback$ConnectionCallbackInternal interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onConnected(): void;
 								onConnectionSuspended(): void;
 								onConnectionFailed(): void;
 							});
+							public constructor();
 							public onConnectionFailed(): void;
 							public onConnected(): void;
 							public onConnectionSuspended(): void;
@@ -11179,7 +11325,7 @@ declare module android {
 					export class MediaBrowserImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompat.MediaBrowserImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaBrowserImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaBrowserImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							connect(): void;
@@ -11195,6 +11341,7 @@ declare module android {
 							search(param0: string, param1: android.os.Bundle, param2: android.support.v4.media.MediaBrowserCompat.SearchCallback): void;
 							sendCustomAction(param0: string, param1: android.os.Bundle, param2: android.support.v4.media.MediaBrowserCompat.CustomActionCallback): void;
 						});
+						public constructor();
 						public disconnect(): void;
 						public getServiceComponent(): android.content.ComponentName;
 						public getItem(param0: string, param1: android.support.v4.media.MediaBrowserCompat.ItemCallback): void;
@@ -11305,13 +11452,14 @@ declare module android {
 					export class MediaBrowserServiceCallbackImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompat.MediaBrowserServiceCallbackImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaBrowserServiceCallbackImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaBrowserServiceCallbackImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onServiceConnected(param0: android.os.Messenger, param1: string, param2: android.support.v4.media.session.MediaSessionCompat.Token, param3: android.os.Bundle): void;
 							onConnectionFailed(param0: android.os.Messenger): void;
 							onLoadChildren(param0: android.os.Messenger, param1: string, param2: java.util.List<any>, param3: android.os.Bundle): void;
 						});
+						public constructor();
 						public onLoadChildren(param0: android.os.Messenger, param1: string, param2: java.util.List<any>, param3: android.os.Bundle): void;
 						public onServiceConnected(param0: android.os.Messenger, param1: string, param2: android.support.v4.media.session.MediaSessionCompat.Token, param3: android.os.Bundle): void;
 						public onConnectionFailed(param0: android.os.Messenger): void;
@@ -11337,7 +11485,7 @@ declare module android {
 						export class Flags extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompat.MediaItem.Flags>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaItem$Flags interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompat$MediaItem$Flags interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -11345,6 +11493,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -11427,13 +11576,14 @@ declare module android {
 					export class ConnectionCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi21.ConnectionCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi21$ConnectionCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi21$ConnectionCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onConnected(): void;
 							onConnectionSuspended(): void;
 							onConnectionFailed(): void;
 						});
+						public constructor();
 						public onConnected(): void;
 						public onConnectionFailed(): void;
 						public onConnectionSuspended(): void;
@@ -11454,12 +11604,13 @@ declare module android {
 					export class SubscriptionCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi21.SubscriptionCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi21$SubscriptionCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi21$SubscriptionCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onChildrenLoaded(param0: string, param1: java.util.List<any>): void;
 							onError(param0: string): void;
 						});
+						public constructor();
 						public onChildrenLoaded(param0: string, param1: java.util.List<any>): void;
 						public onError(param0: string): void;
 					}
@@ -11489,12 +11640,13 @@ declare module android {
 					export class ItemCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi23.ItemCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi23$ItemCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi23$ItemCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onItemLoaded(param0: android.os.Parcel): void;
 							onError(param0: string): void;
 						});
+						public constructor();
 						public onItemLoaded(param0: android.os.Parcel): void;
 						public onError(param0: string): void;
 					}
@@ -11524,7 +11676,7 @@ declare module android {
 					export class SubscriptionCallback extends java.lang.Object implements android.support.v4.media.MediaBrowserCompatApi21.SubscriptionCallback {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserCompatApi26.SubscriptionCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi26$SubscriptionCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserCompatApi26$SubscriptionCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onChildrenLoaded(param0: string, param1: java.util.List<any>, param2: android.os.Bundle): void;
@@ -11532,6 +11684,7 @@ declare module android {
 							onChildrenLoaded(param0: string, param1: java.util.List<any>): void;
 							onError(param0: string): void;
 						});
+						public constructor();
 						public onChildrenLoaded(param0: string, param1: java.util.List<any>): void;
 						public onChildrenLoaded(param0: string, param1: java.util.List<any>, param2: android.os.Bundle): void;
 						public onError(param0: string, param1: android.os.Bundle): void;
@@ -11655,7 +11808,7 @@ declare module android {
 					export class MediaBrowserServiceImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompat.MediaBrowserServiceImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$MediaBrowserServiceImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$MediaBrowserServiceImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onCreate(): void;
@@ -11664,6 +11817,7 @@ declare module android {
 							notifyChildrenChanged(param0: string, param1: android.os.Bundle): void;
 							getBrowserRootHints(): android.os.Bundle;
 						});
+						public constructor();
 						public notifyChildrenChanged(param0: string, param1: android.os.Bundle): void;
 						public onCreate(): void;
 						public setSessionToken(param0: android.support.v4.media.session.MediaSessionCompat.Token): void;
@@ -11721,7 +11875,7 @@ declare module android {
 					export class ResultFlags extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompat.ResultFlags>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$ResultFlags interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$ResultFlags interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -11729,6 +11883,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -11749,7 +11904,7 @@ declare module android {
 					export class ServiceCallbacks extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompat.ServiceCallbacks>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$ServiceCallbacks interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompat$ServiceCallbacks interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							asBinder(): android.os.IBinder;
@@ -11757,6 +11912,7 @@ declare module android {
 							onConnectFailed(): void;
 							onLoadChildren(param0: string, param1: java.util.List<android.support.v4.media.MediaBrowserCompat.MediaItem>, param2: android.os.Bundle): void;
 						});
+						public constructor();
 						public asBinder(): android.os.IBinder;
 						public onLoadChildren(param0: string, param1: java.util.List<android.support.v4.media.MediaBrowserCompat.MediaItem>, param2: android.os.Bundle): void;
 						public onConnectFailed(): void;
@@ -11810,12 +11966,13 @@ declare module android {
 					export class ServiceCompatProxy extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi21.ServiceCompatProxy>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompatApi21$ServiceCompatProxy interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompatApi21$ServiceCompatProxy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onGetRoot(param0: string, param1: number, param2: android.os.Bundle): android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot;
 							onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<java.util.List<android.os.Parcel>>): void;
 						});
+						public constructor();
 						public onGetRoot(param0: string, param1: number, param2: android.os.Bundle): android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot;
 						public onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<java.util.List<android.os.Parcel>>): void;
 					}
@@ -11841,13 +11998,14 @@ declare module android {
 					export class ServiceCompatProxy extends java.lang.Object implements android.support.v4.media.MediaBrowserServiceCompatApi21.ServiceCompatProxy {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi23.ServiceCompatProxy>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompatApi23$ServiceCompatProxy interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompatApi23$ServiceCompatProxy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onLoadItem(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<android.os.Parcel>): void;
 							onGetRoot(param0: string, param1: number, param2: android.os.Bundle): android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot;
 							onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<java.util.List<android.os.Parcel>>): void;
 						});
+						public constructor();
 						public onLoadItem(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<android.os.Parcel>): void;
 						public onGetRoot(param0: string, param1: number, param2: android.os.Bundle): android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot;
 						public onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<java.util.List<android.os.Parcel>>): void;
@@ -11882,7 +12040,7 @@ declare module android {
 					export class ServiceCompatProxy extends java.lang.Object implements android.support.v4.media.MediaBrowserServiceCompatApi23.ServiceCompatProxy {
 						public static class: java.lang.Class<android.support.v4.media.MediaBrowserServiceCompatApi26.ServiceCompatProxy>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompatApi26$ServiceCompatProxy interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaBrowserServiceCompatApi26$ServiceCompatProxy interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi26.ResultWrapper, param2: android.os.Bundle): void;
@@ -11890,6 +12048,7 @@ declare module android {
 							onGetRoot(param0: string, param1: number, param2: android.os.Bundle): android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot;
 							onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<java.util.List<android.os.Parcel>>): void;
 						});
+						public constructor();
 						public onLoadItem(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi21.ResultWrapper<android.os.Parcel>): void;
 						public onGetRoot(param0: string, param1: number, param2: android.os.Bundle): android.support.v4.media.MediaBrowserServiceCompatApi21.BrowserRoot;
 						public onLoadChildren(param0: string, param1: android.support.v4.media.MediaBrowserServiceCompatApi26.ResultWrapper, param2: android.os.Bundle): void;
@@ -12067,7 +12226,7 @@ declare module android {
 					export class BitmapKey extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.MediaMetadataCompat.BitmapKey>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$BitmapKey interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$BitmapKey interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12075,6 +12234,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12095,7 +12255,7 @@ declare module android {
 					export class LongKey extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.MediaMetadataCompat.LongKey>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$LongKey interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$LongKey interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12103,6 +12263,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12111,7 +12272,7 @@ declare module android {
 					export class RatingKey extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.MediaMetadataCompat.RatingKey>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$RatingKey interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$RatingKey interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12119,6 +12280,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12127,7 +12289,7 @@ declare module android {
 					export class TextKey extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.MediaMetadataCompat.TextKey>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$TextKey interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.MediaMetadataCompat$TextKey interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12135,6 +12297,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12225,7 +12388,7 @@ declare module android {
 					export class StarStyle extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.RatingCompat.StarStyle>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.RatingCompat$StarStyle interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.RatingCompat$StarStyle interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12233,6 +12396,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12241,7 +12405,7 @@ declare module android {
 					export class Style extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.RatingCompat.Style>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.RatingCompat$Style interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.RatingCompat$Style interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12249,6 +12413,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12288,7 +12453,7 @@ declare module android {
 					export class ControlType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.media.VolumeProviderCompat.ControlType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.VolumeProviderCompat$ControlType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.VolumeProviderCompat$ControlType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -12296,6 +12461,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -12320,12 +12486,13 @@ declare module android {
 					export class Delegate extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.media.VolumeProviderCompatApi21.Delegate>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.VolumeProviderCompatApi21$Delegate interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.VolumeProviderCompatApi21$Delegate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onSetVolumeTo(param0: number): void;
 							onAdjustVolume(param0: number): void;
 						});
+						public constructor();
 						public onAdjustVolume(param0: number): void;
 						public onSetVolumeTo(param0: number): void;
 					}
@@ -12381,7 +12548,7 @@ declare module android {
 					export class IMediaControllerCallback extends java.lang.Object implements android.os.IInterface {
 						public static class: java.lang.Class<android.support.v4.media.session.IMediaControllerCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.session.IMediaControllerCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.session.IMediaControllerCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onEvent(param0: string, param1: android.os.Bundle): void;
@@ -12399,6 +12566,7 @@ declare module android {
 							onSessionReady(): void;
 							asBinder(): android.os.IBinder;
 						});
+						public constructor();
 						public onQueueChanged(param0: java.util.List<android.support.v4.media.session.MediaSessionCompat.QueueItem>): void;
 						public onExtrasChanged(param0: android.os.Bundle): void;
 						public onCaptioningEnabledChanged(param0: boolean): void;
@@ -12480,7 +12648,7 @@ declare module android {
 					export class IMediaSession extends java.lang.Object implements android.os.IInterface {
 						public static class: java.lang.Class<android.support.v4.media.session.IMediaSession>;
 						/**
-						 * Constructs a new instance of the android.support.v4.media.session.IMediaSession interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.media.session.IMediaSession interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							sendCommand(param0: string, param1: android.os.Bundle, param2: android.support.v4.media.session.MediaSessionCompat.ResultReceiverWrapper): void;
@@ -12534,6 +12702,7 @@ declare module android {
 							sendCustomAction(param0: string, param1: android.os.Bundle): void;
 							asBinder(): android.os.IBinder;
 						});
+						public constructor();
 						public pause(): void;
 						public removeQueueItemAt(param0: number): void;
 						public rewind(): void;
@@ -12849,7 +13018,7 @@ declare module android {
 						export class MediaControllerImpl extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaControllerCompat.MediaControllerImpl>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaControllerCompat$MediaControllerImpl interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaControllerCompat$MediaControllerImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								registerCallback(param0: android.support.v4.media.session.MediaControllerCompat.Callback, param1: android.os.Handler): void;
@@ -12878,6 +13047,7 @@ declare module android {
 								getPackageName(): string;
 								getMediaController(): any;
 							});
+							public constructor();
 							public adjustVolume(param0: number, param1: number): void;
 							public unregisterCallback(param0: android.support.v4.media.session.MediaControllerCompat.Callback): void;
 							public isCaptioningEnabled(): boolean;
@@ -13206,7 +13376,7 @@ declare module android {
 						export class Callback extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaControllerCompatApi21.Callback>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaControllerCompatApi21$Callback interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaControllerCompatApi21$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onSessionDestroyed(): void;
@@ -13218,6 +13388,7 @@ declare module android {
 								onExtrasChanged(param0: android.os.Bundle): void;
 								onAudioInfoChanged(param0: number, param1: number, param2: number, param3: number, param4: number): void;
 							});
+							public constructor();
 							public onQueueTitleChanged(param0: string): void;
 							public onMetadataChanged(param0: any): void;
 							public onPlaybackStateChanged(param0: any): void;
@@ -13474,7 +13645,7 @@ declare module android {
 						export class MediaSessionImpl extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompat.MediaSessionImpl>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$MediaSessionImpl interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$MediaSessionImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								setCallback(param0: android.support.v4.media.session.MediaSessionCompat.Callback, param1: android.os.Handler): void;
@@ -13502,6 +13673,7 @@ declare module android {
 								getRemoteControlClient(): any;
 								getCallingPackage(): string;
 							});
+							public constructor();
 							public setFlags(param0: number): void;
 							public setSessionActivity(param0: android.app.PendingIntent): void;
 							public setRatingType(param0: number): void;
@@ -13790,11 +13962,12 @@ declare module android {
 						export class OnActiveChangeListener extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompat.OnActiveChangeListener>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$OnActiveChangeListener interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$OnActiveChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onActiveChanged(): void;
 							});
+							public constructor();
 							public onActiveChanged(): void;
 						}
 						export class QueueItem extends java.lang.Object implements android.os.Parcelable {
@@ -13821,7 +13994,7 @@ declare module android {
 						export class SessionFlags extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompat.SessionFlags>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$SessionFlags interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompat$SessionFlags interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -13829,6 +14002,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -13886,7 +14060,7 @@ declare module android {
 						export class Callback extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi21.Callback>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompatApi21$Callback interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompatApi21$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onCommand(param0: string, param1: android.os.Bundle, param2: android.os.ResultReceiver): void;
@@ -13906,6 +14080,7 @@ declare module android {
 								onSetRating(param0: any, param1: android.os.Bundle): void;
 								onCustomAction(param0: string, param1: android.os.Bundle): void;
 							});
+							public constructor();
 							public onPlayFromSearch(param0: string, param1: android.os.Bundle): void;
 							public onSkipToQueueItem(param0: number): void;
 							public onRewind(): void;
@@ -13984,7 +14159,7 @@ declare module android {
 						export class Callback extends java.lang.Object implements android.support.v4.media.session.MediaSessionCompatApi21.Callback {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi23.Callback>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompatApi23$Callback interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompatApi23$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onPlayFromUri(param0: android.net.Uri, param1: android.os.Bundle): void;
@@ -14005,6 +14180,7 @@ declare module android {
 								onSetRating(param0: any, param1: android.os.Bundle): void;
 								onCustomAction(param0: string, param1: android.os.Bundle): void;
 							});
+							public constructor();
 							public onPlayFromSearch(param0: string, param1: android.os.Bundle): void;
 							public onSkipToQueueItem(param0: number): void;
 							public onRewind(): void;
@@ -14049,7 +14225,7 @@ declare module android {
 						export class Callback extends java.lang.Object implements android.support.v4.media.session.MediaSessionCompatApi23.Callback {
 							public static class: java.lang.Class<android.support.v4.media.session.MediaSessionCompatApi24.Callback>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompatApi24$Callback interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.MediaSessionCompatApi24$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onPrepare(): void;
@@ -14074,6 +14250,7 @@ declare module android {
 								onSetRating(param0: any, param1: android.os.Bundle): void;
 								onCustomAction(param0: string, param1: android.os.Bundle): void;
 							});
+							public constructor();
 							public onPrepareFromSearch(param0: string, param1: android.os.Bundle): void;
 							public onPlayFromSearch(param0: string, param1: android.os.Bundle): void;
 							public onSkipToQueueItem(param0: number): void;
@@ -14221,7 +14398,7 @@ declare module android {
 						export class Actions extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.PlaybackStateCompat.Actions>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$Actions interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$Actions interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -14229,6 +14406,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -14274,7 +14452,7 @@ declare module android {
 						export class ErrorCode extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.PlaybackStateCompat.ErrorCode>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$ErrorCode interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$ErrorCode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -14282,6 +14460,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -14290,7 +14469,7 @@ declare module android {
 						export class MediaKeyAction extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.PlaybackStateCompat.MediaKeyAction>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$MediaKeyAction interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$MediaKeyAction interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -14298,6 +14477,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -14306,7 +14486,7 @@ declare module android {
 						export class RepeatMode extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.PlaybackStateCompat.RepeatMode>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$RepeatMode interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$RepeatMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -14314,6 +14494,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -14322,7 +14503,7 @@ declare module android {
 						export class ShuffleMode extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.PlaybackStateCompat.ShuffleMode>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$ShuffleMode interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$ShuffleMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -14330,6 +14511,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -14338,7 +14520,7 @@ declare module android {
 						export class State extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.media.session.PlaybackStateCompat.State>;
 							/**
-							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$State interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.media.session.PlaybackStateCompat$State interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -14346,6 +14528,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -14425,7 +14608,7 @@ declare module android {
 					export class RestrictBackgroundStatus extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.net.ConnectivityManagerCompat.RestrictBackgroundStatus>;
 						/**
-						 * Constructs a new instance of the android.support.v4.net.ConnectivityManagerCompat$RestrictBackgroundStatus interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.net.ConnectivityManagerCompat$RestrictBackgroundStatus interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -14433,6 +14616,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -14530,11 +14714,12 @@ declare module android {
 					export class OnCancelListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.os.CancellationSignal.OnCancelListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.os.CancellationSignal$OnCancelListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.os.CancellationSignal$OnCancelListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onCancel(): void;
 						});
+						public constructor();
 						public onCancel(): void;
 					}
 				}
@@ -14577,12 +14762,13 @@ declare module android {
 				export class IResultReceiver extends java.lang.Object implements android.os.IInterface {
 					public static class: java.lang.Class<android.support.v4.os.IResultReceiver>;
 					/**
-					 * Constructs a new instance of the android.support.v4.os.IResultReceiver interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.os.IResultReceiver interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						send(param0: number, param1: android.os.Bundle): void;
 						asBinder(): android.os.IBinder;
 					});
+					public constructor();
 					public send(param0: number, param1: android.os.Bundle): void;
 					public asBinder(): android.os.IBinder;
 				}
@@ -14711,7 +14897,7 @@ declare module android {
 				export class LocaleListInterface extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.os.LocaleListInterface>;
 					/**
-					 * Constructs a new instance of the android.support.v4.os.LocaleListInterface interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.os.LocaleListInterface interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setLocaleList(param0: native.Array<java.util.Locale>): void;
@@ -14726,6 +14912,7 @@ declare module android {
 						toLanguageTags(): string;
 						getFirstMatch(param0: native.Array<string>): java.util.Locale;
 					});
+					public constructor();
 					public equals(param0: any): boolean;
 					public indexOf(param0: java.util.Locale): number;
 					public toString(): string;
@@ -14787,12 +14974,13 @@ declare module android {
 				export class ParcelableCompatCreatorCallbacks<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.os.ParcelableCompatCreatorCallbacks<any>>;
 					/**
-					 * Constructs a new instance of the android.support.v4.os.ParcelableCompatCreatorCallbacks<any> interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.os.ParcelableCompatCreatorCallbacks<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): T;
 						newArray(param0: number): native.Array<T>;
 					});
+					public constructor();
 					public createFromParcel(param0: android.os.Parcel, param1: java.lang.ClassLoader): T;
 					public newArray(param0: number): native.Array<T>;
 				}
@@ -14895,7 +15083,7 @@ declare module android {
 					export class ColorMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.print.PrintHelper.ColorMode>;
 						/**
-						 * Constructs a new instance of the android.support.v4.print.PrintHelper$ColorMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.print.PrintHelper$ColorMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -14903,6 +15091,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -14911,17 +15100,18 @@ declare module android {
 					export class OnPrintFinishCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.print.PrintHelper.OnPrintFinishCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.print.PrintHelper$OnPrintFinishCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.print.PrintHelper$OnPrintFinishCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onFinish(): void;
 						});
+						public constructor();
 						public onFinish(): void;
 					}
 					export class Orientation extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.print.PrintHelper.Orientation>;
 						/**
-						 * Constructs a new instance of the android.support.v4.print.PrintHelper$Orientation interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.print.PrintHelper$Orientation interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -14929,6 +15119,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -14996,7 +15187,7 @@ declare module android {
 					export class PrintHelperVersionImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.print.PrintHelper.PrintHelperVersionImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.print.PrintHelper$PrintHelperVersionImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.print.PrintHelper$PrintHelperVersionImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setScaleMode(param0: number): void;
@@ -15008,6 +15199,7 @@ declare module android {
 							printBitmap(param0: string, param1: android.graphics.Bitmap, param2: android.support.v4.print.PrintHelper.OnPrintFinishCallback): void;
 							printBitmap(param0: string, param1: android.net.Uri, param2: android.support.v4.print.PrintHelper.OnPrintFinishCallback): void;
 						});
+						public constructor();
 						public setScaleMode(param0: number): void;
 						public printBitmap(param0: string, param1: android.net.Uri, param2: android.support.v4.print.PrintHelper.OnPrintFinishCallback): void;
 						public getColorMode(): number;
@@ -15020,7 +15212,7 @@ declare module android {
 					export class ScaleMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.print.PrintHelper.ScaleMode>;
 						/**
-						 * Constructs a new instance of the android.support.v4.print.PrintHelper$ScaleMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.print.PrintHelper$ScaleMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -15028,6 +15220,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -15161,7 +15354,7 @@ declare module android {
 						export class FontResultStatus extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.provider.FontsContractCompat.FontFamilyResult.FontResultStatus>;
 							/**
-							 * Constructs a new instance of the android.support.v4.provider.FontsContractCompat$FontFamilyResult$FontResultStatus interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.provider.FontsContractCompat$FontFamilyResult$FontResultStatus interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -15169,6 +15362,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -15202,7 +15396,7 @@ declare module android {
 						export class FontRequestFailReason extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.provider.FontsContractCompat.FontRequestCallback.FontRequestFailReason>;
 							/**
-							 * Constructs a new instance of the android.support.v4.provider.FontsContractCompat$FontRequestCallback$FontRequestFailReason interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.provider.FontsContractCompat$FontRequestCallback$FontRequestFailReason interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -15210,6 +15404,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -15269,11 +15464,12 @@ declare module android {
 					export class ReplyCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.provider.SelfDestructiveThread.ReplyCallback<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.provider.SelfDestructiveThread$ReplyCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.provider.SelfDestructiveThread$ReplyCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onReply(param0: T): void;
 						});
+						public constructor();
 						public onReply(param0: T): void;
 					}
 				}
@@ -15394,12 +15590,13 @@ declare module android {
 				export class TextDirectionHeuristicCompat extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.text.TextDirectionHeuristicCompat>;
 					/**
-					 * Constructs a new instance of the android.support.v4.text.TextDirectionHeuristicCompat interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.text.TextDirectionHeuristicCompat interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						isRtl(param0: native.Array<string>, param1: number, param2: number): boolean;
 						isRtl(param0: string, param1: number, param2: number): boolean;
 					});
+					public constructor();
 					public isRtl(param0: native.Array<string>, param1: number, param2: number): boolean;
 					public isRtl(param0: string, param1: number, param2: number): boolean;
 				}
@@ -15436,11 +15633,12 @@ declare module android {
 					export class TextDirectionAlgorithm extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.text.TextDirectionHeuristicsCompat.TextDirectionAlgorithm>;
 						/**
-						 * Constructs a new instance of the android.support.v4.text.TextDirectionHeuristicsCompat$TextDirectionAlgorithm interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.text.TextDirectionHeuristicsCompat$TextDirectionAlgorithm interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							checkRtl(param0: string, param1: number, param2: number): number;
 						});
+						public constructor();
 						public checkRtl(param0: string, param1: number, param2: number): number;
 					}
 					export abstract class TextDirectionHeuristicImpl extends java.lang.Object implements android.support.v4.text.TextDirectionHeuristicCompat {
@@ -15508,7 +15706,7 @@ declare module android {
 						export class LinkifyMask extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v4.text.util.LinkifyCompat.LinkifyMask>;
 							/**
-							 * Constructs a new instance of the android.support.v4.text.util.LinkifyCompat$LinkifyMask interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.text.util.LinkifyCompat$LinkifyMask interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -15516,6 +15714,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -15961,12 +16160,13 @@ declare module android {
 					export class Pool<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.util.Pools.Pool<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.util.Pools$Pool interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.util.Pools$Pool interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							acquire(): T;
 							release(param0: T): boolean;
 						});
+						public constructor();
 						public release(param0: T): boolean;
 						public acquire(): T;
 					}
@@ -16182,21 +16382,23 @@ declare module android {
 					export class SubUiVisibilityListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.ActionProvider.SubUiVisibilityListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ActionProvider$SubUiVisibilityListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ActionProvider$SubUiVisibilityListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onSubUiVisibilityChanged(param0: boolean): void;
 						});
+						public constructor();
 						public onSubUiVisibilityChanged(param0: boolean): void;
 					}
 					export class VisibilityListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.ActionProvider.VisibilityListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ActionProvider$VisibilityListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ActionProvider$VisibilityListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onActionProviderVisibilityChanged(param0: boolean): void;
 						});
+						public constructor();
 						public onActionProviderVisibilityChanged(param0: boolean): void;
 					}
 				}
@@ -16236,11 +16438,12 @@ declare module android {
 					export class OnInflateFinishedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.AsyncLayoutInflater.OnInflateFinishedListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.AsyncLayoutInflater$OnInflateFinishedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.AsyncLayoutInflater$OnInflateFinishedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onInflateFinished(param0: android.view.View, param1: number, param2: android.view.ViewGroup): void;
 						});
+						public constructor();
 						public onInflateFinished(param0: android.view.View, param1: number, param2: android.view.ViewGroup): void;
 					}
 				}
@@ -16269,7 +16472,7 @@ declare module android {
 					export class GestureDetectorCompatImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.GestureDetectorCompat.GestureDetectorCompatImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.GestureDetectorCompat$GestureDetectorCompatImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.GestureDetectorCompat$GestureDetectorCompatImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							isLongpressEnabled(): boolean;
@@ -16277,6 +16480,7 @@ declare module android {
 							setIsLongpressEnabled(param0: boolean): void;
 							setOnDoubleTapListener(param0: android.view.GestureDetector.OnDoubleTapListener): void;
 						});
+						public constructor();
 						public onTouchEvent(param0: android.view.MotionEvent): boolean;
 						public setOnDoubleTapListener(param0: android.view.GestureDetector.OnDoubleTapListener): void;
 						public setIsLongpressEnabled(param0: boolean): void;
@@ -16404,11 +16608,12 @@ declare module android {
 				export class LayoutInflaterFactory extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.LayoutInflaterFactory>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.LayoutInflaterFactory interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.LayoutInflaterFactory interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onCreateView(param0: android.view.View, param1: string, param2: android.content.Context, param3: android.util.AttributeSet): android.view.View;
 					});
+					public constructor();
 					public onCreateView(param0: android.view.View, param1: string, param2: android.content.Context, param3: android.util.AttributeSet): android.view.View;
 				}
 			}
@@ -16520,7 +16725,7 @@ declare module android {
 					export class MenuVersionImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.MenuItemCompat.MenuVersionImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.MenuItemCompat$MenuVersionImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.MenuItemCompat$MenuVersionImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setContentDescription(param0: android.view.MenuItem, param1: string): void;
@@ -16537,6 +16742,7 @@ declare module android {
 							setIconTintMode(param0: android.view.MenuItem, param1: android.graphics.PorterDuff.Mode): void;
 							getIconTintMode(param0: android.view.MenuItem): android.graphics.PorterDuff.Mode;
 						});
+						public constructor();
 						public setContentDescription(param0: android.view.MenuItem, param1: string): void;
 						public setAlphabeticShortcut(param0: android.view.MenuItem, param1: string, param2: number): void;
 						public getIconTintList(param0: android.view.MenuItem): android.content.res.ColorStateList;
@@ -16554,12 +16760,13 @@ declare module android {
 					export class OnActionExpandListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.MenuItemCompat.OnActionExpandListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.MenuItemCompat$OnActionExpandListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.MenuItemCompat$OnActionExpandListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onMenuItemActionExpand(param0: android.view.MenuItem): boolean;
 							onMenuItemActionCollapse(param0: android.view.MenuItem): boolean;
 						});
+						public constructor();
 						public onMenuItemActionExpand(param0: android.view.MenuItem): boolean;
 						public onMenuItemActionCollapse(param0: android.view.MenuItem): boolean;
 					}
@@ -16655,7 +16862,7 @@ declare module android {
 				export class NestedScrollingChild extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.NestedScrollingChild>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.NestedScrollingChild interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.NestedScrollingChild interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setNestedScrollingEnabled(param0: boolean): void;
@@ -16668,6 +16875,7 @@ declare module android {
 						dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
 						dispatchNestedPreFling(param0: number, param1: number): boolean;
 					});
+					public constructor();
 					public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
 					public isNestedScrollingEnabled(): boolean;
 					public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
@@ -16690,7 +16898,7 @@ declare module android {
 				export class NestedScrollingChild2 extends java.lang.Object implements android.support.v4.view.NestedScrollingChild {
 					public static class: java.lang.Class<android.support.v4.view.NestedScrollingChild2>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.NestedScrollingChild2 interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.NestedScrollingChild2 interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						startNestedScroll(param0: number, param1: number): boolean;
@@ -16708,6 +16916,7 @@ declare module android {
 						dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
 						dispatchNestedPreFling(param0: number, param1: number): boolean;
 					});
+					public constructor();
 					public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
 					public stopNestedScroll(param0: number): void;
 					public hasNestedScrollingParent(param0: number): boolean;
@@ -16764,7 +16973,7 @@ declare module android {
 				export class NestedScrollingParent extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.NestedScrollingParent>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.NestedScrollingParent interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.NestedScrollingParent interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
@@ -16776,6 +16985,7 @@ declare module android {
 						onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 						getNestedScrollAxes(): number;
 					});
+					public constructor();
 					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
@@ -16797,7 +17007,7 @@ declare module android {
 				export class NestedScrollingParent2 extends java.lang.Object implements android.support.v4.view.NestedScrollingParent {
 					public static class: java.lang.Class<android.support.v4.view.NestedScrollingParent2>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.NestedScrollingParent2 interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.NestedScrollingParent2 interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number, param3: number): boolean;
@@ -16814,6 +17024,7 @@ declare module android {
 						onNestedPreFling(param0: android.view.View, param1: number, param2: number): boolean;
 						getNestedScrollAxes(): number;
 					});
+					public constructor();
 					public onNestedFling(param0: android.view.View, param1: number, param2: number, param3: boolean): boolean;
 					public onNestedPreScroll(param0: android.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public onStartNestedScroll(param0: android.view.View, param1: android.view.View, param2: number): boolean;
@@ -16858,11 +17069,12 @@ declare module android {
 				export class OnApplyWindowInsetsListener extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.OnApplyWindowInsetsListener>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.OnApplyWindowInsetsListener interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.OnApplyWindowInsetsListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onApplyWindowInsets(param0: android.view.View, param1: android.support.v4.view.WindowInsetsCompat): android.support.v4.view.WindowInsetsCompat;
 					});
+					public constructor();
 					public onApplyWindowInsets(param0: android.view.View, param1: android.support.v4.view.WindowInsetsCompat): android.support.v4.view.WindowInsetsCompat;
 				}
 			}
@@ -17114,7 +17326,7 @@ declare module android {
 				export class ScrollingView extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.ScrollingView>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.ScrollingView interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.ScrollingView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						computeHorizontalScrollRange(): number;
@@ -17124,6 +17336,7 @@ declare module android {
 						computeVerticalScrollOffset(): number;
 						computeVerticalScrollExtent(): number;
 					});
+					public constructor();
 					public computeVerticalScrollRange(): number;
 					public computeVerticalScrollExtent(): number;
 					public computeHorizontalScrollRange(): number;
@@ -17143,7 +17356,7 @@ declare module android {
 				export class TintableBackgroundView extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.TintableBackgroundView>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.TintableBackgroundView interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.TintableBackgroundView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setSupportBackgroundTintList(param0: android.content.res.ColorStateList): void;
@@ -17151,6 +17364,7 @@ declare module android {
 						setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 					});
+					public constructor();
 					public setSupportBackgroundTintMode(param0: android.graphics.PorterDuff.Mode): void;
 					public getSupportBackgroundTintMode(): android.graphics.PorterDuff.Mode;
 					public getSupportBackgroundTintList(): android.content.res.ColorStateList;
@@ -17360,7 +17574,7 @@ declare module android {
 					export class AccessibilityLiveRegion extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.AccessibilityLiveRegion>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$AccessibilityLiveRegion interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$AccessibilityLiveRegion interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17368,6 +17582,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17376,7 +17591,7 @@ declare module android {
 					export class AutofillImportance extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.AutofillImportance>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$AutofillImportance interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$AutofillImportance interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17384,6 +17599,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17392,7 +17608,7 @@ declare module android {
 					export class FocusDirection extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.FocusDirection>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusDirection interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusDirection interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17400,6 +17616,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17408,7 +17625,7 @@ declare module android {
 					export class FocusRealDirection extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.FocusRealDirection>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusRealDirection interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusRealDirection interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17416,6 +17633,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17424,7 +17642,7 @@ declare module android {
 					export class FocusRelativeDirection extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.FocusRelativeDirection>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusRelativeDirection interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$FocusRelativeDirection interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17432,6 +17650,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17440,7 +17659,7 @@ declare module android {
 					export class ImportantForAccessibility extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.ImportantForAccessibility>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ImportantForAccessibility interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ImportantForAccessibility interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17448,6 +17667,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17456,7 +17676,7 @@ declare module android {
 					export class LayerType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.LayerType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$LayerType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$LayerType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17464,6 +17684,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17472,7 +17693,7 @@ declare module android {
 					export class LayoutDirectionMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.LayoutDirectionMode>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$LayoutDirectionMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$LayoutDirectionMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17480,6 +17701,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17488,7 +17710,7 @@ declare module android {
 					export class NestedScrollType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.NestedScrollType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$NestedScrollType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$NestedScrollType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17496,6 +17718,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17504,7 +17727,7 @@ declare module android {
 					export class OverScroll extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.OverScroll>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$OverScroll interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$OverScroll interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17512,6 +17735,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17520,7 +17744,7 @@ declare module android {
 					export class ResolvedLayoutDirectionMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.ResolvedLayoutDirectionMode>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ResolvedLayoutDirectionMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ResolvedLayoutDirectionMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17528,6 +17752,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17536,7 +17761,7 @@ declare module android {
 					export class ScrollAxis extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.ScrollAxis>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ScrollAxis interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ScrollAxis interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17544,6 +17769,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17552,7 +17778,7 @@ declare module android {
 					export class ScrollIndicators extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewCompat.ScrollIndicators>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ScrollIndicators interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewCompat$ScrollIndicators interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17560,6 +17786,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17954,7 +18181,7 @@ declare module android {
 					export class DecorView extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.view.ViewPager.DecorView>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewPager$DecorView interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewPager$DecorView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -17962,6 +18189,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -17988,23 +18216,25 @@ declare module android {
 					export class OnAdapterChangeListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.ViewPager.OnAdapterChangeListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewPager$OnAdapterChangeListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewPager$OnAdapterChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onAdapterChanged(param0: android.support.v4.view.ViewPager, param1: android.support.v4.view.PagerAdapter, param2: android.support.v4.view.PagerAdapter): void;
 						});
+						public constructor();
 						public onAdapterChanged(param0: android.support.v4.view.ViewPager, param1: android.support.v4.view.PagerAdapter, param2: android.support.v4.view.PagerAdapter): void;
 					}
 					export class OnPageChangeListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.ViewPager.OnPageChangeListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewPager$OnPageChangeListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewPager$OnPageChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onPageScrolled(param0: number, param1: number, param2: number): void;
 							onPageSelected(param0: number): void;
 							onPageScrollStateChanged(param0: number): void;
 						});
+						public constructor();
 						public onPageSelected(param0: number): void;
 						public onPageScrolled(param0: number, param1: number, param2: number): void;
 						public onPageScrollStateChanged(param0: number): void;
@@ -18012,11 +18242,12 @@ declare module android {
 					export class PageTransformer extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.view.ViewPager.PageTransformer>;
 						/**
-						 * Constructs a new instance of the android.support.v4.view.ViewPager$PageTransformer interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.view.ViewPager$PageTransformer interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							transformPage(param0: android.view.View, param1: number): void;
 						});
+						public constructor();
 						public transformPage(param0: android.view.View, param1: number): void;
 					}
 					export class PagerObserver extends android.database.DataSetObserver {
@@ -18170,13 +18401,14 @@ declare module android {
 				export class ViewPropertyAnimatorListener extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.ViewPropertyAnimatorListener>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.ViewPropertyAnimatorListener interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.ViewPropertyAnimatorListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onAnimationStart(param0: android.view.View): void;
 						onAnimationEnd(param0: android.view.View): void;
 						onAnimationCancel(param0: android.view.View): void;
 					});
+					public constructor();
 					public onAnimationCancel(param0: android.view.View): void;
 					public onAnimationStart(param0: android.view.View): void;
 					public onAnimationEnd(param0: android.view.View): void;
@@ -18209,11 +18441,12 @@ declare module android {
 				export class ViewPropertyAnimatorUpdateListener extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.view.ViewPropertyAnimatorUpdateListener>;
 					/**
-					 * Constructs a new instance of the android.support.v4.view.ViewPropertyAnimatorUpdateListener interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.view.ViewPropertyAnimatorUpdateListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onAnimationUpdate(param0: android.view.View): void;
 					});
+					public constructor();
 					public onAnimationUpdate(param0: android.view.View): void;
 				}
 			}
@@ -18334,11 +18567,12 @@ declare module android {
 						export class AccessibilityStateChangeListener extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener>;
 							/**
-							 * Constructs a new instance of the android.support.v4.view.accessibility.AccessibilityManagerCompat$AccessibilityStateChangeListener interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.view.accessibility.AccessibilityManagerCompat$AccessibilityStateChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onAccessibilityStateChanged(param0: boolean): void;
 							});
+							public constructor();
 							public onAccessibilityStateChanged(param0: boolean): void;
 						}
 						export abstract class AccessibilityStateChangeListenerCompat extends java.lang.Object implements android.support.v4.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener {
@@ -18355,11 +18589,12 @@ declare module android {
 						export class TouchExplorationStateChangeListener extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v4.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener>;
 							/**
-							 * Constructs a new instance of the android.support.v4.view.accessibility.AccessibilityManagerCompat$TouchExplorationStateChangeListener interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v4.view.accessibility.AccessibilityManagerCompat$TouchExplorationStateChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onTouchExplorationStateChanged(param0: boolean): void;
 							});
+							public constructor();
 							public onTouchExplorationStateChanged(param0: boolean): void;
 						}
 						export class TouchExplorationStateChangeListenerWrapper extends java.lang.Object {
@@ -18925,7 +19160,7 @@ declare module android {
 				export class AutoSizeableTextView extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.widget.AutoSizeableTextView>;
 					/**
-					 * Constructs a new instance of the android.support.v4.widget.AutoSizeableTextView interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.widget.AutoSizeableTextView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setAutoSizeTextTypeWithDefaults(param0: number): void;
@@ -18938,6 +19173,7 @@ declare module android {
 						getAutoSizeTextAvailableSizes(): native.Array<number>;
 						<clinit>(): void;
 					});
+					public constructor();
 					public static PLATFORM_SUPPORTS_AUTOSIZE: boolean;
 					public getAutoSizeTextAvailableSizes(): native.Array<number>;
 					public getAutoSizeTextType(): number;
@@ -19035,7 +19271,7 @@ declare module android {
 					export class ProgressDrawableSize extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.widget.CircularProgressDrawable.ProgressDrawableSize>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.CircularProgressDrawable$ProgressDrawableSize interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.CircularProgressDrawable$ProgressDrawableSize interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -19043,6 +19279,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -19199,7 +19436,7 @@ declare module android {
 					export class CursorFilterClient extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.CursorFilter.CursorFilterClient>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.CursorFilter$CursorFilterClient interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.CursorFilter$CursorFilterClient interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							convertToString(param0: android.database.Cursor): string;
@@ -19207,6 +19444,7 @@ declare module android {
 							getCursor(): android.database.Cursor;
 							changeCursor(param0: android.database.Cursor): void;
 						});
+						public constructor();
 						public runQueryOnBackgroundThread(param0: string): android.database.Cursor;
 						public getCursor(): android.database.Cursor;
 						public changeCursor(param0: android.database.Cursor): void;
@@ -19342,7 +19580,7 @@ declare module android {
 					export class DrawerListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.DrawerLayout.DrawerListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$DrawerListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$DrawerListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onDrawerSlide(param0: android.view.View, param1: number): void;
@@ -19350,6 +19588,7 @@ declare module android {
 							onDrawerClosed(param0: android.view.View): void;
 							onDrawerStateChanged(param0: number): void;
 						});
+						public constructor();
 						public onDrawerOpened(param0: android.view.View): void;
 						public onDrawerClosed(param0: android.view.View): void;
 						public onDrawerSlide(param0: android.view.View, param1: number): void;
@@ -19358,7 +19597,7 @@ declare module android {
 					export class EdgeGravity extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.widget.DrawerLayout.EdgeGravity>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$EdgeGravity interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$EdgeGravity interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -19366,6 +19605,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -19384,7 +19624,7 @@ declare module android {
 					export class LockMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.widget.DrawerLayout.LockMode>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$LockMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$LockMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -19392,6 +19632,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -19417,7 +19658,7 @@ declare module android {
 					export class State extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.widget.DrawerLayout.State>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$State interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.DrawerLayout$State interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -19425,6 +19666,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -19544,22 +19786,24 @@ declare module android {
 					export class BoundsAdapter<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.FocusStrategy.BoundsAdapter<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$BoundsAdapter interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$BoundsAdapter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							obtainBounds(param0: T, param1: android.graphics.Rect): void;
 						});
+						public constructor();
 						public obtainBounds(param0: T, param1: android.graphics.Rect): void;
 					}
 					export class CollectionAdapter<T, V>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.FocusStrategy.CollectionAdapter<any,any>>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$CollectionAdapter interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.FocusStrategy$CollectionAdapter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							get(param0: T, param1: number): V;
 							size(param0: T): number;
 						});
+						public constructor();
 						public get(param0: T, param1: number): V;
 						public size(param0: T): number;
 					}
@@ -19596,7 +19840,7 @@ declare module android {
 					export class ImageViewCompatImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.ImageViewCompat.ImageViewCompatImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.ImageViewCompat$ImageViewCompatImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.ImageViewCompat$ImageViewCompatImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getImageTintList(param0: android.widget.ImageView): android.content.res.ColorStateList;
@@ -19604,6 +19848,7 @@ declare module android {
 							getImageTintMode(param0: android.widget.ImageView): android.graphics.PorterDuff.Mode;
 							setImageTintMode(param0: android.widget.ImageView, param1: android.graphics.PorterDuff.Mode): void;
 						});
+						public constructor();
 						public getImageTintList(param0: android.widget.ImageView): android.content.res.ColorStateList;
 						public setImageTintMode(param0: android.widget.ImageView, param1: android.graphics.PorterDuff.Mode): void;
 						public getImageTintMode(param0: android.widget.ImageView): android.graphics.PorterDuff.Mode;
@@ -19792,11 +20037,12 @@ declare module android {
 					export class OnScrollChangeListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.NestedScrollView.OnScrollChangeListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.NestedScrollView$OnScrollChangeListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.NestedScrollView$OnScrollChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onScrollChange(param0: android.support.v4.widget.NestedScrollView, param1: number, param2: number, param3: number, param4: number): void;
 						});
+						public constructor();
 						public onScrollChange(param0: android.support.v4.widget.NestedScrollView, param1: number, param2: number, param3: number, param4: number): void;
 					}
 					export class SavedState extends android.view.View.BaseSavedState {
@@ -19971,21 +20217,23 @@ declare module android {
 					export class CursorToStringConverter extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.SimpleCursorAdapter.CursorToStringConverter>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.SimpleCursorAdapter$CursorToStringConverter interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.SimpleCursorAdapter$CursorToStringConverter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							convertToString(param0: android.database.Cursor): string;
 						});
+						public constructor();
 						public convertToString(param0: android.database.Cursor): string;
 					}
 					export class ViewBinder extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.SimpleCursorAdapter.ViewBinder>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.SimpleCursorAdapter$ViewBinder interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.SimpleCursorAdapter$ViewBinder interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setViewValue(param0: android.view.View, param1: android.database.Cursor, param2: number): boolean;
 						});
+						public constructor();
 						public setViewValue(param0: android.view.View, param1: android.database.Cursor, param2: number): boolean;
 					}
 				}
@@ -20119,13 +20367,14 @@ declare module android {
 					export class PanelSlideListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.SlidingPaneLayout.PanelSlideListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.SlidingPaneLayout$PanelSlideListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.SlidingPaneLayout$PanelSlideListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onPanelSlide(param0: android.view.View, param1: number): void;
 							onPanelOpened(param0: android.view.View): void;
 							onPanelClosed(param0: android.view.View): void;
 						});
+						public constructor();
 						public onPanelOpened(param0: android.view.View): void;
 						public onPanelSlide(param0: android.view.View, param1: number): void;
 						public onPanelClosed(param0: android.view.View): void;
@@ -20146,11 +20395,12 @@ declare module android {
 					export class SlidingPanelLayoutImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.SlidingPaneLayout.SlidingPanelLayoutImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.SlidingPaneLayout$SlidingPanelLayoutImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.SlidingPaneLayout$SlidingPanelLayoutImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							invalidateChildRegion(param0: android.support.v4.widget.SlidingPaneLayout, param1: android.view.View): void;
 						});
+						public constructor();
 						public invalidateChildRegion(param0: android.support.v4.widget.SlidingPaneLayout, param1: android.view.View): void;
 					}
 					export class SlidingPanelLayoutImplBase extends java.lang.Object implements android.support.v4.widget.SlidingPaneLayout.SlidingPanelLayoutImpl {
@@ -20310,21 +20560,23 @@ declare module android {
 					export class OnChildScrollUpCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.SwipeRefreshLayout.OnChildScrollUpCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.SwipeRefreshLayout$OnChildScrollUpCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.SwipeRefreshLayout$OnChildScrollUpCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							canChildScrollUp(param0: android.support.v4.widget.SwipeRefreshLayout, param1: android.view.View): boolean;
 						});
+						public constructor();
 						public canChildScrollUp(param0: android.support.v4.widget.SwipeRefreshLayout, param1: android.view.View): boolean;
 					}
 					export class OnRefreshListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.SwipeRefreshLayout$OnRefreshListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.SwipeRefreshLayout$OnRefreshListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onRefresh(): void;
 						});
+						public constructor();
 						public onRefresh(): void;
 					}
 				}
@@ -20361,7 +20613,7 @@ declare module android {
 					export class AutoSizeTextType extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v4.widget.TextViewCompat.AutoSizeTextType>;
 						/**
-						 * Constructs a new instance of the android.support.v4.widget.TextViewCompat$AutoSizeTextType interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v4.widget.TextViewCompat$AutoSizeTextType interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -20369,6 +20621,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -20439,7 +20692,7 @@ declare module android {
 				export class TintableCompoundButton extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.widget.TintableCompoundButton>;
 					/**
-					 * Constructs a new instance of the android.support.v4.widget.TintableCompoundButton interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.widget.TintableCompoundButton interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setSupportButtonTintList(param0: android.content.res.ColorStateList): void;
@@ -20447,6 +20700,7 @@ declare module android {
 						setSupportButtonTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						getSupportButtonTintMode(): android.graphics.PorterDuff.Mode;
 					});
+					public constructor();
 					public getSupportButtonTintMode(): android.graphics.PorterDuff.Mode;
 					public setSupportButtonTintMode(param0: android.graphics.PorterDuff.Mode): void;
 					public getSupportButtonTintList(): android.content.res.ColorStateList;
@@ -20464,7 +20718,7 @@ declare module android {
 				export class TintableImageSourceView extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v4.widget.TintableImageSourceView>;
 					/**
-					 * Constructs a new instance of the android.support.v4.widget.TintableImageSourceView interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v4.widget.TintableImageSourceView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setSupportImageTintList(param0: android.content.res.ColorStateList): void;
@@ -20472,6 +20726,7 @@ declare module android {
 						setSupportImageTintMode(param0: android.graphics.PorterDuff.Mode): void;
 						getSupportImageTintMode(): android.graphics.PorterDuff.Mode;
 					});
+					public constructor();
 					public getSupportImageTintList(): android.content.res.ColorStateList;
 					public getSupportImageTintMode(): android.graphics.PorterDuff.Mode;
 					public setSupportImageTintMode(param0: android.graphics.PorterDuff.Mode): void;
@@ -20647,7 +20902,7 @@ declare module android {
 					export class DisplayOptions extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.app.ActionBar.DisplayOptions>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBar$DisplayOptions interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBar$DisplayOptions interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -20655,6 +20910,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -20674,7 +20930,7 @@ declare module android {
 					export class NavigationMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.app.ActionBar.NavigationMode>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBar$NavigationMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBar$NavigationMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -20682,6 +20938,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -20690,21 +20947,23 @@ declare module android {
 					export class OnMenuVisibilityListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.ActionBar.OnMenuVisibilityListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBar$OnMenuVisibilityListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBar$OnMenuVisibilityListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onMenuVisibilityChanged(param0: boolean): void;
 						});
+						public constructor();
 						public onMenuVisibilityChanged(param0: boolean): void;
 					}
 					export class OnNavigationListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.ActionBar.OnNavigationListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBar$OnNavigationListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBar$OnNavigationListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onNavigationItemSelected(param0: number, param1: number): boolean;
 						});
+						public constructor();
 						public onNavigationItemSelected(param0: number, param1: number): boolean;
 					}
 					export abstract class Tab extends java.lang.Object {
@@ -20732,13 +20991,14 @@ declare module android {
 					export class TabListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.ActionBar.TabListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBar$TabListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBar$TabListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onTabSelected(param0: android.support.v7.app.ActionBar.Tab, param1: android.support.v4.app.FragmentTransaction): void;
 							onTabUnselected(param0: android.support.v7.app.ActionBar.Tab, param1: android.support.v4.app.FragmentTransaction): void;
 							onTabReselected(param0: android.support.v7.app.ActionBar.Tab, param1: android.support.v4.app.FragmentTransaction): void;
 						});
+						public constructor();
 						public onTabSelected(param0: android.support.v7.app.ActionBar.Tab, param1: android.support.v4.app.FragmentTransaction): void;
 						public onTabUnselected(param0: android.support.v7.app.ActionBar.Tab, param1: android.support.v4.app.FragmentTransaction): void;
 						public onTabReselected(param0: android.support.v7.app.ActionBar.Tab, param1: android.support.v4.app.FragmentTransaction): void;
@@ -20779,7 +21039,7 @@ declare module android {
 					export class Delegate extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.ActionBarDrawerToggle.Delegate>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBarDrawerToggle$Delegate interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBarDrawerToggle$Delegate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setActionBarUpIndicator(param0: android.graphics.drawable.Drawable, param1: number): void;
@@ -20788,6 +21048,7 @@ declare module android {
 							getActionBarThemedContext(): android.content.Context;
 							isNavigationVisible(): boolean;
 						});
+						public constructor();
 						public isNavigationVisible(): boolean;
 						public getThemeUpIndicator(): android.graphics.drawable.Drawable;
 						public getActionBarThemedContext(): android.content.Context;
@@ -20797,11 +21058,12 @@ declare module android {
 					export class DelegateProvider extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.app.ActionBarDrawerToggle.DelegateProvider>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.ActionBarDrawerToggle$DelegateProvider interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.ActionBarDrawerToggle$DelegateProvider interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getDrawerToggleDelegate(): android.support.v7.app.ActionBarDrawerToggle.Delegate;
 						});
+						public constructor();
 						public getDrawerToggleDelegate(): android.support.v7.app.ActionBarDrawerToggle.Delegate;
 					}
 					export class IcsDelegate extends java.lang.Object implements android.support.v7.app.ActionBarDrawerToggle.Delegate {
@@ -20931,11 +21193,12 @@ declare module android {
 						export class OnPrepareListViewListener extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.app.AlertController.AlertParams.OnPrepareListViewListener>;
 							/**
-							 * Constructs a new instance of the android.support.v7.app.AlertController$AlertParams$OnPrepareListViewListener interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.app.AlertController$AlertParams$OnPrepareListViewListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onPrepareListView(param0: android.widget.ListView): void;
 							});
+							public constructor();
 							public onPrepareListView(param0: android.widget.ListView): void;
 						}
 					}
@@ -21223,13 +21486,14 @@ declare module android {
 				export class AppCompatCallback extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.app.AppCompatCallback>;
 					/**
-					 * Constructs a new instance of the android.support.v7.app.AppCompatCallback interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.app.AppCompatCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onSupportActionModeStarted(param0: android.support.v7.view.ActionMode): void;
 						onSupportActionModeFinished(param0: android.support.v7.view.ActionMode): void;
 						onWindowStartingSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
 					});
+					public constructor();
 					public onSupportActionModeFinished(param0: android.support.v7.view.ActionMode): void;
 					public onWindowStartingSupportActionMode(param0: android.support.v7.view.ActionMode.Callback): android.support.v7.view.ActionMode;
 					public onSupportActionModeStarted(param0: android.support.v7.view.ActionMode): void;
@@ -21291,7 +21555,7 @@ declare module android {
 					export class ApplyableNightMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegate.ApplyableNightMode>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.AppCompatDelegate$ApplyableNightMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.AppCompatDelegate$ApplyableNightMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -21299,6 +21563,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -21307,7 +21572,7 @@ declare module android {
 					export class NightMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.app.AppCompatDelegate.NightMode>;
 						/**
-						 * Constructs a new instance of the android.support.v7.app.AppCompatDelegate$NightMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.app.AppCompatDelegate$NightMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -21315,6 +21580,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -22273,7 +22539,7 @@ declare module android {
 						export class ArrowDirection extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v7.graphics.drawable.DrawerArrowDrawable.ArrowDirection>;
 							/**
-							 * Constructs a new instance of the android.support.v7.graphics.drawable.DrawerArrowDrawable$ArrowDirection interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.graphics.drawable.DrawerArrowDrawable$ArrowDirection interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -22281,6 +22547,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -22432,7 +22699,7 @@ declare module android {
 				export class ListUpdateCallback extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.util.ListUpdateCallback>;
 					/**
-					 * Constructs a new instance of the android.support.v7.util.ListUpdateCallback interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.util.ListUpdateCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onInserted(param0: number, param1: number): void;
@@ -22440,6 +22707,7 @@ declare module android {
 						onMoved(param0: number, param1: number): void;
 						onChanged(param0: number, param1: number, param2: any): void;
 					});
+					public constructor();
 					public onRemoved(param0: number, param1: number): void;
 					public onInserted(param0: number, param1: number): void;
 					public onChanged(param0: number, param1: number, param2: any): void;
@@ -22546,12 +22814,13 @@ declare module android {
 				export class ThreadUtil<T>  extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.util.ThreadUtil<any>>;
 					/**
-					 * Constructs a new instance of the android.support.v7.util.ThreadUtil<any> interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.util.ThreadUtil<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						getMainThreadProxy(param0: android.support.v7.util.ThreadUtil.MainThreadCallback<T>): android.support.v7.util.ThreadUtil.MainThreadCallback<T>;
 						getBackgroundProxy(param0: android.support.v7.util.ThreadUtil.BackgroundCallback<T>): android.support.v7.util.ThreadUtil.BackgroundCallback<T>;
 					});
+					public constructor();
 					public getBackgroundProxy(param0: android.support.v7.util.ThreadUtil.BackgroundCallback<T>): android.support.v7.util.ThreadUtil.BackgroundCallback<T>;
 					public getMainThreadProxy(param0: android.support.v7.util.ThreadUtil.MainThreadCallback<T>): android.support.v7.util.ThreadUtil.MainThreadCallback<T>;
 				}
@@ -22559,7 +22828,7 @@ declare module android {
 					export class BackgroundCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.ThreadUtil.BackgroundCallback<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v7.util.ThreadUtil$BackgroundCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.util.ThreadUtil$BackgroundCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							refresh(param0: number): void;
@@ -22567,6 +22836,7 @@ declare module android {
 							loadTile(param0: number, param1: number): void;
 							recycleTile(param0: android.support.v7.util.TileList.Tile<T>): void;
 						});
+						public constructor();
 						public recycleTile(param0: android.support.v7.util.TileList.Tile<T>): void;
 						public refresh(param0: number): void;
 						public updateRange(param0: number, param1: number, param2: number, param3: number, param4: number): void;
@@ -22575,13 +22845,14 @@ declare module android {
 					export class MainThreadCallback<T>  extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.util.ThreadUtil.MainThreadCallback<any>>;
 						/**
-						 * Constructs a new instance of the android.support.v7.util.ThreadUtil$MainThreadCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.util.ThreadUtil$MainThreadCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							updateItemCount(param0: number, param1: number): void;
 							addTile(param0: number, param1: android.support.v7.util.TileList.Tile<T>): void;
 							removeTile(param0: number, param1: number): void;
 						});
+						public constructor();
 						public addTile(param0: number, param1: android.support.v7.util.TileList.Tile<T>): void;
 						public updateItemCount(param0: number, param1: number): void;
 						public removeTile(param0: number, param1: number): void;
@@ -22670,7 +22941,7 @@ declare module android {
 					export class Callback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.view.ActionMode.Callback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.view.ActionMode$Callback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.view.ActionMode$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onCreateActionMode(param0: android.support.v7.view.ActionMode, param1: android.view.Menu): boolean;
@@ -22678,6 +22949,7 @@ declare module android {
 							onActionItemClicked(param0: android.support.v7.view.ActionMode, param1: android.view.MenuItem): boolean;
 							onDestroyActionMode(param0: android.support.v7.view.ActionMode): void;
 						});
+						public constructor();
 						public onPrepareActionMode(param0: android.support.v7.view.ActionMode, param1: android.view.Menu): boolean;
 						public onDestroyActionMode(param0: android.support.v7.view.ActionMode): void;
 						public onActionItemClicked(param0: android.support.v7.view.ActionMode, param1: android.view.MenuItem): boolean;
@@ -22696,12 +22968,13 @@ declare module android {
 				export class CollapsibleActionView extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.view.CollapsibleActionView>;
 					/**
-					 * Constructs a new instance of the android.support.v7.view.CollapsibleActionView interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.view.CollapsibleActionView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onActionViewExpanded(): void;
 						onActionViewCollapsed(): void;
 					});
+					public constructor();
 					public onActionViewCollapsed(): void;
 					public onActionViewExpanded(): void;
 				}
@@ -23175,7 +23448,7 @@ declare module android {
 						export class HorizPosition extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v7.view.menu.CascadingMenuPopup.HorizPosition>;
 							/**
-							 * Constructs a new instance of the android.support.v7.view.menu.CascadingMenuPopup$HorizPosition interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.view.menu.CascadingMenuPopup$HorizPosition interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -23183,6 +23456,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -23494,23 +23768,25 @@ declare module android {
 						export class Callback extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuBuilder.Callback>;
 							/**
-							 * Constructs a new instance of the android.support.v7.view.menu.MenuBuilder$Callback interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.view.menu.MenuBuilder$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onMenuItemSelected(param0: android.support.v7.view.menu.MenuBuilder, param1: android.view.MenuItem): boolean;
 								onMenuModeChange(param0: android.support.v7.view.menu.MenuBuilder): void;
 							});
+							public constructor();
 							public onMenuItemSelected(param0: android.support.v7.view.menu.MenuBuilder, param1: android.view.MenuItem): boolean;
 							public onMenuModeChange(param0: android.support.v7.view.menu.MenuBuilder): void;
 						}
 						export class ItemInvoker extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuBuilder.ItemInvoker>;
 							/**
-							 * Constructs a new instance of the android.support.v7.view.menu.MenuBuilder$ItemInvoker interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.view.menu.MenuBuilder$ItemInvoker interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								invokeItem(param0: android.support.v7.view.menu.MenuItemImpl): boolean;
 							});
+							public constructor();
 							public invokeItem(param0: android.support.v7.view.menu.MenuItemImpl): boolean;
 						}
 					}
@@ -23551,12 +23827,13 @@ declare module android {
 					export class MenuHelper extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuHelper>;
 						/**
-						 * Constructs a new instance of the android.support.v7.view.menu.MenuHelper interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.view.menu.MenuHelper interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setPresenterCallback(param0: android.support.v7.view.menu.MenuPresenter.Callback): void;
 							dismiss(): void;
 						});
+						public constructor();
 						public setPresenterCallback(param0: android.support.v7.view.menu.MenuPresenter.Callback): void;
 						public dismiss(): void;
 					}
@@ -23948,7 +24225,7 @@ declare module android {
 					export class MenuPresenter extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuPresenter>;
 						/**
-						 * Constructs a new instance of the android.support.v7.view.menu.MenuPresenter interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.view.menu.MenuPresenter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							initForMenu(param0: android.content.Context, param1: android.support.v7.view.menu.MenuBuilder): void;
@@ -23964,6 +24241,7 @@ declare module android {
 							onSaveInstanceState(): android.os.Parcelable;
 							onRestoreInstanceState(param0: android.os.Parcelable): void;
 						});
+						public constructor();
 						public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 						public getMenuView(param0: android.view.ViewGroup): android.support.v7.view.menu.MenuView;
 						public flagActionItems(): boolean;
@@ -23981,12 +24259,13 @@ declare module android {
 						export class Callback extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuPresenter.Callback>;
 							/**
-							 * Constructs a new instance of the android.support.v7.view.menu.MenuPresenter$Callback interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.view.menu.MenuPresenter$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 								onOpenSubMenu(param0: android.support.v7.view.menu.MenuBuilder): boolean;
 							});
+							public constructor();
 							public onCloseMenu(param0: android.support.v7.view.menu.MenuBuilder, param1: boolean): void;
 							public onOpenSubMenu(param0: android.support.v7.view.menu.MenuBuilder): boolean;
 						}
@@ -24005,12 +24284,13 @@ declare module android {
 					export class MenuView extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.view.menu.MenuView>;
 						/**
-						 * Constructs a new instance of the android.support.v7.view.menu.MenuView interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.view.menu.MenuView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							initialize(param0: android.support.v7.view.menu.MenuBuilder): void;
 							getWindowAnimations(): number;
 						});
+						public constructor();
 						public getWindowAnimations(): number;
 						public initialize(param0: android.support.v7.view.menu.MenuBuilder): void;
 					}
@@ -24018,7 +24298,7 @@ declare module android {
 						export class ItemView extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.view.menu.MenuView.ItemView>;
 							/**
-							 * Constructs a new instance of the android.support.v7.view.menu.MenuView$ItemView interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.view.menu.MenuView$ItemView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								initialize(param0: android.support.v7.view.menu.MenuItemImpl, param1: number): void;
@@ -24032,6 +24312,7 @@ declare module android {
 								prefersCondensedTitle(): boolean;
 								showsIcon(): boolean;
 							});
+							public constructor();
 							public setTitle(param0: string): void;
 							public setIcon(param0: android.graphics.drawable.Drawable): void;
 							public prefersCondensedTitle(): boolean;
@@ -24113,7 +24394,7 @@ declare module android {
 					export class ShowableListMenu extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.view.menu.ShowableListMenu>;
 						/**
-						 * Constructs a new instance of the android.support.v7.view.menu.ShowableListMenu interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.view.menu.ShowableListMenu interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							show(): void;
@@ -24121,6 +24402,7 @@ declare module android {
 							isShowing(): boolean;
 							getListView(): android.widget.ListView;
 						});
+						public constructor();
 						public dismiss(): void;
 						public show(): void;
 						public getListView(): android.widget.ListView;
@@ -24659,7 +24941,7 @@ declare module android {
 					export class ActionBarVisibilityCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ActionBarOverlayLayout.ActionBarVisibilityCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ActionBarOverlayLayout$ActionBarVisibilityCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ActionBarOverlayLayout$ActionBarVisibilityCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onWindowVisibilityChanged(param0: number): void;
@@ -24669,6 +24951,7 @@ declare module android {
 							onContentScrollStarted(): void;
 							onContentScrollStopped(): void;
 						});
+						public constructor();
 						public onContentScrollStarted(): void;
 						public hideForSystem(): void;
 						public onContentScrollStopped(): void;
@@ -24900,12 +25183,13 @@ declare module android {
 					export class ActionMenuChildView extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ActionMenuView.ActionMenuChildView>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ActionMenuView$ActionMenuChildView interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ActionMenuView$ActionMenuChildView interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							needsDividerBefore(): boolean;
 							needsDividerAfter(): boolean;
 						});
+						public constructor();
 						public needsDividerAfter(): boolean;
 						public needsDividerBefore(): boolean;
 					}
@@ -24937,11 +25221,12 @@ declare module android {
 					export class OnMenuItemClickListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ActionMenuView.OnMenuItemClickListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ActionMenuView$OnMenuItemClickListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ActionMenuView$OnMenuItemClickListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onMenuItemClick(param0: android.view.MenuItem): boolean;
 						});
+						public constructor();
 						public onMenuItemClick(param0: android.view.MenuItem): boolean;
 					}
 				}
@@ -24977,11 +25262,12 @@ declare module android {
 					export class ActivityChooserModelClient extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserModel.ActivityChooserModelClient>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ActivityChooserModel$ActivityChooserModelClient interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ActivityChooserModel$ActivityChooserModelClient interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setActivityChooserModel(param0: android.support.v7.widget.ActivityChooserModel): void;
 						});
+						public constructor();
 						public setActivityChooserModel(param0: android.support.v7.widget.ActivityChooserModel): void;
 					}
 					export class ActivityResolveInfo extends java.lang.Comparable<android.support.v7.widget.ActivityChooserModel.ActivityResolveInfo> {
@@ -24997,11 +25283,12 @@ declare module android {
 					export class ActivitySorter extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserModel.ActivitySorter>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ActivityChooserModel$ActivitySorter interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ActivityChooserModel$ActivitySorter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							sort(param0: android.content.Intent, param1: java.util.List<android.support.v7.widget.ActivityChooserModel.ActivityResolveInfo>, param2: java.util.List<android.support.v7.widget.ActivityChooserModel.HistoricalRecord>): void;
 						});
+						public constructor();
 						public sort(param0: android.content.Intent, param1: java.util.List<android.support.v7.widget.ActivityChooserModel.ActivityResolveInfo>, param2: java.util.List<android.support.v7.widget.ActivityChooserModel.HistoricalRecord>): void;
 					}
 					export class DefaultSorter extends java.lang.Object implements android.support.v7.widget.ActivityChooserModel.ActivitySorter {
@@ -25022,11 +25309,12 @@ declare module android {
 					export class OnChooseActivityListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ActivityChooserModel.OnChooseActivityListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ActivityChooserModel$OnChooseActivityListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ActivityChooserModel$OnChooseActivityListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onChooseActivity(param0: android.support.v7.widget.ActivityChooserModel, param1: android.content.Intent): boolean;
 						});
+						public constructor();
 						public onChooseActivity(param0: android.support.v7.widget.ActivityChooserModel, param1: android.content.Intent): boolean;
 					}
 					export class PersistHistoryAsyncTask extends android.os.AsyncTask<any,java.lang.Void,java.lang.Void> {
@@ -25203,7 +25491,7 @@ declare module android {
 					export class Callback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.AdapterHelper.Callback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.AdapterHelper$Callback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.AdapterHelper$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							findViewHolder(param0: number): android.support.v7.widget.RecyclerView.ViewHolder;
@@ -25215,6 +25503,7 @@ declare module android {
 							offsetPositionsForAdd(param0: number, param1: number): void;
 							offsetPositionsForMove(param0: number, param1: number): void;
 						});
+						public constructor();
 						public offsetPositionsForRemovingLaidOutOrNewView(param0: number, param1: number): void;
 						public onDispatchFirstPass(param0: android.support.v7.widget.AdapterHelper.UpdateOp): void;
 						public offsetPositionsForAdd(param0: number, param1: number): void;
@@ -25470,11 +25759,12 @@ declare module android {
 					export class DirectSetButtonDrawableInterface extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.AppCompatCompoundButtonHelper.DirectSetButtonDrawableInterface>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.AppCompatCompoundButtonHelper$DirectSetButtonDrawableInterface interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.AppCompatCompoundButtonHelper$DirectSetButtonDrawableInterface interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setButtonDrawable(param0: android.graphics.drawable.Drawable): void;
 						});
+						public constructor();
 						public setButtonDrawable(param0: android.graphics.drawable.Drawable): void;
 					}
 				}
@@ -25507,11 +25797,12 @@ declare module android {
 					export class InflateDelegate extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.AppCompatDrawableManager.InflateDelegate>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.AppCompatDrawableManager$InflateDelegate interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.AppCompatDrawableManager$InflateDelegate interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							createFromXmlInner(param0: android.content.Context, param1: org.xmlpull.v1.XmlPullParser, param2: android.util.AttributeSet, param3: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 						});
+						public constructor();
 						public createFromXmlInner(param0: android.content.Context, param1: org.xmlpull.v1.XmlPullParser, param2: android.util.AttributeSet, param3: android.content.res.Resources.Theme): android.graphics.drawable.Drawable;
 					}
 					export class VdcInflateDelegate extends java.lang.Object implements android.support.v7.widget.AppCompatDrawableManager.InflateDelegate {
@@ -26110,7 +26401,7 @@ declare module android {
 					export class Callback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ChildHelper.Callback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ChildHelper$Callback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ChildHelper$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getChildCount(): number;
@@ -26125,6 +26416,7 @@ declare module android {
 							onEnteredHiddenState(param0: android.view.View): void;
 							onLeftHiddenState(param0: android.view.View): void;
 						});
+						public constructor();
 						public onLeftHiddenState(param0: android.view.View): void;
 						public removeAllViews(): void;
 						public onEnteredHiddenState(param0: android.view.View): void;
@@ -26209,12 +26501,13 @@ declare module android {
 					export class OnAttachListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ContentFrameLayout.OnAttachListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ContentFrameLayout$OnAttachListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ContentFrameLayout$OnAttachListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onDetachedFromWindow(): void;
 							onAttachedFromWindow(): void;
 						});
+						public constructor();
 						public onAttachedFromWindow(): void;
 						public onDetachedFromWindow(): void;
 					}
@@ -26231,7 +26524,7 @@ declare module android {
 				export class DecorContentParent extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.widget.DecorContentParent>;
 					/**
-					 * Constructs a new instance of the android.support.v7.widget.DecorContentParent interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.widget.DecorContentParent interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setWindowCallback(param0: android.view.Window.Callback): void;
@@ -26255,6 +26548,7 @@ declare module android {
 						restoreToolbarHierarchyState(param0: android.util.SparseArray<android.os.Parcelable>): void;
 						dismissPopups(): void;
 					});
+					public constructor();
 					public getTitle(): string;
 					public setLogo(param0: number): void;
 					public isOverflowMenuShowPending(): boolean;
@@ -26288,7 +26582,7 @@ declare module android {
 				export class DecorToolbar extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.widget.DecorToolbar>;
 					/**
-					 * Constructs a new instance of the android.support.v7.widget.DecorToolbar interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.widget.DecorToolbar interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						getViewGroup(): android.view.ViewGroup;
@@ -26349,6 +26643,7 @@ declare module android {
 						setMenuCallbacks(param0: android.support.v7.view.menu.MenuPresenter.Callback, param1: android.support.v7.view.menu.MenuBuilder.Callback): void;
 						getMenu(): android.view.Menu;
 					});
+					public constructor();
 					public getTitle(): string;
 					public setLogo(param0: number): void;
 					public getNavigationMode(): number;
@@ -26610,7 +26905,7 @@ declare module android {
 					export class AnimationState extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.FastScroller.AnimationState>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.FastScroller$AnimationState interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.FastScroller$AnimationState interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -26618,6 +26913,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -26637,7 +26933,7 @@ declare module android {
 					export class DragState extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.FastScroller.DragState>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.FastScroller$DragState interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.FastScroller$DragState interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -26645,6 +26941,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -26653,7 +26950,7 @@ declare module android {
 					export class State extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.FastScroller.State>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.FastScroller$State interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.FastScroller$State interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -26661,6 +26958,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -26793,22 +27091,24 @@ declare module android {
 				export class FitWindowsViewGroup extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.widget.FitWindowsViewGroup>;
 					/**
-					 * Constructs a new instance of the android.support.v7.widget.FitWindowsViewGroup interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.widget.FitWindowsViewGroup interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setOnFitSystemWindowsListener(param0: android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
 					});
+					public constructor();
 					public setOnFitSystemWindowsListener(param0: android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
 				}
 				export module FitWindowsViewGroup {
 					export class OnFitSystemWindowsListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.FitWindowsViewGroup.OnFitSystemWindowsListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.FitWindowsViewGroup$OnFitSystemWindowsListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.FitWindowsViewGroup$OnFitSystemWindowsListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onFitSystemWindows(param0: android.graphics.Rect): void;
 						});
+						public constructor();
 						public onFitSystemWindows(param0: android.graphics.Rect): void;
 					}
 				}
@@ -27061,7 +27361,7 @@ declare module android {
 					export class DividerMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.LinearLayoutCompat.DividerMode>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.LinearLayoutCompat$DividerMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.LinearLayoutCompat$DividerMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -27069,6 +27369,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -27088,7 +27389,7 @@ declare module android {
 					export class OrientationMode extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.LinearLayoutCompat.OrientationMode>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.LinearLayoutCompat$OrientationMode interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.LinearLayoutCompat$OrientationMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -27096,6 +27397,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -27457,12 +27759,13 @@ declare module android {
 				export class MenuItemHoverListener extends java.lang.Object {
 					public static class: java.lang.Class<android.support.v7.widget.MenuItemHoverListener>;
 					/**
-					 * Constructs a new instance of the android.support.v7.widget.MenuItemHoverListener interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.widget.MenuItemHoverListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						onItemHoverExit(param0: android.support.v7.view.menu.MenuBuilder, param1: android.view.MenuItem): void;
 						onItemHoverEnter(param0: android.support.v7.view.menu.MenuBuilder, param1: android.view.MenuItem): void;
 					});
+					public constructor();
 					public onItemHoverEnter(param0: android.support.v7.view.menu.MenuBuilder, param1: android.view.MenuItem): void;
 					public onItemHoverExit(param0: android.support.v7.view.menu.MenuBuilder, param1: android.view.MenuItem): void;
 				}
@@ -27566,12 +27869,13 @@ declare module android {
 					export class Callback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.OpReorderer.Callback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.OpReorderer$Callback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.OpReorderer$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							obtainUpdateOp(param0: number, param1: number, param2: number, param3: any): android.support.v7.widget.AdapterHelper.UpdateOp;
 							recycleUpdateOp(param0: android.support.v7.widget.AdapterHelper.UpdateOp): void;
 						});
+						public constructor();
 						public obtainUpdateOp(param0: number, param1: number, param2: number, param3: any): android.support.v7.widget.AdapterHelper.UpdateOp;
 						public recycleUpdateOp(param0: android.support.v7.widget.AdapterHelper.UpdateOp): void;
 					}
@@ -27657,21 +27961,23 @@ declare module android {
 					export class OnDismissListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.PopupMenu.OnDismissListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.PopupMenu$OnDismissListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.PopupMenu$OnDismissListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onDismiss(param0: android.support.v7.widget.PopupMenu): void;
 						});
+						public constructor();
 						public onDismiss(param0: android.support.v7.widget.PopupMenu): void;
 					}
 					export class OnMenuItemClickListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.PopupMenu.OnMenuItemClickListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.PopupMenu$OnMenuItemClickListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.PopupMenu$OnMenuItemClickListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onMenuItemClick(param0: android.view.MenuItem): boolean;
 						});
+						public constructor();
 						public onMenuItemClick(param0: android.view.MenuItem): boolean;
 					}
 				}
@@ -27955,11 +28261,12 @@ declare module android {
 					export class ChildDrawingOrderCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.ChildDrawingOrderCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ChildDrawingOrderCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ChildDrawingOrderCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onGetChildDrawingOrder(param0: number, param1: number): number;
 						});
+						public constructor();
 						public onGetChildDrawingOrder(param0: number, param1: number): number;
 					}
 					export abstract class ItemAnimator extends java.lang.Object {
@@ -28002,7 +28309,7 @@ declare module android {
 						export class AdapterChanges extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v7.widget.RecyclerView.ItemAnimator.AdapterChanges>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$AdapterChanges interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$AdapterChanges interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -28010,6 +28317,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -28018,21 +28326,23 @@ declare module android {
 						export class ItemAnimatorFinishedListener extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.widget.RecyclerView.ItemAnimator.ItemAnimatorFinishedListener>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$ItemAnimatorFinishedListener interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$ItemAnimatorFinishedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onAnimationsFinished(): void;
 							});
+							public constructor();
 							public onAnimationsFinished(): void;
 						}
 						export class ItemAnimatorListener extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.widget.RecyclerView.ItemAnimator.ItemAnimatorListener>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$ItemAnimatorListener interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$ItemAnimator$ItemAnimatorListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								onAnimationFinished(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 							});
+							public constructor();
 							public onAnimationFinished(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						}
 						export class ItemHolderInfo extends java.lang.Object {
@@ -28210,11 +28520,12 @@ declare module android {
 						export class LayoutPrefetchRegistry extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.widget.RecyclerView.LayoutManager.LayoutPrefetchRegistry>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$LayoutManager$LayoutPrefetchRegistry interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$LayoutManager$LayoutPrefetchRegistry interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								addPosition(param0: number, param1: number): void;
 							});
+							public constructor();
 							public addPosition(param0: number, param1: number): void;
 						}
 						export class Properties extends java.lang.Object {
@@ -28244,12 +28555,13 @@ declare module android {
 					export class OnChildAttachStateChangeListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.OnChildAttachStateChangeListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$OnChildAttachStateChangeListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$OnChildAttachStateChangeListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onChildViewAttachedToWindow(param0: android.view.View): void;
 							onChildViewDetachedFromWindow(param0: android.view.View): void;
 						});
+						public constructor();
 						public onChildViewAttachedToWindow(param0: android.view.View): void;
 						public onChildViewDetachedFromWindow(param0: android.view.View): void;
 					}
@@ -28261,13 +28573,14 @@ declare module android {
 					export class OnItemTouchListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.OnItemTouchListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$OnItemTouchListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$OnItemTouchListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onInterceptTouchEvent(param0: android.support.v7.widget.RecyclerView, param1: android.view.MotionEvent): boolean;
 							onTouchEvent(param0: android.support.v7.widget.RecyclerView, param1: android.view.MotionEvent): void;
 							onRequestDisallowInterceptTouchEvent(param0: boolean): void;
 						});
+						public constructor();
 						public onInterceptTouchEvent(param0: android.support.v7.widget.RecyclerView, param1: android.view.MotionEvent): boolean;
 						public onTouchEvent(param0: android.support.v7.widget.RecyclerView, param1: android.view.MotionEvent): void;
 						public onRequestDisallowInterceptTouchEvent(param0: boolean): void;
@@ -28281,7 +28594,7 @@ declare module android {
 					export class Orientation extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.Orientation>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$Orientation interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$Orientation interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -28289,6 +28602,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -28322,11 +28636,12 @@ declare module android {
 					export class RecyclerListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.RecyclerView.RecyclerListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$RecyclerListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.RecyclerView$RecyclerListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onViewRecycled(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						});
+						public constructor();
 						public onViewRecycled(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 					}
 					export class RecyclerViewDataObserver extends android.support.v7.widget.RecyclerView.AdapterDataObserver {
@@ -28392,11 +28707,12 @@ declare module android {
 						export class ScrollVectorProvider extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.widget.RecyclerView.SmoothScroller.ScrollVectorProvider>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$SmoothScroller$ScrollVectorProvider interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$SmoothScroller$ScrollVectorProvider interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								computeScrollVectorForPosition(param0: number): android.graphics.PointF;
 							});
+							public constructor();
 							public computeScrollVectorForPosition(param0: number): android.graphics.PointF;
 						}
 					}
@@ -28422,7 +28738,7 @@ declare module android {
 						export class LayoutState extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<android.support.v7.widget.RecyclerView.State.LayoutState>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$State$LayoutState interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.RecyclerView$State$LayoutState interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								annotationType(): java.lang.Class<any>;
@@ -28430,6 +28746,7 @@ declare module android {
 								hashCode(): number;
 								toString(): string;
 							});
+							public constructor();
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
@@ -28838,34 +29155,37 @@ declare module android {
 					export class OnCloseListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.SearchView.OnCloseListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.SearchView$OnCloseListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.SearchView$OnCloseListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onClose(): boolean;
 						});
+						public constructor();
 						public onClose(): boolean;
 					}
 					export class OnQueryTextListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.SearchView.OnQueryTextListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.SearchView$OnQueryTextListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.SearchView$OnQueryTextListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onQueryTextSubmit(param0: string): boolean;
 							onQueryTextChange(param0: string): boolean;
 						});
+						public constructor();
 						public onQueryTextChange(param0: string): boolean;
 						public onQueryTextSubmit(param0: string): boolean;
 					}
 					export class OnSuggestionListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.SearchView.OnSuggestionListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.SearchView$OnSuggestionListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.SearchView$OnSuggestionListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onSuggestionSelect(param0: number): boolean;
 							onSuggestionClick(param0: number): boolean;
 						});
+						public constructor();
 						public onSuggestionSelect(param0: number): boolean;
 						public onSuggestionClick(param0: number): boolean;
 					}
@@ -28943,11 +29263,12 @@ declare module android {
 					export class OnShareTargetSelectedListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ShareActionProvider.OnShareTargetSelectedListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ShareActionProvider$OnShareTargetSelectedListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ShareActionProvider$OnShareTargetSelectedListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onShareTargetSelected(param0: android.support.v7.widget.ShareActionProvider, param1: android.content.Intent): boolean;
 						});
+						public constructor();
 						public onShareTargetSelected(param0: android.support.v7.widget.ShareActionProvider, param1: android.content.Intent): boolean;
 					}
 					export class ShareActivityChooserModelPolicy extends java.lang.Object implements android.support.v7.widget.ActivityChooserModel.OnChooseActivityListener {
@@ -29302,7 +29623,7 @@ declare module android {
 				export class ThemedSpinnerAdapter extends java.lang.Object implements android.widget.SpinnerAdapter {
 					public static class: java.lang.Class<android.support.v7.widget.ThemedSpinnerAdapter>;
 					/**
-					 * Constructs a new instance of the android.support.v7.widget.ThemedSpinnerAdapter interface with the provided implementation.
+					 * Constructs a new instance of the android.support.v7.widget.ThemedSpinnerAdapter interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
 						setDropDownViewTheme(param0: android.content.res.Resources.Theme): void;
@@ -29319,6 +29640,7 @@ declare module android {
 						getViewTypeCount(): number;
 						isEmpty(): boolean;
 					});
+					public constructor();
 					public static NO_SELECTION: number;
 					public static IGNORE_ITEM_VIEW_TYPE: number;
 					public isEmpty(): boolean;
@@ -29606,11 +29928,12 @@ declare module android {
 					export class OnMenuItemClickListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.Toolbar.OnMenuItemClickListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.Toolbar$OnMenuItemClickListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.Toolbar$OnMenuItemClickListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onMenuItemClick(param0: android.view.MenuItem): boolean;
 						});
+						public constructor();
 						public onMenuItemClick(param0: android.view.MenuItem): boolean;
 					}
 					export class SavedState extends android.support.v4.view.AbsSavedState {
@@ -29719,11 +30042,12 @@ declare module android {
 					export class ViewCompatImpl extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.TooltipCompat.ViewCompatImpl>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.TooltipCompat$ViewCompatImpl interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.TooltipCompat$ViewCompatImpl interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							setTooltipText(param0: android.view.View, param1: string): void;
 						});
+						public constructor();
 						public setTooltipText(param0: android.view.View, param1: string): void;
 					}
 				}
@@ -29792,7 +30116,7 @@ declare module android {
 					export class Callback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ViewBoundsCheck.Callback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ViewBoundsCheck$Callback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ViewBoundsCheck$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							getChildCount(): number;
@@ -29803,6 +30127,7 @@ declare module android {
 							getChildStart(param0: android.view.View): number;
 							getChildEnd(param0: android.view.View): number;
 						});
+						public constructor();
 						public getChildCount(): number;
 						public getChildAt(param0: number): android.view.View;
 						public getParent(): android.view.View;
@@ -29814,7 +30139,7 @@ declare module android {
 					export class ViewBounds extends java.lang.Object implements java.lang.annotation.Annotation {
 						public static class: java.lang.Class<android.support.v7.widget.ViewBoundsCheck.ViewBounds>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ViewBoundsCheck$ViewBounds interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ViewBoundsCheck$ViewBounds interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							annotationType(): java.lang.Class<any>;
@@ -29822,6 +30147,7 @@ declare module android {
 							hashCode(): number;
 							toString(): string;
 						});
+						public constructor();
 						public equals(param0: any): boolean;
 						public hashCode(): number;
 						public toString(): string;
@@ -29848,7 +30174,7 @@ declare module android {
 					export class ProcessCallback extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ViewInfoStore.ProcessCallback>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ViewInfoStore$ProcessCallback interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ViewInfoStore$ProcessCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							processDisappeared(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo, param2: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo): void;
@@ -29856,6 +30182,7 @@ declare module android {
 							processPersistent(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo, param2: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo): void;
 							unused(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						});
+						public constructor();
 						public unused(param0: android.support.v7.widget.RecyclerView.ViewHolder): void;
 						public processDisappeared(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo, param2: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo): void;
 						public processAppeared(param0: android.support.v7.widget.RecyclerView.ViewHolder, param1: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo, param2: android.support.v7.widget.RecyclerView.ItemAnimator.ItemHolderInfo): void;
@@ -29904,11 +30231,12 @@ declare module android {
 					export class OnInflateListener extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.ViewStubCompat.OnInflateListener>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.ViewStubCompat$OnInflateListener interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.ViewStubCompat$OnInflateListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onInflate(param0: android.support.v7.widget.ViewStubCompat, param1: android.view.View): void;
 						});
+						public constructor();
 						public onInflate(param0: android.support.v7.widget.ViewStubCompat, param1: android.view.View): void;
 					}
 				}
@@ -30034,11 +30362,12 @@ declare module android {
 						export class ViewDropHandler extends java.lang.Object {
 							public static class: java.lang.Class<android.support.v7.widget.helper.ItemTouchHelper.ViewDropHandler>;
 							/**
-							 * Constructs a new instance of the android.support.v7.widget.helper.ItemTouchHelper$ViewDropHandler interface with the provided implementation.
+							 * Constructs a new instance of the android.support.v7.widget.helper.ItemTouchHelper$ViewDropHandler interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 							 */
 							public constructor(implementation: {
 								prepareForDrop(param0: android.view.View, param1: android.view.View, param2: number, param3: number): void;
 							});
+							public constructor();
 							public prepareForDrop(param0: android.view.View, param1: android.view.View, param2: number, param3: number): void;
 						}
 					}
@@ -30056,7 +30385,7 @@ declare module android {
 					export class ItemTouchUIUtil extends java.lang.Object {
 						public static class: java.lang.Class<android.support.v7.widget.helper.ItemTouchUIUtil>;
 						/**
-						 * Constructs a new instance of the android.support.v7.widget.helper.ItemTouchUIUtil interface with the provided implementation.
+						 * Constructs a new instance of the android.support.v7.widget.helper.ItemTouchUIUtil interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 						 */
 						public constructor(implementation: {
 							onDraw(param0: android.graphics.Canvas, param1: android.support.v7.widget.RecyclerView, param2: android.view.View, param3: number, param4: number, param5: number, param6: boolean): void;
@@ -30064,6 +30393,7 @@ declare module android {
 							clearView(param0: android.view.View): void;
 							onSelected(param0: android.view.View): void;
 						});
+						public constructor();
 						public onDraw(param0: android.graphics.Canvas, param1: android.support.v7.widget.RecyclerView, param2: android.view.View, param3: number, param4: number, param5: number, param6: boolean): void;
 						public clearView(param0: android.view.View): void;
 						public onDrawOver(param0: android.graphics.Canvas, param1: android.support.v7.widget.RecyclerView, param2: android.view.View, param3: number, param4: number, param5: number, param6: boolean): void;
