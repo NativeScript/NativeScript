@@ -1,6 +1,9 @@
 ﻿import { LayoutBaseCommon, clipToBoundsProperty, View, layout } from "./layout-base-common";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./layout-base-common";
+
+const majorVersion = iosUtils.MajorVersion;
 
 export class LayoutBase extends LayoutBaseCommon {
     nativeViewProtected: UIView;
@@ -58,32 +61,34 @@ export class LayoutBase extends LayoutBaseCommon {
             let width = layout.toDevicePixels(frame.size.width);
             let height = layout.toDevicePixels(frame.size.height);
 
-            let newLeft = left;
-            let newTop = top;
-            let newWidth = width;
-            let newHeight = height;
+            if (majorVersion > 10) {
+                let newLeft = left;
+                let newTop = top;
+                let newWidth = width;
+                let newHeight = height;
 
-            if (onScreenLeft <= layout.toDevicePixels(safeArea.origin.x)) {
-                newLeft = layout.toDevicePixels(fullscreen.origin.x);
-                newWidth = width + onScreenLeft;
+                if (onScreenLeft <= layout.toDevicePixels(safeArea.origin.x)) {
+                    newLeft = layout.toDevicePixels(fullscreen.origin.x);
+                    newWidth = width + onScreenLeft;
+                }
+
+                if (onScreenTop <= layout.toDevicePixels(safeArea.origin.y)) {
+                    newTop = layout.toDevicePixels(fullscreen.origin.y);
+                    newHeight = height + onScreenTop;
+                }
+
+                if (width && onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
+                    newWidth = newWidth + (layout.toDevicePixels(fullscreen.size.width) - (onScreenLeft + width));
+                }
+
+                if (height && onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
+                    // console.log(">>>>>>>> Bottom Layout: onScreenTop - " + onScreenTop + " height - " + height + " safeAreaOriginY - " + layout.toDevicePixels(safeArea.origin.y) + " safeAreaHeight - " + layout.toDevicePixels(safeArea.size.height));
+                    newHeight = newHeight + (layout.toDevicePixels(fullscreen.size.height) - (onScreenTop + height));
+                }
+
+                const frameNew = CGRectMake(layout.toDeviceIndependentPixels(newLeft), layout.toDeviceIndependentPixels(newTop), layout.toDeviceIndependentPixels(newWidth), layout.toDeviceIndependentPixels(newHeight));
+                nativeView.frame = frameNew;
             }
-
-            if (onScreenTop <= layout.toDevicePixels(safeArea.origin.y)) {
-                newTop = layout.toDevicePixels(fullscreen.origin.y);
-                newHeight = height + onScreenTop;
-            }
-
-            if (width && onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
-                newWidth = newWidth + (layout.toDevicePixels(fullscreen.size.width) - (onScreenLeft + width));
-            }
-
-            if (height && onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
-                // console.log(">>>>>>>> Bottom Layout: onScreenTop - " + onScreenTop + " height - " + height + " safeAreaOriginY - " + layout.toDevicePixels(safeArea.origin.y) + " safeAreaHeight - " + layout.toDevicePixels(safeArea.size.height));
-                newHeight = newHeight + (layout.toDevicePixels(fullscreen.size.height) - (onScreenTop + height));
-            }
-
-            const frameNew = CGRectMake(layout.toDeviceIndependentPixels(newLeft), layout.toDeviceIndependentPixels(newTop), layout.toDeviceIndependentPixels(newWidth), layout.toDeviceIndependentPixels(newHeight));
-            nativeView.frame = frameNew;
 
             // if (leftInset || topInset) {
             //     const frameNew = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left + leftInset), layout.toDeviceIndependentPixels(bottom - top + topInset));
@@ -93,11 +98,11 @@ export class LayoutBase extends LayoutBaseCommon {
             // }
             // else {
                 const boundsOrigin = nativeView.bounds.origin;
-                nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frameNew.size.width, frameNew.size.height);
+                nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, nativeView.frame.size.width, nativeView.frame.size.height);
             // }
         // }
 
-            return frameNew;
+            return nativeView.frame;
     }
     
     [clipToBoundsProperty.getDefault](): boolean {
