@@ -1,0 +1,5 @@
+{
+    "name": "debug",
+    "main": "debug",
+    "types": "debug.d.ts"
+}

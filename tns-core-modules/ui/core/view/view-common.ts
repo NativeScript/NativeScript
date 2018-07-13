@@ -21,7 +21,7 @@ import {
 
 import { createViewFromEntry } from "../../builder";
 import { StyleScope } from "../../styling/style-scope";
-import { LinearGradient } from "../../styling/linear-gradient";
+import { LinearGradient } from "../../styling/gradient";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";

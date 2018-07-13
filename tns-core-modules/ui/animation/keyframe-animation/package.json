@@ -1,0 +1,5 @@
+{
+    "name": "keyframe-animation",
+    "main": "keyframe-animation",
+    "types": "keyframe-animation.d.ts"
+}

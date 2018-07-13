@@ -10,13 +10,13 @@ import {
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
 import {
-    Visibility,
     visibilityProperty, opacityProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
 import { profile } from "../../../profiling";
+import { Visibility } from "../../styling/style-properties/style-properties";
 
 export * from "./view-common";
 

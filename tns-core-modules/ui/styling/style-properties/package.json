@@ -1,0 +1,5 @@
+{
+    "name": "style-properties",
+    "main": "style-properties",
+    "types": "style-properties.d.ts"
+}

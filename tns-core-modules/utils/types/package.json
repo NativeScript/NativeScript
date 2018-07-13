@@ -1,0 +1,5 @@
+{
+    "name": "types",
+    "main": "types",
+    "types": "types.d.ts"
+}

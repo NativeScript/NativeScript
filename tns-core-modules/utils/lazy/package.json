@@ -1,0 +1,5 @@
+{
+    "name": "lazy",
+    "main": "lazy",
+    "types": "lazy.d.ts"
+}

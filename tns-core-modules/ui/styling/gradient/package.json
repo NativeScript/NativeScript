@@ -1,0 +1,5 @@
+{
+    "name": "gradient",
+    "main": "linear-gradient",
+    "types": "gradient.d.ts"
+}

@@ -1,3 +1,6 @@
 {
+    "name": "utils",
+    "main": "utils",
+    "types": "utils.d.ts",
 	"nativescript": {}
 }
