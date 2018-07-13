@@ -1,0 +1,5 @@
+{
+    "name": "layout",
+    "main": "layout",
+    "types": "layout.d.ts"
+}

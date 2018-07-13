@@ -1,0 +1,6 @@
+{
+    "name": "dom-node",
+    "main": "dom-node",
+    "types": "dom-node.d.ts",
+    "nativescript": {}
+}

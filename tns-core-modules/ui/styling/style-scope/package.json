@@ -1,0 +1,5 @@
+{
+    "name": "style-scope",
+    "main": "style-scope",
+    "types": "style-scope.d.ts"
+}

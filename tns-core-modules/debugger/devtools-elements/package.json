@@ -1,0 +1,6 @@
+{
+    "name": "devtools-elements",
+    "main": "devtools-elements",
+    "types": "devtools-elements.d.ts",
+    "nativescript": {}
+}

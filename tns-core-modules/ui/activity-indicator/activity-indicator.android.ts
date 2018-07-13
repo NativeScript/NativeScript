@@ -1,4 +1,5 @@
-﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility, Color } from "./activity-indicator-common";
+﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Color } from "./activity-indicator-common";
+import { Visibility } from "../styling/style-properties/style-properties";
 
 export * from "./activity-indicator-common";
 
