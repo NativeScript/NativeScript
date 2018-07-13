@@ -24,6 +24,8 @@ const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
+const majorVersion = iosUtils.MajorVersion;
+
 export class View extends ViewCommon {
     nativeViewProtected: UIView;
     viewController: UIViewController;
@@ -87,14 +89,13 @@ export class View extends ViewCommon {
         const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         let actualPosition = {left, top, right, bottom};
         if (setFrame) {
-            // The actual position of a native view can change in case of safe area violation or expansion
             actualPosition = this.layoutNativeView(left, top, right, bottom) || actualPosition;
         }
 
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             let insets = { left: 0, top: 0, right: 0, bottom: 0};
 
-            if (this.nativeViewProtected.safeAreaInsets) {
+            if (majorVersion > 10) {
                 insets.left = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.left);
                 insets.top = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.top);
                 insets.right = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.right);
@@ -740,15 +741,15 @@ export namespace ios {
             fullscreenSize.height -= (statusBarHeight + navBarHeight);
         }
 
-        // left = safeOrigin.x;
-        // width = safeAreaSize.width;
-        // top = safeOrigin.y;
-        // height = safeAreaSize.height;
+        left = safeOrigin.x;
+        width = safeAreaSize.width;
+        top = safeOrigin.y;
+        height = safeAreaSize.height;
 
-        left = fullscreenOrigin.x;
-        width = fullscreenSize.width;
-        top = fullscreenOrigin.y;
-        height = fullscreenSize.height;
+        // left = fullscreenOrigin.x;
+        // width = fullscreenSize.width;
+        // top = fullscreenOrigin.y;
+        // height = fullscreenSize.height;
 
         // if (hasChildControllers) {
         //     // If not inner most extend to fullscreen
