@@ -261,6 +261,13 @@ export class ListView extends ListViewBase {
         }
     }
 
+    public scrollToIndexAnimated(index: number) {
+        if (this._ios) {
+            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
+                UITableViewScrollPosition.Top, true);
+        }
+    }
+
     public refresh() {
         // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
         this._map.forEach((view, nativeView, map) => {

@@ -124,6 +124,13 @@ export class ListView extends ListViewBase {
         }
     }
 
+    public scrollToIndexAnimated(index: number) {
+        const nativeView = this.nativeViewProtected;
+        if (nativeView) {
+            nativeView.smoothScrollToPosition(index);
+        }
+    }
+
     get _childrenCount(): number {
         return this._realizedItems.size;
     }
