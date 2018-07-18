@@ -1,7 +1,6 @@
 /* tslint:disable:no-unused-variable */
 import * as TKUnit from "../TKUnit";
 import * as http from "tns-core-modules/http";
-import * as types from "tns-core-modules/utils/types";
 import * as fs from "tns-core-modules/file-system";
 import { addHeader } from "tns-core-modules/http/http-request";
 
@@ -155,6 +154,47 @@ export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
         }
     });
 };
+
+export var test_gzip_request_explicit = function(done) {
+    var result;
+
+    http.request({ 
+        url: "https://postman-echo.com/gzip", 
+        method: "GET", 
+        headers: {
+            "Accept-Encoding": "gzip"
+        }}).then(function (r) {
+        result = r;
+        try {
+            TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from gzipped stream should be valid JSON object!");
+            done(null);
+        }
+        catch (e) {
+            done(e);
+        }
+    }, function (e) {
+        done(e);
+    });
+}
+
+export var test_gzip_request_implicit = function(done) {
+    var result;
+
+    http.request({ 
+        url: "https://postman-echo.com/gzip", 
+        method: "GET"}).then(function (r) {
+        result = r;
+        try {
+            TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from gzipped stream should be valid JSON object!");
+            done(null);
+        }
+        catch (e) {
+            done(e);
+        }
+    }, function (e) {
+        done(e);
+    });
+}
 
 export var test_getImage_isDefined = function () {
     TKUnit.assert(typeof (http.getImage) !== "undefined", "Method http.getImage() should be defined!");
