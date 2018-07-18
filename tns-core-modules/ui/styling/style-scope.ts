@@ -80,7 +80,7 @@ class CSSSource {
 
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
         // webpack modules require all file paths to be relative to /app folder
-        let appRelativeUri = CSSSource.uriToRelativePath(uri);
+        let appRelativeUri = CSSSource.pathRelativeToApp(uri);
 
         try {
             const cssOrAst = global.loadModule(appRelativeUri);
@@ -103,15 +103,19 @@ class CSSSource {
         return CSSSource.fromFile(appRelativeUri, keyframes);
     }
 
-    private static uriToRelativePath(uri: string): string {
-        let appRelativeUri = uri;
-        if (appRelativeUri.startsWith("/")) {
-            var app = knownFolders.currentApp().path + "/";
-            if (appRelativeUri.startsWith(app)) {
-                appRelativeUri = "./" + appRelativeUri.substr(app.length);
-            }
+    private static pathRelativeToApp(uri: string): string {
+        if (!uri.startsWith("/")) {
+            return uri;
         }
-        return appRelativeUri;
+
+        const appPath = knownFolders.currentApp().path;
+        if (!uri.startsWith(appPath)) {
+            traceWrite(`${uri} does not start with ${appPath}`, traceCategories.Error, traceMessageType.error);
+            return uri;
+        }
+
+        const relativeUri = `.${uri.substr(appPath.length)}`;
+        return relativeUri;
     }
 
     public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
@@ -125,6 +129,11 @@ class CSSSource {
         }
 
         const file = CSSSource.resolveCSSPathFromURL(url);
+        return new CSSSource(undefined, url, file, keyframes, undefined);
+    }
+
+    public static fromFileImport(url: string, keyframes: KeyframesMap, importSource: string): CSSSource {
+        const file = CSSSource.resolveCSSPathFromURL(url, importSource);
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
 
@@ -202,22 +211,33 @@ class CSSSource {
     }
 
     private createSelectorsFromImports(): RuleSet[] {
-        let selectors: RuleSet[] = [];
         const imports = this._ast["stylesheet"]["rules"].filter(r => r.type === "import");
-        for (let i = 0; i < imports.length; i++) {
-            const importItem = imports[i]["import"];
-            const importItemSource = imports[i]["position"]["source"];
-            const match = importItem && (<string>importItem).match(pattern);
-            const url = match && match[2];
 
-            if (url !== null && url !== undefined) {
-                const file = CSSSource.resolveCSSPathFromURL(url, importItemSource);
-                const cssFile = new CSSSource(undefined, url, file, this._keyframes, undefined);
-                selectors = selectors.concat(cssFile.selectors);
-            }
-        }
+        const urlFromImportObject = importObject => {
+            const importItem = importObject["import"] as string;
+            const urlMatch = importItem && importItem.match(pattern);
+            return urlMatch && urlMatch[2];
+        };
 
-        return selectors;
+        const sourceFromImportObject = importObject =>
+            importObject["position"] && importObject["position"]["source"];
+
+        const toUrlSourcePair = importObject => ({
+            url: urlFromImportObject(importObject),
+            source: sourceFromImportObject(importObject),
+        });
+
+        const getCssFile = ({ url, source }) => source ?
+            CSSSource.fromFileImport(url, this._keyframes, source) :
+            CSSSource.fromURI(url, this._keyframes);
+
+        const cssFiles = imports
+            .map(toUrlSourcePair)
+            .filter(({ url }) => !!url)
+            .map(getCssFile);
+
+        const selectors = cssFiles.map(file => (file && file.selectors) || []);
+        return selectors.reduce((acc, val) => acc.concat(val), []);
     }
 
     private createSelectorsFromSyntaxTree(): RuleSet[] {
@@ -636,7 +656,7 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
         }
 
         if (importSource) {
-            const importFile = resolveFileNameFromImport(importSource, fileName);
+            const importFile = resolveFilePathFromImport(importSource, fileName);
             if (fileExists(importFile)) {
                 return importFile;
             }
@@ -651,22 +671,17 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     return null;
 }
 
-function resolveFileNameFromImport(importSource: string, fileName: string): string {
-    let stack = importSource.split(path.separator),
-        parts = fileName.split(path.separator);
+function resolveFilePathFromImport(importSource: string, fileName: string): string {
+    const importSourceParts = importSource.split(path.separator);
+    const fileNameParts = fileName.split(path.separator)
+        // exclude the dot-segment for current directory
+        .filter(p => !isCurrentDirectory(p));
 
-    stack.pop()
-    for (let i = 0; i < parts.length; i++) {
-        if (parts[i] === ".") {
-            continue;
-        } if (parts[i] === "..") {
-            stack.pop();
-        } else {
-            stack.push(parts[i]);
-        }
-    }
-
-    return stack.join(path.separator);
+    // remove current file name
+    importSourceParts.pop();
+    // remove element in case of dot-segment for parent directory or add file name
+    fileNameParts.forEach(p => isParentDirectory(p) ? importSourceParts.pop() : importSourceParts.push(p));
+    return importSourceParts.join(path.separator);
 }
 
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
@@ -688,6 +703,14 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         }
     });
 });
+
+function isCurrentDirectory(uriPart: string): boolean {
+    return uriPart === ".";
+}
+
+function isParentDirectory(uriPart: string): boolean {
+    return uriPart === "..";
+}
 
 function isKeyframe(node: CssNode): node is KeyframesDefinition {
     return node.type === "keyframes";

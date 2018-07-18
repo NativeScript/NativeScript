@@ -1450,22 +1450,22 @@ export function test_resolveFileNameFromUrl_external_file_no_tilda() {
 
 export function test_resolveFileNameFromUrl_import_relative_file_curent_dir() {
     const importedFileExistsMock = (fileName: string) => (fileName.indexOf("views") !== -1);
-    const importSourceMock = "app/views/main-page.css";
+    const importSource = "app/views/main-page.css";
     const url = "./common.css";
     const appDirectory = "app";
     const expected = `${appDirectory}/views/common.css`;
-    const result = resolveFileNameFromUrl(url, appDirectory, importedFileExistsMock, importSourceMock);
+    const result = resolveFileNameFromUrl(url, appDirectory, importedFileExistsMock, importSource);
 
     TKUnit.assertEqual(result, expected, "Should resolve relative file to current directory");
 }
 
 export function test_resolveFileNameFromUrl_import_relative_file_parent_dir() {
     const importedFileExistsMock = (fileName: string) => (fileName.indexOf("views") !== -1);
-    const importSourceMock = "app/views/shared/main-page.css";
+    const importSource = "app/views/shared/main-page.css";
     const url = "../common.css";
     const appDirectory = "app";
     const expected = `${appDirectory}/views/common.css`;
-    const result = resolveFileNameFromUrl(url, appDirectory, importedFileExistsMock, importSourceMock);
+    const result = resolveFileNameFromUrl(url, appDirectory, importedFileExistsMock, importSource);
 
     TKUnit.assertEqual(result, expected, "Should resolve relative file to parent directory");
 }
