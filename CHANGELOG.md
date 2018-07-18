@@ -1,6 +1,15 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="4.1.1"></a>
+# [4.1.1](https://github.com/NativeScript/NativeScript/compare/4.1.0...4.1.1) (2018-07-18)
+
+
+### Bug Fixes
+
+* require devtools-elements.js with the extension mentioned explicitly ([#6079](https://github.com/NativeScript/NativeScript/issues/6079)) ([1a15aa2](https://github.com/NativeScript/NativeScript/commit/1a15aa2))
+
+
 <a name="4.1.0"></a>
 # [4.1.0](https://github.com/NativeScript/NativeScript/compare/4.0.1...4.1.0) (2018-05-28)
 
