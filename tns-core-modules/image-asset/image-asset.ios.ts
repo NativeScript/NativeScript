@@ -50,7 +50,7 @@ export class ImageAsset extends common.ImageAsset {
         let imageRequestOptions = PHImageRequestOptions.alloc().init();
         imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
         imageRequestOptions.networkAccessAllowed = true;
-        
+
         PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions,
             (image, imageResultInfo) => {
                 if (image) {
@@ -64,7 +64,56 @@ export class ImageAsset extends common.ImageAsset {
         );
     }
 
-    private scaleImage(image: UIImage, requestedSize: {width: number, height: number}): UIImage {
+    public saveToFile(fileName: string, callback: (imagePath: string, error: any) => void) {
+        if (!this.ios && !this.nativeImage) {
+            callback(null, "Asset cannot be found.");
+        }
+
+        const tempFolderPath = knownFolders.temp().path;
+        const tempFilePath = fsPath.join(tempFolderPath, fileName);
+        const options = PHImageRequestOptions.new();
+
+        options.synchronous = true;
+        options.version = PHImageRequestOptionsVersion.Current;
+        options.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
+
+        PHImageManager.defaultManager().requestImageDataForAssetOptionsResultHandler(this.ios, options,
+            (...args) => {
+                const nsData = args[0];
+                const UTIType = args[1];
+                const imageResultInfo = args[3];
+
+                if (nsData) {
+                    const imageExtension = this.getImageExtension(UTIType);
+                    nsData.writeToFileAtomically(tempFilePath + imageExtension, true);
+                    callback(tempFilePath, null);
+                }
+                else {
+                    callback(null, imageResultInfo.valueForKey(PHImageErrorKey));
+                }
+            });
+    }
+
+    private getImageExtension(UTIType: string): string {
+        switch (UTIType) {
+            case kUTTypeJPEG:
+                return ".jpg";
+            case kUTTypePNG:
+                return ".png";
+            case kUTTypeTIFF:
+                return ".tiff";
+            case kUTTypeGIF:
+                return ".gif";
+            case kUTTypeBMP:
+                return ".bmp";
+            case kUTTypeICO:
+                return ".ico";
+            default:
+                return ".jpg";
+        }
+    }
+
+    private scaleImage(image: UIImage, requestedSize: { width: number, height: number }): UIImage {
         UIGraphicsBeginImageContextWithOptions(requestedSize, false, 0.0);
         image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
         let resultImage = UIGraphicsGetImageFromCurrentImageContext();
