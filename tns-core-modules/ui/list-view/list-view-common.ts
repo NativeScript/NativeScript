@@ -90,6 +90,10 @@ export abstract class ListViewBase extends View implements ListViewDefinition, T
         //
     }
 
+    public scrollToIndexAnimated(index: number) {
+        //
+    }
+
     public _getItemTemplate(index: number): KeyedTemplate {
         let templateKey = "default";
         if (this.itemTemplateSelector) {
