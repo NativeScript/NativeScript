@@ -169,33 +169,33 @@ export class TextField extends TextFieldBase {
     }
 
     [hintProperty.getDefault](): string {
-        return this.nativeViewProtected.placeholder;
+        return this.nativeTextViewProtected.placeholder;
     }
     [hintProperty.setNative](value: string) {
         this._updateAttributedPlaceholder();
     }
 
     [secureProperty.getDefault](): boolean {
-        return this.nativeViewProtected.secureTextEntry;
+        return this.nativeTextViewProtected.secureTextEntry;
     }
     [secureProperty.setNative](value: boolean) {
-        this.nativeViewProtected.secureTextEntry = value;
+        this.nativeTextViewProtected.secureTextEntry = value;
     }
 
     [colorProperty.getDefault](): { textColor: UIColor, tintColor: UIColor } {
         return {
-            textColor: this.nativeViewProtected.textColor,
-            tintColor: this.nativeViewProtected.tintColor
+            textColor: this.nativeTextViewProtected.textColor,
+            tintColor: this.nativeTextViewProtected.tintColor
         };
     }
     [colorProperty.setNative](value: Color | { textColor: UIColor, tintColor: UIColor }) {
         if (value instanceof Color) {
             let color = value instanceof Color ? value.ios : value;
-            this.nativeViewProtected.textColor = color;
-            this.nativeViewProtected.tintColor = color;
+            this.nativeTextViewProtected.textColor = color;
+            this.nativeTextViewProtected.tintColor = color;
         } else {
-            this.nativeViewProtected.textColor = value.textColor;
-            this.nativeViewProtected.tintColor = value.tintColor;
+            this.nativeTextViewProtected.textColor = value.textColor;
+            this.nativeTextViewProtected.tintColor = value.tintColor;
         }
     }
 
@@ -223,7 +223,7 @@ export class TextField extends TextFieldBase {
             attributes[NSForegroundColorAttributeName] = this.style.placeholderColor.ios;
         }
         const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, attributes);
-        this.nativeViewProtected.attributedPlaceholder = attributedPlaceholder;
+        this.nativeTextViewProtected.attributedPlaceholder = attributedPlaceholder;
     }
 
     [paddingTopProperty.getDefault](): Length {

@@ -9,6 +9,8 @@ export * from "../core/view";
 export { FormattedString } from "../../text/formatted-string";
 
 export class TextBase extends View implements AddChildFromBuilder {
+
+    public readonly nativeTextViewProtected: any;
     /**
      * Gets or sets the text.
      */
