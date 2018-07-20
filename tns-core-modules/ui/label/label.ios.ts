@@ -25,10 +25,14 @@ export class Label extends TextBase implements LabelDefinition {
 
     constructor() {
         super();
-
-        this.nativeViewProtected = TNSLabel.new();
-        this.nativeViewProtected.userInteractionEnabled = true;
     }
+
+    public createNativeView() {
+        const view = TNSLabel.new();
+        view.userInteractionEnabled = true;
+        return view;
+    }
+
 
     get ios(): TNSLabel {
         return this.nativeTextViewProtected;
