@@ -24,4 +24,5 @@ export interface ImageAssetOptions {
     width?: number;
     height?: number;
     keepAspectRatio?: boolean;
+    quality?: number;
 }

@@ -65,7 +65,7 @@ export class ImageAsset extends common.ImageAsset {
     }
 
     public saveToFile(fileName: string, callback: (imagePath: string, error: any) => void) {
-        if (!this.ios && !this.nativeImage) {
+        if (!this.ios) {
             callback(null, "Asset cannot be found.");
         }
 
@@ -79,42 +79,67 @@ export class ImageAsset extends common.ImageAsset {
 
         PHImageManager.defaultManager().requestImageDataForAssetOptionsResultHandler(this.ios, options,
             (...args) => {
-                const nsData = args[0];
+                let nsData = args[0];
                 const UTIType = args[1];
                 const imageResultInfo = args[3];
+                const imageExtension = this.getImageExtension(UTIType);
+                const shouldResize = this.options && (this.options.width || this.options.height);
+                const fullPath = `${tempFilePath}.${imageExtension}`;
 
-                if (nsData) {
-                    const imageExtension = this.getImageExtension(UTIType);
-                    nsData.writeToFileAtomically(tempFilePath + imageExtension, true);
-                    callback(tempFilePath, null);
-                }
-                else {
+                if (imageResultInfo.valueForKey(PHImageErrorKey)) {
                     callback(null, imageResultInfo.valueForKey(PHImageErrorKey));
+                    return;
                 }
+
+                if (shouldResize) {
+                    this.getImageAsync((image, err) => {
+                        if (image) {
+                            nsData = this.getImageData(image, imageExtension, this.options.quality);
+                            nsData.writeToFileAtomically(fullPath, true);
+                            callback(fullPath, null);
+                        }
+                        else {
+                            callback(null, err);
+                        }
+                    });
+                } else {
+                    nsData.writeToFileAtomically(fullPath, true);
+                    callback(fullPath, null);
+                }
+
             });
     }
 
-    private getImageExtension(UTIType: string): string {
+    private getImageData(instance: UIImage, format: "png" | "jpg", quality = 1.0): NSData {
+        var data = null;
+        switch (format) {
+            case "png":
+                data = UIImagePNGRepresentation(instance);
+                break;
+            case "jpg":
+                if (quality) {
+                    quality = (quality - 0) / (100 - 0);  // Normalize quality on a scale of 0 to 1
+                }
+
+                data = UIImageJPEGRepresentation(instance, quality);
+                break;
+        }
+        return data;
+    }
+
+    private getImageExtension(UTIType: string): "png" | "jpg" {
         switch (UTIType) {
             case kUTTypeJPEG:
-                return ".jpg";
+                return "jpg";
             case kUTTypePNG:
-                return ".png";
-            case kUTTypeTIFF:
-                return ".tiff";
-            case kUTTypeGIF:
-                return ".gif";
-            case kUTTypeBMP:
-                return ".bmp";
-            case kUTTypeICO:
-                return ".ico";
+                return "png";
             default:
-                return ".jpg";
+                return "jpg";
         }
     }
 
     private scaleImage(image: UIImage, requestedSize: { width: number, height: number }): UIImage {
-        UIGraphicsBeginImageContextWithOptions(requestedSize, false, 0.0);
+        UIGraphicsBeginImageContextWithOptions(requestedSize, false, 1); // scaleFactor = 1 to prevent resolution and size change.
         image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
         let resultImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();

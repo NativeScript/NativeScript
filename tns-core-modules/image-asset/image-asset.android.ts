@@ -69,7 +69,43 @@ export class ImageAsset extends common.ImageAsset {
     }
 
     public saveToFile(fileName: string, callback: (imagePath: string, error: any) => void) {
-        callback(this.android, null);
+        const shouldResize = this.options && (this.options.width || this.options.height);
+
+        if (shouldResize) {
+            this.getImageAsync((image, err) => {
+                if (image) {
+                    const extension = this.android.split(".").pop();
+                    const targetFormat = this.getTargetFormat(extension);
+                    const tempPath = knownFolders.temp().path;
+                    const localFullPath = fsPath.join(tempPath, `${fileName}.${extension}`);
+                    const quality = this.options.quality || 100;
+                    const outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(localFullPath));
+
+                    const result = image.compress(targetFormat, quality, outputStream);
+                    outputStream.close();
+
+                    if (result) {
+                        callback(localFullPath, null);
+                    } else {
+                        callback(null, `Fail to save file at '${localFullPath}'`);
+                    }
+                } else {
+                    callback(null, err);
+                }
+            })
+        } else {
+            callback(this.android, null);
+        };
+    }
+
+    private getTargetFormat(format: string): android.graphics.Bitmap.CompressFormat {
+        switch (format.toLocaleLowerCase()) {
+            case "jpeg":
+            case "jpg":
+                return android.graphics.Bitmap.CompressFormat.JPEG;
+            default:
+                return android.graphics.Bitmap.CompressFormat.PNG;
+        }
     }
 }
 
