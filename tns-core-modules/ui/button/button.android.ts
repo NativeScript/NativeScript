@@ -49,12 +49,16 @@ export class Button extends ButtonBase {
 
     @profile
     public createNativeView() {
-        initializeClickListener();
         const button = new AndroidButton(this._context);
+        this.createDelegate(button);
+        return button;
+    }
+
+    public createDelegate(button: android.widget.Button) {
+        initializeClickListener();
         const clickListener = new ClickListener(this);
         button.setOnClickListener(clickListener);
         (<any>button).clickListener = clickListener;
-        return button;
     }
 
     public initNativeView(): void {
