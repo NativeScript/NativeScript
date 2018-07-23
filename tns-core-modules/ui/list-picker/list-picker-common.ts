@@ -9,6 +9,9 @@ export class ListPickerBase extends View implements ListPickerDefinition {
     public selectedIndex: number;
     public items: any[] | ItemsSource;
     public isItemsSource: boolean;
+    public textField: string;
+    public valueField: string;
+    public selectedValue: any;
 
     public _getItemAsString(index: number): any {
         let items = this.items;
@@ -17,7 +20,25 @@ export class ListPickerBase extends View implements ListPickerDefinition {
         }
 
         let item = this.isItemsSource ? (<ItemsSource>this.items).getItem(index) : this.items[index];
-        return (item === undefined || item === null) ? index + "" : item + "";
+
+        return (item === undefined || item === null) ? index + "" : this.parseItem(item);
+    }
+
+    private parseItem(item) {
+        return this.textField ? item[this.textField] + "" : item + "";
+    }
+
+    public updateSelectedValue(index) {
+        var newVal = null;
+        if (index >= 0) {
+            const item = this.items[index];
+
+            newVal = this.valueField ? item[this.valueField] : item;
+        }
+
+        if (this.selectedValue !== newVal) {
+            this.set("selectedValue", newVal);
+        }
     }
 }
 
@@ -40,6 +61,8 @@ export const selectedIndexProperty = new CoercibleProperty<ListPickerBase, numbe
             value = -1;
         }
 
+        target.updateSelectedValue(value);
+
         return value;
     }
 });
@@ -52,3 +75,21 @@ export const itemsProperty = new Property<ListPickerBase, any[] | ItemsSource>({
     }
 });
 itemsProperty.register(ListPickerBase);
+
+export const textFieldProperty = new Property<ListPickerBase, string>({
+    name: "textField",
+    defaultValue: ""
+});
+textFieldProperty.register(ListPickerBase);
+
+export const valueFieldProperty = new Property<ListPickerBase, string>({
+    name: "valueField",
+    defaultValue: ""
+});
+valueFieldProperty.register(ListPickerBase);
+
+export const selectedValueProperty = new Property<ListPickerBase, string>({
+    name: "selectedValue",
+    defaultValue: null
+});
+selectedValueProperty.register(ListPickerBase);
