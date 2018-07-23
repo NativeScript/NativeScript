@@ -124,14 +124,14 @@ export class ScrollView extends ScrollViewBase {
         this._contentMeasuredWidth = this.effectiveMinWidth;
         this._contentMeasuredHeight = this.effectiveMinHeight;
 
-        // `_automaticallyAdjustsScrollViewInsets` is set to true only if the first child 
-        // of UIViewController (Page, TabView e.g) is UIScrollView (ScrollView, ListView e.g).
-        // On iOS 11 by default UIScrollView automatically adjusts the scroll view insets, but they s
-        if (majorVersion > 10 && !this.parent._automaticallyAdjustsScrollViewInsets) {
-            // Disable automatic adjustment of scroll view insets when ScrollView 
-            // is not the first child of UIViewController.
-            this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
-        }
+        // // `_automaticallyAdjustsScrollViewInsets` is set to true only if the first child 
+        // // of UIViewController (Page, TabView e.g) is UIScrollView (ScrollView, ListView e.g).
+        // // On iOS 11 by default UIScrollView automatically adjusts the scroll view insets, but they s
+        // if (majorVersion > 10) {
+        //     // Disable automatic adjustment of scroll view insets when ScrollView 
+        //     // is not the first child of UIViewController.
+        //     this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
+        // }
 
         if (child) {
             let childSize: { measuredWidth: number; measuredHeight: number };
@@ -141,9 +141,9 @@ export class ScrollView extends ScrollViewBase {
                 childSize = View.measureChild(this, child, layout.makeMeasureSpec(0, layout.UNSPECIFIED), heightMeasureSpec);
             }
 
-            const w = layout.toDeviceIndependentPixels(childSize.measuredWidth);
-            const h = layout.toDeviceIndependentPixels(childSize.measuredHeight);
-            this.nativeViewProtected.contentSize = CGSizeMake(w, h);
+            // const w = layout.toDeviceIndependentPixels(childSize.measuredWidth);
+            // const h = layout.toDeviceIndependentPixels(childSize.measuredHeight);
+            // this.nativeViewProtected.contentSize = CGSizeMake(w, h);
 
             this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth);
             this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight);
@@ -155,26 +155,119 @@ export class ScrollView extends ScrollViewBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        const width = (right - left);
-        const height = (bottom - top);
+    public onLayout(left: number, top: number, right: number, bottom: number, insets?: {left, top, right, bottom}): void {
+        let width = (right - left);
+        let height = (bottom - top);
 
-        let verticalInset: number;
-        const nativeView = this.nativeViewProtected;
-        const inset = nativeView.adjustedContentInset;
-        // Prior iOS 11
-        if (inset === undefined) {
-            verticalInset = -layout.toDevicePixels(nativeView.contentOffset.y);
-            verticalInset += getTabBarHeight(this);
-        } else {
-            verticalInset = layout.toDevicePixels(inset.bottom + inset.top);
+        if (majorVersion > 10) {
+            // Disable automatic adjustment of scroll view insets
+            // Consider exposing this as property with all 4 modes
+            // https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
+            this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
         }
+
+        // let verticalInset: number;
+        const nativeView = this.nativeViewProtected;
+        // const inset = nativeView.adjustedContentInset;
+        // // Prior iOS 11
+        // if (inset === undefined) {
+        //     verticalInset = 0;
+        //     // verticalInset = -layout.toDevicePixels(nativeView.contentOffset.y);
+        //     // verticalInset += getTabBarHeight(this);
+        // } else {
+        //     verticalInset = layout.toDevicePixels(inset.bottom + inset.top);
+        // }
 
         if (this.orientation === "horizontal") {
-            View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height - verticalInset);
-        } else {
-            View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height - verticalInset));
+            width = Math.max(this._contentMeasuredWidth + insets.left + insets.right, width);
         }
+        else {
+            height = Math.max(this._contentMeasuredHeight + insets.top + insets.bottom, height);
+        }
+
+        nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height));
+        View.layoutChild(this, this.layoutView, 0, 0, width, height);
+
+        // if (this.orientation === "horizontal") {
+        //     nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(this._contentMeasuredWidth + insets.left + insets.right), layout.toDeviceIndependentPixels(height));
+        //     View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth + insets.left + insets.right, width), height);
+        // } else {
+        //     nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(this._contentMeasuredHeight + insets.top + insets.bottom));
+        //     View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight + insets.top + insets.bottom, height));
+        // }
+    }
+
+    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+        // if (!CGRectEqualToRect(nativeView.frame, frame)) {
+            // if (traceEnabled()) {
+            //     traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
+            // }
+            // this._cachedFrame = frame;
+            // if (this._hasTransfrom) {
+            //     // Always set identity transform before setting frame;
+            //     const transform = nativeView.transform;
+            //     nativeView.transform = CGAffineTransformIdentity;
+            //     nativeView.frame = frame;
+            //     nativeView.transform = transform;
+            // }
+            // else {
+            //     nativeView.frame = frame;
+            // }
+
+            nativeView.frame = frame;
+
+            const safeArea = this.getSafeArea();
+            const fullscreen = this.getFullscreenArea();
+            const locationOnScreen = this.getLocationInWindow();
+            const onScreenLeft = layout.toDevicePixels(layout.round(locationOnScreen.x));
+            const onScreenTop = layout.toDevicePixels(layout.round(locationOnScreen.y));
+
+            let left = layout.toDevicePixels(frame.origin.x);
+            let top = layout.toDevicePixels(frame.origin.y);
+            let width = layout.toDevicePixels(frame.size.width);
+            let height = layout.toDevicePixels(frame.size.height);
+
+            if (majorVersion > 10) {
+                let newLeft = left;
+                let newTop = top;
+                let newWidth = width;
+                let newHeight = height;
+
+                if (left !== 0 && onScreenLeft <= layout.toDevicePixels(safeArea.origin.x)) {
+                    newLeft = layout.toDevicePixels(fullscreen.origin.x);
+                    newWidth = width + onScreenLeft;
+                }
+
+                if (top !== 0 && onScreenTop <= layout.toDevicePixels(safeArea.origin.y)) {
+                    newTop = layout.toDevicePixels(fullscreen.origin.y);
+                    newHeight = height + onScreenTop;
+                }
+
+                if (width && width < layout.toDevicePixels(fullscreen.size.width) && onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
+                    newWidth = newWidth + (layout.toDevicePixels(fullscreen.size.width) - (onScreenLeft + width));
+                }
+
+                if (height && height < layout.toDevicePixels(fullscreen.size.height) && onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
+                    newHeight = newHeight + (layout.toDevicePixels(fullscreen.size.height) - (onScreenTop + height));
+                }
+
+                const frameNew = CGRectMake(layout.toDeviceIndependentPixels(newLeft), layout.toDeviceIndependentPixels(newTop), layout.toDeviceIndependentPixels(newWidth), layout.toDeviceIndependentPixels(newHeight));
+                nativeView.frame = frameNew;
+            }
+
+            // if (leftInset || topInset) {
+            //     const frameNew = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left + leftInset), layout.toDeviceIndependentPixels(bottom - top + topInset));
+            //     nativeView.frame = frameNew;
+            //     const boundsOrigin = nativeView.bounds.origin;
+            //     nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frameNew.size.width, frameNew.size.height);
+            // }
+            // else {
+                const boundsOrigin = nativeView.bounds.origin;
+                nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, nativeView.frame.size.width, nativeView.frame.size.height);
+            // }
+        // }
+
+            return nativeView.frame;
     }
 
     public _onOrientationChanged() {
