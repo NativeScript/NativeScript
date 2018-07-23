@@ -5,11 +5,11 @@
   "repository": "<fill-your-repository-here>",
   "nativescript": {
     "id": "org.nativescript.safearea",
-    "tns-ios": {
-      "version": "next"
-    },
     "tns-android": {
       "version": "next"
+    },
+    "tns-ios": {
+      "version": "4.1.1"
     }
   },
   "dependencies": {
