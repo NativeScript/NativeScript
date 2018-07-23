@@ -51,10 +51,7 @@ interface ExpandedEntry extends BackstackEntry {
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 const intEvaluator = lazy(() => new android.animation.IntEvaluator());
 const defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
-
-// NOTE: Android P Beta SDK version returns 27, which is API level for Android 8.1
-// TODO: Update condition when Android P SDK version returns 28
-const isAndroidP = lazy(() => sdkVersion() >= 27);
+const isAndroidP = lazy(() => sdkVersion() > 27);
 
 export const waitingQueue = new Map<number, Set<ExpandedEntry>>();
 export const completedEntries = new Map<number, ExpandedEntry>();
