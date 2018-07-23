@@ -52,7 +52,7 @@ export class LayoutBase extends LayoutBaseCommon {
 
             const safeArea = this.getSafeArea();
             const fullscreen = this.getFullscreenArea();
-            const locationOnScreen = this.getLocationOnScreen();
+            const locationOnScreen = this.getLocationInWindow();
             const onScreenLeft = layout.toDevicePixels(layout.round(locationOnScreen.x));
             const onScreenTop = layout.toDevicePixels(layout.round(locationOnScreen.y));
 
@@ -67,22 +67,21 @@ export class LayoutBase extends LayoutBaseCommon {
                 let newWidth = width;
                 let newHeight = height;
 
-                if (onScreenLeft <= layout.toDevicePixels(safeArea.origin.x)) {
+                if (left !== 0 && onScreenLeft <= layout.toDevicePixels(safeArea.origin.x)) {
                     newLeft = layout.toDevicePixels(fullscreen.origin.x);
                     newWidth = width + onScreenLeft;
                 }
 
-                if (onScreenTop <= layout.toDevicePixels(safeArea.origin.y)) {
+                if (top !== 0 && onScreenTop <= layout.toDevicePixels(safeArea.origin.y)) {
                     newTop = layout.toDevicePixels(fullscreen.origin.y);
                     newHeight = height + onScreenTop;
                 }
 
-                if (width && onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
+                if (width && width < layout.toDevicePixels(fullscreen.size.width) && onScreenLeft + width >= layout.toDevicePixels(safeArea.origin.x) + layout.toDevicePixels(safeArea.size.width)) {
                     newWidth = newWidth + (layout.toDevicePixels(fullscreen.size.width) - (onScreenLeft + width));
                 }
 
-                if (height && onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
-                    // console.log(">>>>>>>> Bottom Layout: onScreenTop - " + onScreenTop + " height - " + height + " safeAreaOriginY - " + layout.toDevicePixels(safeArea.origin.y) + " safeAreaHeight - " + layout.toDevicePixels(safeArea.size.height));
+                if (height && height < layout.toDevicePixels(fullscreen.size.height) && onScreenTop + height >= layout.toDevicePixels(safeArea.origin.y) + layout.toDevicePixels(safeArea.size.height)) {
                     newHeight = newHeight + (layout.toDevicePixels(fullscreen.size.height) - (onScreenTop + height));
                 }
 

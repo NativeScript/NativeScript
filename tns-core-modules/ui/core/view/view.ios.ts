@@ -212,7 +212,7 @@ export class View extends ViewCommon {
 
         const nativeView = this.nativeViewProtected;
         const frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
-        const actualFrame = this._setNativeViewFrame(nativeView, frame);
+        const actualFrame = this._setNativeViewFrame(nativeView, frame) || frame;
 
         const actualLeft = Math.round(layout.toDevicePixels(actualFrame.origin.x));
         const actualTop = Math.round(layout.toDevicePixels(actualFrame.origin.y));
@@ -672,8 +672,14 @@ export namespace ios {
     export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
         const scrollable = isContentScrollable(controller, owner);
 
-        owner._automaticallyAdjustsScrollViewInsets = scrollable;
-        controller.automaticallyAdjustsScrollViewInsets = scrollable;
+        if (majorVersion <= 10) {
+            owner._automaticallyAdjustsScrollViewInsets = false;
+            // This API is deprecated, but has no alternative for <= iOS 10
+            // Defaults to true and results to appliyng the insets twice together with our logic
+            // for iOS 11+ we use the contentInsetAdjustmentBehavior property in scrollview
+            // https://developer.apple.com/documentation/uikit/uiviewcontroller/1621372-automaticallyadjustsscrollviewin
+            controller.automaticallyAdjustsScrollViewInsets = false;
+        }
     }
 
     export function updateConstraints(controller: UIViewController, owner: View): void {
