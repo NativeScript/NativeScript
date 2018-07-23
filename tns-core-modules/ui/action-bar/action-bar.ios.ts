@@ -116,7 +116,12 @@ export class ActionBar extends ActionBarBase {
         const viewController = (<UIViewController>page.ios);
         const navigationItem: UINavigationItem = viewController.navigationItem;
         const navController = <UINavigationController>viewController.navigationController;
-        const navigationBar = navController ? navController.navigationBar : null;
+
+        if (!navController) {
+            return;
+        }
+
+        const navigationBar = navController.navigationBar;
         let previousController: UIViewController;
 
         // Set Title

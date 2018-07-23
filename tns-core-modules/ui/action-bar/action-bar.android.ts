@@ -38,7 +38,7 @@ function initializeMenuItemClickListener(): void {
             return global.__native(this);
         }
 
-        onMenuItemClick(item: android.view.IMenuItem): boolean {
+        onMenuItemClick(item: android.view.MenuItem): boolean {
             let itemId = item.getItemId();
             return this.owner._onAndroidItemSelected(itemId);
         }

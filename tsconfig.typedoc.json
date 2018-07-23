@@ -17,6 +17,7 @@
     ],
     "exclude": [
         "tns-core-modules/references.d.ts",
-        "tns-core-modules/node_modules"
+        "tns-core-modules/node_modules",
+        "tns-core-modules/ui/frame/transition-definitions.android.d.ts"
     ]
 }
