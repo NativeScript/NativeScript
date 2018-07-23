@@ -1,0 +1,23 @@
+<Page class="page" xmlns="http://schemas.nativescript.org/tns.xsd">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="ScrollView Examples"></Label>
+    </ActionBar>
+
+    <StackLayout>
+        <StackLayout>
+            <Label text="Pages w/ ActionBar"></Label>
+            <Button text="VScroll VStack" tap="onNavigate" route="scrollview/action-bar/vscroll-vstack-page" />
+            <Button text="HScroll HStack" tap="onNavigate" route="scrollview/action-bar/hscroll-hstack-page" />
+            <Button text="Grid 3x3 VScroll VStack" tap="onNavigate" route="scrollview/action-bar/grid-3x3-vscroll-vstack-page" />
+            <Button text="Grid 3x3 HScroll HStack" tap="onNavigate" route="scrollview/action-bar/grid-3x3-hscroll-hstack-page" />
+        </StackLayout>
+        <StackLayout>
+            <Label text="Pages w/o ActionBar"></Label>
+            <Button text="VScroll VStack" tap="onNavigate" route="scrollview/no-action-bar/vscroll-vstack-page" />
+            <Button text="HScroll HStack" tap="onNavigate" route="scrollview/no-action-bar/hscroll-hstack-page" />
+            <Button text="Grid 3x3 VScroll VStack" tap="onNavigate" route="scrollview/no-action-bar/grid-3x3-vscroll-vstack-page" />
+            <Button text="Grid 3x3 HScroll HStack" tap="onNavigate" route="scrollview/no-action-bar/grid-3x3-hscroll-hstack-page" />
+        </StackLayout>
+    </StackLayout>
+</Page>

@@ -1,0 +1,10 @@
+<Page class="page"
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="scrollview/fragments">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="ScrollView Examples"></Label>
+    </ActionBar>
+
+    <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+</Page>

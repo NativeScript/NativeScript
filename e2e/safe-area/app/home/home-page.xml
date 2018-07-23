@@ -6,5 +6,6 @@
 
     <StackLayout>
         <Button text="GridLayout Examples" tap="onNavigate" route="gridlayout/gridlayout-page" />
+        <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page" />
     </StackLayout>
 </Page>

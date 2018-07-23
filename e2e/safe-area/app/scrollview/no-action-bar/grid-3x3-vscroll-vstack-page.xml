@@ -1,0 +1,7 @@
+<Page class="page"
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="scrollview/fragments"
+    actionBarHidden="true">
+
+    <fragments:grid-3x3-vscroll-vstack-fragment></fragments:grid-3x3-vscroll-vstack-fragment>
+</Page>
