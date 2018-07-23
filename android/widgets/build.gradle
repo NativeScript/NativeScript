@@ -11,7 +11,7 @@ def computeCompileSdkVersion () {
         return compileSdk
     }
     else {
-        return 25
+        return 27
     }
 }
 
@@ -20,7 +20,16 @@ def computeBuildToolsVersion() {
         return buildToolsVersion
     }
     else {
-        return "25.0.2"
+        return "27.0.3"
+    }
+}
+
+def computeSupportVersion() {
+    if(project.hasProperty("supportVersion")) {
+        return supportVersion
+    }
+    else {
+        return "27.1.1"
     }
 }
 
@@ -29,7 +38,7 @@ def computeTargetSdkVersion() {
         return targetSdk
     }
     else {
-        return 25
+        return 27
     }
 }
 
@@ -53,7 +62,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:+'
+    compile 'com.android.support:support-v4:' + computeSupportVersion()
 }
 
 task cleanBuildDir (type: Delete) {
