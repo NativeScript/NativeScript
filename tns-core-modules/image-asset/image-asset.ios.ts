@@ -31,7 +31,7 @@ export class ImageAsset extends common.ImageAsset {
         this._ios = value;
     }
 
-    public getImageAsync(callback: (image, error) => void) {
+    public getImageAsync(callback: (image, error) => void, ignoreScaleFactor?: boolean) {
         if (!this.ios && !this.nativeImage) {
             callback(null, "Asset cannot be found.");
         }
@@ -42,7 +42,7 @@ export class ImageAsset extends common.ImageAsset {
 
         if (this.nativeImage) {
             let newSize = CGSizeMake(requestedSize.width, requestedSize.height);
-            let resizedImage = this.scaleImage(this.nativeImage, newSize);
+            let resizedImage = this.scaleImage(this.nativeImage, newSize, ignoreScaleFactor);
             callback(resizedImage, null);
             return;
         }
@@ -54,7 +54,7 @@ export class ImageAsset extends common.ImageAsset {
         PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions,
             (image, imageResultInfo) => {
                 if (image) {
-                    let resultImage = this.scaleImage(image, requestedSize);
+                    let resultImage = this.scaleImage(image, requestedSize, ignoreScaleFactor);
                     callback(resultImage, null);
                 }
                 else {
@@ -101,7 +101,7 @@ export class ImageAsset extends common.ImageAsset {
                         else {
                             callback(null, err);
                         }
-                    });
+                    }, true);
                 } else {
                     nsData.writeToFileAtomically(fullPath, true);
                     callback(fullPath, null);
@@ -110,7 +110,7 @@ export class ImageAsset extends common.ImageAsset {
             });
     }
 
-    private getImageData(instance: UIImage, format: "png" | "jpg", quality = 1.0): NSData {
+    private getImageData(instance: UIImage, format: "png" | "jpg", quality = 0.9): NSData {
         var data = null;
         switch (format) {
             case "png":
@@ -138,8 +138,9 @@ export class ImageAsset extends common.ImageAsset {
         }
     }
 
-    private scaleImage(image: UIImage, requestedSize: { width: number, height: number }): UIImage {
-        UIGraphicsBeginImageContextWithOptions(requestedSize, false, 1); // scaleFactor = 1 to prevent resolution and size change.
+    private scaleImage(image: UIImage, requestedSize: { width: number, height: number }, ignoreScaleFactor: boolean): UIImage {
+        const scaleFactor = ignoreScaleFactor ? 1 : 0; // scaleFactor = 0 takes the scale factor of the device’s main screen.
+        UIGraphicsBeginImageContextWithOptions(requestedSize, false, scaleFactor);
         image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
         let resultImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
