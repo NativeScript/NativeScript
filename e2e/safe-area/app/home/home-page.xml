@@ -1,11 +1,12 @@
-<Page class="page" xmlns="http://schemas.nativescript.org/tns.xsd">
-    
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="Home"></Label>
     </ActionBar>
 
     <StackLayout>
-        <Button text="GridLayout Examples" tap="onNavigate" route="gridlayout/gridlayout-page" />
-        <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page" />
+        <Button text="GridLayout Examples" tap="onNavigate" route="gridlayout/gridlayout-page"></Button>
+        <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page"></Button>
+        <Button text="Component Examples" tap="onNavigate" route="component/component-page"></Button>
     </StackLayout>
 </Page>
