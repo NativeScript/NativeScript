@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="component/fragments" backgroundColor="LightGreen">
+
+    <ActionBar>
+        <Label text="Action Bar"></Label>
+    </ActionBar>
+
+    <fragments:label-fragment></fragments:label-fragment>
+
+</Page>

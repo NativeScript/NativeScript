@@ -1,0 +1,18 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="Component Examples"></Label>
+    </ActionBar>
+
+    <StackLayout horizontalAlignment="center">
+        <StackLayout>
+            <Label text="Pages w/ ActionBar"></Label>
+            <Button text="Label Component" tap="onNavigate" route="component/action-bar/component-page"></Button>
+        </StackLayout>
+        <StackLayout>
+            <Label text="Pages w/o ActionBar"></Label>
+            <Button text="Label Component" tap="onNavigate" route="component/no-action-bar/component-page"></Button>
+        </StackLayout>
+    </StackLayout>
+
+</Page>

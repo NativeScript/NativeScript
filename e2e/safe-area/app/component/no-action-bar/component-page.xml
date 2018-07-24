@@ -1,0 +1,6 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="component/fragments" actionBarHidden="true" backgroundColor="LightGreen">
+
+    <fragments:label-fragment></fragments:label-fragment>
+
+</Page>
