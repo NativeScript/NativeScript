@@ -16,17 +16,21 @@ export class Button extends ButtonBase {
 
     constructor() {
         super();
+        this.createNativeView();
     }
 
     createNativeView() {
-        const view = UIButton.buttonWithType(UIButtonType.System);
+        if (this.nativeViewProtected) {
+            return this.nativeViewProtected;
+        }
+        const view = this.nativeViewProtected = UIButton.buttonWithType(UIButtonType.System);
         this.createDelegate(view);
         return view;
     }
 
     createDelegate(view: UIButton) {
-        view.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
         this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
+        view.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
     }
 
     get ios() {

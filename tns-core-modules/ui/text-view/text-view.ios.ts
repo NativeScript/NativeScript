@@ -104,10 +104,14 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     constructor() {
         super();
+        this.createNativeView();
     }
 
     createNativeView() {
-        const textView = this._ios = UITextView.new();
+        if (this.nativeViewProtected) {
+            return this.nativeViewProtected;
+        }
+        const textView = this._ios = this.nativeViewProtected = UITextView.new();
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
         }

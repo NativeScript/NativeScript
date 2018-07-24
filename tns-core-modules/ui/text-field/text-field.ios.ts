@@ -147,12 +147,15 @@ export class TextField extends TextFieldBase {
 
     constructor() {
         super();
-
+        this.createNativeView();
     }
 
     createNativeView() {
+        if (this.nativeViewProtected) {
+            return this.nativeViewProtected;
+        }
         let weakRef = new WeakRef(this);
-        this._ios = UITextFieldImpl.initWithOwner(weakRef);
+        this._ios = this.nativeViewProtected = UITextFieldImpl.initWithOwner(weakRef);
         this.createDelegate(weakRef);
         return this._ios;
     }
