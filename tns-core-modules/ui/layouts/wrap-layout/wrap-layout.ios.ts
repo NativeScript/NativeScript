@@ -119,14 +119,14 @@ export class WrapLayout extends WrapLayoutBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
         super.onLayout(left, top, right, bottom);
 
         const isVertical = this.orientation === "vertical";
-        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
-        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
-        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
         let childLeft = paddingLeft;
         let childTop = paddingTop;
