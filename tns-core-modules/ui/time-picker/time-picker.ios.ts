@@ -1,5 +1,5 @@
 ﻿import {
-    TimePickerBase, timeProperty,
+    TimePickerBase, timeProperty, minuteIntervalProperty,
     minuteProperty, minMinuteProperty, maxMinuteProperty,
     hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
 } from "./time-picker-common";
@@ -93,10 +93,10 @@ export class TimePicker extends TimePickerBase {
         this.nativeViewProtected.maximumDate = getDate(this.hour, value);
     }
 
-    [timeProperty.getDefault](): number {
+    [minuteIntervalProperty.getDefault](): number {
         return this.nativeViewProtected.minuteInterval;
     }
-    [timeProperty.setNative](value: number) {
+    [minuteIntervalProperty.setNative](value: number) {
         this.nativeViewProtected.minuteInterval = value;
     }
 
