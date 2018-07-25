@@ -1,0 +1,18 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="WrapLayout Examples"></Label>
+    </ActionBar>
+
+    <StackLayout horizontalAlignment="center">
+        <StackLayout>
+            <Label text="Pages w/ ActionBar"></Label>
+            <Button text="HWrap" tap="onNavigate" route="wraplayout/action-bar/wraplayout-page"></Button>
+        </StackLayout>
+        <StackLayout>
+            <Label text="Pages w/o ActionBar"></Label>
+            <Button text="HWrap" tap="onNavigate" route="wraplayout/no-action-bar/wraplayout-page"></Button>
+        </StackLayout>
+    </StackLayout>
+
+</Page>
