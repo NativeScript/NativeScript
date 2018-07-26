@@ -5,10 +5,10 @@
     </ActionBar>
 
     <StackLayout>
+        <Button text="Component Examples" tap="onNavigate" route="component/component-page"></Button>
         <Button text="GridLayout Examples" tap="onNavigate" route="gridlayout/gridlayout-page"></Button>
         <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page"></Button>
         <Button text="ListView Examples" tap="onNavigate" route="listview/listview-page" />
-        <Button text="Component Examples" tap="onNavigate" route="component/component-page"></Button>
         <Button text="WrapLayout Examples" tap="onNavigate" route="wraplayout/wraplayout-page"></Button>
     </StackLayout>
 </Page>
