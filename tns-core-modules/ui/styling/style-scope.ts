@@ -71,6 +71,11 @@ const applicationKeyframes: any = {};
 const animationsSymbol: symbol = Symbol("animations");
 const pattern: RegExp = /('|")(.*?)\1/;
 
+
+export function getAdditionalSelectors(): RuleSet[]  {
+    return applicationAdditionalSelectors;
+}
+
 class CSSSource {
     private _selectors: RuleSet[] = [];
 
@@ -414,7 +419,7 @@ export class CssState {
      * Calculate the difference between the previously applied property values,
      * and the new set of property values that have to be applied for the provided selectors.
      * Apply the values and ensure each property setter is called at most once to avoid excessive change notifications.
-     * @param matchingSelectors 
+     * @param matchingSelectors
      */
     private setPropertyValues(matchingSelectors: SelectorCore[]): void {
         const newPropertyValues = new this.view.style.PropertyBag();
