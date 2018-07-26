@@ -7,11 +7,13 @@
     <StackLayout horizontalAlignment="center">
         <StackLayout>
             <Label text="Pages w/ ActionBar"></Label>
-            <Button text="HWrap" tap="onNavigate" route="wraplayout/action-bar/wraplayout-page"></Button>
+            <Button text="HWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-page"></Button>
+            <Button text="VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-page"></Button>
         </StackLayout>
         <StackLayout>
             <Label text="Pages w/o ActionBar"></Label>
-            <Button text="HWrap" tap="onNavigate" route="wraplayout/no-action-bar/wraplayout-page"></Button>
+            <Button text="HWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-page"></Button>
+            <Button text="VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-page"></Button>
         </StackLayout>
     </StackLayout>
 

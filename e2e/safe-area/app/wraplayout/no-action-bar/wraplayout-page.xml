@@ -1,6 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
-    xmlns:fragments="wraplayout/fragments" actionBarHidden="true">
-
-    <fragments:hwrap-fragment></fragments:hwrap-fragment>
-
-</Page>
