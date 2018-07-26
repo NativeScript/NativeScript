@@ -1,0 +1,10 @@
+<Page class="page"
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="listview/fragments">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="ListView Examples"></Label>
+    </ActionBar>
+
+    <fragments:grid-3x3-nested-listview-fragment></fragments:grid-3x3-nested-listview-fragment>
+</Page>

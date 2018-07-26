@@ -1,0 +1,7 @@
+<Page class="page"
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="listview/fragments"
+    actionBarHidden="true">
+
+    <fragments:grid-3x3-nested-listview-fragment></fragments:grid-3x3-nested-listview-fragment>
+</Page>

@@ -1,0 +1,9 @@
+<ListView items="{{ items }}" loaded="onLoaded" backgroundColor="PowderBlue">
+    <ListView.itemTemplate>
+        <StackLayout backgroundColor="Olive">
+            <Label text="{{ text }}"></Label>
+            <Label text="{{ text }}"></Label>
+            <Label text="{{ text }}"></Label>
+        </StackLayout>
+    </ListView.itemTemplate>
+</ListView>

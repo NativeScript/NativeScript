@@ -7,7 +7,7 @@ const majorVersion = iosUtils.MajorVersion;
 
 export class LayoutBase extends LayoutBaseCommon {
     nativeViewProtected: UIView;
-    
+
     public addChild(child: View): void {
         super.addChild(child);
         this.requestLayout();
@@ -33,26 +33,28 @@ export class LayoutBase extends LayoutBaseCommon {
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         // if (!CGRectEqualToRect(nativeView.frame, frame)) {
-            // if (traceEnabled()) {
-            //     traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
-            // }
-            // this._cachedFrame = frame;
-            // if (this._hasTransfrom) {
-            //     // Always set identity transform before setting frame;
-            //     const transform = nativeView.transform;
-            //     nativeView.transform = CGAffineTransformIdentity;
-            //     nativeView.frame = frame;
-            //     nativeView.transform = transform;
-            // }
-            // else {
-            //     nativeView.frame = frame;
-            // }
+        // if (traceEnabled()) {
+        //     traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
+        // }
+        // this._cachedFrame = frame;
+        // if (this._hasTransfrom) {
+        //     // Always set identity transform before setting frame;
+        //     const transform = nativeView.transform;
+        //     nativeView.transform = CGAffineTransformIdentity;
+        //     nativeView.frame = frame;
+        //     nativeView.transform = transform;
+        // }
+        // else {
+        //     nativeView.frame = frame;
+        // }
 
-            nativeView.frame = frame;
+        nativeView.frame = frame;
+        const locationOnScreen = this.getLocationInWindow();
+
+        if (locationOnScreen) {
 
             const safeArea = this.getSafeArea();
             const fullscreen = this.getFullscreenArea();
-            const locationOnScreen = this.getLocationInWindow();
             const onScreenLeft = layout.toDevicePixels(layout.round(locationOnScreen.x));
             const onScreenTop = layout.toDevicePixels(layout.round(locationOnScreen.y));
 
@@ -88,6 +90,7 @@ export class LayoutBase extends LayoutBaseCommon {
                 const frameNew = CGRectMake(layout.toDeviceIndependentPixels(newLeft), layout.toDeviceIndependentPixels(newTop), layout.toDeviceIndependentPixels(newWidth), layout.toDeviceIndependentPixels(newHeight));
                 nativeView.frame = frameNew;
             }
+        }
 
             // if (leftInset || topInset) {
             //     const frameNew = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left + leftInset), layout.toDeviceIndependentPixels(bottom - top + topInset));
@@ -96,14 +99,14 @@ export class LayoutBase extends LayoutBaseCommon {
             //     nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frameNew.size.width, frameNew.size.height);
             // }
             // else {
-                const boundsOrigin = nativeView.bounds.origin;
-                nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, nativeView.frame.size.width, nativeView.frame.size.height);
+            const boundsOrigin = nativeView.bounds.origin;
+            nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, nativeView.frame.size.width, nativeView.frame.size.height);
             // }
-        // }
-
-            return nativeView.frame;
+            // }
+            
+        return nativeView.frame;
     }
-    
+
     [clipToBoundsProperty.getDefault](): boolean {
         return false;
     }
