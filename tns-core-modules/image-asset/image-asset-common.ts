@@ -2,14 +2,14 @@ import * as definition from ".";
 import * as observable from "../data/observable";
 import * as platform from "../platform";
 
-export class ImageAsset  extends observable.Observable implements definition.ImageAsset {
+export class ImageAsset extends observable.Observable implements definition.ImageAsset {
     private _options: definition.ImageAssetOptions;
     private _nativeImage: any;
 
     ios: PHAsset;
     android: string;
 
-    constructor () {
+    constructor() {
         super();
         this._options = { keepAspectRatio: true };
     }
@@ -31,6 +31,10 @@ export class ImageAsset  extends observable.Observable implements definition.Ima
     }
 
     public getImageAsync(callback: (image: any, error: Error) => void) {
+        //
+    }
+
+    public saveToFile(fileName: string, callback: (imagePath: string, error: any) => void) {
         //
     }
 }

@@ -42,7 +42,7 @@ export class ImageAsset extends common.ImageAsset {
             let error = null;
             // read as minimum bitmap as possible (slightly bigger than the requested size)
             bitmap = android.graphics.BitmapFactory.decodeFile(this.android, finalBitmapOptions);
-            
+
             if (bitmap) {
                 if (requestedSize.width !== bitmap.getWidth() || requestedSize.height !== bitmap.getHeight()) {
                     // scale to exact size
@@ -65,6 +65,46 @@ export class ImageAsset extends common.ImageAsset {
         }
         catch (ex) {
             callback(null, ex);
+        }
+    }
+
+    public saveToFile(fileName: string, callback: (imagePath: string, error: any) => void) {
+        const shouldResize = this.options && (this.options.width || this.options.height);
+
+        if (shouldResize) {
+            this.getImageAsync((image, err) => {
+                if (image) {
+                    const extension = this.android.split(".").pop();
+                    const targetFormat = this.getTargetFormat(extension);
+                    const tempPath = knownFolders.temp().path;
+                    const localFullPath = fsPath.join(tempPath, `${fileName}.${extension}`);
+                    const quality = this.options.quality || 100;
+                    const outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(localFullPath));
+
+                    const result = image.compress(targetFormat, quality, outputStream);
+                    outputStream.close();
+
+                    if (result) {
+                        callback(localFullPath, null);
+                    } else {
+                        callback(null, `Fail to save file at '${localFullPath}'`);
+                    }
+                } else {
+                    callback(null, err);
+                }
+            })
+        } else {
+            callback(this.android, null);
+        };
+    }
+
+    private getTargetFormat(format: string): android.graphics.Bitmap.CompressFormat {
+        switch (format.toLocaleLowerCase()) {
+            case "jpeg":
+            case "jpg":
+                return android.graphics.Bitmap.CompressFormat.JPEG;
+            default:
+                return android.graphics.Bitmap.CompressFormat.PNG;
         }
     }
 }
