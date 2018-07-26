@@ -1,0 +1,5 @@
+<ListView items="{{ items }}" loaded="onLoaded" backgroundColor="PowderBlue">
+    <ListView.itemTemplate>
+        <Label text="{{ text }}"></Label>
+    </ListView.itemTemplate>
+</ListView>

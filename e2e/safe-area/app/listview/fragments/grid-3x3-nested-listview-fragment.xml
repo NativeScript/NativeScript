@@ -1,0 +1,55 @@
+<GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="CadetBlue">
+    <ListView row="0" col="0" items="{{ items }}" loaded="onLoaded"  backgroundColor="SkyBlue">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="0" col="1" items="{{ items }}" loaded="onLoaded" backgroundColor="Indigo">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="0" col="2" items="{{ items }}" loaded="onLoaded" backgroundColor="Crimson">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="1" col="0" items="{{ items }}" loaded="onLoaded" backgroundColor="Chocolate">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="1" col="1" items="{{ items }}" loaded="onLoaded" backgroundColor="Cornsilk">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="1" col="2" items="{{ items }}" loaded="onLoaded" backgroundColor="BurlyWood">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="2" col="0" items="{{ items }}" loaded="onLoaded" backgroundColor="GoldenRod">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="2" col="1" items="{{ items }}" loaded="onLoaded" backgroundColor="Khaki">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+
+    <ListView row="2" col="2" items="{{ items }}" loaded="onLoaded" backgroundColor="IndianRed">
+        <ListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </ListView.itemTemplate>
+    </ListView>
+</GridLayout>

@@ -1,0 +1,28 @@
+<Page class="page"
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="listview/fragments"
+    navigatingTo="onNavigatingTo">
+    
+    <ActionBar class="action-bar">
+        <Label class="action-bar-title" text="ListView Examples"></Label>
+    </ActionBar>
+
+    <StackLayout>
+        <StackLayout>
+            <Label text="Pages w/ ActionBar"></Label>
+            <Button text="ListView" tap="onNavigate" route="listview/action-bar/listview-page" />
+            <Button text="ListView Nested VStack" tap="onNavigate" route="listview/action-bar/listview-nested-vstack-page" />
+            <Button text="ListView Nested HStack" tap="onNavigate" route="listview/action-bar/listview-nested-hstack-page" />
+            <Button text="ListView Nested Grid 3x3" tap="onNavigate" route="listview/action-bar/listview-nested-grid-3x3-page" />
+            <Button text="Grid 3x3 Nested ListView" tap="onNavigate" route="listview/action-bar/grid-3x3-nested-listview-page" />
+        </StackLayout>
+        <StackLayout>
+            <Label text="Pages w/o ActionBar"></Label>
+            <Button text="ListView" tap="onNavigate" route="listview/no-action-bar/listview-page" />
+            <Button text="ListView Nested VStack" tap="onNavigate" route="listview/no-action-bar/listview-nested-vstack-page" />
+            <Button text="ListView Nested HStack" tap="onNavigate" route="listview/no-action-bar/listview-nested-hstack-page" />
+            <Button text="ListView Nested Grid 3x3" tap="onNavigate" route="listview/no-action-bar/listview-nested-grid-3x3-page" />
+            <Button text="Grid 3x3 Nested ListView" tap="onNavigate" route="listview/no-action-bar/grid-3x3-nested-listview-page" />
+        </StackLayout>
+    </StackLayout>
+</Page>
