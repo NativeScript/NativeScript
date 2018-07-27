@@ -1,0 +1,8 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <WrapLayout orientation="vertical" width="210" height="210" backgroundColor="lightgray">
+    <Label text="Label 1" width="70" height="70" backgroundColor="red"/>
+    <Label text="Label 2" width="70" height="70" backgroundColor="green"/>
+    <Label text="Label 3" width="70" height="70" backgroundColor="blue"/>
+    <Label text="Label 4" width="70" height="70" backgroundColor="yellow"/>
+  </WrapLayout>
+</Page>

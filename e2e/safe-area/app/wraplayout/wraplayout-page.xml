@@ -5,15 +5,20 @@
     </ActionBar>
 
     <StackLayout horizontalAlignment="center">
-        <StackLayout>
+        <StackLayout horizontalAlignment="center">
             <Label text="Pages w/ ActionBar"></Label>
             <Button text="HWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-page"></Button>
             <Button text="VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-page"></Button>
         </StackLayout>
-        <StackLayout>
+        <StackLayout horizontalAlignment="center">
             <Label text="Pages w/o ActionBar"></Label>
             <Button text="HWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-page"></Button>
             <Button text="VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-page"></Button>
+        </StackLayout>
+        <StackLayout horizontalAlignment="center">
+            <Label text="Docs Pages"></Label>
+            <Button text="HWrap" tap="onNavigate" route="wraplayout/docs/hwrap-page"></Button>
+            <Button text="VWrap" tap="onNavigate" route="wraplayout/docs/vwrap-page"></Button>
         </StackLayout>
     </StackLayout>
 
