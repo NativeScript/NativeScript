@@ -71,11 +71,6 @@ const applicationKeyframes: any = {};
 const animationsSymbol: symbol = Symbol("animations");
 const pattern: RegExp = /('|")(.*?)\1/;
 
-
-export function getAdditionalSelectors(): RuleSet[]  {
-    return applicationAdditionalSelectors;
-}
-
 class CSSSource {
     private _selectors: RuleSet[] = [];
 
@@ -265,6 +260,34 @@ class CSSSource {
     toString(): string {
         return this._file || this._url || "(in-memory)";
     }
+}
+
+export function removeTaggedAdditonalCSSfunction(tag: String|Number): Boolean {
+    let changed = false;
+    for (let i = 0; i < applicationAdditionalSelectors.length; i++) {
+        if (applicationAdditionalSelectors[i].tag === tag) {
+            applicationAdditionalSelectors.splice(i, 1);
+            i--;
+            changed = true;
+        }
+    }
+    return changed;
+}
+
+export function addTaggedAdditionalCSS(cssText: string, tag?: string|Number): Boolean {
+    const parsed: RuleSet[] = CSSSource.fromSource(cssText, applicationKeyframes, undefined).selectors;
+    let changed = false;
+    if (parsed && parsed.length) {
+        changed = true;
+        if (tag != null) {
+            for (let i = 0; i < parsed.length; i++) {
+                parsed[i].tag = tag;
+            }
+        }
+        applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
+        mergeCssSelectors();
+    }
+    return changed;
 }
 
 const onCssChanged = profile("\"style-scope\".onCssChanged", (args: applicationCommon.CssChangedEventData) => {
