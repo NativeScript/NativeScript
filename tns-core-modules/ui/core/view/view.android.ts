@@ -120,7 +120,7 @@ function initializeDialogFragment() {
         }
     }
 
-    class DialogFragmentImpl extends android.support.v4.app.DialogFragment{
+    class DialogFragmentImpl extends android.support.v4.app.DialogFragment {
         public owner: View;
         private _fullscreen: boolean;
         private _stretched: boolean;
