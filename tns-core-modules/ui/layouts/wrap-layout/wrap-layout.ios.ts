@@ -119,7 +119,7 @@ export class WrapLayout extends WrapLayoutBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
+    public onLayout(left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }): void {
         super.onLayout(left, top, right, bottom);
 
         const isVertical = this.orientation === "vertical";
@@ -130,12 +130,15 @@ export class WrapLayout extends WrapLayoutBase {
 
         let childLeft = paddingLeft;
         let childTop = paddingTop;
-        let childrenLength: number;
+
+        let childrenWidth: number;
+        let childrenHeight: number;
         if (isVertical) {
-            childrenLength = bottom - top - paddingBottom;
-        }
-        else {
-            childrenLength = right - left - paddingRight;
+            childrenHeight = right - left - paddingRight;
+            childrenWidth = bottom - top - paddingBottom;
+        } else {
+            childrenHeight = bottom - top - paddingBottom;
+            childrenWidth = right - left - paddingRight;
         }
 
         var rowOrColumn = 0;
@@ -144,13 +147,13 @@ export class WrapLayout extends WrapLayoutBase {
             // * density converts them to device pixels.
             let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
             let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
-            
+
             let length = this._lengths[rowOrColumn];
             if (isVertical) {
                 childWidth = length;
                 childHeight = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : childHeight;
                 let isFirst = childTop === paddingTop;
-                if (childTop + childHeight > childrenLength) {
+                if (childTop + childHeight > childrenWidth && childLeft + childWidth <= childrenHeight) {
                     // Move to top.
                     childTop = paddingTop;
 
@@ -165,12 +168,19 @@ export class WrapLayout extends WrapLayoutBase {
                     // Take respective column width.
                     childWidth = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
-            }
-            else {
+
+                if (childLeft < childrenHeight && childTop < childrenWidth) {
+                    View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+                }
+
+                // Move next child Left position to right.
+                childTop += childHeight;
+            } else {
                 childWidth = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : childWidth;
                 childHeight = length;
                 let isFirst = childLeft === paddingLeft;
-                if (childLeft + childWidth > childrenLength) {
+
+                if (childLeft + childWidth > childrenWidth && childTop + childHeight <= childrenHeight) {
                     // Move to left.
                     childLeft = paddingLeft;
 
@@ -185,15 +195,11 @@ export class WrapLayout extends WrapLayoutBase {
                     // Take respective row height.
                     childHeight = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
-            }
 
-            View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+                if (childLeft < childrenWidth && childTop < childrenHeight) {
+                    View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+                }
 
-            if (isVertical) {
-                // Move next child Top position to bottom.
-                childTop += childHeight;
-            }
-            else {
                 // Move next child Left position to right.
                 childLeft += childWidth;
             }
