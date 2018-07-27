@@ -130,18 +130,10 @@ export class WrapLayout extends WrapLayoutBase {
 
         let childLeft = paddingLeft;
         let childTop = paddingTop;
+        let childrenHeight = bottom - top - paddingBottom;
+        let childrenWidth = right - left - paddingRight;
+        let rowOrColumn = 0;
 
-        let childrenWidth: number;
-        let childrenHeight: number;
-        if (isVertical) {
-            childrenHeight = right - left - paddingRight;
-            childrenWidth = bottom - top - paddingBottom;
-        } else {
-            childrenHeight = bottom - top - paddingBottom;
-            childrenWidth = right - left - paddingRight;
-        }
-
-        var rowOrColumn = 0;
         this.eachLayoutChild((child, last) => {
             // Add margins because layoutChild will sustract them.
             // * density converts them to device pixels.
@@ -153,7 +145,7 @@ export class WrapLayout extends WrapLayoutBase {
                 childWidth = length;
                 childHeight = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : childHeight;
                 let isFirst = childTop === paddingTop;
-                if (childTop + childHeight > childrenWidth && childLeft + childWidth <= childrenHeight) {
+                if (childTop + childHeight > childrenHeight && childLeft + childWidth <= childrenWidth) {
                     // Move to top.
                     childTop = paddingTop;
 
@@ -169,17 +161,16 @@ export class WrapLayout extends WrapLayoutBase {
                     childWidth = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
 
-                if (childLeft < childrenHeight && childTop < childrenWidth) {
+                if (childLeft < childrenWidth && childTop < childrenHeight) {
                     View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
                 }
 
-                // Move next child Left position to right.
+                // Move next child Top position to bottom.
                 childTop += childHeight;
             } else {
                 childWidth = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : childWidth;
                 childHeight = length;
                 let isFirst = childLeft === paddingLeft;
-
                 if (childLeft + childWidth > childrenWidth && childTop + childHeight <= childrenHeight) {
                     // Move to left.
                     childLeft = paddingLeft;
