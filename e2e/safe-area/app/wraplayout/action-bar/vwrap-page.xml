@@ -1,5 +1,5 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd"
-    xmlns:fragments="wraplayout/fragments" backgroundColor="LightGreen">
+    xmlns:fragments="wraplayout/fragments">
 
     <ActionBar>
         <Label text="Action Bar"></Label>
