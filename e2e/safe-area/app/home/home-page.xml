@@ -10,5 +10,6 @@
         <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page"></Button>
         <Button text="ListView Examples" tap="onNavigate" route="listview/listview-page" />
         <Button text="WrapLayout Examples" tap="onNavigate" route="wraplayout/wraplayout-page"></Button>
+        <Button text="Navigation" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-nav-page"></Button>
     </StackLayout>
 </Page>

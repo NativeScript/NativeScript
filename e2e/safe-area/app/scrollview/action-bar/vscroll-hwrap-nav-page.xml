@@ -1,0 +1,12 @@
+<Page class="page"
+    xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ScrollView orientation="vertical">
+        <WrapLayout orientation="horizontal">
+            <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" backgroundColor="green"></Button>
+            <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Button>
+            <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Button>
+            <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Button>
+        </WrapLayout>
+    </ScrollView>
+</Page>
