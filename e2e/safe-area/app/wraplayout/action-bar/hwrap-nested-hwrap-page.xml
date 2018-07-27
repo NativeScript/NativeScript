@@ -5,6 +5,6 @@
         <Label text="Action Bar"></Label>
     </ActionBar>
 
-    <fragments:hwrap-fragment></fragments:hwrap-fragment>
+    <fragments:hwrap-nested-hwrap-fragment></fragments:hwrap-nested-hwrap-fragment>
 
 </Page>
