@@ -1,4 +1,4 @@
 <WrapLayout orientation="horizontal" backgroundColor="LightGreen">
-    <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%" backgroundColor="LightPink"></Button>
+    <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%" backgroundColor="Green"></Button>
     <Button text="H" backgroundColor="Pink"></Button>
 </WrapLayout>
