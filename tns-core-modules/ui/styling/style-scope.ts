@@ -262,7 +262,7 @@ class CSSSource {
     }
 }
 
-export function removeTaggedAdditonalCSSfunction(tag: String|Number): Boolean {
+export function removeTaggedAdditonalCSS(tag: String|Number): Boolean {
     let changed = false;
     for (let i = 0; i < applicationAdditionalSelectors.length; i++) {
         if (applicationAdditionalSelectors[i].tag === tag) {
