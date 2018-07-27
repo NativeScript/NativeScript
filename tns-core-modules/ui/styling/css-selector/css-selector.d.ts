@@ -47,7 +47,7 @@ export class RuleSet {
     /**
      *  Optional Tag for rules
      **/
-    tag: string|Number;
+    tag: string | Number;
 }
 
 export class SelectorsMap {

@@ -262,7 +262,7 @@ class CSSSource {
     }
 }
 
-export function removeTaggedAdditonalCSS(tag: String|Number): Boolean {
+export function removeTaggedAdditonalCSS(tag: String | Number): Boolean {
     let changed = false;
     for (let i = 0; i < applicationAdditionalSelectors.length; i++) {
         if (applicationAdditionalSelectors[i].tag === tag) {
@@ -274,7 +274,7 @@ export function removeTaggedAdditonalCSS(tag: String|Number): Boolean {
     return changed;
 }
 
-export function addTaggedAdditionalCSS(cssText: string, tag?: string|Number): Boolean {
+export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): Boolean {
     const parsed: RuleSet[] = CSSSource.fromSource(cssText, applicationKeyframes, undefined).selectors;
     let changed = false;
     if (parsed && parsed.length) {
