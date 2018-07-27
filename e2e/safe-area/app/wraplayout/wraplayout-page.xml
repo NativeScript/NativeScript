@@ -11,6 +11,8 @@
             <Button text="HWrap Nested HWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-nested-hwrap-page"></Button>
             <Button text="HWrap Nested VWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-nested-vwrap-page"></Button>
             <Button text="VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-page"></Button>
+            <Button text="VWrap Nested HWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-nested-hwrap-page"></Button>
+            <Button text="VWrap Nested VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-nested-vwrap-page"></Button>
         </StackLayout>
         <StackLayout horizontalAlignment="center">
             <Label text="Pages w/o ActionBar"></Label>
@@ -18,6 +20,8 @@
             <Button text="HWrap Nested HWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-nested-hwrap-page"></Button>
             <Button text="HWrap Nested VWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-nested-vwrap-page"></Button>
             <Button text="VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-page"></Button>
+            <Button text="VWrap Nested HWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-nested-hwrap-page"></Button>
+            <Button text="VWrap Nested VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-nested-vwrap-page"></Button>
         </StackLayout>
         <StackLayout horizontalAlignment="center">
             <Label text="Docs Pages"></Label>
