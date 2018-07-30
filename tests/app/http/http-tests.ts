@@ -384,6 +384,20 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
     // << http-get-response
 };
 
+export var test_headRequest_responseStatusCodeShouldBeDefined = function (done) {
+    http.request({ url: "https://httpbin.org/get", method: "HEAD" }).then(function (response) {
+        try {
+            TKUnit.assert(typeof (response.statusCode) !== "undefined", "response.statusCode should be defined!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
+        done(e);
+    });
+};
+
 export var test_request_responseHeadersShouldBeDefined = function (done) {
     var result: http.HttpResponse;
 
