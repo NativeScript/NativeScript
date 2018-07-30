@@ -156,11 +156,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     public createNativeView() {
-        const editText = new android.widget.EditText(this._context);
-        return editText;
+        return new android.widget.EditText(this._context);
     }
 
-    public createDelegate(editText: android.widget.EditText) {
+    public initNativeViewDelegates(editText: android.widget.EditText) {
         this._configureEditText(editText);
         initializeEditTextListeners();
         const listeners = new EditTextListeners(this);

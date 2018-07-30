@@ -320,6 +320,11 @@ export abstract class ViewBase extends Observable {
     createNativeView(): Object;
 
     /**
+     * Creates any delegate needed by the nativeView. Could be delegates on iOS or listeners on Android.
+     */
+    initNativeViewDelegates(view: Object);
+
+    /**
      * Initializes properties/listeners of the native view.
      */
     initNativeView(): void;

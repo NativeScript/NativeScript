@@ -102,11 +102,6 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _isShowingHint: boolean;
     public _isEditing: boolean;
 
-    constructor() {
-        super();
-        this.createNativeView();
-    }
-
     createNativeView() {
         if (this.nativeViewProtected) {
             return this.nativeViewProtected;
@@ -115,10 +110,9 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
         }
-        this.createDelegate();
         return textView;
     }
-    createDelegate() {
+    initNativeViewDelegates(view: UITextView) {
         this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 

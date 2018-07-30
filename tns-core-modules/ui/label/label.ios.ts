@@ -23,11 +23,6 @@ export class Label extends TextBase implements LabelDefinition {
     nativeViewProtected: TNSLabel;
     private _fixedSize: FixedSize;
 
-    constructor() {
-        super();
-        this.createNativeView();
-    }
-
     public createNativeView() {
         if (this.nativeViewProtected) {
             return this.nativeViewProtected;

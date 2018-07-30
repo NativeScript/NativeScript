@@ -145,23 +145,12 @@ export class TextField extends TextFieldBase {
     private _delegate: UITextFieldDelegateImpl;
     nativeViewProtected: UITextField;
 
-    constructor() {
-        super();
-        this.createNativeView();
-    }
-
     createNativeView() {
-        if (this.nativeViewProtected) {
-            return this.nativeViewProtected;
-        }
-        let weakRef = new WeakRef(this);
-        this._ios = this.nativeViewProtected = UITextFieldImpl.initWithOwner(weakRef);
-        this.createDelegate(weakRef);
-        return this._ios;
+        return  UITextFieldImpl.initWithOwner(new WeakRef(this));
     }
 
-    createDelegate(weakRef: WeakRef<TextField>) {
-        this._delegate = UITextFieldDelegateImpl.initWithOwner(weakRef);
+    initNativeViewDelegates(view: UITextFieldImpl) {
+        this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
     @profile

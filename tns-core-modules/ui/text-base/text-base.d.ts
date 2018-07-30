@@ -10,7 +10,12 @@ export { FormattedString } from "../../text/formatted-string";
 
 export class TextBase extends View implements AddChildFromBuilder {
 
+    /**
+     * Gets of the text widget. In some cases(android TextInputLayout) the TextView is made of 2 views: the layout and the text view
+     * So we need a different getter for the layout and text functions
+     */
     public readonly nativeTextViewProtected: any;
+
     /**
      * Gets or sets the text.
      */

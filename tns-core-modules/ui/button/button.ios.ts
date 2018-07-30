@@ -14,21 +14,11 @@ export class Button extends ButtonBase {
     private _tapHandler: NSObject;
     private _stateChangedHandler: ControlStateChangeListener;
 
-    constructor() {
-        super();
-        this.createNativeView();
-    }
-
     createNativeView() {
-        if (this.nativeViewProtected) {
-            return this.nativeViewProtected;
-        }
-        const view = this.nativeViewProtected = UIButton.buttonWithType(UIButtonType.System);
-        this.createDelegate(view);
-        return view;
+        return UIButton.buttonWithType(UIButtonType.System);
     }
 
-    createDelegate(view: UIButton) {
+    initNativeViewDelegates(view: UIButton) {
         this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
         view.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
     }

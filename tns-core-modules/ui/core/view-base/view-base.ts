@@ -642,6 +642,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         return undefined;
     }
 
+    public initNativeViewDelegates(view: Object) {
+        //
+    }
+
     public disposeNativeView() {
         //
     }
@@ -696,6 +700,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
             if (!nativeView) {
                 nativeView = this.createNativeView();
+                this.initNativeViewDelegates(nativeView);
             }
 
             this._androidView = nativeView;
