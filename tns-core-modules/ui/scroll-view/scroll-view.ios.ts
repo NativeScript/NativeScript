@@ -186,7 +186,7 @@ export class ScrollView extends ScrollViewBase {
         }
 
         nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height));
-        View.layoutChild(this, this.layoutView, 0, 0, width, height);
+        View.layoutChild(this, this.layoutView, insets.left, insets.top, width, height);
 
         // if (this.orientation === "horizontal") {
         //     nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(this._contentMeasuredWidth + insets.left + insets.right), layout.toDeviceIndependentPixels(height));
