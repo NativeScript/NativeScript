@@ -353,22 +353,22 @@ class TouchGestureRecognizer extends UIGestureRecognizer {
 
     touchesBeganWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(TouchAction.down, touches, event);
-        (this.observer.target.nativeView as UIView).touchesBeganWithEvent(touches, event);
+        this.view.touchesBeganWithEvent(touches, event);
     }
 
     touchesMovedWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(TouchAction.move, touches, event);
-        (this.observer.target.nativeView as UIView).touchesMovedWithEvent(touches, event);
+        this.view.touchesMovedWithEvent(touches, event);
     }
 
     touchesEndedWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(TouchAction.up, touches, event);
-        (this.observer.target.nativeView as UIView).touchesEndedWithEvent(touches, event);
+        this.view.touchesEndedWithEvent(touches, event);
     }
 
     touchesCancelledWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(TouchAction.cancel, touches, event);
-        (this.observer.target.nativeView as UIView).touchesCancelledWithEvent(touches, event);
+        this.view.touchesCancelledWithEvent(touches, event);
     }
 
     private executeCallback(action: string, touches: NSSet<any>, event: any): void {
