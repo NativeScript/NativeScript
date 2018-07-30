@@ -40,6 +40,7 @@ function initializeNativeClasses(): void {
 
         onValueChange(picker: android.widget.NumberPicker, oldValue: number, newValue: number): void {
             selectedIndexProperty.nativeValueChange(this.owner, newValue);
+            this.owner.updateSelectedValue(newValue);
         }
     }
 
