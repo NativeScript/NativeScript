@@ -386,8 +386,6 @@ public class Async
 
 			public void readResponseStream(HttpURLConnection connection, Stack<Closeable> openedStreams, RequestOptions options) throws IOException
 			{
-				this.statusCode = connection.getResponseCode();
-
 				int contentLength = connection.getContentLength();
 
 				InputStream inStream;
@@ -564,6 +562,7 @@ public class Async
 					// build the result
 					result.getHeaders(connection);
 					result.url = options.url;
+					result.statusCode = connection.getResponseCode();
 					result.statusText = connection.getResponseMessage();
 					if (!requestMethod.equals(HEAD_METHOD))
 					{
