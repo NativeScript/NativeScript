@@ -700,7 +700,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
             if (!nativeView) {
                 nativeView = this.createNativeView();
-                this.initNativeViewDelegates(nativeView);
             }
 
             this._androidView = nativeView;
@@ -736,13 +735,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             }
         } else {
             // TODO: Implement _createNativeView for iOS
-            nativeView = this.createNativeView();
-            this._iosView = nativeView || this.nativeViewProtected;
+            nativeView = this.createNativeView() || this.nativeViewProtected;
+            this._iosView = nativeView;
         }
+        this.initNativeViewDelegates(nativeView);
 
         // This will account for nativeView that is created in createNativeView, recycled
         // or for backward compatability - set before _setupUI in iOS contructor.
-        this.setNativeView(nativeView || this.nativeViewProtected);
+        this.setNativeView(nativeView);
 
         if (this.parent) {
             const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
