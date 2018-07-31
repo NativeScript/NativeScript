@@ -45,7 +45,7 @@ function initializeNativeClasses() {
         return;
     }
 
-    class TabFragmentImplementation extends android.app.Fragment {
+    class TabFragmentImplementation extends android.support.v4.app.Fragment {
         private tab: TabView;
         private index: number;
 
@@ -90,8 +90,8 @@ function initializeNativeClasses() {
 
     class FragmentPagerAdapter extends android.support.v4.view.PagerAdapter {
         public items: Array<TabViewItemDefinition>;
-        private mCurTransaction: android.app.FragmentTransaction;
-        private mCurrentPrimaryItem: android.app.Fragment;
+        private mCurTransaction: android.support.v4.app.FragmentTransaction;
+        private mCurrentPrimaryItem: android.support.v4.app.Fragment;
 
         constructor(public owner: TabView) {
             super();
@@ -127,7 +127,7 @@ function initializeNativeClasses() {
             const itemId = this.getItemId(position);
             const name = makeFragmentName(container.getId(), itemId);
 
-            let fragment: android.app.Fragment = fragmentManager.findFragmentByTag(name);
+            let fragment: android.support.v4.app.Fragment = fragmentManager.findFragmentByTag(name);
             if (fragment != null) {
                 this.mCurTransaction.attach(fragment);
             } else {
@@ -159,7 +159,7 @@ function initializeNativeClasses() {
                 this.mCurTransaction = fragmentManager.beginTransaction();
             }
 
-            const fragment: android.app.Fragment = <android.app.Fragment>object;
+            const fragment: android.support.v4.app.Fragment = <android.support.v4.app.Fragment>object;
             this.mCurTransaction.detach(fragment);
 
             if (this.mCurrentPrimaryItem === fragment) {
@@ -174,7 +174,7 @@ function initializeNativeClasses() {
         }
 
         setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-            const fragment = <android.app.Fragment>object;
+            const fragment = <android.support.v4.app.Fragment>object;
             if (fragment !== this.mCurrentPrimaryItem) {
                 if (this.mCurrentPrimaryItem != null) {
                     this.mCurrentPrimaryItem.setMenuVisibility(false);
@@ -213,7 +213,7 @@ function initializeNativeClasses() {
         }
 
         isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
-            return (<android.app.Fragment>object).getView() === view;
+            return (<android.support.v4.app.Fragment>object).getView() === view;
         }
 
         saveState(): android.os.Parcelable {
