@@ -271,6 +271,7 @@ export function removeTaggedAdditonalCSS(tag: String | Number): Boolean {
             changed = true;
         }
     }
+    if (changed) {  mergeCssSelectors(); }
     return changed;
 }
 
