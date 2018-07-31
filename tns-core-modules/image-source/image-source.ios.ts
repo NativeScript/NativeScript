@@ -190,7 +190,7 @@ function getFileName(path: string): string {
     return fileName;
 }
 
-function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 1.0): NSData {
+function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 0.9): NSData {
     var data = null;
     switch (format) {
         case "png":
