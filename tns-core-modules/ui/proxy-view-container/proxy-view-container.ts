@@ -11,6 +11,7 @@ import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } 
 // * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 @CSSType("ProxyViewContainer")
 export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
+    public _ngDialogRoot: View;
 
     constructor() {
         super();
