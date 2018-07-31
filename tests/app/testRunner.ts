@@ -33,6 +33,7 @@ export function isRunningOnEmulator(): boolean {
 
 export const allTests = {};
 
+/*
 import * as domNodeTest from "./debugger/dom-node-tests";
 allTests["DOM-NODE"] = domNodeTest;
 
@@ -149,10 +150,11 @@ allTests["VIEW"] = viewTests;
 
 import * as viewLayoutChangedEventTests from "./ui/view/view-tests-layout-event";
 allTests["VIEW-LAYOUT-EVENT"] = viewLayoutChangedEventTests;
-
+*/
 import * as styleTests from "./ui/styling/style-tests";
 allTests["STYLE"] = styleTests;
 
+/*
 import * as visualStateTests from "./ui/styling/visual-state-tests";
 allTests["VISUAL-STATE"] = visualStateTests;
 
@@ -248,6 +250,7 @@ allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
 import * as rootViewTests from "./ui/root-view/root-view-tests";
 allTests["ROOT-VIEW"] = rootViewTests;
+*/
 
 const testsSuitesWithLongDelay = {
     HTTP: 15 * 1000,
