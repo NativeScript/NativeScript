@@ -50,7 +50,7 @@ export class ImageAsset extends common.ImageAsset {
         let imageRequestOptions = PHImageRequestOptions.alloc().init();
         imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
         imageRequestOptions.networkAccessAllowed = true;
-        
+
         PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions,
             (image, imageResultInfo) => {
                 if (image) {
@@ -64,8 +64,11 @@ export class ImageAsset extends common.ImageAsset {
         );
     }
 
-    private scaleImage(image: UIImage, requestedSize: {width: number, height: number}): UIImage {
-        UIGraphicsBeginImageContextWithOptions(requestedSize, false, 0.0);
+    private scaleImage(image: UIImage, requestedSize: { width: number, height: number }): UIImage {
+        // scaleFactor = 0 takes the scale factor of the devices's main screen.
+        const scaleFactor = this.options && this.options.autoScaleFactor === false ? 1.0 : 0.0;
+
+        UIGraphicsBeginImageContextWithOptions(requestedSize, false, scaleFactor);
         image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
         let resultImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
