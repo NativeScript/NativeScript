@@ -50,17 +50,12 @@ interface ExpandedEntry extends BackstackEntry {
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 const defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
-const isAndroidP = lazy(() => sdkVersion() > 27);
 
 export const waitingQueue = new Map<number, Set<ExpandedEntry>>();
 export const completedEntries = new Map<number, ExpandedEntry>();
 
 let TransitionListener: TransitionListener;
 let AnimationListener: android.view.animation.Animation.AnimationListener;
-let loadAnimationMethod: java.lang.reflect.Method;
-let reflectionDone: boolean;
-let defaultEnterAnimationStatic: android.view.animation.Animation;
-let defaultExitAnimationStatic: android.view.animation.Animation;
 
 export function _setAndroidFragmentTransitions(
     animated: boolean,
@@ -68,7 +63,6 @@ export function _setAndroidFragmentTransitions(
     currentEntry: ExpandedEntry,
     newEntry: ExpandedEntry,
     fragmentTransaction: android.support.v4.app.FragmentTransaction,
-    manager: android.support.v4.app.FragmentManager,
     frameId: number): void {
 
     const currentFragment: android.support.v4.app.Fragment = currentEntry ? currentEntry.fragment : null;
@@ -76,10 +70,6 @@ export function _setAndroidFragmentTransitions(
     const entries = waitingQueue.get(frameId);
     if (entries && entries.size > 0) {
         throw new Error("Calling navigation before previous navigation finish.");
-    }
-
-    if (!isAndroidP()) {
-        initDefaultAnimations(manager);
     }
 
     if (sdkVersion() >= 21) {
@@ -120,11 +110,7 @@ export function _setAndroidFragmentTransitions(
     if (name === "none") {
         transition = new NoTransition(0, null);
     } else if (name === "default") {
-        if (isAndroidP()) {
-            transition = new FadeTransition(150, null);
-        } else {
-            transition = new DefaultTransition(0, null);
-        }
+        transition = new FadeTransition(150, null);
     } else if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
@@ -178,11 +164,7 @@ export function _setAndroidFragmentTransitions(
         }
     }
 
-    if (isAndroidP()) {
-        setupDefaultAnimations(newEntry, new FadeTransition(150, null));
-    } else {
-        setupDefaultAnimations(newEntry, new DefaultTransition(0, null));
-    }
+    setupDefaultAnimations(newEntry, new FadeTransition(150, null));
 
     printTransitions(currentEntry);
     printTransitions(newEntry);
@@ -739,46 +721,6 @@ function toShortString(nativeTransition: android.transition.Transition): string 
     return `${nativeTransition.getClass().getSimpleName()}@${nativeTransition.hashCode().toString(16)}`;
 }
 
-function javaObjectArray(...params: java.lang.Object[]) {
-    const nativeArray = Array.create(java.lang.Object, params.length);
-    params.forEach((value, i) => nativeArray[i] = value);
-    return nativeArray;
-}
-
-function javaClassArray(...params: java.lang.Class<any>[]) {
-    const nativeArray = Array.create(java.lang.Class, params.length);
-    params.forEach((value, i) => nativeArray[i] = value);
-    return nativeArray;
-}
-
-function initDefaultAnimations(manager: android.support.v4.app.FragmentManager): void {
-    if (reflectionDone) {
-        return;
-    }
-
-    reflectionDone = true;
-
-    loadAnimationMethod = manager.getClass().getDeclaredMethod("loadAnimation", javaClassArray(android.support.v4.app.Fragment.class, java.lang.Integer.TYPE, java.lang.Boolean.TYPE, java.lang.Integer.TYPE));
-    if (loadAnimationMethod != null) {
-        loadAnimationMethod.setAccessible(true);
-
-        const fragment_open = java.lang.Integer.valueOf(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        const zero = java.lang.Integer.valueOf(0);
-        const fragment = new android.support.v4.app.Fragment();
-
-        // Get default enter transition.
-        defaultEnterAnimationStatic = loadAnimationMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.TRUE, zero));
-
-        // Get default exit transition.
-        defaultExitAnimationStatic = loadAnimationMethod.invoke(manager, javaObjectArray(fragment, fragment_open, java.lang.Boolean.FALSE, zero));
-    }
-}
-
-function getDefaultAnimation(enter: boolean): android.view.animation.Animation {
-    const defaultAnimation = enter ? defaultEnterAnimationStatic : defaultExitAnimationStatic;
-    return defaultAnimation ? defaultAnimation.clone() : null;
-}
-
 function createDummyZeroDurationAnimation(): android.view.animation.Animation {
     // NOTE: returning the dummy AlphaAnimation directly does not work for some reason;
     // animationEnd is fired first, then some animationStart (but for a different animation?)
@@ -815,19 +757,5 @@ function printTransitions(entry: ExpandedEntry) {
 class NoTransition extends Transition {
     public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
         return createDummyZeroDurationAnimation();
-    }
-}
-
-class DefaultTransition extends Transition {
-    public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
-        switch (transitionType) {
-            case AndroidTransitionType.enter:
-            case AndroidTransitionType.popEnter:
-                return getDefaultAnimation(true);
-
-            case AndroidTransitionType.popExit:
-            case AndroidTransitionType.exit:
-                return getDefaultAnimation(false);
-        }
     }
 }

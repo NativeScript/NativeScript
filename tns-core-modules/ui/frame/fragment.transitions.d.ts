@@ -24,7 +24,6 @@ export function _setAndroidFragmentTransitions(
     currentEntry: BackstackEntry,
     newEntry: BackstackEntry,
     fragmentTransaction: any,
-    manager: any /* android.support.v4.app.FragmentManager */,
     frameId: number): void;
 /**
  * @private

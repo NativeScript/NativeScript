@@ -337,10 +337,7 @@ export class Frame extends FrameBase {
         // https://github.com/NativeScript/NativeScript/issues/4895
         const navigationTransition = this._currentEntry ? this._getNavigationTransition(newEntry.entry) : null;
 
-        _setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, transaction, manager, this._android.frameId);
-        // if (clearHistory) {
-        //     deleteEntries(this.backStack);
-        // }
+        _setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, transaction, this._android.frameId);
 
         if (currentEntry && animated && !navigationTransition) {
             transaction.setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
