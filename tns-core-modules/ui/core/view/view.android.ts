@@ -47,7 +47,7 @@ interface TouchListener {
 }
 
 interface DialogFragment {
-    new(): android.app.DialogFragment;
+    new(): android.support.v4.app.DialogFragment;
 }
 
 function initializeDisabledListener(): void {
@@ -120,7 +120,7 @@ function initializeDialogFragment() {
         }
     }
 
-    class DialogFragmentImpl extends android.app.DialogFragment {
+    class DialogFragmentImpl extends android.support.v4.app.DialogFragment {
         public owner: View;
         private _fullscreen: boolean;
         private _stretched: boolean;
@@ -141,7 +141,7 @@ function initializeDialogFragment() {
             this._dismissCallback = options.dismissCallback;
             this._shownCallback = options.shownCallback;
             this.owner._dialogFragment = this;
-            this.setStyle(android.app.DialogFragment.STYLE_NO_TITLE, 0);
+            this.setStyle(android.support.v4.app.DialogFragment.STYLE_NO_TITLE, 0);
 
             const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
 
@@ -225,13 +225,13 @@ function getModalOptions(domId: number): DialogOptions {
 export class View extends ViewCommon {
     public static androidBackPressedEvent = androidBackPressedEvent;
 
-    public _dialogFragment: android.app.DialogFragment;
+    public _dialogFragment: android.support.v4.app.DialogFragment;
     private _isClickable: boolean;
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
     private layoutChangeListenerIsSet: boolean;
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
-    private _manager: android.app.FragmentManager;
+    private _manager: android.support.v4.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
 
@@ -263,7 +263,7 @@ export class View extends ViewCommon {
         }
     }
 
-    public _getFragmentManager(): android.app.FragmentManager {
+    public _getFragmentManager(): android.support.v4.app.FragmentManager {
         let manager = this._manager;
         if (!manager) {
             let view: View = this;
@@ -280,7 +280,7 @@ export class View extends ViewCommon {
             }
 
             if (!manager && this._context) {
-                manager = (<android.app.Activity>this._context).getFragmentManager();
+                manager = (<android.support.v7.app.AppCompatActivity>this._context).getSupportFragmentManager();
             }
 
             this._manager = manager;
