@@ -78,6 +78,7 @@ git push origin <my-fix-branch> --force
 
 It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
 
+>Note: Sometimes you will see someone from the contributors team writing strange comments like: `test` or `test branch_functional_tests#css-gradients-tests branch_widgets#vultix/css-gradients` - don't worry about it, these are just phrases that trigger the internal CI builds.
 
 ## <a name="commit-messages"></a> Commit Message Guidelines
 
