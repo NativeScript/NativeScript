@@ -9,7 +9,7 @@ import * as tabViewModule from "tns-core-modules/ui/tab-view";
 import * as helper from "../../ui/helper";
 import * as types from "tns-core-modules/utils/types";
 import * as viewModule from "tns-core-modules/ui/core/view";
-import { resolveFileNameFromUrl } from "tns-core-modules/ui/styling/style-scope";
+import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
 import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as color from "tns-core-modules/color";
 
@@ -1477,6 +1477,36 @@ export function test_resolveFileNameFromUrl_unexisting_file() {
     const result = resolveFileNameFromUrl(url, appDirectory, fileDoesNotExistMock);
 
     TKUnit.assertNull(result, "Shouldn't resolve unexisting file");
+}
+
+export function test_checkAddRemoveCSS() {
+    const css1 = "#test_checkAddRemoveCSS_label { color: #FF0000; }";
+    const css2 = "#test_checkAddRemoveCSS_label { color: #00FF00; }";
+    const label = new labelModule.Label();
+    label.text = "color coming from updated rules";
+    label.id = "test_checkAddRemoveCSS_label";
+
+    helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+
+        // Add Red, we have to then trigger the page's CSS state change, for it to refresh the label's css with the new global rule
+        addTaggedAdditionalCSS(css1, "red");
+        page._onCssStateChange();
+        helper.assertViewColor(label, "#FF0000");
+
+        // Add Green (should override red)
+        addTaggedAdditionalCSS(css2, "green");
+        page._onCssStateChange();
+        helper.assertViewColor(label, "#00FF00");
+
+        // Remove Green (Should revert to red, since we removed the green rule)
+        removeTaggedAdditionalCSS("green");
+        page._onCssStateChange();
+        helper.assertViewColor(label, "#FF0000");
+
+        //Cleanup
+        removeTaggedAdditionalCSS("red");
+    });
 }
 
 // <snippet module="ui/styling" title="styling">

@@ -262,6 +262,35 @@ class CSSSource {
     }
 }
 
+export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
+    let changed = false;
+    for (let i = 0; i < applicationAdditionalSelectors.length; i++) {
+        if (applicationAdditionalSelectors[i].tag === tag) {
+            applicationAdditionalSelectors.splice(i, 1);
+            i--;
+            changed = true;
+        }
+    }
+    if (changed) {  mergeCssSelectors(); }
+    return changed;
+}
+
+export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): Boolean {
+    const parsed: RuleSet[] = CSSSource.fromSource(cssText, applicationKeyframes, undefined).selectors;
+    let changed = false;
+    if (parsed && parsed.length) {
+        changed = true;
+        if (tag != null) {
+            for (let i = 0; i < parsed.length; i++) {
+                parsed[i].tag = tag;
+            }
+        }
+        applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
+        mergeCssSelectors();
+    }
+    return changed;
+}
+
 const onCssChanged = profile("\"style-scope\".onCssChanged", (args: applicationCommon.CssChangedEventData) => {
     if (args.cssText) {
         const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
@@ -414,7 +443,7 @@ export class CssState {
      * Calculate the difference between the previously applied property values,
      * and the new set of property values that have to be applied for the provided selectors.
      * Apply the values and ensure each property setter is called at most once to avoid excessive change notifications.
-     * @param matchingSelectors 
+     * @param matchingSelectors
      */
     private setPropertyValues(matchingSelectors: SelectorCore[]): void {
         const newPropertyValues = new this.view.style.PropertyBag();
