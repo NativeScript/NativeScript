@@ -219,8 +219,8 @@ export class ScrollView extends ScrollViewBase {
             const safeArea = this.getSafeArea();
             const fullscreen = this.getFullscreenArea();
             const locationOnScreen = this.getLocationInWindow();
-            const onScreenLeft = layout.toDevicePixels(layout.round(locationOnScreen.x));
-            const onScreenTop = layout.toDevicePixels(layout.round(locationOnScreen.y));
+            const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
+            const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
 
             let left = layout.toDevicePixels(frame.origin.x);
             let top = layout.toDevicePixels(frame.origin.y);
