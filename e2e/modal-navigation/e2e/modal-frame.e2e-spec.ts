@@ -35,10 +35,11 @@ describe("modal-frame:", function () {
 
             afterEach(async function () {
                 if (this.currentTest.state === "failed") {
+                    await driver.logTestArtifacts(prepareImageName("fail_after", this.currentTest.title));
                     await driver.resetApp();
                     await screen[root]();
                 } else {
-                    await driver.logTestArtifacts(prepareImageName("fail_after", this.currentTest.title));
+                    await driver.logTestArtifacts(prepareImageName("after", this.currentTest.title));
                 }
             });
 
