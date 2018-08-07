@@ -9,6 +9,7 @@ import { Label } from "tns-core-modules/ui/label";
 import * as helper from "../helper";
 import { Page } from "tns-core-modules/ui/page";
 import { View, KeyedTemplate, isIOS } from "tns-core-modules/ui/core/view";
+import { MyButton, MyStackLayout } from "../layouts/layout-helper";
 
 // >> article-require-listview-module
 import * as listViewModule from "tns-core-modules/ui/list-view";
@@ -101,6 +102,51 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             // << (hide)
         });
         // << article-listview-array
+    }
+
+    public test_layout_is_done_on_items_when_requested() {
+        const listView = this.testView;
+
+        const colors = ["red", "green", "blue"];
+        const templateViews = Array<MyButton>();
+        listView.items = colors;
+        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+            if (!args.view) {
+                const res = new MyStackLayout();
+                const btn = new MyButton();
+                btn.text = "item at " + args.index;
+                res.addChild(btn);
+                templateViews[args.index] = btn;
+                args.view = res;
+            }
+        });
+
+        TKUnit.waitUntilReady(() => templateViews.length === 3);
+        TKUnit.waitUntilReady(() => templateViews.every(btn => btn.isLayoutValid));
+
+        // All buttons measured once
+        TKUnit.assertEqual(templateViews[0].measureCount, 1, "templateViews[0].measureCount");
+        TKUnit.assertEqual(templateViews[0].arrangeCount, 1, "templateViews[0].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[1].measureCount, 1, "templateViews[1].measureCount");
+        TKUnit.assertEqual(templateViews[1].arrangeCount, 1, "templateViews[1].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[2].measureCount, 1, "templateViews[2].measureCount");
+        TKUnit.assertEqual(templateViews[2].arrangeCount, 1, "templateViews[2].arrangeCount");
+
+        // Request measure of second item
+        templateViews[1].requestLayout();
+        TKUnit.waitUntilReady(() => templateViews.every(btn => btn.isLayoutValid));
+
+        // Second item measured once more
+        TKUnit.assertEqual(templateViews[0].measureCount, 1, "templateViews[0].measureCount");
+        TKUnit.assertEqual(templateViews[0].arrangeCount, 1, "templateViews[0].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[1].measureCount, 2, "templateViews[1].measureCount");
+        TKUnit.assertEqual(templateViews[1].arrangeCount, 2, "templateViews[1].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[2].measureCount, 1, "templateViews[2].measureCount");
+        TKUnit.assertEqual(templateViews[2].arrangeCount, 1, "templateViews[2].arrangeCount");
     }
 
     public test_set_native_item_exposed() {
@@ -736,9 +782,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     private loadViewWithItemNumber(args: listViewModule.ItemEventData) {
         if (!args.view) {
-            args.view = new labelModule.Label();
+            args.view = new Label();
         }
-        (<labelModule.Label>args.view).text = "item " + args.index;
+        (<Label>args.view).text = "item " + args.index;
     }
 
     private getTextFromNativeElementAt(listView: listViewModule.ListView, index: number): string {
