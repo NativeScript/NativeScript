@@ -102,6 +102,14 @@ class Device implements DeviceDefinition {
 class MainScreen implements ScreenMetricsDefinition {
     private _metrics: android.util.DisplayMetrics;
     
+    constructor() {
+        appModule.on(appModule.orientationChangedEvent, () => {
+            if (this._metrics) {
+                this.initMetrics();
+            }
+        });
+    }
+
     private cssChanged(args: appModule.CssChangedEventData): void {
         if (!this._metrics) {
             this._metrics = new android.util.DisplayMetrics();
