@@ -33,7 +33,7 @@
     "tns-platform-declarations": "*"
   },
   "scripts": {
-    "version": "rm package-lock.json && conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md"
+    "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md"
   },
   "nativescript": {
     "platforms": {
