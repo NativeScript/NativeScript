@@ -35,7 +35,7 @@ export enum connectionType {
     ethernet = 3,
 
     /**
-     * Denotes an ethernet connection
+     * Denotes an bluetooth connection
      */
     bluetooth = 4
 }
