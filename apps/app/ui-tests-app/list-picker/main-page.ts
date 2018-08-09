@@ -13,5 +13,6 @@ export function loadExamples() {
     const examples = new Map<string, string>();
     examples.set("issue_2895", "list-picker/issue_2895");
     examples.set("list-picker", "list-picker/list-picker");
+    examples.set("list-picker-json-array", "list-picker/list-picker-json-array");
     return examples;
 }
