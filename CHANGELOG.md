@@ -32,7 +32,10 @@ Cross Platform Modules Changelog
 
 ### BREAKING CHANGES
 
-* **typings:** There is no longer added `I` prefix in the names of the interfaces. For example, `android.view.IMenuItem` is now `android.view.MenuItem`. This matches the original name of the interface in the android framework.
+* **typings:** 
+    * There is no longer added `I` prefix in the names of the interfaces. For example, `android.view.IMenuItem` is now `android.view.MenuItem`. This matches the original name of the interface in the Android framework.
+    * We are now generating only **public** methods, so all the methods which you override when extending Android class should be **public**.
+    * You need to use **Array\<string>** (lowercase **string**) instead of **Array\<String>** (uppercase **String**) when overriding a method accepting string array type.
 
 
 <a name="4.1.1"></a>
