@@ -16,6 +16,12 @@ const DEFAULT_HEIGHT = 44;
 
 const infinity = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
+interface ViewItemIndex {
+    _listViewItemIndex?: number;
+}
+
+type ItemView = View & ViewItemIndex;
+
 class ListViewCell extends UITableViewCell {
     public static initWithEmptyBackground(): ListViewCell {
         const cell = <ListViewCell>ListViewCell.new();
@@ -205,7 +211,7 @@ export class ListView extends ListViewBase {
     private _heights: Array<number>;
     private _preparingCell: boolean;
     private _isDataDirty: boolean;
-    private _map: Map<ListViewCell, View>;
+    private _map: Map<ListViewCell, ItemView>;
     widthMeasureSpec: number = 0;
 
     constructor() {
@@ -217,7 +223,7 @@ export class ListView extends ListViewBase {
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
-        this._map = new Map<ListViewCell, View>();
+        this._map = new Map<ListViewCell, ItemView>();
         this._setNativeClipToBounds();
     }
 
@@ -335,6 +341,27 @@ export class ListView extends ListViewBase {
         }
     }
 
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        this._map.forEach((childView, listViewCell) => {
+            View.measureChild(this, childView, childView._currentWidthMeasureSpec, childView._currentHeightMeasureSpec);
+        });
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(left, top, right, bottom);
+
+        this._map.forEach((childView, listViewCell) => {
+            let rowHeight = this._effectiveRowHeight;
+            let cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
+            if (cellHeight) {
+                let width = layout.getMeasureSpecSize(this.widthMeasureSpec);
+                View.layoutChild(this, childView, 0, 0, width, cellHeight);
+            }
+        });
+    }
+
     private _layoutCell(cellView: View, indexPath: NSIndexPath): number {
         if (cellView) {
             const rowHeight = this._effectiveRowHeight;
@@ -352,7 +379,7 @@ export class ListView extends ListViewBase {
         let cellHeight: number;
         try {
             this._preparingCell = true;
-            let view = cell.view;
+            let view: ItemView = cell.view;
             if (!view) {
                 view = this._getItemTemplate(indexPath.row).createView();
             }
@@ -378,7 +405,9 @@ export class ListView extends ListViewBase {
             }
 
             this._prepareItem(view, indexPath.row);
+            view._listViewItemIndex = indexPath.row;
             this._map.set(cell, view);
+
             // We expect that views returned from itemLoading are new (e.g. not reused).
             if (view && !view.parent && view.nativeViewProtected) {
                 cell.contentView.addSubview(view.nativeViewProtected);
@@ -393,7 +422,7 @@ export class ListView extends ListViewBase {
     }
 
     public _removeContainer(cell: ListViewCell): void {
-        let view = cell.view;
+        let view: ItemView = cell.view;
         // This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
         if (!(view.parent instanceof ListView)) {
             this._removeView(view.parent);
@@ -403,6 +432,7 @@ export class ListView extends ListViewBase {
         const preparing = this._preparingCell;
         this._preparingCell = true;
         view.parent._removeView(view);
+        view._listViewItemIndex = undefined;
         this._preparingCell = preparing;
         this._map.delete(cell);
     }

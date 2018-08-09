@@ -1,22 +1,22 @@
-﻿import * as testModule from "../../ui-test";
-import * as TKUnit from "../../TKUnit";
-import * as app from "tns-core-modules/application";
-import * as observable from "tns-core-modules/data/observable";
-import * as types from "tns-core-modules/utils/types";
-import * as platform from "tns-core-modules/platform";
-import * as utils from "tns-core-modules/utils/utils";
-import { Label } from "tns-core-modules/ui/label";
+﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
+import { UITest } from "../../ui-test";
+import { getResources as appGetResources } from "tns-core-modules/application";
+import { Observable, EventData } from "tns-core-modules/data/observable";
+import { isFunction, isUndefined } from "tns-core-modules/utils/types";
+import { isAndroid, isIOS } from "tns-core-modules/platform";
+import { GC } from "tns-core-modules/utils/utils";
 import { Page } from "tns-core-modules/ui/page";
-import { View, KeyedTemplate, isIOS } from "tns-core-modules/ui/core/view";
+import { View, KeyedTemplate } from "tns-core-modules/ui/core/view";
+import { MyButton, MyStackLayout } from "../layouts/layout-helper";
 
 // >> article-require-listview-module
-import * as listViewModule from "tns-core-modules/ui/list-view";
+import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
 // << article-require-listview-module
 
 // >> article-require-modules-listview
-import * as observableArray from "tns-core-modules/data/observable-array";
-import * as labelModule from "tns-core-modules/ui/label";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
+import { Label } from "tns-core-modules/ui/label";
 // << article-require-modules-listview
 
 // >> article-item-tap
@@ -46,22 +46,22 @@ for (var i = 0; i < 100; i++) {
     MANY_ITEMS.push(i);
 }
 
-export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
+export class ListViewTest extends UITest<ListView> {
 
-    public create(): listViewModule.ListView {
-        return new listViewModule.ListView();
+    public create(): ListView {
+        return new ListView();
     }
 
     public test_recycling() {
-        helper.nativeView_recycling_test(() => new listViewModule.ListView());
+        helper.nativeView_recycling_test(() => new ListView());
     }
 
     public test_default_TNS_values() {
         // >> article-create-listview
-        var listView = new listViewModule.ListView();
+        var listView = new ListView();
         // << article-create-listview
 
-        TKUnit.assert(types.isUndefined(listView.items), "Default listView.items should be undefined");
+        TKUnit.assert(isUndefined(listView.items), "Default listView.items should be undefined");
     }
 
     public test_set_items_to_array_loads_all_items(done) {
@@ -71,21 +71,21 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         // >> article-listview-array
         var colors = ["red", "green", "blue"];
         listView.items = colors;
-        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+        listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
             if (!args.view) {
                 // Create label if it is not already created.
-                args.view = new labelModule.Label();
+                args.view = new Label();
             }
-            (<labelModule.Label>args.view).text = colors[args.index];
+            (<Label>args.view).text = colors[args.index];
 
             // >> (hide)
             indexes[args.index] = true;
             if (args.index === (colors.length - 1)) {
                 try {
-                    if (app.android) {
+                    if (isAndroid) {
                         TKUnit.assert(listView.android instanceof android.widget.ListView, "android property is android.widget.ListView");
                     }
-                    else if (app.ios) {
+                    else if (isIOS) {
                         TKUnit.assert(listView.ios instanceof UITableView, "ios property is UITableView");
                     }
 
@@ -103,12 +103,57 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         // << article-listview-array
     }
 
+    public test_layout_is_done_on_items_when_requested() {
+        const listView = this.testView;
+
+        const colors = ["red", "green", "blue"];
+        const templateViews = Array<MyButton>();
+        listView.items = colors;
+        listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
+            if (!args.view) {
+                const res = new MyStackLayout();
+                const btn = new MyButton();
+                btn.text = "item at " + args.index;
+                res.addChild(btn);
+                templateViews[args.index] = btn;
+                args.view = res;
+            }
+        });
+
+        TKUnit.waitUntilReady(() => templateViews.length === 3);
+        TKUnit.waitUntilReady(() => templateViews.every(btn => btn.isLayoutValid));
+
+        // All buttons measured once
+        TKUnit.assertEqual(templateViews[0].measureCount, 1, "templateViews[0].measureCount");
+        TKUnit.assertEqual(templateViews[0].arrangeCount, 1, "templateViews[0].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[1].measureCount, 1, "templateViews[1].measureCount");
+        TKUnit.assertEqual(templateViews[1].arrangeCount, 1, "templateViews[1].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[2].measureCount, 1, "templateViews[2].measureCount");
+        TKUnit.assertEqual(templateViews[2].arrangeCount, 1, "templateViews[2].arrangeCount");
+
+        // Request measure of second item
+        templateViews[1].requestLayout();
+        TKUnit.waitUntilReady(() => templateViews.every(btn => btn.isLayoutValid));
+
+        // Second item measured once more
+        TKUnit.assertEqual(templateViews[0].measureCount, 1, "templateViews[0].measureCount");
+        TKUnit.assertEqual(templateViews[0].arrangeCount, 1, "templateViews[0].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[1].measureCount, 2, "templateViews[1].measureCount");
+        TKUnit.assertEqual(templateViews[1].arrangeCount, 2, "templateViews[1].arrangeCount");
+
+        TKUnit.assertEqual(templateViews[2].measureCount, 1, "templateViews[2].measureCount");
+        TKUnit.assertEqual(templateViews[2].arrangeCount, 1, "templateViews[2].arrangeCount");
+    }
+
     public test_set_native_item_exposed() {
         const listView = this.testView;
 
         const indexes = [];
         const colors = ["red", "green", "blue"];
-        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+        listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
             indexes[args.index] = isIOS ? args.ios : args.android;
         });
         listView.items = colors;
@@ -117,7 +162,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         for (var item in indexes) {
             if (isIOS) {
                 TKUnit.assertTrue(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
-            } else if (platform.device.os === platform.platformNames.android) {
+            } else if (isAndroid) {
                 TKUnit.assertTrue(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
             }
         }
@@ -129,7 +174,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
             const indexes = [];
             const colors = ["red", "green", "blue"];
-            listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+            listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
                 indexes[args.index] = isIOS ? args.ios : args.android;
             });
             listView.items = colors;
@@ -148,7 +193,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_set_items_to_array_creates_native_views() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
         listView.items = FEW_ITEMS;
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), FEW_ITEMS.length, "Native views count.");
@@ -157,7 +202,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     public test_refresh_after_adding_items_to_array_loads_new_items() {
 
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         var colors = ["red", "green", "blue"];
         listView.items = colors;
@@ -178,11 +223,11 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         let indexes = {};
         let completed = false;
         listView.items = FEW_ITEMS;
-        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+        listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
             if (!args.view) {
-                args.view = new labelModule.Label();
+                args.view = new Label();
             }
-            (<labelModule.Label>args.view).text = "item " + args.index;
+            (<Label>args.view).text = "item " + args.index;
 
             indexes[args.index] = indexes[args.index] ? indexes[args.index] + 1 : 1;
             completed = args.index === (listView.items.length - 1);
@@ -207,7 +252,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_set_itmes_to_null_clears_native_items() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         listView.items = FEW_ITEMS;
         this.waitUntilListViewReady();
@@ -220,7 +265,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_set_itmes_to_undefiend_clears_native_items() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         listView.items = FEW_ITEMS;
         this.waitUntilListViewReady();
@@ -233,7 +278,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_set_itmes_to_different_source_loads_new_items() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         listView.items = [1, 2, 3];
         this.waitUntilListViewReady();
@@ -249,14 +294,14 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         var indexes = {};
         // >> article-listview-observablearray
-        var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
+        var colors = new ObservableArray(["red", "green", "blue"]);
         listView.items = colors;
-        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+        listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
             if (!args.view) {
                 // Create label if it is not already created.
-                args.view = new labelModule.Label();
+                args.view = new Label();
             }
-            (<labelModule.Label>args.view).text = colors.getItem(args.index);
+            (<Label>args.view).text = colors.getItem(args.index);
 
             indexes[args.index] = true;
         });
@@ -270,9 +315,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_add_to_observable_array_refreshes_the_listview() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
-        var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
+        var colors = new ObservableArray(["red", "green", "blue"]);
         listView.items = colors;
 
         this.waitUntilListViewReady();
@@ -288,10 +333,10 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_remove_from_observable_array_refreshes_the_listview() {
         var listView = this.testView;
-        var data = new observableArray.ObservableArray([1, 2, 3]);
+        var data = new ObservableArray([1, 2, 3]);
 
         listView.items = data;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
@@ -303,10 +348,10 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_splice_observable_array_refreshes_the_listview() {
         var listView = this.testView;
-        var data = new observableArray.ObservableArray(["a", "b", "c"]);
+        var data = new ObservableArray(["a", "b", "c"]);
 
         listView.items = data;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
@@ -319,14 +364,14 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_nativeTap_is_raised() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
         listView.items = FEW_ITEMS;
 
         var nativeTapRaised = false;
         var itemIndex = -1;
         /* tslint:disable:no-unused-variable */
         // >> article-itemtap-event
-        listView.on(listViewModule.ListView.itemTapEvent, function (args: listViewModule.ItemEventData) {
+        listView.on(ListView.itemTapEvent, function (args: ItemEventData) {
             var tappedItemIndex = args.index;
             var tappedItemView = args.view;
             // Do someting
@@ -349,9 +394,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         var loadMoreItemsCount = 0;
         listView.items = FEW_ITEMS;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
         // >> article-loadmoreitems-event
-        listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
+        listView.on(ListView.loadMoreItemsEvent, function (data: EventData) {
             // Do something.
             // >> (hide)
             loadMoreItemsCount++;
@@ -364,20 +409,20 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_loadMoreItems_not_raised_when_showing_many_items() {
-        if (platform.isIOS) {
+        if (isIOS) {
             return;
         }
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         var loadMoreItemsCount = 0;
         listView.items = MANY_ITEMS;
-        listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
+        listView.on(ListView.loadMoreItemsEvent, function (data: EventData) {
             loadMoreItemsCount++;
         });
 
         // We can't use waitUntilReady because we don't know what to wait for.
-        if (platform.device.os === platform.platformNames.android) {
+        if (isAndroid) {
             this.waitUntilTestElementLayoutIsValid();
         }
         else {
@@ -389,18 +434,18 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_loadMoreItems_is_raised_when_scroll_to_last_item() {
         var listView = this.testView;
-        listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
+        listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
         var loadMoreItemsCount = 0;
         listView.items = MANY_ITEMS;
-        listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
+        listView.on(ListView.loadMoreItemsEvent, function (data: EventData) {
             loadMoreItemsCount++;
         });
 
         listView.scrollToIndex(MANY_ITEMS.length - 1);
 
         // We can't use waitUntilReady because we don't know what to wait for.
-        if (platform.device.os === platform.platformNames.android) {
+        if (isAndroid) {
             this.waitUntilTestElementLayoutIsValid();
         }
         else {
@@ -423,9 +468,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return result;
         };
 
-        app.getResources()["dateConverter"] = dateConverter;
+        appGetResources()["dateConverter"] = dateConverter;
 
-        var data = new observableArray.ObservableArray();
+        var data = new ObservableArray();
         data.push({ date: new Date(2020, 2, 7) });
 
         listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ date, date | dateConverter('DD.MM.YYYY') }}\" />";
@@ -496,7 +541,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
         var expectedValue = "parentTestValue";
 
-        var listViewModel = new observable.Observable();
+        var listViewModel = new Observable();
         listViewModel.set("items", [1, 2, 3]);
         listViewModel.set("parentTestProp", expectedValue);
         listView.bindingContext = listViewModel;
@@ -518,7 +563,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
         var expectedValue = "parentTestValue";
 
-        var listViewModel = new observable.Observable();
+        var listViewModel = new Observable();
         listViewModel.set("items", [1, 2, 3]);
         listViewModel.set("parentTestProp", expectedValue);
         listView.bindingContext = listViewModel;
@@ -544,9 +589,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return value;
         }
 
-        app.getResources()["testConverter"] = testConverter;
+        appGetResources()["testConverter"] = testConverter;
 
-        var listViewModel = new observable.Observable();
+        var listViewModel = new Observable();
         listViewModel.set("items", [1, 2, 3]);
         listView.bindingContext = listViewModel;
 
@@ -567,9 +612,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return value;
         }
 
-        app.getResources()["testConverter"] = testConverter;
+        appGetResources()["testConverter"] = testConverter;
 
-        var listViewModel = new observable.Observable();
+        var listViewModel = new Observable();
         listViewModel.set("items", [1, 2, 3]);
         listView.bindingContext = listViewModel;
 
@@ -578,7 +623,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         this.waitUntilListViewReady();
 
-        if (platform.isAndroid) {
+        if (isAndroid) {
             // simulates Angular way of removing views
             (<any>listView)._realizedItems.forEach((view, nativeView, map) => {
                 //console.log("view: " + view);
@@ -591,7 +636,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_no_memory_leak_when_items_is_regular_array() {
-        let weakRef = new WeakRef<listViewModule.ListView>(this.testView);
+        let weakRef = new WeakRef<ListView>(this.testView);
         weakRef.get().items = FEW_ITEMS;
         this.waitUntilTestElementIsLoaded();
         TKUnit.assertTrue(weakRef.get().isLoaded, "ListView should be loaded here");
@@ -600,9 +645,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_no_memory_leak_when_items_is_observable_array() {
         // Keep the reference to the observable array to test the weakEventListener 
-        var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
+        var colors = new ObservableArray(["red", "green", "blue"]);
 
-        let weakRef = new WeakRef<listViewModule.ListView>(this.testView);
+        let weakRef = new WeakRef<ListView>(this.testView);
         weakRef.get().items = colors;
         this.waitUntilTestElementIsLoaded();
         TKUnit.assertTrue(weakRef.get().isLoaded, "ListView should be loaded here");
@@ -635,7 +680,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         const listView = this.testView;
         const count = 10;
 
-        let items = new observableArray.ObservableArray<Item>();
+        let items = new ObservableArray<Item>();
         for (let i = 0; i < count; i++) {
             items.push({
                 text: "Item " + i,
@@ -672,12 +717,12 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     public test_view_in_itemLoading_is_not_collected_prematurely() {
         let weakRef: WeakRef<Label>;
 
-        let handler = function (args: listViewModule.ItemEventData) {
+        let handler = function (args: ItemEventData) {
             let lbl = new Label();
             lbl.text = args.index.toString();
             weakRef = new WeakRef(lbl);
             args.view = lbl;
-            let listView: listViewModule.ListView = <listViewModule.ListView>args.object;
+            let listView: ListView = <ListView>args.object;
             listView.off("itemLoading", handler);
         };
 
@@ -685,7 +730,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         this.testView.items = [1];
         this.waitUntilListViewReady();
 
-        if (platform.device.os === platform.platformNames.ios) {
+        if (isIOS) {
             //Could cause GC on the next call.
             //    NOTE: Don't replace this with forceGC();
             let array = new ArrayBuffer(4 * 1024 * 1024);
@@ -694,7 +739,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             };
         }
 
-        utils.GC();
+        GC();
         TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
     }
 
@@ -704,7 +749,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.itemTemplate = "<Label text='default' minHeight='100' maxHeight='100'/>";
         listView.items = ListViewTest.generateItemsForMultipleTemplatesTests(40);
         TKUnit.wait(0.1);
-        
+
         var firstNativeElementVisible = this.checkItemVisibleAtIndex(listView, 0);
         var secondNativeElementVisible = this.checkItemVisibleAtIndex(listView, 1);
         var lastNativeElementVisible = this.checkItemVisibleAtIndex(listView, 39);
@@ -714,34 +759,34 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assertEqual(lastNativeElementVisible, false, "Last element is not visible");
     }
 
-    private checkItemVisibleAtIndex(listView: listViewModule.ListView, index: number ): boolean {
+    private checkItemVisibleAtIndex(listView: ListView, index: number): boolean {
         return listView.isItemAtIndexVisible(index);
     }
 
-    private assertNoMemoryLeak(weakRef: WeakRef<listViewModule.ListView>) {
+    private assertNoMemoryLeak(weakRef: WeakRef<ListView>) {
         this.tearDown();
         TKUnit.waitUntilReady(() => {
-            if (platform.device.os === platform.platformNames.ios) {
+            if (isIOS) {
                 /* tslint:disable:no-unused-expression */
                 // Could cause GC on the next call.
                 // NOTE: Don't replace this with forceGC();
                 new ArrayBuffer(4 * 1024 * 1024);
             }
-            utils.GC();
+            GC();
             return !weakRef.get();
         });
 
         TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
     }
 
-    private loadViewWithItemNumber(args: listViewModule.ItemEventData) {
+    private loadViewWithItemNumber(args: ItemEventData) {
         if (!args.view) {
-            args.view = new labelModule.Label();
+            args.view = new Label();
         }
-        (<labelModule.Label>args.view).text = "item " + args.index;
+        (<Label>args.view).text = "item " + args.index;
     }
 
-    private getTextFromNativeElementAt(listView: listViewModule.ListView, index: number): string {
+    private getTextFromNativeElementAt(listView: ListView, index: number): string {
         if (listView.android) {
             var nativeElement = listView.android.getChildAt(index);
             if (nativeElement instanceof android.view.ViewGroup) {
@@ -750,7 +795,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return (<android.widget.TextView>nativeElement).getText() + "";
         }
         else if (listView.ios) {
-            if (types.isFunction(listView.ios.visibleCells)) {
+            if (isFunction(listView.ios.visibleCells)) {
                 return listView.ios.visibleCells()[index].contentView.subviews[0].text + "";
             }
             else {
@@ -759,12 +804,12 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
-    private getNativeViewCount(listView: listViewModule.ListView): number {
+    private getNativeViewCount(listView: ListView): number {
         if (listView.android) {
             return listView.android.getChildCount();
         }
         else if (listView.ios) {
-            if (types.isFunction(listView.ios.visibleCells)) {
+            if (isFunction(listView.ios.visibleCells)) {
                 return listView.ios.visibleCells().count;
             }
             else {
@@ -776,7 +821,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
-    private performNativeItemTap(listView: listViewModule.ListView, index: number): void {
+    private performNativeItemTap(listView: ListView, index: number): void {
         if (listView.android) {
             listView.android.performItemClick(listView.android.getChildAt(index), index, listView.android.getAdapter().getItemId(index));
         }
