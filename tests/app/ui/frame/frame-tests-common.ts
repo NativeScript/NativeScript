@@ -8,6 +8,8 @@ import { Page } from "tns-core-modules/ui/page";
 import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
 
+const NAV_WAIT = 8;
+
 export function ignore_test_DummyTestForSnippetOnly0() {
     // >> frame-navigating
     const frame = topmost();
@@ -129,7 +131,7 @@ export function test_can_go_back() {
 
     TKUnit.assertFalse(frame.canGoBack(), "14");
     frame.goBack();
-    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), NAV_WAIT);
 }
 
 export function test_go_back_to_backstack_entry() {
@@ -147,7 +149,7 @@ export function test_go_back_to_backstack_entry() {
 
     TKUnit.assertFalse(frame.canGoBack(), "2");
     frame.goBack();
-    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), NAV_WAIT);
 }
 
 export function test_page_parent_when_backstackVisible_is_false() {
@@ -163,7 +165,7 @@ export function test_page_parent_when_backstackVisible_is_false() {
     frame.navigate({ create: () => new Page(), clearHistory: true });
     frame.navigate({ create, backstackVisible: false });
     frame.navigate(() => new Page());
-    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), NAV_WAIT);
 
     TKUnit.assertEqual(pages.length, 1);
     TKUnit.assertEqual(frame.backStack.length, 1);
@@ -189,7 +191,7 @@ export function test_page_parent_when_navigate_with_clear_history() {
     frame.navigate({ create, backstackVisible: false });
     frame.navigate({ create });
     frame.navigate({ create: () => new Page(), clearHistory: true });
-    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), NAV_WAIT);
 
     TKUnit.assertEqual(pages.length, 3);
     TKUnit.assertEqual(frame.backStack.length, 0);
@@ -214,8 +216,8 @@ export function test_page_parent_when_navigate_back() {
     frame.navigate({ create: () => new Page(), clearHistory: true });
     frame.navigate({ create });
     frame.goBack();
-    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
-    
+    TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), NAV_WAIT);
+
     TKUnit.assertEqual(pages.length, 1);
     TKUnit.assertEqual(frame.backStack.length, 0);
     pages.forEach(p => {
