@@ -404,7 +404,7 @@ export abstract class View extends ViewBase {
      * @param right     Right position, relative to parent
      * @param bottom    Bottom position, relative to parent
      */
-    public onLayout(left: number, top: number, right: number, bottom: number, insets?: {left, top, right, bottom}): void;
+    public onLayout(left: number, top: number, right: number, bottom: number): void;
 
     /**
      * This method must be called by onMeasure(int, int) to store the measured width and measured height. Failing to do so will trigger an exception at measurement time.
@@ -415,7 +415,6 @@ export abstract class View extends ViewBase {
 
     /**
      * Called from onLayout when native view position is about to be changed.
-     * @param parent    This parameter is not used. You can pass null.
      * @param left      Left position, relative to parent
      * @param top       Top position, relative to parent
      * @param right     Right position, relative to parent
@@ -427,7 +426,7 @@ export abstract class View extends ViewBase {
      * Measure a child by taking into account its margins and a given measureSpecs.
      * @param parent            This parameter is not used. You can pass null.
      * @param child             The view to be measured.
-     * @param measuredWidth        The measured width that the parent layout specifies for this view.
+     * @param measuredWidth     The measured width that the parent layout specifies for this view.
      * @param measuredHeight    The measured height that the parent layout specifies for this view.
      */
     public static measureChild(parent: View, child: View, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number };
@@ -526,6 +525,21 @@ export abstract class View extends ViewBase {
      * Creates an Animation object based on the supplied options. 
      */
     public createAnimation(options: AnimationDefinition): Animation;
+
+    /**
+     * Returns the iOS safe area insets of this view.
+     */
+    public getSafeAreaInsets(): { left, top, right, bottom };
+
+    /**
+     * Transforms iOS CGRect to a position object with left, top, right and bottom.
+     */
+    public getPositionFromFrame(frame: any): { left, top, right, bottom };
+
+    /**
+     * Transforms a position object with left, top, right and bottom to an iOS CGRect.
+     */
+    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): any;
 
     /**
      * Returns the iOS safe area frame of the closest parent with UIViewController.
@@ -707,9 +721,16 @@ export abstract class View extends ViewBase {
 }
 
 /**
+ * Base class for all UI components that are containers. 
+ */
+export class ContainerView extends View {
+
+}
+
+/**
  * Base class for all UI components that implement custom layouts. 
  */
-export class CustomLayoutView extends View {
+export class CustomLayoutView extends ContainerView {
     //@private
     /**
      * @private

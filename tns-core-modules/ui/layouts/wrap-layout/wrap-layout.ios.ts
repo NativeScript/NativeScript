@@ -119,9 +119,10 @@ export class WrapLayout extends WrapLayoutBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }): void {
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
+        const insets = this.getSafeAreaInsets();
         const isVertical = this.orientation === "vertical";
         const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
         const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;

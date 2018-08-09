@@ -81,8 +81,10 @@ export class StackLayout extends StackLayoutBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
+
+        const insets = this.getSafeAreaInsets();
         if (this.orientation === "vertical") {
             this.layoutVertical(left, top, right, bottom, insets);
         }
@@ -100,7 +102,6 @@ export class StackLayout extends StackLayoutBase {
         let childTop: number;
         let childLeft: number = paddingLeft;
         let childRight = right - left - paddingRight;
-        // let childRight = right - paddingRight;
 
         switch (this.verticalAlignment) {
             case VerticalAlignment.MIDDLE:

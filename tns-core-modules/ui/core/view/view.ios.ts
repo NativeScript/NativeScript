@@ -87,22 +87,18 @@ export class View extends ViewCommon {
     @profile
     public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
         const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
-        let actualPosition = {left, top, right, bottom};
         if (setFrame) {
-            actualPosition = this.layoutNativeView(left, top, right, bottom) || actualPosition;
+            this.layoutNativeView(left, top, right, bottom);
         }
 
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
-            let insets = { left: 0, top: 0, right: 0, bottom: 0};
-
-            if (majorVersion > 10) {
-                insets.left = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.left);
-                insets.top = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.top);
-                insets.right = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.right);
-                insets.bottom = layout.toDevicePixels(this.nativeViewProtected.safeAreaInsets.bottom);
+            let position = { left, top, right, bottom };
+            if (this.nativeViewProtected) {
+                const frame = this.nativeViewProtected.frame;
+                position = this.getPositionFromFrame(frame);
             }
 
-            this.onLayout(actualPosition.left, actualPosition.top, actualPosition.right, actualPosition.bottom, insets);
+            this.onLayout(position.left, position.top, position.right, position.bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
         }
 
@@ -150,11 +146,11 @@ export class View extends ViewCommon {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number, insets?: {left, top, right, bottom}): void {
-        //
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        // 
     }
 
-    public _setNativeViewFrame(nativeView: UIView, frame: CGRect): CGRect {
+    public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
             if (traceEnabled()) {
                 traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
@@ -166,34 +162,18 @@ export class View extends ViewCommon {
                 nativeView.transform = CGAffineTransformIdentity;
                 nativeView.frame = frame;
                 nativeView.transform = transform;
-            }
-            else {
+            } else {
                 nativeView.frame = frame;
             }
 
-            if (nativeView.safeAreaInsets) {
-                const leftInset = layout.toDevicePixels(nativeView.safeAreaInsets.left);
-                const topInset = layout.toDevicePixels(nativeView.safeAreaInsets.top);
+            const adjustedFrame = this.applySafeAreaInsets(frame);
+            if (adjustedFrame) {
+                nativeView.frame = adjustedFrame;
+            }
 
-                const left = layout.toDevicePixels(frame.origin.x);
-                const top = layout.toDevicePixels(frame.origin.y);
-                const right = layout.toDevicePixels(frame.origin.x + frame.size.width);
-                const bottom = layout.toDevicePixels(frame.origin.y + frame.size.height);
-                if (leftInset || topInset) {
-                    const frameNew = CGRectMake(layout.toDeviceIndependentPixels(left + leftInset), layout.toDeviceIndependentPixels(top + topInset), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
-                    nativeView.frame = frameNew;
-                    const boundsOrigin = nativeView.bounds.origin;
-                    nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frameNew.size.width, frameNew.size.height);
-                }
-                else {
-                    const boundsOrigin = nativeView.bounds.origin;
-                    nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
-                }
-            }
-            else {
-                const boundsOrigin = nativeView.bounds.origin;
-                nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
-            }
+            const boundsOrigin = nativeView.bounds.origin;
+            const boundsFrame = nativeView.frame;
+            nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
 
             this._raiseLayoutChangedEvent();
             this._isLaidOut = true;
@@ -201,25 +181,16 @@ export class View extends ViewCommon {
             // Rects could be equal on the first layout and an event should be raised.
             this._raiseLayoutChangedEvent();
         }
-
-        return nativeView.frame;
     }
 
-    public layoutNativeView(left: number, top: number, right: number, bottom: number): any {
+    public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         if (!this.nativeViewProtected) {
             return;
         }
 
         const nativeView = this.nativeViewProtected;
-        const frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
-        const actualFrame = this._setNativeViewFrame(nativeView, frame) || frame;
-
-        const actualLeft = Math.round(layout.toDevicePixels(actualFrame.origin.x));
-        const actualTop = Math.round(layout.toDevicePixels(actualFrame.origin.y));
-        const actualRight = Math.round(layout.toDevicePixels(actualFrame.origin.x + actualFrame.size.width));
-        const actualBottom = Math.round(layout.toDevicePixels(actualFrame.origin.y + actualFrame.size.height));
-
-        return { left: actualLeft, top: actualTop, right: actualRight, bottom: actualBottom};
+        const frame = this.getFrameFromPosition({ left, top, right, bottom });
+        this._setNativeViewFrame(nativeView, frame);
     }
 
     public _setLayoutFlags(left: number, top: number, right: number, bottom: number): void {
@@ -244,6 +215,54 @@ export class View extends ViewCommon {
         }
 
         return false;
+    }
+
+    protected applySafeAreaInsets(frame: CGRect): CGRect {
+        if (majorVersion > 10) {
+            const insets = this.getSafeAreaInsets();
+
+            if (insets.left || insets.top) {
+                const position = this.getPositionFromFrame(frame);
+                const adjustedFrame = this.getFrameFromPosition(position, insets);
+                return adjustedFrame;
+            }
+        }
+
+        return null;
+    }
+
+    public getSafeAreaInsets(): { left, top, right, bottom } {
+        const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
+        let insets = { left: 0, top: 0, right: 0, bottom: 0 };
+
+        if (safeAreaInsets) {
+            insets.left = layout.round(layout.toDevicePixels(safeAreaInsets.left));
+            insets.top = layout.round(layout.toDevicePixels(safeAreaInsets.top));
+            insets.right = layout.round(layout.toDevicePixels(safeAreaInsets.right));
+            insets.bottom = layout.round(layout.toDevicePixels(safeAreaInsets.bottom));
+        }
+
+        return insets;
+    }
+
+    public getPositionFromFrame(frame: CGRect): { left, top, right, bottom } {
+        const left = layout.round(layout.toDevicePixels(frame.origin.x));
+        const top = layout.round(layout.toDevicePixels(frame.origin.y));
+        const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
+        const bottom = layout.round(layout.toDevicePixels(frame.origin.y + frame.size.height));
+
+        return { left, right, top, bottom };
+    }
+
+    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): CGRect {
+        insets = insets || { left: 0, top: 0 };
+
+        const left = layout.round(layout.toDeviceIndependentPixels(position.left + insets.left));
+        const top = layout.round(layout.toDeviceIndependentPixels(position.top + insets.top));
+        const width = layout.round(layout.toDeviceIndependentPixels(position.right - position.left));
+        const height = layout.round(layout.toDeviceIndependentPixels(position.bottom - position.top));
+
+        return CGRectMake(left, top, width, height);
     }
 
     public getFullscreenArea(): any {
@@ -419,7 +438,7 @@ export class View extends ViewCommon {
     protected _hideNativeModalView(parent: View) {
         if (!parent || !parent.viewController) {
             traceError("Trying to hide modal view but no parent with viewController specified.")
-            return; 
+            return;
         }
 
         const parentController = parent.viewController;
@@ -585,7 +604,49 @@ export class View extends ViewCommon {
 }
 View.prototype._nativeBackgroundState = "unset";
 
-export class CustomLayoutView extends View {
+export class ContainerView extends View {
+    protected applySafeAreaInsets(frame: CGRect): CGRect {
+        if (majorVersion > 10) {
+            const locationOnScreen = this.getLocationOnScreen();
+
+            if (locationOnScreen) {
+                const safeArea = this.getSafeArea();
+                const fullscreen = this.getFullscreenArea();
+                const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
+                const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
+
+                const position = this.getPositionFromFrame(frame);
+                const safeAreaPosition = this.getPositionFromFrame(safeArea);
+                const fullscreenPosition = this.getPositionFromFrame(fullscreen);
+
+                const adjustedPosition = position;
+
+                if (position.left && onScreenLeft <= safeAreaPosition.left) {
+                    adjustedPosition.left = fullscreenPosition.left;
+                }
+
+                if (position.top && onScreenTop <= safeAreaPosition.top) {
+                    adjustedPosition.top = fullscreenPosition.top;
+                }
+
+                if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
+                    adjustedPosition.right = fullscreenPosition.right;
+                }
+
+                if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
+                    adjustedPosition.bottom = fullscreenPosition.bottom;
+                }
+
+                const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
+                return adjustedFrame;
+            }
+        }
+
+        return null;
+    }
+}
+
+export class CustomLayoutView extends ContainerView {
 
     nativeViewProtected: UIView;
 
@@ -683,8 +744,7 @@ export namespace ios {
     }
 
     export function updateConstraints(controller: UIViewController, owner: View): void {
-        const root = controller.view;
-        if (!root.safeAreaLayoutGuide) {
+        if (majorVersion <= 10) {
             const layoutGuide = initLayoutGuide(controller);
             (<any>controller.view).safeAreaLayoutGuide = layoutGuide;
         }
@@ -703,27 +763,7 @@ export namespace ios {
         return layoutGuide;
     }
 
-    function getStatusBarHeight(viewController?: UIViewController): number {
-        const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
-        if (!app || app.statusBarHidden) {
-            return 0;
-        }
-
-        if (viewController && viewController.prefersStatusBarHidden) {
-            return 0;
-        }
-
-        const statusFrame = app.statusBarFrame;
-        return Math.min(statusFrame.size.width, statusFrame.size.height);
-    }
-
     export function layoutView(controller: UIViewController, owner: View): void {
-        let left: number, top: number, width: number, height: number;
-
-        const frame = controller.view.frame;
-        const fullscreenOrigin = frame.origin;
-        const fullscreenSize = frame.size;
-
         let layoutGuide = controller.view.safeAreaLayoutGuide;
         if (!layoutGuide) {
             traceWrite(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,
@@ -732,62 +772,17 @@ export namespace ios {
             layoutGuide = initLayoutGuide(controller);
         }
         const safeArea = layoutGuide.layoutFrame;
-        const safeOrigin = safeArea.origin;
+        const position = owner.getPositionFromFrame(safeArea);
         const safeAreaSize = safeArea.size;
 
-        const navController = controller.navigationController;
-        const navBarHidden = navController ? navController.navigationBarHidden : true;
-        const scrollable = isContentScrollable(controller, owner);
-        const hasChildControllers = controller.childViewControllers.count > 0;
-
-        if (!(controller.edgesForExtendedLayout & UIRectEdge.Top)) {
-            const statusBarHeight = getStatusBarHeight(controller);
-            const navBarHeight = controller.navigationController ? controller.navigationController.navigationBar.frame.size.height : 0;
-            fullscreenOrigin.y = safeOrigin.y;
-            fullscreenSize.height -= (statusBarHeight + navBarHeight);
-        }
-
-        left = safeOrigin.x;
-        width = safeAreaSize.width;
-        top = safeOrigin.y;
-        height = safeAreaSize.height;
-
-        // left = fullscreenOrigin.x;
-        // width = fullscreenSize.width;
-        // top = fullscreenOrigin.y;
-        // height = fullscreenSize.height;
-
-        // if (hasChildControllers) {
-        //     // If not inner most extend to fullscreen
-        //     top = fullscreenOrigin.y;
-        //     height = fullscreenSize.height;
-        // } else if (!scrollable) {
-        //     // If not scrollable dock under safe area
-        //     top = safeOrigin.y;
-        //     height = safeAreaSize.height;
-        // } else if (navBarHidden) {
-        //     // If scrollable but no navigation bar dock under safe area
-        //     top = safeOrigin.y;
-        //     height = navController ? (fullscreenSize.height - top) : safeAreaSize.height;
-        // } else {
-        //     // If scrollable and navigation bar extend to fullscreen
-        //     top = fullscreenOrigin.y;
-        //     height = fullscreenSize.height;
-        // }
-
-        left = layout.toDevicePixels(left);
-        top = layout.toDevicePixels(top);
-        width = layout.toDevicePixels(width);
-        height = layout.toDevicePixels(height);
-
-        const safeAreaWidth = layout.toDevicePixels(safeAreaSize.width);
-        const safeAreaHeight = layout.toDevicePixels(safeAreaSize.height);
+        const safeAreaWidth = layout.round(layout.toDevicePixels(safeAreaSize.width));
+        const safeAreaHeight = layout.round(layout.toDevicePixels(safeAreaSize.height));
 
         const widthSpec = layout.makeMeasureSpec(safeAreaWidth, layout.EXACTLY);
         const heightSpec = layout.makeMeasureSpec(safeAreaHeight, layout.EXACTLY);
 
         View.measureChild(null, owner, widthSpec, heightSpec);
-        View.layoutChild(null, owner, left, top, width + left, height + top);
+        View.layoutChild(null, owner, position.left, position.top, position.right, position.bottom);
 
         layoutParent(owner.parent);
     }
