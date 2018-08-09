@@ -8,6 +8,7 @@ Here are some guides on how to do that:
  - [Requesting New Features](#features)
  - [Submitting a PR](#pr)
  - [Commit Message Guidelines](#commit-messages)
+ - [Releasing new versions](#release)
 
 ##  <a name="coc"></a> Code of Conduct
 Help us keep a healthy and open community. We expect all participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
@@ -209,3 +210,44 @@ If you want to contribute, but you are not sure where to start - look for [issue
 
 
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
+
+## <a name="release"></a> Releasing new versions
+
+Instructions how to release a new version for **NativeScript Core Team Members**.
+
+1. Execute `npm install` to install dependencies:
+```bash
+npm install
+```
+
+2. Add the following to your `.npmrc`:
+```
+tag-version-prefix=""
+message="release: cut the %s release"
+```
+
+3. Create new branch based on `master`:
+```bash
+git checkout -b username/release-version
+```
+
+4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
+```bash
+cd tns-platform-declarations
+npm --no-git-tag-version version [patch|minor|major]
+cd ..
+```
+
+5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, tag the release and update the CHANGELOG.md:
+```bash
+cd tns-core-modules
+npm version [patch|minor|major]
+cd ..
+```
+
+6. Push all the changes to your branch and open a pull request:
+```bash
+git push --set-upstream origin username/release-version --tags
+```
+
+7. Create `release` branch after the pull request is merged to `master` and publish the packages built on CI to `npm`.
