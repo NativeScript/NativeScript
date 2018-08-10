@@ -101,8 +101,8 @@ class Device implements DeviceDefinition {
 
 class MainScreen implements ScreenMetricsDefinition {
     private _metrics: android.util.DisplayMetrics;
-    
-    private cssChanged(args: appModule.CssChangedEventData): void {
+
+    private reinitMetrics(): void {
         if (!this._metrics) {
             this._metrics = new android.util.DisplayMetrics();
         }
@@ -117,7 +117,8 @@ class MainScreen implements ScreenMetricsDefinition {
     private get metrics(): android.util.DisplayMetrics {
         if (!this._metrics) {
             // NOTE: This will be memory leak but we MainScreen is singleton
-            appModule.on("cssChanged", this.cssChanged, this);
+            appModule.on("cssChanged", this.reinitMetrics, this);
+            appModule.on(appModule.orientationChangedEvent, this.reinitMetrics, this);
 
             this._metrics = new android.util.DisplayMetrics();
             this.initMetrics();
