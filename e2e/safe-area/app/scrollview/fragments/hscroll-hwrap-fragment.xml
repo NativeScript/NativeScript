@@ -1,5 +1,5 @@
-<ScrollView orientation="horizontal" backgroundColor="BurlyWood">
-    <WrapLayout orientation="horizontal" backgroundColor="LightGreen">
+<ScrollView orientation="horizontal" class="scroll">
+    <WrapLayout orientation="horizontal" backgroundColor="Orchid">
         <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Button>
         <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Button>
         <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Button>

@@ -1,4 +1,4 @@
-<GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="CadetBlue">
+<GridLayout rows="*, *, *" columns="*, *, *" class="grid">
     <GridLayout row="0" col="0" backgroundColor="SkyBlue">
         <Label text="overflowing text, overflowing text"></Label>
     </GridLayout>

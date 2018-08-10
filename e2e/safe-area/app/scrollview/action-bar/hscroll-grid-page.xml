@@ -1,7 +1,7 @@
 <Page class="page"
     xmlns="http://schemas.nativescript.org/tns.xsd"
     xmlns:fragments="scrollview/fragments">
-    
+
     <ActionBar>
         <Label text="Action Bar"></Label>
     </ActionBar>

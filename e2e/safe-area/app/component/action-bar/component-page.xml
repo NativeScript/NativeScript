@@ -1,5 +1,5 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd"
-    xmlns:fragments="component/fragments" backgroundColor="LightGreen">
+    xmlns:fragments="component/fragments">
 
     <ActionBar>
         <Label text="Action Bar"></Label>

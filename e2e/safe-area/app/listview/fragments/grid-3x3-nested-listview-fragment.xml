@@ -1,4 +1,4 @@
-<GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="CadetBlue">
+<GridLayout rows="*, *, *" columns="*, *, *" class="list">
     <ListView row="0" col="0" items="{{ items }}" loaded="onLoaded"  backgroundColor="SkyBlue">
         <ListView.itemTemplate>
             <Label text="{{ text }}"></Label>

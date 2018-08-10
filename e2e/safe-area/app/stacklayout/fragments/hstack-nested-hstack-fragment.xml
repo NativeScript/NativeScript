@@ -1,4 +1,4 @@
-<StackLayout orientation="horizontal" backgroundColor="Crimson">
+<StackLayout orientation="horizontal" class="stack">
     <StackLayout orientation="horizontal" backgroundColor="GoldenRod">
         <Label text="123"></Label>
         <Label text="456"></Label>

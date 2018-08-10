@@ -6,5 +6,4 @@
     </ActionBar>
 
     <fragments:vwrap-fragment></fragments:vwrap-fragment>
-
 </Page>
