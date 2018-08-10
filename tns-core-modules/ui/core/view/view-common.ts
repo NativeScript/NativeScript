@@ -883,11 +883,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return undefined;
     }
 
-    public getPositionFromFrame(frame: CGRect): { left, top, right, bottom } {
+    public getPositionFromFrame(frame: any): { left, top, right, bottom } {
         return undefined;
     }
 
-    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): CGRect {
+    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): any {
         return undefined;
     }
 
