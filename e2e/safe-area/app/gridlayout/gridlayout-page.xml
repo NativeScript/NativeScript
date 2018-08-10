@@ -1,35 +1,25 @@
 <Page class="page" xmlns="http://schemas.nativescript.org/tns.xsd">
-    
-    <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Home"></Label>
+
+    <ActionBar>
+        <Label text="GridLayout Examples"></Label>
     </ActionBar>
 
-    <StackLayout>
-        <StackLayout>
-            <Label text="Pages w/ ActionBar"></Label>
-            <Button text="Grid 3x3" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-page" />
-            <Button text="Grid 3x3 Nested Grid" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-nested-grid-page" />
-            <Button text="Grid 3x3 Nested VStack" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-nested-vstack-page" />
-            <Button text="Grid 3x3 Nested HStack" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-nested-hstack-page" />
-            <Button text="VStack" tap="onNavigate" route="gridlayout/action-bar/vstack-page" />
-            <Button text="VStack Nested VStack" tap="onNavigate" route="gridlayout/action-bar/vstack-nested-vstack-page" />
-            <Button text="VStack Nested HStack" tap="onNavigate" route="gridlayout/action-bar/vstack-nested-hstack-page" />
-            <Button text="HStack" tap="onNavigate" route="gridlayout/action-bar/hstack-page" />
-            <Button text="HStack Nested VStack" tap="onNavigate" route="gridlayout/action-bar/hstack-nested-vstack-page" />
-            <Button text="HStack Nested HStack" tap="onNavigate" route="gridlayout/action-bar/hstack-nested-hstack-page" />
+    <ScrollView>
+        <StackLayout horizontalAlignment="center">
+            <StackLayout>
+                <Label text="Pages w/ ActionBar"></Label>
+                <Button text="Grid 3x3" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-page" />
+                <Button text="Grid 3x3 Nested Grid" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-nested-grid-page" />
+                <Button text="Grid 3x3 Nested HStack" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-nested-hstack-page" />
+                <Button text="Grid 3x3 Nested VStack" tap="onNavigate" route="gridlayout/action-bar/gridlayout-3x3-nested-vstack-page" />
+            </StackLayout>
+            <StackLayout>
+                <Label text="Pages w/o ActionBar"></Label>
+                <Button text="Grid 3x3" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-page" />
+                <Button text="Grid 3x3 Nested Grid" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-nested-grid-page" />
+                <Button text="Grid 3x3 Nested HStack" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-nested-hstack-page" />
+                <Button text="Grid 3x3 Nested VStack" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-nested-vstack-page" />
+            </StackLayout>
         </StackLayout>
-        <StackLayout>
-            <Label text="Pages w/o ActionBar"></Label>
-            <Button text="Grid 3x3" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-page" />
-            <Button text="Grid 3x3 Nested Grid" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-nested-grid-page" />
-            <Button text="Grid 3x3 Nested VStack" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-nested-vstack-page" />
-            <Button text="Grid 3x3 Nested HStack" tap="onNavigate" route="gridlayout/no-action-bar/gridlayout-3x3-nested-hstack-page" />
-            <Button text="VStack" tap="onNavigate" route="gridlayout/no-action-bar/vstack-page" />
-            <Button text="VStack Nested VStack" tap="onNavigate" route="gridlayout/no-action-bar/vstack-nested-vstack-page" />
-            <Button text="VStack Nested HStack" tap="onNavigate" route="gridlayout/no-action-bar/vstack-nested-hstack-page" />
-            <Button text="HStack" tap="onNavigate" route="gridlayout/no-action-bar/hstack-page" />
-            <Button text="HStack Nested VStack" tap="onNavigate" route="gridlayout/no-action-bar/hstack-nested-vstack-page" />
-            <Button text="HStack Nested HStack" tap="onNavigate" route="gridlayout/no-action-bar/hstack-nested-hstack-page" />
-        </StackLayout>
-    </StackLayout>
+    </ScrollView>
 </Page>

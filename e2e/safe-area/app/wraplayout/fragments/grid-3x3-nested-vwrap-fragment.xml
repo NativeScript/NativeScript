@@ -1,182 +1,128 @@
-<StackLayout orientation="horizontal" backgroundColor="Crimson">
-    <StackLayout backgroundColor="GoldenRod">
+<GridLayout rows="*, *, *" columns="*, *, *" class="grid">
+    <WrapLayout row="0" col="0" orientation="vertical" backgroundColor="SkyBlue">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="LemonChiffon">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Cornsilk">
+    </WrapLayout>
+    <WrapLayout row="0" col="1" orientation="vertical" backgroundColor="Indigo">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="BurlyWood">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Khaki">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="LightBlue">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="GoldenRod">
+    </WrapLayout>
+    <WrapLayout row="0" col="2" orientation="vertical" backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Indigo">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="GoldenRod">
+    </WrapLayout>
+    <WrapLayout row="1" col="0" orientation="vertical" backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="LemonChiffon">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Cornsilk">
+    </WrapLayout>
+    <WrapLayout row="1" col="1" orientation="vertical" backgroundColor="Cornsilk">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="BurlyWood">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Khaki">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="LightBlue">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="GoldenRod">
+    </WrapLayout>
+    <WrapLayout row="1" col="2" orientation="vertical" backgroundColor="BurlyWood">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Indigo">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="GoldenRod">
+    </WrapLayout>
+    <WrapLayout row="2" col="0" orientation="vertical" backgroundColor="GoldenRod">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="LemonChiffon">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Cornsilk">
+    </WrapLayout>
+    <WrapLayout row="2" col="1" orientation="vertical" backgroundColor="Khaki">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="BurlyWood">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Khaki">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="LightBlue">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="GoldenRod">
+    </WrapLayout>
+    <WrapLayout row="2" col="2" orientation="vertical" backgroundColor="IndianRed">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Indigo">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Crimson">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="Chocolate">
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
         <Label text="overflowing text, overflowing text"></Label>
-    </StackLayout>
-</StackLayout>
+    </WrapLayout>
+</GridLayout>

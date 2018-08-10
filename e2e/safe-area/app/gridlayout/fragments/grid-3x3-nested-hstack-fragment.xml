@@ -1,4 +1,4 @@
-<GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="CadetBlue">
+<GridLayout rows="*, *, *" columns="*, *, *" class="grid">
     <StackLayout row="0" col="0" orientation="horizontal" backgroundColor="SkyBlue">
         <Label text="123"></Label>
         <Label text="456"></Label>

@@ -2,12 +2,12 @@
     xmlns="http://schemas.nativescript.org/tns.xsd"
     xmlns:fragments="listview/fragments"
     navigatingTo="onNavigatingTo">
-    
-    <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="ListView Examples"></Label>
+
+    <ActionBar>
+        <Label text="ListView Examples"></Label>
     </ActionBar>
 
-    <StackLayout>
+    <StackLayout horizontalAlignment="center">
         <StackLayout>
             <Label text="Pages w/ ActionBar"></Label>
             <Button text="ListView" tap="onNavigate" route="listview/action-bar/listview-page" />

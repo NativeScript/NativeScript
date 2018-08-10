@@ -4,30 +4,27 @@
         <Label text="WrapLayout Examples"></Label>
     </ActionBar>
 
-    <StackLayout horizontalAlignment="center">
-        <StackLayout horizontalAlignment="center">
-            <Label text="Pages w/ ActionBar"></Label>
-            <Button text="HWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-page"></Button>
-            <!-- <Button text="HWrap Nested HWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-nested-hwrap-page"></Button>
-            <Button text="HWrap Nested VWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-nested-vwrap-page"></Button> -->
-            <Button text="VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-page"></Button>
-            <!-- <Button text="VWrap Nested HWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-nested-hwrap-page"></Button>
-            <Button text="VWrap Nested VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-nested-vwrap-page"></Button> -->
+    <ScrollView>
+        <StackLayout>
+            <StackLayout horizontalAlignment="center">
+                <Label text="Pages w/ ActionBar"></Label>
+                <Button text="Grid 3x3 Nested HWrap" tap="onNavigate" route="wraplayout/action-bar/grid-3x3-nested-hwrap-page"></Button>
+                <Button text="Grid 3x3 Nested VWrap" tap="onNavigate" route="wraplayout/action-bar/grid-3x3-nested-vwrap-page"></Button>
+                <Button text="HWrap" tap="onNavigate" route="wraplayout/action-bar/hwrap-page"></Button>
+                <Button text="VWrap" tap="onNavigate" route="wraplayout/action-bar/vwrap-page"></Button>
+            </StackLayout>
+            <StackLayout horizontalAlignment="center">
+                <Label text="Pages w/o ActionBar"></Label>
+                <Button text="Grid 3x3 Nested HWrap" tap="onNavigate" route="wraplayout/no-action-bar/grid-3x3-nested-hwrap-page"></Button>
+                <Button text="Grid 3x3 Nested VWrap" tap="onNavigate" route="wraplayout/no-action-bar/grid-3x3-nested-vwrap-page"></Button>
+                <Button text="HWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-page"></Button>
+                <Button text="VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-page"></Button>
+            </StackLayout>
+            <StackLayout horizontalAlignment="center">
+                <Label text="Docs Pages"></Label>
+                <Button text="HWrap" tap="onNavigate" route="wraplayout/docs/hwrap-page"></Button>
+                <Button text="VWrap" tap="onNavigate" route="wraplayout/docs/vwrap-page"></Button>
+            </StackLayout>
         </StackLayout>
-        <StackLayout horizontalAlignment="center">
-            <Label text="Pages w/o ActionBar"></Label>
-            <Button text="HWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-page"></Button>
-            <!-- <Button text="HWrap Nested HWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-nested-hwrap-page"></Button>
-            <Button text="HWrap Nested VWrap" tap="onNavigate" route="wraplayout/no-action-bar/hwrap-nested-vwrap-page"></Button> -->
-            <Button text="VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-page"></Button>
-            <!-- <Button text="VWrap Nested HWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-nested-hwrap-page"></Button>
-            <Button text="VWrap Nested VWrap" tap="onNavigate" route="wraplayout/no-action-bar/vwrap-nested-vwrap-page"></Button> -->
-        </StackLayout>
-        <StackLayout horizontalAlignment="center">
-            <Label text="Docs Pages"></Label>
-            <Button text="HWrap" tap="onNavigate" route="wraplayout/docs/hwrap-page"></Button>
-            <Button text="VWrap" tap="onNavigate" route="wraplayout/docs/vwrap-page"></Button>
-        </StackLayout>
-    </StackLayout>
-
+    </ScrollView>
 </Page>

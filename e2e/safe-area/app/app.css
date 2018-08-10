@@ -8,6 +8,31 @@ selectors and properties you can use to style UI components.
 For example, the following CSS rule changes the font size of all UI
 components that have the btn class name.
 */
+
 .btn {
     font-size: 18;
+}
+
+Page {
+    background-color: LightGreen;
+}
+
+.grid {
+    background-color: LightBlue;
+}
+
+.list {
+    background-color: LightCoral;
+}
+
+.scroll {
+    background-color: LightSalmon;
+}
+
+.stack {
+    background-color: LightPink;
+}
+
+.wrap {
+    background-color: LightYellow;
 }

@@ -1,5 +1,5 @@
-<ScrollView orientation="horizontal" backgroundColor="LightGreen">
-    <GridLayout rows="auto, auto" columns="auto, auto" backgroundColor="LightBlue">
+<ScrollView orientation="horizontal" class="scroll">
+    <GridLayout rows="auto, auto" columns="auto, auto" backgroundColor="CadetBlue">
         <StackLayout row="0" col="0" backgroundColor="SkyBlue">
             <Label text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Label>
             <Label text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></Label>

@@ -1,10 +1,7 @@
 <Page class="page"
     xmlns="http://schemas.nativescript.org/tns.xsd"
-    xmlns:fragments="gridlayout/fragments">
-    
-    <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Home"></Label>
-    </ActionBar>
+    xmlns:fragments="stacklayout/fragments"
+    actionBarHidden="true">
 
     <fragments:hstack-nested-vstack-fragment></fragments:hstack-nested-vstack-fragment>
 </Page>

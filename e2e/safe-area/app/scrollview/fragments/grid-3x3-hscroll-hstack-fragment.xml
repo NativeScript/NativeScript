@@ -1,4 +1,4 @@
-<GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="CadetBlue">
+<GridLayout rows="*, *, *" columns="*, *, *" class="scroll">
     <ScrollView row="0" col="0" orientation="horizontal" backgroundColor="SkyBlue">
         <StackLayout orientation="horizontal">
             <Label text="overflowing text, overflowing text"></Label>

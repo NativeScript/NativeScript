@@ -6,5 +6,4 @@
     </ActionBar>
 
     <fragments:hwrap-fragment></fragments:hwrap-fragment>
-
 </Page>

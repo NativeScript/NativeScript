@@ -1,0 +1,29 @@
+<Page class="page" xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="StackLayout Examples"></Label>
+    </ActionBar>
+
+    <ScrollView>
+        <StackLayout horizontalAlignment="center">
+            <StackLayout>
+                <Label text="Pages w/ ActionBar"></Label>
+                <Button text="HStack" tap="onNavigate" route="stacklayout/action-bar/hstack-page" />
+                <Button text="HStack Nested HStack" tap="onNavigate" route="stacklayout/action-bar/hstack-nested-hstack-page" />
+                <Button text="HStack Nested VStack" tap="onNavigate" route="stacklayout/action-bar/hstack-nested-vstack-page" />
+                <Button text="VStack" tap="onNavigate" route="stacklayout/action-bar/vstack-page" />
+                <Button text="VStack Nested HStack" tap="onNavigate" route="stacklayout/action-bar/vstack-nested-hstack-page" />
+                <Button text="VStack Nested VStack" tap="onNavigate" route="stacklayout/action-bar/vstack-nested-vstack-page" />
+            </StackLayout>
+            <StackLayout>
+                <Label text="Pages w/o ActionBar"></Label>
+                <Button text="HStack" tap="onNavigate" route="stacklayout/no-action-bar/hstack-page" />
+                <Button text="HStack Nested HStack" tap="onNavigate" route="stacklayout/no-action-bar/hstack-nested-hstack-page" />
+                <Button text="HStack Nested VStack" tap="onNavigate" route="stacklayout/no-action-bar/hstack-nested-vstack-page" />
+                <Button text="VStack" tap="onNavigate" route="stacklayout/no-action-bar/vstack-page" />
+                <Button text="VStack Nested HStack" tap="onNavigate" route="stacklayout/no-action-bar/vstack-nested-hstack-page" />
+                <Button text="VStack Nested VStack" tap="onNavigate" route="stacklayout/no-action-bar/vstack-nested-vstack-page" />
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</Page>
