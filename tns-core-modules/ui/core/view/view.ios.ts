@@ -536,9 +536,8 @@ export class CustomLayoutView extends View {
 
     nativeViewProtected: UIView;
 
-    constructor() {
-        super();
-        this.nativeViewProtected = UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
+    createNativeView() {
+        return UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
     }
 
     get ios(): UIView {

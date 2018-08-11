@@ -83,23 +83,31 @@ export class WebView extends WebViewBase {
     private _ios: WKWebView;
     private _delegate: any;
 
-    constructor() {
-        super();
-        const configuration = WKWebViewConfiguration.new();
-        this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+    createNativeView() {
         const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
         const wkUScript = WKUserScript.alloc().initWithSourceInjectionTimeForMainFrameOnly(jScript, WKUserScriptInjectionTime.AtDocumentEnd, true);
         const wkUController = WKUserContentController.new();
         wkUController.addUserScript(wkUScript);
+        const configuration = WKWebViewConfiguration.new();
         configuration.userContentController = wkUController;
         configuration.preferences.setValueForKey(
             true,
             "allowFileAccessFromFileURLs"
         );
-        this.nativeViewProtected = this._ios = new WKWebView({
+        return new WKWebView({
             frame: CGRectZero,
             configuration: configuration
         });
+    }
+
+    initNativeView() {
+        super.initNativeView();
+        this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        super.disposeNativeView();
     }
 
     @profile

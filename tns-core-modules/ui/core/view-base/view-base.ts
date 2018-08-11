@@ -642,10 +642,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         return undefined;
     }
 
-    public initNativeViewDelegates(view: Object) {
-        //
-    }
-
     public disposeNativeView() {
         //
     }
@@ -738,7 +734,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             nativeView = this.createNativeView() || this.nativeViewProtected;
             this._iosView = nativeView;
         }
-        this.initNativeViewDelegates(nativeView);
 
         // This will account for nativeView that is created in createNativeView, recycled
         // or for backward compatability - set before _setupUI in iOS contructor.

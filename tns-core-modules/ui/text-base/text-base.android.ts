@@ -58,6 +58,7 @@ export class TextBase extends TextBaseCommon {
     private _maxLines: number;
 
     public initNativeView(): void {
+        super.initNativeView();
         initializeTextTransformation();
         const nativeView = this.nativeTextViewProtected;
         this._defaultTransformationMethod = nativeView.getTransformationMethod();
@@ -65,7 +66,6 @@ export class TextBase extends TextBaseCommon {
         this._maxHeight = nativeView.getMaxHeight();
         this._minLines = nativeView.getMinLines();
         this._maxLines = nativeView.getMaxLines();
-        super.initNativeView();
     }
 
     public resetNativeView(): void {

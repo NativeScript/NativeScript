@@ -97,38 +97,42 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
 @CSSType("TextView")
 export class TextView extends EditableTextBase implements TextViewDefinition {
-    private _ios: UITextView;
+    nativeViewProtected: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
     public _isEditing: boolean;
 
     createNativeView() {
-        if (this.nativeViewProtected) {
-            return this.nativeViewProtected;
-        }
-        const textView = this._ios = this.nativeViewProtected = UITextView.new();
+        const textView = UITextView.new();
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
         }
         return textView;
     }
-    initNativeViewDelegates(view: UITextView) {
+
+    initNativeView() {
+        super.initNativeView();
         this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        super.disposeNativeView();
     }
 
     @profile
     public onLoaded() {
         super.onLoaded();
-        this._ios.delegate = this._delegate;
+        this.ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this.ios.delegate = null;
         super.onUnloaded();
     }
 
     get ios(): UITextView {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     public _refreshHintState(hint: string, text: string) {

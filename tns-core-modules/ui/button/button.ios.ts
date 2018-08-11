@@ -18,9 +18,16 @@ export class Button extends ButtonBase {
         return UIButton.buttonWithType(UIButtonType.System);
     }
 
-    initNativeViewDelegates(view: UIButton) {
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
         this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
-        view.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
+        nativeView.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
+    }
+
+    public disposeNativeView(): void {
+        this._tapHandler = null;
+        super.disposeNativeView();
     }
 
     get ios() {

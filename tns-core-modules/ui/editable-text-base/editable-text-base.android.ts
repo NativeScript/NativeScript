@@ -159,7 +159,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return new android.widget.EditText(this._context);
     }
 
-    public initNativeViewDelegates(editText: android.widget.EditText) {
+    public initNativeView(): void {
+        super.initNativeView();
+        const editText = this.nativeTextViewProtected;
         this._configureEditText(editText);
         initializeEditTextListeners();
         const listeners = new EditTextListeners(this);
@@ -167,19 +169,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         editText.setOnFocusChangeListener(listeners);
         editText.setOnEditorActionListener(listeners);
         (<any>editText).listener = listeners;
-    }
-
-    public initNativeView(): void {
-        super.initNativeView();
-        const editText = this.nativeTextViewProtected;
-        (<any>editText).listener.owner = this;
         this._inputType = editText.getInputType();
     }
 
     public disposeNativeView(): void {
-        super.disposeNativeView();
         (<any>this.nativeTextViewProtected).listener.owner = null;
+        (<any>this.nativeTextViewProtected).listener = null;
         this._keyListenerCache = null;
+        super.disposeNativeView();
     }
 
     public resetNativeView(): void {

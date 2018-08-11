@@ -49,23 +49,22 @@ export class Image extends ImageBase {
         if (!AndroidImageView) {
             AndroidImageView = org.nativescript.widgets.ImageView;
         }
-        initializeImageLoadedListener();
 
-        const imageView = new AndroidImageView(this._context);
-        const listener = new ImageLoadedListener(this);
-        imageView.setImageLoadedListener(listener);
-        (<any>imageView).listener = listener;
-
-        return imageView;
+        return new AndroidImageView(this._context);
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        (<any>this.nativeViewProtected).listener.owner = this;
+        initializeImageLoadedListener();
+        const nativeView = this.nativeViewProtected;
+        const listener = new ImageLoadedListener(this);
+        nativeView.setImageLoadedListener(listener);
+        (<any>nativeView).listener = listener;
     }
 
     public disposeNativeView() {
         (<any>this.nativeViewProtected).listener.owner = null;
+        (<any>this.nativeViewProtected).listener = null;
         super.disposeNativeView();
     }
 

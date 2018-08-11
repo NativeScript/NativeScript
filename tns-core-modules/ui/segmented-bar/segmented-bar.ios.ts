@@ -21,33 +21,40 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 export class SegmentedBar extends SegmentedBarBase {
-    private _ios: UISegmentedControl;
+    nativeViewProtected: UISegmentedControl;
     private _selectionHandler: NSObject;
 
-    constructor() {
-        super();
-        this.nativeViewProtected = this._ios = UISegmentedControl.new();
+    createNativeView() {
+        return UISegmentedControl.new();
+    }
 
+    initNativeView() {
+        super.initNativeView();
         this._selectionHandler = SelectionHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.ValueChanged);
+        this.nativeViewProtected.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.ValueChanged);
+    }
+
+    disposeNativeView() {
+        this._selectionHandler = null;
+        super.disposeNativeView();
     }
 
     get ios(): UISegmentedControl {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     [selectedIndexProperty.getDefault](): number {
         return -1;
     }
     [selectedIndexProperty.setNative](value: number) {
-        this._ios.selectedSegmentIndex = value;
+        this.ios.selectedSegmentIndex = value;
     }
 
     [itemsProperty.getDefault](): SegmentedBarItem[] {
         return null;
     }
     [itemsProperty.setNative](value: SegmentedBarItem[]) {
-        const segmentedControl = this._ios;
+        const segmentedControl = this.ios;
         segmentedControl.removeAllSegments();
         const newItems = value;
 
@@ -63,11 +70,11 @@ export class SegmentedBar extends SegmentedBarBase {
     }
 
     [selectedBackgroundColorProperty.getDefault](): UIColor {
-        return this._ios.tintColor;
+        return this.ios.tintColor;
     }
     [selectedBackgroundColorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
-        this._ios.tintColor = color;
+        this.ios.tintColor = color;
     }
 
     [colorProperty.getDefault](): UIColor {
@@ -75,7 +82,7 @@ export class SegmentedBar extends SegmentedBarBase {
     }
     [colorProperty.setNative](value: Color | UIColor) {
         let color = value instanceof Color ? value.ios : value;
-        let bar = this._ios;
+        let bar = this.ios;
         let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
         attrs.setValueForKey(color, NSForegroundColorAttributeName);
@@ -87,7 +94,7 @@ export class SegmentedBar extends SegmentedBarBase {
     }
     [fontInternalProperty.setNative](value: Font) {
         let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(ios.getter(UIFont, UIFont.labelFontSize))) : null;
-        let bar = this._ios;
+        let bar = this.ios;
         let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
         attrs.setValueForKey(font, NSFontAttributeName);

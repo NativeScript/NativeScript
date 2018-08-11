@@ -52,22 +52,19 @@ export class Button extends ButtonBase {
         return new AndroidButton(this._context);
     }
 
-    public initNativeViewDelegates(button: android.widget.Button) {
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
         initializeClickListener();
         const clickListener = new ClickListener(this);
-        button.setOnClickListener(clickListener);
-        (<any>button).clickListener = clickListener;
-    }
-
-    public initNativeView(): void {
-        const nativeView = this.nativeViewProtected;
-        (<any>nativeView).clickListener.owner = this;
-        super.initNativeView();
+        nativeView.setOnClickListener(clickListener);
+        (<any>nativeView).clickListener = clickListener;
     }
 
     public disposeNativeView() {
         if (this.nativeViewProtected) {
             (<any>this.nativeViewProtected).clickListener.owner = null;
+            (<any>this.nativeViewProtected).clickListener = null;
         }
         super.disposeNativeView();
     }

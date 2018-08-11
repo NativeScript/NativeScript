@@ -141,31 +141,36 @@ class UITextFieldImpl extends UITextField {
 }
 
 export class TextField extends TextFieldBase {
-    private _ios: UITextField;
-    private _delegate: UITextFieldDelegateImpl;
     nativeViewProtected: UITextField;
+    private _delegate: UITextFieldDelegateImpl;
 
     createNativeView() {
         return  UITextFieldImpl.initWithOwner(new WeakRef(this));
     }
 
-    initNativeViewDelegates(view: UITextFieldImpl) {
+    initNativeView() {
+        super.initNativeView();
         this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        super.disposeNativeView();
     }
 
     @profile
     public onLoaded() {
         super.onLoaded();
-        this._ios.delegate = this._delegate;
+        this.ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this.ios.delegate = null;
         super.onUnloaded();
     }
 
     get ios(): UITextField {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     [hintProperty.getDefault](): string {

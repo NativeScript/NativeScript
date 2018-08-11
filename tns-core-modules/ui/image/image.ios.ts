@@ -10,14 +10,17 @@ export class Image extends ImageBase {
     private _imageSourceAffectsLayout: boolean = true;
     private _templateImageWasCreated: boolean;
 
-    constructor() {
-        super();
-
-        //TODO: Think of unified way of setting all the default values.
+    public createNativeView() {
         const imageView = UIImageView.new();
         imageView.contentMode = UIViewContentMode.ScaleAspectFit;
         imageView.userInteractionEnabled = true;
         this.nativeViewProtected = imageView;
+        this._setNativeClipToBounds();
+        return imageView;
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
         this._setNativeClipToBounds();
     }
 

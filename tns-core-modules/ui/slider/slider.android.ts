@@ -13,11 +13,8 @@ interface OwnerSeekBar extends android.widget.SeekBar {
 let SeekBar: typeof android.widget.SeekBar;
 let SeekBarChangeListener: android.widget.SeekBar.OnSeekBarChangeListener;
 
-function initializeModule(): void {
-    if (!SeekBar) {
-        SeekBar = android.widget.SeekBar;
-    }
-
+function initializeListenerClass(): void {
+    
     if (!SeekBarChangeListener) {
         @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
         class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
@@ -56,16 +53,18 @@ export class Slider extends SliderBase {
     nativeViewProtected: OwnerSeekBar;
 
     public createNativeView() {
-        initializeModule();
-        const nativeView = new SeekBar(this._context);
-        const listener = getListener();
-        nativeView.setOnSeekBarChangeListener(listener);
-        return nativeView;
+        if (!SeekBar) {
+            SeekBar = android.widget.SeekBar;
+        }
+        return new SeekBar(this._context);
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        this.nativeViewProtected.owner = this;
+        const nativeView = this.nativeViewProtected;
+        initializeListenerClass();
+        const listener = getListener();
+        nativeView.setOnSeekBarChangeListener(listener);
     }
 
     public disposeNativeView() {

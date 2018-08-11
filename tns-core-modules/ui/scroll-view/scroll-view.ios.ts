@@ -38,10 +38,13 @@ export class ScrollView extends ScrollViewBase {
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
     private _delegate: UIScrollViewDelegateImpl;
+    
+    public createNativeView() {
+        return UIScrollView.new();
+    }
 
-    constructor() {
-        super();
-        this.nativeViewProtected = UIScrollView.new();
+    initNativeView() {
+        super.initNativeView();
         this._setNativeClipToBounds();
     }
 

@@ -24,9 +24,6 @@ export class Label extends TextBase implements LabelDefinition {
     private _fixedSize: FixedSize;
 
     public createNativeView() {
-        if (this.nativeViewProtected) {
-            return this.nativeViewProtected;
-        }
         const view = this.nativeViewProtected = TNSLabel.new();
         view.userInteractionEnabled = true;
         return view;

@@ -199,7 +199,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 }
 
 export class ListView extends ListViewBase {
-    public _ios: UITableView;
+    public nativeViewProtected: UITableView;
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
@@ -208,22 +208,32 @@ export class ListView extends ListViewBase {
     private _map: Map<ListViewCell, View>;
     widthMeasureSpec: number = 0;
 
-    constructor() {
-        super();
-        this.nativeViewProtected = this._ios = UITableView.new();
-        this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), this._defaultTemplate.key);
-        this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
-        this._ios.rowHeight = UITableViewAutomaticDimension;
-        this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
+    createNativeView() {
+        return UITableView.new();
+    }
+
+    initNativeView() {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
+        nativeView.registerClassForCellReuseIdentifier(ListViewCell.class(), this._defaultTemplate.key);
+        nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
+        nativeView.rowHeight = UITableViewAutomaticDimension;
+        nativeView.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, View>();
         this._setNativeClipToBounds();
     }
 
+    disposeNativeView() {
+        this._delegate = null;
+        this._dataSource = null;
+        super.disposeNativeView();
+    }
+
     _setNativeClipToBounds() {
         // Always set clipsToBounds for list-view
-        this._ios.clipsToBounds = true;
+        this.ios.clipsToBounds = true;
     }
 
     @profile
@@ -232,16 +242,16 @@ export class ListView extends ListViewBase {
         if (this._isDataDirty) {
             this.refresh();
         }
-        this._ios.delegate = this._delegate;
+        this.ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this.ios.delegate = null;
         super.onUnloaded();
     }
 
     get ios(): UITableView {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     get _childrenCount(): number {
@@ -255,15 +265,15 @@ export class ListView extends ListViewBase {
     }
 
     public scrollToIndex(index: number) {
-        if (this._ios) {
-            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
+        if (this.ios) {
+            this.ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
                 UITableViewScrollPosition.Top, false);
         }
     }
 
     public scrollToIndexAnimated(index: number) {
-        if (this._ios) {
-            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
+        if (this.ios) {
+            this.ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
                 UITableViewScrollPosition.Top, true);
         }
     }
@@ -277,7 +287,7 @@ export class ListView extends ListViewBase {
         });
 
         if (this.isLoaded) {
-            this._ios.reloadData();
+            this.ios.reloadData();
             this.requestLayout();
             this._isDataDirty = false;
         } else {
@@ -286,7 +296,7 @@ export class ListView extends ListViewBase {
     }
 
     public isItemAtIndexVisible(itemIndex: number): boolean {
-        const indexes: NSIndexPath[] = Array.from(this._ios.indexPathsForVisibleRows);
+        const indexes: NSIndexPath[] = Array.from(this.ios.indexPathsForVisibleRows);
         return indexes.some(visIndex => visIndex.row === itemIndex);
     }
 
@@ -300,7 +310,7 @@ export class ListView extends ListViewBase {
 
     public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
         const value = layout.toDeviceIndependentPixels(this._effectiveRowHeight);
-        const nativeView = this._ios;
+        const nativeView = this.ios;
         if (value < 0) {
             nativeView.rowHeight = UITableViewAutomaticDimension;
             nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -331,7 +341,7 @@ export class ListView extends ListViewBase {
         var changed = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         super.measure(widthMeasureSpec, heightMeasureSpec);
         if (changed) {
-            this._ios.reloadData();
+            this.ios.reloadData();
         }
     }
 
@@ -345,7 +355,7 @@ export class ListView extends ListViewBase {
             return height;
         }
 
-        return this._ios.estimatedRowHeight;
+        return this.ios.estimatedRowHeight;
     }
 
     public _prepareCell(cell: ListViewCell, indexPath: NSIndexPath): number {
@@ -408,10 +418,10 @@ export class ListView extends ListViewBase {
     }
 
     [separatorColorProperty.getDefault](): UIColor {
-        return this._ios.separatorColor;
+        return this.ios.separatorColor;
     }
     [separatorColorProperty.setNative](value: Color | UIColor) {
-        this._ios.separatorColor = value instanceof Color ? value.ios : value;
+        this.ios.separatorColor = value instanceof Color ? value.ios : value;
     }
 
     [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
@@ -421,7 +431,7 @@ export class ListView extends ListViewBase {
         this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
         if (value) {
             for (let i = 0, length = value.length; i < length; i++) {
-                this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), value[i].key);
+                this.ios.registerClassForCellReuseIdentifier(ListViewCell.class(), value[i].key);
             }
             this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
         }
@@ -433,7 +443,7 @@ export class ListView extends ListViewBase {
         return DEFAULT_HEIGHT;
     }
     [iosEstimatedRowHeightProperty.setNative](value: Length) {
-        const nativeView = this._ios;
+        const nativeView = this.ios;
         const estimatedHeight = Length.toDevicePixels(value, 0);
         nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
     }
