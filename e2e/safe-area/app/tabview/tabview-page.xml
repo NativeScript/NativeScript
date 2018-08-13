@@ -1,0 +1,34 @@
+<Page class="page" xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="TabView Examples"></Label>
+    </ActionBar>
+
+    <ScrollView>
+        <StackLayout horizontalAlignment="center">
+            <StackLayout>
+                <Label text="Pages w/ ActionBar"></Label>
+                <Button text="Label Component" tap="onNavigate" route="tabview/action-bar/tabview-component-page" />
+                <Button text="Grid 3x3 Nested Grid" tap="onNavigate" route="tabview/action-bar/tabview-grid-3x3-nested-grid-page" />
+                <Button text="Grid 3x3 Nested ListView" tap="onNavigate" route="tabview/action-bar/tabview-grid-3x3-nested-listview-page" />
+                <Button text="HScroll HStack" tap="onNavigate" route="tabview/action-bar/tabview-hscroll-hstack-page" />
+                <Button text="HStack" tap="onNavigate" route="tabview/action-bar/tabview-hstack-page" />
+                <Button text="ListView" tap="onNavigate" route="tabview/action-bar/tabview-listview-page" />
+                <Button text="VScroll VStack" tap="onNavigate" route="tabview/action-bar/tabview-vscroll-vstack-page" />
+                <Button text="VStack" tap="onNavigate" route="tabview/action-bar/tabview-vstack-page" />
+            </StackLayout>
+            <StackLayout>
+                <Label text="Pages w/o ActionBar"></Label>
+                <Button text="Label Component" tap="onNavigate" route="tabview/no-action-bar/tabview-component-page" />
+                <Button text="Grid 3x3 Nested Grid" tap="onNavigate" route="tabview/no-action-bar/tabview-grid-3x3-nested-grid-page" />
+                <Button text="Grid 3x3 Nested ListView" tap="onNavigate" route="tabview/no-action-bar/tabview-grid-3x3-nested-listview-page" />
+                <Button text="HScroll HStack" tap="onNavigate" route="tabview/no-action-bar/tabview-hscroll-hstack-page" />
+                <Button text="HStack" tap="onNavigate" route="tabview/no-action-bar/tabview-hstack-page" />
+                <Button text="ListView" tap="onNavigate" route="tabview/no-action-bar/tabview-listview-page" />
+                <Button text="VScroll VStack" tap="onNavigate" route="tabview/no-action-bar/tabview-vscroll-vstack-page" />
+                <Button text="VStack" tap="onNavigate" route="tabview/no-action-bar/tabview-vstack-page" />
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+
+</Page>

@@ -1,0 +1,14 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:fragments="stacklayout/fragments"
+    actionBarHidden="true">
+
+	<TabView>
+        <TabViewItem title="Home" iconSource="res://home">
+            <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+        </TabViewItem>
+        <TabViewItem title="Search" iconSource="res://search">
+            <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+        </TabViewItem>
+    </TabView>
+
+</Page>
