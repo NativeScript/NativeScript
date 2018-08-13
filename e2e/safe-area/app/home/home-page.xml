@@ -10,6 +10,7 @@
             <Button text="GridLayout Examples" tap="onNavigate" route="gridlayout/gridlayout-page"></Button>
             <Button text="ListView Examples" tap="onNavigate" route="listview/listview-page" />
             <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page"></Button>
+            <Button text="TabView Examples" tap="onNavigate" route="tabview/tabview-page"></Button>
             <Button text="StackLayout Examples" tap="onNavigate" route="stacklayout/stacklayout-page"></Button>
             <Button text="WrapLayout Examples" tap="onNavigate" route="wraplayout/wraplayout-page"></Button>
         </StackLayout>
