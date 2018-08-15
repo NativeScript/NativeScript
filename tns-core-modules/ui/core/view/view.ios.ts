@@ -774,8 +774,14 @@ export namespace ios {
             layoutGuide = initLayoutGuide(controller);
         }
         const safeArea = layoutGuide.layoutFrame;
-        const position = owner.getPositionFromFrame(safeArea);
+        let position = owner.getPositionFromFrame(safeArea);
         const safeAreaSize = safeArea.size;
+
+        const hasChildViewControllers = controller.childViewControllers.count > 0;
+        if (hasChildViewControllers) {
+            const fullscreen = controller.view.frame;
+            position = owner.getPositionFromFrame(fullscreen);
+        }
 
         const safeAreaWidth = layout.round(layout.toDevicePixels(safeAreaSize.width));
         const safeAreaHeight = layout.round(layout.toDevicePixels(safeAreaSize.height));
