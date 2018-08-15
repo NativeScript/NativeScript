@@ -357,7 +357,7 @@ export class CssState {
      * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
      */
     public onChange(): void {
-        if (this.view.isLoaded) {
+        if (this.view && this.view.isLoaded) {
             this.unsubscribeFromDynamicUpdates();
             this.updateMatch();
             this.subscribeForDynamicUpdates();

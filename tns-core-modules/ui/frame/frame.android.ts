@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 import {
     FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, traceError
 } from "./frame-common";
 
 import {
@@ -700,35 +700,45 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         const entry = this.entry;
-        const page = entry.resolvedPage;
-        const frame = this.frame;
-        if (page.parent === frame) {
-            // If we are navigating to a page that was destroyed
-            // reinitialize its UI.
-            if (!page._context) {
-                const context = container && container.getContext() || inflater && inflater.getContext();
-                page._setupUI(context);
+        if (entry) {
+          const page = entry.resolvedPage;
+          if (page) {
+            const frame = this.frame;
+            if (page.parent === frame) {
+                // If we are navigating to a page that was destroyed
+                // reinitialize its UI.
+                if (!page._context) {
+                    const context = container && container.getContext() || inflater && inflater.getContext();
+                    page._setupUI(context);
+                }
+            } else {
+                if (!frame._styleScope) {
+                    // Make sure page will have styleScope even if parents don't.
+                    page._updateStyleScope();
+                }
+    
+                frame._addView(page);
             }
-        } else {
-            if (!this.frame._styleScope) {
-                // Make sure page will have styleScope even if parents don't.
-                page._updateStyleScope();
+    
+            if ((frame && frame.isLoaded) && (page && !page.isLoaded)) {
+                page.callLoaded();
             }
-
-            this.frame._addView(page);
+    
+            const savedState = entry.viewSavedState;
+            if (savedState) {
+                (<android.view.View>page.nativeViewProtected).restoreHierarchyState(savedState);
+                entry.viewSavedState = null;
+            }
+    
+            return page.nativeViewProtected;
+          }
+          if (traceEnabled()) {
+            traceError(`${fragment}.onCreateView page: ${page}`);
+          }
         }
-
-        if (frame.isLoaded && !page.isLoaded) {
-            page.callLoaded();
+        if (traceEnabled()) {
+          traceError(`${fragment}.onCreateView entry: ${entry}`);
         }
-
-        const savedState = entry.viewSavedState;
-        if (savedState) {
-            (<android.view.View>page.nativeViewProtected).restoreHierarchyState(savedState);
-            entry.viewSavedState = null;
-        }
-
-        return page.nativeViewProtected;
     }
 
     @profile
