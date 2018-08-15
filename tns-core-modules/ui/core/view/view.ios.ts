@@ -93,7 +93,9 @@ export class View extends ViewCommon {
 
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             let position = { left, top, right, bottom };
-            if (this.nativeViewProtected) {
+            if (this.nativeViewProtected && majorVersion > 10) {
+                // on iOS 11+ it is possible to have a changed layout frame due to safe area insets
+                // get the frame and adjust the position, so that onLayout works correctly
                 const frame = this.nativeViewProtected.frame;
                 position = this.getPositionFromFrame(frame);
             }
