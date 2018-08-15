@@ -68,11 +68,25 @@ export class Label extends TextBase implements LabelDefinition {
             this._fixedSize = (widthMode === layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
                 | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
-            // NOTE: utils.measureNativeView(...) relies on UIView.sizeThatFits(...) that 
-            // seems to have various issues when laying out UILabel instances.
-            // We use custom measure logic here that relies on overriden 
-            // UILabel.textRectForBounds:limitedToNumberOfLines: in TNSLabel widget. 
-            const nativeSize = this._measureNativeView(width, widthMode, height, heightMode);
+            let nativeSize;
+            if (this.textWrap) {
+                // https://github.com/NativeScript/NativeScript/issues/4834
+                // NOTE: utils.measureNativeView(...) relies on UIView.sizeThatFits(...) that 
+                // seems to have various issues when laying out UILabel instances.
+                // We use custom measure logic here that relies on overriden 
+                // UILabel.textRectForBounds:limitedToNumberOfLines: in TNSLabel widget.
+                nativeSize = this._measureNativeView(width, widthMode, height, heightMode);
+            } else {
+                // https://github.com/NativeScript/NativeScript/issues/6059
+                // NOTE: _measureNativeView override breaks a scenario with StackLayout that arranges
+                // labels horizontally (with textWrap=false) e.g. we are measuring label #2 within 356px,
+                // label #2 needs more, and decides to show ellipsis(...) but because of this its native size 
+                // returned from UILabel.textRectForBounds:limitedToNumberOfLines: logic becomes 344px, so
+                // StackLayout tries to measure label #3 within the remaining 12px which is wrong;
+                // label #2 with ellipsis should take the whole 356px and label #3 should not be visible at all.
+                nativeSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
+            }
+
             let labelWidth = nativeSize.width;
 
             if (this.textWrap && widthMode === layout.AT_MOST) {
