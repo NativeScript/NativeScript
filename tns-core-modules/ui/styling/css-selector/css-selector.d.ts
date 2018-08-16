@@ -43,6 +43,11 @@ export class RuleSet {
      * Gets the key-value list of declarations for the ruleset.
      */
     declarations: Declaration[];
+
+    /**
+     *  Optional Tag for rules
+     **/
+    tag: string | Number;
 }
 
 export class SelectorsMap {
@@ -68,7 +73,7 @@ export class SelectorsMatch<T extends Node> {
     selectors: SelectorCore[];
 
     /**
-     * Gets a map of nodes to attributes and pseudo classes, that may affect the state of the dynamic 
+     * Gets a map of nodes to attributes and pseudo classes, that may affect the state of the dynamic
      */
     changeMap: ChangeMap<T>;
 }

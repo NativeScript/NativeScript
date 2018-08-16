@@ -659,7 +659,7 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _getFragmentManager(): any; /* android.app.FragmentManager */
+    _getFragmentManager(): any; /* android.support.v4.app.FragmentManager */
 
     /**
      * Updates styleScope or create new styleScope.

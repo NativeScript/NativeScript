@@ -1,6 +1,50 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="4.2.0"></a>
+# [4.2.0](https://github.com/NativeScript/NativeScript/compare/4.1.1...4.2.0) (2018-08-08)
+
+### Bug Fixes
+
+* **action-bar:** navController may be null ([#6029](https://github.com/NativeScript/NativeScript/issues/6029)) ([324fdce](https://github.com/NativeScript/NativeScript/commit/324fdce))
+* **android:** label width shrinking on shorter text change ([#5917](https://github.com/NativeScript/NativeScript/issues/5917)) ([0b9d4ae](https://github.com/NativeScript/NativeScript/commit/0b9d4ae))
+* **android:** NavigationButton was read as "Button" by screenreaders ([#5949](https://github.com/NativeScript/NativeScript/issues/5949)) ([0e04cb4](https://github.com/NativeScript/NativeScript/commit/0e04cb4))
+* **android:** prevent error during tear down ([#5947](https://github.com/NativeScript/NativeScript/issues/5947)) ([b0afd3a](https://github.com/NativeScript/NativeScript/commit/b0afd3a))
+* **animation:** handle promise rejection and avoid throw ([#5861](https://github.com/NativeScript/NativeScript/issues/5861)) ([9308bab](https://github.com/NativeScript/NativeScript/commit/9308bab))
+* **animations:** avoid steady mem consumption rise ([#6004](https://github.com/NativeScript/NativeScript/issues/6004)) ([bcadcbe](https://github.com/NativeScript/NativeScript/commit/bcadcbe))
+* **core/properties:** typings for nativeValueChange ([#5791](https://github.com/NativeScript/NativeScript/issues/5791)) ([357c8ec](https://github.com/NativeScript/NativeScript/commit/357c8ec))
+* **dialogs-ios:** dialogs not showing in single page apps (non Frame based apps) ([#6000](https://github.com/NativeScript/NativeScript/issues/6000)) ([0082dfb](https://github.com/NativeScript/NativeScript/commit/0082dfb))
+* **image:** catch Response content may not be converted to an Image ([#5856](https://github.com/NativeScript/NativeScript/issues/5856)) ([5cd8a1f](https://github.com/NativeScript/NativeScript/commit/5cd8a1f))
+* **ios:** safeAreaLayoutGuide fallback for iOS 10 cases ([#5960](https://github.com/NativeScript/NativeScript/issues/5960)) ([4b5754a](https://github.com/NativeScript/NativeScript/commit/4b5754a))
+* **ios:** set current tab as topmost frame on load ([#5908](https://github.com/NativeScript/NativeScript/issues/5908)) ([b122bd4](https://github.com/NativeScript/NativeScript/commit/b122bd4))
+* **ios:** translate transform breaks sequential animation set ([#5961](https://github.com/NativeScript/NativeScript/issues/5961)) ([6cfdc20](https://github.com/NativeScript/NativeScript/commit/6cfdc20))
+* **ios-dialogs:** unable to show dialog from modal view without a page ([#5881](https://github.com/NativeScript/NativeScript/issues/5881)) ([e59d156](https://github.com/NativeScript/NativeScript/commit/e59d156))
+* **modal:** parent page invalid hierarchy handling [extended] ([#5966](https://github.com/NativeScript/NativeScript/issues/5966)) ([b5b8d51](https://github.com/NativeScript/NativeScript/commit/b5b8d51))
+
+### Features
+
+* **typings:** add Android typings for API levels from 17 to 27 ([#5890](https://github.com/NativeScript/NativeScript/issues/5890)) ([398c9b3](https://github.com/NativeScript/NativeScript/commit/398c9b3))
+* Flexible Error/Exception handling ([#5929](https://github.com/NativeScript/NativeScript/issues/5929)) ([3dc3a41](https://github.com/NativeScript/NativeScript/commit/3dc3a41))
+* Pass NativeScript app to the native app instead of presenting it over the root ViewController ([#5967](https://github.com/NativeScript/NativeScript/issues/5967)) ([05c2460](https://github.com/NativeScript/NativeScript/commit/05c2460))
+* **CSS:** import of relative paths ([#6023](https://github.com/NativeScript/NativeScript/issues/6023)) ([6ce1d22](https://github.com/NativeScript/NativeScript/commit/6ce1d22))
+* **ListPicker:** add textField, valueField and selectedValue properties ([#6033](https://github.com/NativeScript/NativeScript/issues/6033)) ([9e2e8ec](https://github.com/NativeScript/NativeScript/commit/9e2e8ec))
+* **ListView:** add animated scroll to index ([#6077](https://github.com/NativeScript/NativeScript/issues/6077)) ([1fac718](https://github.com/NativeScript/NativeScript/commit/1fac718))
+
+### BREAKING CHANGES
+
+* **typings:** 
+    * There is no longer added `I` prefix in the names of the interfaces. For example, `android.view.IMenuItem` is now `android.view.MenuItem`. This matches the original name of the interface in the Android framework.
+    * We are now generating only **public** methods, so all the methods which you override when extending Android class should be **public**.
+    * You need to use **Array\<string>** (lowercase **string**) instead of **Array\<String>** (uppercase **String**) when overriding a method accepting string array type.
+
+
+<a name="4.1.1"></a>
+# [4.1.1](https://github.com/NativeScript/NativeScript/compare/4.1.0...4.1.1) (2018-07-18)
+
+### Bug Fixes
+* require devtools-elements.js with the extension mentioned explicitly ([#6079](https://github.com/NativeScript/NativeScript/issues/6079)) ([1a15aa2](https://github.com/NativeScript/NativeScript/commit/1a15aa2))
+
+
 <a name="4.1.0"></a>
 # [4.1.0](https://github.com/NativeScript/NativeScript/compare/4.0.1...4.1.0) (2018-05-28)
 
@@ -1374,4 +1418,3 @@ application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChan
   * Image: `source` property renamed to `imageSource`.
   * TabView: `TabEntry` renamed to `TabViewItem`.
   * Module `local-settings` changed to `application-settings`. Only the name of the module is changed (API remains the same), hence the `require` statements must be updated, i.e., `require("local-settings")` should be changed to `require("application-settings")`.
-

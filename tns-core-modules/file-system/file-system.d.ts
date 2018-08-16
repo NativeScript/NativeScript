@@ -219,42 +219,42 @@ export module knownFolders {
      */
     module ios {
         /**
-         * Gets the NSLibraryDirectory.
+         * Gets the NSLibraryDirectory. Note that the folder will not be created if it did not exist. 
          */
         export function library(): Folder;
 
         /**
-         * Gets the NSDeveloperDirectory.
+         * Gets the NSDeveloperDirectory. Note that the folder will not be created if it did not exist.
          */
         export function developer(): Folder;
 
         /**
-         * Gets the NSDesktopDirectory.
+         * Gets the NSDesktopDirectory. Note that the folder will not be created if it did not exist.
          */
         export function desktop(): Folder;
 
         /**
-         * Gets the NSDownloadsDirectory.
+         * Gets the NSDownloadsDirectory. Note that the folder will not be created if it did not exist.
          */
         export function downloads(): Folder;
 
         /**
-         * Gets the NSMoviesDirectory.
+         * Gets the NSMoviesDirectory. Note that the folder will not be created if it did not exist.
          */
         export function movies(): Folder;
 
         /**
-         * Gets the NSMusicDirectory.
+         * Gets the NSMusicDirectory. Note that the folder will not be created if it did not exist.
          */
         export function music(): Folder;
 
         /**
-         * Gets the NSPicturesDirectory.
+         * Gets the NSPicturesDirectory. Note that the folder will not be created if it did not exist.
          */
         export function pictures(): Folder;
 
         /**
-         * Gets the NSSharedPublicDirectory.
+         * Gets the NSSharedPublicDirectory. Note that the folder will not be created if it did not exist.
          */
         export function sharedPublic(): Folder;
     }
