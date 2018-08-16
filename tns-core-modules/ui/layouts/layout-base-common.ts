@@ -1,5 +1,5 @@
 ﻿import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
-import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
+import { View, CustomLayoutView, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
 
 export * from "../core/view";
 
@@ -105,7 +105,16 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
         this.style.paddingLeft = value;
     }
 
-    public clipToBounds: boolean;
+    get clipToBounds(): boolean {
+        return this.style.clipToBounds;
+    }
+    set clipToBounds(value: boolean) {
+        //we should never get a string as the booleanConverter is used in the property. Though it happens ...
+        if (typeof value === "string") {
+            value = booleanConverter(value);
+        }
+        this.style.clipToBounds = value;
+    }
 
     public _childIndexToNativeChildIndex(index?: number): number {
         if (index === undefined) {
@@ -148,6 +157,3 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
     }
 }
-
-export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({ name: "clipToBounds", defaultValue: true, valueConverter: booleanConverter });
-clipToBoundsProperty.register(LayoutBaseCommon);

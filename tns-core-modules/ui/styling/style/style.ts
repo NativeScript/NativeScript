@@ -32,6 +32,7 @@ export class Style extends Observable implements StyleDefinition {
     public translateY: dip;
 
     public clipPath: string;
+    public clipToBounds: boolean;
     public color: Color;
     public tintColor: Color;
     public placeholderColor: Color;

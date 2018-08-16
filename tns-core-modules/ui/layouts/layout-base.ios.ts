@@ -21,8 +21,8 @@ export class LayoutBase extends LayoutBaseCommon {
     }
 
     _setNativeClipToBounds() {
-        if (this.clipToBounds) {
-            this.nativeViewProtected.clipsToBounds = true;
+        if (this.style.clipToBounds !== undefined) {
+            this.nativeViewProtected.clipsToBounds = !!!this.style.clipToBounds;
         } else {
             super._setNativeClipToBounds();
         }

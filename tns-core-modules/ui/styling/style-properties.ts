@@ -9,7 +9,7 @@ import {
     TransformFunctionsInfo,
 } from "../animation/animation";
 
-import { dip, px, percent } from "../core/view";
+import { dip, px, percent, booleanConverter } from "../core/view";
 
 import { Color } from "../../color";
 import { Font, parseFont, FontStyle, FontWeight } from "../../ui/styling/font";
@@ -1099,3 +1099,6 @@ export const visibilityProperty = new CssProperty<Style, Visibility>({
     }
 });
 visibilityProperty.register(Style);
+
+export const clipToBoundsProperty = new CssProperty<Style, boolean>({ name: "clipToBounds", cssName: "clip", valueConverter: booleanConverter });
+clipToBoundsProperty.register(Style);

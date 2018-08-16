@@ -92,10 +92,4 @@ export class LayoutBase extends CustomLayoutView {
      */
     paddingTop: Length;
 
-    /**
-     * Gets or sets a value indicating whether to clip the content of this layout.
-     */
-    clipToBounds: boolean;
 }
-
-export const clipToBoundsProperty: Property<LayoutBase, boolean>;

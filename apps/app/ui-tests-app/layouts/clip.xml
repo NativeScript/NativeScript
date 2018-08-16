@@ -1,0 +1,8 @@
+﻿<Page loaded="onLoaded">
+  <StackLayout height="100%" backgroundColor="green">
+    <AbsoluteLayout paddingLeft="10" backgroundColor="red" width="200" height="200" clipToBounds="false">
+      <StackLayout backgroundColor="blue" width="80%" height="400">
+      </StackLayout>
+    </AbsoluteLayout>
+  </StackLayout>
+</Page>

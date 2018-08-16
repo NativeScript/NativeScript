@@ -16,6 +16,7 @@ export function loadExamples() {
     examples.set("grid", "layouts/grid");
     examples.set("stack", "layouts/stack");
     examples.set("wrap", "layouts/wrap");
+    examples.set("clip", "layouts/clip");
     examples.set("pabsolute", "layouts-percent/absolute");
     examples.set("pdock", "layouts-percent/dock");
     examples.set("pgrid", "layouts-percent/grid");
