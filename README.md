@@ -1,6 +1,6 @@
 # NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
-![NativeScript logo](http://i.imgur.com/YmNIMqS.png)
+![NativeScript logo](https://i.imgur.com/YmNIMqS.png)
 
 [NativeScript](http://www.nativescript.org) is a framework for building native iOS and Android apps using JavaScript and CSS. NativeScript renders UIs with the native platform’s rendering engine, no [WebViews](http://developer.telerik.com/featured/what-is-a-webview/), resulting in native-like performance and UX.
 
@@ -32,7 +32,7 @@ Our Getting Started Guides are hands-on tutorials that walk you through installi
 
 Below is a common NativeScript architecture diagram. In more detail, read the [How NativeScript Works article](https://docs.nativescript.org/start/how-it-works).
 
-![Architecture diagram](https://github.com/NativeScript/docs/blob/master/docs/img/ns-common.png)
+![Architecture diagram](https://raw.githubusercontent.com/NativeScript/docs/master/docs/img/ns-common.png)
 
 ## Quick Links
 
