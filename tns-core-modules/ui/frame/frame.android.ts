@@ -22,9 +22,6 @@ import { profile } from "../../profiling";
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
 
-import { device } from "../../platform";
-import lazy from "../../utils/lazy";
-
 export * from "./frame-common";
 
 const INTENT_EXTRA = "com.tns.activity";
@@ -34,8 +31,6 @@ const CALLBACKS = "_callbacks";
 
 const ownerSymbol = Symbol("_owner");
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
-
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 let navDepth = -1;
 let fragmentId = -1;
