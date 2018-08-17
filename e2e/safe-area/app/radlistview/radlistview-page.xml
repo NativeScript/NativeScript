@@ -1,0 +1,9 @@
+<Page class="page" loaded="onPageLoaded" xmlns:lv="nativescript-ui-listview" xmlns="http://www.nativescript.org/tns.xsd">
+
+    <lv:RadListView items="{{ items }}" class="list">
+        <lv:RadListView.itemTemplate>
+            <Label text="{{ text }}"></Label>
+        </lv:RadListView.itemTemplate>
+    </lv:RadListView>
+
+</Page>

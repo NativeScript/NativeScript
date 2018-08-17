@@ -1,6 +1,6 @@
 import { Observable } from "tns-core-modules/data/observable";
 
-export class ListViewViewModel extends Observable {
+export class ViewModel extends Observable {
     items: Array<any>;
 
     constructor() {
