@@ -1,16 +1,17 @@
 <Page class="page" loaded="onPageLoaded" xmlns:chart="nativescript-ui-chart" xmlns="http://www.nativescript.org/tns.xsd">
 
-    <chart:RadCartesianChart id="cartesianChart">
-        <chart:RadCartesianChart.series>
-            <chart:LineSeries items="{{ categoricalSource }}" categoryProperty="Country" valueProperty="Amount">
-                <chart:LineSeries.horizontalAxis>
-                    <chart:CategoricalAxis/>
-                </chart:LineSeries.horizontalAxis>
-                <chart:LineSeries.verticalAxis>
-                    <chart:LinearAxis/>
-                </chart:LineSeries.verticalAxis>
-            </chart:LineSeries>
-        </chart:RadCartesianChart.series>
-    </chart:RadCartesianChart>
-
+    <GridLayout cols="*" rows="*">
+        <chart:RadCartesianChart id="cartesianChart">
+            <chart:RadCartesianChart.series>
+                <chart:LineSeries items="{{ categoricalSource }}" categoryProperty="Country" valueProperty="Amount">
+                    <chart:LineSeries.horizontalAxis>
+                        <chart:CategoricalAxis/>
+                    </chart:LineSeries.horizontalAxis>
+                    <chart:LineSeries.verticalAxis>
+                        <chart:LinearAxis/>
+                    </chart:LineSeries.verticalAxis>
+                </chart:LineSeries>
+            </chart:RadCartesianChart.series>
+        </chart:RadCartesianChart>
+    </GridLayout>
 </Page>

@@ -14,6 +14,7 @@
             <Button text="StackLayout Examples" tap="onNavigate" route="stacklayout/stacklayout-page"></Button>
             <Button text="WrapLayout Examples" tap="onNavigate" route="wraplayout/wraplayout-page"></Button>
             <Button text="RadListView Examples" tap="onNavigate" route="radlistview/radlistview-page"></Button>
+            <Button text="RadCalendar Examples" tap="onNavigate" route="radcalendar/radcalendar-page"></Button>
             <Button text="RadChart Examples" tap="onNavigate" route="radchart/radchart-page"></Button>
         </StackLayout>
     </ScrollView>
