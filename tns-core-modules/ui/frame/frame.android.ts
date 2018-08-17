@@ -197,21 +197,8 @@ export class Frame extends FrameBase {
 
         const manager: android.support.v4.app.FragmentManager = this._getFragmentManager();
         const transaction = manager.beginTransaction();
-        const androidSdkVersion = sdkVersion();
-
-        if (androidSdkVersion !== 21 && androidSdkVersion !== 22) {
-            transaction.remove(this._currentEntry.fragment);
-        } else {
-            // https://github.com/NativeScript/NativeScript/issues/5674
-            // HACK: Add and remove dummy fragment to workaround a Lollipop issue
-            // with inFragment passed as null when adding transition targets: https://android.googlesource.com/platform/frameworks/base.git/+/lollipop-release/core/java/android/app/BackStackRecord.java#1127  
-            const dummyFragmentTag = "dummy";
-            const dummyFragment = this.createFragment(<BackstackEntry>{}, dummyFragmentTag);
-            transaction.replace(this.containerViewId, dummyFragment, dummyFragmentTag);
-            transaction.remove(dummyFragment);
-        }
-
-        transaction.commitAllowingStateLoss();
+        transaction.remove(this._currentEntry.fragment);
+        transaction.commitNowAllowingStateLoss();
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.support.v4.app.Fragment {
