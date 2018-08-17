@@ -1,4 +1,4 @@
-﻿import { ItemEventData } from ".";
+import { ItemEventData } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, Observable, Color,
     separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, layout, EventData
@@ -6,6 +6,7 @@ import {
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { profile } from "../../profiling";
+import * as trace from "../../trace";
 
 export * from "./list-view-common";
 
@@ -261,16 +262,31 @@ export class ListView extends ListViewBase {
     }
 
     public scrollToIndex(index: number) {
-        if (this._ios) {
-            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
-                UITableViewScrollPosition.Top, false);
-        }
+        this._scrollToIndex(index, false);
     }
 
     public scrollToIndexAnimated(index: number) {
-        if (this._ios) {
+        this._scrollToIndex(index);
+    }
+
+    private _scrollToIndex(index: number, animated: boolean = true) {
+        if (!this._ios) {
+            return;
+        }
+
+        const itemsLength = this.items ? this.items.length : 0;
+        // mimic Android behavior that silently coerces index values within [0, itemsLength - 1] range
+        if (itemsLength > 0) {
+            if (index < 0) {
+                index = 0
+            } else if (index >= itemsLength) {
+                index = itemsLength - 1;
+            }
+
             this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
-                UITableViewScrollPosition.Top, true);
+                UITableViewScrollPosition.Top, animated);
+        } else if (trace.isEnabled()) {
+            trace.write(`Cannot scroll listview to index ${index} when listview items not set`, trace.categories.Binding);
         }
     }
 
