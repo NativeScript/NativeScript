@@ -1,4 +1,6 @@
 
+declare var RPApplicationInfoBundleIdentifierKey: string;
+
 declare class RPBroadcastActivityViewController extends UIViewController {
 
 	static alloc(): RPBroadcastActivityViewController; // inherited from NSObject
@@ -144,6 +146,8 @@ declare class RPBroadcastSampleHandler extends RPBroadcastHandler {
 
 	static new(): RPBroadcastSampleHandler; // inherited from NSObject
 
+	broadcastAnnotatedWithApplicationInfo(applicationInfo: NSDictionary<any, any>): void;
+
 	broadcastFinished(): void;
 
 	broadcastPaused(): void;
@@ -219,7 +223,17 @@ declare const enum RPRecordingErrorCode {
 
 	FailedToSave = -5812,
 
-	CarPlay = -5813
+	CarPlay = -5813,
+
+	FailedApplicationConnectionInvalid = -5814,
+
+	FailedApplicationConnectionInterrupted = -5815,
+
+	FailedNoMatchingApplicationContext = -5816,
+
+	FailedMediaServicesFailure = -5817,
+
+	VideoMixingFailure = -5818
 }
 
 declare var RPRecordingErrorDomain: string;
@@ -280,3 +294,5 @@ declare var RPScreenRecorderDelegate: {
 
 	prototype: RPScreenRecorderDelegate;
 };
+
+declare var RPVideoSampleOrientationKey: string;

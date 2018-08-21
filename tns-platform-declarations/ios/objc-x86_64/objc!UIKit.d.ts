@@ -7571,6 +7571,8 @@ declare class UIInputViewController extends UIViewController implements UITextIn
 
 	static new(): UIInputViewController; // inherited from NSObject
 
+	hasDictationKey: boolean;
+
 	readonly hasFullAccess: boolean;
 
 	inputView: UIInputView;

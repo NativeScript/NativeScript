@@ -377,7 +377,9 @@ declare const enum CKErrorCode {
 
 	ParticipantMayNeedVerification = 33,
 
-	ServerResponseLost = 34
+	ServerResponseLost = 34,
+
+	AssetNotAvailable = 35
 }
 
 declare var CKErrorDomain: string;

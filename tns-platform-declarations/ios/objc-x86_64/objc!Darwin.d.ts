@@ -1096,6 +1096,14 @@ interface __Reply__mach_vm_wire_t {
 }
 declare var __Reply__mach_vm_wire_t: interop.StructType<__Reply__mach_vm_wire_t>;
 
+interface __Reply__mach_zone_info_for_zone_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	info: mach_zone_info_t;
+}
+declare var __Reply__mach_zone_info_for_zone_t: interop.StructType<__Reply__mach_zone_info_for_zone_t>;
+
 interface __Reply__mach_zone_info_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -1888,6 +1896,13 @@ interface __Reply__vm_map_64_t {
 	address: number;
 }
 declare var __Reply__vm_map_64_t: interop.StructType<__Reply__vm_map_64_t>;
+
+interface __Reply__vm_map_exec_lockdown_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+}
+declare var __Reply__vm_map_exec_lockdown_t: interop.StructType<__Reply__vm_map_exec_lockdown_t>;
 
 interface __Reply__vm_map_page_query_t {
 	Head: mach_msg_header_t;
@@ -2800,6 +2815,13 @@ interface __Request__mach_vm_wire_t {
 }
 declare var __Request__mach_vm_wire_t: interop.StructType<__Request__mach_vm_wire_t>;
 
+interface __Request__mach_zone_info_for_zone_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	name: mach_zone_name_t;
+}
+declare var __Request__mach_zone_info_for_zone_t: interop.StructType<__Request__mach_zone_info_for_zone_t>;
+
 interface __Request__mach_zone_info_t {
 	Head: mach_msg_header_t;
 }
@@ -3567,6 +3589,11 @@ interface __Request__vm_map_64_t {
 	inheritance: number;
 }
 declare var __Request__vm_map_64_t: interop.StructType<__Request__vm_map_64_t>;
+
+interface __Request__vm_map_exec_lockdown_t {
+	Head: mach_msg_header_t;
+}
+declare var __Request__vm_map_exec_lockdown_t: interop.StructType<__Request__vm_map_exec_lockdown_t>;
 
 interface __Request__vm_map_page_query_t {
 	Head: mach_msg_header_t;
@@ -6141,6 +6168,8 @@ declare function mach_voucher_extract_attr_recipe_trap(voucher_name: number, key
 
 declare function mach_zone_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t>>, namesCnt: interop.Pointer | interop.Reference<number>, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t>>, infoCnt: interop.Pointer | interop.Reference<number>): number;
 
+declare function mach_zone_info_for_zone(host: number, name: mach_zone_name_t, info: interop.Pointer | interop.Reference<mach_zone_info_t>): number;
+
 interface mach_zone_info_t {
 	mzi_count: number;
 	mzi_cur_size: number;
@@ -6717,6 +6746,8 @@ declare function pthread_setugid_np(p1: number, p2: number): number;
 declare function pthread_sigmask(p1: number, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): number;
 
 declare function ptsname(p1: number): string;
+
+declare function ptsname_r(fildes: number, buffer: string, buflen: number): number;
 
 declare function putc(p1: number, p2: interop.Pointer | interop.Reference<FILE>): number;
 
@@ -8160,6 +8191,8 @@ declare function vm_machine_attribute(target_task: number, address: number, size
 declare function vm_map(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, object: number, offset: number, copy: number, cur_protection: number, max_protection: number, inheritance: number): number;
 
 declare function vm_map_64(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, mask: number, flags: number, object: number, offset: number, copy: number, cur_protection: number, max_protection: number, inheritance: number): number;
+
+declare function vm_map_exec_lockdown(target_task: number): number;
 
 declare function vm_map_page_query(target_map: number, offset: number, disposition: interop.Pointer | interop.Reference<number>, ref_count: interop.Pointer | interop.Reference<number>): number;
 

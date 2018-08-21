@@ -1,4 +1,11 @@
 
+declare class HMAccessControl extends NSObject {
+
+	static alloc(): HMAccessControl; // inherited from NSObject
+
+	static new(): HMAccessControl; // inherited from NSObject
+}
+
 declare class HMAccessory extends NSObject {
 
 	static alloc(): HMAccessory; // inherited from NSObject
@@ -34,6 +41,8 @@ declare class HMAccessory extends NSObject {
 	readonly room: HMRoom;
 
 	readonly services: NSArray<HMService>;
+
+	readonly supportsIdentify: boolean;
 
 	readonly uniqueIdentifier: NSUUID;
 
@@ -99,6 +108,8 @@ declare var HMAccessoryCategoryTypeDoorLock: string;
 
 declare var HMAccessoryCategoryTypeFan: string;
 
+declare var HMAccessoryCategoryTypeFaucet: string;
+
 declare var HMAccessoryCategoryTypeGarageDoorOpener: string;
 
 declare var HMAccessoryCategoryTypeIPCamera: string;
@@ -116,6 +127,10 @@ declare var HMAccessoryCategoryTypeRangeExtender: string;
 declare var HMAccessoryCategoryTypeSecuritySystem: string;
 
 declare var HMAccessoryCategoryTypeSensor: string;
+
+declare var HMAccessoryCategoryTypeShowerHead: string;
+
+declare var HMAccessoryCategoryTypeSprinkler: string;
 
 declare var HMAccessoryCategoryTypeSwitch: string;
 
@@ -163,6 +178,17 @@ declare class HMAccessoryProfile extends NSObject {
 	readonly services: NSArray<HMService>;
 
 	readonly uniqueIdentifier: NSUUID;
+}
+
+declare class HMAccessorySetupPayload extends NSObject {
+
+	static alloc(): HMAccessorySetupPayload; // inherited from NSObject
+
+	static new(): HMAccessorySetupPayload; // inherited from NSObject
+
+	constructor(o: { URL: NSURL; });
+
+	initWithURL(setupPayloadURL: NSURL): this;
 }
 
 declare class HMAction extends NSObject {
@@ -650,7 +676,11 @@ declare var HMCharacteristicTypeImageMirroring: string;
 
 declare var HMCharacteristicTypeImageRotation: string;
 
+declare var HMCharacteristicTypeInUse: string;
+
 declare var HMCharacteristicTypeInputEvent: string;
+
+declare var HMCharacteristicTypeIsConfigured: string;
 
 declare var HMCharacteristicTypeLabelIndex: string;
 
@@ -702,6 +732,10 @@ declare var HMCharacteristicTypePositionState: string;
 
 declare var HMCharacteristicTypePowerState: string;
 
+declare var HMCharacteristicTypeProgramMode: string;
+
+declare var HMCharacteristicTypeRemainingDuration: string;
+
 declare var HMCharacteristicTypeRotationDirection: string;
 
 declare var HMCharacteristicTypeRotationSpeed: string;
@@ -713,6 +747,8 @@ declare var HMCharacteristicTypeSecuritySystemAlarmType: string;
 declare var HMCharacteristicTypeSelectedStreamConfiguration: string;
 
 declare var HMCharacteristicTypeSerialNumber: string;
+
+declare var HMCharacteristicTypeSetDuration: string;
 
 declare var HMCharacteristicTypeSetupStreamEndpoint: string;
 
@@ -773,6 +809,8 @@ declare var HMCharacteristicTypeTargetTilt: string;
 declare var HMCharacteristicTypeTargetVerticalTilt: string;
 
 declare var HMCharacteristicTypeTemperatureUnits: string;
+
+declare var HMCharacteristicTypeValveType: string;
 
 declare var HMCharacteristicTypeVersion: string;
 
@@ -839,6 +877,13 @@ declare const enum HMCharacteristicValueChargingState {
 	InProgress = 1,
 
 	NotChargeable = 2
+}
+
+declare const enum HMCharacteristicValueConfigurationState {
+
+	NotConfigured = 0,
+
+	Configured = 1
 }
 
 declare const enum HMCharacteristicValueContactState {
@@ -1032,6 +1077,15 @@ declare const enum HMCharacteristicValuePositionState {
 	Stopped = 2
 }
 
+declare const enum HMCharacteristicValueProgramMode {
+
+	NotScheduled = 0,
+
+	Scheduled = 1,
+
+	ScheduleOverriddenToManual = 2
+}
+
 declare const enum HMCharacteristicValueRotationDirection {
 
 	Clockwise = 0,
@@ -1131,6 +1185,24 @@ declare const enum HMCharacteristicValueTemperatureUnit {
 	Fahrenheit = 1
 }
 
+declare const enum HMCharacteristicValueUsageState {
+
+	NotInUse = 0,
+
+	InUse = 1
+}
+
+declare const enum HMCharacteristicValueValveType {
+
+	GenericValve = 0,
+
+	Irrigation = 1,
+
+	ShowerHead = 2,
+
+	WaterFaucet = 3
+}
+
 declare class HMCharacteristicWriteAction<TargetValueType> extends HMAction {
 
 	static alloc<TargetValueType>(): HMCharacteristicWriteAction<TargetValueType>; // inherited from NSObject
@@ -1166,6 +1238,8 @@ declare class HMDurationEvent extends HMTimeEvent implements NSCopying, NSMutabl
 }
 
 declare const enum HMErrorCode {
+
+	UnexpectedError = -1,
 
 	AlreadyExists = 1,
 
@@ -1351,6 +1425,8 @@ declare const enum HMErrorCode {
 
 	NoCompatibleHomeHub = 92,
 
+	IncompatibleAccessory = 93,
+
 	IncompatibleHomeHub = 92
 }
 
@@ -1481,6 +1557,8 @@ declare class HMHome extends NSObject {
 
 	addAndSetupAccessoriesWithCompletionHandler(completion: (p1: NSError) => void): void;
 
+	addAndSetupAccessoriesWithPayloadCompletionHandler(payload: HMAccessorySetupPayload, completion: (p1: NSArray<HMAccessory>, p2: NSError) => void): void;
+
 	addRoomWithNameCompletionHandler(roomName: string, completion: (p1: HMRoom, p2: NSError) => void): void;
 
 	addServiceGroupWithNameCompletionHandler(serviceGroupName: string, completion: (p1: HMServiceGroup, p2: NSError) => void): void;
@@ -1524,7 +1602,7 @@ declare class HMHome extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
-declare class HMHomeAccessControl extends NSObject {
+declare class HMHomeAccessControl extends HMAccessControl {
 
 	static alloc(): HMHomeAccessControl; // inherited from NSObject
 
@@ -1886,6 +1964,8 @@ declare var HMServiceTypeDoorbell: string;
 
 declare var HMServiceTypeFan: string;
 
+declare var HMServiceTypeFaucet: string;
+
 declare var HMServiceTypeFilterMaintenance: string;
 
 declare var HMServiceTypeGarageDoorOpener: string;
@@ -1895,6 +1975,8 @@ declare var HMServiceTypeHeaterCooler: string;
 declare var HMServiceTypeHumidifierDehumidifier: string;
 
 declare var HMServiceTypeHumiditySensor: string;
+
+declare var HMServiceTypeIrrigationSystem: string;
 
 declare var HMServiceTypeLabel: string;
 
@@ -1933,6 +2015,8 @@ declare var HMServiceTypeSwitch: string;
 declare var HMServiceTypeTemperatureSensor: string;
 
 declare var HMServiceTypeThermostat: string;
+
+declare var HMServiceTypeValve: string;
 
 declare var HMServiceTypeVentilationFan: string;
 

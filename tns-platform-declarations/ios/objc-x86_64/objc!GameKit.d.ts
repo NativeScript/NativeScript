@@ -130,6 +130,15 @@ declare var GKAchievementViewControllerDelegate: {
 	prototype: GKAchievementViewControllerDelegate;
 };
 
+declare const enum GKAuthenticationType {
+
+	AuthenticatingWithoutUI = 0,
+
+	AuthenticatingWithGreenBuddyUI = 1,
+
+	AuthenticatingWithAuthKitInvocation = 2
+}
+
 declare class GKBasePlayer extends NSObject {
 
 	static alloc(): GKBasePlayer; // inherited from NSObject
@@ -395,6 +404,18 @@ declare class GKGameSession extends NSObject {
 	static loadSessionsInContainerCompletionHandler(containerName: string, completionHandler: (p1: NSArray<GKGameSession>, p2: NSError) => void): void;
 
 	static new(): GKGameSession; // inherited from NSObject
+
+	static postSessionDidAddPlayer(session: GKGameSession, player: GKCloudPlayer): void;
+
+	static postSessionDidReceiveDataFromPlayer(session: GKGameSession, data: NSData, player: GKCloudPlayer): void;
+
+	static postSessionDidReceiveMessageWithDataFromPlayer(session: GKGameSession, message: string, data: NSData, player: GKCloudPlayer): void;
+
+	static postSessionDidRemovePlayer(session: GKGameSession, player: GKCloudPlayer): void;
+
+	static postSessionPlayerDidChangeConnectionState(session: GKGameSession, player: GKCloudPlayer, newState: GKConnectionState): void;
+
+	static postSessionPlayerDidSaveData(session: GKGameSession, player: GKCloudPlayer, data: NSData): void;
 
 	static removeEventListener(listener: NSObject): void;
 

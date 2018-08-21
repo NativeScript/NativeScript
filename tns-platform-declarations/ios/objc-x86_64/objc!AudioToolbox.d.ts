@@ -2959,6 +2959,8 @@ declare const kAudioUnitErr_InvalidOfflineRender: number;
 
 declare const kAudioUnitErr_InvalidParameter: number;
 
+declare const kAudioUnitErr_InvalidParameterValue: number;
+
 declare const kAudioUnitErr_InvalidProperty: number;
 
 declare const kAudioUnitErr_InvalidPropertyValue: number;

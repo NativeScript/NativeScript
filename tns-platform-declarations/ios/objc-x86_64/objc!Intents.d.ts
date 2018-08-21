@@ -3602,7 +3602,9 @@ declare const enum INRequestPaymentIntentResponseCode {
 
 	FailureNoBankAccount = 10,
 
-	FailureNotEligible = 11
+	FailureNotEligible = 11,
+
+	FailureTermsAndConditionsAcceptanceRequired = 12
 }
 
 declare class INRequestPaymentPayerResolutionResult extends INPersonResolutionResult {
@@ -3634,7 +3636,9 @@ declare const enum INRequestPaymentPayerUnsupportedReason {
 
 	CredentialsUnverified = 1,
 
-	NoAccount = 2
+	NoAccount = 2,
+
+	NoValidHandle = 3
 }
 
 declare class INRequestRideIntent extends INIntent {
@@ -4710,13 +4714,19 @@ declare class INSearchForNotebookItemsIntent extends INIntent {
 
 	readonly locationSearchType: INLocationSearchType;
 
+	readonly notebookItemIdentifier: string;
+
 	readonly status: INTaskStatus;
 
 	readonly title: INSpeakableString;
 
 	constructor(o: { title: INSpeakableString; content: string; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange; dateSearchType: INDateSearchType; });
 
+	constructor(o: { title: INSpeakableString; content: string; itemType: INNotebookItemType; status: INTaskStatus; location: CLPlacemark; locationSearchType: INLocationSearchType; dateTime: INDateComponentsRange; dateSearchType: INDateSearchType; notebookItemIdentifier: string; });
+
 	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchType(title: INSpeakableString, content: string, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange, dateSearchType: INDateSearchType): this;
+
+	initWithTitleContentItemTypeStatusLocationLocationSearchTypeDateTimeDateSearchTypeNotebookItemIdentifier(title: INSpeakableString, content: string, itemType: INNotebookItemType, status: INTaskStatus, location: CLPlacemark, locationSearchType: INLocationSearchType, dateTime: INDateComponentsRange, dateSearchType: INDateSearchType, notebookItemIdentifier: string): this;
 }
 
 interface INSearchForNotebookItemsIntentHandling extends NSObjectProtocol {
@@ -5097,7 +5107,9 @@ declare const enum INSendPaymentIntentResponseCode {
 
 	FailureNoBankAccount = 11,
 
-	FailureNotEligible = 12
+	FailureNotEligible = 12,
+
+	FailureTermsAndConditionsAcceptanceRequired = 13
 }
 
 declare class INSendPaymentPayeeResolutionResult extends INPersonResolutionResult {
@@ -5131,7 +5143,9 @@ declare const enum INSendPaymentPayeeUnsupportedReason {
 
 	InsufficientFunds = 2,
 
-	NoAccount = 3
+	NoAccount = 3,
+
+	NoValidHandle = 4
 }
 
 declare class INSendRideFeedbackIntent extends INIntent {
@@ -5839,7 +5853,7 @@ declare const enum INSpatialEvent {
 	Depart = 2
 }
 
-declare class INSpatialEventTrigger extends NSObject {
+declare class INSpatialEventTrigger extends NSObject implements NSSecureCoding {
 
 	static alloc(): INSpatialEventTrigger; // inherited from NSObject
 
@@ -5849,7 +5863,15 @@ declare class INSpatialEventTrigger extends NSObject {
 
 	readonly placemark: CLPlacemark;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { placemark: CLPlacemark; event: INSpatialEvent; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithPlacemarkEvent(placemark: CLPlacemark, event: INSpatialEvent): this;
 }
@@ -5890,7 +5912,7 @@ declare var INSpeakable: {
 	prototype: INSpeakable;
 };
 
-declare class INSpeakableString extends NSObject implements INSpeakable {
+declare class INSpeakableString extends NSObject implements INSpeakable, NSSecureCoding {
 
 	static alloc(): INSpeakableString; // inherited from NSObject
 
@@ -5918,6 +5940,10 @@ declare class INSpeakableString extends NSObject implements INSpeakable {
 
 	readonly  // inherited from NSObjectProtocol
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { identifier: string; spokenPhrase: string; pronunciationHint: string; });
 
 	constructor(o: { spokenPhrase: string; });
@@ -5927,6 +5953,10 @@ declare class INSpeakableString extends NSObject implements INSpeakable {
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithIdentifierSpokenPhrasePronunciationHint(identifier: string, spokenPhrase: string, pronunciationHint: string): this;
 

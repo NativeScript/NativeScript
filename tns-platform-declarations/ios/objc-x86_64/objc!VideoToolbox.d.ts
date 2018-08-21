@@ -483,6 +483,12 @@ declare const kVTVideoDecoderMalfunctionErr: number;
 
 declare const kVTVideoDecoderNotAvailableNowErr: number;
 
+declare const kVTVideoDecoderRemovedErr: number;
+
+declare var kVTVideoDecoderSpecification_PreferredDecoderGPURegistryID: string;
+
+declare var kVTVideoDecoderSpecification_RequiredDecoderGPURegistryID: string;
+
 declare const kVTVideoDecoderUnsupportedDataFormatErr: number;
 
 declare const kVTVideoEncoderAuthorizationErr: number;

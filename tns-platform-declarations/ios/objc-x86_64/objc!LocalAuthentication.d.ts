@@ -16,6 +16,8 @@ declare const enum LAAccessControlOperation {
 
 declare const enum LABiometryType {
 
+	TypeNone = 0,
+
 	None = 0,
 
 	TypeTouchID = 1,

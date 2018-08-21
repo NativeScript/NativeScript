@@ -234,6 +234,8 @@ declare var CBConnectPeripheralOptionNotifyOnDisconnectionKey: string;
 
 declare var CBConnectPeripheralOptionNotifyOnNotificationKey: string;
 
+declare var CBConnectPeripheralOptionStartDelayKey: string;
+
 declare class CBDescriptor extends CBAttribute {
 
 	static alloc(): CBDescriptor; // inherited from NSObject

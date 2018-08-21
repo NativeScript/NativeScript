@@ -718,6 +718,8 @@ declare const enum CGImageByteOrderInfo {
 
 	kCGImageByteOrderMask = 28672,
 
+	kCGImageByteOrderDefault = 0,
+
 	kCGImageByteOrder16Little = 4096,
 
 	kCGImageByteOrder32Little = 8192,

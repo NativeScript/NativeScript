@@ -620,6 +620,8 @@ declare var PKPaymentNetworkCarteBancaire: string;
 
 declare var PKPaymentNetworkCarteBancaires: string;
 
+declare var PKPaymentNetworkCartesBancaires: string;
+
 declare var PKPaymentNetworkChinaUnionPay: string;
 
 declare var PKPaymentNetworkDiscover: string;
@@ -834,19 +836,34 @@ declare const enum PKShippingType {
 	ServicePickup = 3
 }
 
-declare class PKSuicaPassProperties extends NSObject {
+declare class PKSuicaPassProperties extends PKTransitPassProperties {
 
 	static alloc(): PKSuicaPassProperties; // inherited from NSObject
 
 	static new(): PKSuicaPassProperties; // inherited from NSObject
 
-	static passPropertiesForPass(pass: PKPass): PKSuicaPassProperties;
+	static passPropertiesForPass(pass: PKPass): PKSuicaPassProperties; // inherited from PKTransitPassProperties
 
-	readonly blacklisted: boolean;
+	readonly balanceAllowedForCommute: boolean;
 
 	readonly greenCarTicketUsed: boolean;
 
 	readonly inShinkansenStation: boolean;
+
+	readonly lowBalanceGateNotificationEnabled: boolean;
+}
+
+declare class PKTransitPassProperties extends NSObject {
+
+	static alloc(): PKTransitPassProperties; // inherited from NSObject
+
+	static new(): PKTransitPassProperties; // inherited from NSObject
+
+	static passPropertiesForPass(pass: PKPass): PKTransitPassProperties;
+
+	readonly blacklisted: boolean;
+
+	readonly expirationDate: Date;
 
 	readonly inStation: boolean;
 
