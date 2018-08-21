@@ -825,7 +825,6 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
 
             //if a child view asks to not be clipped we must set it up for us too
             if (child.style.clipToBounds === false) {
-                console.log("adding child not clipping");
                 this.nativeViewProtected.setClipChildren(false);
             }
             return true;
