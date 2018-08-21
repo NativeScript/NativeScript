@@ -80,7 +80,7 @@ class WKNavigationDelegateImpl extends NSObject
 }
 
 export class WebView extends WebViewBase {
-    private _ios: WKWebView;
+    nativeViewProtected: WKWebView;
     private _delegate: any;
 
     createNativeView() {
@@ -113,51 +113,51 @@ export class WebView extends WebViewBase {
     @profile
     public onLoaded() {
         super.onLoaded();
-        this._ios.navigationDelegate = this._delegate;
+        this.ios.navigationDelegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.navigationDelegate = null;
+        this.ios.navigationDelegate = null;
         super.onUnloaded();
     }
 
     get ios(): WKWebView {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     public stopLoading() {
-        this._ios.stopLoading();
+        this.ios.stopLoading();
     }
 
     public _loadUrl(src: string) {
         if (src.startsWith("file:///")) {
-            this._ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
+            this.ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
         } else {
-            this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
+            this.ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
         }
     }
 
     public _loadData(content: string) {
-        this._ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${knownFolders.currentApp().path}/`));
+        this.ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${knownFolders.currentApp().path}/`));
     }
 
     get canGoBack(): boolean {
-        return this._ios.canGoBack;
+        return this.ios.canGoBack;
     }
 
     get canGoForward(): boolean {
-        return this._ios.canGoForward;
+        return this.ios.canGoForward;
     }
 
     public goBack() {
-        this._ios.goBack();
+        this.ios.goBack();
     }
 
     public goForward() {
-        this._ios.goForward();
+        this.ios.goForward();
     }
 
     public reload() {
-        this._ios.reload();
+        this.ios.reload();
     }
 } 
