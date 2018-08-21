@@ -280,7 +280,7 @@ export class ListView extends ListViewBase {
     }
 
     private _scrollToIndex(index: number, animated: boolean = true) {
-        if (!this._ios) {
+        if (!this.ios) {
             return;
         }
 
@@ -293,7 +293,7 @@ export class ListView extends ListViewBase {
                 index = itemsLength - 1;
             }
 
-            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
+            this.ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
                 UITableViewScrollPosition.Top, animated);
         } else if (trace.isEnabled()) {
             trace.write(`Cannot scroll listview to index ${index} when listview items not set`, trace.categories.Binding);
