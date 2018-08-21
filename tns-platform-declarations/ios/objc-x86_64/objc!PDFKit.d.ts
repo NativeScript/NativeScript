@@ -963,21 +963,21 @@ declare var PDFThumbnailViewDocumentEditedNotification: string;
 
 declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 
-	static alloc(): any; // inherited from NSObject
+	static alloc(): PDFView; // inherited from NSObject
 
-	static appearance(): any; // inherited from UIAppearance
+	static appearance(): PDFView; // inherited from UIAppearance
 
-	static appearanceForTraitCollection(trait: UITraitCollection): any; // inherited from UIAppearance
+	static appearanceForTraitCollection(trait: UITraitCollection): PDFView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): any; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): any; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PDFView; // inherited from UIAppearance
 
-	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): any; // inherited from UIAppearance
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): any; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PDFView; // inherited from UIAppearance
 
-	static new(): any; // inherited from NSObject
+	static new(): PDFView; // inherited from NSObject
 
 	autoScales: boolean;
 
@@ -1051,9 +1051,11 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
+	readonly  // inherited from NSObjectProtocol
+
 	annotationsChangedOnPage(page: PDFPage): void;
 
-	areaOfInterestForMouse(event: UIEvent): PDFAreaOfInterest;
+	areaOfInterestForMouse(event: _UIEvent): PDFAreaOfInterest;
 
 	areaOfInterestForPoint(cursorLocation: CGPoint): PDFAreaOfInterest;
 
@@ -1071,7 +1073,7 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 
 	convertRectToPage(rect: CGRect, page: PDFPage): CGRect;
 
-	copy(): any;
+	copy(): void;
 
 	drawPagePostToContext(page: PDFPage, context: any): void;
 

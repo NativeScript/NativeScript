@@ -743,7 +743,7 @@ declare const enum MPMediaType {
 
 	AnyVideo = 65280,
 
-	Any = 4294967295
+	Any = 18446744073709551615
 }
 
 declare class MPMovieAccessLog extends NSObject implements NSCopying {

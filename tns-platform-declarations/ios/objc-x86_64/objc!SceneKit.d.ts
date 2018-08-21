@@ -2155,6 +2155,32 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	scale: SCNVector3;
 
+	simdEulerAngles: interop.Reference<number>;
+
+	simdOrientation: simd_quatf;
+
+	simdPivot: simd_float4x4;
+
+	simdPosition: interop.Reference<number>;
+
+	simdRotation: interop.Reference<number>;
+
+	simdScale: interop.Reference<number>;
+
+	simdTransform: simd_float4x4;
+
+	readonly simdWorldFront: interop.Reference<number>;
+
+	simdWorldOrientation: simd_quatf;
+
+	simdWorldPosition: interop.Reference<number>;
+
+	readonly simdWorldRight: interop.Reference<number>;
+
+	simdWorldTransform: simd_float4x4;
+
+	readonly simdWorldUp: interop.Reference<number>;
+
 	skinner: SCNSkinner;
 
 	transform: SCNMatrix4;
@@ -2176,6 +2202,12 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	static readonly localRight: SCNVector3;
 
 	static readonly localUp: SCNVector3;
+
+	static readonly simdLocalFront: interop.Reference<number>;
+
+	static readonly simdLocalRight: interop.Reference<number>;
+
+	static readonly simdLocalUp: interop.Reference<number>;
 
 	readonly actionKeys: NSArray<string>; // inherited from SCNActionable
 
@@ -2340,6 +2372,28 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	setWorldTransform(worldTransform: SCNMatrix4): void;
 
 	shouldUpdateFocusInContext(context: UIFocusUpdateContext): boolean;
+
+	simdConvertPositionFromNode(position: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
+
+	simdConvertPositionToNode(position: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
+
+	simdConvertTransformFromNode(transform: simd_float4x4, node: SCNNode): simd_float4x4;
+
+	simdConvertTransformToNode(transform: simd_float4x4, node: SCNNode): simd_float4x4;
+
+	simdConvertVectorFromNode(vector: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
+
+	simdConvertVectorToNode(vector: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
+
+	simdLocalRotateBy(rotation: simd_quatf): void;
+
+	simdLocalTranslateBy(translation: interop.Reference<number>): void;
+
+	simdLookAt(worldTarget: interop.Reference<number>): void;
+
+	simdLookAtUpLocalFront(worldTarget: interop.Reference<number>, worldUp: interop.Reference<number>, localFront: interop.Reference<number>): void;
+
+	simdRotateByAroundTarget(worldRotation: simd_quatf, worldTarget: interop.Reference<number>): void;
 
 	updateFocusIfNeeded(): void;
 }
@@ -2865,7 +2919,7 @@ declare const enum SCNPhysicsCollisionCategory {
 
 	Static = 2,
 
-	All = 4294967295
+	All = 18446744073709551615
 }
 
 declare class SCNPhysicsConeTwistJoint extends SCNPhysicsBehavior {

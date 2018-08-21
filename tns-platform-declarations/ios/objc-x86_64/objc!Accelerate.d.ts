@@ -1552,10 +1552,6 @@ declare function clauu2_(__uplo: string, __n: interop.Pointer | interop.Referenc
 
 declare function clauum_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
-declare function conv(__A: interop.Pointer | interop.Reference<number>, __IA: number, __F: interop.Pointer | interop.Reference<number>, __IF: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number, __P: number): void;
-
-declare function convD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __F: interop.Pointer | interop.Reference<number>, __IF: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number, __P: number): void;
-
 declare function cpbcon_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cpbequ_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -1635,10 +1631,6 @@ declare function cpttrf_(__n: interop.Pointer | interop.Reference<number>, __d__
 declare function cpttrs_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_complex>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cptts2_(__iuplo: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_complex>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>): number;
-
-declare function create_fftsetup(__Log2n: number, __Radix: number): interop.Pointer | interop.Reference<any>;
-
-declare function create_fftsetupD(__Log2n: number, __Radix: number): interop.Pointer | interop.Reference<any>;
 
 declare function crot_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>, __cy: interop.Pointer | interop.Reference<__CLPK_complex>, __incy: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<__CLPK_complex>): number;
 
@@ -1723,10 +1715,6 @@ declare function ctgsna_(__job: string, __howmny: string, __select: interop.Poin
 declare function ctgsy2_(__trans: string, __ijob: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldd: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_complex>, __lde: interop.Pointer | interop.Reference<number>, __f: interop.Pointer | interop.Reference<__CLPK_complex>, __ldf: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __rdsum: interop.Pointer | interop.Reference<number>, __rdscal: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function ctgsyl_(__trans: string, __ijob: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldd: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_complex>, __lde: interop.Pointer | interop.Reference<number>, __f: interop.Pointer | interop.Reference<__CLPK_complex>, __ldf: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __dif: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
-
-declare function ctoz(__C: interop.Pointer | interop.Reference<DSPComplex>, __IC: number, __Z: interop.Pointer | interop.Reference<DSPSplitComplex>, __IZ: number, __N: number): void;
-
-declare function ctozD(__C: interop.Pointer | interop.Reference<DSPDoubleComplex>, __IC: number, __Z: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IZ: number, __N: number): void;
 
 declare function ctpcon_(__norm: string, __uplo: string, __diag: string, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1825,10 +1813,6 @@ declare function dbdsdc_(__uplo: string, __compq: string, __n: interop.Pointer |
 declare function dbdsqr_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __ncvt: interop.Pointer | interop.Reference<number>, __nru: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function ddisna_(__job: string, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
-
-declare function destroy_fftsetup(__setup: interop.Pointer | interop.Reference<any>): void;
-
-declare function destroy_fftsetupD(__setup: interop.Pointer | interop.Reference<any>): void;
 
 declare function dgbbrd_(__vect: string, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __pt: interop.Pointer | interop.Reference<number>, __ldpt: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2328,10 +2312,6 @@ declare function dormrz_(__side: string, __trans: string, __m: interop.Pointer |
 
 declare function dormtr_(__side: string, __uplo: string, __trans: string, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
-declare function dotpr(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
-
-declare function dotprD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
-
 declare function dpbcon_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dpbequ_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -2600,118 +2580,6 @@ declare function dtzrzf_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function dzsum1_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>): number;
 
-declare function f3x3(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>): void;
-
-declare function f3x3D(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>): void;
-
-declare function f5x5(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>): void;
-
-declare function f5x5D(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>): void;
-
-declare function fft2d_zip(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zipD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zipt(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC1: number, __IC0: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_ziptD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zopD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zopt(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zoptD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zrip(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zripD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __flag: number): void;
-
-declare function fft2d_zript(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zriptD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N0: number, __Log2N1: number, __flag: number): void;
-
-declare function fft2d_zrop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zropD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zropt(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft2d_zroptD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA0: number, __IA1: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC0: number, __IC1: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N0: number, __Log2N1: number, __Direction: number): void;
-
-declare function fft3_zop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft3_zopD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft5_zop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft5_zopD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zip(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zipD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zipt(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_ziptD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_zop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zopD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zopt(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_zoptD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_zrip(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zripD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zript(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_zriptD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_zrop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zropD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Log2N: number, __Direction: number): void;
-
-declare function fft_zropt(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fft_zroptD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __Direction: number): void;
-
-declare function fftm_zip(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IM: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zipD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IM: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zipt(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IM: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_ziptD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IM: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IMC: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zopD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IMC: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zopt(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IMC: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zoptD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IMC: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zrip(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IM: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zripD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IM: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zript(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IM: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zriptD(__Setup: interop.Pointer | interop.Reference<any>, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IM: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zrop(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IMC: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zropD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IMC: number, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zropt(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __IMC: number, __Buffer: interop.Pointer | interop.Reference<DSPSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
-declare function fftm_zroptD(__Setup: interop.Pointer | interop.Reference<any>, __A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __IMA: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __IMC: number, __Buffer: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __Log2N: number, __M: number, __Direction: number): void;
-
 declare function icmax1_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ieeeck_(__ispec: interop.Pointer | interop.Reference<number>, __zero: interop.Pointer | interop.Reference<number>, __one: interop.Pointer | interop.Reference<number>): number;
@@ -2747,10 +2615,6 @@ declare function ilaver_Function(__vers_major__: interop.Pointer | interop.Refer
 declare function ilazlc_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function ilazlr_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>): number;
-
-declare function imgfir(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __P: number, __Q: number): void;
-
-declare function imgfirD(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __P: number, __Q: number): void;
 
 declare function iparmq_(__ispec: interop.Pointer | interop.Reference<number>, __name__: string, __opts: string, __n: interop.Pointer | interop.Reference<number>, __ilo: interop.Pointer | interop.Reference<number>, __ihi: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>): number;
 
@@ -3007,14 +2871,6 @@ declare var kvImage_YpCbCrToARGBMatrix_ITU_R_601_4: interop.Pointer | interop.Re
 declare var kvImage_YpCbCrToARGBMatrix_ITU_R_709_2: interop.Pointer | interop.Reference<vImage_YpCbCrToARGBMatrix>;
 
 declare function lsamen_(__n: interop.Pointer | interop.Reference<number>, __ca: string, __cb: string): number;
-
-declare function mmul(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number, __P: number): void;
-
-declare function mmulD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number, __P: number): void;
-
-declare function mtrans(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number): void;
-
-declare function mtransD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number): void;
 
 declare const enum quadrature_status {
 
@@ -4923,17 +4779,17 @@ declare const enum vImageARGBType {
 	kvImageARGB16Q12 = 2
 }
 
-declare function vImageAffineWarpCG_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
+declare function vImageAffineWarpCG_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
-declare function vImageAffineWarpCG_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
+declare function vImageAffineWarpCG_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
-declare function vImageAffineWarpCG_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
+declare function vImageAffineWarpCG_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
-declare function vImageAffineWarpCG_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
+declare function vImageAffineWarpCG_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
-declare function vImageAffineWarpCG_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: number, flags: number): number;
+declare function vImageAffineWarpCG_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: number, flags: number): number;
 
-declare function vImageAffineWarpCG_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: number, flags: number): number;
+declare function vImageAffineWarpCG_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: number, flags: number): number;
 
 declare function vImageAffineWarpD_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
@@ -6122,34 +5978,6 @@ interface vImage_YpCbCrToARGBMatrix {
 }
 declare var vImage_YpCbCrToARGBMatrix: interop.StructType<vImage_YpCbCrToARGBMatrix>;
 
-declare function vadd(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vaddD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vam(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
-
-declare function vamD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __D: interop.Pointer | interop.Reference<number>, __IDD: number, __N: number): void;
-
-declare function vmul(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vmulD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vsmul(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vsmulD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vsq(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vsqD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vssq(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vssqD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vsub(__B: interop.Pointer | interop.Reference<number>, __IB: number, __A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
-declare function vsubD(__B: interop.Pointer | interop.Reference<number>, __IB: number, __A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
-
 declare function vvacos(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): void;
 
 declare function vvacosf(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): void;
@@ -6318,15 +6146,7 @@ declare function zbdsqr_(__uplo: string, __n: interop.Pointer | interop.Referenc
 
 declare function zcgesv_(__n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __swork: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __iter: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
-declare function zconv(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __F: interop.Pointer | interop.Reference<DSPSplitComplex>, __IF: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number, __P: number): void;
-
-declare function zconvD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __F: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IF: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number, __P: number): void;
-
 declare function zcposv_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __swork: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __iter: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
-
-declare function zdotpr(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __N: number): void;
-
-declare function zdotprD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __N: number): void;
 
 declare function zdrscl_(__n: interop.Pointer | interop.Reference<number>, __sa: interop.Pointer | interop.Reference<number>, __sx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>): number;
 
@@ -6566,10 +6386,6 @@ declare function zhsein_(__side: string, __eigsrc: string, __initv: string, __se
 
 declare function zhseqr_(__job: string, __compz: string, __n: interop.Pointer | interop.Reference<number>, __ilo: interop.Pointer | interop.Reference<number>, __ihi: interop.Pointer | interop.Reference<number>, __h__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldh: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __z__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
-declare function zidotpr(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __N: number): void;
-
-declare function zidotprD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __N: number): void;
-
 declare function zlabrd_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nb: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __tauq: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __taup: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __y: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldy: interop.Pointer | interop.Reference<number>): number;
 
 declare function zlacgv_(__n: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>): number;
@@ -6758,22 +6574,6 @@ declare function zlauu2_(__uplo: string, __n: interop.Pointer | interop.Referenc
 
 declare function zlauum_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
-declare function zmma(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPSplitComplex>, __ID: number, __M: number, __N: number, __P: number): void;
-
-declare function zmmaD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __ID: number, __M: number, __N: number, __P: number): void;
-
-declare function zmms(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPSplitComplex>, __ID: number, __M: number, __N: number, __P: number): void;
-
-declare function zmmsD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __ID: number, __M: number, __N: number, __P: number): void;
-
-declare function zmmul(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __M: number, __N: number, __P: number): void;
-
-declare function zmmulD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __M: number, __N: number, __P: number): void;
-
-declare function zmsm(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPSplitComplex>, __ID: number, __M: number, __N: number, __P: number): void;
-
-declare function zmsmD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __ID: number, __M: number, __N: number, __P: number): void;
-
 declare function zpbcon_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zpbequ_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -6854,23 +6654,7 @@ declare function zpttrs_(__uplo: string, __n: interop.Pointer | interop.Referenc
 
 declare function zptts2_(__iuplo: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>): number;
 
-declare function zrdotpr(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __N: number): void;
-
-declare function zrdotprD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __N: number): void;
-
 declare function zrot_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>, __cy: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incy: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<__CLPK_doublecomplex>): number;
-
-declare function zrvadd(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number): void;
-
-declare function zrvaddD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number): void;
-
-declare function zrvmul(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number): void;
-
-declare function zrvmulD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number): void;
-
-declare function zrvsub(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number): void;
-
-declare function zrvsubD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number): void;
 
 declare function zspcon_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6951,10 +6735,6 @@ declare function ztgsna_(__job: string, __howmny: string, __select: interop.Poin
 declare function ztgsy2_(__trans: string, __ijob: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldd: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lde: interop.Pointer | interop.Reference<number>, __f: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldf: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __rdsum: interop.Pointer | interop.Reference<number>, __rdscal: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function ztgsyl_(__trans: string, __ijob: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldd: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lde: interop.Pointer | interop.Reference<number>, __f: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldf: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __dif: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
-
-declare function ztoc(__Z: interop.Pointer | interop.Reference<DSPSplitComplex>, __IZ: number, __C: interop.Pointer | interop.Reference<DSPComplex>, __IC: number, __N: number): void;
-
-declare function ztocD(__Z: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IZ: number, __C: interop.Pointer | interop.Reference<DSPDoubleComplex>, __IC: number, __N: number): void;
 
 declare function ztpcon_(__norm: string, __uplo: string, __diag: string, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -7047,19 +6827,3 @@ declare function zunmtr_(__side: string, __uplo: string, __trans: string, __m: i
 declare function zupgtr_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __q: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zupmtr_(__side: string, __uplo: string, __trans: string, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __c__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
-
-declare function zvadd(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number): void;
-
-declare function zvaddD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number): void;
-
-declare function zvcma(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPSplitComplex>, __ID: number, __N: number): void;
-
-declare function zvcmaD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __D: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __ID: number, __N: number): void;
-
-declare function zvmul(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number, __Conjugate: number): void;
-
-declare function zvmulD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number, __Conjugate: number): void;
-
-declare function zvsub(__A: interop.Pointer | interop.Reference<DSPSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPSplitComplex>, __IC: number, __N: number): void;
-
-declare function zvsubD(__A: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IA: number, __B: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IB: number, __C: interop.Pointer | interop.Reference<DSPDoubleSplitComplex>, __IC: number, __N: number): void;

@@ -47,7 +47,11 @@ declare class GKAgent2D extends GKAgent implements NSCoding {
 
 	static new(): GKAgent2D; // inherited from NSObject
 
+	position: interop.Reference<number>;
+
 	rotation: number;
+
+	readonly velocity: interop.Reference<number>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -62,7 +66,13 @@ declare class GKAgent3D extends GKAgent {
 
 	static new(): GKAgent3D; // inherited from NSObject
 
+	position: interop.Reference<number>;
+
 	rightHanded: boolean;
+
+	rotation: simd_float3x3;
+
+	readonly velocity: interop.Reference<number>;
 }
 
 interface GKAgentDelegate extends NSObjectProtocol {
@@ -126,6 +136,12 @@ declare class GKBillowNoiseSource extends GKCoherentNoiseSource {
 	initWithFrequencyOctaveCountPersistenceLacunaritySeed(frequency: number, octaveCount: number, persistence: number, lacunarity: number, seed: number): this;
 }
 
+interface GKBox {
+	boxMin: interop.Reference<number>;
+	boxMax: interop.Reference<number>;
+}
+declare var GKBox: interop.StructType<GKBox>;
+
 declare class GKCheckerboardNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKCheckerboardNoiseSource; // inherited from NSObject
@@ -148,6 +164,8 @@ declare class GKCircleObstacle extends GKObstacle {
 	static new(): GKCircleObstacle; // inherited from NSObject
 
 	static obstacleWithRadius(radius: number): GKCircleObstacle;
+
+	position: interop.Reference<number>;
 
 	radius: number;
 
@@ -532,6 +550,14 @@ declare class GKGraphNode2D extends GKGraphNode {
 	static alloc(): GKGraphNode2D; // inherited from NSObject
 
 	static new(): GKGraphNode2D; // inherited from NSObject
+
+	static nodeWithPoint(point: interop.Reference<number>): GKGraphNode2D;
+
+	position: interop.Reference<number>;
+
+	constructor(o: { point: interop.Reference<number>; });
+
+	initWithPoint(point: interop.Reference<number>): this;
 }
 
 declare class GKGraphNode3D extends GKGraphNode {
@@ -539,11 +565,23 @@ declare class GKGraphNode3D extends GKGraphNode {
 	static alloc(): GKGraphNode3D; // inherited from NSObject
 
 	static new(): GKGraphNode3D; // inherited from NSObject
+
+	static nodeWithPoint(point: interop.Reference<number>): GKGraphNode3D;
+
+	position: interop.Reference<number>;
+
+	constructor(o: { point: interop.Reference<number>; });
+
+	initWithPoint(point: interop.Reference<number>): this;
 }
 
 declare class GKGridGraph<NodeType> extends GKGraph {
 
 	static alloc<NodeType>(): GKGridGraph<NodeType>; // inherited from NSObject
+
+	static graphFromGridStartingAtWidthHeightDiagonalsAllowed<NodeType>(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean): GKGridGraph<NodeType>;
+
+	static graphFromGridStartingAtWidthHeightDiagonalsAllowedNodeClass<NodeType>(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean, nodeClass: typeof NSObject): GKGridGraph<NodeType>;
 
 	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode>): GKGridGraph<NodeType>; // inherited from GKGraph
 
@@ -553,11 +591,23 @@ declare class GKGridGraph<NodeType> extends GKGraph {
 
 	readonly gridHeight: number;
 
+	readonly gridOrigin: interop.Reference<number>;
+
 	readonly gridWidth: number;
+
+	constructor(o: { fromGridStartingAt: interop.Reference<number>; width: number; height: number; diagonalsAllowed: boolean; });
+
+	constructor(o: { fromGridStartingAt: interop.Reference<number>; width: number; height: number; diagonalsAllowed: boolean; nodeClass: typeof NSObject; });
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
 	connectNodeToAdjacentNodes(node: GKGridGraphNode): void;
+
+	initFromGridStartingAtWidthHeightDiagonalsAllowed(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean): this;
+
+	initFromGridStartingAtWidthHeightDiagonalsAllowedNodeClass(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean, nodeClass: typeof NSObject): this;
+
+	nodeAtGridPosition(position: interop.Reference<number>): NodeType;
 }
 
 declare class GKGridGraphNode extends GKGraphNode {
@@ -565,6 +615,14 @@ declare class GKGridGraphNode extends GKGraphNode {
 	static alloc(): GKGridGraphNode; // inherited from NSObject
 
 	static new(): GKGridGraphNode; // inherited from NSObject
+
+	static nodeWithGridPosition(gridPosition: interop.Reference<number>): GKGridGraphNode;
+
+	readonly gridPosition: interop.Reference<number>;
+
+	constructor(o: { gridPosition: interop.Reference<number>; });
+
+	initWithGridPosition(gridPosition: interop.Reference<number>): this;
 }
 
 declare class GKLinearCongruentialRandomSource extends GKRandomSource {
@@ -597,6 +655,10 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	static alloc<NodeType>(): GKMeshGraph<NodeType>; // inherited from NSObject
 
+	static graphWithBufferRadiusMinCoordinateMaxCoordinate<NodeType>(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>): GKMeshGraph<NodeType>;
+
+	static graphWithBufferRadiusMinCoordinateMaxCoordinateNodeClass<NodeType>(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>, nodeClass: typeof NSObject): GKMeshGraph<NodeType>;
+
 	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode>): GKMeshGraph<NodeType>; // inherited from GKGraph
 
 	static new<NodeType>(): GKMeshGraph<NodeType>; // inherited from NSObject
@@ -609,13 +671,23 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	triangulationMode: GKMeshGraphTriangulationMode;
 
+	constructor(o: { bufferRadius: number; minCoordinate: interop.Reference<number>; maxCoordinate: interop.Reference<number>; });
+
+	constructor(o: { bufferRadius: number; minCoordinate: interop.Reference<number>; maxCoordinate: interop.Reference<number>; nodeClass: typeof NSObject; });
+
 	addObstacles(obstacles: NSArray<GKPolygonObstacle>): void;
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
 	connectNodeUsingObstacles(node: NodeType): void;
 
+	initWithBufferRadiusMinCoordinateMaxCoordinate(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>): this;
+
+	initWithBufferRadiusMinCoordinateMaxCoordinateNodeClass(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>, nodeClass: typeof NSObject): this;
+
 	removeObstacles(obstacles: NSArray<GKPolygonObstacle>): void;
+
+	triangleAtIndex(index: number): GKTriangle;
 
 	triangulate(): void;
 }
@@ -792,6 +864,8 @@ declare class GKNoise extends NSObject {
 
 	minimumWithNoise(noise: GKNoise): void;
 
+	moveBy(delta: interop.Reference<number>): void;
+
 	multiplyWithNoise(noise: GKNoise): void;
 
 	raiseToPower(power: number): void;
@@ -801,6 +875,12 @@ declare class GKNoise extends NSObject {
 	remapValuesToCurveWithControlPoints(controlPoints: NSDictionary<number, number>): void;
 
 	remapValuesToTerracesWithPeaksTerracesInverted(peakInputValues: NSArray<number>, inverted: boolean): void;
+
+	rotateBy(radians: interop.Reference<number>): void;
+
+	scaleBy(factor: interop.Reference<number>): void;
+
+	valueAtPosition(position: interop.Reference<number>): number;
 }
 
 declare class GKNoiseMap extends NSObject {
@@ -811,11 +891,29 @@ declare class GKNoiseMap extends NSObject {
 
 	static noiseMapWithNoise(noise: GKNoise): GKNoiseMap;
 
+	static noiseMapWithNoiseSizeOriginSampleCountSeamless(noise: GKNoise, size: interop.Reference<number>, origin: interop.Reference<number>, sampleCount: interop.Reference<number>, seamless: boolean): GKNoiseMap;
+
+	readonly origin: interop.Reference<number>;
+
+	readonly sampleCount: interop.Reference<number>;
+
 	readonly seamless: boolean;
+
+	readonly size: interop.Reference<number>;
 
 	constructor(o: { noise: GKNoise; });
 
+	constructor(o: { noise: GKNoise; size: interop.Reference<number>; origin: interop.Reference<number>; sampleCount: interop.Reference<number>; seamless: boolean; });
+
 	initWithNoise(noise: GKNoise): this;
+
+	initWithNoiseSizeOriginSampleCountSeamless(noise: GKNoise, size: interop.Reference<number>, origin: interop.Reference<number>, sampleCount: interop.Reference<number>, seamless: boolean): this;
+
+	interpolatedValueAtPosition(position: interop.Reference<number>): number;
+
+	setValueAtPosition(value: number, position: interop.Reference<number>): void;
+
+	valueAtPosition(position: interop.Reference<number>): number;
 }
 
 declare class GKNoiseSource extends NSObject {
@@ -885,6 +983,20 @@ declare class GKOctree<ElementType> extends NSObject {
 
 	static new<ElementType>(): GKOctree<ElementType>; // inherited from NSObject
 
+	static octreeWithBoundingBoxMinimumCellSize<ElementType>(box: GKBox, minCellSize: number): GKOctree<ElementType>;
+
+	constructor(o: { boundingBox: GKBox; minimumCellSize: number; });
+
+	addElementWithBox(element: ElementType, box: GKBox): GKOctreeNode;
+
+	addElementWithPoint(element: ElementType, point: interop.Reference<number>): GKOctreeNode;
+
+	elementsAtPoint(point: interop.Reference<number>): NSArray<ElementType>;
+
+	elementsInBox(box: GKBox): NSArray<ElementType>;
+
+	initWithBoundingBoxMinimumCellSize(box: GKBox, minCellSize: number): this;
+
 	removeElement(element: ElementType): boolean;
 
 	removeElementWithNode(element: ElementType, node: GKOctreeNode): boolean;
@@ -895,6 +1007,8 @@ declare class GKOctreeNode extends NSObject {
 	static alloc(): GKOctreeNode; // inherited from NSObject
 
 	static new(): GKOctreeNode; // inherited from NSObject
+
+	readonly box: GKBox;
 }
 
 declare class GKPath extends NSObject {
@@ -903,7 +1017,11 @@ declare class GKPath extends NSObject {
 
 	static new(): GKPath; // inherited from NSObject
 
+	static pathWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
+
 	static pathWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode>, radius: number): GKPath;
+
+	static pathWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
 
 	cyclical: boolean;
 
@@ -911,9 +1029,23 @@ declare class GKPath extends NSObject {
 
 	radius: number;
 
+	constructor(o: { float3Points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
+
 	constructor(o: { graphNodes: NSArray<GKGraphNode>; radius: number; });
 
+	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
+
+	float2AtIndex(index: number): interop.Reference<number>;
+
+	float3AtIndex(index: number): interop.Reference<number>;
+
+	initWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
+
 	initWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode>, radius: number): this;
+
+	initWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
+
+	pointAtIndex(index: number): interop.Reference<number>;
 }
 
 declare class GKPerlinNoiseSource extends GKCoherentNoiseSource {
@@ -937,20 +1069,48 @@ declare class GKPolygonObstacle extends GKObstacle implements NSCoding {
 
 	static new(): GKPolygonObstacle; // inherited from NSObject
 
+	static obstacleWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>>, numPoints: number): GKPolygonObstacle;
+
 	readonly vertexCount: number;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; });
+
 	encodeWithCoder(aCoder: NSCoder): void;
 
 	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>>, numPoints: number): this;
+
+	vertexAtIndex(index: number): interop.Reference<number>;
 }
+
+interface GKQuad {
+	quadMin: interop.Reference<number>;
+	quadMax: interop.Reference<number>;
+}
+declare var GKQuad: interop.StructType<GKQuad>;
 
 declare class GKQuadtree<ElementType> extends NSObject {
 
 	static alloc<ElementType>(): GKQuadtree<ElementType>; // inherited from NSObject
 
 	static new<ElementType>(): GKQuadtree<ElementType>; // inherited from NSObject
+
+	static quadtreeWithBoundingQuadMinimumCellSize<ElementType>(quad: GKQuad, minCellSize: number): GKQuadtree<ElementType>;
+
+	constructor(o: { boundingQuad: GKQuad; minimumCellSize: number; });
+
+	addElementWithPoint(element: ElementType, point: interop.Reference<number>): GKQuadtreeNode;
+
+	addElementWithQuad(element: ElementType, quad: GKQuad): GKQuadtreeNode;
+
+	elementsAtPoint(point: interop.Reference<number>): NSArray<ElementType>;
+
+	elementsInQuad(quad: GKQuad): NSArray<ElementType>;
+
+	initWithBoundingQuadMinimumCellSize(quad: GKQuad, minCellSize: number): this;
 
 	removeElement(element: ElementType): boolean;
 
@@ -962,6 +1122,8 @@ declare class GKQuadtreeNode extends NSObject {
 	static alloc(): GKQuadtreeNode; // inherited from NSObject
 
 	static new(): GKQuadtreeNode; // inherited from NSObject
+
+	readonly quad: GKQuad;
 }
 
 declare class GKRTree<ElementType> extends NSObject {
@@ -976,7 +1138,13 @@ declare class GKRTree<ElementType> extends NSObject {
 
 	constructor(o: { maxNumberOfChildren: number; });
 
+	addElementBoundingRectMinBoundingRectMaxSplitStrategy(element: ElementType, boundingRectMin: interop.Reference<number>, boundingRectMax: interop.Reference<number>, splitStrategy: GKRTreeSplitStrategy): void;
+
+	elementsInBoundingRectMinRectMax(rectMin: interop.Reference<number>, rectMax: interop.Reference<number>): NSArray<ElementType>;
+
 	initWithMaxNumberOfChildren(maxNumberOfChildren: number): this;
+
+	removeElementBoundingRectMinBoundingRectMax(element: ElementType, boundingRectMin: interop.Reference<number>, boundingRectMax: interop.Reference<number>): void;
 }
 
 declare const enum GKRTreeSplitStrategy {
@@ -1309,6 +1477,8 @@ declare class GKSphereObstacle extends GKObstacle {
 
 	static obstacleWithRadius(radius: number): GKSphereObstacle;
 
+	position: interop.Reference<number>;
+
 	radius: number;
 
 	constructor(o: { radius: number; });
@@ -1385,6 +1555,11 @@ declare var GKStrategist: {
 
 	prototype: GKStrategist;
 };
+
+interface GKTriangle {
+	points: interop.Reference<interop.Reference<number>>;
+}
+declare var GKTriangle: interop.StructType<GKTriangle>;
 
 declare class GKVoronoiNoiseSource extends GKNoiseSource {
 

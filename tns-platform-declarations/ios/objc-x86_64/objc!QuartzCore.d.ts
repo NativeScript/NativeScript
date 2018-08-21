@@ -977,7 +977,6 @@ interface _CALayerIvars {
 	refcount: number;
 	magic: number;
 	layer: interop.Pointer | interop.Reference<any>;
-	unused1: interop.Reference<interop.Pointer | interop.Reference<any>>;
 }
 declare var _CALayerIvars: interop.StructType<_CALayerIvars>;
 
