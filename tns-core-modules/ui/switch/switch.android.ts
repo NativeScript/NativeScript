@@ -51,7 +51,6 @@ export class Switch extends SwitchBase {
     public disposeNativeView() {
         const nativeView: any = this.nativeViewProtected;
         nativeView.listener.owner = null;
-        nativeView.listener = null;
         super.disposeNativeView();
     }
 

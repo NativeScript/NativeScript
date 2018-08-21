@@ -64,7 +64,6 @@ export class Button extends ButtonBase {
     public disposeNativeView() {
         if (this.nativeViewProtected) {
             (<any>this.nativeViewProtected).clickListener.owner = null;
-            (<any>this.nativeViewProtected).clickListener = null;
         }
         super.disposeNativeView();
     }

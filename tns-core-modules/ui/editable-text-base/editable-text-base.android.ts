@@ -174,7 +174,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     public disposeNativeView(): void {
         (<any>this.nativeTextViewProtected).listener.owner = null;
-        (<any>this.nativeTextViewProtected).listener = null;
         this._keyListenerCache = null;
         super.disposeNativeView();
     }

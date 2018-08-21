@@ -24,7 +24,7 @@ export class Label extends TextBase implements LabelDefinition {
     private _fixedSize: FixedSize;
 
     public createNativeView() {
-        const view = this.nativeViewProtected = TNSLabel.new();
+        const view = TNSLabel.new();
         view.userInteractionEnabled = true;
         return view;
     }
@@ -36,7 +36,7 @@ export class Label extends TextBase implements LabelDefinition {
     get textWrap(): boolean {
         return this.style.whiteSpace === "normal";
     }
-    set textWrap(value: boolean) {        
+    set textWrap(value: boolean) {
         if (typeof value === "string") {
             value = booleanConverter(value)
         }

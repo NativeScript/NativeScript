@@ -85,9 +85,7 @@ export class ListView extends ListViewBase {
         const nativeView = this.nativeViewProtected;
         nativeView.setAdapter(null);
         (<any>nativeView).itemClickListener.owner = null;
-        (<any>nativeView).itemClickListener = null;
         (<any>nativeView).adapter.owner = null;
-        (<any>nativeView).adapter = null;
         this.clearRealizedCells();
         super.disposeNativeView();
     }

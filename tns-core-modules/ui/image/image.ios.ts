@@ -14,8 +14,6 @@ export class Image extends ImageBase {
         const imageView = UIImageView.new();
         imageView.contentMode = UIViewContentMode.ScaleAspectFit;
         imageView.userInteractionEnabled = true;
-        this.nativeViewProtected = imageView;
-        this._setNativeClipToBounds();
         return imageView;
     }
 

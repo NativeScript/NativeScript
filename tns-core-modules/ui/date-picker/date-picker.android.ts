@@ -70,7 +70,6 @@ export class DatePicker extends DatePickerBase {
 
     public disposeNativeView() {
         (<any>this.nativeViewProtected).listener.owner = null;
-        (<any>this.nativeViewProtected).listener = null;
         super.disposeNativeView();
     }
 
