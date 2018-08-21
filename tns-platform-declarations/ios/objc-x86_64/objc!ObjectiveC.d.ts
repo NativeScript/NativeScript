@@ -163,7 +163,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	dealloc(): void;
 
-	dictionaryWithValuesForKeys(keys: NSArray<string>): NSDictionary<string, any>;
+	dictionaryWithValuesForKeys(keys: NSArray<string> | string[]): NSDictionary<string, any>;
 
 	didChangeValueForKey(key: string): void;
 
@@ -219,17 +219,17 @@ declare class NSObject implements NSObjectProtocol {
 
 	performSelectorOnMainThreadWithObjectWaitUntilDone(aSelector: string, arg: any, wait: boolean): void;
 
-	performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: string, arg: any, wait: boolean, array: NSArray<string>): void;
+	performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: string, arg: any, wait: boolean, array: NSArray<string> | string[]): void;
 
 	performSelectorOnThreadWithObjectWaitUntilDone(aSelector: string, thr: NSThread, arg: any, wait: boolean): void;
 
-	performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: string, thr: NSThread, arg: any, wait: boolean, array: NSArray<string>): void;
+	performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: string, thr: NSThread, arg: any, wait: boolean, array: NSArray<string> | string[]): void;
 
 	performSelectorWithObject(aSelector: string, object: any): any;
 
 	performSelectorWithObjectAfterDelay(aSelector: string, anArgument: any, delay: number): void;
 
-	performSelectorWithObjectAfterDelayInModes(aSelector: string, anArgument: any, delay: number, modes: NSArray<string>): void;
+	performSelectorWithObjectAfterDelayInModes(aSelector: string, anArgument: any, delay: number, modes: NSArray<string> | string[]): void;
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 

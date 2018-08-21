@@ -48,17 +48,17 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): SKAction; // inherited from NSObject
 
-	static animateWithNormalTexturesTimePerFrame(textures: NSArray<SKTexture>, sec: number): SKAction;
+	static animateWithNormalTexturesTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], sec: number): SKAction;
 
-	static animateWithNormalTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture>, sec: number, resize: boolean, restore: boolean): SKAction;
+	static animateWithNormalTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture> | SKTexture[], sec: number, resize: boolean, restore: boolean): SKAction;
 
-	static animateWithTexturesTimePerFrame(textures: NSArray<SKTexture>, sec: number): SKAction;
+	static animateWithTexturesTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], sec: number): SKAction;
 
-	static animateWithTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture>, sec: number, resize: boolean, restore: boolean): SKAction;
+	static animateWithTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture> | SKTexture[], sec: number, resize: boolean, restore: boolean): SKAction;
 
-	static animateWithWarpsTimes(warps: NSArray<SKWarpGeometry>, times: NSArray<number>): SKAction;
+	static animateWithWarpsTimes(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[]): SKAction;
 
-	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry>, times: NSArray<number>, restore: boolean): SKAction;
+	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[], restore: boolean): SKAction;
 
 	static applyAngularImpulseDuration(impulse: number, duration: number): SKAction;
 
@@ -126,7 +126,7 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static followPathSpeed(path: any, speed: number): SKAction;
 
-	static group(actions: NSArray<SKAction>): SKAction;
+	static group(actions: NSArray<SKAction> | SKAction[]): SKAction;
 
 	static hide(): SKAction;
 
@@ -198,7 +198,7 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static scaleYToDuration(scale: number, duration: number): SKAction;
 
-	static sequence(actions: NSArray<SKAction>): SKAction;
+	static sequence(actions: NSArray<SKAction> | SKAction[]): SKAction;
 
 	static setNormalTexture(texture: SKTexture): SKAction;
 
@@ -722,7 +722,7 @@ declare class SKKeyframeSequence extends NSObject implements NSCoding, NSCopying
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithKeyframeValuesTimes(values: NSArray<any>, times: NSArray<number>): this;
+	initWithKeyframeValuesTimes(values: NSArray<any> | any[], times: NSArray<number> | number[]): this;
 
 	removeKeyframeAtIndex(index: number): void;
 
@@ -876,11 +876,11 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 
 	static nodeWithFileNamed(filename: string): SKNode;
 
-	static obstaclesFromNodeBounds(nodes: NSArray<SKNode>): NSArray<GKPolygonObstacle>;
+	static obstaclesFromNodeBounds(nodes: NSArray<SKNode> | SKNode[]): NSArray<GKPolygonObstacle>;
 
-	static obstaclesFromNodePhysicsBodies(nodes: NSArray<SKNode>): NSArray<GKPolygonObstacle>;
+	static obstaclesFromNodePhysicsBodies(nodes: NSArray<SKNode> | SKNode[]): NSArray<GKPolygonObstacle>;
 
-	static obstaclesFromSpriteTexturesAccuracy(sprites: NSArray<SKNode>, accuracy: number): NSArray<GKPolygonObstacle>;
+	static obstaclesFromSpriteTexturesAccuracy(sprites: NSArray<SKNode> | SKNode[], accuracy: number): NSArray<GKPolygonObstacle>;
 
 	alpha: number;
 
@@ -1010,7 +1010,7 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 
 	removeAllChildren(): void;
 
-	removeChildrenInArray(nodes: NSArray<SKNode>): void;
+	removeChildrenInArray(nodes: NSArray<SKNode> | SKNode[]): void;
 
 	removeFromParent(): void;
 
@@ -1061,7 +1061,7 @@ declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): SKPhysicsBody; // inherited from NSObject
 
-	static bodyWithBodies(bodies: NSArray<SKPhysicsBody>): SKPhysicsBody;
+	static bodyWithBodies(bodies: NSArray<SKPhysicsBody> | SKPhysicsBody[]): SKPhysicsBody;
 
 	static bodyWithCircleOfRadius(r: number): SKPhysicsBody;
 
@@ -1573,7 +1573,7 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 
 	static shaderWithSource(source: string): SKShader;
 
-	static shaderWithSourceUniforms(source: string, uniforms: NSArray<SKUniform>): SKShader;
+	static shaderWithSourceUniforms(source: string, uniforms: NSArray<SKUniform> | SKUniform[]): SKShader;
 
 	attributes: NSArray<SKAttribute>;
 
@@ -1597,7 +1597,7 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 
 	initWithSource(source: string): this;
 
-	initWithSourceUniforms(source: string, uniforms: NSArray<SKUniform>): this;
+	initWithSourceUniforms(source: string, uniforms: NSArray<SKUniform> | SKUniform[]): this;
 
 	removeUniformNamed(name: string): void;
 
@@ -1776,7 +1776,7 @@ declare class SKTexture extends NSObject implements NSCoding, NSCopying {
 
 	static new(): SKTexture; // inherited from NSObject
 
-	static preloadTexturesWithCompletionHandler(textures: NSArray<SKTexture>, completionHandler: () => void): void;
+	static preloadTexturesWithCompletionHandler(textures: NSArray<SKTexture> | SKTexture[], completionHandler: () => void): void;
 
 	static textureNoiseWithSmoothnessSizeGrayscale(smoothness: number, size: CGSize, grayscale: boolean): SKTexture;
 
@@ -1835,9 +1835,9 @@ declare class SKTextureAtlas extends NSObject implements NSCoding {
 
 	static new(): SKTextureAtlas; // inherited from NSObject
 
-	static preloadTextureAtlasesNamedWithCompletionHandler(atlasNames: NSArray<string>, completionHandler: (p1: NSError, p2: NSArray<SKTextureAtlas>) => void): void;
+	static preloadTextureAtlasesNamedWithCompletionHandler(atlasNames: NSArray<string> | string[], completionHandler: (p1: NSError, p2: NSArray<SKTextureAtlas>) => void): void;
 
-	static preloadTextureAtlasesWithCompletionHandler(textureAtlases: NSArray<SKTextureAtlas>, completionHandler: () => void): void;
+	static preloadTextureAtlasesWithCompletionHandler(textureAtlases: NSArray<SKTextureAtlas> | SKTextureAtlas[], completionHandler: () => void): void;
 
 	readonly textureNames: NSArray<string>;
 
@@ -1944,9 +1944,9 @@ declare class SKTileDefinition extends NSObject implements NSCoding, NSCopying {
 
 	static tileDefinitionWithTextureSize(texture: SKTexture, size: CGSize): SKTileDefinition;
 
-	static tileDefinitionWithTexturesNormalTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, normalTextures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): SKTileDefinition;
+	static tileDefinitionWithTexturesNormalTexturesSizeTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], normalTextures: NSArray<SKTexture> | SKTexture[], size: CGSize, timePerFrame: number): SKTileDefinition;
 
-	static tileDefinitionWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): SKTileDefinition;
+	static tileDefinitionWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], size: CGSize, timePerFrame: number): SKTileDefinition;
 
 	flipHorizontally: boolean;
 
@@ -1992,9 +1992,9 @@ declare class SKTileDefinition extends NSObject implements NSCoding, NSCopying {
 
 	initWithTextureSize(texture: SKTexture, size: CGSize): this;
 
-	initWithTexturesNormalTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, normalTextures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): this;
+	initWithTexturesNormalTexturesSizeTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], normalTextures: NSArray<SKTexture> | SKTexture[], size: CGSize, timePerFrame: number): this;
 
-	initWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): this;
+	initWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], size: CGSize, timePerFrame: number): this;
 }
 
 declare const enum SKTileDefinitionRotation {
@@ -2016,7 +2016,7 @@ declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
 
 	static new(): SKTileGroup; // inherited from NSObject
 
-	static tileGroupWithRules(rules: NSArray<SKTileGroupRule>): SKTileGroup;
+	static tileGroupWithRules(rules: NSArray<SKTileGroupRule> | SKTileGroupRule[]): SKTileGroup;
 
 	static tileGroupWithTileDefinition(tileDefinition: SKTileDefinition): SKTileGroup;
 
@@ -2036,7 +2036,7 @@ declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithRules(rules: NSArray<SKTileGroupRule>): this;
+	initWithRules(rules: NSArray<SKTileGroupRule> | SKTileGroupRule[]): this;
 
 	initWithTileDefinition(tileDefinition: SKTileDefinition): this;
 }
@@ -2047,7 +2047,7 @@ declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
 
 	static new(): SKTileGroupRule; // inherited from NSObject
 
-	static tileGroupRuleWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition>): SKTileGroupRule;
+	static tileGroupRuleWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition> | SKTileDefinition[]): SKTileGroupRule;
 
 	adjacency: SKTileAdjacencyMask;
 
@@ -2063,7 +2063,7 @@ declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
-	initWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition>): this;
+	initWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition> | SKTileDefinition[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 }
@@ -2082,9 +2082,9 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 
 	static tileMapNodeWithTileSetColumnsRowsTileSizeFillWithTileGroup(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroup: SKTileGroup): SKTileMapNode;
 
-	static tileMapNodeWithTileSetColumnsRowsTileSizeTileGroupLayout(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroupLayout: NSArray<SKTileGroup>): SKTileMapNode;
+	static tileMapNodeWithTileSetColumnsRowsTileSizeTileGroupLayout(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroupLayout: NSArray<SKTileGroup> | SKTileGroup[]): SKTileMapNode;
 
-	static tileMapNodesWithTileSetColumnsRowsTileSizeFromNoiseMapTileTypeNoiseMapThresholds(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, noiseMap: GKNoiseMap, thresholds: NSArray<number>): NSArray<SKTileMapNode>;
+	static tileMapNodesWithTileSetColumnsRowsTileSizeFromNoiseMapTileTypeNoiseMapThresholds(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, noiseMap: GKNoiseMap, thresholds: NSArray<number> | number[]): NSArray<SKTileMapNode>;
 
 	anchorPoint: CGPoint;
 
@@ -2132,7 +2132,7 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 
 	initWithTileSetColumnsRowsTileSizeFillWithTileGroup(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroup: SKTileGroup): this;
 
-	initWithTileSetColumnsRowsTileSizeTileGroupLayout(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroupLayout: NSArray<SKTileGroup>): this;
+	initWithTileSetColumnsRowsTileSizeTileGroupLayout(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroupLayout: NSArray<SKTileGroup> | SKTileGroup[]): this;
 
 	setTileGroupAndTileDefinitionForColumnRow(tileGroup: SKTileGroup, tileDefinition: SKTileDefinition, column: number, row: number): void;
 
@@ -2157,9 +2157,9 @@ declare class SKTileSet extends NSObject implements NSCoding, NSCopying {
 
 	static tileSetNamed(name: string): SKTileSet;
 
-	static tileSetWithTileGroups(tileGroups: NSArray<SKTileGroup>): SKTileSet;
+	static tileSetWithTileGroups(tileGroups: NSArray<SKTileGroup> | SKTileGroup[]): SKTileSet;
 
-	static tileSetWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup>, tileSetType: SKTileSetType): SKTileSet;
+	static tileSetWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup> | SKTileGroup[], tileSetType: SKTileSetType): SKTileSet;
 
 	defaultTileGroup: SKTileGroup;
 
@@ -2183,9 +2183,9 @@ declare class SKTileSet extends NSObject implements NSCoding, NSCopying {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithTileGroups(tileGroups: NSArray<SKTileGroup>): this;
+	initWithTileGroups(tileGroups: NSArray<SKTileGroup> | SKTileGroup[]): this;
 
-	initWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup>, tileSetType: SKTileSetType): this;
+	initWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup> | SKTileGroup[], tileSetType: SKTileSetType): this;
 }
 
 declare const enum SKTileSetType {
@@ -2447,11 +2447,11 @@ declare class SKView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): SKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SKView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): SKView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SKView; // inherited from UIAppearance
 
 	static new(): SKView; // inherited from NSObject
 

@@ -437,7 +437,7 @@ interface CLLocationManagerDelegate extends NSObjectProtocol {
 
 	locationManagerDidPauseLocationUpdates?(manager: CLLocationManager): void;
 
-	locationManagerDidRangeBeaconsInRegion?(manager: CLLocationManager, beacons: NSArray<CLBeacon>, region: CLBeaconRegion): void;
+	locationManagerDidRangeBeaconsInRegion?(manager: CLLocationManager, beacons: NSArray<CLBeacon> | CLBeacon[], region: CLBeaconRegion): void;
 
 	locationManagerDidResumeLocationUpdates?(manager: CLLocationManager): void;
 
@@ -445,7 +445,7 @@ interface CLLocationManagerDelegate extends NSObjectProtocol {
 
 	locationManagerDidUpdateHeading?(manager: CLLocationManager, newHeading: CLHeading): void;
 
-	locationManagerDidUpdateLocations?(manager: CLLocationManager, locations: NSArray<CLLocation>): void;
+	locationManagerDidUpdateLocations?(manager: CLLocationManager, locations: NSArray<CLLocation> | CLLocation[]): void;
 
 	locationManagerDidUpdateToLocationFromLocation?(manager: CLLocationManager, newLocation: CLLocation, oldLocation: CLLocation): void;
 

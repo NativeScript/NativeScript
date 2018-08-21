@@ -130,7 +130,7 @@ declare class NFCNDEFReaderSession extends NFCReaderSession {
 
 interface NFCNDEFReaderSessionDelegate extends NSObjectProtocol {
 
-	readerSessionDidDetectNDEFs(session: NFCNDEFReaderSession, messages: NSArray<NFCNDEFMessage>): void;
+	readerSessionDidDetectNDEFs(session: NFCNDEFReaderSession, messages: NSArray<NFCNDEFMessage> | NFCNDEFMessage[]): void;
 
 	readerSessionDidInvalidateWithError(session: NFCNDEFReaderSession, error: NSError): void;
 }
@@ -221,7 +221,7 @@ interface NFCReaderSessionDelegate extends NSObjectProtocol {
 
 	readerSessionDidBecomeActive(session: NFCReaderSession): void;
 
-	readerSessionDidDetectTags(session: NFCReaderSession, tags: NSArray<NFCTag>): void;
+	readerSessionDidDetectTags(session: NFCReaderSession, tags: NSArray<NFCTag> | NFCTag[]): void;
 
 	readerSessionDidInvalidateWithError(session: NFCReaderSession, error: NSError): void;
 }

@@ -54,7 +54,7 @@ declare class WKInterfaceController extends NSObject {
 
 	static openParentApplicationReply(userInfo: NSDictionary<any, any>, reply: (p1: NSDictionary<any, any>, p2: NSError) => void): boolean;
 
-	static reloadRootControllersWithNamesContexts(names: NSArray<string>, contexts: NSArray<any>): void;
+	static reloadRootControllersWithNamesContexts(names: NSArray<string> | string[], contexts: NSArray<any> | any[]): void;
 
 	readonly contentFrame: CGRect;
 
@@ -104,9 +104,9 @@ declare class WKInterfaceController extends NSObject {
 
 	presentControllerWithNameContext(name: string, context: any): void;
 
-	presentControllerWithNamesContexts(names: NSArray<string>, contexts: NSArray<any>): void;
+	presentControllerWithNamesContexts(names: NSArray<string> | string[], contexts: NSArray<any> | any[]): void;
 
-	presentTextInputControllerWithSuggestionsAllowedInputModeCompletion(suggestions: NSArray<string>, inputMode: WKTextInputMode, completion: (p1: NSArray<any>) => void): void;
+	presentTextInputControllerWithSuggestionsAllowedInputModeCompletion(suggestions: NSArray<string> | string[], inputMode: WKTextInputMode, completion: (p1: NSArray<any>) => void): void;
 
 	presentTextInputControllerWithSuggestionsForLanguageAllowedInputModeCompletion(suggestionsHandler: (p1: string) => NSArray<any>, inputMode: WKTextInputMode, completion: (p1: NSArray<any>) => void): void;
 
@@ -334,7 +334,7 @@ declare class WKInterfaceObject extends NSObject {
 
 	setAccessibilityIdentifier(accessibilityIdentifier: string): void;
 
-	setAccessibilityImageRegions(accessibilityImageRegions: NSArray<WKAccessibilityImageRegion>): void;
+	setAccessibilityImageRegions(accessibilityImageRegions: NSArray<WKAccessibilityImageRegion> | WKAccessibilityImageRegion[]): void;
 
 	setAccessibilityLabel(accessibilityLabel: string): void;
 
@@ -412,7 +412,7 @@ declare class WKInterfaceTable extends WKInterfaceObject {
 
 	setNumberOfRowsWithRowType(numberOfRows: number, rowType: string): void;
 
-	setRowTypes(rowTypes: NSArray<string>): void;
+	setRowTypes(rowTypes: NSArray<string> | string[]): void;
 }
 
 declare class WKInterfaceTimer extends WKInterfaceObject {

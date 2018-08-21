@@ -404,7 +404,7 @@ declare class ARSCNFaceGeometry extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): ARSCNFaceGeometry; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): ARSCNFaceGeometry; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): ARSCNFaceGeometry; // inherited from SCNGeometry
 
 	static new(): ARSCNFaceGeometry; // inherited from NSObject
 
@@ -421,11 +421,11 @@ declare class ARSCNView extends SCNView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ARSCNView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): ARSCNView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ARSCNView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ARSCNView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): ARSCNView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ARSCNView; // inherited from UIAppearance
 
 	static new(): ARSCNView; // inherited from NSObject
 
@@ -469,11 +469,11 @@ declare class ARSKView extends SKView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ARSKView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): ARSKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ARSKView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ARSKView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): ARSKView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ARSKView; // inherited from UIAppearance
 
 	static new(): ARSKView; // inherited from NSObject
 
@@ -532,11 +532,11 @@ declare class ARSession extends NSObject {
 
 interface ARSessionDelegate extends ARSessionObserver {
 
-	sessionDidAddAnchors?(session: ARSession, anchors: NSArray<ARAnchor>): void;
+	sessionDidAddAnchors?(session: ARSession, anchors: NSArray<ARAnchor> | ARAnchor[]): void;
 
-	sessionDidRemoveAnchors?(session: ARSession, anchors: NSArray<ARAnchor>): void;
+	sessionDidRemoveAnchors?(session: ARSession, anchors: NSArray<ARAnchor> | ARAnchor[]): void;
 
-	sessionDidUpdateAnchors?(session: ARSession, anchors: NSArray<ARAnchor>): void;
+	sessionDidUpdateAnchors?(session: ARSession, anchors: NSArray<ARAnchor> | ARAnchor[]): void;
 
 	sessionDidUpdateFrame?(session: ARSession, frame: ARFrame): void;
 }

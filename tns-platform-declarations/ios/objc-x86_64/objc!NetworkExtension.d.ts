@@ -84,7 +84,7 @@ declare class NEAppProxyUDPFlow extends NEAppProxyFlow {
 
 	readDatagramsWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSArray<NWEndpoint>, p3: NSError) => void): void;
 
-	writeDatagramsSentByEndpointsCompletionHandler(datagrams: NSArray<NSData>, remoteEndpoints: NSArray<NWEndpoint>, completionHandler: (p1: NSError) => void): void;
+	writeDatagramsSentByEndpointsCompletionHandler(datagrams: NSArray<NSData> | NSData[], remoteEndpoints: NSArray<NWEndpoint> | NWEndpoint[], completionHandler: (p1: NSError) => void): void;
 }
 
 declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
@@ -206,7 +206,7 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithServers(servers: NSArray<string>): this;
+	initWithServers(servers: NSArray<string> | string[]): this;
 }
 
 declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NSSecureCoding {
@@ -235,7 +235,7 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithMatchDomainsAndAction(domains: NSArray<string>, action: NEEvaluateConnectionRuleAction): this;
+	initWithMatchDomainsAndAction(domains: NSArray<string> | string[], action: NEEvaluateConnectionRuleAction): this;
 }
 
 declare const enum NEEvaluateConnectionRuleAction {
@@ -778,7 +778,7 @@ declare class NEHotspotEAPSettings extends NSObject implements NSCopying, NSSecu
 
 	setIdentity(identity: any): boolean;
 
-	setTrustedServerCertificates(certificates: NSArray<any>): boolean;
+	setTrustedServerCertificates(certificates: NSArray<any> | any[]): boolean;
 }
 
 declare class NEHotspotHS20Settings extends NSObject implements NSCopying, NSSecureCoding {
@@ -880,7 +880,7 @@ declare class NEHotspotHelperResponse extends NSObject {
 
 	setNetwork(network: NEHotspotNetwork): void;
 
-	setNetworkList(networkList: NSArray<NEHotspotNetwork>): void;
+	setNetworkList(networkList: NSArray<NEHotspotNetwork> | NEHotspotNetwork[]): void;
 }
 
 declare const enum NEHotspotHelperResult {
@@ -978,7 +978,7 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
-	initWithAddressesSubnetMasks(addresses: NSArray<string>, subnetMasks: NSArray<string>): this;
+	initWithAddressesSubnetMasks(addresses: NSArray<string> | string[], subnetMasks: NSArray<string> | string[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 }
@@ -1036,7 +1036,7 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
-	initWithAddressesNetworkPrefixLengths(addresses: NSArray<string>, networkPrefixLengths: NSArray<number>): this;
+	initWithAddressesNetworkPrefixLengths(addresses: NSArray<string> | string[], networkPrefixLengths: NSArray<number> | number[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 }
@@ -1159,9 +1159,9 @@ declare class NEPacketTunnelFlow extends NSObject {
 
 	readPacketsWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSArray<number>) => void): void;
 
-	writePacketObjects(packets: NSArray<NEPacket>): boolean;
+	writePacketObjects(packets: NSArray<NEPacket> | NEPacket[]): boolean;
 
-	writePacketsWithProtocols(packets: NSArray<NSData>, protocols: NSArray<number>): boolean;
+	writePacketsWithProtocols(packets: NSArray<NSData> | NSData[], protocols: NSArray<number> | number[]): boolean;
 }
 
 declare class NEPacketTunnelNetworkSettings extends NETunnelNetworkSettings {
@@ -1824,7 +1824,7 @@ declare class NWTCPConnection extends NSObject {
 
 interface NWTCPConnectionAuthenticationDelegate extends NSObjectProtocol {
 
-	evaluateTrustForConnectionPeerCertificateChainCompletionHandler?(connection: NWTCPConnection, peerCertificateChain: NSArray<any>, completion: (p1: any) => void): void;
+	evaluateTrustForConnectionPeerCertificateChainCompletionHandler?(connection: NWTCPConnection, peerCertificateChain: NSArray<any> | any[], completion: (p1: any) => void): void;
 
 	provideIdentityForConnectionCompletionHandler?(connection: NWTCPConnection, completion: (p1: any, p2: NSArray<any>) => void): void;
 
@@ -1899,7 +1899,7 @@ declare class NWUDPSession extends NSObject {
 
 	writeDatagramCompletionHandler(datagram: NSData, completionHandler: (p1: NSError) => void): void;
 
-	writeMultipleDatagramsCompletionHandler(datagramArray: NSArray<NSData>, completionHandler: (p1: NSError) => void): void;
+	writeMultipleDatagramsCompletionHandler(datagramArray: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
 }
 
 declare const enum NWUDPSessionState {

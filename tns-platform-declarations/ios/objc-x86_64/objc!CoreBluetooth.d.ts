@@ -122,11 +122,11 @@ declare class CBCentralManager extends CBManager {
 
 	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
 
-	retrieveConnectedPeripheralsWithServices(serviceUUIDs: NSArray<CBUUID>): NSArray<CBPeripheral>;
+	retrieveConnectedPeripheralsWithServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[]): NSArray<CBPeripheral>;
 
-	retrievePeripheralsWithIdentifiers(identifiers: NSArray<NSUUID>): NSArray<CBPeripheral>;
+	retrievePeripheralsWithIdentifiers(identifiers: NSArray<NSUUID> | NSUUID[]): NSArray<CBPeripheral>;
 
-	scanForPeripheralsWithServicesOptions(serviceUUIDs: NSArray<CBUUID>, options: NSDictionary<string, any>): void;
+	scanForPeripheralsWithServicesOptions(serviceUUIDs: NSArray<CBUUID> | CBUUID[], options: NSDictionary<string, any>): void;
 
 	stopScan(): void;
 }
@@ -391,13 +391,13 @@ declare class CBPeripheral extends CBPeer {
 
 	readonly state: CBPeripheralState;
 
-	discoverCharacteristicsForService(characteristicUUIDs: NSArray<CBUUID>, service: CBService): void;
+	discoverCharacteristicsForService(characteristicUUIDs: NSArray<CBUUID> | CBUUID[], service: CBService): void;
 
 	discoverDescriptorsForCharacteristic(characteristic: CBCharacteristic): void;
 
-	discoverIncludedServicesForService(includedServiceUUIDs: NSArray<CBUUID>, service: CBService): void;
+	discoverIncludedServicesForService(includedServiceUUIDs: NSArray<CBUUID> | CBUUID[], service: CBService): void;
 
-	discoverServices(serviceUUIDs: NSArray<CBUUID>): void;
+	discoverServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[]): void;
 
 	maximumWriteValueLengthForType(type: CBCharacteristicWriteType): number;
 
@@ -426,7 +426,7 @@ interface CBPeripheralDelegate extends NSObjectProtocol {
 
 	peripheralDidDiscoverServices?(peripheral: CBPeripheral, error: NSError): void;
 
-	peripheralDidModifyServices?(peripheral: CBPeripheral, invalidatedServices: NSArray<CBService>): void;
+	peripheralDidModifyServices?(peripheral: CBPeripheral, invalidatedServices: NSArray<CBService> | CBService[]): void;
 
 	peripheralDidOpenL2CAPChannelError?(peripheral: CBPeripheral, channel: CBL2CAPChannel, error: NSError): void;
 
@@ -491,7 +491,7 @@ declare class CBPeripheralManager extends CBManager {
 
 	unpublishL2CAPChannel(PSM: number): void;
 
-	updateValueForCharacteristicOnSubscribedCentrals(value: NSData, characteristic: CBMutableCharacteristic, centrals: NSArray<CBCentral>): boolean;
+	updateValueForCharacteristicOnSubscribedCentrals(value: NSData, characteristic: CBMutableCharacteristic, centrals: NSArray<CBCentral> | CBCentral[]): boolean;
 }
 
 declare const enum CBPeripheralManagerAuthorizationStatus {
@@ -528,7 +528,7 @@ interface CBPeripheralManagerDelegate extends NSObjectProtocol {
 
 	peripheralManagerDidReceiveReadRequest?(peripheral: CBPeripheralManager, request: CBATTRequest): void;
 
-	peripheralManagerDidReceiveWriteRequests?(peripheral: CBPeripheralManager, requests: NSArray<CBATTRequest>): void;
+	peripheralManagerDidReceiveWriteRequests?(peripheral: CBPeripheralManager, requests: NSArray<CBATTRequest> | CBATTRequest[]): void;
 
 	peripheralManagerDidStartAdvertisingError?(peripheral: CBPeripheralManager, error: NSError): void;
 

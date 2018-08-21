@@ -399,11 +399,11 @@ declare class HMCameraView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): HMCameraView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): HMCameraView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): HMCameraView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): HMCameraView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): HMCameraView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): HMCameraView; // inherited from UIAppearance
 
 	static new(): HMCameraView; // inherited from NSObject
 
@@ -1413,21 +1413,21 @@ declare class HMEventTrigger extends HMTrigger {
 
 	addEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
 
-	initWithNameEventsEndEventsRecurrencesPredicate(name: string, events: NSArray<HMEvent>, endEvents: NSArray<HMEvent>, recurrences: NSArray<NSDateComponents>, predicate: NSPredicate): this;
+	initWithNameEventsEndEventsRecurrencesPredicate(name: string, events: NSArray<HMEvent> | HMEvent[], endEvents: NSArray<HMEvent> | HMEvent[], recurrences: NSArray<NSDateComponents> | NSDateComponents[], predicate: NSPredicate): this;
 
-	initWithNameEventsPredicate(name: string, events: NSArray<HMEvent>, predicate: NSPredicate): this;
+	initWithNameEventsPredicate(name: string, events: NSArray<HMEvent> | HMEvent[], predicate: NSPredicate): this;
 
 	removeEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
 
-	updateEndEventsCompletionHandler(endEvents: NSArray<HMEvent>, completion: (p1: NSError) => void): void;
+	updateEndEventsCompletionHandler(endEvents: NSArray<HMEvent> | HMEvent[], completion: (p1: NSError) => void): void;
 
-	updateEventsCompletionHandler(events: NSArray<HMEvent>, completion: (p1: NSError) => void): void;
+	updateEventsCompletionHandler(events: NSArray<HMEvent> | HMEvent[], completion: (p1: NSError) => void): void;
 
 	updateExecuteOnceCompletionHandler(executeOnce: boolean, completion: (p1: NSError) => void): void;
 
 	updatePredicateCompletionHandler(predicate: NSPredicate, completion: (p1: NSError) => void): void;
 
-	updateRecurrencesCompletionHandler(recurrences: NSArray<NSDateComponents>, completion: (p1: NSError) => void): void;
+	updateRecurrencesCompletionHandler(recurrences: NSArray<NSDateComponents> | NSDateComponents[], completion: (p1: NSError) => void): void;
 }
 
 declare const enum HMEventTriggerActivationState {
@@ -1517,7 +1517,7 @@ declare class HMHome extends NSObject {
 
 	roomForEntireHome(): HMRoom;
 
-	servicesWithTypes(serviceTypes: NSArray<string>): NSArray<HMService>;
+	servicesWithTypes(serviceTypes: NSArray<string> | string[]): NSArray<HMService>;
 
 	unblockAccessoryCompletionHandler(accessory: HMAccessory, completion: (p1: NSError) => void): void;
 

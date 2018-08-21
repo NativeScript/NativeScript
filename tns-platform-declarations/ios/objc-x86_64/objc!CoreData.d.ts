@@ -143,7 +143,7 @@ declare class NSBatchDeleteRequest extends NSPersistentStoreRequest {
 
 	initWithFetchRequest(fetch: NSFetchRequest<any>): this;
 
-	initWithObjectIDs(objects: NSArray<NSManagedObjectID>): this;
+	initWithObjectIDs(objects: NSArray<NSManagedObjectID> | NSManagedObjectID[]): this;
 }
 
 declare const enum NSBatchDeleteRequestResultType {
@@ -241,7 +241,7 @@ declare class NSConstraintConflict extends NSObject {
 
 	constructor(o: { constraint: NSArray<string>; databaseObject: NSManagedObject; databaseSnapshot: NSDictionary<any, any>; conflictingObjects: NSArray<NSManagedObject>; conflictingSnapshots: NSArray<any>; });
 
-	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string>, databaseObject: NSManagedObject, databaseSnapshot: NSDictionary<any, any>, conflictingObjects: NSArray<NSManagedObject>, conflictingSnapshots: NSArray<any>): this;
+	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string> | string[], databaseObject: NSManagedObject, databaseSnapshot: NSDictionary<any, any>, conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[], conflictingSnapshots: NSArray<any> | any[]): this;
 }
 
 declare class NSCoreDataCoreSpotlightDelegate extends NSObject {
@@ -262,7 +262,7 @@ declare class NSCoreDataCoreSpotlightDelegate extends NSObject {
 
 	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
 
-	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string>, acknowledgementHandler: () => void): void;
+	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string> | string[], acknowledgementHandler: () => void): void;
 }
 
 declare var NSCoreDataCoreSpotlightExporter: string;
@@ -454,7 +454,7 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription>): this;
+	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]): this;
 }
 
 declare class NSFetchIndexElementDescription extends NSObject implements NSCoding {
@@ -688,9 +688,9 @@ declare class NSIncrementalStore extends NSPersistentStore {
 
 	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext): any;
 
-	managedObjectContextDidRegisterObjectsWithIDs(objectIDs: NSArray<NSManagedObjectID>): void;
+	managedObjectContextDidRegisterObjectsWithIDs(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): void;
 
-	managedObjectContextDidUnregisterObjectsWithIDs(objectIDs: NSArray<NSManagedObjectID>): void;
+	managedObjectContextDidUnregisterObjectsWithIDs(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): void;
 
 	newObjectIDForEntityReferenceObject(entity: NSEntityDescription, data: any): NSManagedObjectID;
 
@@ -698,7 +698,7 @@ declare class NSIncrementalStore extends NSPersistentStore {
 
 	newValuesForObjectWithIDWithContextError(objectID: NSManagedObjectID, context: NSManagedObjectContext): NSIncrementalStoreNode;
 
-	obtainPermanentIDsForObjectsError(array: NSArray<NSManagedObject>): NSArray<NSManagedObjectID>;
+	obtainPermanentIDsForObjectsError(array: NSArray<NSManagedObject> | NSManagedObject[]): NSArray<NSManagedObjectID>;
 
 	referenceObjectForObjectID(objectID: NSManagedObjectID): any;
 }
@@ -792,7 +792,7 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	class(): typeof NSObject;
 
-	committedValuesForKeys(keys: NSArray<string>): NSDictionary<string, any>;
+	committedValuesForKeys(keys: NSArray<string> | string[]): NSDictionary<string, any>;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
@@ -855,7 +855,7 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	static alloc(): NSManagedObjectContext; // inherited from NSObject
 
-	static mergeChangesFromRemoteContextSaveIntoContexts(changeNotificationData: NSDictionary<any, any>, contexts: NSArray<NSManagedObjectContext>): void;
+	static mergeChangesFromRemoteContextSaveIntoContexts(changeNotificationData: NSDictionary<any, any>, contexts: NSArray<NSManagedObjectContext> | NSManagedObjectContext[]): void;
 
 	static new(): NSManagedObjectContext; // inherited from NSObject
 
@@ -931,7 +931,7 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	objectWithID(objectID: NSManagedObjectID): NSManagedObject;
 
-	obtainPermanentIDsForObjectsError(objects: NSArray<NSManagedObject>): boolean;
+	obtainPermanentIDsForObjectsError(objects: NSArray<NSManagedObject> | NSManagedObject[]): boolean;
 
 	performBlock(block: () => void): void;
 
@@ -1040,13 +1040,13 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	static alloc(): NSManagedObjectModel; // inherited from NSObject
 
-	static mergedModelFromBundles(bundles: NSArray<NSBundle>): NSManagedObjectModel;
+	static mergedModelFromBundles(bundles: NSArray<NSBundle> | NSBundle[]): NSManagedObjectModel;
 
-	static mergedModelFromBundlesForStoreMetadata(bundles: NSArray<NSBundle>, metadata: NSDictionary<string, any>): NSManagedObjectModel;
+	static mergedModelFromBundlesForStoreMetadata(bundles: NSArray<NSBundle> | NSBundle[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
 
-	static modelByMergingModels(models: NSArray<NSManagedObjectModel>): NSManagedObjectModel;
+	static modelByMergingModels(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[]): NSManagedObjectModel;
 
-	static modelByMergingModelsForStoreMetadata(models: NSArray<NSManagedObjectModel>, metadata: NSDictionary<string, any>): NSManagedObjectModel;
+	static modelByMergingModelsForStoreMetadata(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
 
 	static new(): NSManagedObjectModel; // inherited from NSObject
 
@@ -1085,7 +1085,7 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	isConfigurationCompatibleWithStoreMetadata(configuration: string, metadata: NSDictionary<string, any>): boolean;
 
-	setEntitiesForConfiguration(entities: NSArray<NSEntityDescription>, configuration: string): void;
+	setEntitiesForConfiguration(entities: NSArray<NSEntityDescription> | NSEntityDescription[], configuration: string): void;
 
 	setFetchRequestTemplateForName(fetchRequestTemplate: NSFetchRequest<any>, name: string): void;
 }
@@ -1100,7 +1100,7 @@ declare class NSMappingModel extends NSObject {
 
 	static inferredMappingModelForSourceModelDestinationModelError(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): NSMappingModel;
 
-	static mappingModelFromBundlesForSourceModelDestinationModel(bundles: NSArray<NSBundle>, sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): NSMappingModel;
+	static mappingModelFromBundlesForSourceModelDestinationModel(bundles: NSArray<NSBundle> | NSBundle[], sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): NSMappingModel;
 
 	static new(): NSMappingModel; // inherited from NSObject
 
@@ -1166,11 +1166,11 @@ declare class NSMergePolicy extends NSObject {
 
 	initWithMergeType(ty: NSMergePolicyType): this;
 
-	resolveConflictsError(list: NSArray<any>): boolean;
+	resolveConflictsError(list: NSArray<any> | any[]): boolean;
 
-	resolveConstraintConflictsError(list: NSArray<NSConstraintConflict>): boolean;
+	resolveConstraintConflictsError(list: NSArray<NSConstraintConflict> | NSConstraintConflict[]): boolean;
 
-	resolveOptimisticLockingVersionConflictsError(list: NSArray<NSMergeConflict>): boolean;
+	resolveOptimisticLockingVersionConflictsError(list: NSArray<NSMergeConflict> | NSMergeConflict[]): boolean;
 }
 
 declare const enum NSMergePolicyType {
@@ -1232,7 +1232,7 @@ declare class NSMigrationManager extends NSObject {
 
 	destinationEntityForEntityMapping(mEntity: NSEntityMapping): NSEntityDescription;
 
-	destinationInstancesForEntityMappingNamedSourceInstances(mappingName: string, sourceInstances: NSArray<NSManagedObject>): NSArray<NSManagedObject>;
+	destinationInstancesForEntityMappingNamedSourceInstances(mappingName: string, sourceInstances: NSArray<NSManagedObject> | NSManagedObject[]): NSArray<NSManagedObject>;
 
 	initWithSourceModelDestinationModel(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): this;
 
@@ -1242,7 +1242,7 @@ declare class NSMigrationManager extends NSObject {
 
 	sourceEntityForEntityMapping(mEntity: NSEntityMapping): NSEntityDescription;
 
-	sourceInstancesForEntityMappingNamedDestinationInstances(mappingName: string, destinationInstances: NSArray<NSManagedObject>): NSArray<NSManagedObject>;
+	sourceInstancesForEntityMappingNamedDestinationInstances(mappingName: string, destinationInstances: NSArray<NSManagedObject> | NSManagedObject[]): NSArray<NSManagedObject>;
 }
 
 declare const NSMigrationManagerDestinationStoreError: number;
@@ -1731,7 +1731,7 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	setValidationPredicatesWithValidationWarnings(validationPredicates: NSArray<NSPredicate>, validationWarnings: NSArray<string>): void;
+	setValidationPredicatesWithValidationWarnings(validationPredicates: NSArray<NSPredicate> | NSPredicate[], validationWarnings: NSArray<string> | string[]): void;
 }
 
 declare class NSPropertyMapping extends NSObject {

@@ -11,11 +11,11 @@ declare class PKAddPassButton extends UIButton {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PKAddPassButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKAddPassButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PKAddPassButton; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKAddPassButton; // inherited from UIAppearance
 
 	static buttonWithType(buttonType: UIButtonType): PKAddPassButton; // inherited from UIButton
 
@@ -51,7 +51,7 @@ declare class PKAddPassesViewController extends UIViewController {
 
 	initWithPass(pass: PKPass): this;
 
-	initWithPasses(passes: NSArray<PKPass>): this;
+	initWithPasses(passes: NSArray<PKPass> | PKPass[]): this;
 }
 
 interface PKAddPassesViewControllerDelegate extends NSObjectProtocol {
@@ -133,7 +133,7 @@ interface PKAddPaymentPassViewControllerDelegate extends NSObjectProtocol {
 
 	addPaymentPassViewControllerDidFinishAddingPaymentPassError(controller: PKAddPaymentPassViewController, pass: PKPaymentPass, error: NSError): void;
 
-	addPaymentPassViewControllerGenerateRequestWithCertificateChainNonceNonceSignatureCompletionHandler(controller: PKAddPaymentPassViewController, certificates: NSArray<NSData>, nonce: NSData, nonceSignature: NSData, handler: (p1: PKAddPaymentPassRequest) => void): void;
+	addPaymentPassViewControllerGenerateRequestWithCertificateChainNonceNonceSignatureCompletionHandler(controller: PKAddPaymentPassViewController, certificates: NSArray<NSData> | NSData[], nonce: NSData, nonceSignature: NSData, handler: (p1: PKAddPaymentPassRequest) => void): void;
 }
 declare var PKAddPaymentPassViewControllerDelegate: {
 
@@ -310,7 +310,7 @@ declare class PKPassLibrary extends NSObject {
 
 	activatePaymentPassWithActivationDataCompletion(paymentPass: PKPaymentPass, activationData: NSData, completion: (p1: boolean, p2: NSError) => void): void;
 
-	addPassesWithCompletionHandler(passes: NSArray<PKPass>, completion: (p1: PKPassLibraryAddPassesStatus) => void): void;
+	addPassesWithCompletionHandler(passes: NSArray<PKPass> | PKPass[], completion: (p1: PKPassLibraryAddPassesStatus) => void): void;
 
 	canAddFelicaPass(): boolean;
 
@@ -394,9 +394,9 @@ declare class PKPaymentAuthorizationController extends NSObject {
 
 	static canMakePayments(): boolean;
 
-	static canMakePaymentsUsingNetworks(supportedNetworks: NSArray<string>): boolean;
+	static canMakePaymentsUsingNetworks(supportedNetworks: NSArray<string> | string[]): boolean;
 
-	static canMakePaymentsUsingNetworksCapabilities(supportedNetworks: NSArray<string>, capabilties: PKMerchantCapability): boolean;
+	static canMakePaymentsUsingNetworksCapabilities(supportedNetworks: NSArray<string> | string[], capabilties: PKMerchantCapability): boolean;
 
 	static new(): PKPaymentAuthorizationController; // inherited from NSObject
 
@@ -450,7 +450,7 @@ declare class PKPaymentAuthorizationResult extends NSObject {
 
 	constructor(o: { status: PKPaymentAuthorizationStatus; errors: NSArray<NSError>; });
 
-	initWithStatusErrors(status: PKPaymentAuthorizationStatus, errors: NSArray<NSError>): this;
+	initWithStatusErrors(status: PKPaymentAuthorizationStatus, errors: NSArray<NSError> | NSError[]): this;
 }
 
 declare const enum PKPaymentAuthorizationStatus {
@@ -478,9 +478,9 @@ declare class PKPaymentAuthorizationViewController extends UIViewController {
 
 	static canMakePayments(): boolean;
 
-	static canMakePaymentsUsingNetworks(supportedNetworks: NSArray<string>): boolean;
+	static canMakePaymentsUsingNetworks(supportedNetworks: NSArray<string> | string[]): boolean;
 
-	static canMakePaymentsUsingNetworksCapabilities(supportedNetworks: NSArray<string>, capabilties: PKMerchantCapability): boolean;
+	static canMakePaymentsUsingNetworksCapabilities(supportedNetworks: NSArray<string> | string[], capabilties: PKMerchantCapability): boolean;
 
 	static new(): PKPaymentAuthorizationViewController; // inherited from NSObject
 
@@ -530,11 +530,11 @@ declare class PKPaymentButton extends UIButton {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PKPaymentButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKPaymentButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PKPaymentButton; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKPaymentButton; // inherited from UIAppearance
 
 	static buttonWithType(buttonType: UIButtonType): PKPaymentButton; // inherited from UIButton
 
@@ -742,7 +742,7 @@ declare class PKPaymentRequestShippingContactUpdate extends PKPaymentRequestUpda
 
 	constructor(o: { errors: NSArray<NSError>; paymentSummaryItems: NSArray<PKPaymentSummaryItem>; shippingMethods: NSArray<PKShippingMethod>; });
 
-	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError>, paymentSummaryItems: NSArray<PKPaymentSummaryItem>, shippingMethods: NSArray<PKShippingMethod>): this;
+	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
 }
 
 declare class PKPaymentRequestShippingMethodUpdate extends PKPaymentRequestUpdate {
@@ -764,7 +764,7 @@ declare class PKPaymentRequestUpdate extends NSObject {
 
 	constructor(o: { paymentSummaryItems: NSArray<PKPaymentSummaryItem>; });
 
-	initWithPaymentSummaryItems(paymentSummaryItems: NSArray<PKPaymentSummaryItem>): this;
+	initWithPaymentSummaryItems(paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
 }
 
 declare class PKPaymentSummaryItem extends NSObject {

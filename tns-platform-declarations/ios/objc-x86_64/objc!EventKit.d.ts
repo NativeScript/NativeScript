@@ -339,13 +339,13 @@ declare class EKEventStore extends NSObject {
 
 	fetchRemindersMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<EKReminder>) => void): any;
 
-	predicateForCompletedRemindersWithCompletionDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForCompletedRemindersWithCompletionDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
-	predicateForEventsWithStartDateEndDateCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForEventsWithStartDateEndDateCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
-	predicateForIncompleteRemindersWithDueDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForIncompleteRemindersWithDueDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
-	predicateForRemindersInCalendars(calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForRemindersInCalendars(calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
 	refreshSourcesIfNecessary(): void;
 
@@ -565,7 +565,7 @@ declare class EKRecurrenceRule extends EKObject implements NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initRecurrenceWithFrequencyIntervalDaysOfTheWeekDaysOfTheMonthMonthsOfTheYearWeeksOfTheYearDaysOfTheYearSetPositionsEnd(type: EKRecurrenceFrequency, interval: number, days: NSArray<EKRecurrenceDayOfWeek>, monthDays: NSArray<number>, months: NSArray<number>, weeksOfTheYear: NSArray<number>, daysOfTheYear: NSArray<number>, setPositions: NSArray<number>, end: EKRecurrenceEnd): this;
+	initRecurrenceWithFrequencyIntervalDaysOfTheWeekDaysOfTheMonthMonthsOfTheYearWeeksOfTheYearDaysOfTheYearSetPositionsEnd(type: EKRecurrenceFrequency, interval: number, days: NSArray<EKRecurrenceDayOfWeek> | EKRecurrenceDayOfWeek[], monthDays: NSArray<number> | number[], months: NSArray<number> | number[], weeksOfTheYear: NSArray<number> | number[], daysOfTheYear: NSArray<number> | number[], setPositions: NSArray<number> | number[], end: EKRecurrenceEnd): this;
 
 	initRecurrenceWithFrequencyIntervalEnd(type: EKRecurrenceFrequency, interval: number, end: EKRecurrenceEnd): this;
 }

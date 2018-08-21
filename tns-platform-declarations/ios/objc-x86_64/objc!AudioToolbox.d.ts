@@ -157,7 +157,7 @@ declare class AUAudioUnit extends NSObject {
 
 	stopHardware(): void;
 
-	supportedViewConfigurations(availableViewConfigurations: NSArray<AUAudioUnitViewConfiguration>): NSIndexSet;
+	supportedViewConfigurations(availableViewConfigurations: NSArray<AUAudioUnitViewConfiguration> | AUAudioUnitViewConfiguration[]): NSIndexSet;
 
 	tokenByAddingRenderObserver(observer: (p1: AudioUnitRenderActionFlags, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number) => void): number;
 }
@@ -221,13 +221,13 @@ declare class AUAudioUnitBusArray extends NSObject implements NSFastEnumeration 
 
 	initWithAudioUnitBusType(owner: AUAudioUnit, busType: AUAudioUnitBusType): this;
 
-	initWithAudioUnitBusTypeBusses(owner: AUAudioUnit, busType: AUAudioUnitBusType, busArray: NSArray<AUAudioUnitBus>): this;
+	initWithAudioUnitBusTypeBusses(owner: AUAudioUnit, busType: AUAudioUnitBusType, busArray: NSArray<AUAudioUnitBus> | AUAudioUnitBus[]): this;
 
 	objectAtIndexedSubscript(index: number): AUAudioUnitBus;
 
 	removeObserverFromAllBussesForKeyPathContext(observer: NSObject, keyPath: string, context: interop.Pointer | interop.Reference<any>): void;
 
-	replaceBusses(busArray: NSArray<AUAudioUnitBus>): void;
+	replaceBusses(busArray: NSArray<AUAudioUnitBus> | AUAudioUnitBus[]): void;
 
 	setBusCountError(count: number): boolean;
 }
@@ -494,13 +494,13 @@ declare class AUParameterTree extends AUParameterGroup implements NSSecureCoding
 
 	static createGroupFromTemplateIdentifierNameAddressOffset(templateGroup: AUParameterGroup, identifier: string, name: string, addressOffset: number): AUParameterGroup;
 
-	static createGroupTemplate(children: NSArray<AUParameterNode>): AUParameterGroup;
+	static createGroupTemplate(children: NSArray<AUParameterNode> | AUParameterNode[]): AUParameterGroup;
 
-	static createGroupWithIdentifierNameChildren(identifier: string, name: string, children: NSArray<AUParameterNode>): AUParameterGroup;
+	static createGroupWithIdentifierNameChildren(identifier: string, name: string, children: NSArray<AUParameterNode> | AUParameterNode[]): AUParameterGroup;
 
-	static createParameterWithIdentifierNameAddressMinMaxUnitUnitNameFlagsValueStringsDependentParameters(identifier: string, name: string, address: number, min: number, max: number, unit: AudioUnitParameterUnit, unitName: string, flags: AudioUnitParameterOptions, valueStrings: NSArray<string>, dependentParameters: NSArray<number>): AUParameter;
+	static createParameterWithIdentifierNameAddressMinMaxUnitUnitNameFlagsValueStringsDependentParameters(identifier: string, name: string, address: number, min: number, max: number, unit: AudioUnitParameterUnit, unitName: string, flags: AudioUnitParameterOptions, valueStrings: NSArray<string> | string[], dependentParameters: NSArray<number> | number[]): AUParameter;
 
-	static createTreeWithChildren(children: NSArray<AUParameterNode>): AUParameterTree;
+	static createTreeWithChildren(children: NSArray<AUParameterNode> | AUParameterNode[]): AUParameterTree;
 
 	static new(): AUParameterTree; // inherited from NSObject
 

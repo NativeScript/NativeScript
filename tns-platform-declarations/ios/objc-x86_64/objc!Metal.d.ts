@@ -1011,7 +1011,7 @@ interface MTLDevice extends NSObjectProtocol {
 
 	minimumLinearTextureAlignmentForPixelFormat(format: MTLPixelFormat): number;
 
-	newArgumentEncoderWithArguments(_arguments: NSArray<MTLArgumentDescriptor>): MTLArgumentEncoder;
+	newArgumentEncoderWithArguments(_arguments: NSArray<MTLArgumentDescriptor> | MTLArgumentDescriptor[]): MTLArgumentEncoder;
 
 	newBufferWithBytesLengthOptions(pointer: interop.Pointer | interop.Reference<any>, length: number, options: MTLResourceOptions): MTLBuffer;
 

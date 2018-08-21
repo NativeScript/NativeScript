@@ -186,7 +186,7 @@ declare const enum NSLayoutAttribute {
 
 declare class NSLayoutConstraint extends NSObject {
 
-	static activateConstraints(constraints: NSArray<NSLayoutConstraint>): void;
+	static activateConstraints(constraints: NSArray<NSLayoutConstraint> | NSLayoutConstraint[]): void;
 
 	static alloc(): NSLayoutConstraint; // inherited from NSObject
 
@@ -194,7 +194,7 @@ declare class NSLayoutConstraint extends NSObject {
 
 	static constraintsWithVisualFormatOptionsMetricsViews(format: string, opts: NSLayoutFormatOptions, metrics: NSDictionary<string, any>, views: NSDictionary<string, any>): NSArray<NSLayoutConstraint>;
 
-	static deactivateConstraints(constraints: NSArray<NSLayoutConstraint>): void;
+	static deactivateConstraints(constraints: NSArray<NSLayoutConstraint> | NSLayoutConstraint[]): void;
 
 	static new(): NSLayoutConstraint; // inherited from NSObject
 
@@ -1583,11 +1583,11 @@ declare class UIActionSheet extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIActionSheet; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIActionSheet; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIActionSheet; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIActionSheet; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIActionSheet; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIActionSheet; // inherited from UIAppearance
 
 	static new(): UIActionSheet; // inherited from NSObject
 
@@ -1676,11 +1676,11 @@ declare class UIActivity extends NSObject {
 
 	activityDidFinish(completed: boolean): void;
 
-	canPerformWithActivityItems(activityItems: NSArray<any>): boolean;
+	canPerformWithActivityItems(activityItems: NSArray<any> | any[]): boolean;
 
 	performActivity(): void;
 
-	prepareWithActivityItems(activityItems: NSArray<any>): void;
+	prepareWithActivityItems(activityItems: NSArray<any> | any[]): void;
 }
 
 declare const enum UIActivityCategory {
@@ -1700,11 +1700,11 @@ declare class UIActivityIndicatorView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIActivityIndicatorView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIActivityIndicatorView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIActivityIndicatorView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIActivityIndicatorView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIActivityIndicatorView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIActivityIndicatorView; // inherited from UIAppearance
 
 	static new(): UIActivityIndicatorView; // inherited from NSObject
 
@@ -1864,7 +1864,7 @@ declare class UIActivityViewController extends UIViewController {
 
 	constructor(o: { activityItems: NSArray<any>; applicationActivities: NSArray<UIActivity>; });
 
-	initWithActivityItemsApplicationActivities(activityItems: NSArray<any>, applicationActivities: NSArray<UIActivity>): this;
+	initWithActivityItemsApplicationActivities(activityItems: NSArray<any> | any[], applicationActivities: NSArray<UIActivity> | UIActivity[]): this;
 }
 
 interface UIAdaptivePresentationControllerDelegate extends NSObjectProtocol {
@@ -1984,11 +1984,11 @@ declare class UIAlertView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIAlertView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIAlertView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIAlertView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIAlertView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIAlertView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIAlertView; // inherited from UIAppearance
 
 	static new(): UIAlertView; // inherited from NSObject
 
@@ -2067,11 +2067,11 @@ declare var UIAppearance: {
 
 	appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIAppearance;
 
-	appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIAppearance;
+	appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIAppearance;
 
 	appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIAppearance;
 
-	appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIAppearance;
+	appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIAppearance;
 };
 
 interface UIAppearanceContainer extends NSObjectProtocol {
@@ -2298,7 +2298,7 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	applicationUserDidAcceptCloudKitShareWithMetadata?(application: UIApplication, cloudKitShareMetadata: CKShareMetadata): void;
 
-	applicationViewControllerWithRestorationIdentifierPathCoder?(application: UIApplication, identifierComponents: NSArray<any>, coder: NSCoder): UIViewController;
+	applicationViewControllerWithRestorationIdentifierPathCoder?(application: UIApplication, identifierComponents: NSArray<any> | any[], coder: NSCoder): UIViewController;
 
 	applicationWillChangeStatusBarFrame?(application: UIApplication, newStatusBarFrame: CGRect): void;
 
@@ -2605,11 +2605,11 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UISpringLoa
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIBarButtonItem; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIBarButtonItem; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBarButtonItem; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIBarButtonItem; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIBarButtonItem; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBarButtonItem; // inherited from UIAppearance
 
 	static new(): UIBarButtonItem; // inherited from NSObject
 
@@ -2738,7 +2738,7 @@ declare class UIBarButtonItemGroup extends NSObject implements NSCoding {
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
-	initWithBarButtonItemsRepresentativeItem(barButtonItems: NSArray<UIBarButtonItem>, representativeItem: UIBarButtonItem): this;
+	initWithBarButtonItemsRepresentativeItem(barButtonItems: NSArray<UIBarButtonItem> | UIBarButtonItem[], representativeItem: UIBarButtonItem): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 }
@@ -2813,11 +2813,11 @@ declare class UIBarItem extends NSObject implements NSCoding, UIAccessibilityIde
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIBarItem;
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIBarItem;
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBarItem;
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIBarItem;
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIBarItem;
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIBarItem;
 
 	static new(): UIBarItem; // inherited from NSObject
 
@@ -3071,11 +3071,11 @@ declare class UIButton extends UIControl implements NSCoding, UIAccessibilityCon
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIButton; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIButton; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIButton; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIButton; // inherited from UIAppearance
 
 	static buttonWithType(buttonType: UIButtonType): UIButton;
 
@@ -3293,11 +3293,11 @@ declare class UICollectionReusableView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UICollectionReusableView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UICollectionReusableView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICollectionReusableView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UICollectionReusableView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UICollectionReusableView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICollectionReusableView; // inherited from UIAppearance
 
 	static new(): UICollectionReusableView; // inherited from NSObject
 
@@ -3337,11 +3337,11 @@ declare class UICollectionView extends UIScrollView implements UIDataSourceTrans
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UICollectionView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UICollectionView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICollectionView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UICollectionView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UICollectionView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICollectionView; // inherited from UIAppearance
 
 	static new(): UICollectionView; // inherited from NSObject
 
@@ -3417,7 +3417,7 @@ declare class UICollectionView extends UIScrollView implements UIDataSourceTrans
 
 	dataSourceSectionIndexForPresentationSectionIndex(presentationSectionIndex: number): number;
 
-	deleteItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath>): void;
+	deleteItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
 	deleteSections(sections: NSIndexSet): void;
 
@@ -3439,7 +3439,7 @@ declare class UICollectionView extends UIScrollView implements UIDataSourceTrans
 
 	initWithFrameCollectionViewLayout(frame: CGRect, layout: UICollectionViewLayout): this;
 
-	insertItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath>): void;
+	insertItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
 	insertSections(sections: NSIndexSet): void;
 
@@ -3483,7 +3483,7 @@ declare class UICollectionView extends UIScrollView implements UIDataSourceTrans
 
 	reloadData(): void;
 
-	reloadItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath>): void;
+	reloadItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
 	reloadSections(sections: NSIndexSet): void;
 
@@ -3520,11 +3520,11 @@ declare class UICollectionViewCell extends UICollectionReusableView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UICollectionViewCell; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UICollectionViewCell; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICollectionViewCell; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UICollectionViewCell; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UICollectionViewCell; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICollectionViewCell; // inherited from UIAppearance
 
 	static new(): UICollectionViewCell; // inherited from NSObject
 
@@ -3718,9 +3718,9 @@ declare var UICollectionViewDataSource: {
 
 interface UICollectionViewDataSourcePrefetching extends NSObjectProtocol {
 
-	collectionViewCancelPrefetchingForItemsAtIndexPaths?(collectionView: UICollectionView, indexPaths: NSArray<NSIndexPath>): void;
+	collectionViewCancelPrefetchingForItemsAtIndexPaths?(collectionView: UICollectionView, indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
-	collectionViewPrefetchItemsAtIndexPaths(collectionView: UICollectionView, indexPaths: NSArray<NSIndexPath>): void;
+	collectionViewPrefetchItemsAtIndexPaths(collectionView: UICollectionView, indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 }
 declare var UICollectionViewDataSourcePrefetching: {
 
@@ -4039,9 +4039,9 @@ declare class UICollectionViewLayout extends NSObject implements NSCoding {
 
 	invalidationContextForBoundsChange(newBounds: CGRect): UICollectionViewLayoutInvalidationContext;
 
-	invalidationContextForEndingInteractiveMovementOfItemsToFinalIndexPathsPreviousIndexPathsMovementCancelled(indexPaths: NSArray<NSIndexPath>, previousIndexPaths: NSArray<NSIndexPath>, movementCancelled: boolean): UICollectionViewLayoutInvalidationContext;
+	invalidationContextForEndingInteractiveMovementOfItemsToFinalIndexPathsPreviousIndexPathsMovementCancelled(indexPaths: NSArray<NSIndexPath> | NSIndexPath[], previousIndexPaths: NSArray<NSIndexPath> | NSIndexPath[], movementCancelled: boolean): UICollectionViewLayoutInvalidationContext;
 
-	invalidationContextForInteractivelyMovingItemsWithTargetPositionPreviousIndexPathsPreviousPosition(targetIndexPaths: NSArray<NSIndexPath>, targetPosition: CGPoint, previousIndexPaths: NSArray<NSIndexPath>, previousPosition: CGPoint): UICollectionViewLayoutInvalidationContext;
+	invalidationContextForInteractivelyMovingItemsWithTargetPositionPreviousIndexPathsPreviousPosition(targetIndexPaths: NSArray<NSIndexPath> | NSIndexPath[], targetPosition: CGPoint, previousIndexPaths: NSArray<NSIndexPath> | NSIndexPath[], previousPosition: CGPoint): UICollectionViewLayoutInvalidationContext;
 
 	invalidationContextForPreferredLayoutAttributesWithOriginalAttributes(preferredAttributes: UICollectionViewLayoutAttributes, originalAttributes: UICollectionViewLayoutAttributes): UICollectionViewLayoutInvalidationContext;
 
@@ -4057,7 +4057,7 @@ declare class UICollectionViewLayout extends NSObject implements NSCoding {
 
 	prepareForAnimatedBoundsChange(oldBounds: CGRect): void;
 
-	prepareForCollectionViewUpdates(updateItems: NSArray<UICollectionViewUpdateItem>): void;
+	prepareForCollectionViewUpdates(updateItems: NSArray<UICollectionViewUpdateItem> | UICollectionViewUpdateItem[]): void;
 
 	prepareForTransitionFromLayout(oldLayout: UICollectionViewLayout): void;
 
@@ -4183,11 +4183,11 @@ declare class UICollectionViewLayoutInvalidationContext extends NSObject {
 
 	readonly targetIndexPathsForInteractivelyMovingItems: NSArray<NSIndexPath>;
 
-	invalidateDecorationElementsOfKindAtIndexPaths(elementKind: string, indexPaths: NSArray<NSIndexPath>): void;
+	invalidateDecorationElementsOfKindAtIndexPaths(elementKind: string, indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
-	invalidateItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath>): void;
+	invalidateItemsAtIndexPaths(indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
-	invalidateSupplementaryElementsOfKindAtIndexPaths(elementKind: string, indexPaths: NSArray<NSIndexPath>): void;
+	invalidateSupplementaryElementsOfKindAtIndexPaths(elementKind: string, indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 }
 
 declare class UICollectionViewPlaceholder extends NSObject {
@@ -4296,7 +4296,7 @@ declare class UICollisionBehavior extends UIDynamicBehavior {
 
 	boundaryWithIdentifier(identifier: any): UIBezierPath;
 
-	initWithItems(items: NSArray<UIDynamicItem>): this;
+	initWithItems(items: NSArray<UIDynamicItem> | UIDynamicItem[]): this;
 
 	removeAllBoundaries(): void;
 
@@ -4600,11 +4600,11 @@ declare class UIControl extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIControl; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIControl; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIControl; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIControl; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIControl; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIControl; // inherited from UIAppearance
 
 	static new(): UIControl; // inherited from NSObject
 
@@ -4846,11 +4846,11 @@ declare class UIDatePicker extends UIControl implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIDatePicker; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIDatePicker; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIDatePicker; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIDatePicker; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIDatePicker; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIDatePicker; // inherited from UIAppearance
 
 	static new(): UIDatePicker; // inherited from NSObject
 
@@ -5282,7 +5282,7 @@ declare class UIDocumentBrowserViewController extends UIViewController implement
 
 	importDocumentAtURLNextToDocumentAtURLModeCompletionHandler(documentURL: NSURL, neighbourURL: NSURL, importMode: UIDocumentBrowserImportMode, completion: (p1: NSURL, p2: NSError) => void): void;
 
-	initForOpeningFilesWithContentTypes(allowedContentTypes: NSArray<string>): this;
+	initForOpeningFilesWithContentTypes(allowedContentTypes: NSArray<string> | string[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -5293,11 +5293,11 @@ declare class UIDocumentBrowserViewController extends UIViewController implement
 
 interface UIDocumentBrowserViewControllerDelegate extends NSObjectProtocol {
 
-	documentBrowserApplicationActivitiesForDocumentURLs?(controller: UIDocumentBrowserViewController, documentURLs: NSArray<NSURL>): NSArray<UIActivity>;
+	documentBrowserApplicationActivitiesForDocumentURLs?(controller: UIDocumentBrowserViewController, documentURLs: NSArray<NSURL> | NSURL[]): NSArray<UIActivity>;
 
 	documentBrowserDidImportDocumentAtURLToDestinationURL?(controller: UIDocumentBrowserViewController, sourceURL: NSURL, destinationURL: NSURL): void;
 
-	documentBrowserDidPickDocumentURLs?(controller: UIDocumentBrowserViewController, documentURLs: NSArray<NSURL>): void;
+	documentBrowserDidPickDocumentURLs?(controller: UIDocumentBrowserViewController, documentURLs: NSArray<NSURL> | NSURL[]): void;
 
 	documentBrowserDidRequestDocumentCreationWithHandler?(controller: UIDocumentBrowserViewController, importHandler: (p1: NSURL, p2: UIDocumentBrowserImportMode) => void): void;
 
@@ -5469,7 +5469,7 @@ declare class UIDocumentMenuViewController extends UIViewController {
 
 	addOptionWithTitleImageOrderHandler(title: string, image: UIImage, order: UIDocumentMenuOrder, handler: () => void): void;
 
-	initWithDocumentTypesInMode(allowedUTIs: NSArray<string>, mode: UIDocumentPickerMode): this;
+	initWithDocumentTypesInMode(allowedUTIs: NSArray<string> | string[], mode: UIDocumentPickerMode): this;
 
 	initWithURLInMode(url: NSURL, mode: UIDocumentPickerMode): this;
 }
@@ -5478,7 +5478,7 @@ interface UIDocumentPickerDelegate extends NSObjectProtocol {
 
 	documentPickerDidPickDocumentAtURL?(controller: UIDocumentPickerViewController, url: NSURL): void;
 
-	documentPickerDidPickDocumentsAtURLs?(controller: UIDocumentPickerViewController, urls: NSArray<NSURL>): void;
+	documentPickerDidPickDocumentsAtURLs?(controller: UIDocumentPickerViewController, urls: NSArray<NSURL> | NSURL[]): void;
 
 	documentPickerWasCancelled?(controller: UIDocumentPickerViewController): void;
 }
@@ -5537,11 +5537,11 @@ declare class UIDocumentPickerViewController extends UIViewController {
 
 	constructor(o: { URLs: NSArray<NSURL>; inMode: UIDocumentPickerMode; });
 
-	initWithDocumentTypesInMode(allowedUTIs: NSArray<string>, mode: UIDocumentPickerMode): this;
+	initWithDocumentTypesInMode(allowedUTIs: NSArray<string> | string[], mode: UIDocumentPickerMode): this;
 
 	initWithURLInMode(url: NSURL, mode: UIDocumentPickerMode): this;
 
-	initWithURLsInMode(urls: NSArray<NSURL>, mode: UIDocumentPickerMode): this;
+	initWithURLsInMode(urls: NSArray<NSURL> | NSURL[], mode: UIDocumentPickerMode): this;
 }
 
 declare const enum UIDocumentSaveOperation {
@@ -5589,7 +5589,7 @@ interface UIDragDropSession extends NSObjectProtocol {
 
 	canLoadObjectsOfClass(aClass: typeof NSObject): boolean;
 
-	hasItemsConformingToTypeIdentifiers(typeIdentifiers: NSArray<string>): boolean;
+	hasItemsConformingToTypeIdentifiers(typeIdentifiers: NSArray<string> | string[]): boolean;
 
 	locationInView(view: UIView): CGPoint;
 }
@@ -5679,11 +5679,11 @@ interface UIDragInteractionDelegate extends NSObjectProtocol {
 
 	dragInteractionSessionDidTransferItems?(interaction: UIDragInteraction, session: UIDragSession): void;
 
-	dragInteractionSessionForAddingItemsWithTouchAtPoint?(interaction: UIDragInteraction, sessions: NSArray<UIDragSession>, point: CGPoint): UIDragSession;
+	dragInteractionSessionForAddingItemsWithTouchAtPoint?(interaction: UIDragInteraction, sessions: NSArray<UIDragSession> | UIDragSession[], point: CGPoint): UIDragSession;
 
 	dragInteractionSessionIsRestrictedToDraggingApplication?(interaction: UIDragInteraction, session: UIDragSession): boolean;
 
-	dragInteractionSessionWillAddItemsForInteraction?(interaction: UIDragInteraction, session: UIDragSession, items: NSArray<UIDragItem>, addingInteraction: UIDragInteraction): void;
+	dragInteractionSessionWillAddItemsForInteraction?(interaction: UIDragInteraction, session: UIDragSession, items: NSArray<UIDragItem> | UIDragItem[], addingInteraction: UIDragInteraction): void;
 
 	dragInteractionSessionWillBegin?(interaction: UIDragInteraction, session: UIDragSession): void;
 
@@ -5752,7 +5752,7 @@ declare class UIDragPreviewParameters extends NSObject implements NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithTextLineRects(textLineRects: NSArray<NSValue>): this;
+	initWithTextLineRects(textLineRects: NSArray<NSValue> | NSValue[]): this;
 }
 
 declare class UIDragPreviewTarget extends NSObject implements NSCopying {
@@ -6039,7 +6039,7 @@ declare class UIDynamicItemBehavior extends UIDynamicBehavior {
 
 	angularVelocityForItem(item: UIDynamicItem): number;
 
-	initWithItems(items: NSArray<UIDynamicItem>): this;
+	initWithItems(items: NSArray<UIDynamicItem> | UIDynamicItem[]): this;
 
 	linearVelocityForItem(item: UIDynamicItem): CGPoint;
 
@@ -6091,7 +6091,7 @@ declare class UIDynamicItemGroup extends NSObject implements UIDynamicItem {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithItems(items: NSArray<UIDynamicItem>): this;
+	initWithItems(items: NSArray<UIDynamicItem> | UIDynamicItem[]): this;
 
 	isEqual(object: any): boolean;
 
@@ -6998,7 +6998,7 @@ declare class UIGravityBehavior extends UIDynamicBehavior {
 
 	addItem(item: UIDynamicItem): void;
 
-	initWithItems(items: NSArray<UIDynamicItem>): this;
+	initWithItems(items: NSArray<UIDynamicItem> | UIDynamicItem[]): this;
 
 	removeItem(item: UIDynamicItem): void;
 
@@ -7035,7 +7035,7 @@ declare class UIImage extends NSObject implements NSItemProviderReading, NSItemP
 
 	static animatedImageNamedDuration(name: string, duration: number): UIImage;
 
-	static animatedImageWithImagesDuration(images: NSArray<UIImage>, duration: number): UIImage;
+	static animatedImageWithImagesDuration(images: NSArray<UIImage> | UIImage[], duration: number): UIImage;
 
 	static animatedResizableImageNamedCapInsetsDuration(name: string, capInsets: UIEdgeInsets, duration: number): UIImage;
 
@@ -7432,11 +7432,11 @@ declare class UIImageView extends UIView implements UIAccessibilityContentSizeCa
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIImageView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIImageView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIImageView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIImageView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIImageView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIImageView; // inherited from UIAppearance
 
 	static new(): UIImageView; // inherited from NSObject
 
@@ -7539,11 +7539,11 @@ declare class UIInputView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIInputView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIInputView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIInputView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIInputView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIInputView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIInputView; // inherited from UIAppearance
 
 	static new(): UIInputView; // inherited from NSObject
 
@@ -7860,11 +7860,11 @@ declare class UILabel extends UIView implements NSCoding, UIContentSizeCategoryA
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UILabel; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UILabel; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UILabel; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UILabel; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UILabel; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UILabel; // inherited from UIAppearance
 
 	static new(): UILabel; // inherited from NSObject
 
@@ -8132,7 +8132,7 @@ declare class UILocalizedIndexedCollation extends NSObject {
 
 	sectionForSectionIndexTitleAtIndex(indexTitleIndex: number): number;
 
-	sortedArrayFromArrayCollationStringSelector(array: NSArray<any>, selector: string): NSArray<any>;
+	sortedArrayFromArrayCollationStringSelector(array: NSArray<any> | any[], selector: string): NSArray<any>;
 }
 
 declare class UILongPressGestureRecognizer extends UIGestureRecognizer {
@@ -8359,7 +8359,7 @@ declare class UIMutableUserNotificationCategory extends UIUserNotificationCatego
 
 	identifier: string;
 
-	setActionsForContext(actions: NSArray<UIUserNotificationAction>, context: UIUserNotificationActionContext): void;
+	setActionsForContext(actions: NSArray<UIUserNotificationAction> | UIUserNotificationAction[], context: UIUserNotificationActionContext): void;
 }
 
 declare class UINavigationBar extends UIView implements NSCoding, UIBarPositioning {
@@ -8372,11 +8372,11 @@ declare class UINavigationBar extends UIView implements NSCoding, UIBarPositioni
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UINavigationBar; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UINavigationBar; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UINavigationBar; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UINavigationBar; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UINavigationBar; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UINavigationBar; // inherited from UIAppearance
 
 	static new(): UINavigationBar; // inherited from NSObject
 
@@ -8460,7 +8460,7 @@ declare class UINavigationBar extends UIView implements NSCoding, UIBarPositioni
 
 	setBackgroundImageForBarPositionBarMetrics(backgroundImage: UIImage, barPosition: UIBarPosition, barMetrics: UIBarMetrics): void;
 
-	setItemsAnimated(items: NSArray<UINavigationItem>, animated: boolean): void;
+	setItemsAnimated(items: NSArray<UINavigationItem> | UINavigationItem[], animated: boolean): void;
 
 	setTitleVerticalPositionAdjustmentForBarMetrics(adjustment: number, barMetrics: UIBarMetrics): void;
 
@@ -8538,7 +8538,7 @@ declare class UINavigationController extends UIViewController {
 
 	setToolbarHiddenAnimated(hidden: boolean, animated: boolean): void;
 
-	setViewControllersAnimated(viewControllers: NSArray<UIViewController>, animated: boolean): void;
+	setViewControllersAnimated(viewControllers: NSArray<UIViewController> | UIViewController[], animated: boolean): void;
 }
 
 interface UINavigationControllerDelegate extends NSObjectProtocol {
@@ -8617,11 +8617,11 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 
 	setLeftBarButtonItemAnimated(item: UIBarButtonItem, animated: boolean): void;
 
-	setLeftBarButtonItemsAnimated(items: NSArray<UIBarButtonItem>, animated: boolean): void;
+	setLeftBarButtonItemsAnimated(items: NSArray<UIBarButtonItem> | UIBarButtonItem[], animated: boolean): void;
 
 	setRightBarButtonItemAnimated(item: UIBarButtonItem, animated: boolean): void;
 
-	setRightBarButtonItemsAnimated(items: NSArray<UIBarButtonItem>, animated: boolean): void;
+	setRightBarButtonItemsAnimated(items: NSArray<UIBarButtonItem> | UIBarButtonItem[], animated: boolean): void;
 }
 
 declare const enum UINavigationItemLargeTitleDisplayMode {
@@ -8674,7 +8674,7 @@ declare var UIObjectRestoration: {
 
 	prototype: UIObjectRestoration;
 
-	objectWithRestorationIdentifierPathCoder(identifierComponents: NSArray<string>, coder: NSCoder): UIStateRestoring;
+	objectWithRestorationIdentifierPathCoder(identifierComponents: NSArray<string> | string[], coder: NSCoder): UIStateRestoring;
 };
 
 interface UIOffset {
@@ -8697,11 +8697,11 @@ declare class UIPageControl extends UIControl {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIPageControl; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIPageControl; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPageControl; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIPageControl; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIPageControl; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPageControl; // inherited from UIAppearance
 
 	static new(): UIPageControl; // inherited from NSObject
 
@@ -8748,7 +8748,7 @@ declare class UIPageViewController extends UIViewController {
 
 	initWithTransitionStyleNavigationOrientationOptions(style: UIPageViewControllerTransitionStyle, navigationOrientation: UIPageViewControllerNavigationOrientation, options: NSDictionary<string, any>): this;
 
-	setViewControllersDirectionAnimatedCompletion(viewControllers: NSArray<UIViewController>, direction: UIPageViewControllerNavigationDirection, animated: boolean, completion: (p1: boolean) => void): void;
+	setViewControllersDirectionAnimatedCompletion(viewControllers: NSArray<UIViewController> | UIViewController[], direction: UIPageViewControllerNavigationDirection, animated: boolean, completion: (p1: boolean) => void): void;
 }
 
 interface UIPageViewControllerDataSource extends NSObjectProtocol {
@@ -8768,7 +8768,7 @@ declare var UIPageViewControllerDataSource: {
 
 interface UIPageViewControllerDelegate extends NSObjectProtocol {
 
-	pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted?(pageViewController: UIPageViewController, finished: boolean, previousViewControllers: NSArray<UIViewController>, completed: boolean): void;
+	pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted?(pageViewController: UIPageViewController, finished: boolean, previousViewControllers: NSArray<UIViewController> | UIViewController[], completed: boolean): void;
 
 	pageViewControllerPreferredInterfaceOrientationForPresentation?(pageViewController: UIPageViewController): UIInterfaceOrientation;
 
@@ -8776,7 +8776,7 @@ interface UIPageViewControllerDelegate extends NSObjectProtocol {
 
 	pageViewControllerSupportedInterfaceOrientations?(pageViewController: UIPageViewController): UIInterfaceOrientationMask;
 
-	pageViewControllerWillTransitionToViewControllers?(pageViewController: UIPageViewController, pendingViewControllers: NSArray<UIViewController>): void;
+	pageViewControllerWillTransitionToViewControllers?(pageViewController: UIPageViewController, pendingViewControllers: NSArray<UIViewController> | UIViewController[]): void;
 }
 declare var UIPageViewControllerDelegate: {
 
@@ -8852,7 +8852,7 @@ declare class UIPasteConfiguration extends NSObject implements NSCopying, NSSecu
 
 	constructor(o: { typeIdentifiersForAcceptingClass: typeof NSObject; });
 
-	addAcceptableTypeIdentifiers(acceptableTypeIdentifiers: NSArray<string>): void;
+	addAcceptableTypeIdentifiers(acceptableTypeIdentifiers: NSArray<string> | string[]): void;
 
 	addTypeIdentifiersForAcceptingClass(aClass: typeof NSObject): void;
 
@@ -8860,7 +8860,7 @@ declare class UIPasteConfiguration extends NSObject implements NSCopying, NSSecu
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
-	initWithAcceptableTypeIdentifiers(acceptableTypeIdentifiers: NSArray<string>): this;
+	initWithAcceptableTypeIdentifiers(acceptableTypeIdentifiers: NSArray<string> | string[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -8871,9 +8871,9 @@ interface UIPasteConfigurationSupporting extends NSObjectProtocol {
 
 	pasteConfiguration: UIPasteConfiguration;
 
-	canPasteItemProviders?(itemProviders: NSArray<NSItemProvider>): boolean;
+	canPasteItemProviders?(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): boolean;
 
-	pasteItemProviders?(itemProviders: NSArray<NSItemProvider>): void;
+	pasteItemProviders?(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): void;
 }
 declare var UIPasteConfigurationSupporting: {
 
@@ -8932,29 +8932,29 @@ declare class UIPasteboard extends NSObject {
 
 	static readonly generalPasteboard: UIPasteboard;
 
-	addItems(items: NSArray<NSDictionary<string, any>>): void;
+	addItems(items: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): void;
 
-	containsPasteboardTypes(pasteboardTypes: NSArray<string>): boolean;
+	containsPasteboardTypes(pasteboardTypes: NSArray<string> | string[]): boolean;
 
-	containsPasteboardTypesInItemSet(pasteboardTypes: NSArray<string>, itemSet: NSIndexSet): boolean;
+	containsPasteboardTypesInItemSet(pasteboardTypes: NSArray<string> | string[], itemSet: NSIndexSet): boolean;
 
 	dataForPasteboardType(pasteboardType: string): NSData;
 
 	dataForPasteboardTypeInItemSet(pasteboardType: string, itemSet: NSIndexSet): NSArray<any>;
 
-	itemSetWithPasteboardTypes(pasteboardTypes: NSArray<string>): NSIndexSet;
+	itemSetWithPasteboardTypes(pasteboardTypes: NSArray<string> | string[]): NSIndexSet;
 
 	pasteboardTypesForItemSet(itemSet: NSIndexSet): NSArray<NSArray<string>>;
 
 	setDataForPasteboardType(data: NSData, pasteboardType: string): void;
 
-	setItemProvidersLocalOnlyExpirationDate(itemProviders: NSArray<NSItemProvider>, localOnly: boolean, expirationDate: Date): void;
+	setItemProvidersLocalOnlyExpirationDate(itemProviders: NSArray<NSItemProvider> | NSItemProvider[], localOnly: boolean, expirationDate: Date): void;
 
-	setItemsOptions(items: NSArray<NSDictionary<string, any>>, options: NSDictionary<string, any>): void;
+	setItemsOptions(items: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], options: NSDictionary<string, any>): void;
 
-	setObjects(objects: NSArray<NSItemProviderWriting>): void;
+	setObjects(objects: NSArray<NSItemProviderWriting> | NSItemProviderWriting[]): void;
 
-	setObjectsLocalOnlyExpirationDate(objects: NSArray<NSItemProviderWriting>, localOnly: boolean, expirationDate: Date): void;
+	setObjectsLocalOnlyExpirationDate(objects: NSArray<NSItemProviderWriting> | NSItemProviderWriting[], localOnly: boolean, expirationDate: Date): void;
 
 	setPersistent(persistent: boolean): void;
 
@@ -9064,11 +9064,11 @@ declare class UIPickerView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIPickerView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIPickerView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPickerView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIPickerView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIPickerView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPickerView; // inherited from UIAppearance
 
 	static new(): UIPickerView; // inherited from NSObject
 
@@ -9182,11 +9182,11 @@ declare class UIPopoverBackgroundView extends UIView implements UIPopoverBackgro
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIPopoverBackgroundView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIPopoverBackgroundView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPopoverBackgroundView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIPopoverBackgroundView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIPopoverBackgroundView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPopoverBackgroundView; // inherited from UIAppearance
 
 	static arrowBase(): number;
 
@@ -9577,7 +9577,7 @@ declare class UIPreviewAction extends NSObject implements NSCopying, UIPreviewAc
 
 declare class UIPreviewActionGroup extends NSObject implements NSCopying, UIPreviewActionItem {
 
-	static actionGroupWithTitleStyleActions(title: string, style: UIPreviewActionStyle, actions: NSArray<UIPreviewAction>): UIPreviewActionGroup;
+	static actionGroupWithTitleStyleActions(title: string, style: UIPreviewActionStyle, actions: NSArray<UIPreviewAction> | UIPreviewAction[]): UIPreviewActionGroup;
 
 	static alloc(): UIPreviewActionGroup; // inherited from NSObject
 
@@ -9812,9 +9812,9 @@ declare class UIPrintInteractionController extends NSObject {
 
 interface UIPrintInteractionControllerDelegate extends NSObjectProtocol {
 
-	printInteractionControllerChooseCutterBehavior?(printInteractionController: UIPrintInteractionController, availableBehaviors: NSArray<any>): UIPrinterCutterBehavior;
+	printInteractionControllerChooseCutterBehavior?(printInteractionController: UIPrintInteractionController, availableBehaviors: NSArray<any> | any[]): UIPrinterCutterBehavior;
 
-	printInteractionControllerChoosePaper?(printInteractionController: UIPrintInteractionController, paperList: NSArray<UIPrintPaper>): UIPrintPaper;
+	printInteractionControllerChoosePaper?(printInteractionController: UIPrintInteractionController, paperList: NSArray<UIPrintPaper> | UIPrintPaper[]): UIPrintPaper;
 
 	printInteractionControllerCutLengthForPaper?(printInteractionController: UIPrintInteractionController, paper: UIPrintPaper): number;
 
@@ -9880,7 +9880,7 @@ declare class UIPrintPaper extends NSObject {
 
 	static alloc(): UIPrintPaper; // inherited from NSObject
 
-	static bestPaperForPageSizeWithPapersFromArray(contentSize: CGSize, paperList: NSArray<UIPrintPaper>): UIPrintPaper;
+	static bestPaperForPageSizeWithPapersFromArray(contentSize: CGSize, paperList: NSArray<UIPrintPaper> | UIPrintPaper[]): UIPrintPaper;
 
 	static new(): UIPrintPaper; // inherited from NSObject
 
@@ -10006,11 +10006,11 @@ declare class UIProgressView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIProgressView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIProgressView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIProgressView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIProgressView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIProgressView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIProgressView; // inherited from UIAppearance
 
 	static new(): UIProgressView; // inherited from NSObject
 
@@ -10070,7 +10070,7 @@ declare class UIPushBehavior extends UIDynamicBehavior {
 
 	addItem(item: UIDynamicItem): void;
 
-	initWithItemsMode(items: NSArray<UIDynamicItem>, mode: UIPushBehaviorMode): this;
+	initWithItemsMode(items: NSArray<UIDynamicItem> | UIDynamicItem[], mode: UIPushBehaviorMode): this;
 
 	removeItem(item: UIDynamicItem): void;
 
@@ -10149,11 +10149,11 @@ declare class UIRefreshControl extends UIControl {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIRefreshControl; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIRefreshControl; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIRefreshControl; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIRefreshControl; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIRefreshControl; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIRefreshControl; // inherited from UIAppearance
 
 	static new(): UIRefreshControl; // inherited from NSObject
 
@@ -10266,7 +10266,7 @@ declare class UIResponder extends NSObject implements UIPasteConfigurationSuppor
 
 	becomeFirstResponder(): boolean;
 
-	canPasteItemProviders(itemProviders: NSArray<NSItemProvider>): boolean;
+	canPasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): boolean;
 
 	canPerformActionWithSender(action: string, sender: any): boolean;
 
@@ -10300,7 +10300,7 @@ declare class UIResponder extends NSObject implements UIPasteConfigurationSuppor
 
 	paste(sender: any): void;
 
-	pasteItemProviders(itemProviders: NSArray<NSItemProvider>): void;
+	pasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): void;
 
 	performSelector(aSelector: string): any;
 
@@ -10570,11 +10570,11 @@ declare class UIScrollView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIScrollView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIScrollView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIScrollView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIScrollView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIScrollView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIScrollView; // inherited from UIAppearance
 
 	static new(): UIScrollView; // inherited from NSObject
 
@@ -10771,11 +10771,11 @@ declare class UISearchBar extends UIView implements UIBarPositioning, UITextInpu
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UISearchBar; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UISearchBar; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISearchBar; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UISearchBar; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UISearchBar; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISearchBar; // inherited from UIAppearance
 
 	static new(): UISearchBar; // inherited from NSObject
 
@@ -11151,11 +11151,11 @@ declare class UISegmentedControl extends UIControl implements NSCoding, UISpring
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UISegmentedControl; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UISegmentedControl; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISegmentedControl; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UISegmentedControl; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UISegmentedControl; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISegmentedControl; // inherited from UIAppearance
 
 	static new(): UISegmentedControl; // inherited from NSObject
 
@@ -11205,7 +11205,7 @@ declare class UISegmentedControl extends UIControl implements NSCoding, UISpring
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithItems(items: NSArray<any>): this;
+	initWithItems(items: NSArray<any> | any[]): this;
 
 	insertSegmentWithImageAtIndexAnimated(image: UIImage, segment: number, animated: boolean): void;
 
@@ -11343,11 +11343,11 @@ declare class UISlider extends UIControl implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UISlider; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UISlider; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISlider; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UISlider; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UISlider; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISlider; // inherited from UIAppearance
 
 	static new(): UISlider; // inherited from NSObject
 
@@ -11664,11 +11664,11 @@ declare class UIStackView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIStackView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIStackView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIStackView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIStackView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIStackView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIStackView; // inherited from UIAppearance
 
 	static new(): UIStackView; // inherited from NSObject
 
@@ -11692,7 +11692,7 @@ declare class UIStackView extends UIView {
 
 	customSpacingAfterView(arrangedSubview: UIView): number;
 
-	initWithArrangedSubviews(views: NSArray<UIView>): this;
+	initWithArrangedSubviews(views: NSArray<UIView> | UIView[]): this;
 
 	insertArrangedSubviewAtIndex(view: UIView, stackIndex: number): void;
 
@@ -11786,11 +11786,11 @@ declare class UIStepper extends UIControl {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIStepper; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIStepper; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIStepper; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIStepper; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIStepper; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIStepper; // inherited from UIAppearance
 
 	static new(): UIStepper; // inherited from NSObject
 
@@ -11887,7 +11887,7 @@ declare class UISwipeActionsConfiguration extends NSObject {
 
 	static alloc(): UISwipeActionsConfiguration; // inherited from NSObject
 
-	static configurationWithActions(actions: NSArray<UIContextualAction>): UISwipeActionsConfiguration;
+	static configurationWithActions(actions: NSArray<UIContextualAction> | UIContextualAction[]): UISwipeActionsConfiguration;
 
 	static new(): UISwipeActionsConfiguration; // inherited from NSObject
 
@@ -11928,11 +11928,11 @@ declare class UISwitch extends UIControl implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UISwitch; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UISwitch; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISwitch; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UISwitch; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UISwitch; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UISwitch; // inherited from UIAppearance
 
 	static new(): UISwitch; // inherited from NSObject
 
@@ -11970,11 +11970,11 @@ declare class UITabBar extends UIView implements UISpringLoadedInteractionSuppor
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITabBar; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITabBar; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITabBar; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITabBar; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITabBar; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITabBar; // inherited from UIAppearance
 
 	static new(): UITabBar; // inherited from NSObject
 
@@ -12022,7 +12022,7 @@ declare class UITabBar extends UIView implements UISpringLoadedInteractionSuppor
 
 	readonly  // inherited from NSObjectProtocol
 
-	beginCustomizingItems(items: NSArray<UITabBarItem>): void;
+	beginCustomizingItems(items: NSArray<UITabBarItem> | UITabBarItem[]): void;
 
 	class(): typeof NSObject;
 
@@ -12048,7 +12048,7 @@ declare class UITabBar extends UIView implements UISpringLoadedInteractionSuppor
 
 	self(): this;
 
-	setItemsAnimated(items: NSArray<UITabBarItem>, animated: boolean): void;
+	setItemsAnimated(items: NSArray<UITabBarItem> | UITabBarItem[], animated: boolean): void;
 }
 
 declare class UITabBarController extends UIViewController implements NSCoding, UITabBarDelegate {
@@ -12111,24 +12111,24 @@ declare class UITabBarController extends UIViewController implements NSCoding, U
 
 	self(): this;
 
-	setViewControllersAnimated(viewControllers: NSArray<UIViewController>, animated: boolean): void;
+	setViewControllersAnimated(viewControllers: NSArray<UIViewController> | UIViewController[], animated: boolean): void;
 
-	tabBarDidBeginCustomizingItems(tabBar: UITabBar, items: NSArray<UITabBarItem>): void;
+	tabBarDidBeginCustomizingItems(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[]): void;
 
-	tabBarDidEndCustomizingItemsChanged(tabBar: UITabBar, items: NSArray<UITabBarItem>, changed: boolean): void;
+	tabBarDidEndCustomizingItemsChanged(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[], changed: boolean): void;
 
 	tabBarDidSelectItem(tabBar: UITabBar, item: UITabBarItem): void;
 
-	tabBarWillBeginCustomizingItems(tabBar: UITabBar, items: NSArray<UITabBarItem>): void;
+	tabBarWillBeginCustomizingItems(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[]): void;
 
-	tabBarWillEndCustomizingItemsChanged(tabBar: UITabBar, items: NSArray<UITabBarItem>, changed: boolean): void;
+	tabBarWillEndCustomizingItemsChanged(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[], changed: boolean): void;
 }
 
 interface UITabBarControllerDelegate extends NSObjectProtocol {
 
 	tabBarControllerAnimationControllerForTransitionFromViewControllerToViewController?(tabBarController: UITabBarController, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning;
 
-	tabBarControllerDidEndCustomizingViewControllersChanged?(tabBarController: UITabBarController, viewControllers: NSArray<UIViewController>, changed: boolean): void;
+	tabBarControllerDidEndCustomizingViewControllersChanged?(tabBarController: UITabBarController, viewControllers: NSArray<UIViewController> | UIViewController[], changed: boolean): void;
 
 	tabBarControllerDidSelectViewController?(tabBarController: UITabBarController, viewController: UIViewController): void;
 
@@ -12140,9 +12140,9 @@ interface UITabBarControllerDelegate extends NSObjectProtocol {
 
 	tabBarControllerSupportedInterfaceOrientations?(tabBarController: UITabBarController): UIInterfaceOrientationMask;
 
-	tabBarControllerWillBeginCustomizingViewControllers?(tabBarController: UITabBarController, viewControllers: NSArray<UIViewController>): void;
+	tabBarControllerWillBeginCustomizingViewControllers?(tabBarController: UITabBarController, viewControllers: NSArray<UIViewController> | UIViewController[]): void;
 
-	tabBarControllerWillEndCustomizingViewControllersChanged?(tabBarController: UITabBarController, viewControllers: NSArray<UIViewController>, changed: boolean): void;
+	tabBarControllerWillEndCustomizingViewControllersChanged?(tabBarController: UITabBarController, viewControllers: NSArray<UIViewController> | UIViewController[], changed: boolean): void;
 }
 declare var UITabBarControllerDelegate: {
 
@@ -12151,15 +12151,15 @@ declare var UITabBarControllerDelegate: {
 
 interface UITabBarDelegate extends NSObjectProtocol {
 
-	tabBarDidBeginCustomizingItems?(tabBar: UITabBar, items: NSArray<UITabBarItem>): void;
+	tabBarDidBeginCustomizingItems?(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[]): void;
 
-	tabBarDidEndCustomizingItemsChanged?(tabBar: UITabBar, items: NSArray<UITabBarItem>, changed: boolean): void;
+	tabBarDidEndCustomizingItemsChanged?(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[], changed: boolean): void;
 
 	tabBarDidSelectItem?(tabBar: UITabBar, item: UITabBarItem): void;
 
-	tabBarWillBeginCustomizingItems?(tabBar: UITabBar, items: NSArray<UITabBarItem>): void;
+	tabBarWillBeginCustomizingItems?(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[]): void;
 
-	tabBarWillEndCustomizingItemsChanged?(tabBar: UITabBar, items: NSArray<UITabBarItem>, changed: boolean): void;
+	tabBarWillEndCustomizingItemsChanged?(tabBar: UITabBar, items: NSArray<UITabBarItem> | UITabBarItem[], changed: boolean): void;
 }
 declare var UITabBarDelegate: {
 
@@ -12176,11 +12176,11 @@ declare class UITabBarItem extends UIBarItem implements UISpringLoadedInteractio
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITabBarItem; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITabBarItem; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITabBarItem; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITabBarItem; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITabBarItem; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITabBarItem; // inherited from UIAppearance
 
 	static new(): UITabBarItem; // inherited from NSObject
 
@@ -12297,11 +12297,11 @@ declare class UITableView extends UIScrollView implements NSCoding, UIDataSource
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITableView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITableView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITableView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITableView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITableView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITableView; // inherited from UIAppearance
 
 	static new(): UITableView; // inherited from NSObject
 
@@ -12417,7 +12417,7 @@ declare class UITableView extends UIScrollView implements NSCoding, UIDataSource
 
 	dataSourceSectionIndexForPresentationSectionIndex(presentationSectionIndex: number): number;
 
-	deleteRowsAtIndexPathsWithRowAnimation(indexPaths: NSArray<NSIndexPath>, animation: UITableViewRowAnimation): void;
+	deleteRowsAtIndexPathsWithRowAnimation(indexPaths: NSArray<NSIndexPath> | NSIndexPath[], animation: UITableViewRowAnimation): void;
 
 	deleteSectionsWithRowAnimation(sections: NSIndexSet, animation: UITableViewRowAnimation): void;
 
@@ -12447,7 +12447,7 @@ declare class UITableView extends UIScrollView implements NSCoding, UIDataSource
 
 	initWithFrameStyle(frame: CGRect, style: UITableViewStyle): this;
 
-	insertRowsAtIndexPathsWithRowAnimation(indexPaths: NSArray<NSIndexPath>, animation: UITableViewRowAnimation): void;
+	insertRowsAtIndexPathsWithRowAnimation(indexPaths: NSArray<NSIndexPath> | NSIndexPath[], animation: UITableViewRowAnimation): void;
 
 	insertSectionsWithRowAnimation(sections: NSIndexSet, animation: UITableViewRowAnimation): void;
 
@@ -12495,7 +12495,7 @@ declare class UITableView extends UIScrollView implements NSCoding, UIDataSource
 
 	reloadData(): void;
 
-	reloadRowsAtIndexPathsWithRowAnimation(indexPaths: NSArray<NSIndexPath>, animation: UITableViewRowAnimation): void;
+	reloadRowsAtIndexPathsWithRowAnimation(indexPaths: NSArray<NSIndexPath> | NSIndexPath[], animation: UITableViewRowAnimation): void;
 
 	reloadSectionIndexTitles(): void;
 
@@ -12528,11 +12528,11 @@ declare class UITableViewCell extends UIView implements NSCoding, UIGestureRecog
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITableViewCell; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITableViewCell; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITableViewCell; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITableViewCell; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITableViewCell; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITableViewCell; // inherited from UIAppearance
 
 	static new(): UITableViewCell; // inherited from NSObject
 
@@ -12977,9 +12977,9 @@ declare var UITableViewDataSource: {
 
 interface UITableViewDataSourcePrefetching extends NSObjectProtocol {
 
-	tableViewCancelPrefetchingForRowsAtIndexPaths?(tableView: UITableView, indexPaths: NSArray<NSIndexPath>): void;
+	tableViewCancelPrefetchingForRowsAtIndexPaths?(tableView: UITableView, indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 
-	tableViewPrefetchRowsAtIndexPaths(tableView: UITableView, indexPaths: NSArray<NSIndexPath>): void;
+	tableViewPrefetchRowsAtIndexPaths(tableView: UITableView, indexPaths: NSArray<NSIndexPath> | NSIndexPath[]): void;
 }
 declare var UITableViewDataSourcePrefetching: {
 
@@ -13220,11 +13220,11 @@ declare class UITableViewHeaderFooterView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITableViewHeaderFooterView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITableViewHeaderFooterView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITableViewHeaderFooterView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITableViewHeaderFooterView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITableViewHeaderFooterView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITableViewHeaderFooterView; // inherited from UIAppearance
 
 	static new(): UITableViewHeaderFooterView; // inherited from NSObject
 
@@ -13715,11 +13715,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITextField; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITextField; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITextField; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITextField; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITextField; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITextField; // inherited from UIAppearance
 
 	static new(): UITextField; // inherited from NSObject
 
@@ -13861,7 +13861,7 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	borderRectForBounds(bounds: CGRect): CGRect;
 
-	canPasteItemProviders(itemProviders: NSArray<NSItemProvider>): boolean;
+	canPasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): boolean;
 
 	caretRectForPosition(position: UITextPosition): CGRect;
 
@@ -13905,7 +13905,7 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	insertDictationResult(dictationResult: NSArray<UIDictationPhrase>): void;
+	insertDictationResult(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
 	insertText(text: string): void;
 
@@ -13919,7 +13919,7 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	offsetFromPositionToPosition(from: UITextPosition, toPosition: UITextPosition): number;
 
-	pasteItemProviders(itemProviders: NSArray<NSItemProvider>): void;
+	pasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): void;
 
 	performSelector(aSelector: string): any;
 
@@ -14084,7 +14084,7 @@ interface UITextInput extends UIKeyInput {
 
 	frameForDictationResultPlaceholder?(placeholder: any): CGRect;
 
-	insertDictationResult?(dictationResult: NSArray<UIDictationPhrase>): void;
+	insertDictationResult?(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
 	offsetFromPositionToPosition(from: UITextPosition, toPosition: UITextPosition): number;
 
@@ -14310,7 +14310,7 @@ declare var UITextPasteConfigurationSupporting: {
 
 interface UITextPasteDelegate extends NSObjectProtocol {
 
-	textPasteConfigurationSupportingCombineItemAttributedStringsForRange?(textPasteConfigurationSupporting: UITextPasteConfigurationSupporting, itemStrings: NSArray<NSAttributedString>, textRange: UITextRange): NSAttributedString;
+	textPasteConfigurationSupportingCombineItemAttributedStringsForRange?(textPasteConfigurationSupporting: UITextPasteConfigurationSupporting, itemStrings: NSArray<NSAttributedString> | NSAttributedString[], textRange: UITextRange): NSAttributedString;
 
 	textPasteConfigurationSupportingPerformPasteOfAttributedStringToRange?(textPasteConfigurationSupporting: UITextPasteConfigurationSupporting, attributedString: NSAttributedString, textRange: UITextRange): UITextRange;
 
@@ -14436,11 +14436,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UITextView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UITextView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITextView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UITextView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UITextView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UITextView; // inherited from UIAppearance
 
 	static new(): UITextView; // inherited from NSObject
 
@@ -14568,7 +14568,7 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	beginFloatingCursorAtPoint(point: CGPoint): void;
 
-	canPasteItemProviders(itemProviders: NSArray<NSItemProvider>): boolean;
+	canPasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): boolean;
 
 	caretRectForPosition(position: UITextPosition): CGRect;
 
@@ -14602,7 +14602,7 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	initWithFrameTextContainer(frame: CGRect, textContainer: NSTextContainer): this;
 
-	insertDictationResult(dictationResult: NSArray<UIDictationPhrase>): void;
+	insertDictationResult(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
 	insertText(text: string): void;
 
@@ -14614,7 +14614,7 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	offsetFromPositionToPosition(from: UITextPosition, toPosition: UITextPosition): number;
 
-	pasteItemProviders(itemProviders: NSArray<NSItemProvider>): void;
+	pasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): void;
 
 	performSelector(aSelector: string): any;
 
@@ -14739,11 +14739,11 @@ declare class UIToolbar extends UIView implements UIBarPositioning {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIToolbar; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIToolbar; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIToolbar; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIToolbar; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIToolbar; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIToolbar; // inherited from UIAppearance
 
 	static new(): UIToolbar; // inherited from NSObject
 
@@ -14797,7 +14797,7 @@ declare class UIToolbar extends UIView implements UIBarPositioning {
 
 	setBackgroundImageForToolbarPositionBarMetrics(backgroundImage: UIImage, topOrBottom: UIBarPosition, barMetrics: UIBarMetrics): void;
 
-	setItemsAnimated(items: NSArray<UIBarButtonItem>, animated: boolean): void;
+	setItemsAnimated(items: NSArray<UIBarButtonItem> | UIBarButtonItem[], animated: boolean): void;
 
 	setShadowImageForToolbarPosition(shadowImage: UIImage, topOrBottom: UIBarPosition): void;
 
@@ -14917,7 +14917,7 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 
 	static traitCollectionWithPreferredContentSizeCategory(preferredContentSizeCategory: string): UITraitCollection;
 
-	static traitCollectionWithTraitsFromCollections(traitCollections: NSArray<UITraitCollection>): UITraitCollection;
+	static traitCollectionWithTraitsFromCollections(traitCollections: NSArray<UITraitCollection> | UITraitCollection[]): UITraitCollection;
 
 	static traitCollectionWithUserInterfaceIdiom(idiom: UIUserInterfaceIdiom): UITraitCollection;
 
@@ -15183,11 +15183,11 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIView;
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIView;
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIView;
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIView;
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIView;
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIView;
 
 	static beginAnimationsContext(animationID: string, context: interop.Pointer | interop.Reference<any>): void;
 
@@ -15195,7 +15195,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	static new(): UIView; // inherited from NSObject
 
-	static performSystemAnimationOnViewsOptionsAnimationsCompletion(animation: UISystemAnimation, views: NSArray<UIView>, options: UIViewAnimationOptions, parallelAnimations: () => void, completion: (p1: boolean) => void): void;
+	static performSystemAnimationOnViewsOptionsAnimationsCompletion(animation: UISystemAnimation, views: NSArray<UIView> | UIView[], options: UIViewAnimationOptions, parallelAnimations: () => void, completion: (p1: boolean) => void): void;
 
 	static performWithoutAnimation(actionsWithoutAnimation: () => void): void;
 
@@ -15397,7 +15397,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	addConstraint(constraint: NSLayoutConstraint): void;
 
-	addConstraints(constraints: NSArray<NSLayoutConstraint>): void;
+	addConstraints(constraints: NSArray<NSLayoutConstraint> | NSLayoutConstraint[]): void;
 
 	addGestureRecognizer(gestureRecognizer: UIGestureRecognizer): void;
 
@@ -15517,7 +15517,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	removeConstraint(constraint: NSLayoutConstraint): void;
 
-	removeConstraints(constraints: NSArray<NSLayoutConstraint>): void;
+	removeConstraints(constraints: NSArray<NSLayoutConstraint> | NSLayoutConstraint[]): void;
 
 	removeFromSuperview(): void;
 
@@ -16054,7 +16054,7 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 
 	setOverrideTraitCollectionForChildViewController(collection: UITraitCollection, childViewController: UIViewController): void;
 
-	setToolbarItemsAnimated(toolbarItems: NSArray<UIBarButtonItem>, animated: boolean): void;
+	setToolbarItemsAnimated(toolbarItems: NSArray<UIBarButtonItem> | UIBarButtonItem[], animated: boolean): void;
 
 	shouldAutomaticallyForwardRotationMethods(): boolean;
 
@@ -16226,7 +16226,7 @@ declare var UIViewControllerRestoration: {
 
 	prototype: UIViewControllerRestoration;
 
-	viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<any>, coder: NSCoder): UIViewController;
+	viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<any> | any[], coder: NSCoder): UIViewController;
 };
 
 declare var UIViewControllerShowDetailTargetDidChangeNotification: string;
@@ -16490,11 +16490,11 @@ declare class UIVisualEffectView extends UIView implements NSSecureCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIVisualEffectView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIVisualEffectView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIVisualEffectView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIVisualEffectView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIVisualEffectView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIVisualEffectView; // inherited from UIAppearance
 
 	static new(): UIVisualEffectView; // inherited from NSObject
 
@@ -16545,11 +16545,11 @@ declare class UIWebView extends UIView implements NSCoding, UIScrollViewDelegate
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIWebView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIWebView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIWebView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIWebView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIWebView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIWebView; // inherited from UIAppearance
 
 	static new(): UIWebView; // inherited from NSObject
 
@@ -16720,11 +16720,11 @@ declare class UIWindow extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIWindow; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): UIWindow; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIWindow; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIWindow; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): UIWindow; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIWindow; // inherited from UIAppearance
 
 	static new(): UIWindow; // inherited from NSObject
 

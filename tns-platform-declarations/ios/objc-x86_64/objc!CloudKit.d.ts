@@ -13,7 +13,7 @@ declare class CKAcceptSharesOperation extends CKOperation {
 
 	constructor(o: { shareMetadatas: NSArray<CKShareMetadata>; });
 
-	initWithShareMetadatas(shareMetadatas: NSArray<CKShareMetadata>): this;
+	initWithShareMetadatas(shareMetadatas: NSArray<CKShareMetadata> | CKShareMetadata[]): this;
 }
 
 declare var CKAccountChangedNotification: string;
@@ -274,7 +274,7 @@ declare class CKDiscoverUserIdentitiesOperation extends CKOperation {
 
 	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>; });
 
-	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>): this;
+	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]): this;
 }
 
 declare class CKDiscoverUserInfosOperation extends CKOperation {
@@ -291,7 +291,7 @@ declare class CKDiscoverUserInfosOperation extends CKOperation {
 
 	constructor(o: { emailAddresses: NSArray<string>; userRecordIDs: NSArray<CKRecordID>; });
 
-	initWithEmailAddressesUserRecordIDs(emailAddresses: NSArray<string>, userRecordIDs: NSArray<CKRecordID>): this;
+	initWithEmailAddressesUserRecordIDs(emailAddresses: NSArray<string> | string[], userRecordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
 }
 
 declare class CKDiscoveredUserInfo extends NSObject {
@@ -483,7 +483,7 @@ declare class CKFetchRecordZoneChangesOperation extends CKDatabaseOperation {
 
 	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID>; optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>; });
 
-	initWithRecordZoneIDsOptionsByRecordZoneID(recordZoneIDs: NSArray<CKRecordZoneID>, optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>): this;
+	initWithRecordZoneIDsOptionsByRecordZoneID(recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[], optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>): this;
 }
 
 declare class CKFetchRecordZoneChangesOptions extends NSObject implements NSCopying, NSSecureCoding {
@@ -523,7 +523,7 @@ declare class CKFetchRecordZonesOperation extends CKDatabaseOperation {
 
 	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID>; });
 
-	initWithRecordZoneIDs(zoneIDs: NSArray<CKRecordZoneID>): this;
+	initWithRecordZoneIDs(zoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]): this;
 }
 
 declare class CKFetchRecordsOperation extends CKDatabaseOperation {
@@ -546,7 +546,7 @@ declare class CKFetchRecordsOperation extends CKDatabaseOperation {
 
 	constructor(o: { recordIDs: NSArray<CKRecordID>; });
 
-	initWithRecordIDs(recordIDs: NSArray<CKRecordID>): this;
+	initWithRecordIDs(recordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
 }
 
 declare class CKFetchShareMetadataOperation extends CKOperation {
@@ -567,7 +567,7 @@ declare class CKFetchShareMetadataOperation extends CKOperation {
 
 	constructor(o: { shareURLs: NSArray<NSURL>; });
 
-	initWithShareURLs(shareURLs: NSArray<NSURL>): this;
+	initWithShareURLs(shareURLs: NSArray<NSURL> | NSURL[]): this;
 }
 
 declare class CKFetchShareParticipantsOperation extends CKOperation {
@@ -584,7 +584,7 @@ declare class CKFetchShareParticipantsOperation extends CKOperation {
 
 	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>; });
 
-	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>): this;
+	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]): this;
 }
 
 declare class CKFetchSubscriptionsOperation extends CKDatabaseOperation {
@@ -601,7 +601,7 @@ declare class CKFetchSubscriptionsOperation extends CKDatabaseOperation {
 
 	constructor(o: { subscriptionIDs: NSArray<string>; });
 
-	initWithSubscriptionIDs(subscriptionIDs: NSArray<string>): this;
+	initWithSubscriptionIDs(subscriptionIDs: NSArray<string> | string[]): this;
 }
 
 declare class CKFetchWebAuthTokenOperation extends CKDatabaseOperation {
@@ -658,7 +658,7 @@ declare class CKMarkNotificationsReadOperation extends CKOperation {
 
 	constructor(o: { notificationIDsToMarkRead: NSArray<CKNotificationID>; });
 
-	initWithNotificationIDsToMarkRead(notificationIDs: NSArray<CKNotificationID>): this;
+	initWithNotificationIDsToMarkRead(notificationIDs: NSArray<CKNotificationID> | CKNotificationID[]): this;
 }
 
 declare class CKModifyBadgeOperation extends CKOperation {
@@ -690,7 +690,7 @@ declare class CKModifyRecordZonesOperation extends CKDatabaseOperation {
 
 	constructor(o: { recordZonesToSave: NSArray<CKRecordZone>; recordZoneIDsToDelete: NSArray<CKRecordZoneID>; });
 
-	initWithRecordZonesToSaveRecordZoneIDsToDelete(recordZonesToSave: NSArray<CKRecordZone>, recordZoneIDsToDelete: NSArray<CKRecordZoneID>): this;
+	initWithRecordZonesToSaveRecordZoneIDsToDelete(recordZonesToSave: NSArray<CKRecordZone> | CKRecordZone[], recordZoneIDsToDelete: NSArray<CKRecordZoneID> | CKRecordZoneID[]): this;
 }
 
 declare class CKModifyRecordsOperation extends CKDatabaseOperation {
@@ -717,7 +717,7 @@ declare class CKModifyRecordsOperation extends CKDatabaseOperation {
 
 	constructor(o: { recordsToSave: NSArray<CKRecord>; recordIDsToDelete: NSArray<CKRecordID>; });
 
-	initWithRecordsToSaveRecordIDsToDelete(records: NSArray<CKRecord>, recordIDs: NSArray<CKRecordID>): this;
+	initWithRecordsToSaveRecordIDsToDelete(records: NSArray<CKRecord> | CKRecord[], recordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
 }
 
 declare class CKModifySubscriptionsOperation extends CKDatabaseOperation {
@@ -734,7 +734,7 @@ declare class CKModifySubscriptionsOperation extends CKDatabaseOperation {
 
 	constructor(o: { subscriptionsToSave: NSArray<CKSubscription>; subscriptionIDsToDelete: NSArray<string>; });
 
-	initWithSubscriptionsToSaveSubscriptionIDsToDelete(subscriptionsToSave: NSArray<CKSubscription>, subscriptionIDsToDelete: NSArray<string>): this;
+	initWithSubscriptionsToSaveSubscriptionIDsToDelete(subscriptionsToSave: NSArray<CKSubscription> | CKSubscription[], subscriptionIDsToDelete: NSArray<string> | string[]): this;
 }
 
 declare class CKNotification extends NSObject {
@@ -1638,11 +1638,11 @@ declare class CKUserIdentityLookupInfo extends NSObject implements NSCopying, NS
 
 	static alloc(): CKUserIdentityLookupInfo; // inherited from NSObject
 
-	static lookupInfosWithEmails(emails: NSArray<string>): NSArray<CKUserIdentityLookupInfo>;
+	static lookupInfosWithEmails(emails: NSArray<string> | string[]): NSArray<CKUserIdentityLookupInfo>;
 
-	static lookupInfosWithPhoneNumbers(phoneNumbers: NSArray<string>): NSArray<CKUserIdentityLookupInfo>;
+	static lookupInfosWithPhoneNumbers(phoneNumbers: NSArray<string> | string[]): NSArray<CKUserIdentityLookupInfo>;
 
-	static lookupInfosWithRecordIDs(recordIDs: NSArray<CKRecordID>): NSArray<CKUserIdentityLookupInfo>;
+	static lookupInfosWithRecordIDs(recordIDs: NSArray<CKRecordID> | CKRecordID[]): NSArray<CKUserIdentityLookupInfo>;
 
 	static new(): CKUserIdentityLookupInfo; // inherited from NSObject
 

@@ -341,7 +341,7 @@ declare class MPMediaItemCollection extends MPMediaEntity {
 
 	static alloc(): MPMediaItemCollection; // inherited from NSObject
 
-	static collectionWithItems(items: NSArray<MPMediaItem>): MPMediaItemCollection;
+	static collectionWithItems(items: NSArray<MPMediaItem> | MPMediaItem[]): MPMediaItemCollection;
 
 	static new(): MPMediaItemCollection; // inherited from NSObject
 
@@ -355,7 +355,7 @@ declare class MPMediaItemCollection extends MPMediaEntity {
 
 	constructor(o: { items: NSArray<MPMediaItem>; });
 
-	initWithItems(items: NSArray<MPMediaItem>): this;
+	initWithItems(items: NSArray<MPMediaItem> | MPMediaItem[]): this;
 }
 
 declare var MPMediaItemPropertyAlbumArtist: string;
@@ -559,7 +559,7 @@ declare class MPMediaPlaylist extends MPMediaItemCollection {
 
 	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSError) => void): void;
 
-	addMediaItemsCompletionHandler(mediaItems: NSArray<MPMediaItem>, completionHandler: (p1: NSError) => void): void;
+	addMediaItemsCompletionHandler(mediaItems: NSArray<MPMediaItem> | MPMediaItem[], completionHandler: (p1: NSError) => void): void;
 }
 
 declare const enum MPMediaPlaylistAttribute {
@@ -975,7 +975,7 @@ declare class MPMoviePlayerController extends NSObject implements MPMediaPlaybac
 
 	prepareToPlay(): void;
 
-	requestThumbnailImagesAtTimesTimeOption(playbackTimes: NSArray<any>, option: MPMovieTimeOption): void;
+	requestThumbnailImagesAtTimesTimeOption(playbackTimes: NSArray<any> | any[], option: MPMovieTimeOption): void;
 
 	setFullscreenAnimated(fullscreen: boolean, animated: boolean): void;
 
@@ -1167,7 +1167,7 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	setQueueWithQuery(query: MPMediaQuery): void;
 
-	setQueueWithStoreIDs(storeIDs: NSArray<string>): void;
+	setQueueWithStoreIDs(storeIDs: NSArray<string> | string[]): void;
 
 	skipToBeginning(): void;
 
@@ -1264,7 +1264,7 @@ declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQu
 
 	constructor(o: { playParametersQueue: NSArray<MPMusicPlayerPlayParameters>; });
 
-	initWithPlayParametersQueue(playParametersQueue: NSArray<MPMusicPlayerPlayParameters>): this;
+	initWithPlayParametersQueue(playParametersQueue: NSArray<MPMusicPlayerPlayParameters> | MPMusicPlayerPlayParameters[]): this;
 
 	setEndTimeForItemWithPlayParameters(endTime: number, playParameters: MPMusicPlayerPlayParameters): void;
 
@@ -1298,7 +1298,7 @@ declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescri
 
 	constructor(o: { storeIDs: NSArray<string>; });
 
-	initWithStoreIDs(storeIDs: NSArray<string>): this;
+	initWithStoreIDs(storeIDs: NSArray<string> | string[]): this;
 
 	setEndTimeForItemWithStoreID(endTime: number, storeID: string): void;
 
@@ -1360,7 +1360,7 @@ declare class MPNowPlayingInfoLanguageOption extends NSObject {
 
 	constructor(o: { type: MPNowPlayingInfoLanguageOptionType; languageTag: string; characteristics: NSArray<string>; displayName: string; identifier: string; });
 
-	initWithTypeLanguageTagCharacteristicsDisplayNameIdentifier(languageOptionType: MPNowPlayingInfoLanguageOptionType, languageTag: string, languageOptionCharacteristics: NSArray<string>, displayName: string, identifier: string): this;
+	initWithTypeLanguageTagCharacteristicsDisplayNameIdentifier(languageOptionType: MPNowPlayingInfoLanguageOptionType, languageTag: string, languageOptionCharacteristics: NSArray<string> | string[], displayName: string, identifier: string): this;
 
 	isAutomaticAudibleLanguageOption(): boolean;
 
@@ -1381,7 +1381,7 @@ declare class MPNowPlayingInfoLanguageOptionGroup extends NSObject {
 
 	constructor(o: { languageOptions: NSArray<MPNowPlayingInfoLanguageOption>; defaultLanguageOption: MPNowPlayingInfoLanguageOption; allowEmptySelection: boolean; });
 
-	initWithLanguageOptionsDefaultLanguageOptionAllowEmptySelection(languageOptions: NSArray<MPNowPlayingInfoLanguageOption>, defaultLanguageOption: MPNowPlayingInfoLanguageOption, allowEmptySelection: boolean): this;
+	initWithLanguageOptionsDefaultLanguageOptionAllowEmptySelection(languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[], defaultLanguageOption: MPNowPlayingInfoLanguageOption, allowEmptySelection: boolean): this;
 }
 
 declare const enum MPNowPlayingInfoLanguageOptionType {
@@ -1468,7 +1468,7 @@ interface MPPlayableContentDelegate extends NSObjectProtocol {
 
 	playableContentManagerInitializePlaybackQueueWithCompletionHandler?(contentManager: MPPlayableContentManager, completionHandler: (p1: NSError) => void): void;
 
-	playableContentManagerInitializePlaybackQueueWithContentItemsCompletionHandler?(contentManager: MPPlayableContentManager, contentItems: NSArray<any>, completionHandler: (p1: NSError) => void): void;
+	playableContentManagerInitializePlaybackQueueWithContentItemsCompletionHandler?(contentManager: MPPlayableContentManager, contentItems: NSArray<any> | any[], completionHandler: (p1: NSError) => void): void;
 
 	playableContentManagerInitiatePlaybackOfContentItemAtIndexPathCompletionHandler?(contentManager: MPPlayableContentManager, indexPath: NSIndexPath, completionHandler: (p1: NSError) => void): void;
 }
@@ -1721,11 +1721,11 @@ declare class MPVolumeView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MPVolumeView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MPVolumeView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MPVolumeView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MPVolumeView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MPVolumeView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MPVolumeView; // inherited from UIAppearance
 
 	static new(): MPVolumeView; // inherited from NSObject
 

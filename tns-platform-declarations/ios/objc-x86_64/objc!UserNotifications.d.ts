@@ -198,9 +198,9 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 
 	static alloc(): UNNotificationCategory; // inherited from NSObject
 
-	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderOptions(identifier: string, actions: NSArray<UNNotificationAction>, intentIdentifiers: NSArray<string>, hiddenPreviewsBodyPlaceholder: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
+	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], hiddenPreviewsBodyPlaceholder: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
 
-	static categoryWithIdentifierActionsIntentIdentifiersOptions(identifier: string, actions: NSArray<UNNotificationAction>, intentIdentifiers: NSArray<string>, options: UNNotificationCategoryOptions): UNNotificationCategory;
+	static categoryWithIdentifierActionsIntentIdentifiersOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], options: UNNotificationCategoryOptions): UNNotificationCategory;
 
 	static new(): UNNotificationCategory; // inherited from NSObject
 
@@ -512,9 +512,9 @@ declare class UNUserNotificationCenter extends NSObject {
 
 	removeAllPendingNotificationRequests(): void;
 
-	removeDeliveredNotificationsWithIdentifiers(identifiers: NSArray<string>): void;
+	removeDeliveredNotificationsWithIdentifiers(identifiers: NSArray<string> | string[]): void;
 
-	removePendingNotificationRequestsWithIdentifiers(identifiers: NSArray<string>): void;
+	removePendingNotificationRequestsWithIdentifiers(identifiers: NSArray<string> | string[]): void;
 
 	requestAuthorizationWithOptionsCompletionHandler(options: UNAuthorizationOptions, completionHandler: (p1: boolean, p2: NSError) => void): void;
 

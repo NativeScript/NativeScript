@@ -30,7 +30,7 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static fadeOutWithDuration(sec: number): SCNAction;
 
-	static group(actions: NSArray<SCNAction>): SCNAction;
+	static group(actions: NSArray<SCNAction> | SCNAction[]): SCNAction;
 
 	static hide(): SCNAction;
 
@@ -70,7 +70,7 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static scaleToDuration(scale: number, sec: number): SCNAction;
 
-	static sequence(actions: NSArray<SCNAction>): SCNAction;
+	static sequence(actions: NSArray<SCNAction> | SCNAction[]): SCNAction;
 
 	static unhide(): SCNAction;
 
@@ -539,7 +539,7 @@ declare class SCNBox extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNBox; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNBox; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNBox; // inherited from SCNGeometry
 
 	static new(): SCNBox; // inherited from NSObject
 
@@ -820,7 +820,7 @@ declare class SCNCameraController extends NSObject {
 
 	endInteractionWithViewportVelocity(location: CGPoint, viewport: CGSize, velocity: CGPoint): void;
 
-	frameNodes(nodes: NSArray<SCNNode>): void;
+	frameNodes(nodes: NSArray<SCNNode> | SCNNode[]): void;
 
 	rollAroundTarget(delta: number): void;
 
@@ -861,7 +861,7 @@ declare class SCNCapsule extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNCapsule; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNCapsule; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNCapsule; // inherited from SCNGeometry
 
 	static new(): SCNCapsule; // inherited from NSObject
 
@@ -910,7 +910,7 @@ declare class SCNCone extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNCone; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNCone; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNCone; // inherited from SCNGeometry
 
 	static new(): SCNCone; // inherited from NSObject
 
@@ -1043,7 +1043,7 @@ declare class SCNCylinder extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNCylinder; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNCylinder; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNCylinder; // inherited from SCNGeometry
 
 	static new(): SCNCylinder; // inherited from NSObject
 
@@ -1130,7 +1130,7 @@ declare class SCNFloor extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNFloor; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNFloor; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNFloor; // inherited from SCNGeometry
 
 	static new(): SCNFloor; // inherited from NSObject
 
@@ -1157,7 +1157,7 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNGeometry;
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNGeometry;
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNGeometry;
 
 	static new(): SCNGeometry; // inherited from NSObject
 
@@ -2734,7 +2734,7 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
-	addModifierForPropertiesAtStageWithBlock(properties: NSArray<string>, stage: SCNParticleModifierStage, block: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>, p3: number, p4: number, p5: number) => void): void;
+	addModifierForPropertiesAtStageWithBlock(properties: NSArray<string> | string[], stage: SCNParticleModifierStage, block: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>, p3: number, p4: number, p5: number) => void): void;
 
 	animationForKey(key: string): CAAnimation;
 
@@ -2748,7 +2748,7 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
-	handleEventForPropertiesWithBlock(event: SCNParticleEvent, properties: NSArray<string>, block: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: number) => void): void;
+	handleEventForPropertiesWithBlock(event: SCNParticleEvent, properties: NSArray<string> | string[], block: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: number) => void): void;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -3080,7 +3080,7 @@ declare class SCNPhysicsShape extends NSObject implements NSCopying, NSSecureCod
 
 	static shapeWithNodeOptions(node: SCNNode, options: NSDictionary<string, any>): SCNPhysicsShape;
 
-	static shapeWithShapesTransforms(shapes: NSArray<SCNPhysicsShape>, transforms: NSArray<NSValue>): SCNPhysicsShape;
+	static shapeWithShapesTransforms(shapes: NSArray<SCNPhysicsShape> | SCNPhysicsShape[], transforms: NSArray<NSValue> | NSValue[]): SCNPhysicsShape;
 
 	readonly options: NSDictionary<string, any>;
 
@@ -3170,7 +3170,7 @@ declare class SCNPhysicsVehicle extends SCNPhysicsBehavior {
 
 	static new(): SCNPhysicsVehicle; // inherited from NSObject
 
-	static vehicleWithChassisBodyWheels(chassisBody: SCNPhysicsBody, wheels: NSArray<SCNPhysicsVehicleWheel>): SCNPhysicsVehicle;
+	static vehicleWithChassisBodyWheels(chassisBody: SCNPhysicsBody, wheels: NSArray<SCNPhysicsVehicleWheel> | SCNPhysicsVehicleWheel[]): SCNPhysicsVehicle;
 
 	readonly chassisBody: SCNPhysicsBody;
 
@@ -3277,7 +3277,7 @@ declare class SCNPlane extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNPlane; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNPlane; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNPlane; // inherited from SCNGeometry
 
 	static new(): SCNPlane; // inherited from NSObject
 
@@ -3364,7 +3364,7 @@ declare class SCNPyramid extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNPyramid; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNPyramid; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNPyramid; // inherited from SCNGeometry
 
 	static new(): SCNPyramid; // inherited from NSObject
 
@@ -3499,7 +3499,7 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	prepareObjectShouldAbortBlock(object: any, block: () => boolean): boolean;
 
-	prepareObjectsWithCompletionHandler(objects: NSArray<any>, completionHandler: (p1: boolean) => void): void;
+	prepareObjectsWithCompletionHandler(objects: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
 	presentSceneWithTransitionIncomingPointOfViewCompletionHandler(scene: SCNScene, transition: SKTransition, pointOfView: SCNNode, completionHandler: () => void): void;
 
@@ -3525,7 +3525,7 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	updateAtTime(time: number): void;
 
-	updateProbesAtTime(lightProbes: NSArray<SCNNode>, time: number): void;
+	updateProbesAtTime(lightProbes: NSArray<SCNNode> | SCNNode[], time: number): void;
 }
 
 declare const enum SCNRenderingAPI {
@@ -3706,7 +3706,7 @@ interface SCNSceneRenderer extends NSObjectProtocol {
 
 	prepareObjectShouldAbortBlock(object: any, block: () => boolean): boolean;
 
-	prepareObjectsWithCompletionHandler(objects: NSArray<any>, completionHandler: (p1: boolean) => void): void;
+	prepareObjectsWithCompletionHandler(objects: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
 	presentSceneWithTransitionIncomingPointOfViewCompletionHandler(scene: SCNScene, transition: SKTransition, pointOfView: SCNNode, completionHandler: () => void): void;
 
@@ -3878,7 +3878,7 @@ declare class SCNShape extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNShape; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNShape; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNShape; // inherited from SCNGeometry
 
 	static new(): SCNShape; // inherited from NSObject
 
@@ -3901,7 +3901,7 @@ declare class SCNSkinner extends NSObject implements NSSecureCoding {
 
 	static new(): SCNSkinner; // inherited from NSObject
 
-	static skinnerWithBaseGeometryBonesBoneInverseBindTransformsBoneWeightsBoneIndices(baseGeometry: SCNGeometry, bones: NSArray<SCNNode>, boneInverseBindTransforms: NSArray<NSValue>, boneWeights: SCNGeometrySource, boneIndices: SCNGeometrySource): SCNSkinner;
+	static skinnerWithBaseGeometryBonesBoneInverseBindTransformsBoneWeightsBoneIndices(baseGeometry: SCNGeometry, bones: NSArray<SCNNode> | SCNNode[], boneInverseBindTransforms: NSArray<NSValue> | NSValue[], boneWeights: SCNGeometrySource, boneIndices: SCNGeometrySource): SCNSkinner;
 
 	baseGeometry: SCNGeometry;
 
@@ -3949,7 +3949,7 @@ declare class SCNSphere extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNSphere; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNSphere; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNSphere; // inherited from SCNGeometry
 
 	static new(): SCNSphere; // inherited from NSObject
 
@@ -3968,7 +3968,7 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): SCNTechnique; // inherited from NSObject
 
-	static techniqueBySequencingTechniques(techniques: NSArray<SCNTechnique>): SCNTechnique;
+	static techniqueBySequencingTechniques(techniques: NSArray<SCNTechnique> | SCNTechnique[]): SCNTechnique;
 
 	static techniqueWithDictionary(dictionary: NSDictionary<string, any>): SCNTechnique;
 
@@ -4068,7 +4068,7 @@ declare class SCNText extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNText; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNText; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNText; // inherited from SCNGeometry
 
 	static new(): SCNText; // inherited from NSObject
 
@@ -4122,7 +4122,7 @@ declare class SCNTorus extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNTorus; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNTorus; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNTorus; // inherited from SCNGeometry
 
 	static new(): SCNTorus; // inherited from NSObject
 
@@ -4200,7 +4200,7 @@ declare class SCNTube extends SCNGeometry {
 
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNTube; // inherited from SCNGeometry
 
-	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource>, elements: NSArray<SCNGeometryElement>): SCNTube; // inherited from SCNGeometry
+	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNTube; // inherited from SCNGeometry
 
 	static new(): SCNTube; // inherited from NSObject
 
@@ -4250,11 +4250,11 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SCNView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): SCNView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SCNView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SCNView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): SCNView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SCNView; // inherited from UIAppearance
 
 	static new(): SCNView; // inherited from NSObject
 
@@ -4350,7 +4350,7 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	prepareObjectShouldAbortBlock(object: any, block: () => boolean): boolean;
 
-	prepareObjectsWithCompletionHandler(objects: NSArray<any>, completionHandler: (p1: boolean) => void): void;
+	prepareObjectsWithCompletionHandler(objects: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
 	presentSceneWithTransitionIncomingPointOfViewCompletionHandler(scene: SCNScene, transition: SKTransition, pointOfView: SCNNode, completionHandler: () => void): void;
 

@@ -22,11 +22,11 @@ declare class PHAsset extends PHObject {
 
 	static fetchAssetsInAssetCollectionOptions(assetCollection: PHAssetCollection, options: PHFetchOptions): PHFetchResult<PHAsset>;
 
-	static fetchAssetsWithALAssetURLsOptions(assetURLs: NSArray<NSURL>, options: PHFetchOptions): PHFetchResult<PHAsset>;
+	static fetchAssetsWithALAssetURLsOptions(assetURLs: NSArray<NSURL> | NSURL[], options: PHFetchOptions): PHFetchResult<PHAsset>;
 
 	static fetchAssetsWithBurstIdentifierOptions(burstIdentifier: string, options: PHFetchOptions): PHFetchResult<PHAsset>;
 
-	static fetchAssetsWithLocalIdentifiersOptions(identifiers: NSArray<string>, options: PHFetchOptions): PHFetchResult<PHAsset>;
+	static fetchAssetsWithLocalIdentifiersOptions(identifiers: NSArray<string> | string[], options: PHFetchOptions): PHFetchResult<PHAsset>;
 
 	static fetchAssetsWithMediaTypeOptions(mediaType: PHAssetMediaType, options: PHFetchOptions): PHFetchResult<PHAsset>;
 
@@ -119,9 +119,9 @@ declare class PHAssetCollection extends PHCollection {
 
 	static fetchAssetCollectionsContainingAssetWithTypeOptions(asset: PHAsset, type: PHAssetCollectionType, options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
 
-	static fetchAssetCollectionsWithALAssetGroupURLsOptions(assetGroupURLs: NSArray<NSURL>, options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
+	static fetchAssetCollectionsWithALAssetGroupURLsOptions(assetGroupURLs: NSArray<NSURL> | NSURL[], options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
 
-	static fetchAssetCollectionsWithLocalIdentifiersOptions(identifiers: NSArray<string>, options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
+	static fetchAssetCollectionsWithLocalIdentifiersOptions(identifiers: NSArray<string> | string[], options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
 
 	static fetchAssetCollectionsWithTypeSubtypeOptions(type: PHAssetCollectionType, subtype: PHAssetCollectionSubtype, options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
 
@@ -133,7 +133,7 @@ declare class PHAssetCollection extends PHCollection {
 
 	static transientAssetCollectionWithAssetFetchResultTitle(fetchResult: PHFetchResult<PHAsset>, title: string): PHAssetCollection;
 
-	static transientAssetCollectionWithAssetsTitle(assets: NSArray<PHAsset>, title: string): PHAssetCollection;
+	static transientAssetCollectionWithAssetsTitle(assets: NSArray<PHAsset> | PHAsset[], title: string): PHAssetCollection;
 
 	readonly approximateLocation: CLLocation;
 
@@ -257,7 +257,7 @@ declare class PHAssetCreationRequest extends PHAssetChangeRequest {
 
 	static new(): PHAssetCreationRequest; // inherited from NSObject
 
-	static supportsAssetResourceTypes(types: NSArray<number>): boolean;
+	static supportsAssetResourceTypes(types: NSArray<number> | number[]): boolean;
 
 	addResourceWithTypeDataOptions(type: PHAssetResourceType, data: NSData, options: PHAssetResourceCreationOptions): void;
 
@@ -437,11 +437,11 @@ declare class PHCachingImageManager extends PHImageManager {
 
 	allowsCachingHighQualityImages: boolean;
 
-	startCachingImagesForAssetsTargetSizeContentModeOptions(assets: NSArray<PHAsset>, targetSize: CGSize, contentMode: PHImageContentMode, options: PHImageRequestOptions): void;
+	startCachingImagesForAssetsTargetSizeContentModeOptions(assets: NSArray<PHAsset> | PHAsset[], targetSize: CGSize, contentMode: PHImageContentMode, options: PHImageRequestOptions): void;
 
 	stopCachingImagesForAllAssets(): void;
 
-	stopCachingImagesForAssetsTargetSizeContentModeOptions(assets: NSArray<PHAsset>, targetSize: CGSize, contentMode: PHImageContentMode, options: PHImageRequestOptions): void;
+	stopCachingImagesForAssetsTargetSizeContentModeOptions(assets: NSArray<PHAsset> | PHAsset[], targetSize: CGSize, contentMode: PHImageContentMode, options: PHImageRequestOptions): void;
 }
 
 declare class PHChange extends NSObject {
@@ -497,7 +497,7 @@ declare class PHCollectionList extends PHCollection {
 
 	static fetchCollectionListsContainingCollectionOptions(collection: PHCollection, options: PHFetchOptions): PHFetchResult<PHCollectionList>;
 
-	static fetchCollectionListsWithLocalIdentifiersOptions(identifiers: NSArray<string>, options: PHFetchOptions): PHFetchResult<PHCollectionList>;
+	static fetchCollectionListsWithLocalIdentifiersOptions(identifiers: NSArray<string> | string[], options: PHFetchOptions): PHFetchResult<PHCollectionList>;
 
 	static fetchCollectionListsWithTypeSubtypeOptions(collectionListType: PHCollectionListType, subtype: PHCollectionListSubtype, options: PHFetchOptions): PHFetchResult<PHCollectionList>;
 
@@ -509,7 +509,7 @@ declare class PHCollectionList extends PHCollection {
 
 	static transientCollectionListWithCollectionsFetchResultTitle(fetchResult: PHFetchResult<PHCollection>, title: string): PHCollectionList;
 
-	static transientCollectionListWithCollectionsTitle(collections: NSArray<PHCollection>, title: string): PHCollectionList;
+	static transientCollectionListWithCollectionsTitle(collections: NSArray<PHCollection> | PHCollection[], title: string): PHCollectionList;
 
 	readonly collectionListSubtype: PHCollectionListSubtype;
 
@@ -712,7 +712,7 @@ declare class PHFetchResultChangeDetails<ObjectType> extends NSObject {
 
 	static alloc<ObjectType>(): PHFetchResultChangeDetails<ObjectType>; // inherited from NSObject
 
-	static changeDetailsFromFetchResultToFetchResultChangedObjects<ObjectType>(fromResult: PHFetchResult<ObjectType>, toResult: PHFetchResult<ObjectType>, changedObjects: NSArray<ObjectType>): PHFetchResultChangeDetails<ObjectType>;
+	static changeDetailsFromFetchResultToFetchResultChangedObjects<ObjectType>(fromResult: PHFetchResult<ObjectType>, toResult: PHFetchResult<ObjectType>, changedObjects: NSArray<ObjectType> | ObjectType[]): PHFetchResultChangeDetails<ObjectType>;
 
 	static new<ObjectType>(): PHFetchResultChangeDetails<ObjectType>; // inherited from NSObject
 
@@ -845,7 +845,7 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): PHLivePhoto; // inherited from NSObject
 
-	static requestLivePhotoWithResourceFileURLsPlaceholderImageTargetSizeContentModeResultHandler(fileURLs: NSArray<NSURL>, image: UIImage, targetSize: CGSize, contentMode: PHImageContentMode, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
+	static requestLivePhotoWithResourceFileURLsPlaceholderImageTargetSizeContentModeResultHandler(fileURLs: NSArray<NSURL> | NSURL[], image: UIImage, targetSize: CGSize, contentMode: PHImageContentMode, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
 
 	readonly size: CGSize;
 

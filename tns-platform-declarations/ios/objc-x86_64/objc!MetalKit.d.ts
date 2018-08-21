@@ -125,7 +125,7 @@ declare class MTKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 
 	newZone(capacity: number): MDLMeshBufferZone;
 
-	newZoneForBuffersWithSizeAndType(sizes: NSArray<number>, types: NSArray<number>): MDLMeshBufferZone;
+	newZoneForBuffersWithSizeAndType(sizes: NSArray<number> | number[], types: NSArray<number> | number[]): MDLMeshBufferZone;
 
 	performSelector(aSelector: string): any;
 
@@ -207,11 +207,11 @@ declare class MTKTextureLoader extends NSObject {
 
 	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>): MTLTexture;
 
-	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL>, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
+	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
 
-	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL>, options: NSDictionary<string, any>): NSArray<MTLTexture>;
+	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>): NSArray<MTLTexture>;
 
-	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string>, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
+	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string> | string[], scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
 }
 
 declare var MTKTextureLoaderCubeLayoutVertical: string;
@@ -252,11 +252,11 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MTKView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MTKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MTKView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MTKView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MTKView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MTKView; // inherited from UIAppearance
 
 	static new(): MTKView; // inherited from NSObject
 
