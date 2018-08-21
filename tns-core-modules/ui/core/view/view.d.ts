@@ -345,6 +345,15 @@ export abstract class View extends ViewBase {
     isUserInteractionEnabled: boolean;
 
     /**
+     * Gets or sets a value indicating whether hit-testing should be performed on subviews if the user cannot 
+     * interact with the parent view (isUserInteractionEnabled set to false). This property is iOS only. 
+     * Default value of this property is false. Note that setting this property to true overrides the standard 
+     * iOS responder chain behavior for handling events i.e. by default if UIView.isUserInteractionEnabled property is set to false, 
+     * no hit-testing is performed on its subviews. This does not affect the appearance of the view.
+     */
+    isPassthroughParentEnabled: boolean;
+
+    /**
      * Gets is layout is valid. This is a read-only property.
      */
     isLayoutValid: boolean;

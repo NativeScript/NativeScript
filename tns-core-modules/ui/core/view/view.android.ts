@@ -72,6 +72,14 @@ function initializeTouchListener(): void {
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
             const owner = this.owner;
+            // TODO: Should this be conditional?
+            // i.e. with isUserInteractionEnabled = false, return false means we are not handling the event
+            // and we are allowing a parent to handle it (previously with disabledTouchListener implementation (widgets)
+            // we handled it as a noop unconditionally, not allowing parents to process it)
+            if (!owner.isUserInteractionEnabled) {
+                return false;
+            }
+
             for (let type in owner._gestureObservers) {
                 let list = owner._gestureObservers[type];
                 list.forEach(element => {
@@ -293,7 +301,10 @@ export class View extends ViewCommon {
     public onLoaded() {
         this._manager = null;
         super.onLoaded();
-        this.setOnTouchListener();
+
+        if (!this.touchListenerIsSet) {
+            this.setOnTouchListener();
+        }
     }
 
     @profile
@@ -343,10 +354,11 @@ export class View extends ViewCommon {
     }
 
     private setOnTouchListener() {
+        this.touchListenerIsSet = true;
+
         if (this.nativeViewProtected && this.hasGestureObservers()) {
-            this.touchListenerIsSet = true;
             if (this.nativeViewProtected.setClickable) {
-                this.nativeViewProtected.setClickable(true);
+                this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
             }
 
             initializeTouchListener();
@@ -591,15 +603,20 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        if (!value) {
-            initializeDisabledListener();
-            // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-            this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
-        } else {
-            this.setOnTouchListener();
-            if (!this.touchListenerIsSet) {
-                this.nativeViewProtected.setOnTouchListener(null);
-            }
+        // TODO: cleanup disabledTouchListener implementation from widgets if we are not going to use it
+        // if (!value) {
+        //     initializeDisabledListener();
+        //     // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
+        //     this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
+        // } else {
+        //     this.setOnTouchListener();
+        //     if (!this.touchListenerIsSet) {
+        //         this.nativeViewProtected.setOnTouchListener(null);
+        //     }
+        // }
+
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(value);
         }
     }
 
