@@ -2,16 +2,16 @@ import * as definition from ".";
 import * as observable from "../data/observable";
 import * as platform from "../platform";
 
-export class ImageAsset  extends observable.Observable implements definition.ImageAsset {
+export class ImageAsset extends observable.Observable implements definition.ImageAsset {
     private _options: definition.ImageAssetOptions;
     private _nativeImage: any;
 
     ios: PHAsset;
     android: string;
 
-    constructor () {
+    constructor() {
         super();
-        this._options = { keepAspectRatio: true };
+        this._options = { keepAspectRatio: true, autoScaleFactor: true };
     }
 
     get options(): definition.ImageAssetOptions {
