@@ -12693,8 +12693,6 @@ declare const NS_LittleEndian: number;
 
 declare const NS_UnknownByteOrder: number;
 
-declare var _NSConstantStringClassReference: interop.Pointer | interop.Reference<any>;
-
 interface _expressionFlags {
 	_evaluationBlocked: number;
 	_reservedExpressionFlags: number;

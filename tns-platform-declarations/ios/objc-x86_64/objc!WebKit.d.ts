@@ -7,7 +7,7 @@ declare const enum WKAudiovisualMediaTypes {
 
 	Video = 2,
 
-	All = 4294967295
+	All = 18446744073709551615
 }
 
 declare class WKBackForwardList extends NSObject {
@@ -88,7 +88,7 @@ declare const enum WKDataDetectorTypes {
 
 	LookupSuggestion = 64,
 
-	All = 4294967295,
+	All = 18446744073709551615,
 
 	SpotlightSuggestion = 64
 }

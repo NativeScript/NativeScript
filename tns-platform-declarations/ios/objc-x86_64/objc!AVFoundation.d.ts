@@ -3183,6 +3183,10 @@ declare class AVCameraCalibrationData extends NSObject {
 
 	static new(): AVCameraCalibrationData; // inherited from NSObject
 
+	readonly extrinsicMatrix: simd_float4x3;
+
+	readonly intrinsicMatrix: simd_float3x3;
+
 	readonly intrinsicMatrixReferenceDimensions: CGSize;
 
 	readonly inverseLensDistortionLookupTable: NSData;

@@ -368,6 +368,8 @@ declare class VNImageHomographicAlignmentObservation extends VNImageAlignmentObs
 	static alloc(): VNImageHomographicAlignmentObservation; // inherited from NSObject
 
 	static new(): VNImageHomographicAlignmentObservation; // inherited from NSObject
+
+	warpTransform: simd_float3x3;
 }
 
 declare var VNImageOptionCIContext: string;
@@ -375,6 +377,8 @@ declare var VNImageOptionCIContext: string;
 declare var VNImageOptionCameraIntrinsics: string;
 
 declare var VNImageOptionProperties: string;
+
+declare function VNImagePointForFaceLandmarkPoint(faceLandmarkPoint: interop.Reference<number>, faceBoundingBox: CGRect, imageWidth: number, imageHeight: number): CGPoint;
 
 declare function VNImagePointForNormalizedPoint(normalizedPoint: CGPoint, imageWidth: number, imageHeight: number): CGPoint;
 
@@ -444,6 +448,8 @@ declare class VNImageTranslationAlignmentObservation extends VNImageAlignmentObs
 
 	alignmentTransform: CGAffineTransform;
 }
+
+declare function VNNormalizedFaceBoundingBoxPointForLandmarkPoint(faceLandmarkPoint: interop.Reference<number>, faceBoundingBox: CGRect, imageWidth: number, imageHeight: number): CGPoint;
 
 declare var VNNormalizedIdentityRect: CGRect;
 

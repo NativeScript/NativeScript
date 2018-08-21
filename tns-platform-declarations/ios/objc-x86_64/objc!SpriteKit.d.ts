@@ -30,6 +30,10 @@ declare class SK3DNode extends SKNode {
 	hitTestOptions(point: CGPoint, options: NSDictionary<string, any>): NSArray<SCNHitTestResult>;
 
 	initWithViewportSize(viewportSize: CGSize): this;
+
+	projectPoint(point: interop.Reference<number>): interop.Reference<number>;
+
+	unprojectPoint(point: interop.Reference<number>): interop.Reference<number>;
 }
 
 declare class SKAction extends NSObject implements NSCoding, NSCopying {
@@ -308,7 +312,19 @@ declare class SKAttributeValue extends NSObject implements NSCoding {
 
 	static valueWithFloat(value: number): SKAttributeValue;
 
+	static valueWithVectorFloat2(value: interop.Reference<number>): SKAttributeValue;
+
+	static valueWithVectorFloat3(value: interop.Reference<number>): SKAttributeValue;
+
+	static valueWithVectorFloat4(value: interop.Reference<number>): SKAttributeValue;
+
 	floatValue: number;
+
+	vectorFloat2Value: interop.Reference<number>;
+
+	vectorFloat3Value: interop.Reference<number>;
+
+	vectorFloat4Value: interop.Reference<number>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -612,9 +628,13 @@ declare class SKFieldNode extends SKNode {
 
 	static alloc(): SKFieldNode; // inherited from NSObject
 
+	static customFieldWithEvaluationBlock(block: (p1: interop.Reference<number>, p2: interop.Reference<number>, p3: number, p4: number, p5: number) => interop.Reference<number>): SKFieldNode;
+
 	static dragField(): SKFieldNode;
 
 	static electricField(): SKFieldNode;
+
+	static linearGravityFieldWithVector(direction: interop.Reference<number>): SKFieldNode;
 
 	static magneticField(): SKFieldNode;
 
@@ -634,11 +654,15 @@ declare class SKFieldNode extends SKNode {
 
 	static velocityFieldWithTexture(velocityTexture: SKTexture): SKFieldNode;
 
+	static velocityFieldWithVector(direction: interop.Reference<number>): SKFieldNode;
+
 	static vortexField(): SKFieldNode;
 
 	animationSpeed: number;
 
 	categoryBitMask: number;
+
+	direction: interop.Reference<number>;
 
 	enabled: boolean;
 
@@ -1281,6 +1305,8 @@ declare class SKPhysicsWorld extends NSObject implements NSCoding {
 	removeAllJoints(): void;
 
 	removeJoint(joint: SKPhysicsJoint): void;
+
+	sampleFieldsAt(position: interop.Reference<number>): interop.Reference<number>;
 }
 
 declare class SKRange extends NSObject implements NSCoding, NSCopying {
@@ -2186,6 +2212,18 @@ declare class SKTransformNode extends SKNode {
 	xRotation: number;
 
 	yRotation: number;
+
+	eulerAngles(): interop.Reference<number>;
+
+	quaternion(): simd_quatf;
+
+	rotationMatrix(): simd_float3x3;
+
+	setEulerAngles(euler: interop.Reference<number>): void;
+
+	setQuaternion(quaternion: simd_quatf): void;
+
+	setRotationMatrix(rotationMatrix: simd_float3x3): void;
 }
 
 declare class SKTransition extends NSObject implements NSCopying {
@@ -2250,9 +2288,27 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 
 	static uniformWithNameFloat(name: string, value: number): SKUniform;
 
+	static uniformWithNameMatrixFloat2x2(name: string, value: simd_float2x2): SKUniform;
+
+	static uniformWithNameMatrixFloat3x3(name: string, value: simd_float3x3): SKUniform;
+
+	static uniformWithNameMatrixFloat4x4(name: string, value: simd_float4x4): SKUniform;
+
 	static uniformWithNameTexture(name: string, texture: SKTexture): SKUniform;
 
+	static uniformWithNameVectorFloat2(name: string, value: interop.Reference<number>): SKUniform;
+
+	static uniformWithNameVectorFloat3(name: string, value: interop.Reference<number>): SKUniform;
+
+	static uniformWithNameVectorFloat4(name: string, value: interop.Reference<number>): SKUniform;
+
 	floatValue: number;
+
+	matrixFloat2x2Value: simd_float2x2;
+
+	matrixFloat3x3Value: simd_float3x3;
+
+	matrixFloat4x4Value: simd_float4x4;
 
 	readonly name: string;
 
@@ -2260,13 +2316,31 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 
 	readonly uniformType: SKUniformType;
 
+	vectorFloat2Value: interop.Reference<number>;
+
+	vectorFloat3Value: interop.Reference<number>;
+
+	vectorFloat4Value: interop.Reference<number>;
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { name: string; });
 
 	constructor(o: { name: string; float: number; });
 
+	constructor(o: { name: string; matrixFloat2x2: simd_float2x2; });
+
+	constructor(o: { name: string; matrixFloat3x3: simd_float3x3; });
+
+	constructor(o: { name: string; matrixFloat4x4: simd_float4x4; });
+
 	constructor(o: { name: string; texture: SKTexture; });
+
+	constructor(o: { name: string; vectorFloat2: interop.Reference<number>; });
+
+	constructor(o: { name: string; vectorFloat3: interop.Reference<number>; });
+
+	constructor(o: { name: string; vectorFloat4: interop.Reference<number>; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2278,7 +2352,19 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 
 	initWithNameFloat(name: string, value: number): this;
 
+	initWithNameMatrixFloat2x2(name: string, value: simd_float2x2): this;
+
+	initWithNameMatrixFloat3x3(name: string, value: simd_float3x3): this;
+
+	initWithNameMatrixFloat4x4(name: string, value: simd_float4x4): this;
+
 	initWithNameTexture(name: string, texture: SKTexture): this;
+
+	initWithNameVectorFloat2(name: string, value: interop.Reference<number>): this;
+
+	initWithNameVectorFloat3(name: string, value: interop.Reference<number>): this;
+
+	initWithNameVectorFloat4(name: string, value: interop.Reference<number>): this;
 }
 
 declare const enum SKUniformType {
@@ -2446,6 +2532,8 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSCoding {
 
 	static gridWithColumnsRows(cols: number, rows: number): SKWarpGeometryGrid;
 
+	static gridWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): SKWarpGeometryGrid;
+
 	static new(): SKWarpGeometryGrid; // inherited from NSObject
 
 	readonly numberOfColumns: number;
@@ -2456,9 +2544,21 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { columns: number; rows: number; sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>; destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>; });
+
+	destPositionAtIndex(index: number): interop.Reference<number>;
+
 	encodeWithCoder(aCoder: NSCoder): void;
 
+	gridByReplacingDestPositions(destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
+
+	gridByReplacingSourcePositions(sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
+
 	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
+
+	sourcePositionAtIndex(index: number): interop.Reference<number>;
 }
 
 interface SKWarpable extends NSObjectProtocol {

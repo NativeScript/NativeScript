@@ -229,7 +229,7 @@ declare const enum PHAssetCollectionSubtype {
 
 	SmartAlbumLongExposures = 215,
 
-	Any = 2147483647
+	Any = 9223372036854775807
 }
 
 declare const enum PHAssetCollectionType {
@@ -565,7 +565,7 @@ declare const enum PHCollectionListSubtype {
 
 	SmartFolderFaces = 201,
 
-	Any = 2147483647
+	Any = 9223372036854775807
 }
 
 declare const enum PHCollectionListType {

@@ -7,7 +7,13 @@ declare class ARAnchor extends NSObject implements NSCopying {
 
 	readonly identifier: NSUUID;
 
+	readonly transform: simd_float4x4;
+
+	constructor(o: { transform: simd_float4x4; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithTransform(transform: simd_float4x4): this;
 }
 
 declare var ARBlendShapeLocationBrowDownLeft: string;
@@ -118,13 +124,27 @@ declare class ARCamera extends NSObject implements NSCopying {
 
 	static new(): ARCamera; // inherited from NSObject
 
+	readonly eulerAngles: interop.Reference<number>;
+
 	readonly imageResolution: CGSize;
+
+	readonly intrinsics: simd_float3x3;
+
+	readonly projectionMatrix: simd_float4x4;
 
 	readonly trackingState: ARTrackingState;
 
 	readonly trackingStateReason: ARTrackingStateReason;
 
+	readonly transform: simd_float4x4;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	projectPointOrientationViewportSize(point: interop.Reference<number>, orientation: UIInterfaceOrientation, viewportSize: CGSize): CGPoint;
+
+	projectionMatrixForOrientationViewportSizeZNearZFar(orientation: UIInterfaceOrientation, viewportSize: CGSize, zNear: number, zFar: number): simd_float4x4;
+
+	viewMatrixForOrientation(orientation: UIInterfaceOrientation): simd_float4x4;
 }
 
 declare class ARConfiguration extends NSObject implements NSCopying {
@@ -149,6 +169,8 @@ declare class ARDirectionalLightEstimate extends ARLightEstimate {
 	static alloc(): ARDirectionalLightEstimate; // inherited from NSObject
 
 	static new(): ARDirectionalLightEstimate; // inherited from NSObject
+
+	readonly primaryLightDirection: interop.Reference<number>;
 
 	readonly primaryLightIntensity: number;
 
@@ -225,11 +247,15 @@ declare class ARFaceGeometry extends NSObject implements NSCopying {
 
 	readonly textureCoordinateCount: number;
 
+	readonly textureCoordinates: interop.Pointer | interop.Reference<interop.Reference<number>>;
+
 	readonly triangleCount: number;
 
 	readonly triangleIndices: interop.Pointer | interop.Reference<number>;
 
 	readonly vertexCount: number;
+
+	readonly vertices: interop.Pointer | interop.Reference<interop.Reference<number>>;
 
 	constructor(o: { blendShapes: NSDictionary<string, number>; });
 
@@ -284,7 +310,11 @@ declare class ARHitTestResult extends NSObject {
 
 	readonly distance: number;
 
+	readonly localTransform: simd_float4x4;
+
 	readonly type: ARHitTestResultType;
+
+	readonly worldTransform: simd_float4x4;
 }
 
 declare const enum ARHitTestResultType {
@@ -323,6 +353,10 @@ declare class ARPlaneAnchor extends ARAnchor {
 	static new(): ARPlaneAnchor; // inherited from NSObject
 
 	readonly alignment: ARPlaneAnchorAlignment;
+
+	readonly center: interop.Reference<number>;
+
+	readonly extent: interop.Reference<number>;
 }
 
 declare const enum ARPlaneAnchorAlignment {
@@ -346,6 +380,8 @@ declare class ARPointCloud extends NSObject {
 	readonly count: number;
 
 	readonly identifiers: interop.Pointer | interop.Reference<number>;
+
+	readonly points: interop.Pointer | interop.Reference<interop.Reference<number>>;
 }
 
 declare var ARSCNDebugOptionShowFeaturePoints: SCNDebugOptions;
