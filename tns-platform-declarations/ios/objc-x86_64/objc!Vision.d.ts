@@ -437,7 +437,7 @@ declare class VNImageRequestHandler extends NSObject {
 
 	initWithURLOrientationOptions(imageURL: NSURL, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
-	performRequestsError(requests: NSArray<VNRequest>): boolean;
+	performRequestsError(requests: NSArray<VNRequest> | VNRequest[]): boolean;
 }
 
 declare class VNImageTranslationAlignmentObservation extends VNImageAlignmentObservation {
@@ -538,25 +538,25 @@ declare class VNSequenceRequestHandler extends NSObject {
 
 	static new(): VNSequenceRequestHandler; // inherited from NSObject
 
-	performRequestsOnCGImageError(requests: NSArray<VNRequest>, image: any): boolean;
+	performRequestsOnCGImageError(requests: NSArray<VNRequest> | VNRequest[], image: any): boolean;
 
-	performRequestsOnCGImageOrientationError(requests: NSArray<VNRequest>, image: any, orientation: CGImagePropertyOrientation): boolean;
+	performRequestsOnCGImageOrientationError(requests: NSArray<VNRequest> | VNRequest[], image: any, orientation: CGImagePropertyOrientation): boolean;
 
-	performRequestsOnCIImageError(requests: NSArray<VNRequest>, image: CIImage): boolean;
+	performRequestsOnCIImageError(requests: NSArray<VNRequest> | VNRequest[], image: CIImage): boolean;
 
-	performRequestsOnCIImageOrientationError(requests: NSArray<VNRequest>, image: CIImage, orientation: CGImagePropertyOrientation): boolean;
+	performRequestsOnCIImageOrientationError(requests: NSArray<VNRequest> | VNRequest[], image: CIImage, orientation: CGImagePropertyOrientation): boolean;
 
-	performRequestsOnCVPixelBufferError(requests: NSArray<VNRequest>, pixelBuffer: any): boolean;
+	performRequestsOnCVPixelBufferError(requests: NSArray<VNRequest> | VNRequest[], pixelBuffer: any): boolean;
 
-	performRequestsOnCVPixelBufferOrientationError(requests: NSArray<VNRequest>, pixelBuffer: any, orientation: CGImagePropertyOrientation): boolean;
+	performRequestsOnCVPixelBufferOrientationError(requests: NSArray<VNRequest> | VNRequest[], pixelBuffer: any, orientation: CGImagePropertyOrientation): boolean;
 
-	performRequestsOnImageDataError(requests: NSArray<VNRequest>, imageData: NSData): boolean;
+	performRequestsOnImageDataError(requests: NSArray<VNRequest> | VNRequest[], imageData: NSData): boolean;
 
-	performRequestsOnImageDataOrientationError(requests: NSArray<VNRequest>, imageData: NSData, orientation: CGImagePropertyOrientation): boolean;
+	performRequestsOnImageDataOrientationError(requests: NSArray<VNRequest> | VNRequest[], imageData: NSData, orientation: CGImagePropertyOrientation): boolean;
 
-	performRequestsOnImageURLError(requests: NSArray<VNRequest>, imageURL: NSURL): boolean;
+	performRequestsOnImageURLError(requests: NSArray<VNRequest> | VNRequest[], imageURL: NSURL): boolean;
 
-	performRequestsOnImageURLOrientationError(requests: NSArray<VNRequest>, imageURL: NSURL, orientation: CGImagePropertyOrientation): boolean;
+	performRequestsOnImageURLOrientationError(requests: NSArray<VNRequest> | VNRequest[], imageURL: NSURL, orientation: CGImagePropertyOrientation): boolean;
 }
 
 declare class VNTargetedImageRequest extends VNImageBasedRequest {

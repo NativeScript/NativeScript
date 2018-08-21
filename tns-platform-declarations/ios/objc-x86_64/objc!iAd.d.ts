@@ -24,11 +24,11 @@ declare class ADBannerView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ADBannerView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): ADBannerView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ADBannerView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ADBannerView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): ADBannerView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ADBannerView; // inherited from UIAppearance
 
 	static new(): ADBannerView; // inherited from NSObject
 
@@ -80,7 +80,7 @@ declare class ADClient extends NSObject {
 
 	static sharedClient(): ADClient;
 
-	addClientToSegmentsReplaceExisting(segmentIdentifiers: NSArray<string>, replaceExisting: boolean): void;
+	addClientToSegmentsReplaceExisting(segmentIdentifiers: NSArray<string> | string[], replaceExisting: boolean): void;
 
 	determineAppInstallationAttributionWithCompletionHandler(completionHandler: (p1: boolean) => void): void;
 

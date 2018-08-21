@@ -1,9 +1,9 @@
 
 interface NSFileProviderChangeObserver extends NSObjectProtocol {
 
-	didDeleteItemsWithIdentifiers(deletedItemIdentifiers: NSArray<string>): void;
+	didDeleteItemsWithIdentifiers(deletedItemIdentifiers: NSArray<string> | string[]): void;
 
-	didUpdateItems(updatedItems: NSArray<NSFileProviderItem>): void;
+	didUpdateItems(updatedItems: NSArray<NSFileProviderItem> | NSFileProviderItem[]): void;
 
 	finishEnumeratingChangesUpToSyncAnchorMoreComing(anchor: NSData, moreComing: boolean): void;
 
@@ -33,7 +33,7 @@ declare class NSFileProviderDomain extends NSObject {
 
 interface NSFileProviderEnumerationObserver extends NSObjectProtocol {
 
-	didEnumerateItems(updatedItems: NSArray<NSFileProviderItem>): void;
+	didEnumerateItems(updatedItems: NSArray<NSFileProviderItem> | NSFileProviderItem[]): void;
 
 	finishEnumeratingUpToPage(nextPage: NSData): void;
 
@@ -106,7 +106,7 @@ declare class NSFileProviderExtension extends NSObject {
 
 	enumeratorForContainerItemIdentifierError(containerItemIdentifier: string): NSFileProviderEnumerator;
 
-	fetchThumbnailsForItemIdentifiersRequestedSizePerThumbnailCompletionHandlerCompletionHandler(itemIdentifiers: NSArray<string>, size: CGSize, perThumbnailCompletionHandler: (p1: string, p2: NSData, p3: NSError) => void, completionHandler: (p1: NSError) => void): NSProgress;
+	fetchThumbnailsForItemIdentifiersRequestedSizePerThumbnailCompletionHandlerCompletionHandler(itemIdentifiers: NSArray<string> | string[], size: CGSize, perThumbnailCompletionHandler: (p1: string, p2: NSData, p3: NSError) => void, completionHandler: (p1: NSError) => void): NSProgress;
 
 	importDocumentAtURLToParentItemIdentifierCompletionHandler(fileURL: NSURL, parentItemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
 

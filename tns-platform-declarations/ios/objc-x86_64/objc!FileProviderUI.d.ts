@@ -18,7 +18,7 @@ declare class FPUIActionExtensionViewController extends UIViewController {
 
 	readonly extensionContext: FPUIActionExtensionContext;
 
-	prepareForActionWithIdentifierItemIdentifiers(actionIdentifier: string, itemIdentifiers: NSArray<string>): void;
+	prepareForActionWithIdentifierItemIdentifiers(actionIdentifier: string, itemIdentifiers: NSArray<string> | string[]): void;
 
 	prepareForError(error: NSError): void;
 }

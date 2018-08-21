@@ -260,11 +260,11 @@ declare class MCSession extends NSObject {
 
 	initWithPeer(myPeerID: MCPeerID): this;
 
-	initWithPeerSecurityIdentityEncryptionPreference(myPeerID: MCPeerID, identity: NSArray<any>, encryptionPreference: MCEncryptionPreference): this;
+	initWithPeerSecurityIdentityEncryptionPreference(myPeerID: MCPeerID, identity: NSArray<any> | any[], encryptionPreference: MCEncryptionPreference): this;
 
 	nearbyConnectionDataForPeerWithCompletionHandler(peerID: MCPeerID, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	sendDataToPeersWithModeError(data: NSData, peerIDs: NSArray<MCPeerID>, mode: MCSessionSendDataMode): boolean;
+	sendDataToPeersWithModeError(data: NSData, peerIDs: NSArray<MCPeerID> | MCPeerID[], mode: MCSessionSendDataMode): boolean;
 
 	sendResourceAtURLWithNameToPeerWithCompletionHandler(resourceURL: NSURL, resourceName: string, peerID: MCPeerID, completionHandler: (p1: NSError) => void): NSProgress;
 
@@ -275,7 +275,7 @@ interface MCSessionDelegate extends NSObjectProtocol {
 
 	sessionDidFinishReceivingResourceWithNameFromPeerAtURLWithError(session: MCSession, resourceName: string, peerID: MCPeerID, localURL: NSURL, error: NSError): void;
 
-	sessionDidReceiveCertificateFromPeerCertificateHandler?(session: MCSession, certificate: NSArray<any>, peerID: MCPeerID, certificateHandler: (p1: boolean) => void): void;
+	sessionDidReceiveCertificateFromPeerCertificateHandler?(session: MCSession, certificate: NSArray<any> | any[], peerID: MCPeerID, certificateHandler: (p1: boolean) => void): void;
 
 	sessionDidReceiveDataFromPeer(session: MCSession, data: NSData, peerID: MCPeerID): void;
 

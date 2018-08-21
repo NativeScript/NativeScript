@@ -103,7 +103,7 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 
 	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
 
-	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string>, acknowledgementHandler: () => void): void;
+	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string> | string[], acknowledgementHandler: () => void): void;
 
 	self(): this;
 }
@@ -179,7 +179,7 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string>, handleIdentifier: string): this;
+	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string> | string[], handleIdentifier: string): this;
 }
 
 declare var CSQueryContinuationActionType: string;
@@ -204,7 +204,7 @@ declare class CSSearchQuery extends NSObject {
 
 	cancel(): void;
 
-	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string>): this;
+	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string> | string[]): this;
 
 	start(): void;
 }
@@ -244,15 +244,15 @@ declare class CSSearchableIndex extends NSObject {
 
 	deleteAllSearchableItemsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	deleteSearchableItemsWithDomainIdentifiersCompletionHandler(domainIdentifiers: NSArray<string>, completionHandler: (p1: NSError) => void): void;
+	deleteSearchableItemsWithDomainIdentifiersCompletionHandler(domainIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError) => void): void;
 
-	deleteSearchableItemsWithIdentifiersCompletionHandler(identifiers: NSArray<string>, completionHandler: (p1: NSError) => void): void;
+	deleteSearchableItemsWithIdentifiersCompletionHandler(identifiers: NSArray<string> | string[], completionHandler: (p1: NSError) => void): void;
 
 	endIndexBatchWithClientStateCompletionHandler(clientState: NSData, completionHandler: (p1: NSError) => void): void;
 
 	fetchLastClientStateWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	indexSearchableItemsCompletionHandler(items: NSArray<CSSearchableItem>, completionHandler: (p1: NSError) => void): void;
+	indexSearchableItemsCompletionHandler(items: NSArray<CSSearchableItem> | CSSearchableItem[], completionHandler: (p1: NSError) => void): void;
 
 	initWithName(name: string): this;
 
@@ -271,7 +271,7 @@ interface CSSearchableIndexDelegate extends NSObjectProtocol {
 
 	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
 
-	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string>, acknowledgementHandler: () => void): void;
+	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string> | string[], acknowledgementHandler: () => void): void;
 }
 declare var CSSearchableIndexDelegate: {
 

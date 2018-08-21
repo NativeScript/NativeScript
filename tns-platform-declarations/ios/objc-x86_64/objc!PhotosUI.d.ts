@@ -33,11 +33,11 @@ declare class PHLivePhotoView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PHLivePhotoView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PHLivePhotoView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PHLivePhotoView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PHLivePhotoView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PHLivePhotoView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PHLivePhotoView; // inherited from UIAppearance
 
 	static livePhotoBadgeImageWithOptions(badgeOptions: PHLivePhotoBadgeOptions): UIImage;
 

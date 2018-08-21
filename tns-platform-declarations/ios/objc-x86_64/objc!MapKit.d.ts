@@ -26,11 +26,11 @@ declare class MKAnnotationView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKAnnotationView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKAnnotationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKAnnotationView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKAnnotationView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKAnnotationView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKAnnotationView; // inherited from UIAppearance
 
 	static new(): MKAnnotationView; // inherited from NSObject
 
@@ -187,11 +187,11 @@ declare class MKCircleView extends MKOverlayPathView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKCircleView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKCircleView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKCircleView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKCircleView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKCircleView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKCircleView; // inherited from UIAppearance
 
 	static new(): MKCircleView; // inherited from NSObject
 
@@ -234,7 +234,7 @@ declare class MKClusterAnnotation extends NSObject implements MKAnnotation {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	initWithMemberAnnotations(memberAnnotations: NSArray<MKAnnotation>): this;
+	initWithMemberAnnotations(memberAnnotations: NSArray<MKAnnotation> | MKAnnotation[]): this;
 
 	isEqual(object: any): boolean;
 
@@ -267,11 +267,11 @@ declare class MKCompassButton extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKCompassButton; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKCompassButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKCompassButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKCompassButton; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKCompassButton; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKCompassButton; // inherited from UIAppearance
 
 	static compassButtonWithMapView(mapView: MKMapView): MKCompassButton;
 
@@ -626,7 +626,7 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): MKMapItem;
 
-	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem>, launchOptions: NSDictionary<string, any>): boolean;
+	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>): boolean;
 
 	readonly isCurrentLocation: boolean;
 
@@ -829,11 +829,11 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKMapView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKMapView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKMapView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKMapView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKMapView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKMapView; // inherited from UIAppearance
 
 	static new(): MKMapView; // inherited from NSObject
 
@@ -887,15 +887,15 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	addAnnotation(annotation: MKAnnotation): void;
 
-	addAnnotations(annotations: NSArray<MKAnnotation>): void;
+	addAnnotations(annotations: NSArray<MKAnnotation> | MKAnnotation[]): void;
 
 	addOverlay(overlay: MKOverlay): void;
 
 	addOverlayLevel(overlay: MKOverlay, level: MKOverlayLevel): void;
 
-	addOverlays(overlays: NSArray<MKOverlay>): void;
+	addOverlays(overlays: NSArray<MKOverlay> | MKOverlay[]): void;
 
-	addOverlaysLevel(overlays: NSArray<MKOverlay>, level: MKOverlayLevel): void;
+	addOverlaysLevel(overlays: NSArray<MKOverlay> | MKOverlay[], level: MKOverlayLevel): void;
 
 	annotationsInMapRect(mapRect: MKMapRect): NSSet<MKAnnotation>;
 
@@ -941,11 +941,11 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	removeAnnotation(annotation: MKAnnotation): void;
 
-	removeAnnotations(annotations: NSArray<MKAnnotation>): void;
+	removeAnnotations(annotations: NSArray<MKAnnotation> | MKAnnotation[]): void;
 
 	removeOverlay(overlay: MKOverlay): void;
 
-	removeOverlays(overlays: NSArray<MKOverlay>): void;
+	removeOverlays(overlays: NSArray<MKOverlay> | MKOverlay[]): void;
 
 	rendererForOverlay(overlay: MKOverlay): MKOverlayRenderer;
 
@@ -963,7 +963,7 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	setVisibleMapRectEdgePaddingAnimated(mapRect: MKMapRect, insets: UIEdgeInsets, animate: boolean): void;
 
-	showAnnotationsAnimated(annotations: NSArray<MKAnnotation>, animated: boolean): void;
+	showAnnotationsAnimated(annotations: NSArray<MKAnnotation> | MKAnnotation[], animated: boolean): void;
 
 	viewForAnnotation(annotation: MKAnnotation): MKAnnotationView;
 
@@ -980,13 +980,13 @@ interface MKMapViewDelegate extends NSObjectProtocol {
 
 	mapViewAnnotationViewDidChangeDragStateFromOldState?(mapView: MKMapView, view: MKAnnotationView, newState: MKAnnotationViewDragState, oldState: MKAnnotationViewDragState): void;
 
-	mapViewClusterAnnotationForMemberAnnotations?(mapView: MKMapView, memberAnnotations: NSArray<MKAnnotation>): MKClusterAnnotation;
+	mapViewClusterAnnotationForMemberAnnotations?(mapView: MKMapView, memberAnnotations: NSArray<MKAnnotation> | MKAnnotation[]): MKClusterAnnotation;
 
-	mapViewDidAddAnnotationViews?(mapView: MKMapView, views: NSArray<MKAnnotationView>): void;
+	mapViewDidAddAnnotationViews?(mapView: MKMapView, views: NSArray<MKAnnotationView> | MKAnnotationView[]): void;
 
-	mapViewDidAddOverlayRenderers?(mapView: MKMapView, renderers: NSArray<MKOverlayRenderer>): void;
+	mapViewDidAddOverlayRenderers?(mapView: MKMapView, renderers: NSArray<MKOverlayRenderer> | MKOverlayRenderer[]): void;
 
-	mapViewDidAddOverlayViews?(mapView: MKMapView, overlayViews: NSArray<any>): void;
+	mapViewDidAddOverlayViews?(mapView: MKMapView, overlayViews: NSArray<any> | any[]): void;
 
 	mapViewDidChangeUserTrackingModeAnimated?(mapView: MKMapView, mode: MKUserTrackingMode, animated: boolean): void;
 
@@ -1037,11 +1037,11 @@ declare class MKMarkerAnnotationView extends MKAnnotationView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKMarkerAnnotationView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKMarkerAnnotationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKMarkerAnnotationView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKMarkerAnnotationView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKMarkerAnnotationView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKMarkerAnnotationView; // inherited from UIAppearance
 
 	static new(): MKMarkerAnnotationView; // inherited from NSObject
 
@@ -1146,11 +1146,11 @@ declare class MKOverlayPathView extends MKOverlayView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKOverlayPathView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKOverlayPathView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKOverlayPathView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKOverlayPathView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKOverlayPathView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKOverlayPathView; // inherited from UIAppearance
 
 	static new(): MKOverlayPathView; // inherited from NSObject
 
@@ -1230,11 +1230,11 @@ declare class MKOverlayView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKOverlayView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKOverlayView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKOverlayView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKOverlayView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKOverlayView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKOverlayView; // inherited from UIAppearance
 
 	static new(): MKOverlayView; // inherited from NSObject
 
@@ -1280,11 +1280,11 @@ declare class MKPinAnnotationView extends MKAnnotationView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKPinAnnotationView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKPinAnnotationView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKPinAnnotationView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKPinAnnotationView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKPinAnnotationView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKPinAnnotationView; // inherited from UIAppearance
 
 	static greenPinColor(): UIColor;
 
@@ -1383,11 +1383,11 @@ declare class MKPolygon extends MKMultiPoint implements MKOverlay {
 
 	static polygonWithCoordinatesCount(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number): MKPolygon;
 
-	static polygonWithCoordinatesCountInteriorPolygons(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number, interiorPolygons: NSArray<MKPolygon>): MKPolygon;
+	static polygonWithCoordinatesCountInteriorPolygons(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, count: number, interiorPolygons: NSArray<MKPolygon> | MKPolygon[]): MKPolygon;
 
 	static polygonWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number): MKPolygon;
 
-	static polygonWithPointsCountInteriorPolygons(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number, interiorPolygons: NSArray<MKPolygon>): MKPolygon;
+	static polygonWithPointsCountInteriorPolygons(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number, interiorPolygons: NSArray<MKPolygon> | MKPolygon[]): MKPolygon;
 
 	readonly interiorPolygons: NSArray<MKPolygon>;
 
@@ -1463,11 +1463,11 @@ declare class MKPolygonView extends MKOverlayPathView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKPolygonView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKPolygonView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKPolygonView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKPolygonView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKPolygonView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKPolygonView; // inherited from UIAppearance
 
 	static new(): MKPolygonView; // inherited from NSObject
 
@@ -1560,11 +1560,11 @@ declare class MKPolylineView extends MKOverlayPathView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKPolylineView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKPolylineView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKPolylineView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKPolylineView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKPolylineView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKPolylineView; // inherited from UIAppearance
 
 	static new(): MKPolylineView; // inherited from NSObject
 
@@ -1661,11 +1661,11 @@ declare class MKScaleView extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKScaleView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKScaleView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKScaleView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKScaleView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKScaleView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKScaleView; // inherited from UIAppearance
 
 	static new(): MKScaleView; // inherited from NSObject
 
@@ -1900,11 +1900,11 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKUserTrackingBarButtonItem; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKUserTrackingBarButtonItem; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
 	static new(): MKUserTrackingBarButtonItem; // inherited from NSObject
 
@@ -1925,11 +1925,11 @@ declare class MKUserTrackingButton extends UIView {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserTrackingButton; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): MKUserTrackingButton; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserTrackingButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserTrackingButton; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): MKUserTrackingButton; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserTrackingButton; // inherited from UIAppearance
 
 	static new(): MKUserTrackingButton; // inherited from NSObject
 

@@ -209,11 +209,11 @@ declare class SKPaymentQueue extends NSObject {
 
 	addTransactionObserver(observer: SKPaymentTransactionObserver): void;
 
-	cancelDownloads(downloads: NSArray<SKDownload>): void;
+	cancelDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
 	finishTransaction(transaction: SKPaymentTransaction): void;
 
-	pauseDownloads(downloads: NSArray<SKDownload>): void;
+	pauseDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
 	removeTransactionObserver(observer: SKPaymentTransactionObserver): void;
 
@@ -221,9 +221,9 @@ declare class SKPaymentQueue extends NSObject {
 
 	restoreCompletedTransactionsWithApplicationUsername(username: string): void;
 
-	resumeDownloads(downloads: NSArray<SKDownload>): void;
+	resumeDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
-	startDownloads(downloads: NSArray<SKDownload>): void;
+	startDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 }
 
 declare class SKPaymentTransaction extends NSObject {
@@ -251,7 +251,7 @@ declare class SKPaymentTransaction extends NSObject {
 
 interface SKPaymentTransactionObserver extends NSObjectProtocol {
 
-	paymentQueueRemovedTransactions?(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction>): void;
+	paymentQueueRemovedTransactions?(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction> | SKPaymentTransaction[]): void;
 
 	paymentQueueRestoreCompletedTransactionsFailedWithError?(queue: SKPaymentQueue, error: NSError): void;
 
@@ -259,9 +259,9 @@ interface SKPaymentTransactionObserver extends NSObjectProtocol {
 
 	paymentQueueShouldAddStorePaymentForProduct?(queue: SKPaymentQueue, payment: SKPayment, product: SKProduct): boolean;
 
-	paymentQueueUpdatedDownloads?(queue: SKPaymentQueue, downloads: NSArray<SKDownload>): void;
+	paymentQueueUpdatedDownloads?(queue: SKPaymentQueue, downloads: NSArray<SKDownload> | SKDownload[]): void;
 
-	paymentQueueUpdatedTransactions(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction>): void;
+	paymentQueueUpdatedTransactions(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction> | SKPaymentTransaction[]): void;
 }
 declare var SKPaymentTransactionObserver: {
 
@@ -316,7 +316,7 @@ declare class SKProductStorePromotionController extends NSObject {
 
 	fetchStorePromotionVisibilityForProductCompletionHandler(product: SKProduct, completionHandler: (p1: SKProductStorePromotionVisibility, p2: NSError) => void): void;
 
-	updateStorePromotionOrderCompletionHandler(storePromotionOrder: NSArray<SKProduct>, completionHandler: (p1: NSError) => void): void;
+	updateStorePromotionOrderCompletionHandler(storePromotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError) => void): void;
 
 	updateStorePromotionVisibilityForProductCompletionHandler(promotionVisibility: SKProductStorePromotionVisibility, product: SKProduct, completionHandler: (p1: NSError) => void): void;
 }

@@ -611,7 +611,7 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	beginFindStringWithOptions(string: string, options: NSStringCompareOptions): void;
 
-	beginFindStringsWithOptions(strings: NSArray<string>, options: NSStringCompareOptions): void;
+	beginFindStringsWithOptions(strings: NSArray<string> | string[], options: NSStringCompareOptions): void;
 
 	cancelFindString(): void;
 
@@ -875,7 +875,7 @@ declare class PDFSelection extends NSObject implements NSCopying {
 
 	addSelection(selection: PDFSelection): void;
 
-	addSelections(selections: NSArray<PDFSelection>): void;
+	addSelections(selections: NSArray<PDFSelection> | PDFSelection[]): void;
 
 	boundsForPage(page: PDFPage): CGRect;
 
@@ -934,11 +934,11 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFThumbnailView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PDFThumbnailView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFThumbnailView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFThumbnailView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PDFThumbnailView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFThumbnailView; // inherited from UIAppearance
 
 	static new(): PDFThumbnailView; // inherited from NSObject
 
@@ -971,11 +971,11 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PDFView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PDFView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFView; // inherited from UIAppearance
 
 	static new(): PDFView; // inherited from NSObject
 

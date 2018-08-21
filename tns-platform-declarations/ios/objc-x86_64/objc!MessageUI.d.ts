@@ -31,9 +31,9 @@ declare class MFMailComposeViewController extends UINavigationController {
 
 	addAttachmentDataMimeTypeFileName(attachment: NSData, mimeType: string, filename: string): void;
 
-	setBccRecipients(bccRecipients: NSArray<string>): void;
+	setBccRecipients(bccRecipients: NSArray<string> | string[]): void;
 
-	setCcRecipients(ccRecipients: NSArray<string>): void;
+	setCcRecipients(ccRecipients: NSArray<string> | string[]): void;
 
 	setMessageBodyIsHTML(body: string, isHTML: boolean): void;
 
@@ -41,7 +41,7 @@ declare class MFMailComposeViewController extends UINavigationController {
 
 	setSubject(subject: string): void;
 
-	setToRecipients(toRecipients: NSArray<string>): void;
+	setToRecipients(toRecipients: NSArray<string> | string[]): void;
 }
 
 interface MFMailComposeViewControllerDelegate extends NSObjectProtocol {

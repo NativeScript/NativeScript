@@ -32,7 +32,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	static predicateForContactsMatchingName(name: string): NSPredicate;
 
-	static predicateForContactsWithIdentifiers(identifiers: NSArray<string>): NSPredicate;
+	static predicateForContactsWithIdentifiers(identifiers: NSArray<string> | string[]): NSPredicate;
 
 	readonly birthday: NSDateComponents;
 
@@ -116,7 +116,7 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	areKeysAvailable(keyDescriptors: NSArray<CNKeyDescriptor>): boolean;
+	areKeysAvailable(keyDescriptors: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): boolean;
 
 	class(): typeof NSObject;
 
@@ -202,7 +202,7 @@ declare class CNContactFetchRequest extends NSObject implements NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithKeysToFetch(keysToFetch: NSArray<CNKeyDescriptor>): this;
+	initWithKeysToFetch(keysToFetch: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): this;
 }
 
 declare class CNContactFormatter extends NSFormatter {
@@ -366,9 +366,9 @@ declare class CNContactStore extends NSObject {
 
 	requestAccessForEntityTypeCompletionHandler(entityType: CNEntityType, completionHandler: (p1: boolean, p2: NSError) => void): void;
 
-	unifiedContactWithIdentifierKeysToFetchError(identifier: string, keys: NSArray<CNKeyDescriptor>): CNContact;
+	unifiedContactWithIdentifierKeysToFetchError(identifier: string, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): CNContact;
 
-	unifiedContactsMatchingPredicateKeysToFetchError(predicate: NSPredicate, keys: NSArray<CNKeyDescriptor>): NSArray<CNContact>;
+	unifiedContactsMatchingPredicateKeysToFetchError(predicate: NSPredicate, keys: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): NSArray<CNContact>;
 }
 
 declare var CNContactStoreDidChangeNotification: string;
@@ -392,7 +392,7 @@ declare class CNContactVCardSerialization extends NSObject {
 
 	static contactsWithDataError(data: NSData): NSArray<CNContact>;
 
-	static dataWithContactsError(contacts: NSArray<CNContact>): NSData;
+	static dataWithContactsError(contacts: NSArray<CNContact> | CNContact[]): NSData;
 
 	static descriptorForRequiredKeys(): CNKeyDescriptor;
 
@@ -422,7 +422,7 @@ declare class CNContainer extends NSObject implements NSCopying, NSSecureCoding 
 
 	static predicateForContainerOfGroupWithIdentifier(groupIdentifier: string): NSPredicate;
 
-	static predicateForContainersWithIdentifiers(identifiers: NSArray<string>): NSPredicate;
+	static predicateForContainersWithIdentifiers(identifiers: NSArray<string> | string[]): NSPredicate;
 
 	readonly identifier: string;
 
@@ -516,7 +516,7 @@ declare class CNGroup extends NSObject implements NSCopying, NSMutableCopying, N
 
 	static predicateForGroupsInContainerWithIdentifier(containerIdentifier: string): NSPredicate;
 
-	static predicateForGroupsWithIdentifiers(identifiers: NSArray<string>): NSPredicate;
+	static predicateForGroupsWithIdentifiers(identifiers: NSArray<string> | string[]): NSPredicate;
 
 	readonly identifier: string;
 

@@ -270,7 +270,7 @@ declare class GLKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 
 	newZone(capacity: number): MDLMeshBufferZone;
 
-	newZoneForBuffersWithSizeAndType(sizes: NSArray<number>, types: NSArray<number>): MDLMeshBufferZone;
+	newZoneForBuffersWithSizeAndType(sizes: NSArray<number> | number[], types: NSArray<number> | number[]): MDLMeshBufferZone;
 
 	performSelector(aSelector: string): any;
 
@@ -409,7 +409,7 @@ declare class GLKTextureLoader extends NSObject {
 
 	static cubeMapWithContentsOfFileOptionsError(path: string, options: NSDictionary<string, number>): GLKTextureInfo;
 
-	static cubeMapWithContentsOfFilesOptionsError(paths: NSArray<any>, options: NSDictionary<string, number>): GLKTextureInfo;
+	static cubeMapWithContentsOfFilesOptionsError(paths: NSArray<any> | any[], options: NSDictionary<string, number>): GLKTextureInfo;
 
 	static cubeMapWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>): GLKTextureInfo;
 
@@ -429,7 +429,7 @@ declare class GLKTextureLoader extends NSObject {
 
 	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any>, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
 	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
@@ -546,11 +546,11 @@ declare class GLKView extends UIView implements NSCoding {
 
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
 
-	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): GLKView; // inherited from UIAppearance
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): GLKView; // inherited from UIAppearance
 
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
 
-	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): GLKView; // inherited from UIAppearance
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): GLKView; // inherited from UIAppearance
 
 	static new(): GLKView; // inherited from NSObject
 

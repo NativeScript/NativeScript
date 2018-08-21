@@ -235,7 +235,7 @@ declare class CIColorKernel extends CIKernel {
 
 	static new(): CIColorKernel; // inherited from NSObject
 
-	applyWithExtentArguments(extent: CGRect, args: NSArray<any>): CIImage;
+	applyWithExtentArguments(extent: CGRect, args: NSArray<any> | any[]): CIImage;
 }
 
 declare class CIContext extends NSObject {
@@ -460,7 +460,7 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static filterArrayFromSerializedXMPInputImageExtentError(xmpData: NSData, extent: CGRect): NSArray<CIFilter>;
 
-	static filterNamesInCategories(categories: NSArray<string>): NSArray<string>;
+	static filterNamesInCategories(categories: NSArray<string> | string[]): NSArray<string>;
 
 	static filterNamesInCategory(category: string): NSArray<string>;
 
@@ -488,7 +488,7 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static registerFilterNameConstructorClassAttributes(name: string, anObject: CIFilterConstructor, attributes: NSDictionary<string, any>): void;
 
-	static serializedXMPFromFiltersInputImageExtent(filters: NSArray<CIFilter>, extent: CGRect): NSData;
+	static serializedXMPFromFiltersInputImageExtent(filters: NSArray<CIFilter> | CIFilter[], extent: CGRect): NSData;
 
 	readonly attributes: NSDictionary<string, any>;
 
@@ -784,13 +784,13 @@ declare class CIImageProcessorKernel extends NSObject {
 
 	static alloc(): CIImageProcessorKernel; // inherited from NSObject
 
-	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage>, args: NSDictionary<string, any>): CIImage;
+	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage> | CIImage[], args: NSDictionary<string, any>): CIImage;
 
 	static formatForInputAtIndex(input: number): number;
 
 	static new(): CIImageProcessorKernel; // inherited from NSObject
 
-	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput>, _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput): boolean;
+	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput): boolean;
 
 	static roiForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
 
@@ -838,7 +838,7 @@ declare class CIKernel extends NSObject {
 
 	readonly name: string;
 
-	applyWithExtentRoiCallbackArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, args: NSArray<any>): CIImage;
+	applyWithExtentRoiCallbackArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, args: NSArray<any> | any[]): CIImage;
 
 	setROISelector(method: string): void;
 }
@@ -1163,7 +1163,7 @@ declare class CIWarpKernel extends CIKernel {
 
 	static new(): CIWarpKernel; // inherited from NSObject
 
-	applyWithExtentRoiCallbackInputImageArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, image: CIImage, args: NSArray<any>): CIImage;
+	applyWithExtentRoiCallbackInputImageArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, image: CIImage, args: NSArray<any> | any[]): CIImage;
 }
 
 declare var kCIActiveKeys: string;

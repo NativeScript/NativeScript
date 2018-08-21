@@ -92,9 +92,9 @@ declare class GKBehavior extends NSObject implements NSCopying, NSFastEnumeratio
 
 	static behaviorWithGoalWeight(goal: GKGoal, weight: number): GKBehavior;
 
-	static behaviorWithGoals(goals: NSArray<GKGoal>): GKBehavior;
+	static behaviorWithGoals(goals: NSArray<GKGoal> | GKGoal[]): GKBehavior;
 
-	static behaviorWithGoalsAndWeights(goals: NSArray<GKGoal>, weights: NSArray<number>): GKBehavior;
+	static behaviorWithGoalsAndWeights(goals: NSArray<GKGoal> | GKGoal[], weights: NSArray<number> | number[]): GKBehavior;
 
 	static behaviorWithWeightedGoals(weightedGoals: NSDictionary<GKGoal, number>): GKBehavior;
 
@@ -247,15 +247,15 @@ declare class GKCompositeBehavior extends GKBehavior {
 
 	static alloc(): GKCompositeBehavior; // inherited from NSObject
 
-	static behaviorWithBehaviors(behaviors: NSArray<GKBehavior>): GKCompositeBehavior;
+	static behaviorWithBehaviors(behaviors: NSArray<GKBehavior> | GKBehavior[]): GKCompositeBehavior;
 
-	static behaviorWithBehaviorsAndWeights(behaviors: NSArray<GKBehavior>, weights: NSArray<number>): GKCompositeBehavior;
+	static behaviorWithBehaviorsAndWeights(behaviors: NSArray<GKBehavior> | GKBehavior[], weights: NSArray<number> | number[]): GKCompositeBehavior;
 
 	static behaviorWithGoalWeight(goal: GKGoal, weight: number): GKCompositeBehavior; // inherited from GKBehavior
 
-	static behaviorWithGoals(goals: NSArray<GKGoal>): GKCompositeBehavior; // inherited from GKBehavior
+	static behaviorWithGoals(goals: NSArray<GKGoal> | GKGoal[]): GKCompositeBehavior; // inherited from GKBehavior
 
-	static behaviorWithGoalsAndWeights(goals: NSArray<GKGoal>, weights: NSArray<number>): GKCompositeBehavior; // inherited from GKBehavior
+	static behaviorWithGoalsAndWeights(goals: NSArray<GKGoal> | GKGoal[], weights: NSArray<number> | number[]): GKCompositeBehavior; // inherited from GKBehavior
 
 	static behaviorWithWeightedGoals(weightedGoals: NSDictionary<GKGoal, number>): GKCompositeBehavior; // inherited from GKBehavior
 
@@ -352,7 +352,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithExamplesActionsAttributes(examples: NSArray<NSArray<NSObjectProtocol>>, actions: NSArray<NSObjectProtocol>, attributes: NSArray<NSObjectProtocol>): this;
+	initWithExamplesActionsAttributes(examples: NSArray<NSArray<NSObjectProtocol>> | NSArray<NSObjectProtocol>[], actions: NSArray<NSObjectProtocol> | NSObjectProtocol[], attributes: NSArray<NSObjectProtocol> | NSObjectProtocol[]): this;
 
 	initWithURLError(url: NSURL, error: NSError): this;
 }
@@ -458,13 +458,13 @@ declare class GKGoal extends NSObject implements NSCopying {
 
 	static alloc(): GKGoal; // inherited from NSObject
 
-	static goalToAlignWithAgentsMaxDistanceMaxAngle(agents: NSArray<GKAgent>, maxDistance: number, maxAngle: number): GKGoal;
+	static goalToAlignWithAgentsMaxDistanceMaxAngle(agents: NSArray<GKAgent> | GKAgent[], maxDistance: number, maxAngle: number): GKGoal;
 
-	static goalToAvoidAgentsMaxPredictionTime(agents: NSArray<GKAgent>, maxPredictionTime: number): GKGoal;
+	static goalToAvoidAgentsMaxPredictionTime(agents: NSArray<GKAgent> | GKAgent[], maxPredictionTime: number): GKGoal;
 
-	static goalToAvoidObstaclesMaxPredictionTime(obstacles: NSArray<GKObstacle>, maxPredictionTime: number): GKGoal;
+	static goalToAvoidObstaclesMaxPredictionTime(obstacles: NSArray<GKObstacle> | GKObstacle[], maxPredictionTime: number): GKGoal;
 
-	static goalToCohereWithAgentsMaxDistanceMaxAngle(agents: NSArray<GKAgent>, maxDistance: number, maxAngle: number): GKGoal;
+	static goalToCohereWithAgentsMaxDistanceMaxAngle(agents: NSArray<GKAgent> | GKAgent[], maxDistance: number, maxAngle: number): GKGoal;
 
 	static goalToFleeAgent(agent: GKAgent): GKGoal;
 
@@ -476,7 +476,7 @@ declare class GKGoal extends NSObject implements NSCopying {
 
 	static goalToSeekAgent(agent: GKAgent): GKGoal;
 
-	static goalToSeparateFromAgentsMaxDistanceMaxAngle(agents: NSArray<GKAgent>, maxDistance: number, maxAngle: number): GKGoal;
+	static goalToSeparateFromAgentsMaxDistanceMaxAngle(agents: NSArray<GKAgent> | GKAgent[], maxDistance: number, maxAngle: number): GKGoal;
 
 	static goalToStayOnPathMaxPredictionTime(path: GKPath, maxPredictionTime: number): GKGoal;
 
@@ -491,7 +491,7 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): GKGraph; // inherited from NSObject
 
-	static graphWithNodes(nodes: NSArray<GKGraphNode>): GKGraph;
+	static graphWithNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): GKGraph;
 
 	static new(): GKGraph; // inherited from NSObject
 
@@ -501,7 +501,7 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { nodes: NSArray<GKGraphNode>; });
 
-	addNodes(nodes: NSArray<GKGraphNode>): void;
+	addNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): void;
 
 	connectNodeToLowestCostNodeBidirectional(node: GKGraphNode, bidirectional: boolean): void;
 
@@ -513,9 +513,9 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithNodes(nodes: NSArray<GKGraphNode>): this;
+	initWithNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): this;
 
-	removeNodes(nodes: NSArray<GKGraphNode>): void;
+	removeNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): void;
 }
 
 declare class GKGraphNode extends NSObject implements NSCoding {
@@ -528,7 +528,7 @@ declare class GKGraphNode extends NSObject implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	addConnectionsToNodesBidirectional(nodes: NSArray<GKGraphNode>, bidirectional: boolean): void;
+	addConnectionsToNodesBidirectional(nodes: NSArray<GKGraphNode> | GKGraphNode[], bidirectional: boolean): void;
 
 	costToNode(node: GKGraphNode): number;
 
@@ -542,7 +542,7 @@ declare class GKGraphNode extends NSObject implements NSCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	removeConnectionsToNodesBidirectional(nodes: NSArray<GKGraphNode>, bidirectional: boolean): void;
+	removeConnectionsToNodesBidirectional(nodes: NSArray<GKGraphNode> | GKGraphNode[], bidirectional: boolean): void;
 }
 
 declare class GKGraphNode2D extends GKGraphNode {
@@ -583,7 +583,7 @@ declare class GKGridGraph<NodeType> extends GKGraph {
 
 	static graphFromGridStartingAtWidthHeightDiagonalsAllowedNodeClass<NodeType>(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean, nodeClass: typeof NSObject): GKGridGraph<NodeType>;
 
-	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode>): GKGridGraph<NodeType>; // inherited from GKGraph
+	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode> | GKGraphNode[]): GKGridGraph<NodeType>; // inherited from GKGraph
 
 	static new<NodeType>(): GKGridGraph<NodeType>; // inherited from NSObject
 
@@ -659,7 +659,7 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	static graphWithBufferRadiusMinCoordinateMaxCoordinateNodeClass<NodeType>(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>, nodeClass: typeof NSObject): GKMeshGraph<NodeType>;
 
-	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode>): GKMeshGraph<NodeType>; // inherited from GKGraph
+	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode> | GKGraphNode[]): GKMeshGraph<NodeType>; // inherited from GKGraph
 
 	static new<NodeType>(): GKMeshGraph<NodeType>; // inherited from NSObject
 
@@ -675,7 +675,7 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	constructor(o: { bufferRadius: number; minCoordinate: interop.Reference<number>; maxCoordinate: interop.Reference<number>; nodeClass: typeof NSObject; });
 
-	addObstacles(obstacles: NSArray<GKPolygonObstacle>): void;
+	addObstacles(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
@@ -685,7 +685,7 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	initWithBufferRadiusMinCoordinateMaxCoordinateNodeClass(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>, nodeClass: typeof NSObject): this;
 
-	removeObstacles(obstacles: NSArray<GKPolygonObstacle>): void;
+	removeObstacles(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
 	triangleAtIndex(index: number): GKTriangle;
 
@@ -830,9 +830,9 @@ declare class GKNoise extends NSObject {
 
 	static new(): GKNoise; // inherited from NSObject
 
-	static noiseWithComponentNoisesSelectionNoise(noises: NSArray<GKNoise>, selectionNoise: GKNoise): GKNoise;
+	static noiseWithComponentNoisesSelectionNoise(noises: NSArray<GKNoise> | GKNoise[], selectionNoise: GKNoise): GKNoise;
 
-	static noiseWithComponentNoisesSelectionNoiseComponentBoundariesBoundaryBlendDistances(noises: NSArray<GKNoise>, selectionNoise: GKNoise, componentBoundaries: NSArray<number>, blendDistances: NSArray<number>): GKNoise;
+	static noiseWithComponentNoisesSelectionNoiseComponentBoundariesBoundaryBlendDistances(noises: NSArray<GKNoise> | GKNoise[], selectionNoise: GKNoise, componentBoundaries: NSArray<number> | number[], blendDistances: NSArray<number> | number[]): GKNoise;
 
 	static noiseWithNoiseSource(noiseSource: GKNoiseSource): GKNoise;
 
@@ -874,7 +874,7 @@ declare class GKNoise extends NSObject {
 
 	remapValuesToCurveWithControlPoints(controlPoints: NSDictionary<number, number>): void;
 
-	remapValuesToTerracesWithPeaksTerracesInverted(peakInputValues: NSArray<number>, inverted: boolean): void;
+	remapValuesToTerracesWithPeaksTerracesInverted(peakInputValues: NSArray<number> | number[], inverted: boolean): void;
 
 	rotateBy(radians: interop.Reference<number>): void;
 
@@ -934,11 +934,11 @@ declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	static alloc<NodeType>(): GKObstacleGraph<NodeType>; // inherited from NSObject
 
-	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode>): GKObstacleGraph<NodeType>; // inherited from GKGraph
+	static graphWithNodes<NodeType>(nodes: NSArray<GKGraphNode> | GKGraphNode[]): GKObstacleGraph<NodeType>; // inherited from GKGraph
 
-	static graphWithObstaclesBufferRadius<NodeType>(obstacles: NSArray<GKPolygonObstacle>, bufferRadius: number): GKObstacleGraph<NodeType>;
+	static graphWithObstaclesBufferRadius<NodeType>(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[], bufferRadius: number): GKObstacleGraph<NodeType>;
 
-	static graphWithObstaclesBufferRadiusNodeClass<NodeType>(obstacles: NSArray<GKPolygonObstacle>, bufferRadius: number, nodeClass: typeof NSObject): GKObstacleGraph<NodeType>;
+	static graphWithObstaclesBufferRadiusNodeClass<NodeType>(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[], bufferRadius: number, nodeClass: typeof NSObject): GKObstacleGraph<NodeType>;
 
 	static new<NodeType>(): GKObstacleGraph<NodeType>; // inherited from NSObject
 
@@ -950,19 +950,19 @@ declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	constructor(o: { obstacles: NSArray<GKPolygonObstacle>; bufferRadius: number; nodeClass: typeof NSObject; });
 
-	addObstacles(obstacles: NSArray<GKPolygonObstacle>): void;
+	addObstacles(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
 	connectNodeUsingObstacles(node: NodeType): void;
 
-	connectNodeUsingObstaclesIgnoringBufferRadiusOfObstacles(node: NodeType, obstaclesBufferRadiusToIgnore: NSArray<GKPolygonObstacle>): void;
+	connectNodeUsingObstaclesIgnoringBufferRadiusOfObstacles(node: NodeType, obstaclesBufferRadiusToIgnore: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
-	connectNodeUsingObstaclesIgnoringObstacles(node: NodeType, obstaclesToIgnore: NSArray<GKPolygonObstacle>): void;
+	connectNodeUsingObstaclesIgnoringObstacles(node: NodeType, obstaclesToIgnore: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
-	initWithObstaclesBufferRadius(obstacles: NSArray<GKPolygonObstacle>, bufferRadius: number): this;
+	initWithObstaclesBufferRadius(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[], bufferRadius: number): this;
 
-	initWithObstaclesBufferRadiusNodeClass(obstacles: NSArray<GKPolygonObstacle>, bufferRadius: number, nodeClass: typeof NSObject): this;
+	initWithObstaclesBufferRadiusNodeClass(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[], bufferRadius: number, nodeClass: typeof NSObject): this;
 
 	isConnectionLockedFromNodeToNode(startNode: NodeType, endNode: NodeType): boolean;
 
@@ -972,7 +972,7 @@ declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	removeAllObstacles(): void;
 
-	removeObstacles(obstacles: NSArray<GKPolygonObstacle>): void;
+	removeObstacles(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
 	unlockConnectionFromNodeToNode(startNode: NodeType, endNode: NodeType): void;
 }
@@ -1019,7 +1019,7 @@ declare class GKPath extends NSObject {
 
 	static pathWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
 
-	static pathWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode>, radius: number): GKPath;
+	static pathWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode> | GKGraphNode[], radius: number): GKPath;
 
 	static pathWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
 
@@ -1041,7 +1041,7 @@ declare class GKPath extends NSObject {
 
 	initWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
 
-	initWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode>, radius: number): this;
+	initWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode> | GKGraphNode[], radius: number): this;
 
 	initWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
 
@@ -1218,7 +1218,7 @@ declare class GKRandomSource extends NSObject implements GKRandom, NSCopying, NS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	arrayByShufflingObjectsInArray(array: NSArray<any>): NSArray<any>;
+	arrayByShufflingObjectsInArray(array: NSArray<any> | any[]): NSArray<any>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -1285,7 +1285,7 @@ declare class GKRuleSystem extends NSObject {
 
 	addRule(rule: GKRule): void;
 
-	addRulesFromArray(rules: NSArray<GKRule>): void;
+	addRulesFromArray(rules: NSArray<GKRule> | GKRule[]): void;
 
 	assertFact(fact: NSObjectProtocol): void;
 
@@ -1295,9 +1295,9 @@ declare class GKRuleSystem extends NSObject {
 
 	gradeForFact(fact: NSObjectProtocol): number;
 
-	maximumGradeForFacts(facts: NSArray<any>): number;
+	maximumGradeForFacts(facts: NSArray<any> | any[]): number;
 
-	minimumGradeForFacts(facts: NSArray<any>): number;
+	minimumGradeForFacts(facts: NSArray<any> | any[]): number;
 
 	removeAllRules(): void;
 
@@ -1526,7 +1526,7 @@ declare class GKStateMachine extends NSObject {
 
 	static new(): GKStateMachine; // inherited from NSObject
 
-	static stateMachineWithStates(states: NSArray<GKState>): GKStateMachine;
+	static stateMachineWithStates(states: NSArray<GKState> | GKState[]): GKStateMachine;
 
 	readonly currentState: GKState;
 
@@ -1536,7 +1536,7 @@ declare class GKStateMachine extends NSObject {
 
 	enterState(stateClass: typeof NSObject): boolean;
 
-	initWithStates(states: NSArray<GKState>): this;
+	initWithStates(states: NSArray<GKState> | GKState[]): this;
 
 	stateForClass(stateClass: typeof NSObject): GKState;
 

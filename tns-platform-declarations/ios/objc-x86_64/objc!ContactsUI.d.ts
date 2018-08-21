@@ -5,11 +5,11 @@ interface CNContactPickerDelegate extends NSObjectProtocol {
 
 	contactPickerDidSelectContact?(picker: CNContactPickerViewController, contact: CNContact): void;
 
-	contactPickerDidSelectContactProperties?(picker: CNContactPickerViewController, contactProperties: NSArray<CNContactProperty>): void;
+	contactPickerDidSelectContactProperties?(picker: CNContactPickerViewController, contactProperties: NSArray<CNContactProperty> | CNContactProperty[]): void;
 
 	contactPickerDidSelectContactProperty?(picker: CNContactPickerViewController, contactProperty: CNContactProperty): void;
 
-	contactPickerDidSelectContacts?(picker: CNContactPickerViewController, contacts: NSArray<CNContact>): void;
+	contactPickerDidSelectContacts?(picker: CNContactPickerViewController, contacts: NSArray<CNContact> | CNContact[]): void;
 }
 declare var CNContactPickerDelegate: {
 

@@ -540,9 +540,9 @@ declare class MDLCheckerboardTexture extends MDLTexture {
 
 	static new(): MDLCheckerboardTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLCheckerboardTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLCheckerboardTexture; // inherited from MDLTexture
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLCheckerboardTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLCheckerboardTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLCheckerboardTexture; // inherited from MDLTexture
 
@@ -569,9 +569,9 @@ declare class MDLColorSwatchTexture extends MDLTexture {
 
 	static new(): MDLColorSwatchTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLColorSwatchTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLColorSwatchTexture; // inherited from MDLTexture
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLColorSwatchTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLColorSwatchTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLColorSwatchTexture; // inherited from MDLTexture
 
@@ -666,7 +666,7 @@ declare class MDLLightProbe extends MDLLight {
 
 	static alloc(): MDLLightProbe; // inherited from NSObject
 
-	static lightProbeWithTextureSizeForLocationLightsToConsiderObjectsToConsiderReflectiveCubemapIrradianceCubemap(textureSize: number, transform: MDLTransform, lightsToConsider: NSArray<MDLLight>, objectsToConsider: NSArray<MDLObject>, reflectiveCubemap: MDLTexture, irradianceCubemap: MDLTexture): MDLLightProbe;
+	static lightProbeWithTextureSizeForLocationLightsToConsiderObjectsToConsiderReflectiveCubemapIrradianceCubemap(textureSize: number, transform: MDLTransform, lightsToConsider: NSArray<MDLLight> | MDLLight[], objectsToConsider: NSArray<MDLObject> | MDLObject[], reflectiveCubemap: MDLTexture, irradianceCubemap: MDLTexture): MDLLightProbe;
 
 	static lightWithSCNLight(scnLight: SCNLight): MDLLightProbe; // inherited from MDLLight
 
@@ -900,7 +900,7 @@ declare class MDLMaterialPropertyGraph extends MDLMaterialPropertyNode {
 
 	evaluate(): void;
 
-	initWithNodesConnections(nodes: NSArray<MDLMaterialPropertyNode>, connections: NSArray<MDLMaterialPropertyConnection>): this;
+	initWithNodesConnections(nodes: NSArray<MDLMaterialPropertyNode> | MDLMaterialPropertyNode[], connections: NSArray<MDLMaterialPropertyConnection> | MDLMaterialPropertyConnection[]): this;
 }
 
 declare class MDLMaterialPropertyNode extends NSObject implements MDLNamed {
@@ -919,7 +919,7 @@ declare class MDLMaterialPropertyNode extends NSObject implements MDLNamed {
 
 	constructor(o: { inputs: NSArray<MDLMaterialProperty>; outputs: NSArray<MDLMaterialProperty>; evaluationFunction: (p1: MDLMaterialPropertyNode) => void; });
 
-	initWithInputsOutputsEvaluationFunction(inputs: NSArray<MDLMaterialProperty>, outputs: NSArray<MDLMaterialProperty>, _function: (p1: MDLMaterialPropertyNode) => void): this;
+	initWithInputsOutputsEvaluationFunction(inputs: NSArray<MDLMaterialProperty> | MDLMaterialProperty[], outputs: NSArray<MDLMaterialProperty> | MDLMaterialProperty[], _function: (p1: MDLMaterialPropertyNode) => void): this;
 }
 
 declare const enum MDLMaterialPropertyType {
@@ -1129,19 +1129,19 @@ declare class MDLMesh extends MDLObject {
 
 	flipTextureCoordinatesInAttributeNamed(textureCoordinateAttributeName: string): void;
 
-	generateAmbientOcclusionTextureWithQualityAttenuationFactorObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(bakeQuality: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string, materialPropertyName: string): boolean;
+	generateAmbientOcclusionTextureWithQualityAttenuationFactorObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(bakeQuality: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string, materialPropertyName: string): boolean;
 
-	generateAmbientOcclusionTextureWithSizeRaysPerSampleAttenuationFactorObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(textureSize: interop.Reference<number>, raysPerSample: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string, materialPropertyName: string): boolean;
+	generateAmbientOcclusionTextureWithSizeRaysPerSampleAttenuationFactorObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(textureSize: interop.Reference<number>, raysPerSample: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string, materialPropertyName: string): boolean;
 
-	generateAmbientOcclusionVertexColorsWithQualityAttenuationFactorObjectsToConsiderVertexAttributeNamed(bakeQuality: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string): boolean;
+	generateAmbientOcclusionVertexColorsWithQualityAttenuationFactorObjectsToConsiderVertexAttributeNamed(bakeQuality: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string): boolean;
 
-	generateAmbientOcclusionVertexColorsWithRaysPerSampleAttenuationFactorObjectsToConsiderVertexAttributeNamed(raysPerSample: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string): boolean;
+	generateAmbientOcclusionVertexColorsWithRaysPerSampleAttenuationFactorObjectsToConsiderVertexAttributeNamed(raysPerSample: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string): boolean;
 
-	generateLightMapTextureWithQualityLightsToConsiderObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(bakeQuality: number, lightsToConsider: NSArray<MDLLight>, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string, materialPropertyName: string): boolean;
+	generateLightMapTextureWithQualityLightsToConsiderObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(bakeQuality: number, lightsToConsider: NSArray<MDLLight> | MDLLight[], objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string, materialPropertyName: string): boolean;
 
-	generateLightMapTextureWithTextureSizeLightsToConsiderObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(textureSize: interop.Reference<number>, lightsToConsider: NSArray<MDLLight>, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string, materialPropertyName: string): boolean;
+	generateLightMapTextureWithTextureSizeLightsToConsiderObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(textureSize: interop.Reference<number>, lightsToConsider: NSArray<MDLLight> | MDLLight[], objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string, materialPropertyName: string): boolean;
 
-	generateLightMapVertexColorsWithLightsToConsiderObjectsToConsiderVertexAttributeNamed(lightsToConsider: NSArray<MDLLight>, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string): boolean;
+	generateLightMapVertexColorsWithLightsToConsiderObjectsToConsiderVertexAttributeNamed(lightsToConsider: NSArray<MDLLight> | MDLLight[], objectsToConsider: NSArray<MDLObject> | MDLObject[], vertexAttributeName: string): boolean;
 
 	initBoxWithExtentSegmentsInwardNormalsGeometryTypeAllocator(extent: interop.Reference<number>, segments: interop.Reference<number>, inwardNormals: boolean, geometryType: MDLGeometryType, allocator: MDLMeshBufferAllocator): this;
 
@@ -1163,9 +1163,9 @@ declare class MDLMesh extends MDLObject {
 
 	initWithBufferAllocator(bufferAllocator: MDLMeshBufferAllocator): this;
 
-	initWithVertexBufferVertexCountDescriptorSubmeshes(vertexBuffer: MDLMeshBuffer, vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh>): this;
+	initWithVertexBufferVertexCountDescriptorSubmeshes(vertexBuffer: MDLMeshBuffer, vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh> | MDLSubmesh[]): this;
 
-	initWithVertexBuffersVertexCountDescriptorSubmeshes(vertexBuffers: NSArray<MDLMeshBuffer>, vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh>): this;
+	initWithVertexBuffersVertexCountDescriptorSubmeshes(vertexBuffers: NSArray<MDLMeshBuffer> | MDLMeshBuffer[], vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh> | MDLSubmesh[]): this;
 
 	makeVerticesUnique(): void;
 
@@ -1213,7 +1213,7 @@ interface MDLMeshBufferAllocator extends NSObjectProtocol {
 
 	newZone(capacity: number): MDLMeshBufferZone;
 
-	newZoneForBuffersWithSizeAndType(sizes: NSArray<number>, types: NSArray<number>): MDLMeshBufferZone;
+	newZoneForBuffersWithSizeAndType(sizes: NSArray<number> | number[], types: NSArray<number> | number[]): MDLMeshBufferZone;
 }
 declare var MDLMeshBufferAllocator: {
 
@@ -1321,7 +1321,7 @@ declare class MDLMeshBufferDataAllocator extends NSObject implements MDLMeshBuff
 
 	newZone(capacity: number): MDLMeshBufferZone;
 
-	newZoneForBuffersWithSizeAndType(sizes: NSArray<number>, types: NSArray<number>): MDLMeshBufferZone;
+	newZoneForBuffersWithSizeAndType(sizes: NSArray<number> | number[], types: NSArray<number> | number[]): MDLMeshBufferZone;
 
 	performSelector(aSelector: string): any;
 
@@ -1431,9 +1431,9 @@ declare class MDLNoiseTexture extends MDLTexture {
 
 	static new(): MDLNoiseTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLNoiseTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLNoiseTexture; // inherited from MDLTexture
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLNoiseTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLNoiseTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLNoiseTexture; // inherited from MDLTexture
 
@@ -1462,9 +1462,9 @@ declare class MDLNormalMapTexture extends MDLTexture {
 
 	static new(): MDLNormalMapTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLNormalMapTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLNormalMapTexture; // inherited from MDLTexture
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLNormalMapTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLNormalMapTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLNormalMapTexture; // inherited from MDLTexture
 
@@ -1610,7 +1610,7 @@ declare class MDLPackedJointAnimation extends MDLObject implements MDLJointAnima
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithNameJointPaths(name: string, jointPaths: NSArray<string>): this;
+	initWithNameJointPaths(name: string, jointPaths: NSArray<string> | string[]): this;
 }
 
 declare class MDLPathAssetResolver extends NSObject implements MDLAssetResolver {
@@ -1852,7 +1852,7 @@ declare class MDLSkeleton extends MDLObject implements NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithNameJointPaths(name: string, jointPaths: NSArray<string>): this;
+	initWithNameJointPaths(name: string, jointPaths: NSArray<string> | string[]): this;
 }
 
 declare class MDLSkyCubeTexture extends MDLTexture {
@@ -1865,9 +1865,9 @@ declare class MDLSkyCubeTexture extends MDLTexture {
 
 	static new(): MDLSkyCubeTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLSkyCubeTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLSkyCubeTexture; // inherited from MDLTexture
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLSkyCubeTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLSkyCubeTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLSkyCubeTexture; // inherited from MDLTexture
 
@@ -2023,9 +2023,9 @@ declare class MDLTexture extends NSObject implements MDLNamed {
 
 	static new(): MDLTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLTexture;
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLTexture;
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLTexture;
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLTexture;
 
 	static textureNamed(name: string): MDLTexture;
 
@@ -2509,9 +2509,9 @@ declare class MDLURLTexture extends MDLTexture {
 
 	static new(): MDLURLTexture; // inherited from NSObject
 
-	static textureCubeWithImagesNamed(names: NSArray<string>): MDLURLTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamed(names: NSArray<string> | string[]): MDLURLTexture; // inherited from MDLTexture
 
-	static textureCubeWithImagesNamedBundle(names: NSArray<string>, bundleOrNil: NSBundle): MDLURLTexture; // inherited from MDLTexture
+	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLURLTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLURLTexture; // inherited from MDLTexture
 

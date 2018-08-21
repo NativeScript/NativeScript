@@ -32,7 +32,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	static array<ObjectType>(): NSArray<ObjectType>;
 
-	static arrayWithArray<ObjectType>(array: NSArray<ObjectType>): NSArray<ObjectType>;
+	static arrayWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSArray<ObjectType>;
 
 	static arrayWithContentsOfFile<ObjectType>(path: string): NSArray<ObjectType>;
 
@@ -92,7 +92,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	arrayByAddingObject(anObject: ObjectType): NSArray<ObjectType>;
 
-	arrayByAddingObjectsFromArray(otherArray: NSArray<ObjectType>): NSArray<ObjectType>;
+	arrayByAddingObjectsFromArray(otherArray: NSArray<ObjectType> | ObjectType[]): NSArray<ObjectType>;
 
 	class(): typeof NSObject;
 
@@ -118,7 +118,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	filteredArrayUsingPredicate(predicate: NSPredicate): NSArray<ObjectType>;
 
-	firstObjectCommonWithArray(otherArray: NSArray<ObjectType>): ObjectType;
+	firstObjectCommonWithArray(otherArray: NSArray<ObjectType> | ObjectType[]): ObjectType;
 
 	getObjects(objects: interop.Reference<ObjectType>): void;
 
@@ -146,9 +146,9 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	indexesOfObjectsWithOptionsPassingTest(opts: NSEnumerationOptions, predicate: (p1: ObjectType, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => boolean): NSIndexSet;
 
-	initWithArray(array: NSArray<ObjectType>): this;
+	initWithArray(array: NSArray<ObjectType> | ObjectType[]): this;
 
-	initWithArrayCopyItems(array: NSArray<ObjectType>, flag: boolean): this;
+	initWithArrayCopyItems(array: NSArray<ObjectType> | ObjectType[], flag: boolean): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -164,7 +164,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	isEqual(object: any): boolean;
 
-	isEqualToArray(otherArray: NSArray<ObjectType>): boolean;
+	isEqualToArray(otherArray: NSArray<ObjectType> | ObjectType[]): boolean;
 
 	isKindOfClass(aClass: typeof NSObject): boolean;
 
@@ -184,7 +184,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	objectsAtIndexes(indexes: NSIndexSet): NSArray<ObjectType>;
 
-	pathsMatchingExtensions(filterTypes: NSArray<string>): NSArray<string>;
+	pathsMatchingExtensions(filterTypes: NSArray<string> | string[]): NSArray<string>;
 
 	performSelector(aSelector: string): any;
 
@@ -210,7 +210,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	sortedArrayUsingComparator(cmptr: (p1: any, p2: any) => NSComparisonResult): NSArray<ObjectType>;
 
-	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor>): NSArray<ObjectType>;
+	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]): NSArray<ObjectType>;
 
 	sortedArrayUsingFunctionContext(comparator: interop.FunctionReference<(p1: ObjectType, p2: ObjectType, p3: interop.Pointer | interop.Reference<any>) => number>, context: interop.Pointer | interop.Reference<any>): NSArray<ObjectType>;
 
@@ -437,9 +437,9 @@ declare class NSBundle extends NSObject {
 
 	static pathsForResourcesOfTypeInDirectory(ext: string, bundlePath: string): NSArray<string>;
 
-	static preferredLocalizationsFromArray(localizationsArray: NSArray<string>): NSArray<string>;
+	static preferredLocalizationsFromArray(localizationsArray: NSArray<string> | string[]): NSArray<string>;
 
-	static preferredLocalizationsFromArrayForPreferences(localizationsArray: NSArray<string>, preferencesArray: NSArray<string>): NSArray<string>;
+	static preferredLocalizationsFromArrayForPreferences(localizationsArray: NSArray<string> | string[], preferencesArray: NSArray<string> | string[]): NSArray<string>;
 
 	readonly appStoreReceiptURL: NSURL;
 
@@ -1392,13 +1392,13 @@ declare class NSCompoundPredicate extends NSPredicate {
 
 	static alloc(): NSCompoundPredicate; // inherited from NSObject
 
-	static andPredicateWithSubpredicates(subpredicates: NSArray<NSPredicate>): NSCompoundPredicate;
+	static andPredicateWithSubpredicates(subpredicates: NSArray<NSPredicate> | NSPredicate[]): NSCompoundPredicate;
 
 	static new(): NSCompoundPredicate; // inherited from NSObject
 
 	static notPredicateWithSubpredicate(predicate: NSPredicate): NSCompoundPredicate;
 
-	static orPredicateWithSubpredicates(subpredicates: NSArray<NSPredicate>): NSCompoundPredicate;
+	static orPredicateWithSubpredicates(subpredicates: NSArray<NSPredicate> | NSPredicate[]): NSCompoundPredicate;
 
 	readonly compoundPredicateType: NSCompoundPredicateType;
 
@@ -1406,7 +1406,7 @@ declare class NSCompoundPredicate extends NSPredicate {
 
 	constructor(o: { type: NSCompoundPredicateType; subpredicates: NSArray<NSPredicate>; });
 
-	initWithTypeSubpredicates(type: NSCompoundPredicateType, subpredicates: NSArray<NSPredicate>): this;
+	initWithTypeSubpredicates(type: NSCompoundPredicateType, subpredicates: NSArray<NSPredicate> | NSPredicate[]): this;
 }
 
 declare const enum NSCompoundPredicateType {
@@ -1520,7 +1520,7 @@ declare class NSCountedSet<ObjectType> extends NSMutableSet<ObjectType> {
 
 	static set<ObjectType>(): NSCountedSet<ObjectType>; // inherited from NSSet
 
-	static setWithArray<ObjectType>(array: NSArray<ObjectType>): NSCountedSet<ObjectType>; // inherited from NSSet
+	static setWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSCountedSet<ObjectType>; // inherited from NSSet
 
 	static setWithCapacity<ObjectType>(numItems: number): NSCountedSet<ObjectType>; // inherited from NSMutableSet
 
@@ -2385,13 +2385,13 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	static dictionaryWithObjectsAndKeys<KeyType, ObjectType>(firstObject: any): NSDictionary<KeyType, ObjectType>;
 
-	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType>, keys: NSArray<KeyType>): NSDictionary<KeyType, ObjectType>;
+	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType> | ObjectType[], keys: NSArray<KeyType> | KeyType[]): NSDictionary<KeyType, ObjectType>;
 
 	static dictionaryWithObjectsForKeysCount<KeyType, ObjectType>(objects: interop.Reference<ObjectType>, keys: interop.Reference<KeyType>, cnt: number): NSDictionary<KeyType, ObjectType>;
 
 	static new<KeyType, ObjectType>(): NSDictionary<KeyType, ObjectType>; // inherited from NSObject
 
-	static sharedKeySetForKeys<KeyType>(keys: NSArray<KeyType>): any;
+	static sharedKeySetForKeys<KeyType>(keys: NSArray<KeyType> | KeyType[]): any;
 
 	readonly allKeys: NSArray<KeyType>;
 
@@ -2502,7 +2502,7 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	initWithObjectsAndKeys(firstObject: any): this;
 
-	initWithObjectsForKeys(objects: NSArray<ObjectType>, keys: NSArray<KeyType>): this;
+	initWithObjectsForKeys(objects: NSArray<ObjectType> | ObjectType[], keys: NSArray<KeyType> | KeyType[]): this;
 
 	initWithObjectsForKeysCount(objects: interop.Reference<ObjectType>, keys: interop.Reference<KeyType>, cnt: number): this;
 
@@ -2534,7 +2534,7 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	objectForKeyedSubscript(key: KeyType): ObjectType;
 
-	objectsForKeysNotFoundMarker(keys: NSArray<KeyType>, marker: ObjectType): NSArray<ObjectType>;
+	objectsForKeysNotFoundMarker(keys: NSArray<KeyType> | KeyType[], marker: ObjectType): NSArray<ObjectType>;
 
 	performSelector(aSelector: string): any;
 
@@ -2782,11 +2782,11 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static alloc(): NSExpression; // inherited from NSObject
 
-	static expressionForAggregate(subexpressions: NSArray<NSExpression>): NSExpression;
+	static expressionForAggregate(subexpressions: NSArray<NSExpression> | NSExpression[]): NSExpression;
 
 	static expressionForAnyKey(): NSExpression;
 
-	static expressionForBlockArguments(block: (p1: any, p2: NSArray<NSExpression>, p3: NSMutableDictionary<any, any>) => any, _arguments: NSArray<NSExpression>): NSExpression;
+	static expressionForBlockArguments(block: (p1: any, p2: NSArray<NSExpression>, p3: NSMutableDictionary<any, any>) => any, _arguments: NSArray<NSExpression> | NSExpression[]): NSExpression;
 
 	static expressionForConditionalTrueExpressionFalseExpression(predicate: NSPredicate, trueExpression: NSExpression, falseExpression: NSExpression): NSExpression;
 
@@ -2794,9 +2794,9 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static expressionForEvaluatedObject(): NSExpression;
 
-	static expressionForFunctionArguments(name: string, parameters: NSArray<any>): NSExpression;
+	static expressionForFunctionArguments(name: string, parameters: NSArray<any> | any[]): NSExpression;
 
-	static expressionForFunctionSelectorNameArguments(target: NSExpression, name: string, parameters: NSArray<any>): NSExpression;
+	static expressionForFunctionSelectorNameArguments(target: NSExpression, name: string, parameters: NSArray<any> | any[]): NSExpression;
 
 	static expressionForIntersectSetWith(left: NSExpression, right: NSExpression): NSExpression;
 
@@ -2810,7 +2810,7 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static expressionForVariable(string: string): NSExpression;
 
-	static expressionWithFormatArgumentArray(expressionFormat: string, _arguments: NSArray<any>): NSExpression;
+	static expressionWithFormatArgumentArray(expressionFormat: string, _arguments: NSArray<any> | any[]): NSExpression;
 
 	static new(): NSExpression; // inherited from NSObject
 
@@ -2908,7 +2908,7 @@ declare class NSExtensionContext extends NSObject {
 
 	cancelRequestWithError(error: NSError): void;
 
-	completeRequestReturningItemsCompletionHandler(items: NSArray<any>, completionHandler: (p1: boolean) => void): void;
+	completeRequestReturningItemsCompletionHandler(items: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
 	completeRequestWithBroadcastURLBroadcastConfigurationSetupInfo(broadcastURL: NSURL, broadcastConfiguration: RPBroadcastConfiguration, setupInfo: NSDictionary<string, NSObject>): void;
 
@@ -3035,7 +3035,7 @@ declare class NSFileCoordinator extends NSObject {
 
 	cancel(): void;
 
-	coordinateAccessWithIntentsQueueByAccessor(intents: NSArray<NSFileAccessIntent>, queue: NSOperationQueue, accessor: (p1: NSError) => void): void;
+	coordinateAccessWithIntentsQueueByAccessor(intents: NSArray<NSFileAccessIntent> | NSFileAccessIntent[], queue: NSOperationQueue, accessor: (p1: NSError) => void): void;
 
 	coordinateReadingItemAtURLOptionsErrorByAccessor(url: NSURL, options: NSFileCoordinatorReadingOptions, outError: interop.Pointer | interop.Reference<NSError>, reader: (p1: NSURL) => void): void;
 
@@ -3053,7 +3053,7 @@ declare class NSFileCoordinator extends NSObject {
 
 	itemAtURLWillMoveToURL(oldURL: NSURL, newURL: NSURL): void;
 
-	prepareForReadingItemsAtURLsOptionsWritingItemsAtURLsOptionsErrorByAccessor(readingURLs: NSArray<NSURL>, readingOptions: NSFileCoordinatorReadingOptions, writingURLs: NSArray<NSURL>, writingOptions: NSFileCoordinatorWritingOptions, outError: interop.Pointer | interop.Reference<NSError>, batchAccessor: (p1: () => void) => void): void;
+	prepareForReadingItemsAtURLsOptionsWritingItemsAtURLsOptionsErrorByAccessor(readingURLs: NSArray<NSURL> | NSURL[], readingOptions: NSFileCoordinatorReadingOptions, writingURLs: NSArray<NSURL> | NSURL[], writingOptions: NSFileCoordinatorWritingOptions, outError: interop.Pointer | interop.Reference<NSError>, batchAccessor: (p1: () => void) => void): void;
 }
 
 declare const enum NSFileCoordinatorReadingOptions {
@@ -3144,7 +3144,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	acceptConnectionInBackgroundAndNotify(): void;
 
-	acceptConnectionInBackgroundAndNotifyForModes(modes: NSArray<string>): void;
+	acceptConnectionInBackgroundAndNotifyForModes(modes: NSArray<string> | string[]): void;
 
 	closeFile(): void;
 
@@ -3162,11 +3162,11 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	readInBackgroundAndNotify(): void;
 
-	readInBackgroundAndNotifyForModes(modes: NSArray<string>): void;
+	readInBackgroundAndNotifyForModes(modes: NSArray<string> | string[]): void;
 
 	readToEndOfFileInBackgroundAndNotify(): void;
 
-	readToEndOfFileInBackgroundAndNotifyForModes(modes: NSArray<string>): void;
+	readToEndOfFileInBackgroundAndNotifyForModes(modes: NSArray<string> | string[]): void;
 
 	seekToEndOfFile(): number;
 
@@ -3178,7 +3178,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	waitForDataInBackgroundAndNotify(): void;
 
-	waitForDataInBackgroundAndNotifyForModes(modes: NSArray<string>): void;
+	waitForDataInBackgroundAndNotifyForModes(modes: NSArray<string> | string[]): void;
 
 	writeData(data: NSData): void;
 }
@@ -3245,7 +3245,7 @@ declare class NSFileManager extends NSObject {
 
 	contentsOfDirectoryAtPathError(path: string): NSArray<string>;
 
-	contentsOfDirectoryAtURLIncludingPropertiesForKeysOptionsError(url: NSURL, keys: NSArray<string>, mask: NSDirectoryEnumerationOptions): NSArray<NSURL>;
+	contentsOfDirectoryAtURLIncludingPropertiesForKeysOptionsError(url: NSURL, keys: NSArray<string> | string[], mask: NSDirectoryEnumerationOptions): NSArray<NSURL>;
 
 	copyItemAtPathToPathError(srcPath: string, dstPath: string): boolean;
 
@@ -3273,7 +3273,7 @@ declare class NSFileManager extends NSObject {
 
 	enumeratorAtPath(path: string): NSDirectoryEnumerator<string>;
 
-	enumeratorAtURLIncludingPropertiesForKeysOptionsErrorHandler(url: NSURL, keys: NSArray<string>, mask: NSDirectoryEnumerationOptions, handler: (p1: NSURL, p2: NSError) => boolean): NSDirectoryEnumerator<NSURL>;
+	enumeratorAtURLIncludingPropertiesForKeysOptionsErrorHandler(url: NSURL, keys: NSArray<string> | string[], mask: NSDirectoryEnumerationOptions, handler: (p1: NSURL, p2: NSError) => boolean): NSDirectoryEnumerator<NSURL>;
 
 	evictUbiquitousItemAtURLError(url: NSURL): boolean;
 
@@ -3307,7 +3307,7 @@ declare class NSFileManager extends NSObject {
 
 	linkItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL): boolean;
 
-	mountedVolumeURLsIncludingResourceValuesForKeysOptions(propertyKeys: NSArray<string>, options: NSVolumeEnumerationOptions): NSArray<NSURL>;
+	mountedVolumeURLsIncludingResourceValuesForKeysOptions(propertyKeys: NSArray<string> | string[], options: NSVolumeEnumerationOptions): NSArray<NSURL>;
 
 	moveItemAtPathToPathError(srcPath: string, dstPath: string): boolean;
 
@@ -3760,7 +3760,7 @@ declare class NSHTTPCookie extends NSObject {
 
 	static new(): NSHTTPCookie; // inherited from NSObject
 
-	static requestHeaderFieldsWithCookies(cookies: NSArray<NSHTTPCookie>): NSDictionary<string, string>;
+	static requestHeaderFieldsWithCookies(cookies: NSArray<NSHTTPCookie> | NSHTTPCookie[]): NSDictionary<string, string>;
 
 	readonly HTTPOnly: boolean;
 
@@ -3852,11 +3852,11 @@ declare class NSHTTPCookieStorage extends NSObject {
 
 	setCookie(cookie: NSHTTPCookie): void;
 
-	setCookiesForURLMainDocumentURL(cookies: NSArray<NSHTTPCookie>, URL: NSURL, mainDocumentURL: NSURL): void;
+	setCookiesForURLMainDocumentURL(cookies: NSArray<NSHTTPCookie> | NSHTTPCookie[], URL: NSURL, mainDocumentURL: NSURL): void;
 
-	sortedCookiesUsingDescriptors(sortOrder: NSArray<NSSortDescriptor>): NSArray<NSHTTPCookie>;
+	sortedCookiesUsingDescriptors(sortOrder: NSArray<NSSortDescriptor> | NSSortDescriptor[]): NSArray<NSHTTPCookie>;
 
-	storeCookiesForTask(cookies: NSArray<NSHTTPCookie>, task: NSURLSessionTask): void;
+	storeCookiesForTask(cookies: NSArray<NSHTTPCookie> | NSHTTPCookie[], task: NSURLSessionTask): void;
 }
 
 declare var NSHTTPCookieValue: string;
@@ -4564,7 +4564,7 @@ declare class NSKeyedUnarchiver extends NSCoder {
 
 interface NSKeyedUnarchiverDelegate extends NSObjectProtocol {
 
-	unarchiverCannotDecodeObjectOfClassNameOriginalClasses?(unarchiver: NSKeyedUnarchiver, name: string, classNames: NSArray<string>): typeof NSObject;
+	unarchiverCannotDecodeObjectOfClassNameOriginalClasses?(unarchiver: NSKeyedUnarchiver, name: string, classNames: NSArray<string> | string[]): typeof NSObject;
 
 	unarchiverDidDecodeObject?(unarchiver: NSKeyedUnarchiver, object: any): any;
 
@@ -4725,7 +4725,7 @@ declare class NSLinguisticTagger extends NSObject {
 
 	enumerateTagsInRangeUnitSchemeOptionsUsingBlock(range: NSRange, unit: NSLinguisticTaggerUnit, scheme: string, options: NSLinguisticTaggerOptions, block: (p1: string, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	initWithTagSchemesOptions(tagSchemes: NSArray<string>, opts: number): this;
+	initWithTagSchemesOptions(tagSchemes: NSArray<string> | string[], opts: number): this;
 
 	orthographyAtIndexEffectiveRange(charIndex: number, effectiveRange: interop.Pointer | interop.Reference<NSRange>): NSOrthography;
 
@@ -5243,7 +5243,7 @@ declare class NSMetadataItem extends NSObject {
 
 	valueForAttribute(key: string): any;
 
-	valuesForAttributes(keys: NSArray<string>): NSDictionary<string, any>;
+	valuesForAttributes(keys: NSArray<string> | string[]): NSDictionary<string, any>;
 }
 
 declare var NSMetadataItemContentTypeKey: string;
@@ -5469,7 +5469,7 @@ declare class NSMutableArray<ObjectType> extends NSArray<ObjectType> {
 
 	static array<ObjectType>(): NSMutableArray<ObjectType>; // inherited from NSArray
 
-	static arrayWithArray<ObjectType>(array: NSArray<ObjectType>): NSMutableArray<ObjectType>; // inherited from NSArray
+	static arrayWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSMutableArray<ObjectType>; // inherited from NSArray
 
 	static arrayWithCapacity<ObjectType>(numItems: number): NSMutableArray<ObjectType>;
 
@@ -5489,7 +5489,7 @@ declare class NSMutableArray<ObjectType> extends NSArray<ObjectType> {
 
 	addObject(anObject: ObjectType): void;
 
-	addObjectsFromArray(otherArray: NSArray<ObjectType>): void;
+	addObjectsFromArray(otherArray: NSArray<ObjectType> | ObjectType[]): void;
 
 	exchangeObjectAtIndexWithObjectAtIndex(idx1: number, idx2: number): void;
 
@@ -5499,7 +5499,7 @@ declare class NSMutableArray<ObjectType> extends NSArray<ObjectType> {
 
 	insertObjectAtIndex(anObject: ObjectType, index: number): void;
 
-	insertObjectsAtIndexes(objects: NSArray<ObjectType>, indexes: NSIndexSet): void;
+	insertObjectsAtIndexes(objects: NSArray<ObjectType> | ObjectType[], indexes: NSIndexSet): void;
 
 	removeAllObjects(): void;
 
@@ -5519,25 +5519,25 @@ declare class NSMutableArray<ObjectType> extends NSArray<ObjectType> {
 
 	removeObjectsFromIndicesNumIndices(indices: interop.Pointer | interop.Reference<number>, cnt: number): void;
 
-	removeObjectsInArray(otherArray: NSArray<ObjectType>): void;
+	removeObjectsInArray(otherArray: NSArray<ObjectType> | ObjectType[]): void;
 
 	removeObjectsInRange(range: NSRange): void;
 
 	replaceObjectAtIndexWithObject(index: number, anObject: ObjectType): void;
 
-	replaceObjectsAtIndexesWithObjects(indexes: NSIndexSet, objects: NSArray<ObjectType>): void;
+	replaceObjectsAtIndexesWithObjects(indexes: NSIndexSet, objects: NSArray<ObjectType> | ObjectType[]): void;
 
-	replaceObjectsInRangeWithObjectsFromArray(range: NSRange, otherArray: NSArray<ObjectType>): void;
+	replaceObjectsInRangeWithObjectsFromArray(range: NSRange, otherArray: NSArray<ObjectType> | ObjectType[]): void;
 
-	replaceObjectsInRangeWithObjectsFromArrayRange(range: NSRange, otherArray: NSArray<ObjectType>, otherRange: NSRange): void;
+	replaceObjectsInRangeWithObjectsFromArrayRange(range: NSRange, otherArray: NSArray<ObjectType> | ObjectType[], otherRange: NSRange): void;
 
-	setArray(otherArray: NSArray<ObjectType>): void;
+	setArray(otherArray: NSArray<ObjectType> | ObjectType[]): void;
 
 	setObjectAtIndexedSubscript(obj: ObjectType, idx: number): void;
 
 	sortUsingComparator(cmptr: (p1: any, p2: any) => NSComparisonResult): void;
 
-	sortUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor>): void;
+	sortUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]): void;
 
 	sortUsingFunctionContext(compare: interop.FunctionReference<(p1: ObjectType, p2: ObjectType, p3: interop.Pointer | interop.Reference<any>) => number>, context: interop.Pointer | interop.Reference<any>): void;
 
@@ -5704,7 +5704,7 @@ declare class NSMutableDictionary<KeyType, ObjectType> extends NSDictionary<KeyT
 
 	static dictionaryWithObjectsAndKeys<KeyType, ObjectType>(firstObject: any): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
-	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType>, keys: NSArray<KeyType>): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
+	static dictionaryWithObjectsForKeys<KeyType, ObjectType>(objects: NSArray<ObjectType> | ObjectType[], keys: NSArray<KeyType> | KeyType[]): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
 	static dictionaryWithObjectsForKeysCount<KeyType, ObjectType>(objects: interop.Reference<ObjectType>, keys: interop.Reference<KeyType>, cnt: number): NSMutableDictionary<KeyType, ObjectType>; // inherited from NSDictionary
 
@@ -5722,7 +5722,7 @@ declare class NSMutableDictionary<KeyType, ObjectType> extends NSDictionary<KeyT
 
 	removeObjectForKey(aKey: KeyType): void;
 
-	removeObjectsForKeys(keyArray: NSArray<KeyType>): void;
+	removeObjectsForKeys(keyArray: NSArray<KeyType> | KeyType[]): void;
 
 	setDictionary(otherDictionary: NSDictionary<KeyType, ObjectType>): void;
 
@@ -5770,9 +5770,9 @@ declare class NSMutableOrderedSet<ObjectType> extends NSOrderedSet<ObjectType> {
 
 	static orderedSet<ObjectType>(): NSMutableOrderedSet<ObjectType>; // inherited from NSOrderedSet
 
-	static orderedSetWithArray<ObjectType>(array: NSArray<ObjectType>): NSMutableOrderedSet<ObjectType>; // inherited from NSOrderedSet
+	static orderedSetWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSMutableOrderedSet<ObjectType>; // inherited from NSOrderedSet
 
-	static orderedSetWithArrayRangeCopyItems<ObjectType>(array: NSArray<ObjectType>, range: NSRange, flag: boolean): NSMutableOrderedSet<ObjectType>; // inherited from NSOrderedSet
+	static orderedSetWithArrayRangeCopyItems<ObjectType>(array: NSArray<ObjectType> | ObjectType[], range: NSRange, flag: boolean): NSMutableOrderedSet<ObjectType>; // inherited from NSOrderedSet
 
 	static orderedSetWithCapacity<ObjectType>(numItems: number): NSMutableOrderedSet<ObjectType>;
 
@@ -5796,7 +5796,7 @@ declare class NSMutableOrderedSet<ObjectType> extends NSOrderedSet<ObjectType> {
 
 	addObjectsCount(objects: interop.Reference<ObjectType>, count: number): void;
 
-	addObjectsFromArray(array: NSArray<ObjectType>): void;
+	addObjectsFromArray(array: NSArray<ObjectType> | ObjectType[]): void;
 
 	exchangeObjectAtIndexWithObjectAtIndex(idx1: number, idx2: number): void;
 
@@ -5806,7 +5806,7 @@ declare class NSMutableOrderedSet<ObjectType> extends NSOrderedSet<ObjectType> {
 
 	insertObjectAtIndex(object: ObjectType, idx: number): void;
 
-	insertObjectsAtIndexes(objects: NSArray<ObjectType>, indexes: NSIndexSet): void;
+	insertObjectsAtIndexes(objects: NSArray<ObjectType> | ObjectType[], indexes: NSIndexSet): void;
 
 	intersectOrderedSet(other: NSOrderedSet<ObjectType>): void;
 
@@ -5826,13 +5826,13 @@ declare class NSMutableOrderedSet<ObjectType> extends NSOrderedSet<ObjectType> {
 
 	removeObjectsAtIndexes(indexes: NSIndexSet): void;
 
-	removeObjectsInArray(array: NSArray<ObjectType>): void;
+	removeObjectsInArray(array: NSArray<ObjectType> | ObjectType[]): void;
 
 	removeObjectsInRange(range: NSRange): void;
 
 	replaceObjectAtIndexWithObject(idx: number, object: ObjectType): void;
 
-	replaceObjectsAtIndexesWithObjects(indexes: NSIndexSet, objects: NSArray<ObjectType>): void;
+	replaceObjectsAtIndexesWithObjects(indexes: NSIndexSet, objects: NSArray<ObjectType> | ObjectType[]): void;
 
 	replaceObjectsInRangeWithObjectsCount(range: NSRange, objects: interop.Reference<ObjectType>, count: number): void;
 
@@ -5844,7 +5844,7 @@ declare class NSMutableOrderedSet<ObjectType> extends NSOrderedSet<ObjectType> {
 
 	sortUsingComparator(cmptr: (p1: any, p2: any) => NSComparisonResult): void;
 
-	sortUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor>): void;
+	sortUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]): void;
 
 	sortWithOptionsUsingComparator(opts: NSSortOptions, cmptr: (p1: any, p2: any) => NSComparisonResult): void;
 
@@ -5861,7 +5861,7 @@ declare class NSMutableSet<ObjectType> extends NSSet<ObjectType> {
 
 	static set<ObjectType>(): NSMutableSet<ObjectType>; // inherited from NSSet
 
-	static setWithArray<ObjectType>(array: NSArray<ObjectType>): NSMutableSet<ObjectType>; // inherited from NSSet
+	static setWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSMutableSet<ObjectType>; // inherited from NSSet
 
 	static setWithCapacity<ObjectType>(numItems: number): NSMutableSet<ObjectType>;
 
@@ -5877,7 +5877,7 @@ declare class NSMutableSet<ObjectType> extends NSSet<ObjectType> {
 
 	addObject(object: ObjectType): void;
 
-	addObjectsFromArray(array: NSArray<ObjectType>): void;
+	addObjectsFromArray(array: NSArray<ObjectType> | ObjectType[]): void;
 
 	filterUsingPredicate(predicate: NSPredicate): void;
 
@@ -6225,7 +6225,7 @@ declare class NSNotificationQueue extends NSObject {
 
 	enqueueNotificationPostingStyle(notification: NSNotification, postingStyle: NSPostingStyle): void;
 
-	enqueueNotificationPostingStyleCoalesceMaskForModes(notification: NSNotification, postingStyle: NSPostingStyle, coalesceMask: NSNotificationCoalescing, modes: NSArray<string>): void;
+	enqueueNotificationPostingStyleCoalesceMaskForModes(notification: NSNotification, postingStyle: NSPostingStyle, coalesceMask: NSNotificationCoalescing, modes: NSArray<string> | string[]): void;
 
 	initWithNotificationCenter(notificationCenter: NSNotificationCenter): this;
 }
@@ -6705,7 +6705,7 @@ declare class NSOperationQueue extends NSObject {
 
 	addOperationWithBlock(block: () => void): void;
 
-	addOperationsWaitUntilFinished(ops: NSArray<NSOperation>, wait: boolean): void;
+	addOperationsWaitUntilFinished(ops: NSArray<NSOperation> | NSOperation[], wait: boolean): void;
 
 	cancelAllOperations(): void;
 
@@ -6735,9 +6735,9 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 
 	static orderedSet<ObjectType>(): NSOrderedSet<ObjectType>;
 
-	static orderedSetWithArray<ObjectType>(array: NSArray<ObjectType>): NSOrderedSet<ObjectType>;
+	static orderedSetWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSOrderedSet<ObjectType>;
 
-	static orderedSetWithArrayRangeCopyItems<ObjectType>(array: NSArray<ObjectType>, range: NSRange, flag: boolean): NSOrderedSet<ObjectType>;
+	static orderedSetWithArrayRangeCopyItems<ObjectType>(array: NSArray<ObjectType> | ObjectType[], range: NSRange, flag: boolean): NSOrderedSet<ObjectType>;
 
 	static orderedSetWithObject<ObjectType>(object: ObjectType): NSOrderedSet<ObjectType>;
 
@@ -6829,11 +6829,11 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 
 	indexesOfObjectsWithOptionsPassingTest(opts: NSEnumerationOptions, predicate: (p1: ObjectType, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => boolean): NSIndexSet;
 
-	initWithArray(array: NSArray<ObjectType>): this;
+	initWithArray(array: NSArray<ObjectType> | ObjectType[]): this;
 
-	initWithArrayCopyItems(set: NSArray<ObjectType>, flag: boolean): this;
+	initWithArrayCopyItems(set: NSArray<ObjectType> | ObjectType[], flag: boolean): this;
 
-	initWithArrayRangeCopyItems(set: NSArray<ObjectType>, range: NSRange, flag: boolean): this;
+	initWithArrayRangeCopyItems(set: NSArray<ObjectType> | ObjectType[], range: NSRange, flag: boolean): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -6877,7 +6877,7 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 
 	sortedArrayUsingComparator(cmptr: (p1: any, p2: any) => NSComparisonResult): NSArray<ObjectType>;
 
-	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor>): NSArray<ObjectType>;
+	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]): NSArray<ObjectType>;
 
 	sortedArrayWithOptionsUsingComparator(opts: NSSortOptions, cmptr: (p1: any, p2: any) => NSComparisonResult): NSArray<ObjectType>;
 }
@@ -7236,7 +7236,7 @@ declare class NSPredicate extends NSObject implements NSCopying, NSSecureCoding 
 
 	static predicateWithBlock(block: (p1: any, p2: NSDictionary<string, any>) => boolean): NSPredicate;
 
-	static predicateWithFormatArgumentArray(predicateFormat: string, _arguments: NSArray<any>): NSPredicate;
+	static predicateWithFormatArgumentArray(predicateFormat: string, _arguments: NSArray<any> | any[]): NSPredicate;
 
 	static predicateWithValue(value: boolean): NSPredicate;
 
@@ -7772,9 +7772,9 @@ declare class NSRunLoop extends NSObject {
 
 	performBlock(block: () => void): void;
 
-	performInModesBlock(modes: NSArray<string>, block: () => void): void;
+	performInModesBlock(modes: NSArray<string> | string[], block: () => void): void;
 
-	performSelectorTargetArgumentOrderModes(aSelector: string, target: any, arg: any, order: number, modes: NSArray<string>): void;
+	performSelectorTargetArgumentOrderModes(aSelector: string, target: any, arg: any, order: number, modes: NSArray<string> | string[]): void;
 
 	removePortForMode(aPort: NSPort, mode: string): void;
 
@@ -7935,7 +7935,7 @@ declare class NSSet<ObjectType> extends NSObject implements NSCopying, NSFastEnu
 
 	static set<ObjectType>(): NSSet<ObjectType>;
 
-	static setWithArray<ObjectType>(array: NSArray<ObjectType>): NSSet<ObjectType>;
+	static setWithArray<ObjectType>(array: NSArray<ObjectType> | ObjectType[]): NSSet<ObjectType>;
 
 	static setWithObject<ObjectType>(object: ObjectType): NSSet<ObjectType>;
 
@@ -7980,7 +7980,7 @@ declare class NSSet<ObjectType> extends NSObject implements NSCopying, NSFastEnu
 
 	filteredSetUsingPredicate(predicate: NSPredicate): NSSet<ObjectType>;
 
-	initWithArray(array: NSArray<ObjectType>): this;
+	initWithArray(array: NSArray<ObjectType> | ObjectType[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -8014,11 +8014,11 @@ declare class NSSet<ObjectType> extends NSObject implements NSCopying, NSFastEnu
 
 	setByAddingObject(anObject: ObjectType): NSSet<ObjectType>;
 
-	setByAddingObjectsFromArray(other: NSArray<ObjectType>): NSSet<ObjectType>;
+	setByAddingObjectsFromArray(other: NSArray<ObjectType> | ObjectType[]): NSSet<ObjectType>;
 
 	setByAddingObjectsFromSet(other: NSSet<ObjectType>): NSSet<ObjectType>;
 
-	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor>): NSArray<ObjectType>;
+	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]): NSArray<ObjectType>;
 }
 
 declare function NSSetUncaughtExceptionHandler(p1: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: NSException) => void>>): void;
@@ -8279,13 +8279,13 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static localizedNameOfStringEncoding(encoding: number): string;
 
-	static localizedUserNotificationStringForKeyArguments(key: string, _arguments: NSArray<any>): string;
+	static localizedUserNotificationStringForKeyArguments(key: string, _arguments: NSArray<any> | any[]): string;
 
 	static new(): NSString; // inherited from NSObject
 
 	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSString;
 
-	static pathWithComponents(components: NSArray<string>): string;
+	static pathWithComponents(components: NSArray<string> | string[]): string;
 
 	static string(): NSString;
 
@@ -8467,7 +8467,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	compareOptionsRangeLocale(string: string, mask: NSStringCompareOptions, rangeOfReceiverToCompare: NSRange, locale: any): NSComparisonResult;
 
-	completePathIntoStringCaseSensitiveMatchesIntoArrayFilterTypes(outputName: interop.Pointer | interop.Reference<string>, flag: boolean, outputArray: interop.Pointer | interop.Reference<NSArray<string>>, filterTypes: NSArray<string>): number;
+	completePathIntoStringCaseSensitiveMatchesIntoArrayFilterTypes(outputName: interop.Pointer | interop.Reference<string>, flag: boolean, outputArray: interop.Pointer | interop.Reference<NSArray<string>>, filterTypes: NSArray<string> | string[]): number;
 
 	componentsSeparatedByCharactersInSet(separator: NSCharacterSet): NSArray<string>;
 
@@ -8683,7 +8683,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	stringByTrimmingCharactersInSet(set: NSCharacterSet): string;
 
-	stringsByAppendingPaths(paths: NSArray<string>): NSArray<string>;
+	stringsByAppendingPaths(paths: NSArray<string> | string[]): NSArray<string>;
 
 	substringFromIndex(from: number): string;
 
@@ -8859,7 +8859,7 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	static correctionCheckingResultWithRangeReplacementString(range: NSRange, replacementString: string): NSTextCheckingResult;
 
-	static correctionCheckingResultWithRangeReplacementStringAlternativeStrings(range: NSRange, replacementString: string, alternativeStrings: NSArray<string>): NSTextCheckingResult;
+	static correctionCheckingResultWithRangeReplacementStringAlternativeStrings(range: NSRange, replacementString: string, alternativeStrings: NSArray<string> | string[]): NSTextCheckingResult;
 
 	static dashCheckingResultWithRangeReplacementString(range: NSRange, replacementString: string): NSTextCheckingResult;
 
@@ -8867,7 +8867,7 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	static dateCheckingResultWithRangeDateTimeZoneDuration(range: NSRange, date: Date, timeZone: NSTimeZone, duration: number): NSTextCheckingResult;
 
-	static grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray<NSDictionary<string, any>>): NSTextCheckingResult;
+	static grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): NSTextCheckingResult;
 
 	static linkCheckingResultWithRangeURL(range: NSRange, url: NSURL): NSTextCheckingResult;
 
@@ -9191,7 +9191,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	static fileURLWithPath(path: string): NSURL;
 
-	static fileURLWithPathComponents(components: NSArray<string>): NSURL;
+	static fileURLWithPathComponents(components: NSArray<string> | string[]): NSURL;
 
 	static fileURLWithPathIsDirectory(path: string, isDir: boolean): NSURL;
 
@@ -9205,7 +9205,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSURL;
 
-	static resourceValuesForKeysFromBookmarkData(keys: NSArray<string>, bookmarkData: NSData): NSDictionary<string, any>;
+	static resourceValuesForKeysFromBookmarkData(keys: NSArray<string> | string[], bookmarkData: NSData): NSDictionary<string, any>;
 
 	static writeBookmarkDataToURLOptionsError(bookmarkData: NSData, bookmarkFileURL: NSURL, options: number): boolean;
 
@@ -9319,7 +9319,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	URLByAppendingPathExtension(pathExtension: string): NSURL;
 
-	bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(options: NSURLBookmarkCreationOptions, keys: NSArray<string>, relativeURL: NSURL): NSData;
+	bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(options: NSURLBookmarkCreationOptions, keys: NSArray<string> | string[], relativeURL: NSURL): NSData;
 
 	checkPromisedItemIsReachableAndReturnError(): boolean;
 
@@ -9383,13 +9383,13 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	promisedItemResourceValuesForKeysError(keys: NSArray<string>): NSDictionary<string, any>;
+	promisedItemResourceValuesForKeysError(keys: NSArray<string> | string[]): NSDictionary<string, any>;
 
 	removeAllCachedResourceValues(): void;
 
 	removeCachedResourceValueForKey(key: string): void;
 
-	resourceValuesForKeysError(keys: NSArray<string>): NSDictionary<string, any>;
+	resourceValuesForKeysError(keys: NSArray<string> | string[]): NSDictionary<string, any>;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -9729,7 +9729,7 @@ declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCod
 
 	static credentialForTrust(trust: any): NSURLCredential;
 
-	static credentialWithIdentityCertificatesPersistence(identity: any, certArray: NSArray<any>, persistence: NSURLCredentialPersistence): NSURLCredential;
+	static credentialWithIdentityCertificatesPersistence(identity: any, certArray: NSArray<any> | any[], persistence: NSURLCredentialPersistence): NSURLCredential;
 
 	static credentialWithUserPasswordPersistence(user: string, password: string, persistence: NSURLCredentialPersistence): NSURLCredential;
 
@@ -9763,7 +9763,7 @@ declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCod
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithIdentityCertificatesPersistence(identity: any, certArray: NSArray<any>, persistence: NSURLCredentialPersistence): this;
+	initWithIdentityCertificatesPersistence(identity: any, certArray: NSArray<any> | any[], persistence: NSURLCredentialPersistence): this;
 
 	initWithTrust(trust: any): this;
 
@@ -11008,7 +11008,7 @@ declare class NSUbiquitousKeyValueStore extends NSObject {
 
 	removeObjectForKey(aKey: string): void;
 
-	setArrayForKey(anArray: NSArray<any>, aKey: string): void;
+	setArrayForKey(anArray: NSArray<any> | any[], aKey: string): void;
 
 	setBoolForKey(value: boolean, aKey: string): void;
 

@@ -83,7 +83,7 @@ declare class CXCallController extends NSObject {
 
 	requestTransactionWithActionCompletion(action: CXAction, completion: (p1: NSError) => void): void;
 
-	requestTransactionWithActionsCompletion(actions: NSArray<CXAction>, completion: (p1: NSError) => void): void;
+	requestTransactionWithActionsCompletion(actions: NSArray<CXAction> | CXAction[], completion: (p1: NSError) => void): void;
 }
 
 declare const enum CXCallDirectoryEnabledStatus {
@@ -557,7 +557,7 @@ declare class CXTransaction extends NSObject implements NSCopying, NSSecureCodin
 
 	initWithAction(action: CXAction): this;
 
-	initWithActions(actions: NSArray<CXAction>): this;
+	initWithActions(actions: NSArray<CXAction> | CXAction[]): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 }

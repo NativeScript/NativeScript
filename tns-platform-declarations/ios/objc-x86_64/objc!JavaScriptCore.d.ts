@@ -351,9 +351,9 @@ declare class JSValue extends NSObject {
 	readonly isUndefined: boolean;
 	[index: number]: JSValue;
 
-	callWithArguments(_arguments: NSArray<any>): JSValue;
+	callWithArguments(_arguments: NSArray<any> | any[]): JSValue;
 
-	constructWithArguments(_arguments: NSArray<any>): JSValue;
+	constructWithArguments(_arguments: NSArray<any> | any[]): JSValue;
 
 	definePropertyDescriptor(property: string, descriptor: any): void;
 
@@ -361,7 +361,7 @@ declare class JSValue extends NSObject {
 
 	hasProperty(property: string): boolean;
 
-	invokeMethodWithArguments(method: string, _arguments: NSArray<any>): JSValue;
+	invokeMethodWithArguments(method: string, _arguments: NSArray<any> | any[]): JSValue;
 
 	isEqualToObject(value: any): boolean;
 

@@ -115,7 +115,7 @@ declare class INAddTasksIntent extends INIntent {
 
 	constructor(o: { targetTaskList: INTaskList; taskTitles: NSArray<INSpeakableString>; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; });
 
-	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTrigger(targetTaskList: INTaskList, taskTitles: NSArray<INSpeakableString>, spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger): this;
+	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTrigger(targetTaskList: INTaskList, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger): this;
 }
 
 interface INAddTasksIntentHandling extends NSObjectProtocol {
@@ -381,7 +381,7 @@ declare class INBillPayeeResolutionResult extends INIntentResolutionResult<NSObj
 
 	static confirmationRequiredWithBillPayeeToConfirm(billPayeeToConfirm: INBillPayee): INBillPayeeResolutionResult;
 
-	static disambiguationWithBillPayeesToDisambiguate(billPayeesToDisambiguate: NSArray<INBillPayee>): INBillPayeeResolutionResult;
+	static disambiguationWithBillPayeesToDisambiguate(billPayeesToDisambiguate: NSArray<INBillPayee> | INBillPayee[]): INBillPayeeResolutionResult;
 
 	static needsValue(): INBillPayeeResolutionResult; // inherited from INIntentResolutionResult
 
@@ -1126,7 +1126,7 @@ declare class INCreateTaskListIntent extends INIntent {
 
 	constructor(o: { title: INSpeakableString; taskTitles: NSArray<INSpeakableString>; groupName: INSpeakableString; });
 
-	initWithTitleTaskTitlesGroupName(title: INSpeakableString, taskTitles: NSArray<INSpeakableString>, groupName: INSpeakableString): this;
+	initWithTitleTaskTitlesGroupName(title: INSpeakableString, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], groupName: INSpeakableString): this;
 }
 
 interface INCreateTaskListIntentHandling extends NSObjectProtocol {
@@ -1207,7 +1207,7 @@ declare class INCurrencyAmountResolutionResult extends INIntentResolutionResult<
 
 	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount): INCurrencyAmountResolutionResult;
 
-	static disambiguationWithCurrencyAmountsToDisambiguate(currencyAmountsToDisambiguate: NSArray<INCurrencyAmount>): INCurrencyAmountResolutionResult;
+	static disambiguationWithCurrencyAmountsToDisambiguate(currencyAmountsToDisambiguate: NSArray<INCurrencyAmount> | INCurrencyAmount[]): INCurrencyAmountResolutionResult;
 
 	static needsValue(): INCurrencyAmountResolutionResult; // inherited from INIntentResolutionResult
 
@@ -1263,7 +1263,7 @@ declare class INDateComponentsRangeResolutionResult extends INIntentResolutionRe
 
 	static confirmationRequiredWithDateComponentsRangeToConfirm(dateComponentsRangeToConfirm: INDateComponentsRange): INDateComponentsRangeResolutionResult;
 
-	static disambiguationWithDateComponentsRangesToDisambiguate(dateComponentsRangesToDisambiguate: NSArray<INDateComponentsRange>): INDateComponentsRangeResolutionResult;
+	static disambiguationWithDateComponentsRangesToDisambiguate(dateComponentsRangesToDisambiguate: NSArray<INDateComponentsRange> | INDateComponentsRange[]): INDateComponentsRangeResolutionResult;
 
 	static needsValue(): INDateComponentsRangeResolutionResult; // inherited from INIntentResolutionResult
 
@@ -1282,7 +1282,7 @@ declare class INDateComponentsResolutionResult extends INIntentResolutionResult<
 
 	static confirmationRequiredWithDateComponentsToConfirm(dateComponentsToConfirm: NSDateComponents): INDateComponentsResolutionResult;
 
-	static disambiguationWithDateComponentsToDisambiguate(dateComponentsToDisambiguate: NSArray<NSDateComponents>): INDateComponentsResolutionResult;
+	static disambiguationWithDateComponentsToDisambiguate(dateComponentsToDisambiguate: NSArray<NSDateComponents> | NSDateComponents[]): INDateComponentsResolutionResult;
 
 	static needsValue(): INDateComponentsResolutionResult; // inherited from INIntentResolutionResult
 
@@ -1576,7 +1576,7 @@ declare class INGetAvailableRestaurantReservationBookingsIntentResponse extends 
 
 	constructor(o: { availableBookings: NSArray<INRestaurantReservationBooking>; code: INGetAvailableRestaurantReservationBookingsIntentCode; userActivity: NSUserActivity; });
 
-	initWithAvailableBookingsCodeUserActivity(availableBookings: NSArray<INRestaurantReservationBooking>, code: INGetAvailableRestaurantReservationBookingsIntentCode, userActivity: NSUserActivity): this;
+	initWithAvailableBookingsCodeUserActivity(availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[], code: INGetAvailableRestaurantReservationBookingsIntentCode, userActivity: NSUserActivity): this;
 }
 
 declare class INGetCarLockStatusIntent extends INIntent {
@@ -1850,7 +1850,7 @@ declare class INGetUserCurrentRestaurantReservationBookingsIntentResponse extend
 
 	constructor(o: { userCurrentBookings: NSArray<INRestaurantReservationUserBooking>; code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode; userActivity: NSUserActivity; });
 
-	initWithUserCurrentBookingsCodeUserActivity(userCurrentBookings: NSArray<INRestaurantReservationUserBooking>, code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode, userActivity: NSUserActivity): this;
+	initWithUserCurrentBookingsCodeUserActivity(userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[], code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode, userActivity: NSUserActivity): this;
 }
 
 declare const enum INGetUserCurrentRestaurantReservationBookingsIntentResponseCode {
@@ -2113,7 +2113,7 @@ declare class INInteraction extends NSObject implements NSCopying, NSSecureCodin
 
 	static deleteInteractionsWithGroupIdentifierCompletion(groupIdentifier: string, completion: (p1: NSError) => void): void;
 
-	static deleteInteractionsWithIdentifiersCompletion(identifiers: NSArray<string>, completion: (p1: NSError) => void): void;
+	static deleteInteractionsWithIdentifiersCompletion(identifiers: NSArray<string> | string[], completion: (p1: NSError) => void): void;
 
 	static new(): INInteraction; // inherited from NSObject
 
@@ -2301,11 +2301,11 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithIdentifierContentDateSentSenderRecipients(identifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson>): this;
+	initWithIdentifierContentDateSentSenderRecipients(identifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[]): this;
 
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson>, groupName: INSpeakableString, messageType: INMessageType): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType): this;
 
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson>, messageType: INMessageType): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
 }
 
 declare const enum INMessageAttribute {
@@ -2456,7 +2456,7 @@ declare class INNote extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithTitleContentsGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, contents: NSArray<INNoteContent>, groupName: INSpeakableString, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
+	initWithTitleContentsGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, contents: NSArray<INNoteContent> | INNoteContent[], groupName: INSpeakableString, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
 }
 
 declare class INNoteContent extends NSObject implements NSCopying, NSSecureCoding {
@@ -2482,7 +2482,7 @@ declare class INNoteContentResolutionResult extends INIntentResolutionResult<NSO
 
 	static confirmationRequiredWithNoteContentToConfirm(noteContentToConfirm: INNoteContent): INNoteContentResolutionResult;
 
-	static disambiguationWithNoteContentsToDisambiguate(noteContentsToDisambiguate: NSArray<INNoteContent>): INNoteContentResolutionResult;
+	static disambiguationWithNoteContentsToDisambiguate(noteContentsToDisambiguate: NSArray<INNoteContent> | INNoteContent[]): INNoteContentResolutionResult;
 
 	static needsValue(): INNoteContentResolutionResult; // inherited from INIntentResolutionResult
 
@@ -2531,7 +2531,7 @@ declare class INNoteResolutionResult extends INIntentResolutionResult<NSObject> 
 
 	static confirmationRequiredWithNoteToConfirm(noteToConfirm: INNote): INNoteResolutionResult;
 
-	static disambiguationWithNotesToDisambiguate(notesToDisambiguate: NSArray<INNote>): INNoteResolutionResult;
+	static disambiguationWithNotesToDisambiguate(notesToDisambiguate: NSArray<INNote> | INNote[]): INNoteResolutionResult;
 
 	static needsValue(): INNoteResolutionResult; // inherited from INIntentResolutionResult
 
@@ -2570,9 +2570,9 @@ declare class INNotebookItemTypeResolutionResult extends INIntentResolutionResul
 
 	static confirmationRequiredWithValueToConfirm(valueToConfirm: INNotebookItemType): INNotebookItemTypeResolutionResult;
 
-	static disambiguationWithNotebookItemTypesToDisambiguate(notebookItemTypesToDisambiguate: NSArray<number>): INNotebookItemTypeResolutionResult;
+	static disambiguationWithNotebookItemTypesToDisambiguate(notebookItemTypesToDisambiguate: NSArray<number> | number[]): INNotebookItemTypeResolutionResult;
 
-	static disambiguationWithValuesToDisambiguate(valuesToDisambiguate: NSArray<number>): INNotebookItemTypeResolutionResult;
+	static disambiguationWithValuesToDisambiguate(valuesToDisambiguate: NSArray<number> | number[]): INNotebookItemTypeResolutionResult;
 
 	static needsValue(): INNotebookItemTypeResolutionResult; // inherited from INIntentResolutionResult
 
@@ -2809,7 +2809,7 @@ declare class INPaymentAccountResolutionResult extends INIntentResolutionResult<
 
 	static confirmationRequiredWithPaymentAccountToConfirm(paymentAccountToConfirm: INPaymentAccount): INPaymentAccountResolutionResult;
 
-	static disambiguationWithPaymentAccountsToDisambiguate(paymentAccountsToDisambiguate: NSArray<INPaymentAccount>): INPaymentAccountResolutionResult;
+	static disambiguationWithPaymentAccountsToDisambiguate(paymentAccountsToDisambiguate: NSArray<INPaymentAccount> | INPaymentAccount[]): INPaymentAccountResolutionResult;
 
 	static needsValue(): INPaymentAccountResolutionResult; // inherited from INIntentResolutionResult
 
@@ -2853,7 +2853,7 @@ declare class INPaymentAmountResolutionResult extends INIntentResolutionResult<N
 
 	static confirmationRequiredWithPaymentAmountToConfirm(paymentAmountToConfirm: INPaymentAmount): INPaymentAmountResolutionResult;
 
-	static disambiguationWithPaymentAmountsToDisambiguate(paymentAmountsToDisambiguate: NSArray<INPaymentAmount>): INPaymentAmountResolutionResult;
+	static disambiguationWithPaymentAmountsToDisambiguate(paymentAmountsToDisambiguate: NSArray<INPaymentAmount> | INPaymentAmount[]): INPaymentAmountResolutionResult;
 
 	static needsValue(): INPaymentAmountResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3084,7 +3084,7 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifier(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string): this;
 
-	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierAliasesSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, aliases: NSArray<INPersonHandle>, suggestionType: INPersonSuggestionType): this;
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierAliasesSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, aliases: NSArray<INPersonHandle> | INPersonHandle[], suggestionType: INPersonSuggestionType): this;
 
 	isEqual(object: any): boolean;
 
@@ -3191,7 +3191,7 @@ declare class INPersonResolutionResult extends INIntentResolutionResult<NSObject
 
 	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INPersonResolutionResult;
 
-	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson>): INPersonResolutionResult;
+	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INPersonResolutionResult;
 
 	static needsValue(): INPersonResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3275,7 +3275,7 @@ declare class INPlacemarkResolutionResult extends INIntentResolutionResult<NSObj
 
 	static confirmationRequiredWithPlacemarkToConfirm(placemarkToConfirm: CLPlacemark): INPlacemarkResolutionResult;
 
-	static disambiguationWithPlacemarksToDisambiguate(placemarksToDisambiguate: NSArray<CLPlacemark>): INPlacemarkResolutionResult;
+	static disambiguationWithPlacemarksToDisambiguate(placemarksToDisambiguate: NSArray<CLPlacemark> | CLPlacemark[]): INPlacemarkResolutionResult;
 
 	static needsValue(): INPlacemarkResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3495,7 +3495,7 @@ declare class INRequestPaymentCurrencyAmountResolutionResult extends INCurrencyA
 
 	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount): INRequestPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
 
-	static disambiguationWithCurrencyAmountsToDisambiguate(currencyAmountsToDisambiguate: NSArray<INCurrencyAmount>): INRequestPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
+	static disambiguationWithCurrencyAmountsToDisambiguate(currencyAmountsToDisambiguate: NSArray<INCurrencyAmount> | INCurrencyAmount[]): INRequestPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
 
 	static needsValue(): INRequestPaymentCurrencyAmountResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3611,7 +3611,7 @@ declare class INRequestPaymentPayerResolutionResult extends INPersonResolutionRe
 
 	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INRequestPaymentPayerResolutionResult; // inherited from INPersonResolutionResult
 
-	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson>): INRequestPaymentPayerResolutionResult; // inherited from INPersonResolutionResult
+	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INRequestPaymentPayerResolutionResult; // inherited from INPersonResolutionResult
 
 	static needsValue(): INRequestPaymentPayerResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3808,7 +3808,7 @@ declare class INRestaurantGuestResolutionResult extends INIntentResolutionResult
 
 	static confirmationRequiredWithRestaurantGuestToConfirm(restaurantGuestToConfirm: INRestaurantGuest): INRestaurantGuestResolutionResult;
 
-	static disambiguationWithRestaurantGuestsToDisambiguate(restaurantGuestsToDisambiguate: NSArray<INRestaurantGuest>): INRestaurantGuestResolutionResult;
+	static disambiguationWithRestaurantGuestsToDisambiguate(restaurantGuestsToDisambiguate: NSArray<INRestaurantGuest> | INRestaurantGuest[]): INRestaurantGuestResolutionResult;
 
 	static needsValue(): INRestaurantGuestResolutionResult; // inherited from INIntentResolutionResult
 
@@ -3927,7 +3927,7 @@ declare class INRestaurantResolutionResult extends INIntentResolutionResult<NSOb
 
 	static confirmationRequiredWithRestaurantToConfirm(restaurantToConfirm: INRestaurant): INRestaurantResolutionResult;
 
-	static disambiguationWithRestaurantsToDisambiguate(restaurantsToDisambiguate: NSArray<INRestaurant>): INRestaurantResolutionResult;
+	static disambiguationWithRestaurantsToDisambiguate(restaurantsToDisambiguate: NSArray<INRestaurant> | INRestaurant[]): INRestaurantResolutionResult;
 
 	static needsValue(): INRestaurantResolutionResult; // inherited from INIntentResolutionResult
 
@@ -4628,9 +4628,9 @@ declare class INSearchForMessagesIntent extends INIntent {
 
 	constructor(o: { recipients: NSArray<INPerson>; senders: NSArray<INPerson>; searchTerms: NSArray<string>; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string>; notificationIdentifiers: NSArray<string>; speakableGroupNames: NSArray<INSpeakableString>; });
 
-	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersGroupNames(recipients: NSArray<INPerson>, senders: NSArray<INPerson>, searchTerms: NSArray<string>, attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string>, notificationIdentifiers: NSArray<string>, groupNames: NSArray<string>): this;
+	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersGroupNames(recipients: NSArray<INPerson> | INPerson[], senders: NSArray<INPerson> | INPerson[], searchTerms: NSArray<string> | string[], attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string> | string[], notificationIdentifiers: NSArray<string> | string[], groupNames: NSArray<string> | string[]): this;
 
-	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersSpeakableGroupNames(recipients: NSArray<INPerson>, senders: NSArray<INPerson>, searchTerms: NSArray<string>, attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string>, notificationIdentifiers: NSArray<string>, speakableGroupNames: NSArray<INSpeakableString>): this;
+	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersSpeakableGroupNames(recipients: NSArray<INPerson> | INPerson[], senders: NSArray<INPerson> | INPerson[], searchTerms: NSArray<string> | string[], attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string> | string[], notificationIdentifiers: NSArray<string> | string[], speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[]): this;
 }
 
 interface INSearchForMessagesIntentHandling extends NSObjectProtocol {
@@ -4808,7 +4808,7 @@ declare class INSearchForPhotosIntent extends INIntent {
 
 	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string>; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson>; });
 
-	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string>, includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson>): this;
+	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string> | string[], includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[]): this;
 }
 
 interface INSearchForPhotosIntentHandling extends NSObjectProtocol {
@@ -4888,9 +4888,9 @@ declare class INSendMessageIntent extends INIntent {
 
 	constructor(o: { recipients: NSArray<INPerson>; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; });
 
-	initWithRecipientsContentGroupNameServiceNameSender(recipients: NSArray<INPerson>, content: string, groupName: string, serviceName: string, sender: INPerson): this;
+	initWithRecipientsContentGroupNameServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, groupName: string, serviceName: string, sender: INPerson): this;
 
-	initWithRecipientsContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson>, content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson): this;
+	initWithRecipientsContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson): this;
 }
 
 interface INSendMessageIntentHandling extends NSObjectProtocol {
@@ -4954,7 +4954,7 @@ declare class INSendMessageRecipientResolutionResult extends INPersonResolutionR
 
 	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INSendMessageRecipientResolutionResult; // inherited from INPersonResolutionResult
 
-	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson>): INSendMessageRecipientResolutionResult; // inherited from INPersonResolutionResult
+	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INSendMessageRecipientResolutionResult; // inherited from INPersonResolutionResult
 
 	static needsValue(): INSendMessageRecipientResolutionResult; // inherited from INIntentResolutionResult
 
@@ -4988,7 +4988,7 @@ declare class INSendPaymentCurrencyAmountResolutionResult extends INCurrencyAmou
 
 	static confirmationRequiredWithCurrencyAmountToConfirm(currencyAmountToConfirm: INCurrencyAmount): INSendPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
 
-	static disambiguationWithCurrencyAmountsToDisambiguate(currencyAmountsToDisambiguate: NSArray<INCurrencyAmount>): INSendPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
+	static disambiguationWithCurrencyAmountsToDisambiguate(currencyAmountsToDisambiguate: NSArray<INCurrencyAmount> | INCurrencyAmount[]): INSendPaymentCurrencyAmountResolutionResult; // inherited from INCurrencyAmountResolutionResult
 
 	static needsValue(): INSendPaymentCurrencyAmountResolutionResult; // inherited from INIntentResolutionResult
 
@@ -5106,7 +5106,7 @@ declare class INSendPaymentPayeeResolutionResult extends INPersonResolutionResul
 
 	static confirmationRequiredWithPersonToConfirm(personToConfirm: INPerson): INSendPaymentPayeeResolutionResult; // inherited from INPersonResolutionResult
 
-	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson>): INSendPaymentPayeeResolutionResult; // inherited from INPersonResolutionResult
+	static disambiguationWithPeopleToDisambiguate(peopleToDisambiguate: NSArray<INPerson> | INPerson[]): INSendPaymentPayeeResolutionResult; // inherited from INPersonResolutionResult
 
 	static needsValue(): INSendPaymentPayeeResolutionResult; // inherited from INIntentResolutionResult
 
@@ -5472,7 +5472,7 @@ declare class INSetMessageAttributeIntent extends INIntent {
 
 	constructor(o: { identifiers: NSArray<string>; attribute: INMessageAttribute; });
 
-	initWithIdentifiersAttribute(identifiers: NSArray<string>, attribute: INMessageAttribute): this;
+	initWithIdentifiersAttribute(identifiers: NSArray<string> | string[], attribute: INMessageAttribute): this;
 }
 
 interface INSetMessageAttributeIntentHandling extends NSObjectProtocol {
@@ -5860,7 +5860,7 @@ declare class INSpatialEventTriggerResolutionResult extends INIntentResolutionRe
 
 	static confirmationRequiredWithSpatialEventTriggerToConfirm(spatialEventTriggerToConfirm: INSpatialEventTrigger): INSpatialEventTriggerResolutionResult;
 
-	static disambiguationWithSpatialEventTriggersToDisambiguate(spatialEventTriggersToDisambiguate: NSArray<INSpatialEventTrigger>): INSpatialEventTriggerResolutionResult;
+	static disambiguationWithSpatialEventTriggersToDisambiguate(spatialEventTriggersToDisambiguate: NSArray<INSpatialEventTrigger> | INSpatialEventTrigger[]): INSpatialEventTriggerResolutionResult;
 
 	static needsValue(): INSpatialEventTriggerResolutionResult; // inherited from INIntentResolutionResult
 
@@ -5959,7 +5959,7 @@ declare class INSpeakableStringResolutionResult extends INIntentResolutionResult
 
 	static confirmationRequiredWithStringToConfirm(stringToConfirm: INSpeakableString): INSpeakableStringResolutionResult;
 
-	static disambiguationWithStringsToDisambiguate(stringsToDisambiguate: NSArray<INSpeakableString>): INSpeakableStringResolutionResult;
+	static disambiguationWithStringsToDisambiguate(stringsToDisambiguate: NSArray<INSpeakableString> | INSpeakableString[]): INSpeakableStringResolutionResult;
 
 	static needsValue(): INSpeakableStringResolutionResult; // inherited from INIntentResolutionResult
 
@@ -5986,9 +5986,9 @@ declare class INStartAudioCallIntent extends INIntent {
 
 	constructor(o: { destinationType: INCallDestinationType; contacts: NSArray<INPerson>; });
 
-	initWithContacts(contacts: NSArray<INPerson>): this;
+	initWithContacts(contacts: NSArray<INPerson> | INPerson[]): this;
 
-	initWithDestinationTypeContacts(destinationType: INCallDestinationType, contacts: NSArray<INPerson>): this;
+	initWithDestinationTypeContacts(destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[]): this;
 }
 
 interface INStartAudioCallIntentHandling extends NSObjectProtocol {
@@ -6068,7 +6068,7 @@ declare class INStartPhotoPlaybackIntent extends INIntent {
 
 	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string>; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson>; });
 
-	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string>, includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson>): this;
+	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string> | string[], includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[]): this;
 }
 
 interface INStartPhotoPlaybackIntentHandling extends NSObjectProtocol {
@@ -6132,7 +6132,7 @@ declare class INStartVideoCallIntent extends INIntent {
 
 	constructor(o: { contacts: NSArray<INPerson>; });
 
-	initWithContacts(contacts: NSArray<INPerson>): this;
+	initWithContacts(contacts: NSArray<INPerson> | INPerson[]): this;
 }
 
 interface INStartVideoCallIntentHandling extends NSObjectProtocol {
@@ -6268,7 +6268,7 @@ declare class INStringResolutionResult extends INIntentResolutionResult<NSObject
 
 	static confirmationRequiredWithStringToConfirm(stringToConfirm: string): INStringResolutionResult;
 
-	static disambiguationWithStringsToDisambiguate(stringsToDisambiguate: NSArray<string>): INStringResolutionResult;
+	static disambiguationWithStringsToDisambiguate(stringsToDisambiguate: NSArray<string> | string[]): INStringResolutionResult;
 
 	static needsValue(): INStringResolutionResult; // inherited from INIntentResolutionResult
 
@@ -6348,7 +6348,7 @@ declare class INTaskList extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(aDecoder: NSCoder): this;
 
-	initWithTitleTasksGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, tasks: NSArray<INTask>, groupName: INSpeakableString, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
+	initWithTitleTasksGroupNameCreatedDateComponentsModifiedDateComponentsIdentifier(title: INSpeakableString, tasks: NSArray<INTask> | INTask[], groupName: INSpeakableString, createdDateComponents: NSDateComponents, modifiedDateComponents: NSDateComponents, identifier: string): this;
 }
 
 declare class INTaskListResolutionResult extends INIntentResolutionResult<NSObject> {
@@ -6357,7 +6357,7 @@ declare class INTaskListResolutionResult extends INIntentResolutionResult<NSObje
 
 	static confirmationRequiredWithTaskListToConfirm(taskListToConfirm: INTaskList): INTaskListResolutionResult;
 
-	static disambiguationWithTaskListsToDisambiguate(taskListsToDisambiguate: NSArray<INTaskList>): INTaskListResolutionResult;
+	static disambiguationWithTaskListsToDisambiguate(taskListsToDisambiguate: NSArray<INTaskList> | INTaskList[]): INTaskListResolutionResult;
 
 	static needsValue(): INTaskListResolutionResult; // inherited from INIntentResolutionResult
 
@@ -6376,7 +6376,7 @@ declare class INTaskResolutionResult extends INIntentResolutionResult<NSObject> 
 
 	static confirmationRequiredWithTaskToConfirm(taskToConfirm: INTask): INTaskResolutionResult;
 
-	static disambiguationWithTasksToDisambiguate(tasksToDisambiguate: NSArray<INTask>): INTaskResolutionResult;
+	static disambiguationWithTasksToDisambiguate(tasksToDisambiguate: NSArray<INTask> | INTask[]): INTaskResolutionResult;
 
 	static needsValue(): INTaskResolutionResult; // inherited from INIntentResolutionResult
 
@@ -6434,7 +6434,7 @@ declare class INTemperatureResolutionResult extends INIntentResolutionResult<NSO
 
 	static confirmationRequiredWithTemperatureToConfirm(temperatureToConfirm: NSMeasurement<NSUnitTemperature>): INTemperatureResolutionResult;
 
-	static disambiguationWithTemperaturesToDisambiguate(temperaturesToDisambiguate: NSArray<NSMeasurement<NSUnitTemperature>>): INTemperatureResolutionResult;
+	static disambiguationWithTemperaturesToDisambiguate(temperaturesToDisambiguate: NSArray<NSMeasurement<NSUnitTemperature>> | NSMeasurement<NSUnitTemperature>[]): INTemperatureResolutionResult;
 
 	static needsValue(): INTemperatureResolutionResult; // inherited from INIntentResolutionResult
 
@@ -6476,7 +6476,7 @@ declare class INTemporalEventTriggerResolutionResult extends INIntentResolutionR
 
 	static confirmationRequiredWithTemporalEventTriggerToConfirm(temporalEventTriggerToConfirm: INTemporalEventTrigger): INTemporalEventTriggerResolutionResult;
 
-	static disambiguationWithTemporalEventTriggersToDisambiguate(temporalEventTriggersToDisambiguate: NSArray<INTemporalEventTrigger>): INTemporalEventTriggerResolutionResult;
+	static disambiguationWithTemporalEventTriggersToDisambiguate(temporalEventTriggersToDisambiguate: NSArray<INTemporalEventTrigger> | INTemporalEventTrigger[]): INTemporalEventTriggerResolutionResult;
 
 	static needsValue(): INTemporalEventTriggerResolutionResult; // inherited from INIntentResolutionResult
 

@@ -209,17 +209,17 @@ declare class MLMultiArray extends NSObject {
 
 	constructor(o: { shape: NSArray<number>; dataType: MLMultiArrayDataType; });
 
-	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number>, dataType: MLMultiArrayDataType, strides: NSArray<number>, deallocator: (p1: interop.Pointer | interop.Reference<any>) => void): this;
+	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void): this;
 
-	initWithShapeDataTypeError(shape: NSArray<number>, dataType: MLMultiArrayDataType): this;
+	initWithShapeDataTypeError(shape: NSArray<number> | number[], dataType: MLMultiArrayDataType): this;
 
 	objectAtIndexedSubscript(idx: number): number;
 
-	objectForKeyedSubscript(key: NSArray<number>): number;
+	objectForKeyedSubscript(key: NSArray<number> | number[]): number;
 
 	setObjectAtIndexedSubscript(obj: number, idx: number): void;
 
-	setObjectForKeyedSubscript(obj: number, key: NSArray<number>): void;
+	setObjectForKeyedSubscript(obj: number, key: NSArray<number> | number[]): void;
 }
 
 declare class MLMultiArrayConstraint extends NSObject {
