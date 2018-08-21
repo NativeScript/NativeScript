@@ -566,6 +566,8 @@ declare class AVAssetResourceLoadingContentInformationRequest extends NSObject {
 
 	static new(): AVAssetResourceLoadingContentInformationRequest; // inherited from NSObject
 
+	readonly allowedContentTypes: NSArray<string>;
+
 	byteRangeAccessSupported: boolean;
 
 	contentLength: number;
@@ -3521,6 +3523,8 @@ declare class AVCaptureDevice extends NSObject {
 
 	subjectAreaChangeMonitoringEnabled: boolean;
 
+	readonly systemPressureState: AVCaptureSystemPressureState;
+
 	readonly torchActive: boolean;
 
 	readonly torchAvailable: boolean;
@@ -3671,6 +3675,8 @@ declare var AVCaptureDeviceTypeBuiltInDuoCamera: string;
 declare var AVCaptureDeviceTypeBuiltInMicrophone: string;
 
 declare var AVCaptureDeviceTypeBuiltInTelephotoCamera: string;
+
+declare var AVCaptureDeviceTypeBuiltInTrueDepthCamera: string;
 
 declare var AVCaptureDeviceTypeBuiltInWideAngleCamera: string;
 
@@ -4230,10 +4236,14 @@ declare const enum AVCaptureSessionInterruptionReason {
 
 	VideoDeviceInUseByAnotherClient = 3,
 
-	VideoDeviceNotAvailableWithMultipleForegroundApps = 4
+	VideoDeviceNotAvailableWithMultipleForegroundApps = 4,
+
+	VideoDeviceNotAvailableDueToSystemPressure = 5
 }
 
 declare var AVCaptureSessionInterruptionReasonKey: string;
+
+declare var AVCaptureSessionInterruptionSystemPressureStateKey: string;
 
 declare var AVCaptureSessionPreset1280x720: string;
 
@@ -4356,6 +4366,38 @@ declare class AVCaptureSynchronizedSampleBufferData extends AVCaptureSynchronize
 	readonly sampleBuffer: any;
 
 	readonly sampleBufferWasDropped: boolean;
+}
+
+declare const enum AVCaptureSystemPressureFactors {
+
+	None = 0,
+
+	SystemTemperature = 1,
+
+	PeakPower = 2,
+
+	DepthModuleTemperature = 4
+}
+
+declare var AVCaptureSystemPressureLevelCritical: string;
+
+declare var AVCaptureSystemPressureLevelFair: string;
+
+declare var AVCaptureSystemPressureLevelNominal: string;
+
+declare var AVCaptureSystemPressureLevelSerious: string;
+
+declare var AVCaptureSystemPressureLevelShutdown: string;
+
+declare class AVCaptureSystemPressureState extends NSObject {
+
+	static alloc(): AVCaptureSystemPressureState; // inherited from NSObject
+
+	static new(): AVCaptureSystemPressureState; // inherited from NSObject
+
+	readonly factors: AVCaptureSystemPressureFactors;
+
+	readonly level: string;
 }
 
 declare const enum AVCaptureTorchMode {
@@ -4591,6 +4633,8 @@ declare class AVContentKeyRequest extends NSObject {
 	processContentKeyResponseError(error: NSError): void;
 
 	respondByRequestingPersistableContentKeyRequest(): void;
+
+	respondByRequestingPersistableContentKeyRequestAndReturnError(): boolean;
 }
 
 declare var AVContentKeyRequestProtocolVersionsKey: string;
@@ -4909,7 +4953,9 @@ declare const enum AVError {
 
 	NoLongerPlayable = -11867,
 
-	NoCompatibleAlternatesForExternalDisplay = -11868
+	NoCompatibleAlternatesForExternalDisplay = -11868,
+
+	NoSourceTrack = -11869
 }
 
 declare var AVErrorDeviceKey: string;
@@ -6853,6 +6899,8 @@ declare class AVPlayer extends NSObject {
 
 	volume: number;
 
+	static readonly availableHDRModes: AVPlayerHDRMode;
+
 	constructor(o: { playerItem: AVPlayerItem; });
 
 	constructor(o: { URL: NSURL; });
@@ -6907,6 +6955,17 @@ declare const enum AVPlayerActionAtItemEnd {
 	Pause = 1,
 
 	None = 2
+}
+
+declare var AVPlayerAvailableHDRModesDidChangeNotification: string;
+
+declare const enum AVPlayerHDRMode {
+
+	HLG = 1,
+
+	HDR10 = 2,
+
+	DolbyVision = 4
 }
 
 declare class AVPlayerItem extends NSObject implements NSCopying {
@@ -7526,8 +7585,6 @@ declare class AVSampleBufferAudioRenderer extends NSObject implements AVQueuedSa
 	static alloc(): AVSampleBufferAudioRenderer; // inherited from NSObject
 
 	static new(): AVSampleBufferAudioRenderer; // inherited from NSObject
-
-	audioOutputDeviceUniqueID: string;
 
 	audioTimePitchAlgorithm: string;
 

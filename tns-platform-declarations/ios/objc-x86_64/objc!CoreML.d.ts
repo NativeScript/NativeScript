@@ -1,4 +1,21 @@
 
+interface MLCustomLayer {
+
+	encodeToCommandBufferInputsOutputsError?(commandBuffer: MTLCommandBuffer, inputs: NSArray<MTLTexture> | MTLTexture[], outputs: NSArray<MTLTexture> | MTLTexture[]): boolean;
+
+	evaluateOnCPUWithInputsOutputsError(inputs: NSArray<MLMultiArray> | MLMultiArray[], outputs: NSArray<MLMultiArray> | MLMultiArray[]): boolean;
+
+	initWithParameterDictionaryError?(parameters: NSDictionary<string, any>): MLCustomLayer;
+
+	outputShapesForInputShapesError(inputShapes: NSArray<NSArray<number>> | NSArray<number>[]): NSArray<NSArray<number>>;
+
+	setWeightDataError(weights: NSArray<NSData> | NSData[]): boolean;
+}
+declare var MLCustomLayer: {
+
+	prototype: MLCustomLayer;
+};
+
 declare class MLDictionaryConstraint extends NSObject {
 
 	static alloc(): MLDictionaryConstraint; // inherited from NSObject
@@ -179,7 +196,9 @@ declare const enum MLModelError {
 
 	FeatureType = 1,
 
-	IO = 3
+	IO = 3,
+
+	CustomLayer = 4
 }
 
 declare var MLModelErrorDomain: string;

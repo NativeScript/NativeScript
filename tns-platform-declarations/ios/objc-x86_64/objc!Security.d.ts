@@ -268,7 +268,11 @@ declare const enum SecAccessControlCreateFlags {
 
 	kSecAccessControlUserPresence = 1,
 
+	kSecAccessControlBiometryAny = 2,
+
 	kSecAccessControlTouchIDAny = 2,
+
+	kSecAccessControlBiometryCurrentSet = 8,
 
 	kSecAccessControlTouchIDCurrentSet = 8,
 
@@ -310,6 +314,8 @@ declare function SecCertificateCopySubjectSummary(certificate: any): string;
 declare function SecCertificateCreateWithData(allocator: any, data: NSData): any;
 
 declare function SecCertificateGetTypeID(): number;
+
+declare function SecCopyErrorMessageString(status: number, reserved: interop.Pointer | interop.Reference<any>): string;
 
 declare function SecCreateSharedWebCredentialPassword(): string;
 
@@ -746,6 +752,8 @@ declare const TLS_RSA_WITH_RC4_128_SHA: number;
 
 declare const errSSLBadCert: number;
 
+declare const errSSLBadCertificateStatusResponse: number;
+
 declare const errSSLBadCipherSuite: number;
 
 declare const errSSLBadConfiguration: number;
@@ -758,6 +766,8 @@ declare const errSSLCertExpired: number;
 
 declare const errSSLCertNotYetValid: number;
 
+declare const errSSLCertificateRequired: number;
+
 declare const errSSLClientCertRequested: number;
 
 declare const errSSLClientHelloReceived: number;
@@ -768,23 +778,37 @@ declare const errSSLClosedGraceful: number;
 
 declare const errSSLClosedNoNotify: number;
 
+declare const errSSLConfigurationFailed: number;
+
 declare const errSSLConnectionRefused: number;
 
 declare const errSSLCrypto: number;
+
+declare const errSSLDecodeError: number;
+
+declare const errSSLDecompressFail: number;
 
 declare const errSSLDecryptionFail: number;
 
 declare const errSSLFatalAlert: number;
 
+declare const errSSLHandshakeFail: number;
+
 declare const errSSLHostNameMismatch: number;
 
 declare const errSSLIllegalParam: number;
 
+declare const errSSLInappropriateFallback: number;
+
 declare const errSSLInternal: number;
+
+declare const errSSLMissingExtension: number;
 
 declare const errSSLModuleAttach: number;
 
 declare const errSSLNegotiation: number;
+
+declare const errSSLNetworkTimeout: number;
 
 declare const errSSLNoRootCert: number;
 
@@ -838,9 +862,19 @@ declare const errSSLRecordOverflow: number;
 
 declare const errSSLSessionNotFound: number;
 
+declare const errSSLTransportReset: number;
+
+declare const errSSLUnexpectedMessage: number;
+
 declare const errSSLUnexpectedRecord: number;
 
+declare const errSSLUnknownPSKIdentity: number;
+
 declare const errSSLUnknownRootCert: number;
+
+declare const errSSLUnrecognizedName: number;
+
+declare const errSSLUnsupportedExtension: number;
 
 declare const errSSLWeakPeerEphemeralDHKey: number;
 

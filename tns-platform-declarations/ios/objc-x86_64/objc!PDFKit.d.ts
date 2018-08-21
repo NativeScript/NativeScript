@@ -172,6 +172,8 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	iconType: PDFTextAnnotationIconType;
 
+	interiorColor: UIColor;
+
 	readonly isPasswordField: boolean;
 
 	listChoice: boolean;
@@ -199,6 +201,8 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 	shouldDisplay: boolean;
 
 	shouldPrint: boolean;
+
+	stampName: string;
 
 	startLineStyle: PDFLineStyle;
 

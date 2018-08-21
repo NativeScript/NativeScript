@@ -1231,7 +1231,7 @@ declare class MPMusicPlayerMediaItemQueueDescriptor extends MPMusicPlayerQueueDe
 	setStartTimeForItem(startTime: number, mediaItem: MPMediaItem): void;
 }
 
-declare class MPMusicPlayerPlayParameters extends NSObject implements NSSecureCoding {
+declare class MPMusicPlayerPlayParameters extends NSObject {
 
 	static alloc(): MPMusicPlayerPlayParameters; // inherited from NSObject
 
@@ -1239,15 +1239,7 @@ declare class MPMusicPlayerPlayParameters extends NSObject implements NSSecureCo
 
 	readonly dictionary: NSDictionary<string, any>;
 
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { dictionary: NSDictionary<string, any>; });
-
-	encodeWithCoder(aCoder: NSCoder): void;
-
-	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithDictionary(dictionary: NSDictionary<string, any>): this;
 }
@@ -1271,19 +1263,11 @@ declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQu
 	setStartTimeForItemWithPlayParameters(startTime: number, playParameters: MPMusicPlayerPlayParameters): void;
 }
 
-declare class MPMusicPlayerQueueDescriptor extends NSObject implements NSSecureCoding {
+declare class MPMusicPlayerQueueDescriptor extends NSObject {
 
 	static alloc(): MPMusicPlayerQueueDescriptor; // inherited from NSObject
 
 	static new(): MPMusicPlayerQueueDescriptor; // inherited from NSObject
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	encodeWithCoder(aCoder: NSCoder): void;
-
-	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescriptor {
@@ -1409,6 +1393,8 @@ declare var MPNowPlayingInfoPropertyChapterCount: string;
 declare var MPNowPlayingInfoPropertyChapterNumber: string;
 
 declare var MPNowPlayingInfoPropertyCurrentLanguageOptions: string;
+
+declare var MPNowPlayingInfoPropertyCurrentPlaybackDate: string;
 
 declare var MPNowPlayingInfoPropertyDefaultPlaybackRate: string;
 

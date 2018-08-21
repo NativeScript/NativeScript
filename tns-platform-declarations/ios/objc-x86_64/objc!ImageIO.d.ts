@@ -215,6 +215,8 @@ declare var kCGImageMetadataNamespaceExifEX: string;
 
 declare var kCGImageMetadataNamespaceIPTCCore: string;
 
+declare var kCGImageMetadataNamespaceIPTCExtension: string;
+
 declare var kCGImageMetadataNamespacePhotoshop: string;
 
 declare var kCGImageMetadataNamespaceTIFF: string;
@@ -232,6 +234,8 @@ declare var kCGImageMetadataPrefixExifAux: string;
 declare var kCGImageMetadataPrefixExifEX: string;
 
 declare var kCGImageMetadataPrefixIPTCCore: string;
+
+declare var kCGImageMetadataPrefixIPTCExtension: string;
 
 declare var kCGImageMetadataPrefixPhotoshop: string;
 
@@ -685,6 +689,366 @@ declare var kCGImagePropertyIPTCExpirationDate: string;
 
 declare var kCGImagePropertyIPTCExpirationTime: string;
 
+declare var kCGImagePropertyIPTCExtAboutCvTerm: string;
+
+declare var kCGImagePropertyIPTCExtAboutCvTermCvId: string;
+
+declare var kCGImagePropertyIPTCExtAboutCvTermId: string;
+
+declare var kCGImagePropertyIPTCExtAboutCvTermName: string;
+
+declare var kCGImagePropertyIPTCExtAboutCvTermRefinedAbout: string;
+
+declare var kCGImagePropertyIPTCExtAddlModelInfo: string;
+
+declare var kCGImagePropertyIPTCExtArtworkCircaDateCreated: string;
+
+declare var kCGImagePropertyIPTCExtArtworkContentDescription: string;
+
+declare var kCGImagePropertyIPTCExtArtworkContributionDescription: string;
+
+declare var kCGImagePropertyIPTCExtArtworkCopyrightNotice: string;
+
+declare var kCGImagePropertyIPTCExtArtworkCopyrightOwnerID: string;
+
+declare var kCGImagePropertyIPTCExtArtworkCopyrightOwnerName: string;
+
+declare var kCGImagePropertyIPTCExtArtworkCreator: string;
+
+declare var kCGImagePropertyIPTCExtArtworkCreatorID: string;
+
+declare var kCGImagePropertyIPTCExtArtworkDateCreated: string;
+
+declare var kCGImagePropertyIPTCExtArtworkLicensorID: string;
+
+declare var kCGImagePropertyIPTCExtArtworkLicensorName: string;
+
+declare var kCGImagePropertyIPTCExtArtworkOrObject: string;
+
+declare var kCGImagePropertyIPTCExtArtworkPhysicalDescription: string;
+
+declare var kCGImagePropertyIPTCExtArtworkSource: string;
+
+declare var kCGImagePropertyIPTCExtArtworkSourceInvURL: string;
+
+declare var kCGImagePropertyIPTCExtArtworkSourceInventoryNo: string;
+
+declare var kCGImagePropertyIPTCExtArtworkStylePeriod: string;
+
+declare var kCGImagePropertyIPTCExtArtworkTitle: string;
+
+declare var kCGImagePropertyIPTCExtAudioBitrate: string;
+
+declare var kCGImagePropertyIPTCExtAudioBitrateMode: string;
+
+declare var kCGImagePropertyIPTCExtAudioChannelCount: string;
+
+declare var kCGImagePropertyIPTCExtCircaDateCreated: string;
+
+declare var kCGImagePropertyIPTCExtContainerFormat: string;
+
+declare var kCGImagePropertyIPTCExtContainerFormatIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtContainerFormatName: string;
+
+declare var kCGImagePropertyIPTCExtContributor: string;
+
+declare var kCGImagePropertyIPTCExtContributorIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtContributorName: string;
+
+declare var kCGImagePropertyIPTCExtContributorRole: string;
+
+declare var kCGImagePropertyIPTCExtControlledVocabularyTerm: string;
+
+declare var kCGImagePropertyIPTCExtCopyrightYear: string;
+
+declare var kCGImagePropertyIPTCExtCreator: string;
+
+declare var kCGImagePropertyIPTCExtCreatorIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtCreatorName: string;
+
+declare var kCGImagePropertyIPTCExtCreatorRole: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreen: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegion: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionD: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionH: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionText: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionUnit: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionW: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionX: string;
+
+declare var kCGImagePropertyIPTCExtDataOnScreenRegionY: string;
+
+declare var kCGImagePropertyIPTCExtDigitalImageGUID: string;
+
+declare var kCGImagePropertyIPTCExtDigitalSourceFileType: string;
+
+declare var kCGImagePropertyIPTCExtDigitalSourceType: string;
+
+declare var kCGImagePropertyIPTCExtDopesheet: string;
+
+declare var kCGImagePropertyIPTCExtDopesheetLink: string;
+
+declare var kCGImagePropertyIPTCExtDopesheetLinkLink: string;
+
+declare var kCGImagePropertyIPTCExtDopesheetLinkLinkQualifier: string;
+
+declare var kCGImagePropertyIPTCExtEmbdEncRightsExpr: string;
+
+declare var kCGImagePropertyIPTCExtEmbeddedEncodedRightsExpr: string;
+
+declare var kCGImagePropertyIPTCExtEmbeddedEncodedRightsExprLangID: string;
+
+declare var kCGImagePropertyIPTCExtEmbeddedEncodedRightsExprType: string;
+
+declare var kCGImagePropertyIPTCExtEpisode: string;
+
+declare var kCGImagePropertyIPTCExtEpisodeIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtEpisodeName: string;
+
+declare var kCGImagePropertyIPTCExtEpisodeNumber: string;
+
+declare var kCGImagePropertyIPTCExtEvent: string;
+
+declare var kCGImagePropertyIPTCExtExternalMetadataLink: string;
+
+declare var kCGImagePropertyIPTCExtFeedIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtGenre: string;
+
+declare var kCGImagePropertyIPTCExtGenreCvId: string;
+
+declare var kCGImagePropertyIPTCExtGenreCvTermId: string;
+
+declare var kCGImagePropertyIPTCExtGenreCvTermName: string;
+
+declare var kCGImagePropertyIPTCExtGenreCvTermRefinedAbout: string;
+
+declare var kCGImagePropertyIPTCExtHeadline: string;
+
+declare var kCGImagePropertyIPTCExtIPTCLastEdited: string;
+
+declare var kCGImagePropertyIPTCExtLinkedEncRightsExpr: string;
+
+declare var kCGImagePropertyIPTCExtLinkedEncodedRightsExpr: string;
+
+declare var kCGImagePropertyIPTCExtLinkedEncodedRightsExprLangID: string;
+
+declare var kCGImagePropertyIPTCExtLinkedEncodedRightsExprType: string;
+
+declare var kCGImagePropertyIPTCExtLocationCity: string;
+
+declare var kCGImagePropertyIPTCExtLocationCountryCode: string;
+
+declare var kCGImagePropertyIPTCExtLocationCountryName: string;
+
+declare var kCGImagePropertyIPTCExtLocationCreated: string;
+
+declare var kCGImagePropertyIPTCExtLocationGPSAltitude: string;
+
+declare var kCGImagePropertyIPTCExtLocationGPSLatitude: string;
+
+declare var kCGImagePropertyIPTCExtLocationGPSLongitude: string;
+
+declare var kCGImagePropertyIPTCExtLocationIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtLocationLocationId: string;
+
+declare var kCGImagePropertyIPTCExtLocationLocationName: string;
+
+declare var kCGImagePropertyIPTCExtLocationProvinceState: string;
+
+declare var kCGImagePropertyIPTCExtLocationShown: string;
+
+declare var kCGImagePropertyIPTCExtLocationSublocation: string;
+
+declare var kCGImagePropertyIPTCExtLocationWorldRegion: string;
+
+declare var kCGImagePropertyIPTCExtMaxAvailHeight: string;
+
+declare var kCGImagePropertyIPTCExtMaxAvailWidth: string;
+
+declare var kCGImagePropertyIPTCExtModelAge: string;
+
+declare var kCGImagePropertyIPTCExtOrganisationInImageCode: string;
+
+declare var kCGImagePropertyIPTCExtOrganisationInImageName: string;
+
+declare var kCGImagePropertyIPTCExtPersonHeard: string;
+
+declare var kCGImagePropertyIPTCExtPersonHeardIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtPersonHeardName: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImage: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageCharacteristic: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageCvTermCvId: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageCvTermId: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageCvTermName: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageCvTermRefinedAbout: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageDescription: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageId: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageName: string;
+
+declare var kCGImagePropertyIPTCExtPersonInImageWDetails: string;
+
+declare var kCGImagePropertyIPTCExtProductInImage: string;
+
+declare var kCGImagePropertyIPTCExtProductInImageDescription: string;
+
+declare var kCGImagePropertyIPTCExtProductInImageGTIN: string;
+
+declare var kCGImagePropertyIPTCExtProductInImageName: string;
+
+declare var kCGImagePropertyIPTCExtPublicationEvent: string;
+
+declare var kCGImagePropertyIPTCExtPublicationEventDate: string;
+
+declare var kCGImagePropertyIPTCExtPublicationEventIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtPublicationEventName: string;
+
+declare var kCGImagePropertyIPTCExtRating: string;
+
+declare var kCGImagePropertyIPTCExtRatingRatingRegion: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionCity: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionCountryCode: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionCountryName: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionGPSAltitude: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionGPSLatitude: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionGPSLongitude: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionLocationId: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionLocationName: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionProvinceState: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionSublocation: string;
+
+declare var kCGImagePropertyIPTCExtRatingRegionWorldRegion: string;
+
+declare var kCGImagePropertyIPTCExtRatingScaleMaxValue: string;
+
+declare var kCGImagePropertyIPTCExtRatingScaleMinValue: string;
+
+declare var kCGImagePropertyIPTCExtRatingSourceLink: string;
+
+declare var kCGImagePropertyIPTCExtRatingValue: string;
+
+declare var kCGImagePropertyIPTCExtRatingValueLogoLink: string;
+
+declare var kCGImagePropertyIPTCExtRegistryEntryRole: string;
+
+declare var kCGImagePropertyIPTCExtRegistryID: string;
+
+declare var kCGImagePropertyIPTCExtRegistryItemID: string;
+
+declare var kCGImagePropertyIPTCExtRegistryOrganisationID: string;
+
+declare var kCGImagePropertyIPTCExtReleaseReady: string;
+
+declare var kCGImagePropertyIPTCExtSeason: string;
+
+declare var kCGImagePropertyIPTCExtSeasonIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtSeasonName: string;
+
+declare var kCGImagePropertyIPTCExtSeasonNumber: string;
+
+declare var kCGImagePropertyIPTCExtSeries: string;
+
+declare var kCGImagePropertyIPTCExtSeriesIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtSeriesName: string;
+
+declare var kCGImagePropertyIPTCExtShownEvent: string;
+
+declare var kCGImagePropertyIPTCExtShownEventIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtShownEventName: string;
+
+declare var kCGImagePropertyIPTCExtStorylineIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtStreamReady: string;
+
+declare var kCGImagePropertyIPTCExtStylePeriod: string;
+
+declare var kCGImagePropertyIPTCExtSupplyChainSource: string;
+
+declare var kCGImagePropertyIPTCExtSupplyChainSourceIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtSupplyChainSourceName: string;
+
+declare var kCGImagePropertyIPTCExtTemporalCoverage: string;
+
+declare var kCGImagePropertyIPTCExtTemporalCoverageFrom: string;
+
+declare var kCGImagePropertyIPTCExtTemporalCoverageTo: string;
+
+declare var kCGImagePropertyIPTCExtTranscript: string;
+
+declare var kCGImagePropertyIPTCExtTranscriptLink: string;
+
+declare var kCGImagePropertyIPTCExtTranscriptLinkLink: string;
+
+declare var kCGImagePropertyIPTCExtTranscriptLinkLinkQualifier: string;
+
+declare var kCGImagePropertyIPTCExtVideoBitrate: string;
+
+declare var kCGImagePropertyIPTCExtVideoBitrateMode: string;
+
+declare var kCGImagePropertyIPTCExtVideoDisplayAspectRatio: string;
+
+declare var kCGImagePropertyIPTCExtVideoEncodingProfile: string;
+
+declare var kCGImagePropertyIPTCExtVideoShotType: string;
+
+declare var kCGImagePropertyIPTCExtVideoShotTypeIdentifier: string;
+
+declare var kCGImagePropertyIPTCExtVideoShotTypeName: string;
+
+declare var kCGImagePropertyIPTCExtVideoStreamsCount: string;
+
+declare var kCGImagePropertyIPTCExtVisualColor: string;
+
+declare var kCGImagePropertyIPTCExtWorkflowTag: string;
+
+declare var kCGImagePropertyIPTCExtWorkflowTagCvId: string;
+
+declare var kCGImagePropertyIPTCExtWorkflowTagCvTermId: string;
+
+declare var kCGImagePropertyIPTCExtWorkflowTagCvTermName: string;
+
+declare var kCGImagePropertyIPTCExtWorkflowTagCvTermRefinedAbout: string;
+
 declare var kCGImagePropertyIPTCFixtureIdentifier: string;
 
 declare var kCGImagePropertyIPTCHeadline: string;
@@ -832,6 +1196,10 @@ declare var kCGImagePropertyMakerOlympusDictionary: string;
 declare var kCGImagePropertyMakerPentaxDictionary: string;
 
 declare var kCGImagePropertyNamedColorSpace: string;
+
+declare var kCGImagePropertyOpenEXRAspectRatio: string;
+
+declare var kCGImagePropertyOpenEXRDictionary: string;
 
 declare var kCGImagePropertyOrientation: string;
 

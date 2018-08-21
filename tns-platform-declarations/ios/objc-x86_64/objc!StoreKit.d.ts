@@ -1,4 +1,13 @@
 
+declare class SKAdNetwork extends NSObject {
+
+	static alloc(): SKAdNetwork; // inherited from NSObject
+
+	static new(): SKAdNetwork; // inherited from NSObject
+
+	static registerAppForAdNetworkAttribution(): void;
+}
+
 declare const enum SKCloudServiceAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -293,6 +302,8 @@ declare class SKProduct extends NSObject {
 
 	readonly downloadable: boolean;
 
+	readonly introductoryPrice: SKProductDiscount;
+
 	readonly localizedDescription: string;
 
 	readonly localizedTitle: string;
@@ -302,6 +313,45 @@ declare class SKProduct extends NSObject {
 	readonly priceLocale: NSLocale;
 
 	readonly productIdentifier: string;
+
+	readonly subscriptionPeriod: SKProductSubscriptionPeriod;
+}
+
+declare class SKProductDiscount extends NSObject {
+
+	static alloc(): SKProductDiscount; // inherited from NSObject
+
+	static new(): SKProductDiscount; // inherited from NSObject
+
+	readonly numberOfPeriods: number;
+
+	readonly paymentMode: SKProductDiscountPaymentMode;
+
+	readonly price: NSDecimalNumber;
+
+	readonly priceLocale: NSLocale;
+
+	readonly subscriptionPeriod: SKProductSubscriptionPeriod;
+}
+
+declare const enum SKProductDiscountPaymentMode {
+
+	PayAsYouGo = 0,
+
+	PayUpFront = 1,
+
+	FreeTrial = 2
+}
+
+declare const enum SKProductPeriodUnit {
+
+	Day = 0,
+
+	Week = 1,
+
+	Month = 2,
+
+	Year = 3
 }
 
 declare class SKProductStorePromotionController extends NSObject {
@@ -328,6 +378,17 @@ declare const enum SKProductStorePromotionVisibility {
 	Show = 1,
 
 	Hide = 2
+}
+
+declare class SKProductSubscriptionPeriod extends NSObject {
+
+	static alloc(): SKProductSubscriptionPeriod; // inherited from NSObject
+
+	static new(): SKProductSubscriptionPeriod; // inherited from NSObject
+
+	readonly numberOfUnits: number;
+
+	readonly unit: SKProductPeriodUnit;
 }
 
 declare class SKProductsRequest extends SKRequest {
@@ -405,6 +466,16 @@ declare var SKRequestDelegate: {
 
 	prototype: SKRequestDelegate;
 };
+
+declare var SKStoreProductParameterAdNetworkAttributionSignature: string;
+
+declare var SKStoreProductParameterAdNetworkCampaignIdentifier: string;
+
+declare var SKStoreProductParameterAdNetworkIdentifier: string;
+
+declare var SKStoreProductParameterAdNetworkNonce: string;
+
+declare var SKStoreProductParameterAdNetworkTimestamp: string;
 
 declare var SKStoreProductParameterAdvertisingPartnerToken: string;
 

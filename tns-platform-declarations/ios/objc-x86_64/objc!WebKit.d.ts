@@ -250,7 +250,7 @@ declare const enum WKNavigationType {
 	Other = -1
 }
 
-declare class WKPreferences extends NSObject implements NSCoding {
+declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	static alloc(): WKPreferences; // inherited from NSObject
 
@@ -261,6 +261,8 @@ declare class WKPreferences extends NSObject implements NSCoding {
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -297,11 +299,13 @@ declare class WKPreviewElementInfo extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class WKProcessPool extends NSObject implements NSCoding {
+declare class WKProcessPool extends NSObject implements NSSecureCoding {
 
 	static alloc(): WKProcessPool; // inherited from NSObject
 
 	static new(): WKProcessPool; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -352,6 +356,19 @@ declare const enum WKSelectionGranularity {
 	Dynamic = 0,
 
 	Character = 1
+}
+
+declare class WKSnapshotConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): WKSnapshotConfiguration; // inherited from NSObject
+
+	static new(): WKSnapshotConfiguration; // inherited from NSObject
+
+	rect: CGRect;
+
+	snapshotWidth: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 interface WKUIDelegate extends NSObjectProtocol {
@@ -405,13 +422,15 @@ declare var WKURLSchemeTask: {
 	prototype: WKURLSchemeTask;
 };
 
-declare class WKUserContentController extends NSObject implements NSCoding {
+declare class WKUserContentController extends NSObject implements NSSecureCoding {
 
 	static alloc(): WKUserContentController; // inherited from NSObject
 
 	static new(): WKUserContentController; // inherited from NSObject
 
 	readonly userScripts: NSArray<WKUserScript>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -539,9 +558,11 @@ declare class WKWebView extends UIView {
 	reloadFromOrigin(): WKNavigation;
 
 	stopLoading(): void;
+
+	takeSnapshotWithConfigurationCompletionHandler(snapshotConfiguration: WKSnapshotConfiguration, completionHandler: (p1: UIImage, p2: NSError) => void): void;
 }
 
-declare class WKWebViewConfiguration extends NSObject implements NSCoding, NSCopying {
+declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): WKWebViewConfiguration; // inherited from NSObject
 
@@ -579,6 +600,8 @@ declare class WKWebViewConfiguration extends NSObject implements NSCoding, NSCop
 
 	websiteDataStore: WKWebsiteDataStore;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -603,7 +626,7 @@ declare class WKWebsiteDataRecord extends NSObject {
 	readonly displayName: string;
 }
 
-declare class WKWebsiteDataStore extends NSObject implements NSCoding {
+declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 
 	static allWebsiteDataTypes(): NSSet<string>;
 
@@ -618,6 +641,8 @@ declare class WKWebsiteDataStore extends NSObject implements NSCoding {
 	readonly httpCookieStore: WKHTTPCookieStore;
 
 	readonly persistent: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -636,6 +661,8 @@ declare var WKWebsiteDataTypeCookies: string;
 
 declare var WKWebsiteDataTypeDiskCache: string;
 
+declare var WKWebsiteDataTypeFetchCache: string;
+
 declare var WKWebsiteDataTypeIndexedDBDatabases: string;
 
 declare var WKWebsiteDataTypeLocalStorage: string;
@@ -643,6 +670,8 @@ declare var WKWebsiteDataTypeLocalStorage: string;
 declare var WKWebsiteDataTypeMemoryCache: string;
 
 declare var WKWebsiteDataTypeOfflineWebApplicationCache: string;
+
+declare var WKWebsiteDataTypeServiceWorkerRegistrations: string;
 
 declare var WKWebsiteDataTypeSessionStorage: string;
 

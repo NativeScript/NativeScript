@@ -3482,11 +3482,13 @@ declare const NSFileReadUnsupportedSchemeError: number;
 
 declare var NSFileReferenceCount: string;
 
-declare class NSFileSecurity extends NSObject implements NSCoding, NSCopying {
+declare class NSFileSecurity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSFileSecurity; // inherited from NSObject
 
 	static new(): NSFileSecurity; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11914,7 +11916,11 @@ declare class NSUserActivity extends NSObject {
 
 	contentAttributeSet: CSSearchableItemAttributeSet;
 
+	readonly contextIdentifierPath: NSArray<string>;
+
 	delegate: NSUserActivityDelegate;
+
+	readonly detectedBarcodeDescriptor: CIBarcodeDescriptor;
 
 	eligibleForHandoff: boolean;
 
@@ -11927,6 +11933,8 @@ declare class NSUserActivity extends NSObject {
 	externalMediaContentIdentifier: string;
 
 	readonly interaction: INInteraction;
+
+	readonly isClassKitDeepLink: boolean;
 
 	keywords: NSSet<string>;
 

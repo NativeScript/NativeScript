@@ -626,6 +626,10 @@ declare const enum HKInsulinDeliveryReason {
 	Bolus = 2
 }
 
+declare var HKMetadataKeyAlpineSlopeGrade: string;
+
+declare var HKMetadataKeyAverageSpeed: string;
+
 declare var HKMetadataKeyBloodGlucoseMealTime: string;
 
 declare var HKMetadataKeyBodyTemperatureSensorLocation: string;
@@ -639,6 +643,10 @@ declare var HKMetadataKeyDeviceName: string;
 declare var HKMetadataKeyDeviceSerialNumber: string;
 
 declare var HKMetadataKeyDigitalSignature: string;
+
+declare var HKMetadataKeyElevationAscended: string;
+
+declare var HKMetadataKeyElevationDescended: string;
 
 declare var HKMetadataKeyExternalUUID: string;
 
@@ -655,6 +663,8 @@ declare var HKMetadataKeyIndoorWorkout: string;
 declare var HKMetadataKeyInsulinDeliveryReason: string;
 
 declare var HKMetadataKeyLapLength: string;
+
+declare var HKMetadataKeyMaximumSpeed: string;
 
 declare var HKMetadataKeyMenstrualCycleStart: string;
 
@@ -1002,6 +1012,8 @@ declare var HKQuantityTypeIdentifierDietaryZinc: string;
 
 declare var HKQuantityTypeIdentifierDistanceCycling: string;
 
+declare var HKQuantityTypeIdentifierDistanceDownhillSnowSports: string;
+
 declare var HKQuantityTypeIdentifierDistanceSwimming: string;
 
 declare var HKQuantityTypeIdentifierDistanceWalkingRunning: string;
@@ -1182,21 +1194,13 @@ declare class HKSampleType extends HKObjectType {
 	static new(): HKSampleType; // inherited from NSObject
 }
 
-declare class HKSeriesBuilder extends NSObject implements NSSecureCoding {
+declare class HKSeriesBuilder extends NSObject {
 
 	static alloc(): HKSeriesBuilder; // inherited from NSObject
 
 	static new(): HKSeriesBuilder; // inherited from NSObject
 
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	discard(): void;
-
-	encodeWithCoder(aCoder: NSCoder): void;
-
-	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class HKSeriesSample extends HKSample {

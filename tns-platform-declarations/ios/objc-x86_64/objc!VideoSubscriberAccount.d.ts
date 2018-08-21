@@ -141,6 +141,8 @@ declare class VSSubscription extends NSObject {
 
 	accessLevel: VSSubscriptionAccessLevel;
 
+	billingIdentifier: string;
+
 	expirationDate: Date;
 
 	tierIdentifiers: NSArray<string>;

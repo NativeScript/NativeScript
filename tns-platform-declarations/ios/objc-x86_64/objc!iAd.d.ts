@@ -93,7 +93,11 @@ declare const enum ADClientError {
 
 	Unknown = 0,
 
-	LimitAdTracking = 1
+	LimitAdTracking = 1,
+
+	MissingData = 2,
+
+	CorruptResponse = 3
 }
 
 declare var ADClientErrorDomain: string;

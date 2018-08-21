@@ -205,7 +205,7 @@ declare class CNContactFetchRequest extends NSObject implements NSSecureCoding {
 	initWithKeysToFetch(keysToFetch: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): this;
 }
 
-declare class CNContactFormatter extends NSFormatter {
+declare class CNContactFormatter extends NSFormatter implements NSSecureCoding {
 
 	static alloc(): CNContactFormatter; // inherited from NSObject
 
@@ -223,7 +223,15 @@ declare class CNContactFormatter extends NSFormatter {
 
 	style: CNContactFormatterStyle;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	attributedStringFromContactDefaultAttributes(contact: CNContact, attributes: NSDictionary<any, any>): NSAttributedString;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	stringFromContact(contact: CNContact): string;
 }
@@ -470,6 +478,8 @@ declare const enum CNErrorCode {
 	DataAccessError = 2,
 
 	AuthorizationDenied = 100,
+
+	NoAccessableWritableContainers = 101,
 
 	RecordDoesNotExist = 200,
 
