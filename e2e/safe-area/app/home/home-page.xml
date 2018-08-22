@@ -17,6 +17,8 @@
             <Button text="RadCalendar Examples" tap="onNavigate" route="radcalendar/radcalendar-page"></Button>
             <Button text="RadChart Examples" tap="onNavigate" route="radchart/radchart-page"></Button>
             <Button text="Expand Examples" tap="onNavigate" route="expand/expand-page"></Button>
+            <Button text="Repeater Examples" tap="onNavigate" route="repeater/repeater-page"></Button>
+            <Button text="WebView Examples" tap="onNavigate" route="webview/webview-page"></Button>
         </StackLayout>
     </ScrollView>
 
