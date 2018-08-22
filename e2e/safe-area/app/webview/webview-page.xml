@@ -1,0 +1,4 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd">
+    <!-- <WebView src="https://nativescript.org/" /> -->
+    <WebView src="https://docs.nativescript.org/" />
+</Page>
