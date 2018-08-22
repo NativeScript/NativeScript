@@ -71,15 +71,15 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get horizontalOffset(): number {
-        return this.nativeViewProtected.contentOffset.x;
+        return this.nativeViewProtected ? this.nativeViewProtected.contentOffset.x : 0;
     }
 
     get verticalOffset(): number {
-        return this.nativeViewProtected.contentOffset.y;
+        return this.nativeViewProtected ? this.nativeViewProtected.contentOffset.y : 0;
     }
 
     get scrollableWidth(): number {
-        if (this.orientation !== "horizontal") {
+        if (!this.nativeViewProtected  || this.orientation !== "horizontal") {
             return 0;
         }
 
@@ -87,7 +87,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get scrollableHeight(): number {
-        if (this.orientation !== "vertical") {
+        if (!this.nativeViewProtected  || this.orientation !== "vertical") {
             return 0;
         }
 
@@ -102,14 +102,14 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
-        if (this.orientation === "vertical") {
+        if (this.nativeViewProtected  && this.orientation === "vertical") {
             const bounds = this.nativeViewProtected.bounds.size;
             this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
         }
     }
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
-        if (this.orientation === "horizontal") {
+        if (this.nativeViewProtected  && this.orientation === "horizontal") {
             const bounds = this.nativeViewProtected.bounds.size;
             this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
         }
