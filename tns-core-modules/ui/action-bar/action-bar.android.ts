@@ -140,7 +140,7 @@ export class ActionBar extends ActionBarBase {
         initializeMenuItemClickListener();
         const menuItemClickListener = new MenuItemClickListener(this);
         nativeView.setOnMenuItemClickListener(menuItemClickListener);
-        (<any>toolbar).menuItemClickListener = menuItemClickListener;
+        (<any>nativeView).menuItemClickListener = menuItemClickListener;
     }
 
     public disposeNativeView() {

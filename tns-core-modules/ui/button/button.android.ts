@@ -37,18 +37,26 @@ function initializeClickListener(): void {
     }
 
     ClickListener = ClickListenerImpl;
-    APILEVEL = android.os.Build.VERSION.SDK_INT;
-    AndroidButton = android.widget.Button;
 }
 
 export class Button extends ButtonBase {
     nativeViewProtected: android.widget.Button;
+
+    constructor() {
+        super();
+        if (!APILEVEL) {
+            APILEVEL = android.os.Build.VERSION.SDK_INT;
+        }
+    }
 
     private _stateListAnimator: any;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     @profile
     public createNativeView() {
+        if (!AndroidButton) {
+            AndroidButton = android.widget.Button;
+        }
         return new AndroidButton(this._context);
     }
 
