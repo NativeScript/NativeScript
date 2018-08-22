@@ -25,7 +25,7 @@ function initializeListenerClass(): void {
 
             onProgressChanged(seekBar: OwnerSeekBar, progress: number, fromUser: boolean): void {
                 const owner = seekBar.owner;
-                if (!owner._supressNativeValue) {
+                if (owner && !owner._supressNativeValue) {
                     const newValue = progress + owner.minValue;
                     valueProperty.nativeValueChange(owner, newValue);
                 }
@@ -62,6 +62,7 @@ export class Slider extends SliderBase {
     public initNativeView(): void {
         super.initNativeView();
         const nativeView = this.nativeViewProtected;
+        nativeView.owner = this;
         initializeListenerClass();
         const listener = getListener();
         nativeView.setOnSeekBarChangeListener(listener);
