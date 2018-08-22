@@ -1,6 +1,7 @@
 ﻿// Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
 import { ViewBase } from "../view-base";
+import { booleanConverter, Property } from "../view";
 
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
@@ -607,8 +608,11 @@ export class View extends ViewCommon {
 View.prototype._nativeBackgroundState = "unset";
 
 export class ContainerView extends View {
+
+    public iosExpandSafeArea: boolean;
+
     protected applySafeAreaInsets(frame: CGRect): CGRect {
-        if (majorVersion > 10) {
+        if (this.iosExpandSafeArea && majorVersion > 10) {
             const locationOnScreen = this.getLocationOnScreen();
 
             if (locationOnScreen) {
@@ -647,6 +651,9 @@ export class ContainerView extends View {
         return null;
     }
 }
+
+export const iosExpandSafeAreaProperty = new Property<ContainerView, boolean>({ name: "iosExpandSafeArea", defaultValue: true, valueConverter: booleanConverter });
+iosExpandSafeAreaProperty.register(ContainerView);
 
 export class CustomLayoutView extends ContainerView {
 

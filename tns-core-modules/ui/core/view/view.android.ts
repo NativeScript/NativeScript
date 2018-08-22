@@ -805,7 +805,7 @@ export class View extends ViewCommon {
 }
 
 export class ContainerView extends View {
-    //
+    public iosExpandSafeArea: boolean;
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {

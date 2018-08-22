@@ -724,7 +724,10 @@ export abstract class View extends ViewBase {
  * Base class for all UI components that are containers. 
  */
 export class ContainerView extends View {
-
+    /**
+     * Instruct container view to expand the safe area. This property is iOS specific. Default value: true
+     */
+    public iosExpandSafeArea: boolean;
 }
 
 /**
