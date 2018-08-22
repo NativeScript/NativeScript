@@ -215,6 +215,12 @@ export class ListView extends ListViewBase {
     private _map: Map<ListViewCell, ItemView>;
     widthMeasureSpec: number = 0;
 
+    constructor() {
+        super();
+        this._map = new Map<ListViewCell, ItemView>();
+        this._heights = new Array<number>();
+    }
+
     createNativeView() {
         return UITableView.new();
     }
@@ -227,8 +233,6 @@ export class ListView extends ListViewBase {
         nativeView.rowHeight = UITableViewAutomaticDimension;
         nativeView.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
-        this._heights = new Array<number>();
-        this._map = new Map<ListViewCell, ItemView>();
         this._setNativeClipToBounds();
     }
 
