@@ -321,10 +321,6 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     public androidOnTouchEvent(motionEvent: android.view.MotionEvent) {
-        if (!this.target.isUserInteractionEnabled) {
-            return;
-        }
-
         if (this._notifyTouch) {
             if (!this._eventData) {
                 this._eventData = new TouchGestureEventData();

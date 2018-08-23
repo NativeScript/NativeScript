@@ -72,14 +72,6 @@ function initializeTouchListener(): void {
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
             const owner = this.owner;
-            // TODO: Should this be conditional?
-            // i.e. with isUserInteractionEnabled = false, return false means we are not handling the event
-            // and we are allowing a parent to handle it (previously with disabledTouchListener implementation (widgets)
-            // we handled it as a noop unconditionally, not allowing parents to process it)
-            if (!owner.isUserInteractionEnabled) {
-                return false;
-            }
-
             for (let type in owner._gestureObservers) {
                 let list = owner._gestureObservers[type];
                 list.forEach(element => {
@@ -247,7 +239,7 @@ export class View extends ViewCommon {
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         super.observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
-            this.setOnTouchListener();
+            this.setOnTouchListener(this.isUserInteractionEnabled);
         }
     }
 
@@ -303,7 +295,7 @@ export class View extends ViewCommon {
         super.onLoaded();
 
         if (!this.touchListenerIsSet) {
-            this.setOnTouchListener();
+            this.setOnTouchListener(this.isUserInteractionEnabled);
         }
     }
 
@@ -353,17 +345,28 @@ export class View extends ViewCommon {
         }
     }
 
-    private setOnTouchListener() {
-        this.touchListenerIsSet = true;
-
-        if (this.nativeViewProtected && this.hasGestureObservers()) {
-            if (this.nativeViewProtected.setClickable) {
-                this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
-            }
-
+    private setOnTouchListener(isUserInteractionEnabled: boolean) {
+        if (!this.nativeViewProtected) {
+            return;
+        }
+        
+        if (isUserInteractionEnabled && this.hasGestureObservers()) {
             initializeTouchListener();
             this.touchListener = this.touchListener || new TouchListener(this);
             this.nativeViewProtected.setOnTouchListener(this.touchListener);
+
+            this.touchListenerIsSet = true;
+        } 
+        else if (!isUserInteractionEnabled) {
+            initializeDisabledListener();
+            // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
+            this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
+
+            this.touchListenerIsSet = true;
+        }
+
+        if (this.touchListenerIsSet && this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(this.isUserInteractionEnabled && !this.isPassthroughParentEnabled);
         }
     }
 
@@ -603,21 +606,7 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        // TODO: cleanup disabledTouchListener implementation from widgets if we are not going to use it
-        // if (!value) {
-        //     initializeDisabledListener();
-        //     // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-        //     this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
-        // } else {
-        //     this.setOnTouchListener();
-        //     if (!this.touchListenerIsSet) {
-        //         this.nativeViewProtected.setOnTouchListener(null);
-        //     }
-        // }
-
-        if (this.nativeViewProtected.setClickable) {
-            this.nativeViewProtected.setClickable(value);
-        }
+        this.setOnTouchListener(value);
     }
 
     [visibilityProperty.getDefault](): Visibility {
