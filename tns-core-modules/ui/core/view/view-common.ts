@@ -586,6 +586,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public originY: number;
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
+    public iosExpandSafeArea: boolean;
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -1020,6 +1021,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return false;
     }
 }
+
+export const iosExpandSafeAreaProperty = new Property<ViewCommon, boolean>({ name: "iosExpandSafeArea", defaultValue: false, valueConverter: booleanConverter });
+iosExpandSafeAreaProperty.register(ViewCommon);
 
 export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
 automationTextProperty.register(ViewCommon);
