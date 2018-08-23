@@ -439,9 +439,9 @@ export class ListView extends ListViewBase {
             this._map.set(cell, view);
 
             // We expect that views returned from itemLoading are new (e.g. not reused).
-            if (view && !view.parent && view.nativeViewProtected) {
-                cell.contentView.addSubview(view.nativeViewProtected);
+            if (view && !view.parent) {
                 this._addView(view);
+                cell.contentView.addSubview(view.nativeViewProtected);
             }
 
             cellHeight = this._layoutCell(view, indexPath);
