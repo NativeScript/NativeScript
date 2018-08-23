@@ -221,12 +221,50 @@ export class View extends ViewCommon {
     }
 
     protected applySafeAreaInsets(frame: CGRect): CGRect {
-        if (majorVersion > 10) {
+        if (majorVersion <= 10) {
+            return null;
+        }
+
+        if (!this.iosExpandSafeArea) {
             const insets = this.getSafeAreaInsets();
 
             if (insets.left || insets.top) {
                 const position = this.getPositionFromFrame(frame);
                 const adjustedFrame = this.getFrameFromPosition(position, insets);
+                return adjustedFrame;
+            }
+        } else {
+            const locationOnScreen = this.getLocationOnScreen();
+
+            if (locationOnScreen) {
+                const safeArea = this.getSafeArea();
+                const fullscreen = this.getFullscreenArea();
+                const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
+                const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
+
+                const position = this.getPositionFromFrame(frame);
+                const safeAreaPosition = this.getPositionFromFrame(safeArea);
+                const fullscreenPosition = this.getPositionFromFrame(fullscreen);
+
+                const adjustedPosition = position;
+
+                if (position.left && onScreenLeft <= safeAreaPosition.left) {
+                    adjustedPosition.left = fullscreenPosition.left;
+                }
+
+                if (position.top && onScreenTop <= safeAreaPosition.top) {
+                    adjustedPosition.top = fullscreenPosition.top;
+                }
+
+                if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
+                    adjustedPosition.right = fullscreenPosition.right;
+                }
+
+                if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
+                    adjustedPosition.bottom = fullscreenPosition.bottom;
+                }
+
+                const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
                 return adjustedFrame;
             }
         }
@@ -611,49 +649,11 @@ export class ContainerView extends View {
 
     public iosExpandSafeArea: boolean;
 
-    protected applySafeAreaInsets(frame: CGRect): CGRect {
-        if (this.iosExpandSafeArea && majorVersion > 10) {
-            const locationOnScreen = this.getLocationOnScreen();
-
-            if (locationOnScreen) {
-                const safeArea = this.getSafeArea();
-                const fullscreen = this.getFullscreenArea();
-                const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
-                const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
-
-                const position = this.getPositionFromFrame(frame);
-                const safeAreaPosition = this.getPositionFromFrame(safeArea);
-                const fullscreenPosition = this.getPositionFromFrame(fullscreen);
-
-                const adjustedPosition = position;
-
-                if (position.left && onScreenLeft <= safeAreaPosition.left) {
-                    adjustedPosition.left = fullscreenPosition.left;
-                }
-
-                if (position.top && onScreenTop <= safeAreaPosition.top) {
-                    adjustedPosition.top = fullscreenPosition.top;
-                }
-
-                if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
-                    adjustedPosition.right = fullscreenPosition.right;
-                }
-
-                if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
-                    adjustedPosition.bottom = fullscreenPosition.bottom;
-                }
-
-                const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
-                return adjustedFrame;
-            }
-        }
-
-        return null;
+    constructor() {
+        super();
+        this.iosExpandSafeArea = true;
     }
 }
-
-export const iosExpandSafeAreaProperty = new Property<ContainerView, boolean>({ name: "iosExpandSafeArea", defaultValue: true, valueConverter: booleanConverter });
-iosExpandSafeAreaProperty.register(ContainerView);
 
 export class CustomLayoutView extends ContainerView {
 
