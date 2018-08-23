@@ -1,0 +1,14 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="AbsoluteLayout Examples"></Label>
+    </ActionBar>
+
+    <AbsoluteLayout class="abs">
+        <Button text="Left: 10, Top: 5" left="10" top="5" backgroundColor="red" />
+        <Button text="Left: 30, Top: 80" left="30" top="80" backgroundColor="green" />
+        <Button text="Left: 150, Top: 25" left="150" top="25" backgroundColor="blue" />
+        <Button text="Left: 70, Top: 150" left="70" top="150" backgroundColor="yellow" />
+    </AbsoluteLayout>
+
+</Page>
