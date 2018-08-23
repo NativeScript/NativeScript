@@ -46,7 +46,7 @@
     "typescript": "^2.6.1"
   },
   "scripts": {
-    "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps",
+    "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps && npm run dev-link-e2e-modal && npm run dev-link-e2e-safe-area",
     "tsc": "node  --max_old_space_size=4096 ./node_modules/typescript/bin/tsc",
     "ci": "tsc && npm run tslint && npm run ci-apps && npm run ci-e2e && npm run ci-tests",
     "ci-apps": "cd apps && npm i ../tns-core-modules ../tns-platform-declarations --save",
@@ -70,6 +70,7 @@
     "dev-link-tests": "cd tests && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-apps": "cd apps && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-e2e-modal": "cd e2e && cd modal-navigation && npm link tns-platform-declarations && npm link tns-core-modules",
+    "dev-link-e2e-safe-area": "cd e2e && cd safe-area && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-declarations": "npm run setup && rm -rf tns-platform-declarations/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-platform-declarations/ios/objc tns build ios --path tests",
     "test": "npm run test-android && npm run test-ios",
     "pretest": "npm run setup && npm run tsc",
