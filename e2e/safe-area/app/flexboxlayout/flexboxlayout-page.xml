@@ -1,0 +1,18 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="FlexboxLayout Examples"></Label>
+    </ActionBar>
+
+    <StackLayout horizontalAlignment="center">
+        <StackLayout>
+            <Label text="Pages w/ ActionBar"></Label>
+            <Button text="Flexbox Row" tap="onNavigate" route="flexboxlayout/action-bar/flexboxlayout-row-page"></Button>
+        </StackLayout>
+        <StackLayout>
+            <Label text="Pages w/o ActionBar"></Label>
+            <Button text="Flexbox Row" tap="onNavigate" route="flexboxlayout/no-action-bar/flexboxlayout-row-page"></Button>
+        </StackLayout>
+    </StackLayout>
+
+</Page>

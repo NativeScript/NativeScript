@@ -25,6 +25,10 @@ Page {
     background-color: HoneyDew;
 }
 
+.flex {
+    background-color: Indigo;
+}
+
 .grid {
     background-color: LightBlue;
 }

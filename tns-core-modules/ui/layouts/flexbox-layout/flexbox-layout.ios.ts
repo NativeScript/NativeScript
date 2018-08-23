@@ -943,6 +943,12 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
+        const insets = this.getSafeAreaInsets();
+        left += insets.left;
+        top += insets.top;
+        right -= insets.right;
+        bottom -= insets.bottom;
+
         let isRtl;
         switch (this.flexDirection) {
             case FlexDirection.ROW:
@@ -973,8 +979,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number) {
-        let paddingLeft = this.effectivePaddingLeft;
-        let paddingRight = this.effectivePaddingRight;
+        // include insets
+        let paddingLeft = this.effectivePaddingLeft + left;
+        let paddingRight = this.effectivePaddingRight + right;
 
         let childLeft;
         let currentViewIndex = 0;
@@ -982,8 +989,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let height = bottom - top;
         let width = right - left;
 
+        // include insets
         let childBottom = height - this.effectivePaddingBottom;
-        let childTop = this.effectivePaddingTop;
+        let childTop = this.effectivePaddingTop + top;
 
         let childRight;
         this._flexLines.forEach((flexLine, i) => {
