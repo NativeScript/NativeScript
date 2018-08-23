@@ -1,0 +1,15 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="DockLayout Examples"></Label>
+    </ActionBar>
+
+    <DockLayout stretchLastChild="true" class="dock">
+        <Button dock="Left" text="left" backgroundColor="red" />
+        <Button dock="Top" text="top" backgroundColor="green" />
+        <Button dock="Right" text="right" backgroundColor="blue" />
+        <Button dock="Bottom" text="bottom" backgroundColor="yellow" />
+        <Button text="Fill"/>
+    </DockLayout>
+
+</Page>

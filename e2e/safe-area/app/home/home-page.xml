@@ -7,6 +7,7 @@
     <ScrollView>
         <StackLayout>
             <Button text="Component Examples" tap="onNavigate" route="component/component-page"></Button>
+            <Button text="DockLayout Examples" tap="onNavigate" route="docklayout/docklayout-page"></Button>
             <Button text="GridLayout Examples" tap="onNavigate" route="gridlayout/gridlayout-page"></Button>
             <Button text="ListView Examples" tap="onNavigate" route="listview/listview-page" />
             <Button text="ScrollView Examples" tap="onNavigate" route="scrollview/scrollview-page"></Button>

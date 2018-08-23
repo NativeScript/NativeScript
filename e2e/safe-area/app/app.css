@@ -17,6 +17,10 @@ Page {
     background-color: LightGreen;
 }
 
+.dock {
+    background-color: HoneyDew;
+}
+
 .grid {
     background-color: LightBlue;
 }
