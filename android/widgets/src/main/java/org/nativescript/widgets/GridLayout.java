@@ -226,6 +226,7 @@ public class GridLayout extends LayoutBase {
     }
 
     private void removeFromMap(View child) {
+        this.map.get(child).child = null;
         this.map.remove(child);
     }
 
@@ -374,7 +375,7 @@ class MeasureSpecs {
 
     public boolean measured = false;
 
-    public final View child;
+    public View child;
     private ItemSpec column;
     private ItemSpec row;
     private int columnIndex;
