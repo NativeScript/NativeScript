@@ -8,7 +8,7 @@
 android {  
   defaultConfig {  
     generatedDensities = []
-    applicationId = "org.nativescript.modalnavigation"
+    applicationId = "org.nativescript.safearea"
   }  
   aaptOptions {  
     additionalParameters "--no-version-vectors"  
