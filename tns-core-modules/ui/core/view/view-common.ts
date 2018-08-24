@@ -881,7 +881,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public getSafeAreaInsets(): { left, top, right, bottom } {
-        return undefined;
+        return {left: 0, top: 0, right: 0, bottom: 0};
     }
 
     public getLocationInWindow(): Point {
