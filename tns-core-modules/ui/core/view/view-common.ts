@@ -884,14 +884,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return undefined;
     }
 
-    public getPositionFromFrame(frame: any): { left, top, right, bottom } {
-        return undefined;
-    }
-
-    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): any {
-        return undefined;
-    }
-
     public getLocationInWindow(): Point {
         return undefined;
     }

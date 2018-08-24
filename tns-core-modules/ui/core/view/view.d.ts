@@ -532,16 +532,6 @@ export abstract class View extends ViewBase {
     public getSafeAreaInsets(): { left, top, right, bottom };
 
     /**
-     * Transforms iOS CGRect to a position object with left, top, right and bottom.
-     */
-    public getPositionFromFrame(frame: any): { left, top, right, bottom };
-
-    /**
-     * Transforms a position object with left, top, right and bottom to an iOS CGRect.
-     */
-    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): any;
-
-    /**
      * Returns the location of this view in the window coordinate system.
      */
     public getLocationInWindow(): Point;
