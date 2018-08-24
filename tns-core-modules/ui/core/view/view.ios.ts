@@ -98,7 +98,7 @@ export class View extends ViewCommon {
                 // on iOS 11+ it is possible to have a changed layout frame due to safe area insets
                 // get the frame and adjust the position, so that onLayout works correctly
                 const frame = this.nativeViewProtected.frame;
-                position = this.getPositionFromFrame(frame);
+                position = ios.getPositionFromFrame(frame);
             }
 
             this.onLayout(position.left, position.top, position.right, position.bottom);
@@ -192,7 +192,7 @@ export class View extends ViewCommon {
         }
 
         const nativeView = this.nativeViewProtected;
-        const frame = this.getFrameFromPosition({ left, top, right, bottom });
+        const frame = ios.getFrameFromPosition({ left, top, right, bottom });
         this._setNativeViewFrame(nativeView, frame);
     }
 
@@ -229,8 +229,8 @@ export class View extends ViewCommon {
             const insets = this.getSafeAreaInsets();
 
             if (insets.left || insets.top) {
-                const position = this.getPositionFromFrame(frame);
-                const adjustedFrame = this.getFrameFromPosition(position, insets);
+                const position = ios.getPositionFromFrame(frame);
+                const adjustedFrame = ios.getFrameFromPosition(position, insets);
                 return adjustedFrame;
             }
         } else {
@@ -243,9 +243,9 @@ export class View extends ViewCommon {
                 const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
                 const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
 
-                const position = this.getPositionFromFrame(frame);
-                const safeAreaPosition = this.getPositionFromFrame(safeArea);
-                const fullscreenPosition = this.getPositionFromFrame(fullscreen);
+                const position = ios.getPositionFromFrame(frame);
+                const safeAreaPosition = ios.getPositionFromFrame(safeArea);
+                const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
 
                 const adjustedPosition = position;
 
@@ -285,26 +285,6 @@ export class View extends ViewCommon {
         }
 
         return insets;
-    }
-
-    public getPositionFromFrame(frame: CGRect): { left, top, right, bottom } {
-        const left = layout.round(layout.toDevicePixels(frame.origin.x));
-        const top = layout.round(layout.toDevicePixels(frame.origin.y));
-        const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
-        const bottom = layout.round(layout.toDevicePixels(frame.origin.y + frame.size.height));
-
-        return { left, right, top, bottom };
-    }
-
-    public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top, right, bottom }): CGRect {
-        insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
-
-        const left = layout.round(layout.toDeviceIndependentPixels(position.left + insets.left));
-        const top = layout.round(layout.toDeviceIndependentPixels(position.top + insets.top));
-        const width = layout.round(layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right));
-        const height = layout.round(layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom));
-
-        return CGRectMake(left, top, width, height);
     }
 
     public getLocationInWindow(): Point {
@@ -772,13 +752,13 @@ export namespace ios {
             layoutGuide = initLayoutGuide(controller);
         }
         const safeArea = layoutGuide.layoutFrame;
-        let position = owner.getPositionFromFrame(safeArea);
+        let position = ios.getPositionFromFrame(safeArea);
         const safeAreaSize = safeArea.size;
 
         const hasChildViewControllers = controller.childViewControllers.count > 0;
         if (hasChildViewControllers) {
             const fullscreen = controller.view.frame;
-            position = owner.getPositionFromFrame(fullscreen);
+            position = ios.getPositionFromFrame(fullscreen);
         }
 
         const safeAreaWidth = layout.round(layout.toDevicePixels(safeAreaSize.width));
@@ -791,6 +771,26 @@ export namespace ios {
         View.layoutChild(null, owner, position.left, position.top, position.right, position.bottom);
 
         layoutParent(owner.parent);
+    }
+
+    export function getPositionFromFrame(frame: CGRect): { left, top, right, bottom } {
+        const left = layout.round(layout.toDevicePixels(frame.origin.x));
+        const top = layout.round(layout.toDevicePixels(frame.origin.y));
+        const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
+        const bottom = layout.round(layout.toDevicePixels(frame.origin.y + frame.size.height));
+
+        return { left, right, top, bottom };
+    }
+
+    export function getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top, right, bottom }): CGRect {
+        insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
+
+        const left = layout.round(layout.toDeviceIndependentPixels(position.left + insets.left));
+        const top = layout.round(layout.toDeviceIndependentPixels(position.top + insets.top));
+        const width = layout.round(layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right));
+        const height = layout.round(layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom));
+
+        return CGRectMake(left, top, width, height);
     }
 
     function layoutParent(view: ViewBase): void {
