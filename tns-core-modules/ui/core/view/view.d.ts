@@ -542,16 +542,6 @@ export abstract class View extends ViewBase {
     public getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top }): any;
 
     /**
-     * Returns the iOS safe area frame of the closest parent with UIViewController.
-     */
-    public getSafeArea(): any;
-
-    /**
-     * Returns the iOS frame of the closest parent with UIViewController.
-     */
-    public getFullscreenArea(): any;
-
-    /**
      * Returns the location of this view in the window coordinate system.
      */
     public getLocationInWindow(): Point;
