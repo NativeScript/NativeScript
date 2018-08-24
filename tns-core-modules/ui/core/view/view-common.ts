@@ -892,14 +892,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return undefined;
     }
 
-    public getFullscreenArea(): any {
-        return undefined;
-    }
-
-    public getSafeArea(): any {
-        return undefined;
-    }
-
     public getLocationInWindow(): Point {
         return undefined;
     }

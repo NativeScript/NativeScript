@@ -237,8 +237,9 @@ export class View extends ViewCommon {
             const locationOnScreen = this.getLocationOnScreen();
 
             if (locationOnScreen) {
-                const safeArea = this.getSafeArea();
-                const fullscreen = this.getFullscreenArea();
+                const parentWithController = ios.getParentWithViewController(this);
+                const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
+                const fullscreen = parentWithController.viewController.view.frame;
                 const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
                 const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
 
@@ -304,16 +305,6 @@ export class View extends ViewCommon {
         const height = layout.round(layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom));
 
         return CGRectMake(left, top, width, height);
-    }
-
-    public getFullscreenArea(): any {
-        const parentWithController = ios.getParentWithViewController(this);
-        return parentWithController.viewController.view.frame;
-    }
-
-    public getSafeArea(): any {
-        const parentWithController = ios.getParentWithViewController(this);
-        return parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
     }
 
     public getLocationInWindow(): Point {
