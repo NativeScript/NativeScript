@@ -1,7 +1,7 @@
 import * as TKUnit from "../TKUnit";
-import {Label} from "tns-core-modules/ui/label";
+import { Label } from "tns-core-modules/ui/label";
 // >> observable-array-require
-import {ChangedData, ChangeType, ObservableArray} from "tns-core-modules/data/observable-array";
+import { ObservableArray, ChangedData, ChangeType } from "tns-core-modules/data/observable-array";
 // << observable-array-require
 
 export const test_ObservableArray_shouldCopySourceArrayItems = function () {
