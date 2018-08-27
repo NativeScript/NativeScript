@@ -233,41 +233,35 @@ export class View extends ViewCommon {
                 const adjustedFrame = ios.getFrameFromPosition(position, insets);
                 return adjustedFrame;
             }
-        } else {
-            const locationOnScreen = this.getLocationOnScreen();
+        } else if (this.nativeViewProtected && this.nativeViewProtected.window) {
+            const parentWithController = ios.getParentWithViewController(this);
+            const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
+            const fullscreen = parentWithController.viewController.view.frame;
 
-            if (locationOnScreen) {
-                const parentWithController = ios.getParentWithViewController(this);
-                const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
-                const fullscreen = parentWithController.viewController.view.frame;
-                const onScreenLeft = layout.round(layout.toDevicePixels(locationOnScreen.x));
-                const onScreenTop = layout.round(layout.toDevicePixels(locationOnScreen.y));
+            const position = ios.getPositionFromFrame(frame);
+            const safeAreaPosition = ios.getPositionFromFrame(safeArea);
+            const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
 
-                const position = ios.getPositionFromFrame(frame);
-                const safeAreaPosition = ios.getPositionFromFrame(safeArea);
-                const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
+            const adjustedPosition = position;
 
-                const adjustedPosition = position;
-
-                if (position.left && onScreenLeft <= safeAreaPosition.left) {
-                    adjustedPosition.left = fullscreenPosition.left;
-                }
-
-                if (position.top && onScreenTop <= safeAreaPosition.top) {
-                    adjustedPosition.top = fullscreenPosition.top;
-                }
-
-                if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
-                    adjustedPosition.right = fullscreenPosition.right;
-                }
-
-                if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
-                    adjustedPosition.bottom = fullscreenPosition.bottom;
-                }
-
-                const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
-                return adjustedFrame;
+            if (position.left && position.left <= safeAreaPosition.left) {
+                adjustedPosition.left = fullscreenPosition.left;
             }
+
+            if (position.top && position.top <= safeAreaPosition.top) {
+                adjustedPosition.top = fullscreenPosition.top;
+            }
+
+            if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
+                adjustedPosition.right = fullscreenPosition.right;
+            }
+
+            if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
+                adjustedPosition.bottom = fullscreenPosition.bottom;
+            }
+
+            const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
+            return adjustedFrame;
         }
 
         return null;
