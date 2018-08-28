@@ -156,7 +156,7 @@ export class View extends ViewCommon {
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
             if (traceEnabled()) {
-                traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
+                traceWrite(this + " :_setNativeViewFrame: " + JSON.stringify(ios.getPositionFromFrame(frame)), traceCategories.Layout);
             }
             this._cachedFrame = frame;
             if (this._hasTransfrom) {
@@ -231,6 +231,11 @@ export class View extends ViewCommon {
             if (insets.left || insets.top) {
                 const position = ios.getPositionFromFrame(frame);
                 const adjustedFrame = ios.getFrameFromPosition(position, insets);
+
+                if (traceEnabled()) {
+                    traceWrite(this + " :applySafeAreaInsets: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
+                }
+
                 return adjustedFrame;
             }
         } else if (this.nativeViewProtected && this.nativeViewProtected.window) {
@@ -261,6 +266,11 @@ export class View extends ViewCommon {
             }
 
             const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
+
+            if (traceEnabled()) {
+                traceWrite(this + " :applySafeAreaInsets: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
+            }
+
             return adjustedFrame;
         }
 
