@@ -226,52 +226,9 @@ export class View extends ViewCommon {
         }
 
         if (!this.iosExpandSafeArea) {
-            const insets = this.getSafeAreaInsets();
-
-            if (insets.left || insets.top) {
-                const position = ios.getPositionFromFrame(frame);
-                const adjustedFrame = ios.getFrameFromPosition(position, insets);
-
-                if (traceEnabled()) {
-                    traceWrite(this + " :applySafeAreaInsets: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
-                }
-
-                return adjustedFrame;
-            }
+            return ios.shrinkToSafeArea(this, frame);
         } else if (this.nativeViewProtected && this.nativeViewProtected.window) {
-            const parentWithController = ios.getParentWithViewController(this);
-            const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
-            const fullscreen = parentWithController.viewController.view.frame;
-
-            const position = ios.getPositionFromFrame(frame);
-            const safeAreaPosition = ios.getPositionFromFrame(safeArea);
-            const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
-
-            const adjustedPosition = position;
-
-            if (position.left && position.left <= safeAreaPosition.left) {
-                adjustedPosition.left = fullscreenPosition.left;
-            }
-
-            if (position.top && position.top <= safeAreaPosition.top) {
-                adjustedPosition.top = fullscreenPosition.top;
-            }
-
-            if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
-                adjustedPosition.right = fullscreenPosition.right;
-            }
-
-            if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
-                adjustedPosition.bottom = fullscreenPosition.bottom;
-            }
-
-            const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
-
-            if (traceEnabled()) {
-                traceWrite(this + " :applySafeAreaInsets: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
-            }
-
-            return adjustedFrame;
+            return ios.expandBeyondSafeArea(this, frame);
         }
 
         return null;
@@ -796,6 +753,58 @@ export namespace ios {
 
         return CGRectMake(left, top, width, height);
     }
+
+    export function shrinkToSafeArea(view: View, frame: CGRect): CGRect {
+        const insets = view.getSafeAreaInsets();
+        if (insets.left || insets.top) {
+            const position = ios.getPositionFromFrame(frame);
+            const adjustedFrame = ios.getFrameFromPosition(position, insets);
+
+            if (traceEnabled()) {
+                traceWrite(this + " :shrinkToSafeArea: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
+            }
+
+            return adjustedFrame;
+        }
+        return null;
+    }
+
+    export function expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
+        const parentWithController = ios.getParentWithViewController(view);
+        const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
+        const fullscreen = parentWithController.viewController.view.frame;
+
+        const position = ios.getPositionFromFrame(frame);
+        const safeAreaPosition = ios.getPositionFromFrame(safeArea);
+        const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
+
+        const adjustedPosition = position;
+
+        if (position.left && position.left <= safeAreaPosition.left) {
+            adjustedPosition.left = fullscreenPosition.left;
+        }
+
+        if (position.top && position.top <= safeAreaPosition.top) {
+            adjustedPosition.top = fullscreenPosition.top;
+        }
+
+        if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
+            adjustedPosition.right = fullscreenPosition.right;
+        }
+
+        if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
+            adjustedPosition.bottom = fullscreenPosition.bottom;
+        }
+
+        const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
+
+        if (traceEnabled()) {
+            traceWrite(view + " :expandBeyondSafeArea: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
+        }
+
+        return adjustedFrame;
+    }
+
 
     function layoutParent(view: ViewBase): void {
         if (!view) {
