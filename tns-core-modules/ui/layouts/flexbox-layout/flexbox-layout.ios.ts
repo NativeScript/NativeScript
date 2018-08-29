@@ -944,44 +944,42 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const insets = this.getSafeAreaInsets();
-        left += insets.left;
-        top += insets.top;
-        right -= insets.right;
-        bottom -= insets.bottom;
 
         let isRtl;
         switch (this.flexDirection) {
             case FlexDirection.ROW:
                 isRtl = false;
-                this._layoutHorizontal(isRtl, left, top, right, bottom);
+                this._layoutHorizontal(isRtl, left, top, right, bottom, insets);
                 break;
             case FlexDirection.ROW_REVERSE:
                 isRtl = true;
-                this._layoutHorizontal(isRtl, left, top, right, bottom);
+                this._layoutHorizontal(isRtl, left, top, right, bottom, insets);
                 break;
             case FlexDirection.COLUMN:
                 isRtl = false;
                 if (this.flexWrap === FlexWrap.WRAP_REVERSE) {
                     isRtl = !isRtl;
                 }
-                this._layoutVertical(isRtl, false, left, top, right, bottom);
+                this._layoutVertical(isRtl, false, left, top, right, bottom, insets);
                 break;
             case FlexDirection.COLUMN_REVERSE:
                 isRtl = false;
                 if (this.flexWrap === FlexWrap.WRAP_REVERSE) {
                     isRtl = !isRtl;
                 }
-                this._layoutVertical(isRtl, true, left, top, right, bottom);
+                this._layoutVertical(isRtl, true, left, top, right, bottom, insets);
                 break;
             default:
                 throw new Error("Invalid flex direction is set: " + this.flexDirection);
         }
     }
 
-    private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number) {
+    private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }) {
         // include insets
-        let paddingLeft = this.effectivePaddingLeft + left;
-        let paddingRight = this.effectivePaddingRight + right;
+        let paddingLeft = this.effectivePaddingLeft + insets.left;
+        let paddingTop = this.effectivePaddingTop + insets.top;
+        let paddingRight = this.effectivePaddingRight + insets.right;
+        let paddingBottom = this.effectivePaddingBottom + insets.bottom;
 
         let childLeft;
         let currentViewIndex = 0;
@@ -990,8 +988,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let width = right - left;
 
         // include insets
-        let childBottom = height - this.effectivePaddingBottom;
-        let childTop = this.effectivePaddingTop + top;
+        let childBottom = height - paddingBottom;
+        let childTop = paddingTop;
 
         let childRight;
         this._flexLines.forEach((flexLine, i) => {
@@ -1138,12 +1136,13 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         }
     }
 
-    private _layoutVertical(isRtl: boolean, fromBottomToTop: boolean, left: number, top: number, right: number, bottom: number) {
-        let paddingTop = this.effectivePaddingTop;
-        let paddingBottom = this.effectivePaddingBottom;
+    private _layoutVertical(isRtl: boolean, fromBottomToTop: boolean, left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }) {
+        let paddingLeft = this.effectivePaddingLeft + insets.left;
+        let paddingTop = this.effectivePaddingTop + insets.top;
+        let paddingRight = this.effectivePaddingRight + insets.right;
+        let paddingBottom = this.effectivePaddingBottom + insets.bottom;
 
-        let paddingRight = this.effectivePaddingRight;
-        let childLeft = this.effectivePaddingLeft;
+        let childLeft = paddingLeft;
         let currentViewIndex = 0;
 
         let width = right - left;

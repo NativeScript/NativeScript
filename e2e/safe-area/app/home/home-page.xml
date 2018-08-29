@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" actionBarHidden="true">
 
     <ActionBar>
         <Label text="Home"></Label>
@@ -20,6 +20,7 @@
             <Button text="Expand Examples" tap="onNavigate" route="expand/expand-page"></Button>
             <Button text="Repeater Examples" tap="onNavigate" route="repeater/repeater-page"></Button>
             <Button text="WebView Examples" tap="onNavigate" route="webview/webview-page"></Button>
+            <Button text="Flexbox Examples" tap="onNavigate" route="flexboxlayout/flexboxlayout-page"></Button>
         </StackLayout>
     </ScrollView>
 

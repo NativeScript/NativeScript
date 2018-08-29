@@ -1,11 +1,11 @@
 <FlexboxLayout flexDirection="row" class="flex">
+    <StackLayout backgroundColor="white">
+        <Label text="Lorem"></Label>
+    </StackLayout>
+    <StackLayout flexGrow="1" backgroundColor="green">
+        <Label text="Lorem"></Label>
+    </StackLayout>
     <StackLayout backgroundColor="red">
-        <Label backgroundColor="#965251" text="Item"></Label>
-    </StackLayout>
-    <StackLayout flexGrow="1" class="stack">
-        <Label flexGrow="1" backgroundColor="#d2b29b" text="Flex-Grow 1"></Label>
-    </StackLayout>
-    <StackLayout backgroundColor="blue">
-        <Label backgroundColor="#F69256" text="Item"></Label>
+        <Label text="Lorem"></Label>
     </StackLayout>
 </FlexboxLayout>

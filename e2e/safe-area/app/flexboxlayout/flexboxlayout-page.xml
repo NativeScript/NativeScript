@@ -8,10 +8,12 @@
         <StackLayout>
             <Label text="Pages w/ ActionBar"></Label>
             <Button text="Flexbox Row" tap="onNavigate" route="flexboxlayout/action-bar/flexboxlayout-row-page"></Button>
+            <Button text="Flexbox Col" tap="onNavigate" route="flexboxlayout/action-bar/flexboxlayout-col-page"></Button>
         </StackLayout>
         <StackLayout>
             <Label text="Pages w/o ActionBar"></Label>
             <Button text="Flexbox Row" tap="onNavigate" route="flexboxlayout/no-action-bar/flexboxlayout-row-page"></Button>
+            <Button text="Flexbox Col" tap="onNavigate" route="flexboxlayout/no-action-bar/flexboxlayout-col-page"></Button>
         </StackLayout>
     </StackLayout>
 
