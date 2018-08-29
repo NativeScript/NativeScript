@@ -18,11 +18,11 @@ Page {
 }
 
 .abs {
-    background-color: Lavender;
+    background-color: Aqua;
 }
 
 .dock {
-    background-color: HoneyDew;
+    background-color: Chocolate;
 }
 
 .flex {
@@ -30,21 +30,21 @@ Page {
 }
 
 .grid {
-    background-color: LightBlue;
+    background-color: Coral;
 }
 
 .list {
-    background-color: LightCoral;
+    background-color: Crimson;
 }
 
 .scroll {
-    background-color: LightSalmon;
+    background-color: DarkCyan;
 }
 
 .stack {
-    background-color: LightPink;
+    background-color: DarkOliveGreen;
 }
 
 .wrap {
-    background-color: LightYellow;
+    background-color: Gold;
 }
