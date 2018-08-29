@@ -805,7 +805,6 @@ export namespace ios {
         return adjustedFrame;
     }
 
-
     function layoutParent(view: ViewBase): void {
         if (!view) {
             return;
