@@ -293,10 +293,7 @@ export class View extends ViewCommon {
     public onLoaded() {
         this._manager = null;
         super.onLoaded();
-
-        if (!this.touchListenerIsSet) {
-            this.setOnTouchListener();
-        }
+        this.setOnTouchListener();
     }
 
     @profile
@@ -346,22 +343,20 @@ export class View extends ViewCommon {
     }
 
     private setOnTouchListener() {
-        if (!this.nativeViewProtected) {
+        if (!this.nativeViewProtected || !this.hasGestureObservers()) {
             return;
         }
         
         // do not set noop listener that handles the event (disabled listener) if IsUserInteractionEnabled is
         // false as we might need the ability for the event to pass through to a parent view
-        if (this.hasGestureObservers()) {
-            initializeTouchListener();
-            this.touchListener = this.touchListener || new TouchListener(this);
-            this.nativeViewProtected.setOnTouchListener(this.touchListener);
+        initializeTouchListener();
+        this.touchListener = this.touchListener || new TouchListener(this);
+        this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
-            this.touchListenerIsSet = true;
+        this.touchListenerIsSet = true;
 
-            if (this.nativeViewProtected.setClickable) {
-                this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
-            }
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
         }
     }
 
