@@ -746,10 +746,10 @@ export namespace ios {
     export function getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top, right, bottom }): CGRect {
         insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
-        const left = layout.round(layout.toDeviceIndependentPixels(position.left + insets.left));
-        const top = layout.round(layout.toDeviceIndependentPixels(position.top + insets.top));
-        const width = layout.round(layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right));
-        const height = layout.round(layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom));
+        const left = layout.toDeviceIndependentPixels(position.left + insets.left);
+        const top = layout.toDeviceIndependentPixels(position.top + insets.top);
+        const width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
+        const height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
 
         return CGRectMake(left, top, width, height);
     }
