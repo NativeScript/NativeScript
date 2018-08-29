@@ -3,8 +3,8 @@ import { Point, View as ViewDefinition, dip } from ".";
 import { ViewBase } from "../view-base";
 
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    isPassthroughParentEnabledProperty, traceEnabled, traceWrite, traceCategories, traceError, traceMessageType
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, 
+    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
@@ -414,13 +414,6 @@ export class View extends ViewCommon {
     }
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
         this.nativeViewProtected.userInteractionEnabled = value;
-    }
-
-    [isPassthroughParentEnabledProperty.getDefault](): boolean {
-        return (<any>this.nativeViewProtected).passthroughParent;
-    }
-    [isPassthroughParentEnabledProperty.setNative](value: boolean) {
-        (<any>this.nativeViewProtected).setPassthroughParent(value);
     }
 
     [visibilityProperty.getDefault](): Visibility {

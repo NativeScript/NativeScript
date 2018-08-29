@@ -586,7 +586,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public originY: number;
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
-    public isPassthroughParentEnabled: boolean;
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -1023,6 +1022,3 @@ isEnabledProperty.register(ViewCommon);
 
 export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true, valueConverter: booleanConverter });
 isUserInteractionEnabledProperty.register(ViewCommon);
-
-export const isPassthroughParentEnabledProperty = new Property<ViewCommon, boolean>({ name: "isPassthroughParentEnabled", defaultValue: false, valueConverter: booleanConverter });
-isPassthroughParentEnabledProperty.register(ViewCommon);

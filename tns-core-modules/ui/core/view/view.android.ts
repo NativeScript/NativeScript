@@ -239,7 +239,7 @@ export class View extends ViewCommon {
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         super.observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
-            this.setOnTouchListener(this.isUserInteractionEnabled);
+            this.setOnTouchListener();
         }
     }
 
@@ -295,7 +295,7 @@ export class View extends ViewCommon {
         super.onLoaded();
 
         if (!this.touchListenerIsSet) {
-            this.setOnTouchListener(this.isUserInteractionEnabled);
+            this.setOnTouchListener();
         }
     }
 
@@ -345,28 +345,23 @@ export class View extends ViewCommon {
         }
     }
 
-    private setOnTouchListener(isUserInteractionEnabled: boolean) {
+    private setOnTouchListener() {
         if (!this.nativeViewProtected) {
             return;
         }
         
-        if (isUserInteractionEnabled && this.hasGestureObservers()) {
+        // do not set noop listener that handles the event (disabled listener) if IsUserInteractionEnabled is
+        // false as we might need the ability for the event to pass through to a parent view
+        if (this.hasGestureObservers()) {
             initializeTouchListener();
             this.touchListener = this.touchListener || new TouchListener(this);
             this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
             this.touchListenerIsSet = true;
-        } 
-        else if (!isUserInteractionEnabled) {
-            initializeDisabledListener();
-            // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-            this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
 
-            this.touchListenerIsSet = true;
-        }
-
-        if (this.touchListenerIsSet && this.nativeViewProtected.setClickable) {
-            this.nativeViewProtected.setClickable(this.isUserInteractionEnabled && !this.isPassthroughParentEnabled);
+            if (this.nativeViewProtected.setClickable) {
+                this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
+            }
         }
     }
 
@@ -606,7 +601,9 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        this.setOnTouchListener(value);
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(value);
+        }
     }
 
     [visibilityProperty.getDefault](): Visibility {
