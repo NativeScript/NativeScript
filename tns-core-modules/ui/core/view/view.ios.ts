@@ -770,6 +770,12 @@ export namespace ios {
     }
 
     export function expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
+        const locationInWindow = view.getLocationInWindow();
+        const inWindowLeft = layout.round(layout.toDevicePixels(locationInWindow.x));
+        const inWindowTop = layout.round(layout.toDevicePixels(locationInWindow.y));
+        const inWindowRight = inWindowLeft + layout.round(layout.toDevicePixels(frame.size.width));
+        const inWindowBottom = inWindowTop + layout.round(layout.toDevicePixels(frame.size.height));
+
         const parentWithController = ios.getParentWithViewController(view);
         const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
         const fullscreen = parentWithController.viewController.view.frame;
@@ -780,19 +786,19 @@ export namespace ios {
 
         const adjustedPosition = position;
 
-        if (position.left && position.left <= safeAreaPosition.left) {
+        if (position.left && inWindowLeft <= safeAreaPosition.left) {
             adjustedPosition.left = fullscreenPosition.left;
         }
 
-        if (position.top && position.top <= safeAreaPosition.top) {
+        if (position.top && inWindowTop <= safeAreaPosition.top) {
             adjustedPosition.top = fullscreenPosition.top;
         }
 
-        if (position.right < fullscreenPosition.right && position.right >= safeAreaPosition.right) {
+        if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right) {
             adjustedPosition.right = fullscreenPosition.right;
         }
 
-        if (position.bottom < fullscreenPosition.bottom && position.bottom >= safeAreaPosition.bottom) {
+        if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom) {
             adjustedPosition.bottom = fullscreenPosition.bottom;
         }
 
