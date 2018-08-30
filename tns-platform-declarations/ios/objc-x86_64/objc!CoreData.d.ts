@@ -139,7 +139,7 @@ declare class NSBatchDeleteRequest extends NSPersistentStoreRequest {
 
 	constructor(o: { fetchRequest: NSFetchRequest<any>; });
 
-	constructor(o: { objectIDs: NSArray<NSManagedObjectID>; });
+	constructor(o: { objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]; });
 
 	initWithFetchRequest(fetch: NSFetchRequest<any>): this;
 
@@ -239,7 +239,7 @@ declare class NSConstraintConflict extends NSObject {
 
 	readonly databaseSnapshot: NSDictionary<string, any>;
 
-	constructor(o: { constraint: NSArray<string>; databaseObject: NSManagedObject; databaseSnapshot: NSDictionary<any, any>; conflictingObjects: NSArray<NSManagedObject>; conflictingSnapshots: NSArray<any>; });
+	constructor(o: { constraint: NSArray<string> | string[]; databaseObject: NSManagedObject; databaseSnapshot: NSDictionary<any, any>; conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[]; conflictingSnapshots: NSArray<any> | any[]; });
 
 	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string> | string[], databaseObject: NSManagedObject, databaseSnapshot: NSDictionary<any, any>, conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[], conflictingSnapshots: NSArray<any> | any[]): this;
 }
@@ -448,7 +448,7 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription>; });
+	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]; });
 
 	encodeWithCoder(aCoder: NSCoder): void;
 

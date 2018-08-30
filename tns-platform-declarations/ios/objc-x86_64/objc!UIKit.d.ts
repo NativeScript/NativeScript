@@ -1862,7 +1862,7 @@ declare class UIActivityViewController extends UIViewController {
 
 	excludedActivityTypes: NSArray<string>;
 
-	constructor(o: { activityItems: NSArray<any>; applicationActivities: NSArray<UIActivity>; });
+	constructor(o: { activityItems: NSArray<any> | any[]; applicationActivities: NSArray<UIActivity> | UIActivity[]; });
 
 	initWithActivityItemsApplicationActivities(activityItems: NSArray<any> | any[], applicationActivities: NSArray<UIActivity> | UIActivity[]): this;
 }
@@ -2732,7 +2732,7 @@ declare class UIBarButtonItemGroup extends NSObject implements NSCoding {
 
 	representativeItem: UIBarButtonItem;
 
-	constructor(o: { barButtonItems: NSArray<UIBarButtonItem>; representativeItem: UIBarButtonItem; });
+	constructor(o: { barButtonItems: NSArray<UIBarButtonItem> | UIBarButtonItem[]; representativeItem: UIBarButtonItem; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -4286,7 +4286,7 @@ declare class UICollisionBehavior extends UIDynamicBehavior {
 
 	translatesReferenceBoundsIntoBoundary: boolean;
 
-	constructor(o: { items: NSArray<UIDynamicItem>; });
+	constructor(o: { items: NSArray<UIDynamicItem> | UIDynamicItem[]; });
 
 	addBoundaryWithIdentifierForPath(identifier: any, bezierPath: UIBezierPath): void;
 
@@ -5274,7 +5274,7 @@ declare class UIDocumentBrowserViewController extends UIViewController implement
 
 	delegate: UIDocumentBrowserViewControllerDelegate;
 
-	constructor(o: { forOpeningFilesWithContentTypes: NSArray<string>; });
+	constructor(o: { forOpeningFilesWithContentTypes: NSArray<string> | string[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -5463,7 +5463,7 @@ declare class UIDocumentMenuViewController extends UIViewController {
 
 	delegate: UIDocumentMenuDelegate;
 
-	constructor(o: { documentTypes: NSArray<string>; inMode: UIDocumentPickerMode; });
+	constructor(o: { documentTypes: NSArray<string> | string[]; inMode: UIDocumentPickerMode; });
 
 	constructor(o: { URL: NSURL; inMode: UIDocumentPickerMode; });
 
@@ -5531,11 +5531,11 @@ declare class UIDocumentPickerViewController extends UIViewController {
 
 	readonly documentPickerMode: UIDocumentPickerMode;
 
-	constructor(o: { documentTypes: NSArray<string>; inMode: UIDocumentPickerMode; });
+	constructor(o: { documentTypes: NSArray<string> | string[]; inMode: UIDocumentPickerMode; });
 
 	constructor(o: { URL: NSURL; inMode: UIDocumentPickerMode; });
 
-	constructor(o: { URLs: NSArray<NSURL>; inMode: UIDocumentPickerMode; });
+	constructor(o: { URLs: NSArray<NSURL> | NSURL[]; inMode: UIDocumentPickerMode; });
 
 	initWithDocumentTypesInMode(allowedUTIs: NSArray<string> | string[], mode: UIDocumentPickerMode): this;
 
@@ -5748,7 +5748,7 @@ declare class UIDragPreviewParameters extends NSObject implements NSCopying {
 
 	visiblePath: UIBezierPath;
 
-	constructor(o: { textLineRects: NSArray<NSValue>; });
+	constructor(o: { textLineRects: NSArray<NSValue> | NSValue[]; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -6029,7 +6029,7 @@ declare class UIDynamicItemBehavior extends UIDynamicBehavior {
 
 	resistance: number;
 
-	constructor(o: { items: NSArray<UIDynamicItem>; });
+	constructor(o: { items: NSArray<UIDynamicItem> | UIDynamicItem[]; });
 
 	addAngularVelocityForItem(velocity: number, item: UIDynamicItem): void;
 
@@ -6085,7 +6085,7 @@ declare class UIDynamicItemGroup extends NSObject implements UIDynamicItem {
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { items: NSArray<UIDynamicItem>; });
+	constructor(o: { items: NSArray<UIDynamicItem> | UIDynamicItem[]; });
 
 	class(): typeof NSObject;
 
@@ -6994,7 +6994,7 @@ declare class UIGravityBehavior extends UIDynamicBehavior {
 
 	magnitude: number;
 
-	constructor(o: { items: NSArray<UIDynamicItem>; });
+	constructor(o: { items: NSArray<UIDynamicItem> | UIDynamicItem[]; });
 
 	addItem(item: UIDynamicItem): void;
 
@@ -8848,7 +8848,7 @@ declare class UIPasteConfiguration extends NSObject implements NSCopying, NSSecu
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { acceptableTypeIdentifiers: NSArray<string>; });
+	constructor(o: { acceptableTypeIdentifiers: NSArray<string> | string[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10068,7 +10068,7 @@ declare class UIPushBehavior extends UIDynamicBehavior {
 
 	pushDirection: CGVector;
 
-	constructor(o: { items: NSArray<UIDynamicItem>; mode: UIPushBehaviorMode; });
+	constructor(o: { items: NSArray<UIDynamicItem> | UIDynamicItem[]; mode: UIPushBehaviorMode; });
 
 	addItem(item: UIDynamicItem): void;
 
@@ -11187,7 +11187,7 @@ declare class UISegmentedControl extends UIControl implements NSCoding, UISpring
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { items: NSArray<any>; });
+	constructor(o: { items: NSArray<any> | any[]; });
 
 	backgroundImageForStateBarMetrics(state: UIControlState, barMetrics: UIBarMetrics): UIImage;
 
@@ -11688,7 +11688,7 @@ declare class UIStackView extends UIView {
 
 	spacing: number;
 
-	constructor(o: { arrangedSubviews: NSArray<UIView>; });
+	constructor(o: { arrangedSubviews: NSArray<UIView> | UIView[]; });
 
 	addArrangedSubview(view: UIView): void;
 

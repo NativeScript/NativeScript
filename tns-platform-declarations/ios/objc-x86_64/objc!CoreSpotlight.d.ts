@@ -171,7 +171,7 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { displayName: string; handles: NSArray<string>; handleIdentifier: string; });
+	constructor(o: { displayName: string; handles: NSArray<string> | string[]; handleIdentifier: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -200,7 +200,7 @@ declare class CSSearchQuery extends NSObject {
 
 	protectionClasses: NSArray<string>;
 
-	constructor(o: { queryString: string; attributes: NSArray<string>; });
+	constructor(o: { queryString: string; attributes: NSArray<string> | string[]; });
 
 	cancel(): void;
 

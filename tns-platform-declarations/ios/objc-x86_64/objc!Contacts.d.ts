@@ -196,7 +196,7 @@ declare class CNContactFetchRequest extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { keysToFetch: NSArray<CNKeyDescriptor>; });
+	constructor(o: { keysToFetch: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]; });
 
 	encodeWithCoder(aCoder: NSCoder): void;
 

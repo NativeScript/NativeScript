@@ -404,7 +404,7 @@ declare class AVAssetReaderAudioMixOutput extends AVAssetReaderOutput {
 
 	readonly audioTracks: NSArray<AVAssetTrack>;
 
-	constructor(o: { audioTracks: NSArray<AVAssetTrack>; audioSettings: NSDictionary<string, any>; });
+	constructor(o: { audioTracks: NSArray<AVAssetTrack> | AVAssetTrack[]; audioSettings: NSDictionary<string, any>; });
 
 	initWithAudioTracksAudioSettings(audioTracks: NSArray<AVAssetTrack> | AVAssetTrack[], audioSettings: NSDictionary<string, any>): this;
 }
@@ -508,7 +508,7 @@ declare class AVAssetReaderVideoCompositionOutput extends AVAssetReaderOutput {
 
 	readonly videoTracks: NSArray<AVAssetTrack>;
 
-	constructor(o: { videoTracks: NSArray<AVAssetTrack>; videoSettings: NSDictionary<string, any>; });
+	constructor(o: { videoTracks: NSArray<AVAssetTrack> | AVAssetTrack[]; videoSettings: NSDictionary<string, any>; });
 
 	initWithVideoTracksVideoSettings(videoTracks: NSArray<AVAssetTrack> | AVAssetTrack[], videoSettings: NSDictionary<string, any>): this;
 }
@@ -881,7 +881,7 @@ declare class AVAssetWriterInputGroup extends AVMediaSelectionGroup {
 
 	readonly inputs: NSArray<AVAssetWriterInput>;
 
-	constructor(o: { inputs: NSArray<AVAssetWriterInput>; defaultInput: AVAssetWriterInput; });
+	constructor(o: { inputs: NSArray<AVAssetWriterInput> | AVAssetWriterInput[]; defaultInput: AVAssetWriterInput; });
 
 	initWithInputsDefaultInput(inputs: NSArray<AVAssetWriterInput> | AVAssetWriterInput[], defaultInput: AVAssetWriterInput): this;
 }
@@ -3338,7 +3338,7 @@ declare class AVCaptureConnection extends NSObject {
 
 	constructor(o: { inputPort: AVCaptureInputPort; videoPreviewLayer: AVCaptureVideoPreviewLayer; });
 
-	constructor(o: { inputPorts: NSArray<AVCaptureInputPort>; output: AVCaptureOutput; });
+	constructor(o: { inputPorts: NSArray<AVCaptureInputPort> | AVCaptureInputPort[]; output: AVCaptureOutput; });
 
 	initWithInputPortVideoPreviewLayer(port: AVCaptureInputPort, layer: AVCaptureVideoPreviewLayer): this;
 
@@ -3357,7 +3357,7 @@ declare class AVCaptureDataOutputSynchronizer extends NSObject {
 
 	readonly delegateCallbackQueue: NSObject;
 
-	constructor(o: { dataOutputs: NSArray<AVCaptureOutput>; });
+	constructor(o: { dataOutputs: NSArray<AVCaptureOutput> | AVCaptureOutput[]; });
 
 	initWithDataOutputs(dataOutputs: NSArray<AVCaptureOutput> | AVCaptureOutput[]): this;
 
@@ -4749,7 +4749,7 @@ declare class AVDateRangeMetadataGroup extends AVMetadataGroup implements NSCopy
 
 	readonly startDate: Date;
 
-	constructor(o: { items: NSArray<AVMetadataItem>; startDate: Date; endDate: Date; });
+	constructor(o: { items: NSArray<AVMetadataItem> | AVMetadataItem[]; startDate: Date; endDate: Date; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -7056,7 +7056,7 @@ declare class AVPlayerItem extends NSObject implements NSCopying {
 
 	constructor(o: { asset: AVAsset; });
 
-	constructor(o: { asset: AVAsset; automaticallyLoadedAssetKeys: NSArray<string>; });
+	constructor(o: { asset: AVAsset; automaticallyLoadedAssetKeys: NSArray<string> | string[]; });
 
 	constructor(o: { URL: NSURL; });
 
@@ -7243,7 +7243,7 @@ declare class AVPlayerItemLegibleOutput extends AVPlayerItemOutput {
 
 	textStylingResolution: string;
 
-	constructor(o: { mediaSubtypesForNativeRepresentation: NSArray<number>; });
+	constructor(o: { mediaSubtypesForNativeRepresentation: NSArray<number> | number[]; });
 
 	initWithMediaSubtypesForNativeRepresentation(subtypes: NSArray<number> | number[]): this;
 
@@ -7280,7 +7280,7 @@ declare class AVPlayerItemMetadataCollector extends AVPlayerItemMediaDataCollect
 
 	readonly delegateQueue: NSObject;
 
-	constructor(o: { identifiers: NSArray<string>; classifyingLabels: NSArray<string>; });
+	constructor(o: { identifiers: NSArray<string> | string[]; classifyingLabels: NSArray<string> | string[]; });
 
 	initWithIdentifiersClassifyingLabels(identifiers: NSArray<string> | string[], classifyingLabels: NSArray<string> | string[]): this;
 
@@ -7308,7 +7308,7 @@ declare class AVPlayerItemMetadataOutput extends AVPlayerItemOutput {
 
 	readonly delegateQueue: NSObject;
 
-	constructor(o: { identifiers: NSArray<string>; });
+	constructor(o: { identifiers: NSArray<string> | string[]; });
 
 	initWithIdentifiers(identifiers: NSArray<string> | string[]): this;
 
@@ -7481,7 +7481,7 @@ declare class AVPlayerMediaSelectionCriteria extends NSObject {
 
 	readonly preferredMediaCharacteristics: NSArray<string>;
 
-	constructor(o: { preferredLanguages: NSArray<string>; preferredMediaCharacteristics: NSArray<string>; });
+	constructor(o: { preferredLanguages: NSArray<string> | string[]; preferredMediaCharacteristics: NSArray<string> | string[]; });
 
 	initWithPreferredLanguagesPreferredMediaCharacteristics(preferredLanguages: NSArray<string> | string[], preferredMediaCharacteristics: NSArray<string> | string[]): this;
 }
@@ -7522,7 +7522,7 @@ declare class AVQueuePlayer extends AVPlayer {
 
 	static queuePlayerWithItems(items: NSArray<AVPlayerItem> | AVPlayerItem[]): AVQueuePlayer;
 
-	constructor(o: { items: NSArray<AVPlayerItem>; });
+	constructor(o: { items: NSArray<AVPlayerItem> | AVPlayerItem[]; });
 
 	advanceToNextItem(): void;
 
@@ -7951,7 +7951,7 @@ declare class AVTimedMetadataGroup extends AVMetadataGroup implements NSCopying,
 
 	readonly timeRange: CMTimeRange;
 
-	constructor(o: { items: NSArray<AVMetadataItem>; timeRange: CMTimeRange; });
+	constructor(o: { items: NSArray<AVMetadataItem> | AVMetadataItem[]; timeRange: CMTimeRange; });
 
 	constructor(o: { sampleBuffer: any; });
 

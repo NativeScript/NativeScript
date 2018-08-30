@@ -215,7 +215,7 @@ declare class AUAudioUnitBusArray extends NSObject implements NSFastEnumeration 
 
 	constructor(o: { audioUnit: AUAudioUnit; busType: AUAudioUnitBusType; });
 
-	constructor(o: { audioUnit: AUAudioUnit; busType: AUAudioUnitBusType; busses: NSArray<AUAudioUnitBus>; });
+	constructor(o: { audioUnit: AUAudioUnit; busType: AUAudioUnitBusType; busses: NSArray<AUAudioUnitBus> | AUAudioUnitBus[]; });
 
 	addObserverToAllBussesForKeyPathOptionsContext(observer: NSObject, keyPath: string, options: NSKeyValueObservingOptions, context: interop.Pointer | interop.Reference<any>): void;
 

@@ -198,7 +198,7 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { servers: NSArray<string>; });
+	constructor(o: { servers: NSArray<string> | string[]; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -227,7 +227,7 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { matchDomains: NSArray<string>; andAction: NEEvaluateConnectionRuleAction; });
+	constructor(o: { matchDomains: NSArray<string> | string[]; andAction: NEEvaluateConnectionRuleAction; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -970,7 +970,7 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { addresses: NSArray<string>; subnetMasks: NSArray<string>; });
+	constructor(o: { addresses: NSArray<string> | string[]; subnetMasks: NSArray<string> | string[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1028,7 +1028,7 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { addresses: NSArray<string>; networkPrefixLengths: NSArray<number>; });
+	constructor(o: { addresses: NSArray<string> | string[]; networkPrefixLengths: NSArray<number> | number[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

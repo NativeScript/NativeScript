@@ -72,9 +72,9 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
-	constructor(o: { array: NSArray<ObjectType>; });
+	constructor(o: { array: NSArray<ObjectType> | ObjectType[]; });
 
-	constructor(o: { array: NSArray<ObjectType>; copyItems: boolean; });
+	constructor(o: { array: NSArray<ObjectType> | ObjectType[]; copyItems: boolean; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1404,7 +1404,7 @@ declare class NSCompoundPredicate extends NSPredicate {
 
 	readonly subpredicates: NSArray<any>;
 
-	constructor(o: { type: NSCompoundPredicateType; subpredicates: NSArray<NSPredicate>; });
+	constructor(o: { type: NSCompoundPredicateType; subpredicates: NSArray<NSPredicate> | NSPredicate[]; });
 
 	initWithTypeSubpredicates(type: NSCompoundPredicateType, subpredicates: NSArray<NSPredicate> | NSPredicate[]): this;
 }
@@ -2430,7 +2430,7 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	constructor(o: { objectsAndKeys: any; });
 
-	constructor(o: { objects: NSArray<ObjectType>; forKeys: NSArray<KeyType>; });
+	constructor(o: { objects: NSArray<ObjectType> | ObjectType[]; forKeys: NSArray<KeyType> | KeyType[]; });
 
 	constructor(o: { objects: interop.Reference<ObjectType>; forKeys: interop.Reference<KeyType>; count: number; });
 
@@ -4721,7 +4721,7 @@ declare class NSLinguisticTagger extends NSObject {
 
 	readonly tagSchemes: NSArray<string>;
 
-	constructor(o: { tagSchemes: NSArray<string>; options: number; });
+	constructor(o: { tagSchemes: NSArray<string> | string[]; options: number; });
 
 	enumerateTagsInRangeSchemeOptionsUsingBlock(range: NSRange, tagScheme: string, opts: NSLinguisticTaggerOptions, block: (p1: string, p2: NSRange, p3: NSRange, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
@@ -6771,11 +6771,11 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
-	constructor(o: { array: NSArray<ObjectType>; });
+	constructor(o: { array: NSArray<ObjectType> | ObjectType[]; });
 
-	constructor(o: { array: NSArray<ObjectType>; copyItems: boolean; });
+	constructor(o: { array: NSArray<ObjectType> | ObjectType[]; copyItems: boolean; });
 
-	constructor(o: { array: NSArray<ObjectType>; range: NSRange; copyItems: boolean; });
+	constructor(o: { array: NSArray<ObjectType> | ObjectType[]; range: NSRange; copyItems: boolean; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -7954,7 +7954,7 @@ declare class NSSet<ObjectType> extends NSObject implements NSCopying, NSFastEnu
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[Symbol.iterator](): Iterator<any>;
 
-	constructor(o: { array: NSArray<ObjectType>; });
+	constructor(o: { array: NSArray<ObjectType> | ObjectType[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9753,7 +9753,7 @@ declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identity: any; certificates: NSArray<any>; persistence: NSURLCredentialPersistence; });
+	constructor(o: { identity: any; certificates: NSArray<any> | any[]; persistence: NSURLCredentialPersistence; });
 
 	constructor(o: { trust: any; });
 

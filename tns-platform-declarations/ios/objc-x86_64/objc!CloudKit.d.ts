@@ -11,7 +11,7 @@ declare class CKAcceptSharesOperation extends CKOperation {
 
 	shareMetadatas: NSArray<CKShareMetadata>;
 
-	constructor(o: { shareMetadatas: NSArray<CKShareMetadata>; });
+	constructor(o: { shareMetadatas: NSArray<CKShareMetadata> | CKShareMetadata[]; });
 
 	initWithShareMetadatas(shareMetadatas: NSArray<CKShareMetadata> | CKShareMetadata[]): this;
 }
@@ -272,7 +272,7 @@ declare class CKDiscoverUserIdentitiesOperation extends CKOperation {
 
 	userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>;
 
-	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>; });
+	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]; });
 
 	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]): this;
 }
@@ -289,7 +289,7 @@ declare class CKDiscoverUserInfosOperation extends CKOperation {
 
 	userRecordIDs: NSArray<CKRecordID>;
 
-	constructor(o: { emailAddresses: NSArray<string>; userRecordIDs: NSArray<CKRecordID>; });
+	constructor(o: { emailAddresses: NSArray<string> | string[]; userRecordIDs: NSArray<CKRecordID> | CKRecordID[]; });
 
 	initWithEmailAddressesUserRecordIDs(emailAddresses: NSArray<string> | string[], userRecordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
 }
@@ -483,7 +483,7 @@ declare class CKFetchRecordZoneChangesOperation extends CKDatabaseOperation {
 
 	recordZoneIDs: NSArray<CKRecordZoneID>;
 
-	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID>; optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>; });
+	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]; optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>; });
 
 	initWithRecordZoneIDsOptionsByRecordZoneID(recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[], optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>): this;
 }
@@ -523,7 +523,7 @@ declare class CKFetchRecordZonesOperation extends CKDatabaseOperation {
 
 	recordZoneIDs: NSArray<CKRecordZoneID>;
 
-	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID>; });
+	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]; });
 
 	initWithRecordZoneIDs(zoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]): this;
 }
@@ -546,7 +546,7 @@ declare class CKFetchRecordsOperation extends CKDatabaseOperation {
 
 	recordIDs: NSArray<CKRecordID>;
 
-	constructor(o: { recordIDs: NSArray<CKRecordID>; });
+	constructor(o: { recordIDs: NSArray<CKRecordID> | CKRecordID[]; });
 
 	initWithRecordIDs(recordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
 }
@@ -567,7 +567,7 @@ declare class CKFetchShareMetadataOperation extends CKOperation {
 
 	shouldFetchRootRecord: boolean;
 
-	constructor(o: { shareURLs: NSArray<NSURL>; });
+	constructor(o: { shareURLs: NSArray<NSURL> | NSURL[]; });
 
 	initWithShareURLs(shareURLs: NSArray<NSURL> | NSURL[]): this;
 }
@@ -584,7 +584,7 @@ declare class CKFetchShareParticipantsOperation extends CKOperation {
 
 	userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>;
 
-	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo>; });
+	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]; });
 
 	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]): this;
 }
@@ -601,7 +601,7 @@ declare class CKFetchSubscriptionsOperation extends CKDatabaseOperation {
 
 	subscriptionIDs: NSArray<string>;
 
-	constructor(o: { subscriptionIDs: NSArray<string>; });
+	constructor(o: { subscriptionIDs: NSArray<string> | string[]; });
 
 	initWithSubscriptionIDs(subscriptionIDs: NSArray<string> | string[]): this;
 }
@@ -658,7 +658,7 @@ declare class CKMarkNotificationsReadOperation extends CKOperation {
 
 	notificationIDs: NSArray<CKNotificationID>;
 
-	constructor(o: { notificationIDsToMarkRead: NSArray<CKNotificationID>; });
+	constructor(o: { notificationIDsToMarkRead: NSArray<CKNotificationID> | CKNotificationID[]; });
 
 	initWithNotificationIDsToMarkRead(notificationIDs: NSArray<CKNotificationID> | CKNotificationID[]): this;
 }
@@ -690,7 +690,7 @@ declare class CKModifyRecordZonesOperation extends CKDatabaseOperation {
 
 	recordZonesToSave: NSArray<CKRecordZone>;
 
-	constructor(o: { recordZonesToSave: NSArray<CKRecordZone>; recordZoneIDsToDelete: NSArray<CKRecordZoneID>; });
+	constructor(o: { recordZonesToSave: NSArray<CKRecordZone> | CKRecordZone[]; recordZoneIDsToDelete: NSArray<CKRecordZoneID> | CKRecordZoneID[]; });
 
 	initWithRecordZonesToSaveRecordZoneIDsToDelete(recordZonesToSave: NSArray<CKRecordZone> | CKRecordZone[], recordZoneIDsToDelete: NSArray<CKRecordZoneID> | CKRecordZoneID[]): this;
 }
@@ -717,7 +717,7 @@ declare class CKModifyRecordsOperation extends CKDatabaseOperation {
 
 	savePolicy: CKRecordSavePolicy;
 
-	constructor(o: { recordsToSave: NSArray<CKRecord>; recordIDsToDelete: NSArray<CKRecordID>; });
+	constructor(o: { recordsToSave: NSArray<CKRecord> | CKRecord[]; recordIDsToDelete: NSArray<CKRecordID> | CKRecordID[]; });
 
 	initWithRecordsToSaveRecordIDsToDelete(records: NSArray<CKRecord> | CKRecord[], recordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
 }
@@ -734,7 +734,7 @@ declare class CKModifySubscriptionsOperation extends CKDatabaseOperation {
 
 	subscriptionsToSave: NSArray<CKSubscription>;
 
-	constructor(o: { subscriptionsToSave: NSArray<CKSubscription>; subscriptionIDsToDelete: NSArray<string>; });
+	constructor(o: { subscriptionsToSave: NSArray<CKSubscription> | CKSubscription[]; subscriptionIDsToDelete: NSArray<string> | string[]; });
 
 	initWithSubscriptionsToSaveSubscriptionIDsToDelete(subscriptionsToSave: NSArray<CKSubscription> | CKSubscription[], subscriptionIDsToDelete: NSArray<string> | string[]): this;
 }

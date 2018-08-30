@@ -228,7 +228,7 @@ declare class MKClusterAnnotation extends NSObject implements MKAnnotation {
 
 	readonly  // inherited from NSObjectProtocol
 
-	constructor(o: { memberAnnotations: NSArray<MKAnnotation>; });
+	constructor(o: { memberAnnotations: NSArray<MKAnnotation> | MKAnnotation[]; });
 
 	class(): typeof NSObject;
 

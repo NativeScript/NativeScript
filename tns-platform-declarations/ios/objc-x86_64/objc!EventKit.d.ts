@@ -559,7 +559,7 @@ declare class EKRecurrenceRule extends EKObject implements NSCopying {
 
 	readonly weeksOfTheYear: NSArray<number>;
 
-	constructor(o: { recurrenceWithFrequency: EKRecurrenceFrequency; interval: number; daysOfTheWeek: NSArray<EKRecurrenceDayOfWeek>; daysOfTheMonth: NSArray<number>; monthsOfTheYear: NSArray<number>; weeksOfTheYear: NSArray<number>; daysOfTheYear: NSArray<number>; setPositions: NSArray<number>; end: EKRecurrenceEnd; });
+	constructor(o: { recurrenceWithFrequency: EKRecurrenceFrequency; interval: number; daysOfTheWeek: NSArray<EKRecurrenceDayOfWeek> | EKRecurrenceDayOfWeek[]; daysOfTheMonth: NSArray<number> | number[]; monthsOfTheYear: NSArray<number> | number[]; weeksOfTheYear: NSArray<number> | number[]; daysOfTheYear: NSArray<number> | number[]; setPositions: NSArray<number> | number[]; end: EKRecurrenceEnd; });
 
 	constructor(o: { recurrenceWithFrequency: EKRecurrenceFrequency; interval: number; end: EKRecurrenceEnd; });
 

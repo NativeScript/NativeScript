@@ -601,9 +601,9 @@ declare class GKLeaderboard extends NSObject {
 
 	readonly title: string;
 
-	constructor(o: { playerIDs: NSArray<string>; });
+	constructor(o: { playerIDs: NSArray<string> | string[]; });
 
-	constructor(o: { players: NSArray<GKPlayer>; });
+	constructor(o: { players: NSArray<GKPlayer> | GKPlayer[]; });
 
 	initWithPlayerIDs(playerIDs: NSArray<string> | string[]): this;
 

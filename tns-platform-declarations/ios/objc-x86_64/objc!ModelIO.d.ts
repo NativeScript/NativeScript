@@ -896,7 +896,7 @@ declare class MDLMaterialPropertyGraph extends MDLMaterialPropertyNode {
 
 	readonly nodes: NSArray<MDLMaterialPropertyNode>;
 
-	constructor(o: { nodes: NSArray<MDLMaterialPropertyNode>; connections: NSArray<MDLMaterialPropertyConnection>; });
+	constructor(o: { nodes: NSArray<MDLMaterialPropertyNode> | MDLMaterialPropertyNode[]; connections: NSArray<MDLMaterialPropertyConnection> | MDLMaterialPropertyConnection[]; });
 
 	evaluate(): void;
 
@@ -917,7 +917,7 @@ declare class MDLMaterialPropertyNode extends NSObject implements MDLNamed {
 
 	name: string; // inherited from MDLNamed
 
-	constructor(o: { inputs: NSArray<MDLMaterialProperty>; outputs: NSArray<MDLMaterialProperty>; evaluationFunction: (p1: MDLMaterialPropertyNode) => void; });
+	constructor(o: { inputs: NSArray<MDLMaterialProperty> | MDLMaterialProperty[]; outputs: NSArray<MDLMaterialProperty> | MDLMaterialProperty[]; evaluationFunction: (p1: MDLMaterialPropertyNode) => void; });
 
 	initWithInputsOutputsEvaluationFunction(inputs: NSArray<MDLMaterialProperty> | MDLMaterialProperty[], outputs: NSArray<MDLMaterialProperty> | MDLMaterialProperty[], _function: (p1: MDLMaterialPropertyNode) => void): this;
 }
@@ -1107,9 +1107,9 @@ declare class MDLMesh extends MDLObject {
 
 	constructor(o: { bufferAllocator: MDLMeshBufferAllocator; });
 
-	constructor(o: { vertexBuffer: MDLMeshBuffer; vertexCount: number; descriptor: MDLVertexDescriptor; submeshes: NSArray<MDLSubmesh>; });
+	constructor(o: { vertexBuffer: MDLMeshBuffer; vertexCount: number; descriptor: MDLVertexDescriptor; submeshes: NSArray<MDLSubmesh> | MDLSubmesh[]; });
 
-	constructor(o: { vertexBuffers: NSArray<MDLMeshBuffer>; vertexCount: number; descriptor: MDLVertexDescriptor; submeshes: NSArray<MDLSubmesh>; });
+	constructor(o: { vertexBuffers: NSArray<MDLMeshBuffer> | MDLMeshBuffer[]; vertexCount: number; descriptor: MDLVertexDescriptor; submeshes: NSArray<MDLSubmesh> | MDLSubmesh[]; });
 
 	addAttributeWithNameFormat(name: string, format: MDLVertexFormat): void;
 
@@ -1606,7 +1606,7 @@ declare class MDLPackedJointAnimation extends MDLObject implements MDLJointAnima
 
 	readonly translations: MDLAnimatedVector3Array;
 
-	constructor(o: { name: string; jointPaths: NSArray<string>; });
+	constructor(o: { name: string; jointPaths: NSArray<string> | string[]; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -1848,7 +1848,7 @@ declare class MDLSkeleton extends MDLObject implements NSCopying {
 
 	readonly jointPaths: NSArray<string>;
 
-	constructor(o: { name: string; jointPaths: NSArray<string>; });
+	constructor(o: { name: string; jointPaths: NSArray<string> | string[]; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

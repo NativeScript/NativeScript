@@ -224,9 +224,9 @@ declare class MLMultiArray extends NSObject {
 	readonly strides: NSArray<number>;
 	[index: number]: number;
 
-	constructor(o: { dataPointer: interop.Pointer | interop.Reference<any>; shape: NSArray<number>; dataType: MLMultiArrayDataType; strides: NSArray<number>; deallocator: (p1: interop.Pointer | interop.Reference<any>) => void; });
+	constructor(o: { dataPointer: interop.Pointer | interop.Reference<any>; shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; strides: NSArray<number> | number[]; deallocator: (p1: interop.Pointer | interop.Reference<any>) => void; });
 
-	constructor(o: { shape: NSArray<number>; dataType: MLMultiArrayDataType; });
+	constructor(o: { shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; });
 
 	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void): this;
 

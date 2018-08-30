@@ -47,7 +47,7 @@ declare class PKAddPassesViewController extends UIViewController {
 
 	constructor(o: { pass: PKPass; });
 
-	constructor(o: { passes: NSArray<PKPass>; });
+	constructor(o: { passes: NSArray<PKPass> | PKPass[]; });
 
 	initWithPass(pass: PKPass): this;
 
@@ -448,7 +448,7 @@ declare class PKPaymentAuthorizationResult extends NSObject {
 
 	status: PKPaymentAuthorizationStatus;
 
-	constructor(o: { status: PKPaymentAuthorizationStatus; errors: NSArray<NSError>; });
+	constructor(o: { status: PKPaymentAuthorizationStatus; errors: NSArray<NSError> | NSError[]; });
 
 	initWithStatusErrors(status: PKPaymentAuthorizationStatus, errors: NSArray<NSError> | NSError[]): this;
 }
@@ -742,7 +742,7 @@ declare class PKPaymentRequestShippingContactUpdate extends PKPaymentRequestUpda
 
 	shippingMethods: NSArray<PKShippingMethod>;
 
-	constructor(o: { errors: NSArray<NSError>; paymentSummaryItems: NSArray<PKPaymentSummaryItem>; shippingMethods: NSArray<PKShippingMethod>; });
+	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
 
 	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
 }
@@ -764,7 +764,7 @@ declare class PKPaymentRequestUpdate extends NSObject {
 
 	status: PKPaymentAuthorizationStatus;
 
-	constructor(o: { paymentSummaryItems: NSArray<PKPaymentSummaryItem>; });
+	constructor(o: { paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
 
 	initWithPaymentSummaryItems(paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
 }

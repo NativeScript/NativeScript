@@ -1483,9 +1483,9 @@ declare class HMEventTrigger extends HMTrigger {
 
 	readonly triggerActivationState: HMEventTriggerActivationState;
 
-	constructor(o: { name: string; events: NSArray<HMEvent>; endEvents: NSArray<HMEvent>; recurrences: NSArray<NSDateComponents>; predicate: NSPredicate; });
+	constructor(o: { name: string; events: NSArray<HMEvent> | HMEvent[]; endEvents: NSArray<HMEvent> | HMEvent[]; recurrences: NSArray<NSDateComponents> | NSDateComponents[]; predicate: NSPredicate; });
 
-	constructor(o: { name: string; events: NSArray<HMEvent>; predicate: NSPredicate; });
+	constructor(o: { name: string; events: NSArray<HMEvent> | HMEvent[]; predicate: NSPredicate; });
 
 	addEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
 

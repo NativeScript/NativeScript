@@ -113,7 +113,7 @@ declare class INAddTasksIntent extends INIntent {
 
 	readonly temporalEventTrigger: INTemporalEventTrigger;
 
-	constructor(o: { targetTaskList: INTaskList; taskTitles: NSArray<INSpeakableString>; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; });
+	constructor(o: { targetTaskList: INTaskList; taskTitles: NSArray<INSpeakableString> | INSpeakableString[]; spatialEventTrigger: INSpatialEventTrigger; temporalEventTrigger: INTemporalEventTrigger; });
 
 	initWithTargetTaskListTaskTitlesSpatialEventTriggerTemporalEventTrigger(targetTaskList: INTaskList, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], spatialEventTrigger: INSpatialEventTrigger, temporalEventTrigger: INTemporalEventTrigger): this;
 }
@@ -1124,7 +1124,7 @@ declare class INCreateTaskListIntent extends INIntent {
 
 	readonly title: INSpeakableString;
 
-	constructor(o: { title: INSpeakableString; taskTitles: NSArray<INSpeakableString>; groupName: INSpeakableString; });
+	constructor(o: { title: INSpeakableString; taskTitles: NSArray<INSpeakableString> | INSpeakableString[]; groupName: INSpeakableString; });
 
 	initWithTitleTaskTitlesGroupName(title: INSpeakableString, taskTitles: NSArray<INSpeakableString> | INSpeakableString[], groupName: INSpeakableString): this;
 }
@@ -1574,7 +1574,7 @@ declare class INGetAvailableRestaurantReservationBookingsIntentResponse extends 
 
 	termsAndConditions: INTermsAndConditions;
 
-	constructor(o: { availableBookings: NSArray<INRestaurantReservationBooking>; code: INGetAvailableRestaurantReservationBookingsIntentCode; userActivity: NSUserActivity; });
+	constructor(o: { availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[]; code: INGetAvailableRestaurantReservationBookingsIntentCode; userActivity: NSUserActivity; });
 
 	initWithAvailableBookingsCodeUserActivity(availableBookings: NSArray<INRestaurantReservationBooking> | INRestaurantReservationBooking[], code: INGetAvailableRestaurantReservationBookingsIntentCode, userActivity: NSUserActivity): this;
 }
@@ -1848,7 +1848,7 @@ declare class INGetUserCurrentRestaurantReservationBookingsIntentResponse extend
 
 	userCurrentBookings: NSArray<INRestaurantReservationUserBooking>;
 
-	constructor(o: { userCurrentBookings: NSArray<INRestaurantReservationUserBooking>; code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode; userActivity: NSUserActivity; });
+	constructor(o: { userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[]; code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode; userActivity: NSUserActivity; });
 
 	initWithUserCurrentBookingsCodeUserActivity(userCurrentBookings: NSArray<INRestaurantReservationUserBooking> | INRestaurantReservationUserBooking[], code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode, userActivity: NSUserActivity): this;
 }
@@ -2289,11 +2289,11 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { identifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson>; });
+	constructor(o: { identifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; });
 
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson>; groupName: INSpeakableString; messageType: INMessageType; });
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; });
 
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson>; messageType: INMessageType; });
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2448,7 +2448,7 @@ declare class INNote extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: INSpeakableString; contents: NSArray<INNoteContent>; groupName: INSpeakableString; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
+	constructor(o: { title: INSpeakableString; contents: NSArray<INNoteContent> | INNoteContent[]; groupName: INSpeakableString; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -3064,7 +3064,7 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; });
 
-	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; aliases: NSArray<INPersonHandle>; suggestionType: INPersonSuggestionType; });
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; aliases: NSArray<INPersonHandle> | INPersonHandle[]; suggestionType: INPersonSuggestionType; });
 
 	class(): typeof NSObject;
 
@@ -4628,9 +4628,9 @@ declare class INSearchForMessagesIntent extends INIntent {
 
 	readonly speakableGroupNamesOperator: INConditionalOperator;
 
-	constructor(o: { recipients: NSArray<INPerson>; senders: NSArray<INPerson>; searchTerms: NSArray<string>; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string>; notificationIdentifiers: NSArray<string>; groupNames: NSArray<string>; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; senders: NSArray<INPerson> | INPerson[]; searchTerms: NSArray<string> | string[]; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string> | string[]; notificationIdentifiers: NSArray<string> | string[]; groupNames: NSArray<string> | string[]; });
 
-	constructor(o: { recipients: NSArray<INPerson>; senders: NSArray<INPerson>; searchTerms: NSArray<string>; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string>; notificationIdentifiers: NSArray<string>; speakableGroupNames: NSArray<INSpeakableString>; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; senders: NSArray<INPerson> | INPerson[]; searchTerms: NSArray<string> | string[]; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string> | string[]; notificationIdentifiers: NSArray<string> | string[]; speakableGroupNames: NSArray<INSpeakableString> | INSpeakableString[]; });
 
 	initWithRecipientsSendersSearchTermsAttributesDateTimeRangeIdentifiersNotificationIdentifiersGroupNames(recipients: NSArray<INPerson> | INPerson[], senders: NSArray<INPerson> | INPerson[], searchTerms: NSArray<string> | string[], attributes: INMessageAttributeOptions, dateTimeRange: INDateComponentsRange, identifiers: NSArray<string> | string[], notificationIdentifiers: NSArray<string> | string[], groupNames: NSArray<string> | string[]): this;
 
@@ -4816,7 +4816,7 @@ declare class INSearchForPhotosIntent extends INIntent {
 
 	readonly searchTermsOperator: INConditionalOperator;
 
-	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string>; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson>; });
+	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string> | string[]; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson> | INPerson[]; });
 
 	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string> | string[], includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[]): this;
 }
@@ -4894,9 +4894,9 @@ declare class INSendMessageIntent extends INIntent {
 
 	readonly speakableGroupName: INSpeakableString;
 
-	constructor(o: { recipients: NSArray<INPerson>; content: string; groupName: string; serviceName: string; sender: INPerson; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; content: string; groupName: string; serviceName: string; sender: INPerson; });
 
-	constructor(o: { recipients: NSArray<INPerson>; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; });
+	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; });
 
 	initWithRecipientsContentGroupNameServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, groupName: string, serviceName: string, sender: INPerson): this;
 
@@ -5484,7 +5484,7 @@ declare class INSetMessageAttributeIntent extends INIntent {
 
 	readonly identifiers: NSArray<string>;
 
-	constructor(o: { identifiers: NSArray<string>; attribute: INMessageAttribute; });
+	constructor(o: { identifiers: NSArray<string> | string[]; attribute: INMessageAttribute; });
 
 	initWithIdentifiersAttribute(identifiers: NSArray<string> | string[], attribute: INMessageAttribute): this;
 }
@@ -6012,9 +6012,9 @@ declare class INStartAudioCallIntent extends INIntent {
 
 	readonly destinationType: INCallDestinationType;
 
-	constructor(o: { contacts: NSArray<INPerson>; });
+	constructor(o: { contacts: NSArray<INPerson> | INPerson[]; });
 
-	constructor(o: { destinationType: INCallDestinationType; contacts: NSArray<INPerson>; });
+	constructor(o: { destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[]; });
 
 	initWithContacts(contacts: NSArray<INPerson> | INPerson[]): this;
 
@@ -6096,7 +6096,7 @@ declare class INStartPhotoPlaybackIntent extends INIntent {
 
 	readonly searchTermsOperator: INConditionalOperator;
 
-	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string>; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson>; });
+	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string> | string[]; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson> | INPerson[]; });
 
 	initWithDateCreatedLocationCreatedAlbumNameSearchTermsIncludedAttributesExcludedAttributesPeopleInPhoto(dateCreated: INDateComponentsRange, locationCreated: CLPlacemark, albumName: string, searchTerms: NSArray<string> | string[], includedAttributes: INPhotoAttributeOptions, excludedAttributes: INPhotoAttributeOptions, peopleInPhoto: NSArray<INPerson> | INPerson[]): this;
 }
@@ -6160,7 +6160,7 @@ declare class INStartVideoCallIntent extends INIntent {
 
 	readonly contacts: NSArray<INPerson>;
 
-	constructor(o: { contacts: NSArray<INPerson>; });
+	constructor(o: { contacts: NSArray<INPerson> | INPerson[]; });
 
 	initWithContacts(contacts: NSArray<INPerson> | INPerson[]): this;
 }
@@ -6370,7 +6370,7 @@ declare class INTaskList extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { title: INSpeakableString; tasks: NSArray<INTask>; groupName: INSpeakableString; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
+	constructor(o: { title: INSpeakableString; tasks: NSArray<INTask> | INTask[]; groupName: INSpeakableString; createdDateComponents: NSDateComponents; modifiedDateComponents: NSDateComponents; identifier: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

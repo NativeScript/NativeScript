@@ -250,7 +250,7 @@ declare class MCSession extends NSObject {
 
 	constructor(o: { peer: MCPeerID; });
 
-	constructor(o: { peer: MCPeerID; securityIdentity: NSArray<any>; encryptionPreference: MCEncryptionPreference; });
+	constructor(o: { peer: MCPeerID; securityIdentity: NSArray<any> | any[]; encryptionPreference: MCEncryptionPreference; });
 
 	cancelConnectPeer(peerID: MCPeerID): void;
 

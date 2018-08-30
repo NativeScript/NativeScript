@@ -545,7 +545,7 @@ declare class CXTransaction extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { action: CXAction; });
 
-	constructor(o: { actions: NSArray<CXAction>; });
+	constructor(o: { actions: NSArray<CXAction> | CXAction[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

@@ -338,7 +338,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { examples: NSArray<NSArray<NSObjectProtocol>>; actions: NSArray<NSObjectProtocol>; attributes: NSArray<NSObjectProtocol>; });
+	constructor(o: { examples: NSArray<NSArray<NSObjectProtocol>> | NSArray<NSObjectProtocol>[]; actions: NSArray<NSObjectProtocol> | NSObjectProtocol[]; attributes: NSArray<NSObjectProtocol> | NSObjectProtocol[]; });
 
 	constructor(o: { URL: NSURL; error: NSError; });
 
@@ -499,7 +499,7 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { nodes: NSArray<GKGraphNode>; });
+	constructor(o: { nodes: NSArray<GKGraphNode> | GKGraphNode[]; });
 
 	addNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): void;
 
@@ -946,9 +946,9 @@ declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	readonly obstacles: NSArray<GKPolygonObstacle>;
 
-	constructor(o: { obstacles: NSArray<GKPolygonObstacle>; bufferRadius: number; });
+	constructor(o: { obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]; bufferRadius: number; });
 
-	constructor(o: { obstacles: NSArray<GKPolygonObstacle>; bufferRadius: number; nodeClass: typeof NSObject; });
+	constructor(o: { obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]; bufferRadius: number; nodeClass: typeof NSObject; });
 
 	addObstacles(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
@@ -1031,7 +1031,7 @@ declare class GKPath extends NSObject {
 
 	constructor(o: { float3Points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
 
-	constructor(o: { graphNodes: NSArray<GKGraphNode>; radius: number; });
+	constructor(o: { graphNodes: NSArray<GKGraphNode> | GKGraphNode[]; radius: number; });
 
 	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
 
@@ -1530,7 +1530,7 @@ declare class GKStateMachine extends NSObject {
 
 	readonly currentState: GKState;
 
-	constructor(o: { states: NSArray<GKState>; });
+	constructor(o: { states: NSArray<GKState> | GKState[]; });
 
 	canEnterState(stateClass: typeof NSObject): boolean;
 

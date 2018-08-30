@@ -704,7 +704,7 @@ declare class SKKeyframeSequence extends NSObject implements NSCoding, NSCopying
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { keyframeValues: NSArray<any>; times: NSArray<number>; });
+	constructor(o: { keyframeValues: NSArray<any> | any[]; times: NSArray<number> | number[]; });
 
 	addKeyframeValueTime(value: any, time: number): void;
 
@@ -1585,7 +1585,7 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { source: string; });
 
-	constructor(o: { source: string; uniforms: NSArray<SKUniform>; });
+	constructor(o: { source: string; uniforms: NSArray<SKUniform> | SKUniform[]; });
 
 	addUniform(uniform: SKUniform): void;
 
@@ -1976,9 +1976,9 @@ declare class SKTileDefinition extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { texture: SKTexture; size: CGSize; });
 
-	constructor(o: { textures: NSArray<SKTexture>; normalTextures: NSArray<SKTexture>; size: CGSize; timePerFrame: number; });
+	constructor(o: { textures: NSArray<SKTexture> | SKTexture[]; normalTextures: NSArray<SKTexture> | SKTexture[]; size: CGSize; timePerFrame: number; });
 
-	constructor(o: { textures: NSArray<SKTexture>; size: CGSize; timePerFrame: number; });
+	constructor(o: { textures: NSArray<SKTexture> | SKTexture[]; size: CGSize; timePerFrame: number; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2026,7 +2026,7 @@ declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { rules: NSArray<SKTileGroupRule>; });
+	constructor(o: { rules: NSArray<SKTileGroupRule> | SKTileGroupRule[]; });
 
 	constructor(o: { tileDefinition: SKTileDefinition; });
 
@@ -2055,7 +2055,7 @@ declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
 
 	tileDefinitions: NSArray<SKTileDefinition>;
 
-	constructor(o: { adjacency: SKTileAdjacencyMask; tileDefinitions: NSArray<SKTileDefinition>; });
+	constructor(o: { adjacency: SKTileAdjacencyMask; tileDefinitions: NSArray<SKTileDefinition> | SKTileDefinition[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2116,7 +2116,7 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 
 	constructor(o: { tileSet: SKTileSet; columns: number; rows: number; tileSize: CGSize; fillWithTileGroup: SKTileGroup; });
 
-	constructor(o: { tileSet: SKTileSet; columns: number; rows: number; tileSize: CGSize; tileGroupLayout: NSArray<SKTileGroup>; });
+	constructor(o: { tileSet: SKTileSet; columns: number; rows: number; tileSize: CGSize; tileGroupLayout: NSArray<SKTileGroup> | SKTileGroup[]; });
 
 	centerOfTileAtColumnRow(column: number, row: number): CGPoint;
 
@@ -2173,9 +2173,9 @@ declare class SKTileSet extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { tileGroups: NSArray<SKTileGroup>; });
+	constructor(o: { tileGroups: NSArray<SKTileGroup> | SKTileGroup[]; });
 
-	constructor(o: { tileGroups: NSArray<SKTileGroup>; tileSetType: SKTileSetType; });
+	constructor(o: { tileGroups: NSArray<SKTileGroup> | SKTileGroup[]; tileSetType: SKTileSetType; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

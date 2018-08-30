@@ -353,7 +353,7 @@ declare class MPMediaItemCollection extends MPMediaEntity {
 
 	readonly representativeItem: MPMediaItem;
 
-	constructor(o: { items: NSArray<MPMediaItem>; });
+	constructor(o: { items: NSArray<MPMediaItem> | MPMediaItem[]; });
 
 	initWithItems(items: NSArray<MPMediaItem> | MPMediaItem[]): this;
 }
@@ -1254,7 +1254,7 @@ declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQu
 
 	startItemPlayParameters: MPMusicPlayerPlayParameters;
 
-	constructor(o: { playParametersQueue: NSArray<MPMusicPlayerPlayParameters>; });
+	constructor(o: { playParametersQueue: NSArray<MPMusicPlayerPlayParameters> | MPMusicPlayerPlayParameters[]; });
 
 	initWithPlayParametersQueue(playParametersQueue: NSArray<MPMusicPlayerPlayParameters> | MPMusicPlayerPlayParameters[]): this;
 
@@ -1280,7 +1280,7 @@ declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescri
 
 	storeIDs: NSArray<string>;
 
-	constructor(o: { storeIDs: NSArray<string>; });
+	constructor(o: { storeIDs: NSArray<string> | string[]; });
 
 	initWithStoreIDs(storeIDs: NSArray<string> | string[]): this;
 
@@ -1342,7 +1342,7 @@ declare class MPNowPlayingInfoLanguageOption extends NSObject {
 
 	readonly languageTag: string;
 
-	constructor(o: { type: MPNowPlayingInfoLanguageOptionType; languageTag: string; characteristics: NSArray<string>; displayName: string; identifier: string; });
+	constructor(o: { type: MPNowPlayingInfoLanguageOptionType; languageTag: string; characteristics: NSArray<string> | string[]; displayName: string; identifier: string; });
 
 	initWithTypeLanguageTagCharacteristicsDisplayNameIdentifier(languageOptionType: MPNowPlayingInfoLanguageOptionType, languageTag: string, languageOptionCharacteristics: NSArray<string> | string[], displayName: string, identifier: string): this;
 
@@ -1363,7 +1363,7 @@ declare class MPNowPlayingInfoLanguageOptionGroup extends NSObject {
 
 	readonly languageOptions: NSArray<MPNowPlayingInfoLanguageOption>;
 
-	constructor(o: { languageOptions: NSArray<MPNowPlayingInfoLanguageOption>; defaultLanguageOption: MPNowPlayingInfoLanguageOption; allowEmptySelection: boolean; });
+	constructor(o: { languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[]; defaultLanguageOption: MPNowPlayingInfoLanguageOption; allowEmptySelection: boolean; });
 
 	initWithLanguageOptionsDefaultLanguageOptionAllowEmptySelection(languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[], defaultLanguageOption: MPNowPlayingInfoLanguageOption, allowEmptySelection: boolean): this;
 }
