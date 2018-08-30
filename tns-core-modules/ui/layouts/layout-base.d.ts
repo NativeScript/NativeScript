@@ -102,8 +102,8 @@ export class LayoutBase extends CustomLayoutView {
      * layout container in case an interactive child view did not handle it. 
      * Default value of this property is false. This does not affect the appearance of the view.
      */
-    isPassthroughParentEnabled: boolean;
+    isPassThroughParentEnabled: boolean;
 }
 
 export const clipToBoundsProperty: Property<LayoutBase, boolean>;
-export const isPassthroughParentEnabledProperty: Property<LayoutBase, boolean>;
+export const isPassThroughParentEnabledProperty: Property<LayoutBase, boolean>;

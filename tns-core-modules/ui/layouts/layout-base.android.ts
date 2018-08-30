@@ -1,5 +1,5 @@
 ﻿import {
-    LayoutBaseCommon, clipToBoundsProperty, isPassthroughParentEnabledProperty,
+    LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./layout-base-common";
 
@@ -25,8 +25,8 @@ export class LayoutBase extends LayoutBaseCommon {
         console.warn(`clipToBounds with value false is not supported on Android. You can use this.android.getParent().setClipChildren(false) as an alternative`);
     }
 
-    [isPassthroughParentEnabledProperty.setNative](value: boolean) {
-        (<any>this.nativeViewProtected).setPassthroughParent(value);
+    [isPassThroughParentEnabledProperty.setNative](value: boolean) {
+        (<any>this.nativeViewProtected).setPassThroughParent(value);
     }
 
     [paddingTopProperty.getDefault](): Length {
