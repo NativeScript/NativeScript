@@ -16,14 +16,13 @@ exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
+import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
 import { Frame, stack } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
-import { _resetRootView, getRootView } from "tns-core-modules/application";
+import { _resetRootView } from "tns-core-modules/application";
 import { Button } from "tns-core-modules/ui/button/button";
 
 export function addLabelToPage(page: Page, text?: string) {
@@ -1066,8 +1065,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
 
     const modalCloseCallback = function (returnValue: any) {
         TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
-
-        ready = true;
+        setTimeout(() => ready = true, 50);
     }
 
     const modalTabViewShowingModallyEventHandler = function(args: ShownModallyData) {
