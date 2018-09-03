@@ -659,21 +659,7 @@ export namespace ios {
         return view;
     }
 
-    export function isContentScrollable(controller: UIViewController, owner: View): boolean {
-        let scrollableContent = (<any>owner).scrollableContent;
-        if (scrollableContent === undefined) {
-            const view: UIView = controller.view.subviews.count > 0 ? controller.view.subviews[0] : null;
-            if (view instanceof UIScrollView) {
-                scrollableContent = true;
-            }
-        }
-
-        return scrollableContent === true || scrollableContent === "true";
-    }
-
     export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
-        const scrollable = isContentScrollable(controller, owner);
-
         if (majorVersion <= 10) {
             owner._automaticallyAdjustsScrollViewInsets = false;
             // This API is deprecated, but has no alternative for <= iOS 10
