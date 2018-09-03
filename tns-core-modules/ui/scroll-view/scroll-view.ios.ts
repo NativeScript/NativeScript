@@ -143,8 +143,9 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        let width = (right - left);
-        let height = (bottom - top);
+        const insets = this.getSafeAreaInsets();
+        let width = (right - left - insets.right - insets.left);
+        let height = (bottom - top - insets.bottom - insets.top);
 
         const nativeView = this.nativeViewProtected;
 
@@ -155,16 +156,21 @@ export class ScrollView extends ScrollViewBase {
             nativeView.contentInsetAdjustmentBehavior = 2;
         }
 
-        const insets = this.getSafeAreaInsets();
+        let scrollWidth = width;
+        let scrollHeight = height;
         if (this.orientation === "horizontal") {
-            width = Math.max(this._contentMeasuredWidth + insets.left + insets.right, width);
+            scrollWidth = Math.max(this._contentMeasuredWidth + insets.left + insets.right, width);
+            scrollHeight = height + insets.top + insets.bottom;
+            width = Math.max(this._contentMeasuredWidth, width);
         }
         else {
-            height = Math.max(this._contentMeasuredHeight + insets.top + insets.bottom, height);
+            scrollHeight = Math.max(this._contentMeasuredHeight + insets.top + insets.bottom, height);
+            scrollWidth = width + insets.left + insets.right;
+            height = Math.max(this._contentMeasuredHeight, height);
         }
 
-        nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height));
-        View.layoutChild(this, this.layoutView, insets.left, insets.top, width, height);
+        nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollWidth), layout.toDeviceIndependentPixels(scrollHeight));
+        View.layoutChild(this, this.layoutView, insets.left, insets.top, insets.left + width, insets.top + height);
     }
 
     public _onOrientationChanged() {
