@@ -776,9 +776,9 @@ export namespace ios {
         const inWindowRight = inWindowLeft + layout.round(layout.toDevicePixels(frame.size.width));
         const inWindowBottom = inWindowTop + layout.round(layout.toDevicePixels(frame.size.height));
 
-        const parentWithController = ios.getParentWithViewController(view);
-        const safeArea = parentWithController.viewController.view.safeAreaLayoutGuide.layoutFrame;
-        const fullscreen = parentWithController.viewController.view.frame;
+        const availableSpace = getAvailableSpaceFromParent(view);
+        const safeArea = availableSpace.safeArea;
+        const fullscreen = availableSpace.fullscreen;
 
         const position = ios.getPositionFromFrame(frame);
         const safeAreaPosition = ios.getPositionFromFrame(safeArea);
@@ -828,6 +828,31 @@ export namespace ios {
         }
 
         layoutParent(view.parent);
+    }
+
+    function getAvailableSpaceFromParent(view: View): { safeArea: CGRect, fullscreen: CGRect } {
+        // Search for ViewController or UIScrollView parent to get their content size.
+        let parent = view.parent;
+        while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
+            parent = parent.parent as View;
+        }
+
+        let fullscreen = null;
+        let safeArea = null;
+
+        if (parent.viewController) {
+            const nativeView = parent.viewController.view;
+            safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+            fullscreen = nativeView.frame;
+        }
+
+        if (parent.nativeViewProtected instanceof UIScrollView) {
+            const nativeView = parent.nativeViewProtected;
+            safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+            fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
+        }
+
+        return { safeArea: safeArea, fullscreen: fullscreen}
     }
 
     export class UILayoutViewController extends UIViewController {
