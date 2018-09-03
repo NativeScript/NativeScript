@@ -13,8 +13,8 @@ export class SlideTransition extends transition.Transition {
         this._direction = direction;
     }
 
-    public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        const translationValues = Array.create("float", 2);
+    public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
+        const translationValues = [];
         switch (this._direction) {
             case "left":
                 switch (transitionType) {
@@ -97,23 +97,25 @@ export class SlideTransition extends transition.Transition {
                 }
                 break;
         }
-        let prop;
+
+        let animation;
         if (this._direction === "left" || this._direction === "right") {
-            prop = "translationX";
+            animation = new android.view.animation.TranslateAnimation(translationValues[0], translationValues[1], 0, 0);
         }
         else {
-            prop = "translationY";
+            animation = new android.view.animation.TranslateAnimation(0, 0, translationValues[0], translationValues[1]);
         }
 
-        const animator = android.animation.ObjectAnimator.ofFloat(null, prop, translationValues);
         const duration = this.getDuration();
         if (duration !== undefined) {
-            animator.setDuration(duration);
+            animation.setDuration(duration);
         }
-        animator.setInterpolator(this.getCurve());
-        return animator;
+
+        animation.setInterpolator(this.getCurve());
+        
+        return animation;
     }
-    
+
     public toString(): string {
         return `${super.toString()} ${this._direction}`;
     }

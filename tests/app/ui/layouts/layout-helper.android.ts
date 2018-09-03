@@ -14,14 +14,14 @@ class NativeButton extends android.widget.Button {
         return global.__native(this);
     }
 
-    protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         this.owner.widthMeasureSpec = widthMeasureSpec;
         this.owner.heightMeasureSpec = heightMeasureSpec;
         this.owner.measureCount++;
     }
 
-    protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
+    public onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
         super.onLayout(changed, left, top, right, bottom);
         this.owner.arrangeCount++;
     }
@@ -33,14 +33,14 @@ class NativeStackLayout extends org.nativescript.widgets.StackLayout {
         return global.__native(this);
     }
 
-    protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         this.owner.widthMeasureSpec = widthMeasureSpec;
         this.owner.heightMeasureSpec = heightMeasureSpec;
         this.owner.measureCount++;
     }
 
-    protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
+    public onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
         super.onLayout(changed, left, top, right, bottom);
         this.owner.arrangeCount++;
     }
@@ -52,14 +52,14 @@ class NativeGridLayout extends org.nativescript.widgets.GridLayout {
         return global.__native(this);
     }
 
-    protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         this.owner.widthMeasureSpec = widthMeasureSpec;
         this.owner.heightMeasureSpec = heightMeasureSpec;
         this.owner.measureCount++;
     }
 
-    protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
+    public onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
         super.onLayout(changed, left, top, right, bottom);
         this.owner.arrangeCount++;
     }

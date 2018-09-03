@@ -36,7 +36,7 @@ function dismissSoftInput(owner: EditableTextBase): void {
     if (!dismissKeyboardTimeoutId) {
         dismissKeyboardTimeoutId = setTimeout(() => {
             const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
-            const activity = (owner && owner._context) as android.app.Activity;
+            const activity = (owner && owner._context) as android.support.v7.app.AppCompatActivity;
             const nativeView = owner && owner.nativeViewProtected;
             dismissKeyboardTimeoutId = null;
             dismissKeyboardOwner = null;
@@ -71,7 +71,7 @@ function initializeEditTextListeners(): void {
             // owner.android.setSelection(selectionStart);
         }
 
-        public afterTextChanged(editable: android.text.IEditable): void {
+        public afterTextChanged(editable: android.text.Editable): void {
             const owner = this.owner;
             if (!owner || owner._changeFromCode) {
                 return;

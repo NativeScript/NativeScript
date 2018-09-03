@@ -10,6 +10,7 @@
   "files": [
     "**/*.d.ts",
     "**/*.js",
+    "**/platforms/ios/**",
     "**/package.json",
     "!android17.d.ts",
     "!ios.d.ts",
@@ -30,6 +31,9 @@
   "devDependencies": {
     "@types/node": "~7.0.5",
     "tns-platform-declarations": "*"
+  },
+  "scripts": {
+    "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md"
   },
   "nativescript": {
     "platforms": {

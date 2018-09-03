@@ -9,7 +9,7 @@ import * as tabViewModule from "tns-core-modules/ui/tab-view";
 import * as helper from "../../ui/helper";
 import * as types from "tns-core-modules/utils/types";
 import * as viewModule from "tns-core-modules/ui/core/view";
-import { resolveFileNameFromUrl } from "tns-core-modules/ui/styling/style-scope";
+import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
 import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as color from "tns-core-modules/color";
 
@@ -1409,52 +1409,104 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
 }
 
 export function test_resolveFileNameFromUrl_local_file_tilda() {
-    const localFileExistsMock = (fileName: string ) => true;
-    let url = "~/theme/core.css";
-    let appDirectory = "app";
-    let expected = `${appDirectory}/theme/core.css`;
-    let result = resolveFileNameFromUrl(url, appDirectory, localFileExistsMock);
+    const localFileExistsMock = (fileName: string) => true;
+    const url = "~/theme/core.css";
+    const appDirectory = "app";
+    const expected = `${appDirectory}/theme/core.css`;
+    const result = resolveFileNameFromUrl(url, appDirectory, localFileExistsMock);
 
     TKUnit.assertEqual(result, expected, "Should resolve local file with leading tilda (~/)");
 }
 
 export function test_resolveFileNameFromUrl_local_file_no_tilda() {
-    const localFileExistsMock = (fileName: string ) => true;
-    let url = "theme/core.css";
-    let appDirectory = "app";
-    let expected = `${appDirectory}/theme/core.css`;
-    let result = resolveFileNameFromUrl(url, appDirectory, localFileExistsMock);
+    const localFileExistsMock = (fileName: string) => true;
+    const url = "theme/core.css";
+    const appDirectory = "app";
+    const expected = `${appDirectory}/theme/core.css`;
+    const result = resolveFileNameFromUrl(url, appDirectory, localFileExistsMock);
 
     TKUnit.assertEqual(result, expected, "Should resolve local file without leading tilda (no ~/)");
 }
 
 export function test_resolveFileNameFromUrl_external_file_tilda() {
     const externalFileExistsMock = (fileName: string) => (fileName.indexOf("tns_modules") !== -1);
-    let url = "~/theme/core.css";
-    let appDirectory = "app";
-    let expected = `${appDirectory}/tns_modules/theme/core.css`;
-    let result = resolveFileNameFromUrl(url, appDirectory, externalFileExistsMock);
+    const url = "~/theme/core.css";
+    const appDirectory = "app";
+    const expected = `${appDirectory}/tns_modules/theme/core.css`;
+    const result = resolveFileNameFromUrl(url, appDirectory, externalFileExistsMock);
 
     TKUnit.assertEqual(result, expected, "Should resolve file from tns_modules with leading tilda (~/)");
 }
 
 export function test_resolveFileNameFromUrl_external_file_no_tilda() {
     const externalFileExistsMock = (fileName: string) => (fileName.indexOf("tns_modules") !== -1);
-    let url = "theme/core.css";
-    let appDirectory = "app";
-    let expected = `${appDirectory}/tns_modules/theme/core.css`;
-    let result = resolveFileNameFromUrl(url, appDirectory, externalFileExistsMock);
+    const url = "theme/core.css";
+    const appDirectory = "app";
+    const expected = `${appDirectory}/tns_modules/theme/core.css`;
+    const result = resolveFileNameFromUrl(url, appDirectory, externalFileExistsMock);
 
     TKUnit.assertEqual(result, expected, "Should resolve file from tns_modules without leading tilda (no ~/)");
 }
 
+export function test_resolveFileNameFromUrl_import_relative_file_curent_dir() {
+    const importedFileExistsMock = (fileName: string) => (fileName.indexOf("views") !== -1);
+    const importSource = "app/views/main-page.css";
+    const url = "./common.css";
+    const appDirectory = "app";
+    const expected = `${appDirectory}/views/common.css`;
+    const result = resolveFileNameFromUrl(url, appDirectory, importedFileExistsMock, importSource);
+
+    TKUnit.assertEqual(result, expected, "Should resolve relative file to current directory");
+}
+
+export function test_resolveFileNameFromUrl_import_relative_file_parent_dir() {
+    const importedFileExistsMock = (fileName: string) => (fileName.indexOf("views") !== -1);
+    const importSource = "app/views/shared/main-page.css";
+    const url = "../common.css";
+    const appDirectory = "app";
+    const expected = `${appDirectory}/views/common.css`;
+    const result = resolveFileNameFromUrl(url, appDirectory, importedFileExistsMock, importSource);
+
+    TKUnit.assertEqual(result, expected, "Should resolve relative file to parent directory");
+}
+
 export function test_resolveFileNameFromUrl_unexisting_file() {
     const fileDoesNotExistMock = (fileName: string) => false;
-    let url = "~/theme/core.css";
-    let appDirectory = "app";
-    let result = resolveFileNameFromUrl(url, appDirectory, fileDoesNotExistMock);
+    const url = "~/theme/core.css";
+    const appDirectory = "app";
+    const result = resolveFileNameFromUrl(url, appDirectory, fileDoesNotExistMock);
 
     TKUnit.assertNull(result, "Shouldn't resolve unexisting file");
+}
+
+export function test_checkAddRemoveCSS() {
+    const css1 = "#test_checkAddRemoveCSS_label { color: #FF0000; }";
+    const css2 = "#test_checkAddRemoveCSS_label { color: #00FF00; }";
+    const label = new labelModule.Label();
+    label.text = "color coming from updated rules";
+    label.id = "test_checkAddRemoveCSS_label";
+
+    helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+
+        // Add Red, we have to then trigger the page's CSS state change, for it to refresh the label's css with the new global rule
+        addTaggedAdditionalCSS(css1, "red");
+        page._onCssStateChange();
+        helper.assertViewColor(label, "#FF0000");
+
+        // Add Green (should override red)
+        addTaggedAdditionalCSS(css2, "green");
+        page._onCssStateChange();
+        helper.assertViewColor(label, "#00FF00");
+
+        // Remove Green (Should revert to red, since we removed the green rule)
+        removeTaggedAdditionalCSS("green");
+        page._onCssStateChange();
+        helper.assertViewColor(label, "#FF0000");
+
+        //Cleanup
+        removeTaggedAdditionalCSS("red");
+    });
 }
 
 // <snippet module="ui/styling" title="styling">

@@ -36,7 +36,7 @@ function initializeNativeClasses(): void {
     }
 
     apiLevel = android.os.Build.VERSION.SDK_INT;
-    // Indicator thickness for material - 2dip. For pre-material - 5dip. 
+    // Indicator thickness for material - 2dip. For pre-material - 5dip.
     selectedIndicatorThickness = layout.toDevicePixels(apiLevel >= 21 ? 2 : 5);
 
     @Interfaces([android.widget.TabHost.OnTabChangeListener])
@@ -63,7 +63,7 @@ function initializeNativeClasses(): void {
 
         createTabContent(tag: string): android.view.View {
             const tv = new android.widget.TextView(this.owner._context);
-            // This is collapsed by default and made visible 
+            // This is collapsed by default and made visible
             // by android when TabItem becomes visible/selected.
             // TODO: Try commenting visibility change.
             tv.setVisibility(android.view.View.GONE);
@@ -79,7 +79,7 @@ function initializeNativeClasses(): void {
             return global.__native(this);
         }
 
-        protected onAttachedToWindow(): void {
+        public onAttachedToWindow(): void {
             // overriden to remove the code that will steal the focus from edit fields.
         }
     }

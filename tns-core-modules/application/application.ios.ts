@@ -131,16 +131,26 @@ class IOSApplication implements IOSApplicationDefinition {
         // TODO: Expose Window module so that it can we styled from XML & CSS
         this._window.backgroundColor = utils.ios.getter(UIColor, UIColor.whiteColor);
 
+        this.notifyAppStarted(notification);
+
+    }
+
+    public notifyAppStarted(notification?: NSNotification) {
         const args: LaunchEventData = {
             eventName: launchEvent,
             object: this,
-            ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
+            ios: notification && notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
         };
 
         notify(args);
         notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: getCssFileName() });
 
-        this.setWindowContent(args.root);
+        // this._window will be undefined when NS app is embedded in a native one
+        if (this._window) {
+            this.setWindowContent(args.root);
+        } else {
+            this._window = UIApplication.sharedApplication.delegate.window;
+        }   
     }
 
     @profile
@@ -235,6 +245,7 @@ class IOSApplication implements IOSApplicationDefinition {
             this._window.makeKeyAndVisible();
         }
     }
+
 }
 
 const iosApp = new IOSApplication();
@@ -296,7 +307,14 @@ export function start(entry?: string | NavigationEntry) {
                 if (rootController) {
                     const controller = getViewController(rootView);
                     rootView._setupAsRootView({});
-                    rootController.presentViewControllerAnimatedCompletion(controller, true, null);
+                    let embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+                    if (embedderDelegate) {
+                        embedderDelegate.performSelectorWithObject("presentNativeScriptApp:", controller);
+                    } else {
+                        let visibleVC = utils.ios.getVisibleViewController(rootController);
+                        visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
+                    }
+                    iosApp.notifyAppStarted();
                 }
             }
         }

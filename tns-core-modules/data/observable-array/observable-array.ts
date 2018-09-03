@@ -49,6 +49,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     getItem(index: number): T {
         return this._array[index];
     }
+
     setItem(index: number, value: T) {
         let oldValue = this._array[index];
         this._array[index] = value;
@@ -68,6 +69,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     get length(): number {
         return this._array.length;
     }
+
     set length(value: number) {
         if (types.isNumber(value) && this._array && this._array.length !== value) {
             this.splice(value, this._array.length - value);
@@ -151,7 +153,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     }
 
     /**
-     * Reverses the elements in an Array. 
+     * Reverses the elements in an Array.
      */
     reverse(): T[] {
         return this._array.reverse();
@@ -172,7 +174,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
         return result;
     }
 
-    /** 
+    /**
      * Returns a section of an array.
      * @param start The beginning of the specified portion of the array.
      * @param end The end of the specified portion of the array.
@@ -281,7 +283,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
 
     /**
      * Performs the specified action for each element in an array.
-     * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array. 
+     * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
      * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
     forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void {
@@ -290,7 +292,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
 
     /**
      * Calls a defined callback function on each element of an array, and returns an array that contains the results.
-     * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array. 
+     * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
      * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
     map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[] {
@@ -298,8 +300,8 @@ export class ObservableArray<T> extends observable.Observable implements observa
     }
 
     /**
-     * Returns the elements of an array that meet the condition specified in a callback function. 
-     * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array. 
+     * Returns the elements of an array that meet the condition specified in a callback function.
+     * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
      * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
     filter(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): T[] {
@@ -312,19 +314,21 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
     reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T {
-        return this._array.reduce(callbackfn, initialValue);
+        return initialValue ? this._array.reduce(callbackfn, initialValue) : this._array.reduce(callbackfn);
     }
 
     /**
      * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-     * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. 
+     * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
     reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T {
         return this._array.reduceRight(callbackfn, initialValue);
     }
 }
+
 export interface ObservableArray<T> {
     on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
     on(event: "change", callback: (args: observableArrayDef.ChangedData<T>) => void, thisArg?: any);
 }

@@ -98,6 +98,14 @@ export class ListView extends View {
     scrollToIndex(index: number);
 
     /**
+     * Scrolls the specified item with index into view with animation. 
+     * [iOS](https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instm/UITableView/scrollToRowAtIndexPath:atScrollPosition:animated:)
+     * [Android](https://developer.android.com/reference/android/widget/ListView.html#smoothScrollToPosition(int))
+     * @param index - Item index. 
+     */
+    scrollToIndexAnimated(index: number);
+
+    /**
      * Checks if Specified item with index is visible.
      * @param index - Item index.
      */

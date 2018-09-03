@@ -18,6 +18,8 @@ export function loadExamples() {
     examples.set("csslv", "list-view/csslv");
     examples.set("scrolling-and-sizing", "list-view/scrolling-and-sizing");
     examples.set("row-height", "list-view/row-height");
+    examples.set("width-percent", "list-view/width-percent");
+    examples.set("item-re-layout", "list-view/item-re-layout");
 
     return examples;
 }
