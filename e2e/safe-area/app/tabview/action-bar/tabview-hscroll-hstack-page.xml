@@ -7,10 +7,14 @@
 
 	<TabView>
         <TabViewItem title="Home" iconSource="res://home">
-            <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+            <GridLayout>
+                <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+            </GridLayout>
         </TabViewItem>
         <TabViewItem title="Search" iconSource="res://search">
-            <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+            <GridLayout>
+                <fragments:hscroll-hstack-fragment></fragments:hscroll-hstack-fragment>
+            </GridLayout>
         </TabViewItem>
     </TabView>
 

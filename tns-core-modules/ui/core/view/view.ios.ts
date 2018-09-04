@@ -831,23 +831,25 @@ export namespace ios {
     }
 
     function getAvailableSpaceFromParent(view: View): { safeArea: CGRect, fullscreen: CGRect } {
-        // Search for ViewController or UIScrollView parent to get their content size.
-        let parent = view.parent;
-        while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
-            parent = parent.parent as View;
+        // Search for view and parents with ViewController or parents with UIScrollView parent to get their content size.
+        if (view && !view.viewController) {
+            view = view.parent as View;
+            while (view && !view.viewController && !(view.nativeViewProtected instanceof UIScrollView)) {
+                view = view.parent as View;
+            }
         }
 
         let fullscreen = null;
         let safeArea = null;
 
-        if (parent.viewController) {
-            const nativeView = parent.viewController.view;
+        if (view.viewController) {
+            const nativeView = view.viewController.view;
             safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
             fullscreen = nativeView.frame;
         }
 
-        if (parent.nativeViewProtected instanceof UIScrollView) {
-            const nativeView = parent.nativeViewProtected;
+        if (view.nativeViewProtected instanceof UIScrollView) {
+            const nativeView = view.nativeViewProtected;
             safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
             fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
         }
