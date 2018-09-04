@@ -7,10 +7,14 @@
 
 	<TabView>
         <TabViewItem title="Home" iconSource="res://home">
-            <fragments:listview-fragment></fragments:listview-fragment>
+            <GridLayout>
+                <fragments:listview-fragment></fragments:listview-fragment>
+            </GridLayout>
         </TabViewItem>
         <TabViewItem title="Search" iconSource="res://search">
-            <fragments:listview-fragment></fragments:listview-fragment>
+            <GridLayout>
+                <fragments:listview-fragment></fragments:listview-fragment>
+            </GridLayout>
         </TabViewItem>
     </TabView>
 

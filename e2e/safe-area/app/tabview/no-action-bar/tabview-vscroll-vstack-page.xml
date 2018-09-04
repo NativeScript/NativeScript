@@ -1,13 +1,17 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd"
-    xmlns:fragments="stacklayout/fragments"
+    xmlns:fragments="scrollview/fragments"
     actionBarHidden="true">
 
 	<TabView>
         <TabViewItem title="Home" iconSource="res://home">
-            <fragments:vscroll-vstack-fragment></fragments:vscroll-vstack-fragment>
+            <GridLayout>
+                <fragments:vscroll-vstack-fragment></fragments:vscroll-vstack-fragment>
+            </GridLayout>
         </TabViewItem>
         <TabViewItem title="Search" iconSource="res://search">
-            <fragments:vscroll-vstack-fragment></fragments:vscroll-vstack-fragment>
+            <GridLayout>
+                <fragments:vscroll-vstack-fragment></fragments:vscroll-vstack-fragment>
+            </GridLayout>
         </TabViewItem>
     </TabView>
 
