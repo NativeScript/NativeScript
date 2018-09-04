@@ -8,7 +8,7 @@ if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
 
 //@ts-ignore
 @JavaProxy("com.tns.NativeScriptActivity")
-class NativeScriptActivity extends android.app.Activity {
+class NativeScriptActivity extends android.support.v7.app.AppCompatActivity {
     private _callbacks: AndroidActivityCallbacks;
     public isNativeScriptActivity;
     constructor() {
@@ -54,7 +54,7 @@ class NativeScriptActivity extends android.app.Activity {
         this._callbacks.onBackPressed(this, super.onBackPressed);
     }
 
-    public onRequestPermissionsResult(requestCode: number, permissions: Array<String>, grantResults: Array<number>): void {
+    public onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
         this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
     }
 

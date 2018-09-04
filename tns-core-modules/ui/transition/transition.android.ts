@@ -38,7 +38,7 @@ export class Transition implements TransitionDefinition {
         throw new Error("Abstract method call");
     }
 
-    public createAndroidAnimator(transitionType: string): android.animation.Animator {
+    public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
         throw new Error("Abstract method call");
     }
 

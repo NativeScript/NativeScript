@@ -32,7 +32,12 @@ export enum connectionType {
     /**
      * Denotes an ethernet connection
      */
-    ethernet = 3
+    ethernet = 3,
+
+    /**
+     * Denotes an bluetooth connection
+     */
+    bluetooth = 4
 }
 
 /**

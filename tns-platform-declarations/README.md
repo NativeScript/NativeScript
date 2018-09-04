@@ -6,7 +6,7 @@ Offically supported entry points:
 
 Using the declarations may conflict with DOM typings,
 consider using TypeScript 2.x.x and the following settings in your `tsconfig.json`:
-```
+```JSON
 {
     "compilerOptions": {
         "module": "commonjs",
@@ -21,9 +21,14 @@ consider using TypeScript 2.x.x and the following settings in your `tsconfig.jso
 ```
 
 Create `reference.d.ts`and add the following content:
-```
+```TypeScript
 /// <reference path="./node_modules/tns-platform-declarations/ios.d.ts" />
 /// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
+```
+
+By default the android.d.ts file contains the typings for android API level 17. If your application has a higher minimum API level you can reference that level instead:
+```TypeScript
+/// <reference path="./node_modules/tns-platform-declarations/android-24.d.ts" />
 ```
 
 d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option to tsconfig file.
@@ -31,4 +36,4 @@ d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option 
 ## Generate android .d.ts files
 * To generate android dependencies use [android-dts-generator](https://github.com/NativeScript/android-dts-generator) with the appropriate android version and android support jars
 * To regenerate android-*.d.ts file use the **android-dts-generator** passing the corresponding android jar (described [here](https://github.com/NativeScript/android-dts-generator/blob/master/README.md#generate-definitons-for-android-sdk))
-* Run the **android-dts-generator** for every support jar if needed. You can check [here](https://github.com/NativeScript/android-dts-generator/blob/master/README.md#support-libraries) where you can find that jar files. Rename the ouput .d.ts file with the library name and replace the existing android-support-* files in [android](android) folder.
+* More details for using the **android-dts-generator** can be found in [this article](https://docs.nativescript.org/core-concepts/android-runtime/metadata/generating-typescript-declarations).
