@@ -225,7 +225,7 @@ export class View extends ViewCommon {
             return null;
         }
 
-        if (!this.iosExpandSafeArea) {
+        if (!this.iosOverflowSafeArea) {
             return ios.shrinkToSafeArea(this, frame);
         } else if (this.nativeViewProtected && this.nativeViewProtected.window) {
             return ios.expandBeyondSafeArea(this, frame);
@@ -579,11 +579,11 @@ View.prototype._nativeBackgroundState = "unset";
 
 export class ContainerView extends View {
 
-    public iosExpandSafeArea: boolean;
+    public iosOverflowSafeArea: boolean;
 
     constructor() {
         super();
-        this.iosExpandSafeArea = true;
+        this.iosOverflowSafeArea = true;
     }
 }
 

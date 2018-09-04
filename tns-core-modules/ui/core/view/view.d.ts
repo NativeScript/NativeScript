@@ -345,6 +345,11 @@ export abstract class View extends ViewBase {
     isUserInteractionEnabled: boolean;
 
     /**
+     * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: false
+     */
+    iosOverflowSafeArea: boolean;
+
+    /**
      * Gets is layout is valid. This is a read-only property.
      */
     isLayoutValid: boolean;
@@ -707,7 +712,7 @@ export class ContainerView extends View {
     /**
      * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: true
      */
-    public iosExpandSafeArea: boolean;
+    public iosOverflowSafeArea: boolean;
 }
 
 /**
@@ -787,6 +792,7 @@ export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
+export const iosOverflowSafeAreaProperty: Property<View, boolean>;
 
 export namespace ios {
     /**
@@ -797,6 +803,10 @@ export namespace ios {
     export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void
     export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
     export function layoutView(controller: any /* UIViewController */, owner: View): void;
+    export function getPositionFromFrame(frame: any /* CGRect */): { left, top, right, bottom };
+    export function getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top, right, bottom }): any /* CGRect */;
+    export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any /* CGRect */;
+    export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any /* CGRect */;
     export class UILayoutViewController {
         public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;
     }
