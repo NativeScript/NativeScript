@@ -10,7 +10,7 @@ import * as layoutHelper from "./layout-helper";
 import * as platform from "tns-core-modules/platform";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../helper";
-
+import { parse } from "tns-core-modules/ui/builder";
 var DELTA = 1;
 
 class RemovalTrackingGridLayout extends GridLayout {
@@ -58,6 +58,39 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         return GridLayout.getColumnSpan(view);
     }
 
+    // TODO: Start Refactor
+    private getViews (template: string) {
+        let root = parse(template);
+        return {
+            root,
+            grid: root.getViewById("grid") as GridLayout,
+            cells: [
+                [ root.getViewById("cell00") as view.View, root.getViewById("cell01") as view.View, root.getViewById("cell02") as view.View ],
+                [ root.getViewById("cell10") as view.View, root.getViewById("cell11") as view.View, root.getViewById("cell12") as view.View ],
+                [ root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View ]
+            ]
+        };
+    };
+
+    private executeSnippet<U extends { root: view.View }>(ui: U, setup: (ui: U) => void, test: (ui: U) => void): void {
+        function waitUntilTestElementLayoutIsValid(view: view.View, timeoutSec?: number): void {
+            TKUnit.waitUntilReady(() => {
+                return view.isLayoutValid;
+            }, timeoutSec || 1);
+        }
+
+        setup(ui);
+        helper.buildUIAndRunTest(ui.root, () => {
+            waitUntilTestElementLayoutIsValid(ui.root);
+            test(ui);
+        });
+    };
+
+    private noop() {
+        // no operation
+    };
+    // TODO: End Refactor
+
     private prepareGridLayout(wait?: boolean) {
 
         this.testView.addRow(new ItemSpec(1, "star"));
@@ -94,6 +127,69 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         if (wait) {
             this.waitUntilTestElementLayoutIsValid();
         }
+    }
+
+    public test_grid() {
+        const snippet = `
+        <GridLayout backgroundColor="Crimson">
+        </GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, grid, cells }) => {
+                // TODO: Test Layout position
+            }
+        );
+    }
+
+    public test_grid_3x3_label() {
+        const snippet = `
+        <GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
+            <Label row="0" col="0" id="cell00" text="overflowing text, overflowing text"></Label>
+            <Label row="0" col="1" id="cell01" text="overflowing text, overflowing text"></Label>
+            <Label row="0" col="2" id="cell02" text="overflowing text, overflowing text"></Label>
+            <Label row="1" col="0" id="cell10" text="overflowing text, overflowing text"></Label>
+            <Label row="1" col="1" id="cell11" text="overflowing text, overflowing text"></Label>
+            <Label row="1" col="2" id="cell12" text="overflowing text, overflowing text"></Label>
+            <Label row="2" col="0" id="cell20" text="overflowing text, overflowing text"></Label>
+            <Label row="2" col="1" id="cell21" text="overflowing text, overflowing text"></Label>
+            <Label row="2" col="2" id="cell22" text="overflowing text, overflowing text"></Label>
+        </GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, grid, cells }) => {
+                // TODO: Test Label components position
+            }
+        );
+    }
+
+    public test_grid_3x3_grid() {
+        const snippet = `
+        <GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
+            <GridLayout row="0" col="0" id="cell00" backgroundColor="SkyBlue"></GridLayout>
+            <GridLayout row="0" col="1" id="cell01" backgroundColor="Indigo"></GridLayout>
+            <GridLayout row="0" col="2" id="cell02" backgroundColor="Crimson"></GridLayout>
+            <GridLayout row="1" col="0" id="cell10" backgroundColor="Chocolate"></GridLayout>
+            <GridLayout row="1" col="1" id="cell11" backgroundColor="Cornsilk"></GridLayout>
+            <GridLayout row="1" col="2" id="cell12" backgroundColor="BurlyWood"></GridLayout>
+            <GridLayout row="2" col="0" id="cell20" backgroundColor="GoldenRod"></GridLayout>
+            <GridLayout row="2" col="1" id="cell21" backgroundColor="Khaki"></GridLayout>
+            <GridLayout row="2" col="2" id="cell22" backgroundColor="IndianRed"></GridLayout>
+        </GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, grid, cells }) => {
+                // TODO: Test Nested Layout position
+            }
+        );
     }
 
     public test_row_defaultValue() {
