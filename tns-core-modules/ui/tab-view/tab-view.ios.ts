@@ -124,7 +124,8 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
         let owner = this._owner.get();
         if (owner) {
-            owner._onViewControllerShown(viewController);
+            // View-controller changes without animation flagged as automatic more-navigation.
+            owner._onViewControllerShown(viewController, !animated);
         }
     }
 }
@@ -278,13 +279,17 @@ export class TabView extends TabViewBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public _onViewControllerShown(viewController: UIViewController) {
+    public _onViewControllerShown(viewController: UIViewController, isAutomaticMoreNavigation = false) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
         if (traceEnabled()) {
-            traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
+            traceWrite("TabView._onViewControllerShown(" + viewController + ", " + isAutomaticMoreNavigation + ");", traceCategories.Debug);
         }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
-            this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
+            const newIndex = this._ios.viewControllers.indexOfObject(viewController);
+            if (!isAutomaticMoreNavigation && this.selectedIndex === newIndex) {
+                this.onTabReselected(newIndex);
+            }
+            this.selectedIndex = newIndex;
         } else {
             if (traceEnabled()) {
                 traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);

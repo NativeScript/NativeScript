@@ -261,6 +261,32 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
     }
 
+    public testWhenReselectingATabNativelyTabReselectedEventIsRaised = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
+        this.waitUntilTestElementIsLoaded();
+
+        var expectedTabIndex = 6;
+        var actualTabIndex;
+
+        tabView.selectedIndex = expectedTabIndex;
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === expectedTabIndex;
+        }, helper.ASYNC);
+
+        tabView.on(tabViewModule.TabView.tabReselectedEvent, (args: tabViewModule.TabReselectedEventData) => {
+            actualTabIndex = args.tabIndex;
+            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView")
+        });
+
+        tabViewTestsNative.selectNativeTab(tabView, expectedTabIndex);
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === expectedTabIndex;
+        }, helper.ASYNC);
+
+        TKUnit.assertEqual(actualTabIndex, expectedTabIndex, "expectedTabIndex");
+    }
+
     public testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventIsRaised = function () {
         var tabView = this.testView;
         tabView.items = this._createItems(10);

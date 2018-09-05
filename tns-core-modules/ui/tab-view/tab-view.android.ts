@@ -424,6 +424,14 @@ export class TabView extends TabViewBase {
             tabLayout.setBackgroundColor(primaryColor);
         }
 
+        viewPager.setOnTabSelectedListener(new org.nativescript.widgets.OnTabSelectedListener({
+            onTabSelected: (tabIndex) => {
+                if (this.selectedIndex === tabIndex) {
+                    this.onTabReselected(tabIndex);
+                }
+            },
+        }));
+
         return nativeView;
     }
 
