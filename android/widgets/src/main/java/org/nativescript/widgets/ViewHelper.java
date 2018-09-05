@@ -528,13 +528,5 @@ public class ViewHelper {
             textView.setLetterSpacing(value);
         }
     }
-
-    public static void setBackground(android.view.View view, android.graphics.drawable.Drawable background) {
-        if (version >= 16) {
-            view.setBackground(background);
-        } else {
-            view.setBackgroundDrawable(background);
-        }
-    }
 }
     
