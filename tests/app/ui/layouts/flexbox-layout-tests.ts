@@ -253,7 +253,7 @@ let getViews = (template: string) => {
 };
 
 let activity_flex_wrap = () => getViews(
-    `<FlexboxLayout id="flexbox"
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox"
             flexDirection="${FlexDirection.ROW}"
             flexWrap="${FlexWrap.WRAP}"
             alignContent="${AlignContent.STRETCH}"
@@ -363,7 +363,7 @@ export const testFlexWrap_wrap_reverse_flexDirection_column = test(
 );
 
 let activity_flex_item_match_parent = () => getViews(
-    `<FlexboxLayout id="flexbox"
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox"
             width="100%"
             verticalAlignment="top"
             flexDirection="${FlexDirection.ROW}"
@@ -389,7 +389,7 @@ export const testFlexItem_match_parent = test(
 );
 
 let activity_flex_item_match_parent_direction_column = () => getViews(
-    `<FlexboxLayout id="flexbox"
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox"
             height="100%"
             horizontalAlignment="left"
             flexDirection="${FlexDirection.COLUMN}"
@@ -415,7 +415,7 @@ export const testFlexItem_match_parent_flexDirection_column = test(
 );
 
 let activity_flexbox_wrap_content = () => getViews(
-    `<FlexboxLayout id="flexbox"
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox"
             horizontalAlignment="left"
             verticalAlignment="top"
             flexDirection="${FlexDirection.ROW}"
@@ -448,7 +448,7 @@ export const testFlexboxLayout_wrapContent = test(
 
 let activity_flexbox_wrapped_with_scrollview = () => getViews(
     `<ScrollView width="100%" verticalAlignment="top">
-        <FlexboxLayout id="flexbox"
+        <FlexboxLayout iosOverflowSafeArea="false" id="flexbox"
                 width="360"
                 verticalAlignment="top"
                 flexDirection="${FlexDirection.ROW}"
@@ -481,7 +481,7 @@ export const testFlexboxLayout_wrapped_with_ScrollView = test(
 
 let activity_flexbox_wrapped_with_horizontalscrollview = () => getViews(
     `<ScrollView orientation="horizontal" width="100%" verticalAlignment="top">
-        <FlexboxLayout id="flexbox" horizontalAlignment="left" height="400" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+        <FlexboxLayout iosOverflowSafeArea="false" id="flexbox" horizontalAlignment="left" height="400" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
             <Label id="text1" width="300" height="100%" text="1" backgroundColor="red" />
             <Label id="text2" width="300" height="100%" text="2" backgroundColor="green" />
             <Label id="text3" width="300" height="100%" text="3" backgroundColor="blue" />
@@ -511,7 +511,7 @@ export const testFlexboxLayout_wrapped_with_HorizontalScrollView = test(
 );
 
 let activity_justify_content_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" justifyContent="${JustifyContent.FLEX_START}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" justifyContent="${JustifyContent.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="60" height="60" text="1" backgroundColor="red" />
         <Label id="text2" width="60" height="60" text="2" backgroundColor="green" />
         <Label id="text3" width="60" height="60" text="3" backgroundColor="blue" />
@@ -531,7 +531,7 @@ export const testJustifyContent_flexStart = test(
 
 let activity_justify_content_with_parent_padding = () => getViews(
     `<GridLayout padding="24" width="100%" height="100%">
-        <FlexboxLayout id="flexbox" width="100%" height="100%" padding="8" flexDirection="${FlexDirection.ROW}" justifyCOntent="${JustifyContent.FLEX_START}" backgroundColor="gray">
+        <FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="100%" height="100%" padding="8" flexDirection="${FlexDirection.ROW}" justifyCOntent="${JustifyContent.FLEX_START}" backgroundColor="gray">
             <Label id="text1" width="60" height="60" text="1" backgroundColor="red" />
             <Label id="text2" width="60" height="60" text="2" backgroundColor="green" />
             <Label id="text3" width="60" height="60" text="3" backgroundColor="blue" />
@@ -799,7 +799,7 @@ export const testJustifyContent_spaceAround_flexDirection_column_withPadding = t
 );
 
 let activity_flex_grow_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
             <Label id="text1" width="60" height="60" text="1" backgroundColor="red" />
             <Label id="text2" width="60" height="60" text="2" backgroundColor="green" />
             <Label id="text3" width="60" height="60" text="3" backgroundColor="blue" flexGrow="1" />
@@ -855,7 +855,7 @@ export const testFlexGrow_including_view_gone = test(
 );
 
 let activity_align_content_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignContent="${AlignContent.STRETCH}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignContent="${AlignContent.STRETCH}" backgroundColor="gray">
         <Label id="text1" width="120" height="120" text="1" backgroundColor="red" />
         <Label id="text2" width="120" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="120" height="120" text="3" backgroundColor="blue" />
@@ -1161,7 +1161,7 @@ export const testAlignContent_stretch_parentWrapContent_flexDirection_column = t
 );
 
 let activity_stretch_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" height="360" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.STRETCH}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" height="360" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.STRETCH}" backgroundColor="gray">
         <Label id="text1" width="140" height="80" text="1" backgroundColor="red" />
         <Label id="text2" width="140" height="80" text="2" backgroundColor="green" />
         <Label id="text3" width="140" height="80" text="3" backgroundColor="blue" />
@@ -1188,7 +1188,7 @@ export const testAlignItems_stretch = test(
 );
 
 let activity_align_self_stretch_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" alignContent="${AlignContent.STRETCH}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" alignContent="${AlignContent.STRETCH}" backgroundColor="gray">
         <Label id="text1" width="120" height="120" text="1" backgroundColor="red" alignSelf="${AlignSelf.STRETCH}" />
         <Label id="text2" width="120" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="120" height="120" text="3" backgroundColor="blue" />
@@ -1238,7 +1238,7 @@ export const testAlignSelf_stretch_flexDirection_column = test(
 );
 
 let activity_align_items_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignContent="${AlignContent.STRETCH}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignContent="${AlignContent.STRETCH}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="120" height="120" text="1" backgroundColor="red" />
         <Label id="text2" width="120" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="120" height="120" text="3" backgroundColor="blue" />
@@ -1289,7 +1289,7 @@ export const testAlignItems_flexEnd = test(
 );
 
 let activity_align_items_parent_padding_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="320" height="320" padding="16" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_END}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="320" height="320" padding="16" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_END}" backgroundColor="gray">
         <Label id="text1" width="120" height="120" text="1" backgroundColor="red" />
         <Label id="text2" width="120" height="120" text="2" backgroundColor="green" />
     </FlexboxLayout>`
@@ -1514,7 +1514,7 @@ export const testAlignItems_center_wrapReverse_flexDirection_column = test(
 );
 
 let activity_align_items_baseline_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.BASELINE}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.BASELINE}" backgroundColor="gray">
         <Label id="text1" width="30" height="80" text="1" verticalAlignment="bottom" backgroundColor="red" />
         <Label id="text2" width="30" height="80" text="2" verticalAlignment="top" backgroundColor="green" />
         <Label id="text3" width="30" height="80" text="2" verticalAlignment="center" backgroundColor="blue" />
@@ -1548,7 +1548,7 @@ export const testAlignItems_baseline_wrapReverse = test(
 );
 
 let activity_flex_wrap_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" height="300" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" height="300" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
         <Label id="text1" width="160" height="120" text="1" backgroundColor="red" />
         <Label id="text2" width="160" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="160" height="120" text="3" backgroundColor="blue" />
@@ -1584,7 +1584,7 @@ export const testFlexDirection_column_reverse = test(
 );
 
 let activity_flex_basis_percent_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
         <Label id="text1" width="50%" height="50%" text="1" backgroundColor="red" />
         <Label id="text2" width="60%" height="60%" text="2" backgroundColor="green" />
         <Label id="text3" width="60" height="60" text="3" backgroundColor="blue" />
@@ -1659,7 +1659,7 @@ export const testFlexBasisPercent_nowrap_flexDirection_column = test(
 );
 
 let activity_minwidth_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="400" height="400" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" backgroundColor="gray">
             <Label id="text1" horizontalAlignment="left" verticalAlignment="top" text="1" minWidth="100" backgroundColor="red" />
             <Label id="text2" horizontalAlignment="left" verticalAlignment="top" text="2" minWidth="100" backgroundColor="green" flexGrow="1" />
         </FlexboxLayout>`
@@ -1676,7 +1676,7 @@ export const testMinWidth_initial_width_less_than_minWidth = test(
 );
 
 let activity_minwidth_lower_bound_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="400" height="400" flexWrap="${FlexWrap.NOWRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" flexWrap="${FlexWrap.NOWRAP}" backgroundColor="gray">
         <Label id="text1" width="200" verticalAlignment="top" text="1" minWidth="150" backgroundColor="red" />
         <Label id="text2" width="200" verticalAlignment="top" text="1" backgroundColor="green" />
         <Label id="text3" width="200" verticalAlignment="top" text="1" backgroundColor="blue" />
@@ -1694,7 +1694,7 @@ export const testMinWidth_works_as_lower_bound_shrink_to = test(
 );
 
 let activity_minheight_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="400" height="400" flexDirection="${FlexDirection.COLUMN}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" flexDirection="${FlexDirection.COLUMN}" backgroundColor="gray">
         <Label id="text1" horizontalAlignment="left" verticalAlignment="top" text="1" minHeight="100" backgroundColor="red" />
         <Label id="text2" horizontalAlignment="left" verticalAlignment="top" text="2" backgroundColor="green" flexGrow="1" />
     </FlexboxLayout>`
@@ -1710,7 +1710,7 @@ export const testMinHeight_initial_height_less_than_minHeight = test(
 );
 
 let activity_minheight_lower_bound_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="400" height="400" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.NOWRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="400" height="400" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.NOWRAP}" backgroundColor="gray">
         <Label id="text1" horizontalAlignment="left" height="200" text="1" minHeight="150" backgroundColor="red" />
         <Label id="text2" horizontalAlignment="left" height="200" text="2" backgroundColor="green" />
         <Label id="text3" horizontalAlignment="left" height="200" text="3" backgroundColor="blue" />
@@ -1734,7 +1734,7 @@ export const testMinHeight_works_as_lower_bound_shrink_to = test(
 // omit: testMaxHeight_works_as_lower_bound_expand_to
 
 let activity_views_visibility_gone = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" height="300" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" height="300" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
         <Label id="text1" width="160" height="120" text="1" visibility="collapse" backgroundColor="red" />
         <Label id="text2" width="160" height="120" text="2" visibility="collapse" backgroundColor="green" />
         <Label id="text3" width="160" height="120" text="3" backgroundColor="blue" />
@@ -1760,7 +1760,7 @@ export const testView_visibility_gone = test(
 );
 
 let activity_visibility_gone_first_item_in_flex_line_row = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" verticalAlignment="top" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" verticalAlignment="top" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
         <Label id="text1" width="160" verticalAlignment="top" text="1" backgroundColor="red" />
         <Label id="text2" width="120" verticalAlignment="top" text="2" backgroundColor="green" />
         <Label id="text3" width="160" verticalAlignment="top" text="3" visibility="collapse" backgroundColor="blue" />
@@ -1777,7 +1777,7 @@ export const testView_visibility_gone_first_item_in_flex_line_horizontal = test(
 );
 
 let activity_visibility_gone_first_item_in_flex_line_column = () => getViews(
-    `<FlexboxLayout id="flexbox" horizontalAlignment="left" height="360" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" horizontalAlignment="left" height="360" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
         <Label id="text1" horizontalAlignment="left" height="160" text="1" backgroundColor="red" />
         <Label id="text2" horizontalAlignment="left" height="160" text="1" backgroundColor="green" />
         <Label id="text3" horizontalAlignment="left" height="160" text="1" visibility="collapse" backgroundColor="blue" />
@@ -1794,7 +1794,7 @@ export const testView_visibility_gone_first_item_in_flex_line_vertical = test(
 );
 
 let activity_wrap_before_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" horizontalAlignment="left" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" horizontalAlignment="left" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
         <Label id="text1" width="100" height="80" text="1" backgroundColor="red" />
         <Label id="text2" width="100" height="80" text="2" backgroundColor="green" flexWrapBefore="true" />
         <Label id="text3" width="100" height="80" text="3" backgroundColor="blue" flexWrapBefore="true" />
@@ -1846,7 +1846,7 @@ export const testWrapBefore_nowrap = test(
 );
 
 let activity_wrap_parent_padding_horizontal_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" verticalAlignment="top" padding="32" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" verticalAlignment="top" padding="32" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="280" height="80" text="1" backgroundColor="red" />
         <Label id="text2" width="30" height="80" text="2" backgroundColor="green" />
         <Label id="text3" width="100" height="80" text="3" backgroundColor="blue" /> 
@@ -1864,7 +1864,7 @@ export const testWrap_parentPadding_horizontal = test(
 );
 
 let activity_wrap_parent_padding_vertical_test = () => getViews(
-    `<FlexboxLayout id="flexbox" horizontalAlignment="left" height="360" padding="32" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" horizontalAlignment="left" height="360" padding="32" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="80" height="280" text="1" backgroundColor="red" />
         <Label id="text2" width="80" height="30" text="2" backgroundColor="green" />
         <Label id="text3" width="80" height="80" text="3" backgroundColor="blue" />
@@ -1882,7 +1882,7 @@ export const testWrap_parentPadding_vertical = test(
 );
 
 let activity_wrap_child_margin_horizontal_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="360" verticalAlignment="top" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" verticalAlignment="top" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="280" height="80" text="1" backgroundColor="red" />
         <Label id="text2" width="30" height="80" text="2" margin="32" backgroundColor="green" />
         <Label id="text3" width="100" height="80" text="3" backgroundColor="blue" />
@@ -1900,7 +1900,7 @@ export const testWrap_childMargin_horizontal = test(
 );
 
 let activity_first_item_large_horizontal_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.STRETCH}" alignContent="${AlignItems.STRETCH}">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="320" height="320" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.STRETCH}" alignContent="${AlignItems.STRETCH}">
         <Label id="text1" width="500" height="60" text="1" />
         <Label id="text2" width="120" height="60" text="2" />
         <Label id="text3" width="300" height="60" text="3" />
@@ -1922,7 +1922,7 @@ export const testFirstItemLarge_horizontal = test(
 );
 
 let activity_first_item_large_vertical_test = () => getViews(
-    `<FlexboxLayout id="flexbox" width="320" height="320" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.STRETCH}" alignContent="${AlignContent.STRETCH}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="320" height="320" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.STRETCH}" alignContent="${AlignContent.STRETCH}" backgroundColor="gray">
         <Label id="text1" width="60" height="500" text="1" backgroundColor="red" />
         <Label id="text2" width="60" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="6" height="300" text="3" backgroundColor="blue" />
@@ -1944,7 +1944,7 @@ export const testFirstItemLarge_vertical = test(
 );
 
 let activity_wrap_child_margin_vertical_test = () => getViews(
-    `<FlexboxLayout id="flexbox" horizontalAlignment="left" height="360" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" horizontalAlignment="left" height="360" flexDirection="${FlexDirection.COLUMN}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="80" height="280" text="1" backgroundColor="red" />
         <Label id="text2" width="80" height="30" margin="32" text="2" backgroundColor="green" />
         <Label id="text3" width="80" height="80" text="3" backgroundColor="blue" />
@@ -1963,7 +1963,7 @@ export const testWrap_childMargin_vertical = test(
 );
 
 let activity_flexbox_with_proxy_view_container = () => getViews(
-    `<FlexboxLayout id="flexbox">
+    `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox">
         <ProxyViewContainer></ProxyViewContainer>
     </FlexboxLayout>`
 );
