@@ -11,6 +11,13 @@ import * as platform from "tns-core-modules/platform";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
+import { dipToDp, left, top, right, bottom, height, width,
+    paddingLeft, paddingTop, paddingRight, paddingBottom,
+    equal, closeEnough, notEqual, check,
+    heightEqual, widthEqual,
+    isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
+    isLeftOf, isRightOf, isBelow, isAbove,
+    isLeftWith, isAboveWith, isRightWith, isBelowWith } from "./layout-tests-helper";
 var DELTA = 1;
 
 class RemovalTrackingGridLayout extends GridLayout {
@@ -131,7 +138,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_grid() {
         const snippet = `
-        <GridLayout backgroundColor="Crimson">
+        <GridLayout id="grid" backgroundColor="Crimson">
         </GridLayout>
         `;
 
@@ -139,14 +146,18 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
             this.getViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {
-                // TODO: Test Layout position
+                // TODO: fullscreen
+                equal(left(grid), grid.getSafeAreaInsets().left);
+                check(top(grid) < grid.getSafeAreaInsets().top);
+                equal(right(grid), width(grid) - grid.getSafeAreaInsets().right);
+                check(bottom(grid) > height(grid) - grid.getSafeAreaInsets().bottom);
             }
         );
     }
 
     public test_grid_3x3_label() {
         const snippet = `
-        <GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
+        <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
             <Label row="0" col="0" id="cell00" text="overflowing text, overflowing text"></Label>
             <Label row="0" col="1" id="cell01" text="overflowing text, overflowing text"></Label>
             <Label row="0" col="2" id="cell02" text="overflowing text, overflowing text"></Label>
@@ -163,14 +174,37 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
             this.getViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {
-                // TODO: Test Label components position
+                isLeftAlignedWith(grid, cells[0][0]);
+                isLeftAlignedWith(grid, cells[1][0]);
+                isLeftAlignedWith(grid, cells[2][0]);
+
+                // TODO: fullscreen
+                isBelowWith(grid, cells[0][0], grid.getSafeAreaInsets().top);
+                isBelowWith(grid, cells[0][1], grid.getSafeAreaInsets().top);
+                isBelowWith(grid, cells[0][2], grid.getSafeAreaInsets().top);
+
+                isRightAlignedWith(grid, cells[0][2]);
+                isRightAlignedWith(grid, cells[1][2]);
+                isRightAlignedWith(grid, cells[2][2]);
+
+                isAboveWith(cells[2][0], grid, grid.getSafeAreaInsets().bottom);
+                isAboveWith(cells[2][1], grid, grid.getSafeAreaInsets().bottom);
+                isAboveWith(cells[2][2], grid, grid.getSafeAreaInsets().bottom);
+
+                const cellHeight = height(cells[1][1]);
+                isAboveWith(cells[0][1], cells[1][1], cellHeight);
+                isAboveWith(cells[0][1], cells[1][1], cellHeight);
+
+                const cellWidth = width(cells[1][1]);
+                isRightWith(cells[1][0], cells[1][1], cellWidth);
+                isRightWith(cells[1][1], cells[1][2], cellWidth);
             }
         );
     }
 
     public test_grid_3x3_grid() {
         const snippet = `
-        <GridLayout rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
+        <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
             <GridLayout row="0" col="0" id="cell00" backgroundColor="SkyBlue"></GridLayout>
             <GridLayout row="0" col="1" id="cell01" backgroundColor="Indigo"></GridLayout>
             <GridLayout row="0" col="2" id="cell02" backgroundColor="Crimson"></GridLayout>
@@ -187,7 +221,31 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
             this.getViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {
-                // TODO: Test Nested Layout position
+                
+                isLeftAlignedWith(grid, cells[0][0]);
+                isLeftAlignedWith(grid, cells[1][0]);
+                isLeftAlignedWith(grid, cells[2][0]);
+
+                // TODO: fullscreen
+                isTopAlignedWith(grid, cells[0][0]);
+                isTopAlignedWith(grid, cells[0][1]);
+                isTopAlignedWith(grid, cells[0][2]);
+
+                isRightAlignedWith(grid, cells[0][2]);
+                isRightAlignedWith(grid, cells[1][2]);
+                isRightAlignedWith(grid, cells[2][2]);
+
+                isBottomAlignedWith(cells[2][0], grid);
+                isBottomAlignedWith(cells[2][1], grid);
+                isBottomAlignedWith(cells[2][2], grid);
+
+                const cellHeight = height(cells[1][1]);
+                isAboveWith(cells[0][1], cells[1][1], cellHeight);
+                isAboveWith(cells[0][1], cells[1][1], cellHeight);
+
+                const cellWidth = width(cells[1][1]);
+                isRightWith(cells[1][0], cells[1][1], cellWidth);
+                isRightWith(cells[1][1], cells[1][2], cellWidth);
             }
         );
     }
