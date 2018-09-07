@@ -10,8 +10,8 @@ import {
     testDialogBackground
 } from "./shared.e2e-spec"
 
-describe("modal-frame:", () => {
-
+describe("modal-frame:", function () {
+    this.retries(2);
     let driver: AppiumDriver;
     let screen: Screen;
 
@@ -27,16 +27,19 @@ describe("modal-frame:", () => {
                 await screen[root]();
             });
 
+            const prepareImageName = (prefix, imageName) => `${prefix}_${imageName.replace(" ", "_").replace(",", "_")}`;
             beforeEach(async function () {
+                await driver.logTestArtifacts(prepareImageName("before", this.currentTest.title));
                 await screen.loadModalFrame();
             });
 
             afterEach(async function () {
                 if (this.currentTest.state === "failed") {
-                    await driver.logPageSource(this.currentTest.title);
-                    await driver.logScreenshot(this.currentTest.title);
+                    await driver.logTestArtifacts(prepareImageName("fail_after", this.currentTest.title));
                     await driver.resetApp();
                     await screen[root]();
+                } else {
+                    await driver.logTestArtifacts(prepareImageName("after", this.currentTest.title));
                 }
             });
 
