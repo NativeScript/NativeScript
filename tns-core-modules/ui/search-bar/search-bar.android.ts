@@ -205,7 +205,7 @@ export class SearchBar extends SearchBarBase {
         if (value instanceof Color) {
             textView.setBackgroundColor(value.android);
         } else {
-            org.nativescript.widgets.ViewHelper.setBackground(textView, value);
+            textView.setBackground(value);
         }
     }
     [textFieldHintColorProperty.getDefault](): number {
