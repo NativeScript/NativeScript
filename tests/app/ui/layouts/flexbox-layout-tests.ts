@@ -58,9 +58,8 @@ import * as helper from "../helper";
 import { layout } from "tns-core-modules/utils/utils";
 import { parse } from "tns-core-modules/ui/builder";
 
-// TODO: Test the flexbox-layout-page.xml can be loaded and displayed
-
 import dipToDp = layout.toDevicePixels;
+import round = layout.round;
 
 const EPS = 1;
 
@@ -70,74 +69,29 @@ function waitUntilTestElementLayoutIsValid(view: View, timeoutSec?: number): voi
     }, timeoutSec || 1);
 }
 
-function commonAncestor(view1: View, view2: View): View {
-    let set = new Set();
-    do {
-        if (view1) {
-            if (set.has(view1)) {
-                return view1;
-            }
-            set.add(view1);
-            view1 = <View>view1.parent;
-        }
-        if (view2) {
-            if (set.has(view2)) {
-                return view2;
-            }
-            set.add(view2);
-            view2 = <View>view2.parent;
-        }
-    } while (view1 || view2);
-    return null;
-}
-
-interface Bounds {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-}
-
-function bounds(view: View): Bounds {
-    return view._getCurrentLayoutBounds();
-}
-
-/**
- * Get the bounds of the child as if it was placed in the same view as its ancestor,
- * so the bounds can be compared in the same coordinate system.
- */
-function boundsToAncestor(child: View, ancestor: View = null) {
-    let currentBounds = bounds(child);
-    while (child && child !== ancestor) {
-        child = <View>child.parent;
-        let childBounds = bounds(child);
-        currentBounds.left += childBounds.left;
-        currentBounds.right += childBounds.left;
-        currentBounds.top += childBounds.top;
-        currentBounds.bottom += childBounds.top;
-    }
-    return currentBounds;
-}
-
 function baseline(view: View): number {
     // TODO: Return View's baseline!
     return 0;
 }
 
-function width(child: View): number {
-    let b = bounds(child);
-    return b.right - b.left;
+function height(view: View): number {
+    return round(dipToDp(view.getActualSize().height));
 }
 
-function height(child: View): number {
-    let b = bounds(child);
-    return b.bottom - b.top;
+function width(view: View): number {
+    return round(dipToDp(view.getActualSize().width));
 }
 
-function top(child: View): number { return bounds(child).top; }
-function right(child: View): number { return bounds(child).right; }
-function bottom(child: View): number { return bounds(child).bottom; }
-function left(child: View): number { return bounds(child).left; }
+
+function left(view: View): number { return round(dipToDp(view.getLocationInWindow().x)); }
+function top(view: View): number { return round(dipToDp(view.getLocationInWindow().y)); }
+function right(view: View): number { return left(view) + width(view); }
+function bottom(view: View): number { return top(view) + height(view); }
+
+function paddingLeft(view: View): number { return Length.toDevicePixels(view.style.paddingLeft, 0) + Length.toDevicePixels(view.parent.style.paddingLeft, 0) + (<View>view.parent).getSafeAreaInsets().left; };
+function paddingTop(view: View): number { return top(view) + Length.toDevicePixels(view.style.paddingTop, 0) };
+function paddingRight(view: View): number { return right(view) - Length.toDevicePixels(view.style.paddingRight, 0) };
+function paddingBottom(view: View): number { return bottom(view) - Length.toDevicePixels(view.style.paddingBottom, 0) };
 
 function equal<T>(a: T, b: T, message?: string) {
     message ? TKUnit.assertEqual(a, b, message) : TKUnit.assertEqual(a, b);
@@ -163,51 +117,52 @@ function heightEqual(view1: View, view2: View) {
     equal(height(view1), height(view2), `Expected height of ${view1} to equal height of ${view2}.`);
 }
 
-function comparableBounds(view1: View, view2: View): { bounds1: Bounds, bounds2: Bounds } {
-    let ancestor = commonAncestor(view1, view2);
-    let bounds1 = boundsToAncestor(view1, ancestor);
-    let bounds2 = boundsToAncestor(view2, ancestor);
-    return { bounds1, bounds2 };
-}
-
 function isLeftAlignedWith(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assertEqual(bounds1.left, bounds2.left, `${view1} is not left-aligned with ${view2}`);
+    TKUnit.assertEqual(left(view1), left(view2), `${view1} is not left-aligned with ${view2}`);
 }
 
 function isRightAlignedWith(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assertEqual(bounds1.right, bounds2.right, `${view1} is not right-aligned with ${view2}`);
+    TKUnit.assertEqual(right(view1), right(view2), `${view1} is not right-aligned with ${view2}`);
 }
 
 function isTopAlignedWith(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assertEqual(bounds1.top, bounds2.top, `${view1} is not top-aligned with ${view2}`);
+    TKUnit.assertEqual(top(view1), top(view2), `${view1} is not top-aligned with ${view2}`);
 }
 
 function isBottomAlignedWith(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assertEqual(bounds1.bottom, bounds2.bottom, `${view1} is not bottom-aligned with ${view2}`);
-}
-
-function isRightOf(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assert(bounds1.left >= bounds2.right, `${view1}.left: ${bounds1.left} is not right of ${view2}.right: ${bounds2.right}`);
+    TKUnit.assertEqual(bottom(view1), bottom(view2), `${view1} is not bottom-aligned with ${view2}`);
 }
 
 function isLeftOf(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assert(bounds1.right <= bounds2.left, `${view1}.right: ${bounds1.right} is not left of ${view2}.left: ${bounds2.left}`);
+    TKUnit.assert(right(view1) <= left(view2), `${view1}.right is not left of ${view2}.left`);
 }
 
-function isBelow(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assert(bounds1.top >= bounds2.bottom, `${view1}.top: ${bounds1.top} is not below ${view2}.bottom: ${bounds2.bottom}`);
+function isRightOf(view1: View, view2: View) {
+    TKUnit.assert(left(view1) >= right(view2), `${view1}.left is not right of ${view2}.right`);
+}
+
+function isBelow(view1: View, view2: View, distance?: number) {
+    TKUnit.assert(top(view1) >= bottom(view2), `${view1}.top is not below ${view2}.bottom`);
 }
 
 function isAbove(view1: View, view2: View) {
-    let { bounds1, bounds2 } = comparableBounds(view1, view2);
-    TKUnit.assert(bounds1.bottom <= bounds2.top, `${view1}.bottom: ${bounds1.bottom} is not above ${view2}.top: ${bounds2.top}`);
+    TKUnit.assert(bottom(view1) <= top(view2), `${view1}.bottom is not above ${view2}.top`);
+}
+
+function isLeftWith(view1: View, view2: View, distance: number) {
+    TKUnit.assertTrue(Math.abs(left(view1) + distance - left(view2)) <= EPS, `${view1}.left is not ${distance} of ${view2}.left`);
+}
+
+function isRightWith(view1: View, view2: View, distance: number) {
+    TKUnit.assertTrue(Math.abs(right(view1) + distance - right(view2)) <= EPS, `${view1}.right is not ${distance} of ${view2}.right`);
+}
+
+function isAboveWith(view1: View, view2: View, distance: number) {
+    TKUnit.assertTrue(Math.abs(bottom(view1) + distance - bottom(view2)) <= EPS, `${view1}.bottom is not ${distance} of ${view2}.bottom`);
+}
+
+function isBelowWith(view1: View, view2: View, distance: number) {
+    TKUnit.assertTrue(Math.abs(top(view1) + distance - top(view2)) <= EPS, `${view1}.top is not ${distance} of ${view2}.top`);
 }
 
 export function testFlexboxPage() {
@@ -545,8 +500,8 @@ export const testJustifyContent_flexStart_withParentPadding = test(
     ({ root, flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         isRightOf(text3, text2);
-        equal(left(text1), Length.toDevicePixels(flexbox.style.paddingLeft, 0), `Expected ${text1}.left to equal ${flexbox}.paddingLeft`);
-        equal(top(text1), Length.toDevicePixels(flexbox.style.paddingTop, 0), `Expected ${text1}.top to equal ${flexbox}.paddingTop`);
+        equal(left(text1), paddingLeft(flexbox), `Expected ${text1}.left to equal ${flexbox}.paddingLeft`);
+        equal(top(text1), paddingTop(flexbox), `Expected ${text1}.top to equal ${flexbox}.paddingTop`);
     }
 );
 
@@ -567,8 +522,12 @@ export const testJustifyContent_flexEnd_withParentPadding = test(
     ({ root, flexbox, text1, text2, text3 }) => {
         isLeftOf(text2, text3);
         isLeftOf(text1, text2);
-        closeEnough(width(flexbox) - right(text3), Length.toDevicePixels(flexbox.style.paddingRight, 0));
-        closeEnough(top(text3), Length.toDevicePixels(flexbox.style.paddingTop, 0));
+        equal(top(text1), paddingTop(flexbox));
+        equal(top(text2), paddingTop(flexbox));
+        equal(top(text3), paddingTop(flexbox));
+        equal(right(text3), paddingRight(flexbox));
+        isRightWith(text2, text3, width(text3));
+        isRightWith(text1, text2, width(text2));
     }
 );
 
@@ -584,8 +543,8 @@ export const testJustifyContent_center = test(
 
         let space = width(flexbox) - width(text1) - width(text2) - width(text3);
         space = space / 2;
-        check(space - 1 <= left(text1) && left(text1) <= space + 1);
-        check(space - 1 <= width(flexbox) - right(text3) && width(flexbox) - right(text3) <= space + 1);
+        closeEnough(left(text1), paddingLeft(flexbox) + space);
+        closeEnough(right(text3), paddingRight(flexbox) - space);
     }
 );
 
@@ -595,10 +554,10 @@ export const testJustifyContent_center_withParentPadding = test(
     ({ root, flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         isRightOf(text3, text2);
-        let space = width(flexbox) - width(text1) - width(text2) - width(text3) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) - Length.toDevicePixels(flexbox.style.paddingRight, 0);
+        let space = width(flexbox) - width(text1) - width(text2) - width(text3);
         space = space / 2;
-        check(space - 1 <= left(text1) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) && left(text1) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) <= space + 1);
-        check(space - 1 <= width(flexbox) - right(text3) - Length.toDevicePixels(flexbox.style.paddingRight, 0) && width(flexbox) - right(text3) - Length.toDevicePixels(flexbox.style.paddingRight, 0) <= space + 1);
+        isLeftWith(flexbox, text1, space);
+        isRightWith(text3, flexbox, space);
     }
 );
 
@@ -627,10 +586,10 @@ export const testJustifyContent_spaceBetween_withPadding = test(
     ({ root, flexbox, text1, text2, text3 }) => {
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(padding) * 2;
         space = space / 2;
-        closeEnough(left(text1), dipToDp(padding));
-        closeEnough(width(flexbox) - right(text3), dipToDp(padding));
-        check(space - 1 <= left(text2) - right(text1) && left(text2) - right(text1) <= space + 1);
-        check(space - 1 <= left(text3) - right(text2) && left(text3) - right(text2) <= space + 1);
+        equal(left(text1), paddingLeft(flexbox));
+        closeEnough(right(text1) + space, left(text2));
+        closeEnough(right(text2) + space, left(text3));
+        equal(right(text3), paddingRight(flexbox));
     }
 );
 
@@ -644,12 +603,10 @@ export const testJustifyContent_spaceAround = test(
 
         let space = width(flexbox) - width(text1) - width(text2) - width(text3);
         space = space / 6; // Divide by the number of children * 2
-        check(space - 1 <= left(text1) && left(text1) <= space + 1);
-        let spaceLowerBound = space * 2 - 1;
-        let spaceUpperBound = space * 2 + 1;
-        check(spaceLowerBound <= left(text2) - right(text1) && left(text2) - right(text1) <= spaceUpperBound);
-        check(spaceLowerBound <= left(text3) - right(text2) && left(text3) - right(text2) <= spaceUpperBound);
-        check(space - 1 <= width(flexbox) - right(text3) && width(flexbox) - right(text3) <= space + 1);
+        closeEnough(left(text1), paddingLeft(flexbox) + space);
+        closeEnough(right(text1) + space * 2, left(text2));
+        closeEnough(right(text2) + space * 2, left(text3));
+        closeEnough(right(text3), paddingRight(flexbox) - space);
     }
 );
 
@@ -664,12 +621,12 @@ export const testJustifyContent_spaceAround_withPadding = test(
     ({ root, flexbox, text1, text2, text3 }) => {
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(padding) * 2;
         space = space / 6; // Divide by the number of children * 2
-        check(space - 1 <= left(text1) - dipToDp(padding) && left(text1) - dipToDp(padding) <= space + 1);
-        let spaceLowerBound = space * 2 - 1;
-        let spaceUpperBound = space * 2 + 1;
-        check(spaceLowerBound <= left(text2) - right(text1) && left(text2) - right(text1) <= spaceUpperBound);
-        check(spaceLowerBound <= left(text3) - right(text2) && left(text3) - right(text2) <= spaceUpperBound);
-        check(space - 1 <= width(flexbox) - right(text3) - dipToDp(padding) && width(flexbox) - right(text3) - dipToDp(padding) <= space + 1);
+        equal(top(text1), paddingTop(flexbox));
+        closeEnough(left(text1), paddingLeft(flexbox) + space);
+        closeEnough(right(text1) + space * 2, left(text2));
+        closeEnough(right(text2) + space * 2, left(text3));
+        closeEnough(right(text3), paddingRight(flexbox) - space);
+        equal(bottom(text1), paddingBottom(flexbox));
     }
 );
 
@@ -715,8 +672,8 @@ export const testJustifyContent_center_flexDirection_column = test(
 
         let space = height(flexbox) - height(text1) - height(text2) - height(text3);
         space = space / 2;
-        check(space - 1 <= top(text1) && top(text1) <= space + 1);
-        check(space - 1 <= height(flexbox) - bottom(text3) && height(flexbox) - bottom(text3) <= space + 1);
+        isBelowWith(flexbox, text1, space);
+        isAboveWith(text3, flexbox, space);
     }
 );
 
@@ -750,10 +707,10 @@ export const testJustifyContent_spaceBetween_flexDirection_column_withPadding = 
     ({ root, flexbox, text1, text2, text3 }) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
         space = space / 2;
-        closeEnough(top(text1), dipToDp(padding));
-        closeEnough(height(flexbox) - bottom(text3), dipToDp(padding));
-        check(space - 1 <= top(text2) - bottom(text1) && top(text2) - bottom(text1) <= space + 1);
-        check(space - 1 <= top(text3) - bottom(text2) && top(text3) - bottom(text2) <= space + 1);
+        equal(top(text1), paddingTop(flexbox));
+        equal(bottom(text3), paddingBottom(flexbox));
+        equal(bottom(text1) + space, top(text2));
+        equal(bottom(text2) + space, top(text3));
     }
 );
 
@@ -770,12 +727,10 @@ export const testJustifyContent_spaceAround_flexDirection_column = test(
 
         let space = height(flexbox) - height(text1) - height(text2) - height(text3);
         space = space / 6; // Divide by the number of children * 2
-        check(space - 1 <= top(text1) && top(text1) <= space + 1);
-        let spaceLowerBound = space * 2 - 1;
-        let spaceUpperBound = space * 2 + 1;
-        check(spaceLowerBound <= top(text2) - bottom(text1) && top(text2) - bottom(text1) <= spaceUpperBound);
-        check(spaceLowerBound <= top(text3) - bottom(text2) && top(text3) - bottom(text2) <= spaceUpperBound);
-        check(space - 1 <= height(flexbox) - bottom(text3) && height(flexbox) - bottom(text3) <= space + 1);
+        isBelowWith(flexbox, text1, space);
+        closeEnough(bottom(text1) + 2 * space, top(text2));
+        closeEnough(bottom(text2) + 2 * space, top(text3));
+        isAboveWith(text3, flexbox, space);
     }
 );
 
@@ -789,12 +744,19 @@ export const testJustifyContent_spaceAround_flexDirection_column_withPadding = t
     ({ root, flexbox, text1, text2, text3 }) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
         space = space / 6; // Divide by the number of children * 2
-        check(space - 1 <= top(text1) - dipToDp(padding) && top(text1) - dipToDp(padding) <= space + 1);
-        let spaceLowerBound = space * 2 - 1;
-        let spaceUpperBound = space * 2 + 1;
-        check(spaceLowerBound <= top(text2) - bottom(text1) && top(text2) - bottom(text1) <= spaceUpperBound);
-        check(spaceLowerBound <= top(text3) - bottom(text2) && top(text3) - bottom(text2) <= spaceUpperBound);
-        check(space - 1 <= height(flexbox) - bottom(text3) - dipToDp(padding) && height(flexbox) - bottom(text3) - dipToDp(padding) <= space + 1);
+    
+        closeEnough(top(text1), paddingTop(flexbox) + space);
+        closeEnough(bottom(text1) + 2 * space, top(text2));
+        closeEnough(bottom(text2) + 2 * space, top(text3));
+        closeEnough(bottom(text3), paddingBottom(flexbox) - space);
+
+        equal(left(text1), paddingLeft(flexbox));
+        equal(left(text2), paddingLeft(flexbox));
+        equal(left(text3), paddingLeft(flexbox));
+
+        equal(right(text1), paddingRight(flexbox));
+        equal(right(text2), paddingRight(flexbox));
+        equal(right(text3), paddingRight(flexbox));
     }
 );
 
@@ -874,8 +836,7 @@ export const testAlignContent_stretch = test(
         isLeftAlignedWith(text3, flexbox);
         isBelow(text3, text1);
         isBelow(text3, text2);
-
-        equal(top(text3), height(flexbox) / 2);
+        equal(top(text3), top(flexbox) + height(flexbox) / 2);
     }
 );
 
@@ -891,8 +852,7 @@ export const testAlignContent_flexStart = test(
         isLeftAlignedWith(text3, flexbox);
         isBelow(text3, text1);
         isBelow(text3, text2);
-
-        equal(top(text3), height(text1));
+        equal(top(text3), top(text1) + height(text1));
     }
 );
 
@@ -905,8 +865,7 @@ export const testAlignContent_flexEnd = test(
         isAbove(text1, text3);
         isLeftAlignedWith(text1, flexbox);
         isAbove(text2, text3);
-
-        equal(bottom(text1), height(flexbox) - height(text3));
+        equal(bottom(text1), top(flexbox) + height(flexbox) - height(text3));
     }
 );
 
@@ -920,8 +879,7 @@ export const testAlignContent_flexEnd_parentPadding = test(
         isAbove(text1, text3);
         isAbove(text1, text3);
         isAbove(text2, text3);
-
-        closeEnough(bottom(text3), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
+        equal(bottom(text3), paddingBottom(flexbox));
     }
 );
 
@@ -935,9 +893,7 @@ export const testAlignContent_flexEnd_parentPadding_column = test(
     ({ root, flexbox, text1, text2, text3 }) => {
         isLeftOf(text1, text3);
         isLeftOf(text2, text3);
-
-        let { bounds1, bounds2 } = comparableBounds(text3, flexbox);
-        closeEnough(bounds1.right, bounds2.right - Length.toDevicePixels(flexbox.style.paddingRight, 0));
+        equal(right(text3), paddingRight(flexbox));
     }
 );
 
@@ -951,9 +907,8 @@ export const testAlignContent_center = test(
 
         let spaceAboveAndBottom = height(flexbox) - height(text1) - height(text3);
         spaceAboveAndBottom /= 2;
-
-        check(spaceAboveAndBottom - 1 <= top(text1) && top(text1) <= spaceAboveAndBottom + 1);
-        check(height(flexbox) - spaceAboveAndBottom - 1 <= bottom(text3) && bottom(text3) <= height(flexbox) - spaceAboveAndBottom + 1);
+        isBelowWith(flexbox, text1, spaceAboveAndBottom);
+        isAboveWith(text3, flexbox, spaceAboveAndBottom);
 
         // TODO: equal(flexbox.getFlexLines().size(), is(2));
     }
@@ -997,10 +952,11 @@ export const testAlignContent_spaceAround = test(
         let spaceAround = height(flexbox) - height(text1) - height(text3);
         spaceAround /= 4; // Divide by the number of flex lines * 2
 
-        check(spaceAround - 1 <= top(text1) && top(text1) <= spaceAround + 1);
-        let spaceLowerBound = bottom(text1) + spaceAround * 2 - 1;
-        let spaceUpperBound = bottom(text1) + spaceAround * 2 + 1;
-        check(spaceLowerBound <= top(text3) && top(text3) <= spaceUpperBound);
+        isBelowWith(flexbox, text1, spaceAround);
+        isBelowWith(text1, text3, height(text1) + 2 * spaceAround);
+        isAboveWith(text3, flexbox, spaceAround);
+        isAboveWith(text1, text3, height(text3) + 2 * spaceAround);
+
         // TODO: equal(flexbox.getFlexLines().size(), is(2));
     }
 );
@@ -1021,7 +977,7 @@ export const testAlignContent_stretch_parentWrapContent = test(
         isBelow(text3, text1);
         isBelow(text3, text2);
 
-        equal(top(text3), height(text1));
+        equal(top(text3), bottom(text1));
         // TODO: equal(flexbox.getFlexLines().size(), is(2));
     }
 );
@@ -1040,7 +996,7 @@ export const testAlignContent_stretch_flexDirection_column = test(
         isRightOf(text3, text2);
 
         let flexLineCrossSize = width(flexbox) / 2;
-        equal(left(text3), flexLineCrossSize);
+        equal(left(text3), flexLineCrossSize + left(flexbox));
     }
 );
 
@@ -1059,8 +1015,7 @@ export const testAlignContent_flexStart_flexDirection_column = test(
         isTopAlignedWith(text3, flexbox);
         isRightOf(text3, text1);
         isRightOf(text3, text2);
-
-        equal(left(text3), width(text1));
+        equal(left(text3), width(text1) + left(flexbox));
     }
 );
 
@@ -1076,8 +1031,7 @@ export const testAlignContent_flexEnd_flexDirection_column = test(
         isLeftOf(text1, text3);
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text3);
-
-        equal(right(text1), width(flexbox) - width(text3));
+        equal(right(text1), left(flexbox) + width(flexbox) - width(text3));
     }
 );
 
@@ -1094,11 +1048,8 @@ export const testAlignContent_center_flexDirection_column = test(
 
         let spaceLeftAndRight = width(flexbox) - width(text1) - width(text3);
         spaceLeftAndRight /= 2;
-
-        check(spaceLeftAndRight - 1 <= left(text1) && left(text1) <= spaceLeftAndRight + 1);
-        let spaceLowerBound = width(flexbox) - spaceLeftAndRight - 1;
-        let spaceUpperBound = width(flexbox) - spaceLeftAndRight + 1;
-        check(spaceLowerBound <= right(text3) && right(text3) <= spaceUpperBound);
+        isLeftWith(flexbox, text1, spaceLeftAndRight);
+        isRightWith(text3, flexbox, spaceLeftAndRight);
     }
 );
 
@@ -1131,11 +1082,10 @@ export const testAlignContent_spaceAround_flexDirection_column = test(
 
         let spaceAround = width(flexbox) - width(text1) - width(text3);
         spaceAround /= 4; // Divide by the number of flex lines * 2
-
-        check(spaceAround - 1 <= left(text1) && left(text1) <= spaceAround + 1);
-        let spaceLowerBound = right(text1) + spaceAround * 2 - 1;
-        let spaceUpperBound = right(text1) + spaceAround * 2 + 1;
-        check(spaceLowerBound <= left(text3) && left(text3) <= spaceUpperBound);
+        isLeftWith(flexbox, text1, spaceAround);
+        isLeftWith(text1, text3, width(text1) + 2 * spaceAround);
+        isRightWith(text3, flexbox, spaceAround);
+        isRightWith(text1, text3, width(text3) + 2 * spaceAround);
     }
 );
 
@@ -1155,8 +1105,7 @@ export const testAlignContent_stretch_parentWrapContent_flexDirection_column = t
         isTopAlignedWith(text3, flexbox);
         isRightOf(text3, text1);
         isRightOf(text3, text2);
-
-        equal(left(text3), width(text1));
+        equal(left(text3), left(flexbox) + width(text1));
     }
 );
 
@@ -1208,7 +1157,6 @@ export const testAlignSelf_stretch = test(
         isBelow(text3, text2);
 
         let flexLineSize = height(flexbox) / 2;
-
         check(flexLineSize - 1 <= height(text1) && height(text1) <= flexLineSize + 1);
 
         // use eps.
@@ -1258,11 +1206,10 @@ export const testAlignItems_flexStart = test(
         isBelow(text3, text2);
 
         let flexLineSize = height(flexbox) / 2;
-
         notEqual(height(text1), flexLineSize);
         notEqual(height(text2), flexLineSize);
         notEqual(height(text3), flexLineSize);
-        check(flexLineSize - 1 <= top(text3) && top(text3) <= flexLineSize + 1);
+        equal(top(flexbox) + flexLineSize, top(text3));
     }
 );
 
@@ -1278,13 +1225,12 @@ export const testAlignItems_flexEnd = test(
         isBottomAlignedWith(text3, flexbox);
 
         let flexLineSize = height(flexbox) / 2;
-
         notEqual(height(text1), flexLineSize);
         notEqual(height(text2), flexLineSize);
         notEqual(height(text3), flexLineSize);
-        check(flexLineSize - 1 <= bottom(text1) && bottom(text1) <= flexLineSize + 1);
-        check(flexLineSize - 1 <= bottom(text2) && bottom(text2) <= flexLineSize + 1);
-        equal(bottom(text3), height(flexbox));
+        equal(top(flexbox) + flexLineSize, bottom(text1));
+        equal(top(flexbox) + flexLineSize, bottom(text2));
+        equal(bottom(text3), top(flexbox) + height(flexbox));
     }
 );
 
@@ -1300,8 +1246,8 @@ export const testAlignItems_flexEnd_parentPadding = test(
     ({ flexbox }) => flexbox.alignItems = AlignItems.FLEX_END,
     ({ root, flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
-        closeEnough(bottom(text1), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
-        closeEnough(bottom(text2), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
+        isAboveWith(text1, flexbox, Length.toDevicePixels(flexbox.style.paddingBottom, 0));
+        isAboveWith(text2, flexbox, Length.toDevicePixels(flexbox.style.paddingBottom, 0));
     }
 );
 
@@ -1313,8 +1259,8 @@ export const testAlignItems_flexEnd_parentPadding_column = test(
     },
     ({ root, flexbox, text1, text2, text3 }) => {
         isBelow(text2, text1);
-        closeEnough(right(text1), width(flexbox) - Length.toDevicePixels(flexbox.style.paddingRight, 0));
-        closeEnough(right(text2), width(flexbox) - Length.toDevicePixels(flexbox.style.paddingRight, 0));
+        isRightWith(text1, flexbox,Length.toDevicePixels(flexbox.style.paddingRight, 0));
+        isRightWith(text2, flexbox,Length.toDevicePixels(flexbox.style.paddingRight, 0));
     }
 );
 
@@ -1329,14 +1275,18 @@ export const testAlignItems_center = test(
         isBelow(text3, text2);
 
         let flexLineSize = height(flexbox) / 2;
-
         let spaceAboveAndBelow = (flexLineSize - height(text1)) / 2;
         notEqual(height(text1), flexLineSize);
         notEqual(height(text2), flexLineSize);
         notEqual(height(text3), flexLineSize);
-        check(spaceAboveAndBelow - 1 <= top(text1) && top(text1) <= spaceAboveAndBelow + 1);
-        check(spaceAboveAndBelow - 1 <= top(text2) && top(text2) <= spaceAboveAndBelow + 1);
-        check(flexLineSize + spaceAboveAndBelow - 1 <= top(text3) && top(text3) <= flexLineSize + spaceAboveAndBelow + 1);
+
+        isBelowWith(flexbox, text1, spaceAboveAndBelow);
+        isBelowWith(flexbox, text2, spaceAboveAndBelow);
+        isBelowWith(text1, text3, flexLineSize);
+        isBelowWith(text2, text3, flexLineSize);
+
+        isAboveWith(text3, flexbox, spaceAboveAndBelow);
+        isAboveWith(text1, text3, flexLineSize);
     }
 );
 
@@ -1353,15 +1303,14 @@ export const testAlignItems_flexEnd_wrapReverse = test(
         isTopAlignedWith(text3, flexbox);
 
         let flexLineSize = height(flexbox) / 2;
-
         notEqual(height(text1), flexLineSize);
         notEqual(height(text2), flexLineSize);
         notEqual(height(text3), flexLineSize);
-        let lowerBound = height(flexbox) - flexLineSize - 1;
-        let upperBound = height(flexbox) - flexLineSize + 1;
-        check(lowerBound <= top(text1) && top(text1) <= upperBound);
-        check(lowerBound <= top(text2) && top(text2) <= upperBound);
-        equal(top(text3), 0);
+
+        isBelowWith(flexbox, text1, flexLineSize);
+        isBelowWith(flexbox, text2, flexLineSize);
+        isBelowWith(text3, text1, flexLineSize);
+        isBelowWith(text3, text2, flexLineSize);
     }
 );
 
@@ -1377,17 +1326,18 @@ export const testAlignItems_center_wrapReverse = test(
         isLeftAlignedWith(text3, flexbox);
 
         let flexLineSize = height(flexbox) / 2;
-
         let spaceAboveAndBelow = (flexLineSize - height(text1)) / 2;
         notEqual(height(text1), flexLineSize);
         notEqual(height(text2), flexLineSize);
         notEqual(height(text3), flexLineSize);
-        let lowerBound = height(flexbox) - spaceAboveAndBelow - 1;
-        let upperBound = height(flexbox) - spaceAboveAndBelow + 1;
-        check(lowerBound <= bottom(text1) && bottom(text1) <= upperBound);
-        check(lowerBound <= bottom(text2) && bottom(text2) <= upperBound);
-        check(height(flexbox) - flexLineSize - spaceAboveAndBelow - 1 <= bottom(text3)
-            && bottom(text3) <= height(flexbox) - flexLineSize - spaceAboveAndBelow + 1);
+
+        isBelowWith(flexbox, text3, spaceAboveAndBelow);
+        isBelowWith(text3, text1, flexLineSize);
+        isBelowWith(text3, text2, flexLineSize);
+
+        isAboveWith(text3, text1, flexLineSize);
+        isAboveWith(text1, flexbox, spaceAboveAndBelow);
+        isAboveWith(text2, flexbox, spaceAboveAndBelow);
     }
 );
 
@@ -1407,7 +1357,7 @@ export const testAlignItems_flexStart_flexDirection_column = test(
         notEqual(width(text1), flexLineSize);
         notEqual(width(text2), flexLineSize);
         notEqual(width(text3), flexLineSize);
-        check(flexLineSize - 1 <= left(text3) && left(text3) <= flexLineSize + 1);
+        isLeftWith(flexbox, text3, flexLineSize);
     }
 );
 
@@ -1425,14 +1375,12 @@ export const testAlignItems_flexEnd_flexDirection_column = test(
         isRightOf(text3, text2);
         isRightAlignedWith(text3, flexbox);
 
-        let flexLineSize = height(flexbox) / 2;
-
+        let flexLineSize = width(flexbox) / 2;
         notEqual(width(text1), flexLineSize);
         notEqual(width(text2), flexLineSize);
         notEqual(width(text3), flexLineSize);
-        check(flexLineSize - 1 <= right(text1) && right(text1) <= flexLineSize + 1);
-        check(flexLineSize - 1 <= right(text2) && right(text2) <= flexLineSize + 1);
-        equal(right(text3), width(flexbox));
+        isRightWith(text1, flexbox, flexLineSize);
+        isRightWith(text2, flexbox, flexLineSize);
     }
 )
 
@@ -1450,14 +1398,13 @@ export const testAlignItems_center_flexDirection_column = test(
         isRightOf(text3, text2);
 
         let flexLineSize = width(flexbox) / 2;
-
         let spaceLeftAndRight = (flexLineSize - width(text1)) / 2;
         notEqual(width(text1), flexLineSize);
         notEqual(width(text2), flexLineSize);
         notEqual(width(text3), flexLineSize);
-        check(spaceLeftAndRight - 1 <= left(text1) && left(text1) <= spaceLeftAndRight + 1);
-        check(spaceLeftAndRight - 1 <= left(text2) && left(text2) <= spaceLeftAndRight + 1);
-        check(flexLineSize + spaceLeftAndRight - 1 <= left(text3) && left(text2) <= flexLineSize + spaceLeftAndRight + 1);
+        isLeftWith(flexbox, text1, spaceLeftAndRight);
+        isLeftWith(flexbox, text2, spaceLeftAndRight);
+        isLeftWith(flexbox, text3, flexLineSize + spaceLeftAndRight);
     }
 );
 
@@ -1475,15 +1422,11 @@ export const testAlignItems_flexEnd_wrapReverse_flexDirection_column = test(
         isTopAlignedWith(text3, flexbox);
 
         let flexLineSize = width(flexbox) / 2;
-
         notEqual(width(text1), flexLineSize);
         notEqual(width(text2), flexLineSize);
         notEqual(width(text3), flexLineSize);
-        let lowerBound = width(flexbox) - flexLineSize - 1;
-        let upperBound = width(flexbox) - flexLineSize + 1;
-        check(lowerBound <= left(text1) && left(text1) <= upperBound);
-        check(lowerBound <= left(text2) && left(text2) <= upperBound);
-        equal(left(text3), 0);
+        isLeftWith(flexbox, text1, flexLineSize);
+        isLeftWith(flexbox, text2, flexLineSize);
     }
 );
 
@@ -1500,16 +1443,16 @@ export const testAlignItems_center_wrapReverse_flexDirection_column = test(
         isTopAlignedWith(text3, flexbox);
 
         let flexLineSize = width(flexbox) / 2;
-
         let spaceLeftAndRight = (flexLineSize - width(text1)) / 2;
         notEqual(width(text1), flexLineSize);
         notEqual(width(text2), flexLineSize);
         notEqual(width(text3), flexLineSize);
-        let lowerBound = width(flexbox) - spaceLeftAndRight - 1;
-        let upperBound = width(flexbox) - spaceLeftAndRight + 1;
-        check(lowerBound <= right(text1) && right(text1) <= upperBound);
-        check(lowerBound <= right(text2) && right(text2) <= upperBound);
-        check(width(flexbox) - flexLineSize - spaceLeftAndRight - 1 <= right(text3) && right(text3) <= width(flexbox) - flexLineSize - spaceLeftAndRight + 1);
+        isLeftWith(flexbox, text1, flexLineSize + spaceLeftAndRight);
+        isLeftWith(flexbox, text2, flexLineSize + spaceLeftAndRight);
+        isLeftWith(flexbox, text3, spaceLeftAndRight);
+        isRightWith(text1, flexbox, spaceLeftAndRight);
+        isRightWith(text2, flexbox, spaceLeftAndRight);
+        isRightWith(text3, flexbox, flexLineSize + spaceLeftAndRight);
     }
 );
 
