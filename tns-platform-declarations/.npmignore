@@ -1,9 +1,7 @@
+*.tgz
+package
 test.ts
 test.js
 test.js.map
 tsconfig.json
-*.tgz
-package
-package1
-package2
-package3
+typings-gen.sh

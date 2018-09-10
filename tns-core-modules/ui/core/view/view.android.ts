@@ -785,7 +785,7 @@ export class View extends ViewCommon {
             androidBackground.onBackgroundOrBorderPropertyChanged(this);
         } else {
             const nativeView = this.nativeViewProtected;
-            org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
+            nativeView.setBackground(value);
 
             const style = this.style;
             const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
