@@ -41,58 +41,58 @@ export function check(exp: boolean, message?: string) {
     message ? TKUnit.assert(exp, message) : TKUnit.assert(exp);
 }
 
-export function heightEqual(view1: View, view2: View) {
-    equal(height(view1), height(view2), `Expected height of ${view1} to equal height of ${view2}.`);
+export function heightEqual(view1: View, view2: View, message?: string) {
+    equal(height(view1), height(view2), message || `Expected height of ${view1}:${height(view1)} to equal height of ${view2}:${height(view2)}.`);
 }
 
-export function widthEqual(view1: View, view2: View) {
-    equal(width(view1), width(view2), `Expected width of ${view1} to equal width of ${view2}.`);
+export function widthEqual(view1: View, view2: View, message?: string) {
+    equal(width(view1), width(view2), message || `Expected width of ${view1}:${width(view1)} to equal width of ${view2}:${width(view2)}.`);
 }
 
-export function isLeftAlignedWith(view1: View, view2: View) {
-    TKUnit.assertEqual(left(view1), left(view2), `${view1} is not left-aligned with ${view2}`);
+export function isLeftAlignedWith(view1: View, view2: View, message?: string) {
+    TKUnit.assertEqual(left(view1), left(view2), message || `${view1}:${left(view1)} is not left-aligned with ${view2}:${left(view2)}`);
 }
 
-export function isRightAlignedWith(view1: View, view2: View) {
-    TKUnit.assertEqual(right(view1), right(view2), `${view1} is not right-aligned with ${view2}`);
+export function isRightAlignedWith(view1: View, view2: View, message?: string) {
+    TKUnit.assertEqual(right(view1), right(view2), message || `${view1}:${right(view1)} is not right-aligned with ${view2}:${right(view2)}`);
 }
 
-export function isTopAlignedWith(view1: View, view2: View) {
-    TKUnit.assertEqual(top(view1), top(view2), `${view1} is not top-aligned with ${view2}`);
+export function isTopAlignedWith(view1: View, view2: View, message?: string) {
+    TKUnit.assertEqual(top(view1), top(view2), message || `${view1}:${top(view1)} is not top-aligned with ${view2}:${top(view2)}`);
 }
 
-export function isBottomAlignedWith(view1: View, view2: View) {
-    TKUnit.assertEqual(bottom(view1), bottom(view2), `${view1} is not bottom-aligned with ${view2}`);
+export function isBottomAlignedWith(view1: View, view2: View, message?: string) {
+    TKUnit.assertEqual(bottom(view1), bottom(view2), message || `${view1}:${bottom(view1)} is not bottom-aligned with ${view2}:${bottom(view2)}`);
 }
 
-export function isLeftOf(view1: View, view2: View) {
-    TKUnit.assert(right(view1) <= left(view2), `${view1}.right is not left of ${view2}.left`);
+export function isLeftOf(view1: View, view2: View, message?: string) {
+    TKUnit.assert(right(view1) <= left(view2), message || `${view1}.right:${right(view1)} is not left of ${view2}.left:${left(view2)}`);
 }
 
-export function isAbove(view1: View, view2: View) {
-    TKUnit.assert(bottom(view1) <= top(view2), `${view1}.bottom is not above ${view2}.top`);
+export function isAbove(view1: View, view2: View, message?: string) {
+    TKUnit.assert(bottom(view1) <= top(view2), message || `${view1}.bottom:${bottom(view1)} is not above ${view2}.top:${top(view2)}`);
 }
 
-export function isRightOf(view1: View, view2: View) {
-    TKUnit.assert(left(view1) >= right(view2), `${view1}.left is not right of ${view2}.right`);
+export function isRightOf(view1: View, view2: View, message?: string) {
+    TKUnit.assert(left(view1) >= right(view2), message || `${view1}.left:${left(view1)} is not right of ${view2}.right:${right(view2)}`);
 }
 
-export function isBelow(view1: View, view2: View, distance?: number) {
-    TKUnit.assert(top(view1) >= bottom(view2), `${view1}.top is not below ${view2}.bottom`);
+export function isBelow(view1: View, view2: View, distance?: number, message?: string) {
+    TKUnit.assert(top(view1) >= bottom(view2), message || `${view1}.top:${top(view1)} is not below ${view2}.bottom:${bottom(view1)}`);
 }
 
-export function isLeftWith(view1: View, view2: View, distance: number) {
-    TKUnit.assertTrue(Math.abs(left(view1) + distance - left(view2)) <= EPS, `${view1}.left is not ${distance} of ${view2}.left`);
+export function isLeftWith(view1: View, view2: View, distance: number, message?: string) {
+    TKUnit.assertTrue(Math.abs(left(view1) + distance - left(view2)) <= EPS, message || `${view1}.left:${left(view1)} is not ${distance} of ${view2}.left:${left(view2)}`);
 }
 
-export function isRightWith(view1: View, view2: View, distance: number) {
-    TKUnit.assertTrue(Math.abs(right(view1) + distance - right(view2)) <= EPS, `${view1}.right is not ${distance} of ${view2}.right`);
+export function isRightWith(view1: View, view2: View, distance: number, message?: string) {
+    TKUnit.assertTrue(Math.abs(right(view1) + distance - right(view2)) <= EPS, message || `${view1}.right:${right(view1)} is not ${distance} of ${view2}.right:${right(view2)}`);
 }
 
-export function isAboveWith(view1: View, view2: View, distance: number) {
-    TKUnit.assertTrue(Math.abs(bottom(view1) + distance - bottom(view2)) <= EPS, `${view1}.bottom is not ${distance} of ${view2}.bottom`);
+export function isAboveWith(view1: View, view2: View, distance: number, message?: string) {
+    TKUnit.assertTrue(Math.abs(bottom(view1) + distance - bottom(view2)) <= EPS, message || `${view1}.bottom:${bottom(view1)} is not ${distance} of ${view2}.bottom:${bottom(view2)}`);
 }
 
-export function isBelowWith(view1: View, view2: View, distance: number) {
-    TKUnit.assertTrue(Math.abs(top(view1) + distance - top(view2)) <= EPS, `${view1}.top is not ${distance} of ${view2}.top`);
+export function isBelowWith(view1: View, view2: View, distance: number, message?: string) {
+    TKUnit.assertTrue(Math.abs(top(view1) + distance - top(view2)) <= EPS, message || `${view1}.top:${top(view1)} is not ${distance} of ${view2}.top:${top(view2)}`);
 }
