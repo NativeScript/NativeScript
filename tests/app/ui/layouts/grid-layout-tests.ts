@@ -8,6 +8,7 @@ import * as builder from "tns-core-modules/ui/builder";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
 import * as platform from "tns-core-modules/platform";
+import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
@@ -136,7 +137,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         }
     }
 
-    public test_grid() {
+    public test_layout_in_fullscreen() {
         const snippet = `
         <GridLayout id="grid" backgroundColor="Crimson">
         </GridLayout>
@@ -146,16 +147,22 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
             this.getViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {
-                // TODO: fullscreen
-                equal(left(grid), grid.getSafeAreaInsets().left);
-                check(top(grid) < grid.getSafeAreaInsets().top);
-                equal(right(grid), width(grid) - grid.getSafeAreaInsets().right);
-                check(bottom(grid) > height(grid) - grid.getSafeAreaInsets().bottom);
+                const fullscreenOrigin = { x: 0, y: 0};
+                if (platform.isIOS && iosUtils.MajorVersion < 11) {
+                    const safeAreaOrigin = grid.parent.nativeViewProtected.safeAreaLayoutGuide.layoutFrame.origin;
+                    fullscreenOrigin.y += dipToDp(safeAreaOrigin.y);
+                    fullscreenOrigin.x += dipToDp(safeAreaOrigin.x);
+                }
+
+                equal(left(grid), fullscreenOrigin.x, `actual:${grid}.left:${left(grid)} expected:${fullscreenOrigin.x}`);
+                equal(top(grid), fullscreenOrigin.y, `actual:${grid}.top:${top(grid)} expected:${fullscreenOrigin.y}`);
+                equal(right(grid), platform.screen.mainScreen.widthPixels, `actual:${grid}.right:${right(grid)} expected:${platform.screen.mainScreen.widthPixels}`);
+                equal(bottom(grid), platform.screen.mainScreen.heightPixels, `actual:${grid}.bottom:${bottom(grid)} expected:${platform.screen.mainScreen.heightPixels}`);
             }
         );
     }
 
-    public test_grid_3x3_label() {
+    public test_component_cells_layout_in_safe_area() {
         const snippet = `
         <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
             <Label row="0" col="0" id="cell00" text="overflowing text, overflowing text"></Label>
@@ -174,35 +181,38 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
             this.getViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {
-                isLeftAlignedWith(grid, cells[0][0]);
-                isLeftAlignedWith(grid, cells[1][0]);
-                isLeftAlignedWith(grid, cells[2][0]);
+                const insets = grid.getSafeAreaInsets();
 
-                // TODO: fullscreen
-                isBelowWith(grid, cells[0][0], grid.getSafeAreaInsets().top);
-                isBelowWith(grid, cells[0][1], grid.getSafeAreaInsets().top);
-                isBelowWith(grid, cells[0][2], grid.getSafeAreaInsets().top);
+                equal(left(cells[0][0]), insets.left, `cell00 left actual:<${left(cells[0][0])}> expected:<${insets.left}>`);
+                equal(left(cells[1][0]), insets.left, `cell10 left actual:<${left(cells[1][0])}> expected:<${insets.left}>`);
+                equal(left(cells[2][0]), insets.left, `cell20 left actual:<${left(cells[2][0])}> expected:<${insets.left}>`);
 
-                isRightAlignedWith(grid, cells[0][2]);
-                isRightAlignedWith(grid, cells[1][2]);
-                isRightAlignedWith(grid, cells[2][2]);
+                isBelowWith(grid, cells[0][0], insets.top);
+                isBelowWith(grid, cells[0][1], insets.top);
+                isBelowWith(grid, cells[0][2], insets.top);
 
-                isAboveWith(cells[2][0], grid, grid.getSafeAreaInsets().bottom);
-                isAboveWith(cells[2][1], grid, grid.getSafeAreaInsets().bottom);
-                isAboveWith(cells[2][2], grid, grid.getSafeAreaInsets().bottom);
+                equal(right(cells[0][2]), width(grid) - insets.right, `cell02 left actual:<${left(cells[0][2])}> expected:<${width(grid) - insets.right}>`);
+                equal(right(cells[1][2]), width(grid) - insets.right, `cell12 left actual:<${left(cells[1][2])}> expected:<${width(grid) - insets.right}>`);
+                equal(right(cells[2][2]), width(grid) - insets.right, `cell22 left actual:<${left(cells[2][2])}> expected:<${width(grid) - insets.right}>`);
 
-                const cellHeight = height(cells[1][1]);
-                isAboveWith(cells[0][1], cells[1][1], cellHeight);
-                isAboveWith(cells[0][1], cells[1][1], cellHeight);
+                isAboveWith(cells[2][0], grid, insets.bottom);
+                isAboveWith(cells[2][1], grid, insets.bottom);
+                isAboveWith(cells[2][2], grid, insets.bottom);
 
-                const cellWidth = width(cells[1][1]);
-                isRightWith(cells[1][0], cells[1][1], cellWidth);
-                isRightWith(cells[1][1], cells[1][2], cellWidth);
+                equal(height(cells[0][1]), height(cells[1][1]), `cell height should be equal - cell01<${height(cells[0][1])}> - cell11<${height(cells[1][1])}>`);
+                equal(height(cells[1][1]), height(cells[2][1]), `cell height should be equal - cell11<${height(cells[1][1])}> - cell21<${height(cells[2][1])}>`);
+                const sumOfLabelHeightAndInsets = insets.top + height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]) + insets.bottom;
+                equal(height(grid), sumOfLabelHeightAndInsets, `grid height<${height(grid)}> sum of labels height and insets<${sumOfLabelHeightAndInsets}>`);
+
+                equal(width(cells[1][0]), width(cells[1][1]), `cell width should be equal - cell10<${width(cells[1][0])}> - cell11<${width(cells[1][1])}>`);
+                equal(width(cells[1][1]), width(cells[1][2]), `cell width should be equal - cell11<${width(cells[1][1])}> - cell12<${width(cells[1][2])}>`);
+                const sumOfLabelWidthsAndInsets = insets.left + width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]) + insets.right;
+                equal(width(grid), sumOfLabelWidthsAndInsets, `grid width<${width(grid)}> sum of nested grids width and insets<${sumOfLabelWidthsAndInsets}>`);
             }
         );
     }
 
-    public test_grid_3x3_grid() {
+    public test_nested_grid_cells_layout_beyond_safe_area() {
         const snippet = `
         <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
             <GridLayout row="0" col="0" id="cell00" backgroundColor="SkyBlue"></GridLayout>
@@ -220,13 +230,11 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root, grid, cells }) => {
-                
+            ({ root, grid, cells }) => {                
                 isLeftAlignedWith(grid, cells[0][0]);
                 isLeftAlignedWith(grid, cells[1][0]);
                 isLeftAlignedWith(grid, cells[2][0]);
 
-                // TODO: fullscreen
                 isTopAlignedWith(grid, cells[0][0]);
                 isTopAlignedWith(grid, cells[0][1]);
                 isTopAlignedWith(grid, cells[0][2]);
@@ -235,17 +243,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
                 isRightAlignedWith(grid, cells[1][2]);
                 isRightAlignedWith(grid, cells[2][2]);
 
-                isBottomAlignedWith(cells[2][0], grid);
-                isBottomAlignedWith(cells[2][1], grid);
-                isBottomAlignedWith(cells[2][2], grid);
+                isBottomAlignedWith(grid, cells[2][0]);
+                isBottomAlignedWith(grid, cells[2][1]);
+                isBottomAlignedWith(grid, cells[2][2]);
 
-                const cellHeight = height(cells[1][1]);
-                isAboveWith(cells[0][1], cells[1][1], cellHeight);
-                isAboveWith(cells[0][1], cells[1][1], cellHeight);
+                check(height(cells[0][1]) >= height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or equal cell11 height<${height(cells[1][1])}>`);
+                check(height(cells[1][1]) <= height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
+                const sumOfNestedGridHeights = height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]);
+                equal(height(grid), sumOfNestedGridHeights, `grid height<${height(grid)}> sum of nested grids height <${sumOfNestedGridHeights}>`);
 
-                const cellWidth = width(cells[1][1]);
-                isRightWith(cells[1][0], cells[1][1], cellWidth);
-                isRightWith(cells[1][1], cells[1][2], cellWidth);
+                check(width(cells[1][0]) >= width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or equal cell11 width<${width(cells[1][1])}>`);
+                check(width(cells[1][1]) <= width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or equal cell12 width<${width(cells[1][2])}>`);
+                const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
+                equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
             }
         );
     }
