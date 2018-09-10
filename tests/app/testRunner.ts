@@ -135,6 +135,11 @@ allTests["STACKLAYOUT"] = stackLayoutTests;
 import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
 allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 
+import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
+if (platform.device.os === platform.platformNames.ios) {
+    allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
+}
+
 import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
 allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 
