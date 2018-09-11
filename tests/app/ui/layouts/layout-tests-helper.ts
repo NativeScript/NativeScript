@@ -85,12 +85,12 @@ export function isLeftWith(view1: View, view2: View, distance: number, message?:
     TKUnit.assertTrue(Math.abs(left(view1) + distance - left(view2)) <= EPS, message || `${view1}.left:${left(view1)} is not ${distance} of ${view2}.left:${left(view2)}`);
 }
 
-export function isRightWith(view1: View, view2: View, distance: number, message?: string) {
-    TKUnit.assertTrue(Math.abs(right(view1) + distance - right(view2)) <= EPS, message || `${view1}.right:${right(view1)} is not ${distance} of ${view2}.right:${right(view2)}`);
-}
-
 export function isAboveWith(view1: View, view2: View, distance: number, message?: string) {
     TKUnit.assertTrue(Math.abs(bottom(view1) + distance - bottom(view2)) <= EPS, message || `${view1}.bottom:${bottom(view1)} is not ${distance} of ${view2}.bottom:${bottom(view2)}`);
+}
+
+export function isRightWith(view1: View, view2: View, distance: number, message?: string) {
+    TKUnit.assertTrue(Math.abs(right(view1) + distance - right(view2)) <= EPS, message || `${view1}.right:${right(view1)} is not ${distance} of ${view2}.right:${right(view2)}`);
 }
 
 export function isBelowWith(view1: View, view2: View, distance: number, message?: string) {

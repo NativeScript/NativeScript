@@ -19,7 +19,6 @@ import { dipToDp, left, top, right, bottom, height, width,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftOf, isRightOf, isBelow, isAbove,
     isLeftWith, isAboveWith, isRightWith, isBelowWith } from "./layout-tests-helper";
-var DELTA = 1;
 
 export class SafeAreaTests extends testModule.UITest<any> {
 
@@ -28,19 +27,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     // TODO: Start Refactor
-    private getViews (template: string) {
-        let root = parse(template);
-        return {
-            root,
-            grid: root.getViewById("grid") as GridLayout,
-            cells: [
-                [ root.getViewById("cell00") as view.View, root.getViewById("cell01") as view.View, root.getViewById("cell02") as view.View ],
-                [ root.getViewById("cell10") as view.View, root.getViewById("cell11") as view.View, root.getViewById("cell12") as view.View ],
-                [ root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View ]
-            ]
-        };
-    };
-
     private executeSnippet<U extends { root: view.View }>(ui: U, setup: (ui: U) => void, test: (ui: U) => void): void {
         function waitUntilTestElementLayoutIsValid(view: view.View, timeoutSec?: number): void {
             TKUnit.waitUntilReady(() => {
@@ -58,30 +44,53 @@ export class SafeAreaTests extends testModule.UITest<any> {
     private noop() {
         // no operation
     };
+
     // TODO: End Refactor
 
-    public test_layout_in_fullscreen() {
+    // Common
+    private layout_in_full_screen_test(layout: view.View) {
+        const fullScreenOrigin = { x: 0, y: 0};
+        if (platform.isIOS && iosUtils.MajorVersion < 11) {
+            const safeAreaOrigin = layout.parent.nativeViewProtected.safeAreaLayoutGuide.layoutFrame.origin;
+            fullScreenOrigin.x += dipToDp(safeAreaOrigin.x);
+            fullScreenOrigin.y += dipToDp(safeAreaOrigin.y);
+        }
+
+        const l = left(layout);
+        const t = top(layout);
+        const r = right(layout);
+        const b = bottom(layout);
+        const widthPixels = platform.screen.mainScreen.widthPixels;
+        const heightPixels = platform.screen.mainScreen.heightPixels;
+        equal(l, fullScreenOrigin.x, `${layout}.left - actual:${l}; expected: ${fullScreenOrigin.x}`);
+        equal(t, fullScreenOrigin.y, `${layout}.top - actual:${t}; expected: ${fullScreenOrigin.y}`);
+        equal(r, widthPixels, `${layout}.right - actual:${r}; expected: ${widthPixels}`);
+        equal(b, heightPixels, `${layout}.bottom - actual:${b}; expected: ${heightPixels}`);
+    }
+
+    // Grid
+    private getGridViews (template: string) {
+        let root = parse(template);
+        return {
+            root,
+            grid: root.getViewById("grid") as GridLayout,
+            cells: [
+                [ root.getViewById("cell00") as view.View, root.getViewById("cell01") as view.View, root.getViewById("cell02") as view.View ],
+                [ root.getViewById("cell10") as view.View, root.getViewById("cell11") as view.View, root.getViewById("cell12") as view.View ],
+                [ root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View ]
+            ]
+        };
+    };
+
+    public test_grid_layout_in_full_screen() {
         const snippet = `
-        <GridLayout id="grid" backgroundColor="Crimson">
-        </GridLayout>
+        <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
         `;
 
         this.executeSnippet(
-            this.getViews(snippet),
+            this.getGridViews(snippet),
             this.noop,
-            ({ root, grid, cells }) => {
-                const fullscreenOrigin = { x: 0, y: 0};
-                if (platform.isIOS && iosUtils.MajorVersion < 11) {
-                    const safeAreaOrigin = grid.parent.nativeViewProtected.safeAreaLayoutGuide.layoutFrame.origin;
-                    fullscreenOrigin.y += dipToDp(safeAreaOrigin.y);
-                    fullscreenOrigin.x += dipToDp(safeAreaOrigin.x);
-                }
-
-                equal(left(grid), fullscreenOrigin.x, `actual:${grid}.left:${left(grid)} expected:${fullscreenOrigin.x}`);
-                equal(top(grid), fullscreenOrigin.y, `actual:${grid}.top:${top(grid)} expected:${fullscreenOrigin.y}`);
-                equal(right(grid), platform.screen.mainScreen.widthPixels, `actual:${grid}.right:${right(grid)} expected:${platform.screen.mainScreen.widthPixels}`);
-                equal(bottom(grid), platform.screen.mainScreen.heightPixels, `actual:${grid}.bottom:${bottom(grid)} expected:${platform.screen.mainScreen.heightPixels}`);
-            }
+            ({ root }) => { this.layout_in_full_screen_test(root); }
         );
     }
 
@@ -101,7 +110,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getViews(snippet),
+            this.getGridViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {
                 const insets = grid.getSafeAreaInsets();
@@ -151,7 +160,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getViews(snippet),
+            this.getGridViews(snippet),
             this.noop,
             ({ root, grid, cells }) => {                
                 isLeftAlignedWith(grid, cells[0][0]);
@@ -179,6 +188,112 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 check(width(cells[1][1]) <= width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or equal cell12 width<${width(cells[1][2])}>`);
                 const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
                 equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
+            }
+        );
+    }
+
+    // Dock
+    private getDockViews(template: string) {
+        let root = parse(template);
+        return {
+            root,
+            childLeft: root.getViewById("childLeft") as view.View,
+            childTop: root.getViewById("childTop") as view.View,
+            childRight: root.getViewById("childRight") as view.View,
+            childBottom: root.getViewById("childBottom") as view.View,
+            childFill: root.getViewById("childFill") as view.View,
+        };
+    };
+
+    public test_dock_in_full_screen() {
+        const snippet = `
+        <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getDockViews(snippet),
+            this.noop,
+            ({ root }) => { this.layout_in_full_screen_test(root); }
+        );
+    }
+
+    public test_dock_children_components_in_safe_area() {
+        const snippet = `
+        <DockLayout id="dock" stretchLastChild="true">
+            <Label id="childLeft" dock="Left" text="left" backgroundColor="red" />
+            <Label id="childTop" dock="Top" text="top" backgroundColor="green" />
+            <Label id="childRight" dock="Right" text="right" backgroundColor="blue" />
+            <Label id="childBottom" dock="Bottom" text="bottom" backgroundColor="yellow" />
+            <Label id="childFill" text="fill"/>
+        </DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getDockViews(snippet),
+            this.noop,
+            ({ root, childLeft, childTop, childRight, childBottom, childFill }) => {
+                const insets = root.getSafeAreaInsets();
+
+                equal(left(childLeft), insets.left, `${childLeft}.left - actual: ${left(childLeft)} expected: ${insets.left}`);
+                equal(top(childLeft), insets.top, `${childLeft}.top - actual: ${top(childLeft)} expected: ${insets.top}`);
+
+                equal(top(childTop), insets.top, `${childTop}.top - actual: ${top(childTop)} expected: ${insets.top}`);
+                equal(right(childTop), width(root) - insets.right, `${childTop}.right - actual: ${right(childTop)} expected: ${width(root) - insets.right}`);
+
+                equal(right(childRight), width(root) - insets.right, `${childRight}.right - actual: ${right(childRight)} expected: ${width(root) - insets.right}`);
+                equal(bottom(childRight), height(root) - insets.bottom, `${childRight}.bottom - actual: ${bottom(childRight)} expected: ${height(root) - insets.bottom}`);
+
+                equal(bottom(childBottom), height(root) - insets.bottom, `${childBottom}.bottom - actual: ${bottom(childBottom)} expected: ${height(root) - insets.bottom}`);
+
+                isLeftWith(childLeft, childFill, width(childLeft));
+                isBelowWith(childTop, childFill, height(childTop));
+                isRightWith(childFill, childRight, width(childRight));
+                isAboveWith(childFill, childBottom, height(childBottom));
+            }
+        );
+    }
+
+    public test_dock_nested_layouts_beyond_safe_area() {
+        const snippet = `
+        <DockLayout id="dock" stretchLastChild="true">
+            <DockLayout id="childLeft" dock="Left" text="left" backgroundColor="red">
+                <Label text="left"/>
+            </DockLayout>
+            <DockLayout id="childTop" dock="Top" text="top" backgroundColor="green">
+                <Label text="top" />
+            </DockLayout>
+            <DockLayout id="childRight" dock="Right" text="right" backgroundColor="blue">
+                <Label text="right" />
+            </DockLayout>
+            <DockLayout id="childBottom" dock="Bottom" text="bottom" backgroundColor="yellow">
+                <Label text="bottom" />
+            </DockLayout>
+            <DockLayout id="childFill" text="fill">
+                <Label text="fill" />
+            </DockLayout>
+        </DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getDockViews(snippet),
+            this.noop,
+            ({ root, childLeft, childTop, childRight, childBottom, childFill }) => {
+                isLeftAlignedWith(root, childLeft);
+                isTopAlignedWith(root, childLeft);
+
+                isTopAlignedWith(root, childTop);
+                isRightAlignedWith(root, childTop);
+
+                isRightAlignedWith(root, childRight);
+                isBottomAlignedWith(root, childRight);
+
+                isBottomAlignedWith(root, childRight);
+
+                const sumOfNestedDockHeights = height(childTop) + height(childFill) + height(childBottom);
+                equal(height(root), sumOfNestedDockHeights, `dock height<${height(root)}> sum of nested docks height <${sumOfNestedDockHeights}>`);
+
+                const sumOfNestedDockWidths = width(childLeft) + width(childFill) + width(childRight)
+                equal(width(root), sumOfNestedDockWidths, `dock width<${width(root)}> sum of nested docks width <${sumOfNestedDockWidths}>`);
             }
         );
     }
