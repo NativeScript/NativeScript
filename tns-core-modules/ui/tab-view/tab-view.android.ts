@@ -395,8 +395,9 @@ export class TabView extends TabViewBase {
 
             viewPager.setLayoutParams(lp);
             
-            let swipeEnabled = (this.androidSwipe === "true");
-            viewPager.setSwipePageEnabled(swipeEnabled);
+            if (this.androidSwipe === "false") {
+                viewPager.setSwipePageEnabled(false);
+            }
         } else {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
