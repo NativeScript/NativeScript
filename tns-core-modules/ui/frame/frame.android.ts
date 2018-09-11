@@ -412,9 +412,6 @@ export class Frame extends FrameBase {
         }
 
         super._popFromFrameStack();
-        if (this._android.hasOwnActivity) {
-            this._android.activity.finish();
-        }
     }
 
     public _getNavBarVisible(page: Page): boolean {
@@ -461,7 +458,6 @@ let framesCache = new Array<WeakRef<AndroidFrame>>();
 
 class AndroidFrame extends Observable implements AndroidFrameDefinition {
     public rootViewGroup: android.view.ViewGroup;
-    public hasOwnActivity = false;
     public frameId;
 
     private _showActionBar = true;
