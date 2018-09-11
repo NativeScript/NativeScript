@@ -388,29 +388,23 @@ public class Async
 			{
 				int contentLength = connection.getContentLength();
 
-				InputStream inStream;
-				if (this.statusCode >= 400)
-				{
-					inStream = connection.getErrorStream();
-				}
-				else
-				{
-					inStream = connection.getInputStream();
-					// In the event we don't have a null stream, and we have gzip as part of the encoding
-					// then we will use gzip to decode the stream
-					if (inStream != null) {
-						String encodingHeader = connection.getHeaderField("Content-Encoding");
-						if (encodingHeader != null && encodingHeader.toLowerCase().contains("gzip")) {
-							inStream = new GZIPInputStream(inStream);
-						}
-					}
-				}
+				InputStream inStream =
+					this.statusCode >= 400
+						? connection.getErrorStream()
+						: connection.getInputStream();
 
 				if (inStream == null)
 				{
 					// inStream is null when receiving status code 401 or 407
 					// see this thread for more information http://stackoverflow.com/a/24986433
 					return;
+				}
+
+				// In the event we don't have a null stream, and we have gzip as part of the encoding
+				// then we will use gzip to decode the stream
+				String encodingHeader = connection.getHeaderField("Content-Encoding");
+				if (encodingHeader != null && encodingHeader.toLowerCase().contains("gzip")) {
+					inStream = new GZIPInputStream(inStream);
 				}
 
 				openedStreams.push(inStream);
