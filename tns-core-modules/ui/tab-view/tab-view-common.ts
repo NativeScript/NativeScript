@@ -94,6 +94,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     public selectedIndex: number;
     public androidOffscreenTabLimit: number;
     public androidTabsPosition: "top" | "bottom";
+    public androidSwipe: "true" | "false";
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     get androidSelectedTabHighlightColor(): Color {
@@ -246,6 +247,9 @@ androidOffscreenTabLimitProperty.register(TabViewBase);
 
 export const androidTabsPositionProperty = new Property<TabViewBase, "top" | "bottom">({ name: "androidTabsPosition", defaultValue: "top" });
 androidTabsPositionProperty.register(TabViewBase);
+
+export const androidSwipeProperty = new Property<TabViewBase, "true" | "false">({ name: "androidSwipe", defaultValue: "true" });
+androidSwipeProperty.register(TabViewBase);
 
 export const tabTextFontSizeProperty = new CssProperty<Style, number>({ name: "tabTextFontSize", cssName: "tab-text-font-size", valueConverter: (v) => parseFloat(v) });
 tabTextFontSizeProperty.register(Style);
