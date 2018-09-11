@@ -157,7 +157,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
             if (apiLevel > 21 && backgroundDrawable) {
                 const newDrawable = tryCloneDrawable(backgroundDrawable, nativeView.getResources());
                 newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
-                org.nativescript.widgets.ViewHelper.setBackground(viewGroup, newDrawable);
+                viewGroup.setBackground(newDrawable);
             } else {
                 const stateDrawable = new android.graphics.drawable.StateListDrawable();
                 const colorDrawable: android.graphics.drawable.ColorDrawable = new org.nativescript.widgets.SegmentedBarColorDrawable(color, selectedIndicatorThickness);
@@ -165,11 +165,11 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
                 arr[0] = R_ATTR_STATE_SELECTED;
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, viewGroup.getRight(), viewGroup.getBottom());
-                org.nativescript.widgets.ViewHelper.setBackground(viewGroup, stateDrawable);
+                viewGroup.setBackground(stateDrawable);
             }
         } else {
             const backgroundDrawable = tryCloneDrawable(value, nativeView.getResources());
-            org.nativescript.widgets.ViewHelper.setBackground(viewGroup, backgroundDrawable);
+            viewGroup.setBackground(backgroundDrawable);
         }
     }
 }
