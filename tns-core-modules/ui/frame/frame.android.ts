@@ -720,45 +720,50 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         const entry = this.entry;
-        if (entry) {
-          const page = entry.resolvedPage;
-          if (page) {
-            const frame = this.frame;
-            if (page.parent === frame) {
-                // If we are navigating to a page that was destroyed
-                // reinitialize its UI.
-                if (!page._context) {
-                    const context = container && container.getContext() || inflater && inflater.getContext();
-                    page._setupUI(context);
-                }
-            } else {
-                if (!frame._styleScope) {
-                    // Make sure page will have styleScope even if parents don't.
-                    page._updateStyleScope();
-                }
-    
-                frame._addView(page);
-            }
-    
-            if ((frame && frame.isLoaded) && (page && !page.isLoaded)) {
-                page.callLoaded();
-            }
-    
-            const savedState = entry.viewSavedState;
-            if (savedState) {
-                (<android.view.View>page.nativeViewProtected).restoreHierarchyState(savedState);
-                entry.viewSavedState = null;
-            }
-    
-            return page.nativeViewProtected;
-          }
-          if (traceEnabled()) {
-            traceError(`${fragment}.onCreateView page: ${page}`);
-          }
+        if (!entry) {
+            traceError(`${fragment}.onCreateView: entry is null or undefined`);
+            return null;
         }
-        if (traceEnabled()) {
-          traceError(`${fragment}.onCreateView entry: ${entry}`);
+
+        const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+            return null;
         }
+
+        const frame = this.frame;
+        if (!frame) {
+            traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+            return null;
+        }
+
+        if (page.parent === frame) {
+            // If we are navigating to a page that was destroyed
+            // reinitialize its UI.
+            if (!page._context) {
+                const context = container && container.getContext() || inflater && inflater.getContext();
+                page._setupUI(context);
+            }
+        } else {
+            if (!frame._styleScope) {
+                // Make sure page will have styleScope even if parents don't.
+                page._updateStyleScope();
+            }
+
+            frame._addView(page);
+        }
+
+        if (frame.isLoaded && !page.isLoaded) {
+            page.callLoaded();
+        }
+
+        const savedState = entry.viewSavedState;
+        if (savedState) {
+            (<android.view.View>page.nativeViewProtected).restoreHierarchyState(savedState);
+            entry.viewSavedState = null;
+        }
+
+        return page.nativeViewProtected;
     }
 
     @profile
