@@ -40,7 +40,13 @@ export class ScrollView extends ScrollViewBase {
     private _delegate: UIScrollViewDelegateImpl;
     
     public createNativeView() {
-        return UIScrollView.new();
+        const view = UIScrollView.new();
+        if (this.orientation === "horizontal") {
+            view.showsHorizontalScrollIndicator = this.scrollBarIndicatorVisible;
+        } else {
+            view.showsVerticalScrollIndicator = this.scrollBarIndicatorVisible;
+        }
+        return view;
     }
 
     initNativeView() {
@@ -63,6 +69,9 @@ export class ScrollView extends ScrollViewBase {
     }
 
     protected updateScrollBarVisibility(value) {
+        if (!this.nativeViewProtected) {
+            return;
+        }
         if (this.orientation === "horizontal") {
             this.nativeViewProtected.showsHorizontalScrollIndicator = value;
         } else {
