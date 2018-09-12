@@ -169,6 +169,14 @@ export class View extends ViewCommon {
         }
     }
 
+    get isLayoutValid(): boolean {
+        if (this.nativeViewProtected) {
+            return this._isLayoutValid;
+        }
+
+        return false;
+    }
+
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         if (!this.nativeViewProtected) {
             return;
