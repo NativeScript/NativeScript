@@ -67,6 +67,77 @@ export class SafeAreaTests extends testModule.UITest<any> {
         equal(b, heightPixels, `${layout}.bottom - actual:${b}; expected: ${heightPixels}`);
     }
 
+    // Absolute
+    private getAbsoluteViews(template: string) {
+        let root = parse(template);
+        return {
+            root,
+            child0: root.getViewById("child0") as view.View,
+        };
+    };
+
+    public test_absolute_in_full_screen() {
+        const snippet = `
+        <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getAbsoluteViews(snippet),
+            this.noop,
+            ({ root }) => { this.layout_in_full_screen_test(root); }
+        );
+    }
+
+
+    public test_absolute_children_components_in_safe_area() {
+        const snippet = `
+        <AbsoluteLayout id="abs">
+            <Button id="child0" text="Left: 0, Top: 0" left="0" top="0" backgroundColor="red" />
+            <Button text="Left: 30, Top: 80" left="30" top="80" backgroundColor="green" />
+            <Button text="Left: 150, Top: 25" left="150" top="25" backgroundColor="blue" />
+            <Button text="Left: 70, Top: 150" left="70" top="150" backgroundColor="yellow" />
+        </AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getAbsoluteViews(snippet),
+            this.noop,
+            ({ root, child0 }) => {
+                const insets = root.getSafeAreaInsets();
+                equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+                equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+            }
+        );
+    }
+
+    public test_absolute_nested_layouts_beyond_safe_area() {
+        const snippet = `
+        <AbsoluteLayout id="abs">
+            <AbsoluteLayout id="child0" left="0" top="0" backgroundColor="red">
+                <Label text="Left: 0, Top: 0" />
+            </AbsoluteLayout>
+            <AbsoluteLayout left="30" top="80" backgroundColor="green">
+                <Label text="Left: 30, Top: 80" />
+            </AbsoluteLayout>
+            <AbsoluteLayout left="150" top="25" backgroundColor="blue">
+                <Label text="Left: 150, Top: 25" />
+            </AbsoluteLayout>
+            <AbsoluteLayout left="70" top="150" backgroundColor="yellow">
+                <Label text="Left: 70, Top: 150"  />
+            </AbsoluteLayout>
+        </AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getAbsoluteViews(snippet),
+            this.noop,
+            ({ root, child0 }) => {
+                isLeftAlignedWith(root, child0);
+                isTopAlignedWith(root, child0);
+            }
+        );
+    }
+
     // Dock
     private getDockViews(template: string) {
         let root = parse(template);
