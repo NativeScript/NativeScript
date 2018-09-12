@@ -88,7 +88,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         );
     }
 
-
     public test_absolute_children_components_in_safe_area() {
         const snippet = `
         <AbsoluteLayout id="abs">
@@ -572,6 +571,167 @@ export class SafeAreaTests extends testModule.UITest<any> {
             }
         );
     }
+
+    // Wrap
+    private getWrapViews(template: string) {
+        let root = parse(template);
+        return {
+            root,
+            child0: root.getViewById("child0") as view.View,
+            child1: root.getViewById("child1") as view.View,
+        };
+    };
+
+    public test_wrap_in_full_screen() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getWrapViews(snippet),
+            this.noop,
+            ({ root }) => { this.layout_in_full_screen_test(root); }
+        );
+    }
+
+    public test_wrap_horizontal_children_components_in_safe_area() {
+        const snippet = `
+        <WrapLayout id="wrap" orientation="horizontal">
+            <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
+            <Button id="child1" text="H" backgroundColor="Pink"></Button>
+        </WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getWrapViews(snippet),
+            this.noop,
+            ({ root, child0, child1 }) => {
+                const insets = root.getSafeAreaInsets();
+                equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+                equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+                equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+                equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+                equal(height(child1), 0, `${child1} has been laid out, but should not`);
+                equal(width(child1), 0, `${child1} has been laid out, but should not`);
+            }
+        );
+    }
+
+    public test_wrap_vertical_children_components_in_safe_area() {
+        const snippet = `
+        <WrapLayout id="wrap" orientation="vertical">
+            <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
+            <Button id="child1" text="V" backgroundColor="Pink"></Button>
+        </WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getWrapViews(snippet),
+            this.noop,
+            ({ root, child0, child1 }) => {
+                const insets = root.getSafeAreaInsets();
+                equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+                equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+                equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+                equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+                equal(height(child1), 0, `${child1} has been laid out, but should not`);
+                equal(width(child1), 0, `${child1} has been laid out, but should not`);
+            }
+        );
+    }
+
+    public test_wrap_nested_layouts_beyond_safe_area() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson">
+            <WrapLayout id="child0" backgroundColor="SkyBlue">
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"/>
+            </WrapLayout>
+            <WrapLayout id="child1">
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+            <WrapLayout>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
+            </WrapLayout>
+        </WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getWrapViews(snippet),
+            this.noop,
+            ({ root, child0, child1 }) => {
+                isLeftAlignedWith(root, child0);
+                isTopAlignedWith(root, child0);
+                isRightAlignedWith(root, child0);
+            }
+        );
+    }
+
 }
 
 export function createTestCase(): SafeAreaTests {
