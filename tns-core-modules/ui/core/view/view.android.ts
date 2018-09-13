@@ -72,7 +72,7 @@ function initializeTouchListener(): void {
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
             const owner = this.owner;
-            owner.handleGestureTouch(view, event);
+            owner.handleGestureTouch(event);
 
             let nativeView = owner.nativeViewProtected;
             if (!nativeView || !nativeView.onTouchEvent) {
@@ -315,7 +315,7 @@ export class View extends ViewCommon {
         return false;
     }
 
-    public handleGestureTouch(view: android.view.View, event: android.view.MotionEvent): any {
+    public handleGestureTouch(event: android.view.MotionEvent): any {
         for (let type in this._gestureObservers) {
             let list = this._gestureObservers[type];
             list.forEach(element => {
@@ -323,7 +323,7 @@ export class View extends ViewCommon {
             });
         }
         if (this.parent instanceof View) {
-            this.parent.handleGestureTouch(view, event);
+            this.parent.handleGestureTouch(event);
         }
     }
 
