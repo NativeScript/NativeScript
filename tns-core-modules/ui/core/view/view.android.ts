@@ -185,7 +185,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (!owner.isLoaded) {
+            if (owner && !owner.isLoaded) {
                 owner.callLoaded();
             }
 
@@ -201,7 +201,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (owner.isLoaded) {
+            if (owner && owner.isLoaded) {
                 owner.callUnloaded();
             }
         }
