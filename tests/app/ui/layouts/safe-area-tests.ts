@@ -52,7 +52,8 @@ export class SafeAreaTests extends testModule.UITest<any> {
         return {
             root,
             child0: root.getViewById("child0") as view.View,
-            child1: root.getViewById("child1") as view.View
+            child1: root.getViewById("child1") as view.View,
+            child2: root.getViewById("child2") as view.View
         };
     };
 
@@ -245,7 +246,135 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     // Flexbox
+    public test_flexbox_in_full_screen() {
+        const snippet = `
+        <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
+        `;
 
+        this.executeSnippet(
+            this.getDockViews(snippet),
+            this.noop,
+            ({ root }) => { this.layout_in_full_screen_test(root); }
+        );
+    }
+
+    public test_flex_column_children_components_in_safe_area() {
+        const snippet = `
+        <FlexboxLayout id="flex" flexDirection="column" backgroundColor="Crimson">
+            <Label id="child0" backgroundColor="white" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat." />
+            <Label id="child1" flexGrow="1" backgroundColor="green" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat." />
+            <Label id="child2" backgroundColor="red" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat." />
+        </FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, child0, child2 }) => {
+                const insets = root.getSafeAreaInsets();
+
+                equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+                equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+                equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+
+                equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
+                equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
+                equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
+            }
+        );
+    }
+
+    public test_flex_row_children_components_in_safe_area() {
+        const snippet = `
+        <FlexboxLayout id="flex" flexDirection="row" backgroundColor="Crimson">
+            <Label id="child0" backgroundColor="white" text="Lorem" />
+            <Label id="child1" flexGrow="1" backgroundColor="green" text="Lorem" />
+            <Label id="child2" backgroundColor="red" text="Lorem" />
+        </FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, child0, child2 }) => {
+                const insets = root.getSafeAreaInsets();
+
+                equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+                equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+                equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+
+                equal(top(child2), insets.top, `${child2}.top - actual: ${top(child2)} expected: ${insets.top}`);
+                equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
+                equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
+            }
+        );
+    }
+
+    public test_flex_column_nested_layouts_beyond_safe_area() {
+        const snippet = `
+        <FlexboxLayout id="flex" flexDirection="column">
+            <StackLayout id="child0" backgroundColor="white">
+                <Label text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat."></Label>
+            </StackLayout>
+            <StackLayout id="child1" flexGrow="1" backgroundColor="green">
+                <Label text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat."></Label>
+            </StackLayout>
+            <StackLayout id="child2" backgroundColor="red">
+                <Label text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat."></Label>
+            </StackLayout>
+        </FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, child0, child1, child2 }) => {
+                isLeftAlignedWith(root, child0);
+                isTopAlignedWith(root, child0);
+                isRightAlignedWith(root, child0);
+
+                isLeftAlignedWith(root, child2);
+                isBottomAlignedWith(root, child2);
+                isRightAlignedWith(root, child2);
+
+                const sumOfChildrenHeights = height(child0) + height(child1) + height(child2);
+                equal(height(root), sumOfChildrenHeights, `flex height <${height(root)}> is NOT equal to sum of its children's heights <${sumOfChildrenHeights}>`);
+            }
+        );
+    }
+
+    public test_flex_row_nested_layouts_beyond_safe_area() {
+        const snippet = `
+        <FlexboxLayout id="flex" flexDirection="row">
+            <StackLayout id="child0" backgroundColor="white">
+                <Label text="Lorem"></Label>
+            </StackLayout>
+            <StackLayout id="child1" flexGrow="1" backgroundColor="green">
+                <Label text="Lorem"></Label>
+            </StackLayout>
+            <StackLayout id="child2" backgroundColor="red">
+                <Label text="Lorem"></Label>
+            </StackLayout>
+        </FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root, child0, child1, child2 }) => {
+                isBottomAlignedWith(root, child0);
+                isLeftAlignedWith(root, child0);
+                isTopAlignedWith(root, child0);
+
+                isTopAlignedWith(root, child2);
+                isRightAlignedWith(root, child2);
+                isBottomAlignedWith(root, child2);
+
+                const sumOfChildrenWidths = width(child0) + width(child1) + width(child2);
+                equal(width(root), sumOfChildrenWidths, `flex width <${width(root)}> is NOT equal to sum of its children's width <${sumOfChildrenWidths}>`);
+            }
+        );
+    }
 
     // Grid
     private getGridViews(template: string) {
