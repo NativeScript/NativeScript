@@ -12,13 +12,15 @@ import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
-import { dipToDp, left, top, right, bottom, height, width,
+import {
+    dipToDp, left, top, right, bottom, height, width,
     paddingLeft, paddingTop, paddingRight, paddingBottom,
     equal, closeEnough, notEqual, check,
     heightEqual, widthEqual,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftOf, isRightOf, isBelow, isAbove,
-    isLeftWith, isAboveWith, isRightWith, isBelowWith } from "./layout-tests-helper";
+    isLeftWith, isAboveWith, isRightWith, isBelowWith
+} from "./layout-tests-helper";
 
 export class SafeAreaTests extends testModule.UITest<any> {
 
@@ -26,7 +28,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         return null;
     }
 
-    // TODO: Start Refactor
     private executeSnippet<U extends { root: view.View }>(ui: U, setup: (ui: U) => void, test: (ui: U) => void): void {
         function waitUntilTestElementLayoutIsValid(view: view.View, timeoutSec?: number): void {
             TKUnit.waitUntilReady(() => {
@@ -44,11 +45,19 @@ export class SafeAreaTests extends testModule.UITest<any> {
     private noop() {
         // no operation
     };
-    // TODO: End Refactor
 
     // Common
+    private getViews(template: string) {
+        let root = parse(template);
+        return {
+            root,
+            child0: root.getViewById("child0") as view.View,
+            child1: root.getViewById("child1") as view.View
+        };
+    };
+
     private layout_in_full_screen_test(layout: view.View) {
-        const fullScreenOrigin = { x: 0, y: 0};
+        const fullScreenOrigin = { x: 0, y: 0 };
         if (platform.isIOS && iosUtils.MajorVersion < 11) {
             const safeAreaOrigin = layout.parent.nativeViewProtected.safeAreaLayoutGuide.layoutFrame.origin;
             fullScreenOrigin.x += dipToDp(safeAreaOrigin.x);
@@ -68,21 +77,13 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     // Absolute
-    private getAbsoluteViews(template: string) {
-        let root = parse(template);
-        return {
-            root,
-            child0: root.getViewById("child0") as view.View,
-        };
-    };
-
     public test_absolute_in_full_screen() {
         const snippet = `
         <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
         `;
 
         this.executeSnippet(
-            this.getAbsoluteViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root }) => { this.layout_in_full_screen_test(root); }
         );
@@ -99,7 +100,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getAbsoluteViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root, child0 }) => {
                 const insets = root.getSafeAreaInsets();
@@ -128,7 +129,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getAbsoluteViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root, child0 }) => {
                 isLeftAlignedWith(root, child0);
@@ -243,16 +244,19 @@ export class SafeAreaTests extends testModule.UITest<any> {
         );
     }
 
+    // Flexbox
+
+
     // Grid
-    private getGridViews (template: string) {
+    private getGridViews(template: string) {
         let root = parse(template);
         return {
             root,
             grid: root.getViewById("grid") as GridLayout,
             cells: [
-                [ root.getViewById("cell00") as view.View, root.getViewById("cell01") as view.View, root.getViewById("cell02") as view.View ],
-                [ root.getViewById("cell10") as view.View, root.getViewById("cell11") as view.View, root.getViewById("cell12") as view.View ],
-                [ root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View ]
+                [root.getViewById("cell00") as view.View, root.getViewById("cell01") as view.View, root.getViewById("cell02") as view.View],
+                [root.getViewById("cell10") as view.View, root.getViewById("cell11") as view.View, root.getViewById("cell12") as view.View],
+                [root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View]
             ]
         };
     };
@@ -337,7 +341,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getGridViews(snippet),
             this.noop,
-            ({ root, grid, cells }) => {                
+            ({ root, grid, cells }) => {
                 isLeftAlignedWith(grid, cells[0][0]);
                 isLeftAlignedWith(grid, cells[1][0]);
                 isLeftAlignedWith(grid, cells[2][0]);
@@ -368,22 +372,13 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     // Stack
-    private getStackViews(template: string) {
-        let root = parse(template);
-        return {
-            root,
-            child0: root.getViewById("child0") as view.View,
-            child1: root.getViewById("child1") as view.View
-        };
-    };
-
     public test_stack_in_full_screen() {
         const snippet = `
         <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
         `;
 
         this.executeSnippet(
-            this.getStackViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root }) => { this.layout_in_full_screen_test(root); }
         );
@@ -423,7 +418,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getStackViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root, child0, child1 }) => {
                 const insets = root.getSafeAreaInsets();
@@ -483,7 +478,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getStackViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root, child0, child1 }) => {
                 const insets = root.getSafeAreaInsets();
@@ -562,9 +557,9 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getStackViews(snippet),
+            this.getViews(snippet),
             this.noop,
-            ({ root, child0, child1 }) => {
+            ({ root, child0 }) => {
                 isLeftAlignedWith(root, child0);
                 isTopAlignedWith(root, child0);
                 isRightAlignedWith(root, child0);
@@ -573,22 +568,13 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     // Wrap
-    private getWrapViews(template: string) {
-        let root = parse(template);
-        return {
-            root,
-            child0: root.getViewById("child0") as view.View,
-            child1: root.getViewById("child1") as view.View,
-        };
-    };
-
     public test_wrap_in_full_screen() {
         const snippet = `
         <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
         `;
 
         this.executeSnippet(
-            this.getWrapViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root }) => { this.layout_in_full_screen_test(root); }
         );
@@ -603,7 +589,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getWrapViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root, child0, child1 }) => {
                 const insets = root.getSafeAreaInsets();
@@ -626,7 +612,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getWrapViews(snippet),
+            this.getViews(snippet),
             this.noop,
             ({ root, child0, child1 }) => {
                 const insets = root.getSafeAreaInsets();
@@ -722,16 +708,15 @@ export class SafeAreaTests extends testModule.UITest<any> {
         `;
 
         this.executeSnippet(
-            this.getWrapViews(snippet),
+            this.getViews(snippet),
             this.noop,
-            ({ root, child0, child1 }) => {
+            ({ root, child0 }) => {
                 isLeftAlignedWith(root, child0);
                 isTopAlignedWith(root, child0);
                 isRightAlignedWith(root, child0);
             }
         );
     }
-
 }
 
 export function createTestCase(): SafeAreaTests {
