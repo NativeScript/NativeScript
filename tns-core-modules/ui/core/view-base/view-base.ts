@@ -595,13 +595,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public loadView(view: ViewBase): void {
-        if (!view.isLoaded) {
+        if (view && !view.isLoaded) {
             view.callLoaded();
         }
     }
 
     public unloadView(view: ViewBase): void {
-        if (view.isLoaded) {
+        if (view && view.isLoaded) {
             view.callUnloaded();
         }
     }
