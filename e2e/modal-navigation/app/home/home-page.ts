@@ -57,6 +57,15 @@ export function onModalLayout(args: EventData) {
         false);
 }
 
+export function onAndroidBackEvents(args: EventData) {
+    const view = args.object as View;
+    view.showModal(
+        "android-back-button/android-back-button-page",
+        null,
+        () => console.log("android-back-button modal page layout closed"),
+        true, true, true);
+}
+
 export function onModalTabView(args: EventData) {
     const fullscreen = false;
     const animated = false;

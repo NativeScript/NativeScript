@@ -1,7 +1,6 @@
 // Definitions.
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
-import { AndroidActivityBackPressedEventData } from "../../../application";
 // Types.
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
@@ -22,6 +21,7 @@ import {
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
+import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
 
@@ -107,6 +107,13 @@ function initializeDialogFragment() {
                 activity: view._context,
                 cancel: false,
             };
+
+            // Fist fire application.android global event
+            androidApp.notify(args);
+            if (args.cancel) {
+                return;
+            }
+
             view.notify(args);
 
             if (!args.cancel && !view.onBackPressed()) {
