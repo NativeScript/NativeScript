@@ -1,14 +1,4 @@
-﻿/*
-In NativeScript, the app.css file is where you place CSS rules that
-you would like to apply to your entire application. Check out
-http://docs.nativescript.org/ui/styling for a full list of the CSS
-selectors and properties you can use to style UI components.
-
-/*
-For example, the following CSS rule changes the font size of all UI
-components that have the btn class name.
-*/
-#home-page {
+﻿#home-page {
     font-size: 8;
     margin: 0px;
     padding: 0px;
@@ -17,5 +7,13 @@ components that have the btn class name.
 #action-bar-home-page{
     font-size: 10;
     margin: 0px;
+    padding: 0px;
+}
+
+#home-page Button {
+    margin-bottom: 5px;
+    border-color: gray;
+    border-width: 2px;
+    border-radius: 8px;
     padding: 0px;
 }
