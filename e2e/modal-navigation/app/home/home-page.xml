@@ -1,24 +1,28 @@
-<Page class="page"
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page" 
     navigatingTo="onNavigatingTo" 
-    navigatingFrom="onNavigatingFrom"
-    navigatedTo="onNavigatedTo"
-    navigatedFrom="onNavigatedFrom"
-    xmlns="http://schemas.nativescript.org/tns.xsd">
-    
-    <ActionBar class="action-bar">
+    navigatingFrom="onNavigatingFrom" 
+    navigatedTo="onNavigatedTo" 
+    navigatedFrom="onNavigatedFrom" >
+
+    <ActionBar class="action-bar" id="action-bar-home-page" height="5%">
         <Label class="action-bar-title" text="Home"></Label>
     </ActionBar>
 
-    <StackLayout>
-        <Button text="Show Modal Without Page" tap="onModalNoPage" />
-        <Button text="Show Modal Page With Frame" tap="onModalFrame" />
-        <Button text="Show Modal Page" tap="onModalPage" />
-        <Button text="Show Modal Layout" tap="onModalLayout" />
-        <Button text="Show Modal TabView" tap="onModalTabView" />
-        <Button text="Navigate To Second Page" tap="onNavigate" />
-        <Button text="Reset Frame Root View" tap="onFrameRootViewReset" />
-        <Button text="Reset Tab Root View" tap="onTabRootViewReset" />
-        <Button text="Reset Layout Root View" tap="onLayoutRootViewReset" />
-        <Button text="Android Back Btn Events" tap="onAndroidBackEvents" />
-    </StackLayout>
+    <GridLayout rows="auto" columns="auto, *">
+        <StackLayout id="home-page" row="0" col="0" borderColor="yellowgreen" borderWidth="1" borderRadius="5" padding="2">
+            <TextView text="Reset root" horizontalAlignment="center" />
+            <Button text="Reset Frame Root View" tap="onFrameRootViewReset" horizontalAlignment="left"/>
+            <Button text="Reset Tab Root View" tap="onTabRootViewReset" horizontalAlignment="left" />
+            <Button text="Reset Layout Root View" tap="onLayoutRootViewReset" horizontalAlignment="left"/>
+        </StackLayout>
+        <StackLayout id="home-page" row="0" col="1" borderColor="blue" borderWidth="1" borderRadius="5" marginLeft="2" padding="2" >
+            <TextView text="Navigate to example" horizontalAlignment="center"/>
+            <Button text="Show Modal Without Page" tap="onModalNoPage" horizontalAlignment="left"/>
+            <Button text="Show Modal Page With Frame" tap="onModalFrame" horizontalAlignment="left"/>
+            <Button text="Show Modal Page" tap="onModalPage" horizontalAlignment="left"/>
+            <Button text="Show Modal Layout" tap="onModalLayout" horizontalAlignment="left"/>
+            <Button text="Show Modal TabView" tap="onModalTabView" horizontalAlignment="left"/>
+            <Button text="Android Back Btn Events" tap="onAndroidBackEvents" horizontalAlignment="left" />
+        </StackLayout>
+    </GridLayout>
 </Page>
