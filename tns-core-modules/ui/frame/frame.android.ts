@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 import {
     FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, traceError
 } from "./frame-common";
 
 import {
@@ -696,8 +696,23 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         const entry = this.entry;
+        if (!entry) {
+            traceError(`${fragment}.onCreateView: entry is null or undefined`);
+            return null;
+        }
+
         const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+            return null;
+        }
+
         const frame = this.frame;
+        if (!frame) {
+            traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+            return null;
+        }
+
         if (page.parent === frame) {
             // If we are navigating to a page that was destroyed
             // reinitialize its UI.
@@ -706,12 +721,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 page._setupUI(context);
             }
         } else {
-            if (!this.frame._styleScope) {
+            if (!frame._styleScope) {
                 // Make sure page will have styleScope even if parents don't.
                 page._updateStyleScope();
             }
 
-            this.frame._addView(page);
+            frame._addView(page);
         }
 
         if (frame.isLoaded && !page.isLoaded) {
