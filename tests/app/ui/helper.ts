@@ -1,6 +1,7 @@
 ﻿import * as frame from "tns-core-modules/ui/frame";
 import { ViewBase, View, unsetValue, isIOS } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
+import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../TKUnit";
@@ -78,12 +79,15 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: [Page, Stack
     newPage.content = null;
 }
 
-//export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
-export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, pageCss?) {
+//export function buildUIAndRunTest(controlToTest, testFunction, options) {
+export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, options?: {pageCss}) {
     clearPage();
     let newPage = getCurrentPage();
 
-    newPage.css = pageCss;
+    if (options) {
+        newPage.css = options.pageCss;
+    }
+
     newPage.content = controlToTest;
 
     testFunction([controlToTest, newPage]);
