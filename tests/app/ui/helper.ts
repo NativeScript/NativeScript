@@ -99,12 +99,17 @@ export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction
             newPage.css = options.pageCss;
         }
 
+        newPage.actionBarHidden = true;
+        newPage.actionBar.flat = false;
+
         if (options.actionBar) {
-            newPage.actionBar.title = "Test";
+            newPage.actionBarHidden = false;
+            newPage.actionBar.title = "Test ActionBar";
         }
 
         if (options.actionBarFlat) {
-            newPage.actionBar.title = "Test";
+            newPage.actionBarHidden = false;
+            newPage.actionBar.title = "Test ActionBar Flat";
             newPage.actionBar.flat = true;
         }
 
