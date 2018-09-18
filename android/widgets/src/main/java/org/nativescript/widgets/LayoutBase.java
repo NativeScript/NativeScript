@@ -6,6 +6,7 @@ package org.nativescript.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -19,6 +20,11 @@ public abstract class LayoutBase extends ViewGroup {
 	public LayoutBase(Context context) {
 		super(context);
 	}
+
+    private boolean passThroughParent;
+
+    public boolean getPassThroughParent() { return this.passThroughParent; }
+    public void setPassThroughParent(boolean value) { this.passThroughParent = value; }
 
     @Override
     protected LayoutParams generateDefaultLayoutParams() {
@@ -59,6 +65,18 @@ public abstract class LayoutBase extends ViewGroup {
 	public boolean shouldDelayChildPressedState() {
 		return false;
 	}
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!this.passThroughParent) {
+            return super.onTouchEvent(event);
+        }
+
+        // LayoutBase.onTouchEvent(ev) execution means no interactive child view handled
+        // the event so we let the event pass through to parent view of the layout container
+        // because passThroughParent is set to true
+        return false;
+    }
 	
 	protected static int getGravity(View view) {
 		int gravity = -1;
