@@ -5,16 +5,15 @@ import { Page } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
-import { Layout } from "tns-core-modules/ui/layouts/layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
-import * as utils from "tns-core-modules/utils/utils";
 import * as types from "tns-core-modules/utils/types";
 import * as helper from "../../ui/helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -292,7 +291,7 @@ const customShortHandProperty = new ShorthandProperty<Style, string>({
 });
 customShortHandProperty.register(Style);
 
-class TestView extends Layout {
+class TestView extends LayoutBase {
     public inheritanceTest: number;
     public booleanInheritanceTest: boolean;
     public dummy: number;

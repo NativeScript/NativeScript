@@ -1,7 +1,6 @@
 // Definitions.
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
-import { AndroidActivityBackPressedEventData } from "../../../application";
 // Types.
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
@@ -22,6 +21,7 @@ import {
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
+import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
 
@@ -72,12 +72,7 @@ function initializeTouchListener(): void {
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
             const owner = this.owner;
-            for (let type in owner._gestureObservers) {
-                let list = owner._gestureObservers[type];
-                list.forEach(element => {
-                    element.androidOnTouchEvent(event);
-                });
-            }
+            owner.handleGestureTouch(event);
 
             let nativeView = owner.nativeViewProtected;
             if (!nativeView || !nativeView.onTouchEvent) {
@@ -112,6 +107,13 @@ function initializeDialogFragment() {
                 activity: view._context,
                 cancel: false,
             };
+
+            // Fist fire application.android global event
+            androidApp.notify(args);
+            if (args.cancel) {
+                return;
+            }
+
             view.notify(args);
 
             if (!args.cancel && !view.onBackPressed()) {
@@ -178,7 +180,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (!owner.isLoaded) {
+            if (owner && !owner.isLoaded) {
                 owner.callLoaded();
             }
 
@@ -194,7 +196,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (owner.isLoaded) {
+            if (owner && owner.isLoaded) {
                 owner.callUnloaded();
             }
         }
@@ -318,6 +320,18 @@ export class View extends ViewCommon {
         }
 
         return false;
+    }
+
+    public handleGestureTouch(event: android.view.MotionEvent): any {
+        for (let type in this._gestureObservers) {
+            let list = this._gestureObservers[type];
+            list.forEach(element => {
+                element.androidOnTouchEvent(event);
+            });
+        }
+        if (this.parent instanceof View) {
+            this.parent.handleGestureTouch(event);
+        }
     }
 
     private hasGestureObservers() {
@@ -490,7 +504,7 @@ export class View extends ViewCommon {
 
     public getLocationRelativeTo(otherView: ViewCommon): Point {
         if (!this.nativeViewProtected || !this.nativeViewProtected.getWindowToken() ||
-            !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
+            !otherView || !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
             this.nativeViewProtected.getWindowToken() !== otherView.nativeViewProtected.getWindowToken()) {
             return undefined;
         }
@@ -785,7 +799,7 @@ export class View extends ViewCommon {
             androidBackground.onBackgroundOrBorderPropertyChanged(this);
         } else {
             const nativeView = this.nativeViewProtected;
-            org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
+            nativeView.setBackground(value);
 
             const style = this.style;
             const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;

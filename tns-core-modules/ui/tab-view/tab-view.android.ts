@@ -201,13 +201,7 @@ function initializeNativeClasses() {
 
         finishUpdate(container: android.view.ViewGroup): void {
             if (this.mCurTransaction != null) {
-                if (android.os.Build.VERSION.SDK_INT >= 24) {
-                    (<any>this.mCurTransaction).commitNowAllowingStateLoss();
-                } else {
-                    this.mCurTransaction.commitAllowingStateLoss();
-                    this.owner._getFragmentManager().executePendingTransactions();
-                }
-
+                (<any>this.mCurTransaction).commitNowAllowingStateLoss();
                 this.mCurTransaction = null;
             }
         }

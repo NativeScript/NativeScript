@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 import {
     FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, traceError
 } from "./frame-common";
 
 import {
@@ -22,9 +22,6 @@ import { profile } from "../../profiling";
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
 
-import { device } from "../../platform";
-import lazy from "../../utils/lazy";
-
 export * from "./frame-common";
 
 const INTENT_EXTRA = "com.tns.activity";
@@ -34,8 +31,6 @@ const CALLBACKS = "_callbacks";
 
 const ownerSymbol = Symbol("_owner");
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
-
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -143,7 +138,7 @@ export class Frame extends FrameBase {
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events. 
         // As JS instances are alive it is already done for the current page.
-        if (!this.isLoaded || !this._attachedToWindow) {
+        if (!this.isLoaded || this._executingEntry || !this._attachedToWindow) {
             return;
         }
 
@@ -197,21 +192,8 @@ export class Frame extends FrameBase {
 
         const manager: android.support.v4.app.FragmentManager = this._getFragmentManager();
         const transaction = manager.beginTransaction();
-        const androidSdkVersion = sdkVersion();
-
-        if (androidSdkVersion !== 21 && androidSdkVersion !== 22) {
-            transaction.remove(this._currentEntry.fragment);
-        } else {
-            // https://github.com/NativeScript/NativeScript/issues/5674
-            // HACK: Add and remove dummy fragment to workaround a Lollipop issue
-            // with inFragment passed as null when adding transition targets: https://android.googlesource.com/platform/frameworks/base.git/+/lollipop-release/core/java/android/app/BackStackRecord.java#1127  
-            const dummyFragmentTag = "dummy";
-            const dummyFragment = this.createFragment(<BackstackEntry>{}, dummyFragmentTag);
-            transaction.replace(this.containerViewId, dummyFragment, dummyFragmentTag);
-            transaction.remove(dummyFragment);
-        }
-
-        transaction.commitAllowingStateLoss();
+        transaction.remove(this._currentEntry.fragment);
+        transaction.commitNowAllowingStateLoss();
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): android.support.v4.app.Fragment {
@@ -430,9 +412,6 @@ export class Frame extends FrameBase {
         }
 
         super._popFromFrameStack();
-        if (this._android.hasOwnActivity) {
-            this._android.activity.finish();
-        }
     }
 
     public _getNavBarVisible(page: Page): boolean {
@@ -479,7 +458,6 @@ let framesCache = new Array<WeakRef<AndroidFrame>>();
 
 class AndroidFrame extends Observable implements AndroidFrameDefinition {
     public rootViewGroup: android.view.ViewGroup;
-    public hasOwnActivity = false;
     public frameId;
 
     private _showActionBar = true;
@@ -718,8 +696,23 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         const entry = this.entry;
+        if (!entry) {
+            traceError(`${fragment}.onCreateView: entry is null or undefined`);
+            return null;
+        }
+
         const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+            return null;
+        }
+
         const frame = this.frame;
+        if (!frame) {
+            traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+            return null;
+        }
+
         if (page.parent === frame) {
             // If we are navigating to a page that was destroyed
             // reinitialize its UI.
@@ -728,12 +721,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 page._setupUI(context);
             }
         } else {
-            if (!this.frame._styleScope) {
+            if (!frame._styleScope) {
                 // Make sure page will have styleScope even if parents don't.
                 page._updateStyleScope();
             }
 
-            this.frame._addView(page);
+            frame._addView(page);
         }
 
         if (frame.isLoaded && !page.isLoaded) {
