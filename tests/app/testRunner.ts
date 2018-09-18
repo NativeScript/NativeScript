@@ -11,7 +11,7 @@ import * as platform from "tns-core-modules/platform";
 import "./ui-test";
 import * as fs from "tns-core-modules/file-system";
 import { unsetValue } from "tns-core-modules/ui/core/properties";
-import { ad } from "tns-core-modules/utils/utils";
+import { ad, ios } from "tns-core-modules/utils/utils";
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -136,7 +136,7 @@ import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
 allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 
 import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
-if (platform.device.os === platform.platformNames.ios) {
+if (platform.isIOS && ios.MajorVersion > 10) {
     allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
 }
 

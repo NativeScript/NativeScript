@@ -28,7 +28,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         return null;
     }
 
-    private executeSnippet<U extends { root: view.View }>(ui: U, setup: (ui: U) => void, test: (ui: U) => void): void {
+    private executeSnippet<U extends { root: view.View }>(ui: U, setup: (ui: U) => void, test: (ui: U) => void, pageOptions?: helper.PageOptions): void {
         function waitUntilTestElementLayoutIsValid(view: view.View, timeoutSec?: number): void {
             TKUnit.waitUntilReady(() => {
                 return view.isLayoutValid;
@@ -39,7 +39,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         helper.buildUIAndRunTest(ui.root, () => {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
-        });
+        }, pageOptions);
     };
 
     private noop() {
@@ -58,27 +58,18 @@ export class SafeAreaTests extends testModule.UITest<any> {
     };
 
     private layout_in_full_screen_test(layout: view.View) {
-        const fullScreenOrigin = { x: 0, y: 0 };
-        if (platform.isIOS && iosUtils.MajorVersion < 11) {
-            const safeAreaOrigin = layout.parent.nativeViewProtected.safeAreaLayoutGuide.layoutFrame.origin;
-            fullScreenOrigin.x += dipToDp(safeAreaOrigin.x);
-            fullScreenOrigin.y += dipToDp(safeAreaOrigin.y);
-        }
-
         const l = left(layout);
         const t = top(layout);
         const r = right(layout);
         const b = bottom(layout);
-        const widthPixels = platform.screen.mainScreen.widthPixels;
-        const heightPixels = platform.screen.mainScreen.heightPixels;
-        equal(l, fullScreenOrigin.x, `${layout}.left - actual:${l}; expected: ${fullScreenOrigin.x}`);
-        equal(t, fullScreenOrigin.y, `${layout}.top - actual:${t}; expected: ${fullScreenOrigin.y}`);
-        equal(r, widthPixels, `${layout}.right - actual:${r}; expected: ${widthPixels}`);
-        equal(b, heightPixels, `${layout}.bottom - actual:${b}; expected: ${heightPixels}`);
+        equal(l, 0, `${layout}.left - actual:${l}; expected: ${0}`);
+        equal(t, 0, `${layout}.top - actual:${t}; expected: ${0}`);
+        equal(r, platform.screen.mainScreen.widthPixels, `${layout}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
+        equal(b, platform.screen.mainScreen.heightPixels, `${layout}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }
 
     // Absolute
-    public test_absolute_in_full_screen() {
+    private absolute_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
         <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
         `;
@@ -86,11 +77,30 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { this.layout_in_full_screen_test(root); }
+            ({ root }) => { 
+                this.layout_in_full_screen_test(root);
+            },
+            pageOptions
         );
     }
 
-    public test_absolute_children_components_in_safe_area() {
+    public test_absolute_in_full_screen_action_bar() {
+        this.absolute_in_full_screen({ actionBar: true });
+    }
+
+    public test_absolute_in_full_screen_action_bar_hidden() {
+        this.absolute_in_full_screen({ actionBarHidden: true });
+    }
+
+    public test_absolute_in_full_screen_action_bar_flat() {
+        this.absolute_in_full_screen({ actionBarFlat: true });
+    }
+
+    public test_absolute_in_full_screen_tab_bar() {
+        this.absolute_in_full_screen({ tabBar: true });
+    }
+
+    private absolute_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <AbsoluteLayout id="abs">
             <Button id="child0" text="Left: 0, Top: 0" left="0" top="0" backgroundColor="red" />
@@ -107,11 +117,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 const insets = root.getSafeAreaInsets();
                 equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
                 equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_absolute_nested_layouts_beyond_safe_area() {
+    public test_absolute_children_components_in_safe_area_action_bar() {
+        this.absolute_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_absolute_children_components_in_safe_area_action_bar_hidden() {
+        this.absolute_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_absolute_children_components_in_safe_area_action_bar_flat() {
+        this.absolute_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_absolute_children_components_in_safe_area_tab_bar() {
+        this.absolute_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private absolute_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <AbsoluteLayout id="abs">
             <AbsoluteLayout id="child0" left="0" top="0" backgroundColor="red">
@@ -135,8 +162,25 @@ export class SafeAreaTests extends testModule.UITest<any> {
             ({ root, child0 }) => {
                 isLeftAlignedWith(root, child0);
                 isTopAlignedWith(root, child0);
-            }
+            },
+            pageOptions
         );
+    }
+
+    public test_absolute_nested_layouts_beyond_safe_area_action_bar() {
+        this.absolute_nested_layouts_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_absolute_nested_layouts_beyond_safe_area_action_bar_hidden() {
+        this.absolute_nested_layouts_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_absolute_nested_layouts_beyond_safe_area_action_bar_flat() {
+        this.absolute_nested_layouts_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_absolute_nested_layouts_beyond_safe_area_tab_bar() {
+        this.absolute_nested_layouts_beyond_safe_area({ tabBar: true });
     }
 
     // Dock
@@ -152,7 +196,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         };
     };
 
-    public test_dock_in_full_screen() {
+    private dock_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
         <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
         `;
@@ -160,11 +204,30 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getDockViews(snippet),
             this.noop,
-            ({ root }) => { this.layout_in_full_screen_test(root); }
+            ({ root }) => { 
+                this.layout_in_full_screen_test(root);
+            },
+            pageOptions
         );
     }
 
-    public test_dock_children_components_in_safe_area() {
+    public test_dock_in_full_screen_action_bar() {
+        this.dock_in_full_screen({ actionBar: true });
+    }
+
+    public test_dock_in_full_screen_action_bar_hidden() {
+        this.dock_in_full_screen({ actionBarHidden: true });
+    }
+
+    public test_dock_in_full_screen_action_bar_flat() {
+        this.dock_in_full_screen({ actionBarFlat: true });
+    }
+
+    public test_dock_in_full_screen_tab_bar() {
+        this.dock_in_full_screen({ tabBar: true });
+    }
+
+    private dock_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <DockLayout id="dock" stretchLastChild="true">
             <Label id="childLeft" dock="Left" text="left" backgroundColor="red" />
@@ -196,11 +259,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isBelowWith(childTop, childFill, height(childTop));
                 isRightWith(childFill, childRight, width(childRight));
                 isAboveWith(childFill, childBottom, height(childBottom));
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_dock_nested_layouts_beyond_safe_area() {
+    public test_dock_children_components_in_safe_area_action_bar() {
+        this.dock_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_dock_children_components_in_safe_area_action_bar_hidden() {
+        this.dock_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_dock_children_components_in_safe_area_action_bar_flat() {
+        this.dock_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_dock_children_components_in_safe_area_tab_bar() {
+        this.dock_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private dock_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <DockLayout id="dock" stretchLastChild="true">
             <DockLayout id="childLeft" dock="Left" text="left" backgroundColor="red">
@@ -241,24 +321,60 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
                 const sumOfNestedDockWidths = width(childLeft) + width(childFill) + width(childRight)
                 equal(width(root), sumOfNestedDockWidths, `dock width<${width(root)}> sum of nested docks width <${sumOfNestedDockWidths}>`);
-            }
+            },
+            pageOptions
         );
     }
 
+    public test_dock_nested_layouts_beyond_safe_area_action_bar() {
+        this.dock_nested_layouts_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_dock_nested_layouts_beyond_safe_area_action_bar_hidden() {
+        this.dock_nested_layouts_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_dock_nested_layouts_beyond_safe_area_action_bar_flat() {
+        this.dock_nested_layouts_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_dock_nested_layouts_beyond_safe_area_tab_bar() {
+        this.dock_nested_layouts_beyond_safe_area({ tabBar: true });
+    }
+
     // Flexbox
-    public test_flexbox_in_full_screen() {
+    private flexbox_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
         <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
         `;
 
         this.executeSnippet(
-            this.getDockViews(snippet),
+            this.getViews(snippet),
             this.noop,
-            ({ root }) => { this.layout_in_full_screen_test(root); }
+            ({ root }) => {
+                this.layout_in_full_screen_test(root);
+            },
+            pageOptions
         );
     }
 
-    public test_flex_column_children_components_in_safe_area() {
+    public test_flexbox_in_full_screen_action_bar() {
+        this.flexbox_in_full_screen({ actionBar: true });
+    }
+
+    public test_flexbox_in_full_screen_action_bar_hidden() {
+        this.flexbox_in_full_screen({ actionBarHidden: true });
+    }
+
+    public test_flexbox_in_full_screen_action_bar_flat() {
+        this.flexbox_in_full_screen({ actionBarFlat: true });
+    }
+
+    public test_flexbox_in_full_screen_tab_bar() {
+        this.flexbox_in_full_screen({ tabBar: true });
+    }
+
+    private flex_column_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <FlexboxLayout id="flex" flexDirection="column" backgroundColor="Crimson">
             <Label id="child0" backgroundColor="white" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis euismod fermentum erat, eu vehicula nunc scelerisque quis. Aenean consequat elit sed lacus aliquam consequat." />
@@ -280,11 +396,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
                 equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
                 equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_flex_row_children_components_in_safe_area() {
+    public test_flex_column_children_components_in_safe_area_action_bar() {
+        this.flex_column_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_flex_column_children_components_in_safe_area_action_bar_hidden() {
+        this.flex_column_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_flex_column_children_components_in_safe_area_action_bar_flat() {
+        this.flex_column_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_flex_column_children_components_in_safe_area_tab_bar() {
+        this.flex_column_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private flex_row_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <FlexboxLayout id="flex" flexDirection="row" backgroundColor="Crimson">
             <Label id="child0" backgroundColor="white" text="Lorem" />
@@ -306,11 +439,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(top(child2), insets.top, `${child2}.top - actual: ${top(child2)} expected: ${insets.top}`);
                 equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
                 equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_flex_column_nested_layouts_beyond_safe_area() {
+    public test_flex_row_children_components_in_safe_area_action_bar() {
+        this.flex_row_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_flex_row_children_components_in_safe_area_action_bar_hidden() {
+        this.flex_row_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_flex_row_children_components_in_safe_area_action_bar_flat() {
+        this.flex_row_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_flex_row_children_components_in_safe_area_tab_bar() {
+        this.flex_row_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private flex_column_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <FlexboxLayout id="flex" flexDirection="column">
             <StackLayout id="child0" backgroundColor="white">
@@ -339,11 +489,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
                 const sumOfChildrenHeights = height(child0) + height(child1) + height(child2);
                 equal(height(root), sumOfChildrenHeights, `flex height <${height(root)}> is NOT equal to sum of its children's heights <${sumOfChildrenHeights}>`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_flex_row_nested_layouts_beyond_safe_area() {
+    public test_flex_column_nested_layouts_beyond_safe_area_action_bar() {
+        this.flex_column_nested_layouts_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_flex_column_nested_layouts_beyond_safe_area_action_bar_hidden() {
+        this.flex_column_nested_layouts_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_flex_column_nested_layouts_beyond_safe_area_action_bar_flat() {
+        this.flex_column_nested_layouts_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_flex_column_nested_layouts_beyond_safe_area_tab_bar() {
+        this.flex_column_nested_layouts_beyond_safe_area({ tabBar: true });
+    }
+
+    private flex_row_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <FlexboxLayout id="flex" flexDirection="row">
             <StackLayout id="child0" backgroundColor="white">
@@ -372,8 +539,25 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
                 const sumOfChildrenWidths = width(child0) + width(child1) + width(child2);
                 equal(width(root), sumOfChildrenWidths, `flex width <${width(root)}> is NOT equal to sum of its children's width <${sumOfChildrenWidths}>`);
-            }
+            },
+            pageOptions
         );
+    }
+
+    public test_flex_row_nested_layouts_beyond_safe_area_action_bar() {
+        this.flex_row_nested_layouts_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_flex_row_nested_layouts_beyond_safe_area_action_bar_hidden() {
+        this.flex_row_nested_layouts_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_flex_row_nested_layouts_beyond_safe_area_action_bar_flat() {
+        this.flex_row_nested_layouts_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_flex_row_nested_layouts_beyond_safe_area_tab_bar() {
+        this.flex_row_nested_layouts_beyond_safe_area({ tabBar: true });
     }
 
     // Grid
@@ -390,7 +574,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         };
     };
 
-    public test_grid_layout_in_full_screen() {
+    private grid_layout_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
         <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
         `;
@@ -398,11 +582,30 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getGridViews(snippet),
             this.noop,
-            ({ root }) => { this.layout_in_full_screen_test(root); }
+            ({ root }) => {
+                this.layout_in_full_screen_test(root);
+            },
+            pageOptions
         );
     }
 
-    public test_component_cells_layout_in_safe_area() {
+    public test_grid_layout_in_full_screen_action_bar() {
+        this.grid_layout_in_full_screen({ actionBar: true });
+    }
+
+    public test_grid_layout_in_full_screen_action_bar_hidden() {
+        this.grid_layout_in_full_screen({ actionBarHidden: true });
+    }
+
+    public test_grid_layout_in_full_screen_action_bar_flat() {
+        this.grid_layout_in_full_screen({ actionBarFlat: true });
+    }
+
+    public test_grid_layout_in_full_screen_tab_bar() {
+        this.grid_layout_in_full_screen({ tabBar: true });
+    }
+
+    private grid_component_cells_layout_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
             <Label row="0" col="0" id="cell00" text="overflowing text, overflowing text"></Label>
@@ -448,11 +651,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(width(cells[1][1]), width(cells[1][2]), `cell width should be equal - cell11<${width(cells[1][1])}> - cell12<${width(cells[1][2])}>`);
                 const sumOfLabelWidthsAndInsets = insets.left + width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]) + insets.right;
                 equal(width(grid), sumOfLabelWidthsAndInsets, `grid width<${width(grid)}> sum of nested grids width and insets<${sumOfLabelWidthsAndInsets}>`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_nested_grid_cells_layout_beyond_safe_area() {
+    public test_grid_component_cells_layout_in_safe_area_action_bar() {
+        this.grid_component_cells_layout_in_safe_area({ actionBar: true });
+    }
+
+    public test_grid_component_cells_layout_in_safe_area_action_bar_hidden() {
+        this.grid_component_cells_layout_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_grid_component_cells_layout_in_safe_area_action_bar_flat() {
+        this.grid_component_cells_layout_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_grid_component_cells_layout_in_safe_area_tab_bar() {
+        this.grid_component_cells_layout_in_safe_area({ tabBar: true });
+    }
+
+    private grid_nested_grid_cells_layout_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
             <GridLayout row="0" col="0" id="cell00" backgroundColor="SkyBlue"></GridLayout>
@@ -496,12 +716,29 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 check(width(cells[1][1]) <= width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or equal cell12 width<${width(cells[1][2])}>`);
                 const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
                 equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
-            }
+            },
+            pageOptions
         );
     }
 
+    public test_grid_nested_grid_cells_layout_beyond_safe_area_action_bar() {
+        this.grid_nested_grid_cells_layout_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_grid_nested_grid_cells_layout_beyond_safe_area_action_bar_hidden() {
+        this.grid_nested_grid_cells_layout_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_grid_nested_grid_cells_layout_beyond_safe_area_action_bar_flat() {
+        this.grid_nested_grid_cells_layout_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_grid_nested_grid_cells_layout_beyond_safe_area_tab_bar() {
+        this.grid_nested_grid_cells_layout_beyond_safe_area({ tabBar: true });
+    }
+
     // Stack
-    public test_stack_in_full_screen() {
+    private stack_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
         <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
         `;
@@ -509,40 +746,34 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { this.layout_in_full_screen_test(root); }
+            ({ root }) => {
+                this.layout_in_full_screen_test(root);
+            },
+            pageOptions
         );
     }
 
-    public test_stack_horizontal_children_components_in_safe_area() {
+    public test_stack_in_full_screen_action_bar() {
+        this.stack_in_full_screen({ actionBar: true });
+    }
+
+    public test_stack_in_full_screen_action_bar_hidden() {
+        this.stack_in_full_screen({ actionBarHidden: true });
+    }
+
+    public test_stack_in_full_screen_action_bar_flat() {
+        this.stack_in_full_screen({ actionBarFlat: true });
+    }
+
+    public test_stack_in_full_screen_tab_bar() {
+        this.stack_in_full_screen({ tabBar: true });
+    }
+
+    private stack_horizontal_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <StackLayout id="stack" orientation="horizontal" backgroundColor="Crimson">
             <Label id="child0" text="123"></Label>
             <Label id="child1" text="456"></Label>
-            <Label id="child2" text="789"></Label>
-            <Label id="child3" text="123"></Label>
-            <Label id="child4" text="456"></Label>
-            <Label id="child5" text="789"></Label>
-            <Label id="child6" text="123"></Label>
-            <Label id="child7" text="456"></Label>
-            <Label id="child8" text="789"></Label>
-            <Label id="child9" text="123"></Label>
-            <Label id="child10" text="456"></Label>
-            <Label id="child11" text="789"></Label>
-            <Label id="child12" text="123"></Label>
-            <Label id="child13" text="456"></Label>
-            <Label id="child14" text="789"></Label>
-            <Label id="child15" text="123"></Label>
-            <Label id="child16" text="456"></Label>
-            <Label id="child17" text="789"></Label>
-            <Label id="child18" text="123"></Label>
-            <Label id="child19" text="456"></Label>
-            <Label id="child20" text="789"></Label>
-            <Label id="child21" text="123"></Label>
-            <Label id="child22" text="456"></Label>
-            <Label id="child23" text="789"></Label>
-            <Label id="child24" text="123"></Label>
-            <Label id="child25" text="456"></Label>
-            <Label id="child26" text="789"></Label>
         </StackLayout>
         `;
 
@@ -555,54 +786,32 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
                 equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
                 isLeftWith(child0, child1, width(child0));
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_stack_vertical_children_components_in_safe_area() {
+    public test_stack_horizontal_children_components_in_safe_area_action_bar() {
+        this.stack_horizontal_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_stack_horizontal_children_components_in_safe_area_action_bar_hidden() {
+        this.stack_horizontal_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_stack_horizontal_children_components_in_safe_area_action_bar_flat() {
+        this.stack_horizontal_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_stack_horizontal_children_components_in_safe_area_tab_bar() {
+        this.stack_horizontal_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private stack_vertical_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <StackLayout id="stack" orientation="vertical" backgroundColor="Crimson">
             <Label id="child0" text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
             <Label id="child1" text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
         </StackLayout>
         `;
 
@@ -615,69 +824,31 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
                 equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
                 isBelowWith(child0, child1, height(child0));
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_stack_nested_layouts_beyond_safe_area() {
+    public test_stack_vertical_children_components_in_safe_area_action_bar() {
+        this.stack_vertical_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_stack_vertical_children_components_in_safe_area_action_bar_hidden() {
+        this.stack_vertical_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_stack_vertical_children_components_in_safe_area_action_bar_flat() {
+        this.stack_vertical_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_stack_vertical_children_components_in_safe_area_tab_bar() {
+        this.stack_vertical_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private stack_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <StackLayout id="stack" backgroundColor="Crimson">
             <StackLayout id="child0" backgroundColor="GoldenRod">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout id="child1" backgroundColor="LemonChiffon">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Crimson">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Chocolate">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Cornsilk">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="BurlyWood">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Khaki">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="LightBlue">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="GoldenRod">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Indigo">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Crimson">
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-                <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-            </StackLayout>
-            <StackLayout backgroundColor="Chocolate">
                 <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
                 <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
                 <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
@@ -692,12 +863,29 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isLeftAlignedWith(root, child0);
                 isTopAlignedWith(root, child0);
                 isRightAlignedWith(root, child0);
-            }
+            },
+            pageOptions
         );
     }
 
+    public test_stack_nested_layouts_beyond_safe_area_action_bar() {
+        this.stack_nested_layouts_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_stack_nested_layouts_beyond_safe_area_action_bar_hidden() {
+        this.stack_nested_layouts_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_stack_nested_layouts_beyond_safe_area_action_bar_flat() {
+        this.stack_nested_layouts_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_stack_nested_layouts_beyond_safe_area_tab_bar() {
+        this.stack_nested_layouts_beyond_safe_area({ tabBar: true });
+    }
+
     // Wrap
-    public test_wrap_in_full_screen() {
+    private wrap_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
         <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
         `;
@@ -705,11 +893,30 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { this.layout_in_full_screen_test(root); }
+            ({ root }) => {
+                this.layout_in_full_screen_test(root);
+            },
+            pageOptions
         );
     }
 
-    public test_wrap_horizontal_children_components_in_safe_area() {
+    public test_wrap_in_full_screen_action_bar() {
+        this.wrap_in_full_screen({ actionBar: true });
+    }
+
+    public test_wrap_in_full_screen_action_bar_hidden() {
+        this.wrap_in_full_screen({ actionBarHidden: true });
+    }
+
+    public test_wrap_in_full_screen_action_bar_flat() {
+        this.wrap_in_full_screen({ actionBarFlat: true });
+    }
+
+    public test_wrap_in_full_screen_tab_bar() {
+        this.wrap_in_full_screen({ tabBar: true });
+    }
+
+    private wrap_horizontal_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <WrapLayout id="wrap" orientation="horizontal">
             <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
@@ -728,11 +935,28 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
                 equal(height(child1), 0, `${child1} has been laid out, but should not`);
                 equal(width(child1), 0, `${child1} has been laid out, but should not`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_wrap_vertical_children_components_in_safe_area() {
+    public test_wrap_horizontal_children_components_in_safe_area_action_bar() {
+        this.wrap_horizontal_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_wrap_horizontal_children_components_in_safe_area_action_bar_hidden() {
+        this.wrap_horizontal_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_wrap_horizontal_children_components_in_safe_area_action_bar_flat() {
+        this.wrap_horizontal_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_wrap_horizontal_children_components_in_safe_area_tab_bar() {
+        this.wrap_horizontal_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private wrap_vertical_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <WrapLayout id="wrap" orientation="vertical">
             <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
@@ -751,87 +975,32 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
                 equal(height(child1), 0, `${child1} has been laid out, but should not`);
                 equal(width(child1), 0, `${child1} has been laid out, but should not`);
-            }
+            },
+            pageOptions
         );
     }
 
-    public test_wrap_nested_layouts_beyond_safe_area() {
+    public test_wrap_vertical_children_components_in_safe_area_action_bar() {
+        this.wrap_vertical_children_components_in_safe_area({ actionBar: true });
+    }
+
+    public test_wrap_vertical_children_components_in_safe_area_action_bar_hidden() {
+        this.wrap_vertical_children_components_in_safe_area({ actionBarHidden: true });
+    }
+
+    public test_wrap_vertical_children_components_in_safe_area_action_bar_flat() {
+        this.wrap_vertical_children_components_in_safe_area({ actionBarFlat: true });
+    }
+
+    public test_wrap_vertical_children_components_in_safe_area_tab_bar() {
+        this.wrap_vertical_children_components_in_safe_area({ tabBar: true });
+    }
+
+    private wrap_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <WrapLayout id="wrap" backgroundColor="Crimson">
             <WrapLayout id="child0" backgroundColor="SkyBlue">
                 <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"/>
-            </WrapLayout>
-            <WrapLayout id="child1">
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
-            </WrapLayout>
-            <WrapLayout>
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" />
             </WrapLayout>
         </WrapLayout>
         `;
@@ -843,8 +1012,25 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isLeftAlignedWith(root, child0);
                 isTopAlignedWith(root, child0);
                 isRightAlignedWith(root, child0);
-            }
+            },
+            pageOptions
         );
+    }
+
+    public test_wrap_nested_layouts_beyond_safe_area_action_bar() {
+        this.wrap_nested_layouts_beyond_safe_area({ actionBar: true });
+    }
+
+    public test_wrap_nested_layouts_beyond_safe_area_action_bar_hidden() {
+        this.wrap_nested_layouts_beyond_safe_area({ actionBarHidden: true });
+    }
+
+    public test_wrap_nested_layouts_beyond_safe_area_action_bar_flat() {
+        this.wrap_nested_layouts_beyond_safe_area({ actionBarFlat: true });
+    }
+
+    public test_wrap_nested_layouts_beyond_safe_area_tab_bar() {
+        this.wrap_nested_layouts_beyond_safe_area({ tabBar: true });
     }
 }
 

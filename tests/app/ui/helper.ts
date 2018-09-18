@@ -79,16 +79,50 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: [Page, Stack
     newPage.content = null;
 }
 
+export interface PageOptions {
+    pageCss?: any,
+    actionBar?: boolean,
+    actionBarFlat?: boolean,
+    actionBarHidden?: boolean,
+    tabBar?: boolean
+}
+
 //export function buildUIAndRunTest(controlToTest, testFunction, options) {
-export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, options?: {pageCss}) {
+export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, options?: PageOptions) {
     clearPage();
     let newPage = getCurrentPage();
 
+    let testSubject = controlToTest as View;
+
     if (options) {
-        newPage.css = options.pageCss;
+        if (options.pageCss) {
+            newPage.css = options.pageCss;
+        }
+
+        if (options.actionBar) {
+            newPage.actionBar.title = "Test";
+        }
+
+        if (options.actionBarFlat) {
+            newPage.actionBar.title = "Test";
+            newPage.actionBar.flat = true;
+        }
+
+        if (options.actionBarHidden) {
+            newPage.actionBarHidden = true;
+        }
+
+        if (options.tabBar) {
+            const tabView = new TabView();
+            const tabEntry = new TabViewItem();
+            tabEntry.title = "Test";
+            tabEntry.view = controlToTest;
+            tabView.items = [tabEntry];
+            testSubject = tabView;
+        }
     }
 
-    newPage.content = controlToTest;
+    newPage.content = testSubject;
 
     testFunction([controlToTest, newPage]);
     newPage.content = null;
