@@ -2,7 +2,7 @@ Cross Platform Modules Changelog
 ==============================
 
 <a name="4.2.1"></a>
-## [4.2.1](https://github.com/NativeScript/NativeScript/compare/4.2.0...4.2.1) (2018-09-17)
+## [4.2.1](https://github.com/NativeScript/NativeScript/compare/4.2.0...4.2.1) (2018-09-18)
 
 ### Bug Fixes
 
@@ -10,6 +10,7 @@ Cross Platform Modules Changelog
 * **ios:** listview scrollToIndex crash with async data ([#6182](https://github.com/NativeScript/NativeScript/issues/6182)) ([ca6cccb](https://github.com/NativeScript/NativeScript/commit/ca6cccb))
 * **ios:** touch delegate does not call base class touch methods ([#6113](https://github.com/NativeScript/NativeScript/pull/6113)) ([284cd5](https://github.com/NativeScript/NativeScript/commit/284cd5))
 * **ios:** TimePicker minuteInterval property ([#6116](https://github.com/NativeScript/NativeScript/issues/6116)) ([ca9bad6](https://github.com/NativeScript/NativeScript/commit/ca9bad6))
+* **android:** parallel navigation actions should not be triggered ([#6275](https://github.com/NativeScript/NativeScript/issues/6275)) ([405ccae](https://github.com/NativeScript/NativeScript/commit/405ccae))
 * **android:** HEAD request should return statusCode ([fe35567](https://github.com/NativeScript/NativeScript/commit/fe35567))
 * observable array reduce bug ([#6219](https://github.com/NativeScript/NativeScript/issues/6219)) ([b028dd9](https://github.com/NativeScript/NativeScript/commit/b028dd9))
 * Page and Frame isLoaded undefined checks ([#6255](https://github.com/NativeScript/NativeScript/issues/6255)) ([4a11cf9](https://github.com/NativeScript/NativeScript/commit/4a11cf9))
