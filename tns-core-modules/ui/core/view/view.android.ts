@@ -509,7 +509,7 @@ export class View extends ViewCommon {
 
     public getLocationRelativeTo(otherView: ViewCommon): Point {
         if (!this.nativeViewProtected || !this.nativeViewProtected.getWindowToken() ||
-            !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
+            !otherView || !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
             this.nativeViewProtected.getWindowToken() !== otherView.nativeViewProtected.getWindowToken()) {
             return undefined;
         }

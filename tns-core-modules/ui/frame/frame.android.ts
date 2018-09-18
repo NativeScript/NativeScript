@@ -138,7 +138,7 @@ export class Frame extends FrameBase {
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events. 
         // As JS instances are alive it is already done for the current page.
-        if (!this.isLoaded || !this._attachedToWindow) {
+        if (!this.isLoaded || this._executingEntry || !this._attachedToWindow) {
             return;
         }
 

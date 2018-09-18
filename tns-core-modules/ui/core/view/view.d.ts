@@ -576,7 +576,11 @@ export abstract class View extends ViewBase {
     _getNativeViewsCount(): number;
 
     _eachLayoutView(callback: (View) => void): void;
-
+    
+    /**
+     * Iterates over children of type View. 
+     * @param callback Called for each child of type View. Iteration stops if this method returns falsy value.
+     */
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
