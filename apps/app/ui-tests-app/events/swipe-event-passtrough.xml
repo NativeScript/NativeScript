@@ -5,6 +5,6 @@
     </StackLayout>
     <Label row="1" colSpan="3" 
       text="" textWrap="true"
-      id="output" automationText="output" style="font-size: 10, font-family: monospace;"/>
+      id="output" style="font-size: 10, font-family: monospace;"/>
   </GridLayout>
 </Page>
