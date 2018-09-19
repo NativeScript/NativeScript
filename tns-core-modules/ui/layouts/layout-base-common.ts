@@ -1,5 +1,5 @@
-﻿import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
-import { View, CustomLayoutView, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
+import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
+import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
 
 export * from "../core/view";
 
@@ -109,12 +109,13 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
         return this.style.clipToBounds;
     }
     set clipToBounds(value: boolean) {
-        //we should never get a string as the booleanConverter is used in the property. Though it happens ...
         if (typeof value === "string") {
             value = booleanConverter(value);
         }
         this.style.clipToBounds = value;
     }
+
+    public isPassThroughParentEnabled: boolean;
 
     public _childIndexToNativeChildIndex(index?: number): number {
         if (index === undefined) {
@@ -157,3 +158,6 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
     }
 }
+
+export const isPassThroughParentEnabledProperty = new Property<LayoutBaseCommon, boolean>({ name: "isPassThroughParentEnabled", defaultValue: false, valueConverter: booleanConverter });
+isPassThroughParentEnabledProperty.register(LayoutBaseCommon);

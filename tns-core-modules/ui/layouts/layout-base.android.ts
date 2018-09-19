@@ -1,5 +1,5 @@
-﻿import {
-    LayoutBaseCommon,
+import {
+    LayoutBaseCommon, isPassThroughParentEnabledProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./layout-base-common";
 
@@ -8,6 +8,10 @@ import { clipToBoundsProperty } from "../styling/style-properties";
 export * from "./layout-base-common";
 
 export class LayoutBase extends LayoutBaseCommon { 
+
+    [isPassThroughParentEnabledProperty.setNative](value: boolean) {
+        (<any>this.nativeViewProtected).setPassThroughParent(value);
+    }
 
     [paddingTopProperty.getDefault](): Length {
         return { value: this._defaultPaddingTop, unit: "px" };

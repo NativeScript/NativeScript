@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
 import { ViewBase } from "../view-base";
 

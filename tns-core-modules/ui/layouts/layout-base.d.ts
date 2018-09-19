@@ -92,4 +92,17 @@ export class LayoutBase extends CustomLayoutView {
      */
     paddingTop: Length;
 
+    /**
+     * Gets or sets a value indicating whether to clip the content of this layout.
+     */
+    clipToBounds: boolean;
+
+    /**
+     * Gets or sets a value indicating whether touch event should pass through to a parent view of the 
+     * layout container in case an interactive child view did not handle it. 
+     * Default value of this property is false. This does not affect the appearance of the view.
+     */
+    isPassThroughParentEnabled: boolean;
 }
+
+export const isPassThroughParentEnabledProperty: Property<LayoutBase, boolean>;

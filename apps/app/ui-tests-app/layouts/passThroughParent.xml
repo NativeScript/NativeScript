@@ -1,0 +1,24 @@
+<Page class="page" actionBarHidden="true" xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <WrapLayout tap="onOuterWrapLayoutTap" backgroundColor="#bed3f4">
+
+        <StackLayout tap="onStackLayoutThrowTap" backgroundColor="#f3f9db" height="200" isPassThroughParentEnabled="true">
+            <Label text="isPassThroughParentEnabled='true'" isUserInteractionEnabled="false" />
+            <Button isUserInteractionEnabled="false" tap="onUserInteractionDisabledThrowTap" text="isUserInteractionEnabled='false'"></Button>
+            <Button isEnabled="false" tap="onDisabledThrowTap" text="isEnabled='false'"></Button>
+            <Button tap="onTap" text="TAP"></Button>
+        </StackLayout>
+
+        <StackLayout tap="onStackLayoutThrowTap" style.margin="20" height="300" width="300" backgroundColor="#f5edf7" isPassThroughParentEnabled="true">
+            <Label text="isPassThroughParentEnabled='true'" isUserInteractionEnabled="false" />
+            <StackLayout tap="onStackLayoutThrowTap" backgroundColor="#f3f9db" height="200" isPassThroughParentEnabled="true">
+                <Label text="isPassThroughParentEnabled='true'" isUserInteractionEnabled="false" />
+                <Button isUserInteractionEnabled="false" tap="onUserInteractionDisabledThrowTap" text="isUserInteractionEnabled='false'"></Button>
+                <Button isEnabled="false" tap="onDisabledThrowTap" text="isEnabled='false'"></Button>
+                <Button tap="onTap" text="TAP"></Button>
+            </StackLayout>
+        </StackLayout>
+
+    </WrapLayout>
+
+</Page>
