@@ -1,0 +1,40 @@
+<Page class="page" xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <StackLayout>
+        <StackLayout orientation="horizontal">
+            <StackLayout backgroundColor="GoldenRod">
+                <Label text="overflowing text, overflow"></Label>
+            </StackLayout>
+            <StackLayout backgroundColor="LemonChiffon">
+                <Label text="overflowing text, overflowing text"></Label>
+            </StackLayout>
+            <StackLayout backgroundColor="LightBlue">
+                <Label text="overflowing text, overflowing text"></Label>
+            </StackLayout>
+            <StackLayout backgroundColor="HotPink">
+                <Label text="overflowing text, overflowing text"></Label>
+            </StackLayout>
+        </StackLayout>
+
+        <StackLayout orientation="horizontal">
+            <Label text="overflowing text, overflow" backgroundColor="LightBlue"></Label>
+            <Label text="overflowing text, overflowing text" backgroundColor="LightGray"></Label>
+            <Label text="overflowing text, overflowing text" backgroundColor="HotPink"></Label>
+            <Label text="overflowing text, overflowing text" backgroundColor="Yellow"></Label>
+        </StackLayout>
+
+        <StackLayout orientation="horizontal">
+            <Label text="overflowing text, overflowing text" backgroundColor="GoldenRod" textWrap="true"></Label>
+            <Label text="overflowing text, overflowing text" backgroundColor="LemonChiffon" textWrap="true"></Label>
+            <Label text="overflowing text, overflowing text" backgroundColor="LightBlue" textWrap="true"></Label>
+        </StackLayout>
+
+        <StackLayout orientation="horizontal">
+            <Label text="1 2 3 4 5 6 7 8 9 0" backgroundColor="LightBlue" textWrap="true"></Label>
+            <Label text="1 2 3 4 5 6 7 8 9 0" backgroundColor="LightGray" textWrap="true"></Label>
+            <Label text="1 2 3 4 5 6 7 8 9 0" backgroundColor="HotPink" textWrap="true"></Label>
+            <Label text="1 2 3 4 5 6 7 8 9 0" backgroundColor="Yellow" textWrap="true"></Label>
+        </StackLayout>
+    </StackLayout>
+
+</Page>

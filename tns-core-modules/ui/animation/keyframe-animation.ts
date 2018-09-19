@@ -106,7 +106,7 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             }
         }
 
-        animations.map(a => a["curve"] ? a : Object.assign(a, {curve: info.curve}));
+        animations.map(a => a["curve"] ? a : Object.assign(a, { curve: info.curve }));
 
         const animation: KeyframeAnimation = new KeyframeAnimation();
         animation.delay = info.delay;
@@ -230,9 +230,19 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             }
         }
         else {
-            let animationDef = this.animations[index];
-            (<any>animationDef).target = view;
-            let animation = new Animation([animationDef]);
+            let animation;
+            const cachedAnimation = this._nativeAnimations[index - 1];
+
+            if (cachedAnimation) {
+                animation = cachedAnimation;
+            }
+            else {
+                let animationDef = this.animations[index];
+                (<any>animationDef).target = view;
+                animation = new Animation([animationDef]);
+                this._nativeAnimations.push(animation);
+            }
+
             // Catch the animation cancel to prevent unhandled promise rejection warnings
             animation.play().then(() => {
                 this.animate(view, index + 1, iterations);
@@ -241,7 +251,6 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             }).catch((error: any) => {
                 traceWrite(typeof error === "string" ? error : error.message, traceCategories.Animation, traceType.warn);
             }); // tslint:disable-line
-            this._nativeAnimations.push(animation);
         }
     }
 

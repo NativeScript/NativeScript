@@ -36,5 +36,5 @@ export class StyleScope {
     public getAnimations(ruleset: RuleSet): KeyframeAnimationInfo[];
 }
 
-export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean): string;
+export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean, importSource?: string): string;
 export function applyInlineStyle(view: ViewBase, style: string): void;

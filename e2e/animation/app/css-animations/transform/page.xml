@@ -1,0 +1,11 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+  <Page.actionBar>
+      <ActionBar title="Transform"/>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="Animate" tap="onAnimate"/>
+    <AbsoluteLayout width="300" height="300" clipToBounds="true" backgroundColor="LightGray">
+      <Image id="view" src="~/res/icon_100x100.png" width="100" height="100" left="100" top="100"/>
+    </AbsoluteLayout>
+  </StackLayout>
+</Page>

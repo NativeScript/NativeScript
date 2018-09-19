@@ -253,7 +253,15 @@ export abstract class ViewBase extends Observable {
     public bind(options: BindingOptions, source?: Object): void;
     public unbind(property: string): void;
 
+    /**
+     * Invalidates the layout of the view and triggers a new layout pass.
+     */
     public requestLayout(): void;
+
+    /**
+     * Iterates over children of type ViewBase. 
+     * @param callback Called for each child of type ViewBase. Iteration stops if this method returns falsy value.
+     */
     public eachChild(callback: (child: ViewBase) => boolean): void;
 
     public _addView(view: ViewBase, atIndex?: number): void;

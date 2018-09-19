@@ -131,7 +131,7 @@ export class ImageSource implements ImageSourceDefinition {
         }
 
         if (quality) {
-            quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
+            quality = (quality - 0) / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
         const data = getImageData(this.ios, format, quality);
@@ -149,7 +149,7 @@ export class ImageSource implements ImageSourceDefinition {
         }
 
         if (quality) {
-            quality = quality - 0 / (100 - 0);  // Normalize quality on a scale of 0 to 1
+            quality = (quality - 0) / (100 - 0);  // Normalize quality on a scale of 0 to 1
         }
 
         const data = getImageData(this.ios, format, quality);
@@ -190,7 +190,7 @@ function getFileName(path: string): string {
     return fileName;
 }
 
-function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 1.0): NSData {
+function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 0.9): NSData {
     var data = null;
     switch (format) {
         case "png":

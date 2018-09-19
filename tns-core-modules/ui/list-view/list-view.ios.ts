@@ -1,4 +1,4 @@
-﻿import { ItemEventData } from ".";
+import { ItemEventData } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, Observable, Color,
     separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, layout, EventData
@@ -6,6 +6,7 @@ import {
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { profile } from "../../profiling";
+import * as trace from "../../trace";
 
 export * from "./list-view-common";
 
@@ -15,6 +16,12 @@ const ITEMTAP = ListViewBase.itemTapEvent;
 const DEFAULT_HEIGHT = 44;
 
 const infinity = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+
+interface ViewItemIndex {
+    _listViewItemIndex?: number;
+}
+
+type ItemView = View & ViewItemIndex;
 
 class ListViewCell extends UITableViewCell {
     public static initWithEmptyBackground(): ListViewCell {
@@ -205,7 +212,7 @@ export class ListView extends ListViewBase {
     private _heights: Array<number>;
     private _preparingCell: boolean;
     private _isDataDirty: boolean;
-    private _map: Map<ListViewCell, View>;
+    private _map: Map<ListViewCell, ItemView>;
     widthMeasureSpec: number = 0;
 
     constructor() {
@@ -217,7 +224,7 @@ export class ListView extends ListViewBase {
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
-        this._map = new Map<ListViewCell, View>();
+        this._map = new Map<ListViewCell, ItemView>();
         this._setNativeClipToBounds();
     }
 
@@ -255,9 +262,31 @@ export class ListView extends ListViewBase {
     }
 
     public scrollToIndex(index: number) {
-        if (this._ios) {
+        this._scrollToIndex(index, false);
+    }
+
+    public scrollToIndexAnimated(index: number) {
+        this._scrollToIndex(index);
+    }
+
+    private _scrollToIndex(index: number, animated: boolean = true) {
+        if (!this._ios) {
+            return;
+        }
+
+        const itemsLength = this.items ? this.items.length : 0;
+        // mimic Android behavior that silently coerces index values within [0, itemsLength - 1] range
+        if (itemsLength > 0) {
+            if (index < 0) {
+                index = 0
+            } else if (index >= itemsLength) {
+                index = itemsLength - 1;
+            }
+
             this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
-                UITableViewScrollPosition.Top, false);
+                UITableViewScrollPosition.Top, animated);
+        } else if (trace.isEnabled()) {
+            trace.write(`Cannot scroll listview to index ${index} when listview items not set`, trace.categories.Binding);
         }
     }
 
@@ -328,6 +357,27 @@ export class ListView extends ListViewBase {
         }
     }
 
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        this._map.forEach((childView, listViewCell) => {
+            View.measureChild(this, childView, childView._currentWidthMeasureSpec, childView._currentHeightMeasureSpec);
+        });
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(left, top, right, bottom);
+
+        this._map.forEach((childView, listViewCell) => {
+            let rowHeight = this._effectiveRowHeight;
+            let cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
+            if (cellHeight) {
+                let width = layout.getMeasureSpecSize(this.widthMeasureSpec);
+                View.layoutChild(this, childView, 0, 0, width, cellHeight);
+            }
+        });
+    }
+
     private _layoutCell(cellView: View, indexPath: NSIndexPath): number {
         if (cellView) {
             const rowHeight = this._effectiveRowHeight;
@@ -345,7 +395,7 @@ export class ListView extends ListViewBase {
         let cellHeight: number;
         try {
             this._preparingCell = true;
-            let view = cell.view;
+            let view: ItemView = cell.view;
             if (!view) {
                 view = this._getItemTemplate(indexPath.row).createView();
             }
@@ -371,7 +421,9 @@ export class ListView extends ListViewBase {
             }
 
             this._prepareItem(view, indexPath.row);
+            view._listViewItemIndex = indexPath.row;
             this._map.set(cell, view);
+
             // We expect that views returned from itemLoading are new (e.g. not reused).
             if (view && !view.parent && view.nativeViewProtected) {
                 cell.contentView.addSubview(view.nativeViewProtected);
@@ -386,7 +438,7 @@ export class ListView extends ListViewBase {
     }
 
     public _removeContainer(cell: ListViewCell): void {
-        let view = cell.view;
+        let view: ItemView = cell.view;
         // This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
         if (!(view.parent instanceof ListView)) {
             this._removeView(view.parent);
@@ -396,6 +448,7 @@ export class ListView extends ListViewBase {
         const preparing = this._preparingCell;
         this._preparingCell = true;
         view.parent._removeView(view);
+        view._listViewItemIndex = undefined;
         this._preparingCell = preparing;
         this._map.delete(cell);
     }

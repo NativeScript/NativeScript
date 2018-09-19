@@ -1,7 +1,6 @@
 // Definitions.
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
-import { AndroidActivityBackPressedEventData } from "../../../application";
 // Types.
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
@@ -23,6 +22,7 @@ import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
 import { screen } from "../../../platform";
+import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
 
@@ -48,7 +48,7 @@ interface TouchListener {
 }
 
 interface DialogFragment {
-    new(): android.app.DialogFragment;
+    new(): android.support.v4.app.DialogFragment;
 }
 
 function initializeDisabledListener(): void {
@@ -73,12 +73,7 @@ function initializeTouchListener(): void {
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
             const owner = this.owner;
-            for (let type in owner._gestureObservers) {
-                let list = owner._gestureObservers[type];
-                list.forEach(element => {
-                    element.androidOnTouchEvent(event);
-                });
-            }
+            owner.handleGestureTouch(event);
 
             let nativeView = owner.nativeViewProtected;
             if (!nativeView || !nativeView.onTouchEvent) {
@@ -113,6 +108,13 @@ function initializeDialogFragment() {
                 activity: view._context,
                 cancel: false,
             };
+
+            // Fist fire application.android global event
+            androidApp.notify(args);
+            if (args.cancel) {
+                return;
+            }
+
             view.notify(args);
 
             if (!args.cancel && !view.onBackPressed()) {
@@ -121,7 +123,7 @@ function initializeDialogFragment() {
         }
     }
 
-    class DialogFragmentImpl extends android.app.DialogFragment {
+    class DialogFragmentImpl extends android.support.v4.app.DialogFragment {
         public owner: View;
         private _fullscreen: boolean;
         private _stretched: boolean;
@@ -142,13 +144,13 @@ function initializeDialogFragment() {
             this._dismissCallback = options.dismissCallback;
             this._shownCallback = options.shownCallback;
             this.owner._dialogFragment = this;
-            this.setStyle(android.app.DialogFragment.STYLE_NO_TITLE, 0);
+            this.setStyle(android.support.v4.app.DialogFragment.STYLE_NO_TITLE, 0);
 
             const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
 
-            // do not override alignment unless fullscreen modal will be shown; 
+            // do not override alignment unless fullscreen modal will be shown;
             // otherwise we might break component-level layout:
-            // https://github.com/NativeScript/NativeScript/issues/5392 
+            // https://github.com/NativeScript/NativeScript/issues/5392
             if (!this._fullscreen && !this._stretched) {
                 this.owner.horizontalAlignment = "center";
                 this.owner.verticalAlignment = "middle";
@@ -179,14 +181,14 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (!owner.isLoaded) {
+            if (owner && !owner.isLoaded) {
                 owner.callLoaded();
             }
 
             this._shownCallback();
         }
 
-        public onDismiss(dialog: android.content.IDialogInterface): void {
+        public onDismiss(dialog: android.content.DialogInterface): void {
             super.onDismiss(dialog);
             const manager = this.getFragmentManager();
             if (manager) {
@@ -195,7 +197,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (owner.isLoaded) {
+            if (owner && owner.isLoaded) {
                 owner.callUnloaded();
             }
         }
@@ -226,13 +228,13 @@ function getModalOptions(domId: number): DialogOptions {
 export class View extends ViewCommon {
     public static androidBackPressedEvent = androidBackPressedEvent;
 
-    public _dialogFragment: android.app.DialogFragment;
+    public _dialogFragment: android.support.v4.app.DialogFragment;
     private _isClickable: boolean;
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
     private layoutChangeListenerIsSet: boolean;
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
-    private _manager: android.app.FragmentManager;
+    private _manager: android.support.v4.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
 
@@ -264,7 +266,7 @@ export class View extends ViewCommon {
         }
     }
 
-    public _getFragmentManager(): android.app.FragmentManager {
+    public _getFragmentManager(): android.support.v4.app.FragmentManager {
         let manager = this._manager;
         if (!manager) {
             let view: View = this;
@@ -281,7 +283,7 @@ export class View extends ViewCommon {
             }
 
             if (!manager && this._context) {
-                manager = (<android.app.Activity>this._context).getFragmentManager();
+                manager = (<android.support.v4.app.FragmentActivity>this._context).getSupportFragmentManager();
             }
 
             this._manager = manager;
@@ -321,6 +323,18 @@ export class View extends ViewCommon {
         return false;
     }
 
+    public handleGestureTouch(event: android.view.MotionEvent): any {
+        for (let type in this._gestureObservers) {
+            let list = this._gestureObservers[type];
+            list.forEach(element => {
+                element.androidOnTouchEvent(event);
+            });
+        }
+        if (this.parent instanceof View) {
+            this.parent.handleGestureTouch(event);
+        }
+    }
+
     private hasGestureObservers() {
         return this._gestureObservers && Object.keys(this._gestureObservers).length > 0
     }
@@ -344,15 +358,20 @@ export class View extends ViewCommon {
     }
 
     private setOnTouchListener() {
-        if (this.nativeViewProtected && this.hasGestureObservers()) {
-            this.touchListenerIsSet = true;
-            if (this.nativeViewProtected.setClickable) {
-                this.nativeViewProtected.setClickable(true);
-            }
+        if (!this.nativeViewProtected || !this.hasGestureObservers()) {
+            return;
+        }
+        
+        // do not set noop listener that handles the event (disabled listener) if IsUserInteractionEnabled is
+        // false as we might need the ability for the event to pass through to a parent view
+        initializeTouchListener();
+        this.touchListener = this.touchListener || new TouchListener(this);
+        this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
-            initializeTouchListener();
-            this.touchListener = this.touchListener || new TouchListener(this);
-            this.nativeViewProtected.setOnTouchListener(this.touchListener);
+        this.touchListenerIsSet = true;
+
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
         }
     }
 
@@ -491,7 +510,7 @@ export class View extends ViewCommon {
 
     public getLocationRelativeTo(otherView: ViewCommon): Point {
         if (!this.nativeViewProtected || !this.nativeViewProtected.getWindowToken() ||
-            !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
+            !otherView || !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
             this.nativeViewProtected.getWindowToken() !== otherView.nativeViewProtected.getWindowToken()) {
             return undefined;
         }
@@ -592,15 +611,8 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        if (!value) {
-            initializeDisabledListener();
-            // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-            this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
-        } else {
-            this.setOnTouchListener();
-            if (!this.touchListenerIsSet) {
-                this.nativeViewProtected.setOnTouchListener(null);
-            }
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(value);
         }
     }
 
@@ -800,7 +812,7 @@ export class View extends ViewCommon {
             androidBackground.onBackgroundOrBorderPropertyChanged(this);
         } else {
             const nativeView = this.nativeViewProtected;
-            org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
+            nativeView.setBackground(value);
 
             const style = this.style;
             const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;

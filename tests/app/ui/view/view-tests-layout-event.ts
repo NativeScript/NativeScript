@@ -117,12 +117,14 @@ export function test_event_LayoutChanged_IsRaised_ParentMarginChanged() {
 };
 
 export function test_event_LayoutChanged_IsNotRaised_TransformChanged() {
-    const test = function (views: Array<View>) {
+    helper.do_PageTest_WithStackLayout_AndButton(([page, stack, button, ActionBar]) => {
         let stackLayoutChangedCount = 0;
         let buttonLayoutChangedCount = 0;
-        const button = <Button>views[2];
 
-        views[1].on(View.layoutChangedEvent, (data) => {
+        TKUnit.waitUntilReady(() => button.isLayoutValid);
+        TKUnit.waitUntilReady(() => stack.isLayoutValid);
+
+        stack.on(View.layoutChangedEvent, (data) => {
             stackLayoutChangedCount++;
         });
 
@@ -133,15 +135,13 @@ export function test_event_LayoutChanged_IsNotRaised_TransformChanged() {
         button.translateX += 50;
         button.translateY += 50;
         button.rotate += 50;
-        button.height = 200;
 
-        TKUnit.waitUntilReady(() => button.height === 200, 5);
+        TKUnit.waitUntilReady(() => button.isLayoutValid);
+        TKUnit.waitUntilReady(() => stack.isLayoutValid);
 
-        TKUnit.assertEqual(stackLayoutChangedCount, 1);
-        TKUnit.assertEqual(buttonLayoutChangedCount, 1);
-    };
-
-    helper.do_PageTest_WithStackLayout_AndButton(test);
+        TKUnit.assertEqual(stackLayoutChangedCount, 0);
+        TKUnit.assertEqual(buttonLayoutChangedCount, 0);
+    })
 };
 
 export function test_event_LayoutChanged_IsRaised_StackLayout_SizeChanged() {

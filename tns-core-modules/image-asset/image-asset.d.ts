@@ -17,4 +17,5 @@ export interface ImageAssetOptions {
     width?: number;
     height?: number;
     keepAspectRatio?: boolean;
+    autoScaleFactor?: boolean;
 }

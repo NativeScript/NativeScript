@@ -366,8 +366,8 @@
 
             export class TabLayout extends android.widget.HorizontalScrollView {
                 constructor(context: android.content.Context);
-                constructor(context: android.content.Context, attrs: android.util.IAttributeSet);
-                constructor(context: android.content.Context, attrs: android.util.IAttributeSet, defStyle: number);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
 
                 setSelectedIndicatorColors(color: Array<number>): void;
                 getSelectedIndicatorColors(): Array<number>;
@@ -388,7 +388,7 @@
 
             export class TabViewPager extends android.support.v4.view.ViewPager {
                 constructor(context: android.content.Context);
-                constructor(context: android.content.Context, attrs: android.util.IAttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
 
                 setSwipePageEnabled(enabled: boolean): void;
             }

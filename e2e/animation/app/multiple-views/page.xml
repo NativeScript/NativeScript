@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+
+  <ActionBar title="Multiple Views" />
+
+  <StackLayout>
+    <Button text="Animate" tap="onAnimate" />
+    <Button text="Reset" tap="onReset" />
+    <AbsoluteLayout width="300" height="300" clipToBounds="true" backgroundColor="LightGray">
+      <Label id="view1" text="{N}" width="100" height="100" left="0" top="0" style.textAlignment="center" backgroundColor="Red" style.fontSize="30" />
+      <Label id="view2" text="{N}" width="100" height="100" left="200" top="0" style.textAlignment="center" backgroundColor="Yellow" style.fontSize="30" />
+      <Label id="view3" text="{N}" width="100" height="100" left="200" top="200" style.textAlignment="center" backgroundColor="Green" style.fontSize="30" />
+      <Label id="view4" text="{N}" width="100" height="100" left="0" top="200" style.textAlignment="center" backgroundColor="Blue" style.fontSize="30" />
+    </AbsoluteLayout>
+  </StackLayout>
+
+</Page>

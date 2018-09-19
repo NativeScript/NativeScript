@@ -58,3 +58,30 @@ export function onScroll(args: EventData) {
   }
   scrollToBottom = !scrollToBottom;
 }
+
+export function onScrollToIndex(args: EventData) {
+    let page = (<View>args.object).page;
+    let gridLayout = page.getViewById<GridLayout>("grid-layout");
+    for (let i = 0, length = gridLayout.getChildrenCount(); i < length; i++) {
+        let listView = <ListView>gridLayout.getChildAt(i);
+        listView.scrollToIndex(50);
+    }
+}
+
+export function onScrollToIndexAnimated(args: EventData) {
+    let page = (<View>args.object).page;
+    let gridLayout = page.getViewById<GridLayout>("grid-layout");
+    for (let i = 0, length = gridLayout.getChildrenCount(); i < length; i++) {
+        let listView = <ListView>gridLayout.getChildAt(i);
+        listView.scrollToIndexAnimated(50);
+    }
+}
+
+export function onScrollReset(args: EventData) {
+    let page = (<View>args.object).page;
+    let gridLayout = page.getViewById<GridLayout>("grid-layout");
+    for (let i = 0, length = gridLayout.getChildrenCount(); i < length; i++) {
+        let listView = <ListView>gridLayout.getChildAt(i);
+        listView.scrollToIndex(0);
+    }
+}

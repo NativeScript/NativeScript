@@ -1,0 +1,20 @@
+Label {
+    margin: 6;
+    padding: 4;
+}
+
+.unselected {
+    border-width: 4;
+    border-color: gray;
+    border-radius: 10;
+    background: white;
+    color: gray
+}
+
+.selected {
+    border-width: 4;
+    border-color: blue;
+    border-radius: 10;
+    background: lightcoral;
+    color: blue;
+}

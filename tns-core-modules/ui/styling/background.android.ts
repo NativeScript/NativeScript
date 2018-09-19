@@ -65,7 +65,7 @@ export module ad {
             if (!(drawable instanceof org.nativescript.widgets.BorderDrawable)) {
                 backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
                 refreshBorderDrawable(view, backgroundDrawable);
-                org.nativescript.widgets.ViewHelper.setBackground(nativeView, backgroundDrawable);
+                nativeView.setBackground(backgroundDrawable);
             } else {
                 refreshBorderDrawable(view, backgroundDrawable);
             }
@@ -80,7 +80,7 @@ export module ad {
                 defaultDrawable = null;
             }
 
-            org.nativescript.widgets.ViewHelper.setBackground(nativeView, defaultDrawable);
+            nativeView.setBackground(defaultDrawable);
             // TODO: Do we need to clear the drawable here? Can't we just reuse it again?
             androidView._cachedDrawable = undefined;
         }

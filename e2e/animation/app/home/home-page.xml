@@ -1,0 +1,25 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+
+    <ActionBar title="Animations" />
+
+    <ScrollView>
+        <StackLayout>
+            <Label text="Home" />
+            <Button text="opacity" tap="onButtonTap" />
+            <Button text="background-color" tap="onButtonTap" />
+            <Button text="translate" tap="onButtonTap" />
+            <Button text="scale" tap="onButtonTap" />
+            <Button text="rotate" tap="onButtonTap" />
+            <Button text="multiple-properties" tap="onButtonTap" />
+            <Button text="chaining-with-promises" tap="onButtonTap" />
+            <Button text="chaining-with-animation-set" tap="onButtonTap" />
+            <Button text="multiple-views" tap="onButtonTap" />
+            <Button text="reusing" tap="onButtonTap" />
+            <Button text="slide-in-effect" tap="onButtonTap" />
+            <Button text="infinite" tap="onButtonTap" />
+            <Button text="animation-curves" tap="onButtonTap" />
+            <Button text="css-animations" tap="onButtonTap" /> 
+        </StackLayout>
+    </ScrollView>
+
+</Page>
