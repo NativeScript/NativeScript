@@ -780,12 +780,12 @@ export namespace ios {
             adjustedPosition.top = fullscreenPosition.top;
         }
 
-        if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right) {
-            adjustedPosition.right = fullscreenPosition.right;
+        if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right + fullscreenPosition.left) {
+            adjustedPosition.right = fullscreenPosition.right - fullscreenPosition.left;
         }
 
-        if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom) {
-            adjustedPosition.bottom = fullscreenPosition.bottom;
+        if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
+            adjustedPosition.bottom = fullscreenPosition.bottom - fullscreenPosition.top;
         }
 
         const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
