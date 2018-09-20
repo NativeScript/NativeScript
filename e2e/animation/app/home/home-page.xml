@@ -19,6 +19,7 @@
             <Button text="infinite" tap="onButtonTap" />
             <Button text="animation-curves" tap="onButtonTap" />
             <Button text="css-animations" tap="onButtonTap" /> 
+            <Button text="3d-rotate" tap="onButtonTap" /> 
         </StackLayout>
     </ScrollView>
 
