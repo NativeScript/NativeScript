@@ -47,9 +47,9 @@ export class ScrollView extends ScrollViewBase {
     initNativeView() {
         super.initNativeView();
         if (this.orientation === "horizontal") {
-            view.showsHorizontalScrollIndicator = this.scrollBarIndicatorVisible;
+            this.nativeViewProtected.showsHorizontalScrollIndicator = this.scrollBarIndicatorVisible;
         } else {
-            view.showsVerticalScrollIndicator = this.scrollBarIndicatorVisible;
+            this.nativeViewProtected.showsVerticalScrollIndicator = this.scrollBarIndicatorVisible;
         }
         this._setNativeClipToBounds();
     }
