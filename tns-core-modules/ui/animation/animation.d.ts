@@ -36,7 +36,7 @@ export interface AnimationDefinition {
     /**
      * Animates the rotate affine transform of the view. Value should be a number specifying the rotation amount in degrees.
      */
-    rotate?: Point3D;
+    rotate?: number | Point3D;
 
     /**
      * The length of the animation in milliseconds. The default duration is 300 milliseconds.

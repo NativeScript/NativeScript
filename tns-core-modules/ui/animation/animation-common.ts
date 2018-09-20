@@ -4,7 +4,8 @@ import {
     AnimationPromise as AnimationPromiseDefinition,
     Animation as AnimationBaseDefinition,
     AnimationDefinition,
-    Pair
+    Pair,
+    Point3D
 } from ".";
 import { View } from "../core/view";
 
@@ -87,7 +88,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
     protected _rejectAlreadyPlaying(): AnimationPromiseDefinition {
         const reason = "Animation is already playing.";
         traceWrite(reason, traceCategories.Animation, traceType.warn);
-        
+
         return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
             reject(reason);
         });
@@ -151,21 +152,33 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         }
 
         for (let item in animationDefinition) {
-            if (animationDefinition[item] === undefined) {
+            const value = animationDefinition[item];
+            if (value === undefined) {
                 continue;
             }
 
-            if ((item === Properties.opacity ||
-                item === Properties.rotate ||
+            if (item === Properties.opacity ||
                 item === "duration" ||
                 item === "delay" ||
-                item === "iterations") && typeof animationDefinition[item] !== "number") {
-                throw new Error(`Property ${item} must be valid number. Value: ${animationDefinition[item]}`);
-            } else if ((item === Properties.scale || item === Properties.translate) &&
-                (typeof (<Pair>animationDefinition[item]).x !== "number" || typeof (<Pair>animationDefinition[item]).y !== "number")) {
-                throw new Error(`Property ${item} must be valid Pair. Value: ${animationDefinition[item]}`);
+                item === "iterations") {
+
+                if (typeof value !== "number") {
+                    throw new Error(`Property ${item} must be valid number. Value: ${value}`);
+                }
+
+            } else if (item === Properties.scale || item === Properties.translate) {
+                const pair = <Pair>value;
+                if (typeof pair.x !== "number" || typeof pair.y !== "number") {
+                    throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
+                }
             } else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
-                throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
+                throw new Error(`Property ${item} must be valid color. Value: ${value}`);
+            } else if (item === Properties.rotate) {
+                const rotate: number | Point3D = value;
+                if ((typeof rotate !== "number") &&
+                    !(typeof rotate.x === "number" && typeof rotate.y === "number" && typeof rotate.z === "number")) {
+                    throw new Error(`Property ${rotate} must be valid number or Point3D. Value: ${value}`);
+                }
             }
         }
 
@@ -226,10 +239,18 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
         // rotate
         if (animationDefinition.rotate !== undefined) {
+            // Make sure the value of the rotation property is always Point3D
+            let rotationValue: Point3D;
+            if (typeof animationDefinition.rotate === "number") {
+                rotationValue = { x: 0, y: 0, z: animationDefinition.rotate }
+            } else {
+                rotationValue = animationDefinition.rotate;
+            }
+
             propertyAnimations.push({
                 target: animationDefinition.target,
                 property: Properties.rotate,
-                value: animationDefinition.rotate,
+                value: rotationValue,
                 duration: animationDefinition.duration,
                 delay: animationDefinition.delay,
                 iterations: animationDefinition.iterations,

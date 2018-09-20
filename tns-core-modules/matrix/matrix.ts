@@ -2,16 +2,17 @@ import { TransformFunctionsInfo } from "../ui/animation/animation";
 
 import { radiansToDegrees, degreesToRadians } from "../utils/number-utils";
 
-export const getTransformMatrix = ({property, value}) =>
+// TODO: Handle rotation over X and Y axis.
+export const getTransformMatrix = ({ property, value }) =>
     TRANSFORM_MATRIXES[property](value);
 
 const TRANSFORM_MATRIXES = {
-    "scale": ({x, y}) => [
+    "scale": ({ x, y }) => [
         x, 0, 0,
         0, y, 0,
         0, 0, 1,
     ],
-    "translate": ({x, y}) => [
+    "translate": ({ x, y }) => [
         1, 0, x,
         0, 1, y,
         0, 0, 1,
@@ -52,7 +53,7 @@ export function decompose2DTransformMatrix(matrix: number[])
     const determinant = A * D - B * C;
     const translate = { x: E || 0, y: F || 0 };
 
-    // rewrite with obj desctructuring using the identity matrix
+    // rewrite with obj destructuring using the identity matrix
     let rotate = 0;
     let scale = { x: 1, y: 1 };
     if (A || B) {
@@ -62,12 +63,13 @@ export function decompose2DTransformMatrix(matrix: number[])
     } else if (C || D) {
         const R = Math.sqrt(C * C + D * D);
         rotate = Math.PI / 2 - (D > 0 ? Math.acos(-C / R) : -Math.acos(C / R));
-        scale = { x: determinant / R, y: R  };
+        scale = { x: determinant / R, y: R };
     }
 
     rotate = radiansToDegrees(rotate);
 
-    return { translate, rotate, scale };
+    // TODO: what about rotation over x and y
+    return { translate, rotate: { x: 0, y: 0, z: rotate }, scale };
 }
 
 function verifyTransformMatrix(matrix: number[]) {
