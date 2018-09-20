@@ -57,13 +57,22 @@ export class SafeAreaTests extends testModule.UITest<any> {
         };
     };
 
-    private layout_in_full_screen_test(layout: view.View) {
+    private layout_in_full_screen_test(layout: view.View, pageOptions?: helper.PageOptions) {
+        let expectedTop = 0;
+        if (pageOptions && pageOptions.actionBarFlat) {
+            const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
+            const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
+            const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
+            
+            expectedTop = actionBarHeight + statusBarHeight;
+        }
+
         const l = left(layout);
         const t = top(layout);
         const r = right(layout);
         const b = bottom(layout);
         equal(l, 0, `${layout}.left - actual:${l}; expected: ${0}`);
-        equal(t, 0, `${layout}.top - actual:${t}; expected: ${0}`);
+        equal(t, expectedTop, `${layout}.top - actual:${t}; expected: ${expectedTop}`);
         equal(r, platform.screen.mainScreen.widthPixels, `${layout}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
         equal(b, platform.screen.mainScreen.heightPixels, `${layout}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }
@@ -78,7 +87,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_in_full_screen_test(root);
+                this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
         );
@@ -130,10 +139,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.absolute_children_components_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_absolute_children_components_in_safe_area_action_bar_flat() {
-        this.absolute_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_absolute_children_components_in_safe_area_tab_bar() {
         this.absolute_children_components_in_safe_area({ tabBar: true });
     }
@@ -175,10 +180,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.absolute_nested_layouts_beyond_safe_area({ actionBarHidden: true });
     }
 
-    public test_absolute_nested_layouts_beyond_safe_area_action_bar_flat() {
-        this.absolute_nested_layouts_beyond_safe_area({ actionBarFlat: true });
-    }
-
     public test_absolute_nested_layouts_beyond_safe_area_tab_bar() {
         this.absolute_nested_layouts_beyond_safe_area({ tabBar: true });
     }
@@ -205,7 +206,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getDockViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_in_full_screen_test(root);
+                this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
         );
@@ -272,10 +273,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.dock_children_components_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_dock_children_components_in_safe_area_action_bar_flat() {
-        this.dock_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_dock_children_components_in_safe_area_tab_bar() {
         this.dock_children_components_in_safe_area({ tabBar: true });
     }
@@ -334,10 +331,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.dock_nested_layouts_beyond_safe_area({ actionBarHidden: true });
     }
 
-    public test_dock_nested_layouts_beyond_safe_area_action_bar_flat() {
-        this.dock_nested_layouts_beyond_safe_area({ actionBarFlat: true });
-    }
-
     public test_dock_nested_layouts_beyond_safe_area_tab_bar() {
         this.dock_nested_layouts_beyond_safe_area({ tabBar: true });
     }
@@ -352,7 +345,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => {
-                this.layout_in_full_screen_test(root);
+                this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
         );
@@ -409,10 +402,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.flex_column_children_components_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_flex_column_children_components_in_safe_area_action_bar_flat() {
-        this.flex_column_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_flex_column_children_components_in_safe_area_tab_bar() {
         this.flex_column_children_components_in_safe_area({ tabBar: true });
     }
@@ -450,10 +439,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_flex_row_children_components_in_safe_area_action_bar_hidden() {
         this.flex_row_children_components_in_safe_area({ actionBarHidden: true });
-    }
-
-    public test_flex_row_children_components_in_safe_area_action_bar_flat() {
-        this.flex_row_children_components_in_safe_area({ actionBarFlat: true });
     }
 
     public test_flex_row_children_components_in_safe_area_tab_bar() {
@@ -502,10 +487,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.flex_column_nested_layouts_beyond_safe_area({ actionBarHidden: true });
     }
 
-    public test_flex_column_nested_layouts_beyond_safe_area_action_bar_flat() {
-        this.flex_column_nested_layouts_beyond_safe_area({ actionBarFlat: true });
-    }
-
     public test_flex_column_nested_layouts_beyond_safe_area_tab_bar() {
         this.flex_column_nested_layouts_beyond_safe_area({ tabBar: true });
     }
@@ -552,10 +533,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.flex_row_nested_layouts_beyond_safe_area({ actionBarHidden: true });
     }
 
-    public test_flex_row_nested_layouts_beyond_safe_area_action_bar_flat() {
-        this.flex_row_nested_layouts_beyond_safe_area({ actionBarFlat: true });
-    }
-
     public test_flex_row_nested_layouts_beyond_safe_area_tab_bar() {
         this.flex_row_nested_layouts_beyond_safe_area({ tabBar: true });
     }
@@ -583,7 +560,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getGridViews(snippet),
             this.noop,
             ({ root }) => {
-                this.layout_in_full_screen_test(root);
+                this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
         );
@@ -664,10 +641,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.grid_component_cells_layout_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_grid_component_cells_layout_in_safe_area_action_bar_flat() {
-        this.grid_component_cells_layout_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_grid_component_cells_layout_in_safe_area_tab_bar() {
         this.grid_component_cells_layout_in_safe_area({ tabBar: true });
     }
@@ -729,10 +702,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.grid_nested_grid_cells_layout_beyond_safe_area({ actionBarHidden: true });
     }
 
-    public test_grid_nested_grid_cells_layout_beyond_safe_area_action_bar_flat() {
-        this.grid_nested_grid_cells_layout_beyond_safe_area({ actionBarFlat: true });
-    }
-
     public test_grid_nested_grid_cells_layout_beyond_safe_area_tab_bar() {
         this.grid_nested_grid_cells_layout_beyond_safe_area({ tabBar: true });
     }
@@ -747,7 +716,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => {
-                this.layout_in_full_screen_test(root);
+                this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
         );
@@ -799,10 +768,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.stack_horizontal_children_components_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_stack_horizontal_children_components_in_safe_area_action_bar_flat() {
-        this.stack_horizontal_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_stack_horizontal_children_components_in_safe_area_tab_bar() {
         this.stack_horizontal_children_components_in_safe_area({ tabBar: true });
     }
@@ -835,10 +800,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_stack_vertical_children_components_in_safe_area_action_bar_hidden() {
         this.stack_vertical_children_components_in_safe_area({ actionBarHidden: true });
-    }
-
-    public test_stack_vertical_children_components_in_safe_area_action_bar_flat() {
-        this.stack_vertical_children_components_in_safe_area({ actionBarFlat: true });
     }
 
     public test_stack_vertical_children_components_in_safe_area_tab_bar() {
@@ -876,10 +837,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.stack_nested_layouts_beyond_safe_area({ actionBarHidden: true });
     }
 
-    public test_stack_nested_layouts_beyond_safe_area_action_bar_flat() {
-        this.stack_nested_layouts_beyond_safe_area({ actionBarFlat: true });
-    }
-
     public test_stack_nested_layouts_beyond_safe_area_tab_bar() {
         this.stack_nested_layouts_beyond_safe_area({ tabBar: true });
     }
@@ -894,7 +851,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => {
-                this.layout_in_full_screen_test(root);
+                this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
         );
@@ -948,10 +905,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.wrap_horizontal_children_components_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_wrap_horizontal_children_components_in_safe_area_action_bar_flat() {
-        this.wrap_horizontal_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_wrap_horizontal_children_components_in_safe_area_tab_bar() {
         this.wrap_horizontal_children_components_in_safe_area({ tabBar: true });
     }
@@ -988,10 +941,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.wrap_vertical_children_components_in_safe_area({ actionBarHidden: true });
     }
 
-    public test_wrap_vertical_children_components_in_safe_area_action_bar_flat() {
-        this.wrap_vertical_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
     public test_wrap_vertical_children_components_in_safe_area_tab_bar() {
         this.wrap_vertical_children_components_in_safe_area({ tabBar: true });
     }
@@ -1023,10 +972,6 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_wrap_nested_layouts_beyond_safe_area_action_bar_hidden() {
         this.wrap_nested_layouts_beyond_safe_area({ actionBarHidden: true });
-    }
-
-    public test_wrap_nested_layouts_beyond_safe_area_action_bar_flat() {
-        this.wrap_nested_layouts_beyond_safe_area({ actionBarFlat: true });
     }
 
     public test_wrap_nested_layouts_beyond_safe_area_tab_bar() {

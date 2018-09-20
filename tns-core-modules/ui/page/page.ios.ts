@@ -311,10 +311,11 @@ export class Page extends PageBase {
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
 
         const insets = this.getSafeAreaInsets();
-        const childLeft = left + insets.left;
-        const childTop = top + insets.top;
-        const childRight = right - insets.right;
-        const childBottom = bottom - insets.bottom;
+
+        const childLeft = 0 + insets.left;
+        const childTop = 0 + insets.top;
+        const childRight = right - left - insets.right;
+        const childBottom = bottom - top - insets.bottom;
         View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
