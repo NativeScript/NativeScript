@@ -83,6 +83,18 @@
         "fullReset": false,
         "app": ""
     },
+    "android28": {
+        "platformName": "Android",
+        "platformVersion": "28",
+        "deviceName": "Emulator-Api28-Google",
+        "avd": "Emulator-Api28-Google",
+        "lt": 60000,
+        "appActivity": "com.tns.NativeScriptActivity",
+        "newCommandTimeout": 720,
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
+    },
     "sim.iPhone7.iOS110": {
         "platformName": "iOS",
         "platformVersion": "11.2",

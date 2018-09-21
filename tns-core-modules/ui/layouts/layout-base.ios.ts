@@ -1,9 +1,8 @@
-﻿import { LayoutBaseCommon, clipToBoundsProperty, View, layout } from "./layout-base-common";
-import { ios as iosUtils } from "../../utils/utils";
+import { 
+    LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty, View
+} from "./layout-base-common";
 
 export * from "./layout-base-common";
-
-const majorVersion = iosUtils.MajorVersion;
 
 export class LayoutBase extends LayoutBaseCommon {
     nativeViewProtected: UIView;
@@ -36,5 +35,9 @@ export class LayoutBase extends LayoutBaseCommon {
     }
     [clipToBoundsProperty.setNative](value: boolean) {
         this._setNativeClipToBounds();
+    }
+
+    [isPassThroughParentEnabledProperty.setNative](value: boolean) {
+        (<any>this.nativeViewProtected).setPassThroughParent(value);
     }
 }
