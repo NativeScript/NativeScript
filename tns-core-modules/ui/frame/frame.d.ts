@@ -128,6 +128,10 @@ export class Frame extends View {
     /**
      * @private
      */
+    _executingEntry: BackstackEntry;
+    /**
+     * @private
+     */
     _processNavigationQueue(page: Page);
     /**
      * @private

@@ -186,7 +186,14 @@ export class Frame extends FrameBase {
     }
 
     private disposeCurrentFragment(): void {
-        if (!this._currentEntry || !this._currentEntry.fragment) {
+        // when interacting with nested fragments it seems Android is smart enough
+        // to automatically remove child fragments when parent fragment is removed;
+        // however, we must add a fragment.isAdded() guard as our logic will try to 
+        // explicitly remove the already removed child fragment causing an 
+        // IllegalStateException: Fragment has not been attached yet.
+        if (!this._currentEntry || 
+            !this._currentEntry.fragment || 
+            !this._currentEntry.fragment.isAdded()) {
             return;
         }
 

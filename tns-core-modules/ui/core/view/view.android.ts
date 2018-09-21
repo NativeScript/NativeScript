@@ -3,10 +3,10 @@ import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 // Types.
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
+    Color, EventData, ViewCommon, layout, getAncestor, automationTextProperty,
+    isEnabledProperty, isUserInteractionEnabledProperty, originXProperty, originYProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Color, EventData
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-common";
 
 import {
@@ -20,7 +20,7 @@ import {
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
-import { topmost } from "../../frame/frame-stack";
+import { Frame, topmost } from "../../frame";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
@@ -274,11 +274,24 @@ export class View extends ViewCommon {
                 if (dialogFragment) {
                     manager = dialogFragment.getChildFragmentManager();
                     break;
-                } else {
-                    // the case is needed because _dialogFragment is on View
-                    // but parent may be ViewBase.
-                    view = view.parent as View;
                 }
+                
+                if (view instanceof Frame) {
+                    // when interacting with nested fragments instead of using getSupportFragmentManager 
+                    // we must always use getChildFragmentManager instead
+                    const parentFrame: Frame = <Frame>getAncestor(view, Frame);
+                    if (parentFrame) {
+                        const backstackEntry = parentFrame._currentEntry || parentFrame._executingEntry;
+                        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
+                            manager = backstackEntry.fragment.getChildFragmentManager();
+                            break;
+                        }
+                    }
+                }
+
+                // the case is needed because _dialogFragment is on View
+                // but parent may be ViewBase.
+                view = view.parent as View;
             }
 
             if (!manager && this._context) {
