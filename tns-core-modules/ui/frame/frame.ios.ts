@@ -30,7 +30,6 @@ export class Frame extends FrameBase {
         super();
         this._ios = new iOSFrame(this);
         this.viewController = this._ios.controller;
-        this.nativeViewProtected = this.viewController.view;
     }
 
     createNativeView() {
