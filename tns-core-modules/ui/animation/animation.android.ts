@@ -483,6 +483,4 @@ export class Animation extends AnimationBase {
         this._propertyUpdateCallbacks = this._propertyUpdateCallbacks.concat(propertyUpdateCallbacks);
         this._propertyResetCallbacks = this._propertyResetCallbacks.concat(propertyResetCallbacks);
     }
-
-
 }

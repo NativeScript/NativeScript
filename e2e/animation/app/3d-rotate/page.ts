@@ -36,7 +36,6 @@ export function onAnimateXYZ(args: EventData) {
     });
 }
 
-
 export function onReset(args: EventData) {
     view.rotate = 0;
     view.rotateX = 0;
