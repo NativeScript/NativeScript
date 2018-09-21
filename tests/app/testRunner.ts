@@ -136,8 +136,11 @@ import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
 allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 
 import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
+import * as scrollViewSafeAreaTests from "./ui/scroll-view/scroll-view-safe-area-tests";
+
 if (platform.isIOS && ios.MajorVersion > 10) {
     allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
+    allTests["SAFEAREA-SCROLL-VIEW"] = scrollViewSafeAreaTests;
 }
 
 import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
