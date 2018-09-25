@@ -67,6 +67,7 @@ export function getButtonColors(): { color: Color, backgroundColor: Color } {
     if (!button) {
         const Button = require("ui/button").Button;
         button = new Button;
+        button._setupUI({});
     }
 
     let buttonColor: Color;
@@ -82,6 +83,7 @@ export function getLabelColor(): Color {
     if (!label) {
         const Label = require("ui/label").Label;
         label = new Label;
+        label._setupUI({});
     }
 
     let labelColor: Color;
@@ -95,6 +97,7 @@ export function getTextFieldColor(): Color {
     if (!textField) {
         const TextField = require("ui/text-field").TextField;
         textField = new TextField();
+        textField._setupUI({});
     }
 
     let textFieldColor: Color;
