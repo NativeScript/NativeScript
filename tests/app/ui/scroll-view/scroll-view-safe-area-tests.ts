@@ -69,8 +69,8 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
         equal(b, platform.screen.mainScreen.heightPixels, `${scrollView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }
 
-    private scroll_view_in_full_screen_test(pageOptions?: helper.PageOptions, sample?: string) {
-        const snippet = sample || `
+    private scroll_view_in_full_screen_test(pageOptions?: helper.PageOptions) {
+        const snippet = `
         <ScrollView id="scroll" backgroundColor="Crimson"></ScrollView>
         `;
 
@@ -97,12 +97,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
     }
 
     public test_scroll_view_in_full_screen_tab_bar() {
-        const snippet = `
-        <GridLayout>
-            <ScrollView id="scroll" backgroundColor="Crimson"></ScrollView>
-        </GridLayout>
-        `;
-        this.scroll_view_in_full_screen_test({ tabBar: true }, snippet);
+        this.scroll_view_in_full_screen_test({ tabBar: true });
     }
 
     private scroll_view_children_components_in_safe_area(pageOptions?: helper.PageOptions) {

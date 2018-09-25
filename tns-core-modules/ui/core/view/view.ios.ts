@@ -817,12 +817,8 @@ export namespace ios {
     }
 
     function getAvailableSpaceFromParent(view: View): { safeArea: CGRect, fullscreen: CGRect } {
-        // Search for view and parents with ViewController or parents with UIScrollView parent to get their content size.
-        if (view && !view.viewController) {
-            view = view.parent as View;
-            while (view && !view.viewController && !(view.nativeViewProtected instanceof UIScrollView)) {
-                view = view.parent as View;
-            }
+        if (!view) {
+            return;
         }
 
         let fullscreen = null;
@@ -832,12 +828,21 @@ export namespace ios {
             const nativeView = view.viewController.view;
             safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
             fullscreen = nativeView.frame;
-        }
+        } else {
+            let parent = view.parent as View;
+            while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
+                parent = parent.parent as View;
+            }
 
-        if (view.nativeViewProtected instanceof UIScrollView) {
-            const nativeView = view.nativeViewProtected;
-            safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
-            fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
+            if (parent.nativeViewProtected instanceof UIScrollView) {
+                const nativeView = parent.nativeViewProtected;
+                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+                fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
+            } else if (parent.viewController) {
+                const nativeView = parent.viewController.view;
+                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+                fullscreen = nativeView.frame;
+            }
         }
 
         return { safeArea: safeArea, fullscreen: fullscreen}
