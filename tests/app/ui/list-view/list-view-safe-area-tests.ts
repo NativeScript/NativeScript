@@ -156,7 +156,6 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
         this.list_view_children_components_in_safe_area({ tabBar: true });
     }
 
-
     private grid_nested_list_views_layout_beyond_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
