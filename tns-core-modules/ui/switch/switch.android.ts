@@ -36,18 +36,16 @@ export class Switch extends SwitchBase {
     public checked: boolean;
 
     public createNativeView() {
-        initializeCheckedChangeListener();
-        const nativeView = new android.widget.Switch(this._context);
-        const listener = new CheckedChangeListener(this);
-        nativeView.setOnCheckedChangeListener(listener);
-        (<any>nativeView).listener = listener;
-        return nativeView;
+        return new android.widget.Switch(this._context);
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeViewProtected;
-        nativeView.listener.owner = this;
+        const nativeView = this.nativeViewProtected;
+        initializeCheckedChangeListener();
+        const listener = new CheckedChangeListener(this);
+        nativeView.setOnCheckedChangeListener(listener);
+        (<any>nativeView).listener = listener;
     }
 
     public disposeNativeView() {

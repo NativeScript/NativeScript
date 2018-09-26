@@ -68,25 +68,32 @@ class UISearchBarImpl extends UISearchBar {
 }
 
 export class SearchBar extends SearchBarBase {
-    private _ios: UISearchBar;
+    nativeViewProtected: UISearchBar;
     private _delegate;
     private __textField: UITextField;
     private __placeholderLabel: UILabel;
 
-    constructor() {
-        super();
+    createNativeView() {
+        return UISearchBarImpl.new();
+    }
 
-        this.nativeViewProtected = this._ios = UISearchBarImpl.new();
+    initNativeView() {
+        super.initNativeView();
         this._delegate = UISearchBarDelegateImpl.initWithOwner(new WeakRef(this));
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        super.disposeNativeView();
     }
 
     public onLoaded() {
         super.onLoaded();
-        this._ios.delegate = this._delegate;
+        this.ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this.ios.delegate = null;
         super.onUnloaded();
     }
 
@@ -95,7 +102,7 @@ export class SearchBar extends SearchBarBase {
     }
 
     get ios(): UISearchBar {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     get _textField(): UITextField {
@@ -117,11 +124,11 @@ export class SearchBar extends SearchBarBase {
     }
 
     [backgroundColorProperty.getDefault](): UIColor {
-        return this._ios.barTintColor;
+        return this.ios.barTintColor;
     }
     [backgroundColorProperty.setNative](value: UIColor | Color) {
         let color: UIColor = value instanceof Color ? value.ios : value;
-        this._ios.barTintColor = color;
+        this.ios.barTintColor = color;
     }
 
     [colorProperty.getDefault](): UIColor {
@@ -163,7 +170,7 @@ export class SearchBar extends SearchBarBase {
     }
     [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? "" : value.toString();
-        this._ios.text = text;
+        this.ios.text = text;
     }
 
     [hintProperty.getDefault](): string {
@@ -171,7 +178,7 @@ export class SearchBar extends SearchBarBase {
     }
     [hintProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? "" : value.toString();
-        this._ios.placeholder = text;
+        this.ios.placeholder = text;
     }
 
     [textFieldBackgroundColorProperty.getDefault](): UIColor {

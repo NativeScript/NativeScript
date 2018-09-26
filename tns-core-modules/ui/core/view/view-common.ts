@@ -74,7 +74,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _measuredWidth: number;
     private _measuredHeight: number;
 
-    private _isLayoutValid: boolean;
+    protected _isLayoutValid: boolean;
     private _cssType: string;
 
     private _localAnimations: Set<am.Animation>;

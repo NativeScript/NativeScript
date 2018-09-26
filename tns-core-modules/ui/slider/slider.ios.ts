@@ -31,58 +31,65 @@ class SliderChangeHandlerImpl extends NSObject {
 }
 
 export class Slider extends SliderBase {
-    private _ios: UISlider;
+    nativeViewProtected: UISlider;
     private _changeHandler: NSObject;
+    
+    public createNativeView() {
+        return UISlider.new();
+    }
 
-    constructor() {
-        super();
-        this.nativeViewProtected = this._ios = UISlider.new();
-
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
         // default values
-        this._ios.minimumValue = 0;
-        this._ios.maximumValue = this.maxValue;
-
+        nativeView.minimumValue = 0;
+        nativeView.maximumValue = this.maxValue;
         this._changeHandler = SliderChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._changeHandler, "sliderValueChanged", UIControlEvents.ValueChanged);
+        nativeView.addTargetActionForControlEvents(this._changeHandler, "sliderValueChanged", UIControlEvents.ValueChanged);
+    }
+
+    public disposeNativeView() {
+        this._changeHandler = null;
+        super.disposeNativeView();
     }
 
     get ios(): UISlider {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     [valueProperty.getDefault](): number {
         return 0;
     }
     [valueProperty.setNative](value: number) {
-        this._ios.value = value;
+        this.ios.value = value;
     }
     [minValueProperty.getDefault](): number {
         return 0;
     }
     [minValueProperty.setNative](value: number) {
-        this._ios.minimumValue = value;
+        this.ios.minimumValue = value;
     }
     [maxValueProperty.getDefault](): number {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this._ios.maximumValue = value;
+        this.ios.maximumValue = value;
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this._ios.thumbTintColor;
+        return this.ios.thumbTintColor;
     }
     [colorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
-        this._ios.thumbTintColor = color;
+        this.ios.thumbTintColor = color;
     }
 
     [backgroundColorProperty.getDefault](): UIColor {
-        return this._ios.minimumTrackTintColor;
+        return this.ios.minimumTrackTintColor;
     }
     [backgroundColorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
-        this._ios.minimumTrackTintColor = color;
+        this.ios.minimumTrackTintColor = color;
     }
 
     [backgroundInternalProperty.getDefault](): Background {

@@ -231,8 +231,11 @@ export class Page extends PageBase {
         super();
         const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
         this.viewController = this._ios = controller;
-        this.nativeViewProtected = controller.view;
-        this.nativeViewProtected.backgroundColor = whiteColor;
+        controller.view.backgroundColor = whiteColor;
+    }
+
+    createNativeView() {
+        return this.viewController.view;
     }
 
     get ios(): UIViewController {
