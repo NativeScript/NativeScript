@@ -3,10 +3,10 @@ import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 // Types.
 import {
-    Color, EventData, ViewCommon, layout, getAncestor, automationTextProperty,
-    isEnabledProperty, isUserInteractionEnabledProperty, originXProperty, originYProperty,
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
+    Color, EventData
 } from "./view-common";
 
 import {
@@ -20,7 +20,7 @@ import {
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
-import { Frame, topmost } from "../../frame";
+import { topmost } from "../../frame";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
@@ -269,24 +269,31 @@ export class View extends ViewCommon {
         let manager = this._manager;
         if (!manager) {
             let view: View = this;
+            let frameOrTabFound = false;
             while (view) {
+                // when interacting with nested fragments instead of using getSupportFragmentManager 
+                // we must always use getChildFragmentManager instead;
+                // we have three sources of fragments -- Frame fragments, TabViewItem fragments, and
+                // modal dialog fragments
+
+                // modal -> frame / tabview (frame / tabview use modal CHILD fm)
                 const dialogFragment = view._dialogFragment;
                 if (dialogFragment) {
                     manager = dialogFragment.getChildFragmentManager();
                     break;
                 }
-                
-                if (view instanceof Frame) {
-                    // when interacting with nested fragments instead of using getSupportFragmentManager 
-                    // we must always use getChildFragmentManager instead
-                    const parentFrame: Frame = <Frame>getAncestor(view, Frame);
-                    if (parentFrame) {
-                        const backstackEntry = parentFrame._currentEntry || parentFrame._executingEntry;
-                        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
-                            manager = backstackEntry.fragment.getChildFragmentManager();
-                            break;
-                        }
+
+                // - frame1 -> frame2 (frame2 uses frame1 CHILD fm)
+                // - tabview -> frame1 (frame1 uses tabview item CHILD fm)
+                // - frame1 -> tabview (tabview uses frame1 CHILD fm)
+                // - frame1 -> tabview -> frame2 (tabview uses frame1 CHILD fm; frame2 uses tabview item CHILD fm)
+                if (view.typeName === "Frame" || view.typeName === "TabView") {
+                    if (frameOrTabFound) {
+                        manager = (<any>view)._getChildFragmentManager();
+                        break;
                     }
+
+                    frameOrTabFound = true;
                 }
 
                 // the case is needed because _dialogFragment is on View

@@ -175,6 +175,15 @@ export class Frame extends FrameBase {
         }
     }
 
+    public _getChildFragmentManager() {
+        const backstackEntry = this._executingEntry || this._currentEntry;
+        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
+            return backstackEntry.fragment.getChildFragmentManager();
+        }
+
+        return null;
+    }
+
     _onRootViewReset(): void {
         this.disposeCurrentFragment();
         super._onRootViewReset();

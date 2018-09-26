@@ -361,6 +361,17 @@ export class TabView extends TabViewBase {
         tabs.push(new WeakRef(this));
     }
 
+    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
+        if (this._pagerAdapter) {
+            const fragment: android.support.v4.app.Fragment = (<any>this._pagerAdapter).mCurrentPrimaryItem;
+            if (fragment && fragment.isAdded()) {
+                return fragment.getChildFragmentManager();
+            }
+        }
+
+        return null;
+    }
+
     public onItemsChanged(oldItems: TabViewItem[], newItems: TabViewItem[]): void {
         super.onItemsChanged(oldItems, newItems);
 
