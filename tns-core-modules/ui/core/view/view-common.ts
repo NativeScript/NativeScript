@@ -843,7 +843,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
-        return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom };
+        return { left: 0, top: 0, right: 0, bottom: 0 };
     }
 
     /**
@@ -881,7 +881,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public getSafeAreaInsets(): { left, top, right, bottom } {
-        return {left: 0, top: 0, right: 0, bottom: 0};
+        return { left: 0, top: 0, right: 0, bottom: 0 };
     }
 
     public getLocationInWindow(): Point {

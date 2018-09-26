@@ -545,6 +545,23 @@ export class View extends ViewCommon {
         }
     }
 
+    _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
+        const nativeView = this.nativeViewProtected;
+        if (nativeView && !this.isCollapsed) {
+            const frame = nativeView.frame;
+            const origin = frame.origin;
+            const size = frame.size;
+            return {
+                left: Math.round(layout.toDevicePixels(origin.x)),
+                top: Math.round(layout.toDevicePixels(origin.y)),
+                right: Math.round(layout.toDevicePixels(origin.x + size.width)),
+                bottom: Math.round(layout.toDevicePixels(origin.y + size.height))
+            };
+        } else {
+            return { left: 0, top: 0, right: 0, bottom: 0 };
+        }
+    }
+
     _redrawNativeBackground(value: UIColor | Background): void {
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
@@ -628,23 +645,6 @@ export class CustomLayoutView extends ContainerView {
 
         if (child.nativeViewProtected) {
             child.nativeViewProtected.removeFromSuperview();
-        }
-    }
-
-    _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
-        const nativeView = this.nativeViewProtected;
-        if (nativeView && !this.isCollapsed) {
-            const frame = nativeView.frame;
-            const origin = frame.origin;
-            const size = frame.size;
-            return {
-                left: layout.toDevicePixels(origin.x),
-                top: layout.toDevicePixels(origin.y),
-                right: layout.toDevicePixels(origin.x + size.width),
-                bottom: layout.toDevicePixels(origin.y + size.height)
-            };
-        } else {
-            return { left: 0, top: 0, right: 0, bottom: 0 };
         }
     }
 }
@@ -845,7 +845,7 @@ export namespace ios {
             }
         }
 
-        return { safeArea: safeArea, fullscreen: fullscreen}
+        return { safeArea: safeArea, fullscreen: fullscreen }
     }
 
     export class UILayoutViewController extends UIViewController {
