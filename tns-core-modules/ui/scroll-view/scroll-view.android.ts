@@ -86,6 +86,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }

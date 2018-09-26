@@ -205,9 +205,18 @@ export class TabView extends TabViewBase {
 
         this.viewController = this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
         this.nativeViewProtected = this._ios.view;
+    }
+
+    initNativeView() {
+        super.initNativeView();
         this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
-        //This delegate is set on the last line of _addTabs method.
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        this._moreNavigationControllerDelegate = null;
+        super.disposeNativeView();
     }
 
     @profile

@@ -5,7 +5,7 @@ import { booleanConverter, Property } from "../view";
 
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType
+    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, getAncestor
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
@@ -184,6 +184,14 @@ export class View extends ViewCommon {
             // Rects could be equal on the first layout and an event should be raised.
             this._raiseLayoutChangedEvent();
         }
+    }
+
+    get isLayoutValid(): boolean {
+        if (this.nativeViewProtected) {
+            return this._isLayoutValid;
+        }
+
+        return false;
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
@@ -368,6 +376,8 @@ export class View extends ViewCommon {
             return;
         }
 
+        this._setupAsRootView({});
+
         super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
         if (!controller) {
@@ -380,8 +390,6 @@ export class View extends ViewCommon {
 
             this.viewController = controller;
         }
-
-        this._setupAsRootView({});
 
         if (fullscreen) {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
@@ -608,9 +616,8 @@ export class CustomLayoutView extends ContainerView {
 
     nativeViewProtected: UIView;
 
-    constructor() {
-        super();
-        this.nativeViewProtected = UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
+    createNativeView() {
+        return UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
     }
 
     get ios(): UIView {
@@ -691,6 +698,19 @@ export namespace ios {
     }
 
     export function layoutView(controller: UIViewController, owner: View): void {
+        // apply parent page additional top insets if any. The scenario is when there is a parent page with action bar.
+        const parentPage = getAncestor(owner, "Page");
+        if (parentPage) {
+            const parentPageInsetsTop = parentPage.viewController.view.safeAreaInsets.top;
+            const currentInsetsTop = controller.view.safeAreaInsets.top;
+            const additionalInsetsTop = parentPageInsetsTop - currentInsetsTop;
+
+            if (additionalInsetsTop > 0) {
+                const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: 0, right: 0 });
+                controller.additionalSafeAreaInsets = additionalInsets;
+            }
+        }
+
         let layoutGuide = controller.view.safeAreaLayoutGuide;
         if (!layoutGuide) {
             traceWrite(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,

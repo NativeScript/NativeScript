@@ -226,10 +226,8 @@ class IOSApplication implements IOSApplicationDefinition {
             // if we already have a root view, we reset it.
             this._rootView._onRootViewReset();
         }
-
         const rootView = createRootView(view);
         this._rootView = rootView;
-        const controller = getViewController(rootView);
 
         if (createRootFrame.value) {
             // Don't setup as styleScopeHost
@@ -238,7 +236,7 @@ class IOSApplication implements IOSApplicationDefinition {
             // setup view as styleScopeHost
             rootView._setupAsRootView({});
         }
-
+        const controller = getViewController(rootView);
         const haveController = this._window.rootViewController !== null;
         this._window.rootViewController = controller;
         if (!haveController) {

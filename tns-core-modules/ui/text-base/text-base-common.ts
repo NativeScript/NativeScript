@@ -15,10 +15,13 @@ const CHILD_FORMATTED_TEXT = "formattedText";
 const CHILD_FORMATTED_STRING = "FormattedString";
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
-
     public _isSingleLine: boolean;
     public text: string;
     public formattedText: FormattedString;
+
+    get nativeTextViewProtected() {
+        return this.nativeViewProtected;
+    }
 
     get fontFamily(): string {
         return this.style.fontFamily;

@@ -97,34 +97,42 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
 @CSSType("TextView")
 export class TextView extends EditableTextBase implements TextViewDefinition {
-    private _ios: UITextView;
+    nativeViewProtected: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
     public _isEditing: boolean;
 
-    constructor() {
-        super();
-
-        const textView = this.nativeViewProtected = this._ios = UITextView.new();
+    createNativeView() {
+        const textView = UITextView.new();
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
         }
+        return textView;
+    }
+
+    initNativeView() {
+        super.initNativeView();
         this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        super.disposeNativeView();
     }
 
     @profile
     public onLoaded() {
         super.onLoaded();
-        this._ios.delegate = this._delegate;
+        this.ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this.ios.delegate = null;
         super.onUnloaded();
     }
 
     get ios(): UITextView {
-        return this._ios;
+        return this.nativeViewProtected;
     }
 
     public _refreshHintState(hint: string, text: string) {
@@ -138,7 +146,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             this.showHint(hint);
         } else {
             this._isShowingHint = false;
-            this.nativeViewProtected.text = "";
+            this.nativeTextViewProtected.text = "";
         }
     }
 
@@ -148,28 +156,28 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             const color = this.style.color;
 
             if (placeholderColor) {
-                this.nativeViewProtected.textColor = placeholderColor.ios;
+                this.nativeTextViewProtected.textColor = placeholderColor.ios;
             } else if (color) {
                 // Use semi-transparent version of color for back-compatibility 
-                this.nativeViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
+                this.nativeTextViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
-                this.nativeViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
+                this.nativeTextViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
             }
         } else {
             const color = this.style.color;
 
             if (color) {
-                this.nativeViewProtected.textColor = color.ios;
-                this.nativeViewProtected.tintColor = color.ios;
+                this.nativeTextViewProtected.textColor = color.ios;
+                this.nativeTextViewProtected.tintColor = color.ios;
             } else {
-                this.nativeViewProtected.textColor = null;
-                this.nativeViewProtected.tintColor = null;
+                this.nativeTextViewProtected.textColor = null;
+                this.nativeTextViewProtected.tintColor = null;
             }
         }
     }
 
     public showHint(hint: string) {
-        const nativeView = this.nativeViewProtected;
+        const nativeView = this.nativeTextViewProtected;
 
         this._isShowingHint = true;
         this._refreshColor();
@@ -200,10 +208,10 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     [editableProperty.getDefault](): boolean {
-        return this.nativeViewProtected.editable;
+        return this.nativeTextViewProtected.editable;
     }
     [editableProperty.setNative](value: boolean) {
-        this.nativeViewProtected.editable = value;
+        this.nativeTextViewProtected.editable = value;
     }
 
     [colorProperty.setNative](color: Color) {
@@ -215,97 +223,97 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     [borderTopWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.top,
+            value: this.nativeTextViewProtected.textContainerInset.top,
             unit: "px"
         };
     }
     [borderTopWidthProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
-        this.nativeViewProtected.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
+        this.nativeTextViewProtected.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
     [borderRightWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.right,
+            value: this.nativeTextViewProtected.textContainerInset.right,
             unit: "px"
         };
     }
     [borderRightWidthProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
-        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
+        this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
     [borderBottomWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.bottom,
+            value: this.nativeTextViewProtected.textContainerInset.bottom,
             unit: "px"
         };
     }
     [borderBottomWidthProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
-        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+        this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
     [borderLeftWidthProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.left,
+            value: this.nativeTextViewProtected.textContainerInset.left,
             unit: "px"
         };
     }
     [borderLeftWidthProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
-        this.nativeViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+        this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
     [paddingTopProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.top,
+            value: this.nativeTextViewProtected.textContainerInset.top,
             unit: "px"
         };
     }
     [paddingTopProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
-        this.nativeViewProtected.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
+        this.nativeTextViewProtected.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
     [paddingRightProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.right,
+            value: this.nativeTextViewProtected.textContainerInset.right,
             unit: "px"
         };
     }
     [paddingRightProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
-        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
+        this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
     [paddingBottomProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.bottom,
+            value: this.nativeTextViewProtected.textContainerInset.bottom,
             unit: "px"
         };
     }
     [paddingBottomProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
-        this.nativeViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+        this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
     [paddingLeftProperty.getDefault](): Length {
         return {
-            value: this.nativeViewProtected.textContainerInset.left,
+            value: this.nativeTextViewProtected.textContainerInset.left,
             unit: "px"
         };
     }
     [paddingLeftProperty.setNative](value: Length) {
-        let inset = this.nativeViewProtected.textContainerInset;
+        let inset = this.nativeTextViewProtected.textContainerInset;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
-        this.nativeViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+        this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 }
 
