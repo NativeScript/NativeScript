@@ -83,15 +83,15 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
         this.list_view_in_full_screen_test({ actionBar: true });
     }
 
-    public test_scroll_view_in_full_screen_action_bar_hidden() {
+    public test_list_view_in_full_screen_action_bar_hidden() {
         this.list_view_in_full_screen_test({ actionBarHidden: true });
     }
 
-    public test_scroll_view_in_full_screen_action_bar_flat() {
+    public test_list_view_in_full_screen_action_bar_flat() {
         this.list_view_in_full_screen_test({ actionBarFlat: true });
     }
 
-    public test_scroll_view_in_full_screen_tab_bar() {
+    public test_list_view_in_full_screen_tab_bar() {
         this.list_view_in_full_screen_test({ tabBar: true });
     }
 
