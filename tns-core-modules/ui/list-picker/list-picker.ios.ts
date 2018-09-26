@@ -5,31 +5,40 @@ import { profile } from "../../profiling";
 export * from "./list-picker-common";
 
 export class ListPicker extends ListPickerBase {
-    private _ios: UIPickerView;
+    nativeViewProtected: UIPickerView;
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
+    
+    createNativeView() {
+        return UIPickerView.new();
+    }
 
-    constructor() {
-        super();
-
-        this.nativeViewProtected = this._ios = UIPickerView.new();
-        this._ios.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
+    initNativeView() {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
+        nativeView.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
         this._delegate = ListPickerDelegateImpl.initWithOwner(new WeakRef(this));
+    }
+
+    public disposeNativeView() {
+        this._dataSource = null;
+        this._delegate = null;
+        super.disposeNativeView();
+    }
+
+    get ios() {
+        return this.nativeViewProtected;
     }
 
     @profile
     public onLoaded() {
         super.onLoaded();
-        this._ios.delegate = this._delegate;
+        this.ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
-        this._ios.delegate = null;
+        this.ios.delegate = null;
         super.onUnloaded();
-    }
-
-    get ios(): UIPickerView {
-        return this._ios;
     }
 
     [selectedIndexProperty.getDefault](): number {
@@ -52,17 +61,17 @@ export class ListPicker extends ListPickerBase {
     }
 
     [backgroundColorProperty.getDefault](): UIColor {
-        return this._ios.backgroundColor;
+        return this.ios.backgroundColor;
     }
     [backgroundColorProperty.setNative](value: UIColor | Color) {
-        this._ios.backgroundColor = value instanceof Color ? value.ios : value;
+        this.ios.backgroundColor = value instanceof Color ? value.ios : value;
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this._ios.tintColor;
+        return this.ios.tintColor;
     }
     [colorProperty.setNative](value: UIColor | Color) {
-        this._ios.tintColor = value instanceof Color ? value.ios : value;
+        this.ios.tintColor = value instanceof Color ? value.ios : value;
     }
 }
 

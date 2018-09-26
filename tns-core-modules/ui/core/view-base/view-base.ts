@@ -687,17 +687,22 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         this._context = context;
-        let nativeView;
+
+         // This will account for nativeView that is created in createNativeView, recycled
+        // or for backward compatability - set before _setupUI in iOS contructor.
+        let nativeView = this.nativeViewProtected;
+
+        // if (isAndroid) {
+        //     const recycle = this.recycleNativeView;
+        //     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+        //         nativeView = <android.view.View>getNativeView(context, this.typeName);
+        //     }
+        // }
+        if (!nativeView) {
+            nativeView = this.createNativeView();
+        }
+
         if (isAndroid) {
-            // const recycle = this.recycleNativeView;
-            // if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-            //     nativeView = <android.view.View>getNativeView(context, this.typeName);
-            // }
-
-            if (!nativeView) {
-                nativeView = this.createNativeView();
-            }
-
             this._androidView = nativeView;
             if (nativeView) {
                 if (this._isPaddingRelative === undefined) {
@@ -730,14 +735,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                 }
             }
         } else {
-            // TODO: Implement _createNativeView for iOS
-            nativeView = this.createNativeView();
-            this._iosView = nativeView || this.nativeViewProtected;
+            this._iosView = nativeView;
         }
 
-        // This will account for nativeView that is created in createNativeView, recycled
-        // or for backward compatability - set before _setupUI in iOS contructor.
-        this.setNativeView(nativeView || this.nativeViewProtected);
+        this.setNativeView(nativeView);
 
         if (this.parent) {
             const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);

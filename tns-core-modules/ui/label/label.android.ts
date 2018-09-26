@@ -9,6 +9,7 @@ let TextView: typeof android.widget.TextView;
 @CSSType("Label")
 export class Label extends TextBase implements LabelDefinition {
     nativeViewProtected: android.widget.TextView;
+    nativeTextViewProtected: android.widget.TextView;
 
     get textWrap(): boolean {
         return this.style.whiteSpace === "normal";
@@ -31,7 +32,7 @@ export class Label extends TextBase implements LabelDefinition {
 
     public initNativeView(): void {
         super.initNativeView();
-        const textView = this.nativeViewProtected;
+        const textView = this.nativeTextViewProtected;
         textView.setSingleLine(true);
         textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
     }

@@ -11,14 +11,22 @@ export class DatePicker extends DatePickerBase {
     private _changeHandler: NSObject;
     public nativeViewProtected: UIDatePicker;
 
-    constructor() {
-        super();
+    public createNativeView() {
+        const picker = UIDatePicker.new();
+        picker.datePickerMode = UIDatePickerMode.Date;
+        return picker;
+    }
 
-        this.nativeViewProtected = UIDatePicker.new();
-        this.nativeViewProtected.datePickerMode = UIDatePickerMode.Date;
-
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
         this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this.nativeViewProtected.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
+        nativeView.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
+    }
+
+    public disposeNativeView() {
+        this._changeHandler = null;
+        super.disposeNativeView();
     }
 
     get ios(): UIDatePicker {

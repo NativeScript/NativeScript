@@ -4,11 +4,11 @@ export * from "./activity-indicator-common";
 
 export class ActivityIndicator extends ActivityIndicatorBase {
     nativeViewProtected: UIActivityIndicatorView;
-
-    constructor() {
-        super();
-        this.nativeViewProtected = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
-        this.nativeViewProtected.hidesWhenStopped = true;
+    
+    createNativeView() {
+        const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
+        view.hidesWhenStopped = true;
+        return view;
     }
 
     get ios(): UIActivityIndicatorView {

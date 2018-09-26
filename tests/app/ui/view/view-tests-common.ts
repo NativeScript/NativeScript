@@ -345,19 +345,8 @@ class TestView extends LayoutBase {
         (<any>this.style).customShortHand = value;
     }
 
-    private _nativeView;
     constructor(public name: string) {
         super();
-        this._nativeView = this.nativeViewProtected;
-        this.nativeViewProtected = undefined;
-    }
-
-    public createNativeView() {
-        if (isIOS) {
-            return this._nativeView;
-        }
-
-        return super.createNativeView();
     }
 
     public toString() {

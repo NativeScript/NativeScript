@@ -186,6 +186,14 @@ export class View extends ViewCommon {
         }
     }
 
+    get isLayoutValid(): boolean {
+        if (this.nativeViewProtected) {
+            return this._isLayoutValid;
+        }
+
+        return false;
+    }
+
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         if (!this.nativeViewProtected) {
             return;
@@ -368,6 +376,8 @@ export class View extends ViewCommon {
             return;
         }
 
+        this._setupAsRootView({});
+
         super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
         if (!controller) {
@@ -380,8 +390,6 @@ export class View extends ViewCommon {
 
             this.viewController = controller;
         }
-
-        this._setupAsRootView({});
 
         if (fullscreen) {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
@@ -608,9 +616,8 @@ export class CustomLayoutView extends ContainerView {
 
     nativeViewProtected: UIView;
 
-    constructor() {
-        super();
-        this.nativeViewProtected = UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
+    createNativeView() {
+        return UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
     }
 
     get ios(): UIView {

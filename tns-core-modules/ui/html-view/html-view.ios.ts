@@ -7,16 +7,14 @@ export * from "./html-view-common";
 export class HtmlView extends HtmlViewBase {
     nativeViewProtected: UITextView;
 
-    constructor() {
-        super();
-        const nativeView = UITextView.new()
-        nativeView.scrollEnabled = false;
-        nativeView.editable = false;
-        nativeView.selectable = true;
-        nativeView.userInteractionEnabled = true;
-        nativeView.dataDetectorTypes = UIDataDetectorTypes.All;
-
-        this.nativeViewProtected = nativeView;
+    public createNativeView() {
+        const view = UITextView.new();
+        view.scrollEnabled = false;
+        view.editable = false;
+        view.selectable = true;
+        view.userInteractionEnabled = true;
+        view.dataDetectorTypes = UIDataDetectorTypes.All;
+        return view;
     }
 
     get ios(): UITextView {
