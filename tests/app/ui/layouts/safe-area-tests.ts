@@ -57,14 +57,38 @@ export class SafeAreaTests extends testModule.UITest<any> {
         };
     };
 
+    private layout_insets_top_action_bar_test(layout: view.View) {
+        const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
+        const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
+        const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
+        const topInset = statusBarHeight + actionBarHeight;
+
+        const insets = layout.getSafeAreaInsets();
+        equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`)
+    }
+
+    private layout_insets_top_action_bar_hidden_test(layout: view.View) {
+        const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
+        const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
+        const topInset = statusBarHeight;
+
+        const insets = layout.getSafeAreaInsets();
+        equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`)
+    }
+
+    private layout_insets_top_action_bar_flat_test(layout: view.View) {
+        const insets = layout.getSafeAreaInsets();
+        equal(insets.top, 0, `${layout}.topInset - actual:${insets.top}; expected: ${0}`)
+    }
+
     private layout_in_full_screen_test(layout: view.View, pageOptions?: helper.PageOptions) {
         let expectedTop = 0;
-        if (pageOptions && pageOptions.actionBarFlat) {
-            const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
+        if (pageOptions && (pageOptions.actionBarFlat)) {
             const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
             const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
+            const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
             
-            expectedTop = actionBarHeight + statusBarHeight;
+            expectedTop = statusBarHeight + actionBarHeight;
         }
 
         const l = left(layout);
@@ -107,6 +131,85 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_absolute_in_full_screen_tab_bar() {
         this.absolute_in_full_screen({ tabBar: true });
+    }
+
+    public test_absolute_in_full_screen_tab_bar_action_bar() {
+        this.absolute_in_full_screen({ actionBar: true, tabBar: true });
+    }
+
+    public test_absolute_insets_top_action_bar() {
+        const snippet = `
+        <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true }
+        );
+    }
+
+    public test_absolute_insets_top_action_bar_hidden() {
+        const snippet = `
+        <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { actionBarHidden: true }
+        );
+    }
+
+    public test_absolute_insets_top_action_bar_flat() {
+        const snippet = `
+        <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_flat_test(root);
+            },
+            { actionBarFlat: true }
+        );
+    }
+
+    public test_absolute_insets_top_tab_bar_flat() {
+        const snippet = `
+        <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { tabBar: true }
+        );
+    }
+
+    public test_absolute_insets_top_tab_bar_action_bar_flat() {
+        const snippet = `
+        <AbsoluteLayout id="abs" backgroundColor="Crimson"></AbsoluteLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true, tabBar: true }
+        );
     }
 
     private absolute_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
@@ -226,6 +329,85 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_dock_in_full_screen_tab_bar() {
         this.dock_in_full_screen({ tabBar: true });
+    }
+
+    public test_dock_in_full_screen_tab_bar_action_bar() {
+        this.dock_in_full_screen({ actionBar: true, tabBar: true });
+    }
+
+    public test_dock_insets_top_action_bar() {
+        const snippet = `
+        <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true }
+        );
+    }
+
+    public test_dock_insets_top_action_bar_hidden() {
+        const snippet = `
+        <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { actionBarHidden: true }
+        );
+    }
+
+    public test_dock_insets_top_action_bar_flat() {
+        const snippet = `
+        <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_flat_test(root);
+            },
+            { actionBarFlat: true }
+        );
+    }
+
+    public test_dock_insets_top_tab_bar_flat() {
+        const snippet = `
+        <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { tabBar: true }
+        );
+    }
+
+    public test_dock_insets_top_tab_bar_action_bar_flat() {
+        const snippet = `
+        <DockLayout id="dock" backgroundColor="Crimson"></DockLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true, tabBar: true }
+        );
     }
 
     private dock_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
@@ -365,6 +547,85 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_flexbox_in_full_screen_tab_bar() {
         this.flexbox_in_full_screen({ tabBar: true });
+    }
+
+    public test_flexbox_in_full_screen_tab_bar_action_bar() {
+        this.flexbox_in_full_screen({ actionBar: true, tabBar: true });
+    }
+
+    public test_flexbox_insets_top_action_bar() {
+        const snippet = `
+        <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true }
+        );
+    }
+
+    public test_flexbox_insets_top_action_bar_hidden() {
+        const snippet = `
+        <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { actionBarHidden: true }
+        );
+    }
+
+    public test_flexbox_insets_top_action_bar_flat() {
+        const snippet = `
+        <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_flat_test(root);
+            },
+            { actionBarFlat: true }
+        );
+    }
+
+    public test_flexbox_insets_top_tab_bar_flat() {
+        const snippet = `
+        <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { tabBar: true }
+        );
+    }
+
+    public test_flexbox_insets_top_tab_bar_action_bar_flat() {
+        const snippet = `
+        <FlexboxLayout id="flex" backgroundColor="Crimson"></FlexboxLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true, tabBar: true }
+        );
     }
 
     private flex_column_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
@@ -582,6 +843,85 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.grid_layout_in_full_screen({ tabBar: true });
     }
 
+    public test_grid_layout_in_full_screen_tab_bar_action_bar() {
+        this.grid_layout_in_full_screen({ actionBar: true, tabBar: true });
+    }
+
+    public test_grid_insets_top_action_bar() {
+        const snippet = `
+        <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true }
+        );
+    }
+
+    public test_grid_insets_top_action_bar_hidden() {
+        const snippet = `
+        <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { actionBarHidden: true }
+        );
+    }
+
+    public test_grid_insets_top_action_bar_flat() {
+        const snippet = `
+        <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_flat_test(root);
+            },
+            { actionBarFlat: true }
+        );
+    }
+
+    public test_grid_insets_top_tab_bar_flat() {
+        const snippet = `
+        <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { tabBar: true }
+        );
+    }
+
+    public test_grid_insets_top_tab_bar_action_bar_flat() {
+        const snippet = `
+        <GridLayout id="grid" backgroundColor="Crimson"></GridLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true, tabBar: true }
+        );
+    }
+
     private grid_component_cells_layout_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <GridLayout id="grid" rows="*, *, *" columns="*, *, *" backgroundColor="Crimson">
@@ -738,6 +1078,85 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.stack_in_full_screen({ tabBar: true });
     }
 
+    public test_stack_in_full_screen_tab_bar_action_bar() {
+        this.stack_in_full_screen({ actionBar: true, tabBar: true });
+    }
+
+    public test_stack_insets_top_action_bar() {
+        const snippet = `
+        <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true }
+        );
+    }
+
+    public test_stack_insets_top_action_bar_hidden() {
+        const snippet = `
+        <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { actionBarHidden: true }
+        );
+    }
+
+    public test_stack_insets_top_action_bar_flat() {
+        const snippet = `
+        <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_flat_test(root);
+            },
+            { actionBarFlat: true }
+        );
+    }
+
+    public test_stack_insets_top_tab_bar_flat() {
+        const snippet = `
+        <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { tabBar: true }
+        );
+    }
+
+    public test_stack_insets_top_tab_bar_action_bar_flat() {
+        const snippet = `
+        <StackLayout id="stack" backgroundColor="Crimson"></StackLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true, tabBar: true }
+        );
+    }
+
     private stack_horizontal_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
         <StackLayout id="stack" orientation="horizontal" backgroundColor="Crimson">
@@ -871,6 +1290,85 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     public test_wrap_in_full_screen_tab_bar() {
         this.wrap_in_full_screen({ tabBar: true });
+    }
+
+    public test_wrap_in_full_screen_tab_bar_action_bar() {
+        this.wrap_in_full_screen({ actionBar: true, tabBar: true });
+    }
+
+    public test_wrap_insets_top_action_bar() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true }
+        );
+    }
+
+    public test_wrap_insets_top_action_bar_hidden() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { actionBarHidden: true }
+        );
+    }
+
+    public test_wrap_insets_top_action_bar_flat() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_flat_test(root);
+            },
+            { actionBarFlat: true }
+        );
+    }
+
+    public test_wrap_insets_top_tab_bar_flat() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_hidden_test(root);
+            },
+            { tabBar: true }
+        );
+    }
+
+    public test_wrap_insets_top_tab_bar_action_bar_flat() {
+        const snippet = `
+        <WrapLayout id="wrap" backgroundColor="Crimson"></WrapLayout>
+        `;
+
+        this.executeSnippet(
+            this.getViews(snippet),
+            this.noop,
+            ({ root }) => { 
+                this.layout_insets_top_action_bar_test(root);
+            },
+            { actionBar: true, tabBar: true }
+        );
     }
 
     private wrap_horizontal_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
