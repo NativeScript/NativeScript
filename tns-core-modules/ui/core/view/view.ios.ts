@@ -331,6 +331,8 @@ export class View extends ViewCommon {
             return;
         }
 
+        this._setupAsRootView({});
+
         super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
         let controller = this.viewController;
         if (!controller) {
@@ -343,8 +345,6 @@ export class View extends ViewCommon {
 
             this.viewController = controller;
         }
-
-        this._setupAsRootView({});
 
         if (fullscreen) {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
