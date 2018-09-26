@@ -1,29 +1,17 @@
-﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as platform from "tns-core-modules/platform";
-import * as view from "tns-core-modules/ui/core/view";
-import { UITest } from "../../ui-test";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
+import * as TKUnit from "../../TKUnit";
 import { parse } from "tns-core-modules/ui/builder";
+import * as view from "tns-core-modules/ui/core/view";
+import * as platform from "tns-core-modules/platform";
+import { ListView } from "tns-core-modules/ui/list-view";
+import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import { ViewModel } from "./list-view-view-model";
-import { getResources as appGetResources } from "tns-core-modules/application";
-import { Observable, EventData } from "tns-core-modules/data/observable";
-import { isFunction, isUndefined } from "tns-core-modules/utils/types";
-import { isAndroid, isIOS } from "tns-core-modules/platform";
-import { GC } from "tns-core-modules/utils/utils";
-import { Page } from "tns-core-modules/ui/page";
-import { View, KeyedTemplate } from "tns-core-modules/ui/core/view";
-import { MyButton, MyStackLayout } from "../layouts/layout-helper";
+import { UITest } from "../../ui-test";
 import {
     dipToDp, left, top, right, bottom, height, width,
     equal, check,
-    isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
-    isLeftWith, isRightWith, isBelowWith
+    isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith
 } from "../layouts/layout-tests-helper";
-
-// >> article-require-listview-module
-import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
-import { Label } from "tns-core-modules/ui/label";
 
 export class ListViewSafeAreaTest extends UITest<ListView> {
 
@@ -91,69 +79,20 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
         );
     }
 
-    // public test_list_view_in_full_screen_action_bar() {
-    //     this.list_view_in_full_screen_test({ actionBar: true });
-    // }
-
-    // public test_scroll_view_in_full_screen_action_bar_hidden() {
-    //     this.list_view_in_full_screen_test({ actionBarHidden: true });
-    // }
-
-    // public test_scroll_view_in_full_screen_action_bar_flat() {
-    //     this.list_view_in_full_screen_test({ actionBarFlat: true });
-    // }
-
-    // public test_scroll_view_in_full_screen_tab_bar() {
-    //     this.list_view_in_full_screen_test({ tabBar: true });
-    // }
-
-    private list_view_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
-        const snippet = `
-        <ListView id="list" items = "{{ items }}" loaded = "onLoaded" backgroundColor = "Crimson" >
-            <ListView.itemTemplate>
-                <Label id="{{ id }}" text="{{ text }}"> </Label>
-            </ListView.itemTemplate>
-        </ListView>
-        `;
-
-        this.executeSnippet(
-            this.getViews(snippet),
-            ({ list }) => {
-                list.on("loaded", setBindingContext(list));
-            },
-            ({ list }) => {
-                // const insets = root.getSafeAreaInsets();
-
-                // isLeftAlignedWith(root, stack);
-                // isTopAlignedWith(root, stack);
-                // isRightAlignedWith(root, stack);
-
-                // isLeftWith(root, childFirst, insets.left);
-                // isBelowWith(root, childFirst, insets.top);
-                // isRightWith(childFirst, root, insets.right);
-
-                // const scrollViewContentHeight = round(dipToDp(root.nativeViewProtected.contentSize.height));
-                // const sumOfNestedLabelHeightsAndInsets = height(childFirst) * stack.getChildrenCount() + insets.top + insets.bottom;
-                // equal(scrollViewContentHeight, sumOfNestedLabelHeightsAndInsets, `scroll view content height<${scrollViewContentHeight}> sum of nested label height and insets <${sumOfNestedLabelHeightsAndInsets}>`);
-            },
-            pageOptions
-        );
+    public test_list_view_in_full_screen_action_bar() {
+        this.list_view_in_full_screen_test({ actionBar: true });
     }
 
-    public test_list_view_children_components_in_safe_area() {
-        this.list_view_children_components_in_safe_area({ actionBar: true });
+    public test_scroll_view_in_full_screen_action_bar_hidden() {
+        this.list_view_in_full_screen_test({ actionBarHidden: true });
     }
 
-    public test_list_view_children_components_beyond_safe_area_action_bar_hidden() {
-        this.list_view_children_components_in_safe_area({ actionBarHidden: true });
+    public test_scroll_view_in_full_screen_action_bar_flat() {
+        this.list_view_in_full_screen_test({ actionBarFlat: true });
     }
 
-    public test_list_view_children_components_beyond_safe_area_action_bar_flat() {
-        this.list_view_children_components_in_safe_area({ actionBarFlat: true });
-    }
-
-    public test_list_view_children_components_beyond_safe_area_tab_bar() {
-        this.list_view_children_components_in_safe_area({ tabBar: true });
+    public test_scroll_view_in_full_screen_tab_bar() {
+        this.list_view_in_full_screen_test({ tabBar: true });
     }
 
     private grid_nested_list_views_layout_beyond_safe_area(pageOptions?: helper.PageOptions) {
@@ -257,21 +196,21 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
         );
     }
 
-    // public test_grid_nested_list_views_layout_beyond_safe_area_action_bar() {
-    //     this.grid_nested_list_views_layout_beyond_safe_area({ actionBar: true });
-    // }
+    public test_grid_nested_list_views_layout_beyond_safe_area_action_bar() {
+        this.grid_nested_list_views_layout_beyond_safe_area({ actionBar: true });
+    }
 
-    // public test_grid_nested_list_views_layout_in_safe_area_action_bar_hidden() {
-    //     this.grid_nested_list_views_layout_beyond_safe_area({ actionBarHidden: true });
-    // }
+    public test_grid_nested_list_views_layout_in_safe_area_action_bar_hidden() {
+        this.grid_nested_list_views_layout_beyond_safe_area({ actionBarHidden: true });
+    }
 
-    // public test_grid_nested_list_views_layout_in_safe_area_action_bar_flat() {
-    //     this.grid_nested_list_views_layout_beyond_safe_area({ actionBarFlat: true });
-    // }
+    public test_grid_nested_list_views_layout_in_safe_area_action_bar_flat() {
+        this.grid_nested_list_views_layout_beyond_safe_area({ actionBarFlat: true });
+    }
 
-    // public test_grid_nested_list_views_layout_in_safe_area_tab_bar() {
-    //     this.grid_nested_list_views_layout_beyond_safe_area({ tabBar: true });
-    // }
+    public test_grid_nested_list_views_layout_in_safe_area_tab_bar() {
+        this.grid_nested_list_views_layout_beyond_safe_area({ tabBar: true });
+    }
 }
 
 function setBindingContext(list: ListView) {
