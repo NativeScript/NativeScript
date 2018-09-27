@@ -175,7 +175,7 @@ export class View extends ViewCommon {
             }
 
             const boundsOrigin = nativeView.bounds.origin;
-            const boundsFrame = nativeView.frame;
+            const boundsFrame = adjustedFrame || frame;
             nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
 
             this._raiseLayoutChangedEvent();
