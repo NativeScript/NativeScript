@@ -17,12 +17,15 @@ const TRANSFORM_MATRIXES = {
         0, 1, y,
         0, 0, 1,
     ],
-    "rotate": angleInDeg => {
-        const angleInRad = degreesToRadians(angleInDeg);
+    "rotate": ({ x, y, z}) => {
+        // TODO: Handle rotations over X and Y axis
+        const radZ = degreesToRadians(z);
+        const cosZ = Math.cos(radZ);
+        const sinZ = Math.sin(radZ);
 
         return [
-            Math.cos(angleInRad), -Math.sin(angleInRad), 0,
-            Math.sin(angleInRad), Math.cos(angleInRad), 0,
+            cosZ, -sinZ, 0,
+            sinZ, cosZ, 0,
             0, 0, 1,
         ]
     },
@@ -44,6 +47,7 @@ export function multiplyAffine2d(m1: number[], m2: number[]): number[] {
     ]
 }
 
+// TODO: Decompose rotations over X and Y axis
 export function decompose2DTransformMatrix(matrix: number[])
     : TransformFunctionsInfo {
 
@@ -68,7 +72,6 @@ export function decompose2DTransformMatrix(matrix: number[])
 
     rotate = radiansToDegrees(rotate);
 
-    // TODO: what about rotation over x and y
     return { translate, rotate: { x: 0, y: 0, z: rotate }, scale };
 }
 

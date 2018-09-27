@@ -13,6 +13,7 @@
       <Button text="settings" tap="onButtonTap"/>
       <Button text="visual-states" tap="onButtonTap"/>
       <Button text="initial-animation" tap="onButtonTap"/>
+      <Button text="3d-rotate" tap="onButtonTap"/>
     </StackLayout>
   </ScrollView>
 </Page>

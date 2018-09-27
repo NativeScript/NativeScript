@@ -732,11 +732,11 @@ export class View extends ViewCommon {
         org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, float(value));
     }
     
-    [rotateXProperty.setNative](value: string) {
+    [rotateXProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setRotateX(this.nativeViewProtected, float(value));
     }
 
-    [rotateYProperty.setNative](value: string) {
+    [rotateYProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setRotateY(this.nativeViewProtected, float(value));
     }
     

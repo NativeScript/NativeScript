@@ -10,30 +10,26 @@ export function pageLoaded(args: EventData) {
 }
 
 export function onAnimateX(args: EventData) {
-    rotate({ x: 360, y: 0, z: 0 });
+    view.className = "original";
+    view.className = "animate-x";
 }
 
 export function onAnimateY(args: EventData) {
-    rotate({ x: 0, y: 360, z: 0 });
+    view.className = "original";
+    view.className = "animate-y";
 }
 
 export function onAnimateZ(args: EventData) {
-    rotate({ x: 0, y: 0, z: 360 });
+    view.className = "original";
+    view.className = "animate-z";
+}
+
+export function onAnimateXYZ3D(args: EventData) {
+    view.className = "original";
+    view.className = "animate-xyz-3d";
 }
 
 export function onAnimateXYZ(args: EventData) {
-    rotate({ x: 360, y: 360, z: 360 });
-}
-
-function rotate(rotate: Point3D) {
-    view.animate({
-        rotate,
-        duration: 3000
-    }).then(reset);
-}
-
-function reset() {
-    view.rotate = 0;
-    view.rotateX = 0;
-    view.rotateY = 0;
+    view.className = "original";
+    view.className = "animate-xyz";
 }

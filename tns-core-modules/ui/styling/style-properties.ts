@@ -1,8 +1,10 @@
 // Types
-import { unsetValue, Style,
+import {
+    unsetValue, Style,
     CssProperty, CssAnimationProperty,
     ShorthandProperty, InheritedCssProperty,
-    makeValidator, makeParser } from "../core/properties";
+    makeValidator, makeParser
+} from "../core/properties";
 import {
     Transformation,
     TransformationValue,
@@ -391,13 +393,13 @@ function convertToPaddings(this: void, value: string | Length): [CssProperty<any
 export const rotateProperty = new CssAnimationProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0, valueConverter: parseFloat });
 rotateProperty.register(Style);
 
-export const rotateXProperty = new CssAnimationProperty<Style, number>({ name: "rotateX", cssName: "rotateX", defaultValue: 0, valueConverter: parseFloat });
+export const rotateXProperty = new CssAnimationProperty<Style, number>({ name: "rotateX", cssName: "rotatex", defaultValue: 0, valueConverter: parseFloat });
 rotateXProperty.register(Style);
 
-export const rotateYProperty = new CssAnimationProperty<Style, number>({ name: "rotateY", cssName: "rotateY", defaultValue: 0, valueConverter: parseFloat });
+export const rotateYProperty = new CssAnimationProperty<Style, number>({ name: "rotateY", cssName: "rotatey", defaultValue: 0, valueConverter: parseFloat });
 rotateYProperty.register(Style);
 
-export const perspectiveProperty = new CssAnimationProperty<Style, number>({ name: "perspective", cssName: "perspective", defaultValue: 1000, valueConverter: parseFloat});
+export const perspectiveProperty = new CssAnimationProperty<Style, number>({ name: "perspective", cssName: "perspective", defaultValue: 1000, valueConverter: parseFloat });
 perspectiveProperty.register(Style);
 
 export const scaleXProperty = new CssAnimationProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1, valueConverter: parseFloat });
@@ -450,7 +452,7 @@ transformProperty.register(Style);
 
 const IDENTITY_TRANSFORMATION = {
     translate: { x: 0, y: 0 },
-    rotate: { x: 0, y: 0 , z: 0},
+    rotate: { x: 0, y: 0, z: 0 },
     scale: { x: 1, y: 1 },
 };
 
@@ -482,9 +484,27 @@ const STYLE_TRANSFORMATION_MAP = Object.freeze({
     "translateY": ({ y }) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
 
     "rotate3d": value => ({ property: "rotate", value }),
-    "rotateX": ({ x }) => ({ property: "rotate", value: { x, y: IDENTITY_TRANSFORMATION.rotate.y } }),
-    "rotateY": ({ y }) => ({ property: "rotate", value: { y, x: IDENTITY_TRANSFORMATION.rotate.x } }),
-    "rotate": ({ z }) => ({ property: "rotate", value: { z, x: IDENTITY_TRANSFORMATION.rotate.z } }),
+    "rotateX": (x) => ({
+        property: "rotate", value: {
+            x,
+            y: IDENTITY_TRANSFORMATION.rotate.y,
+            z: IDENTITY_TRANSFORMATION.rotate.z
+        }
+    }),
+    "rotateY": (y) => ({
+        property: "rotate", value: {
+            x: IDENTITY_TRANSFORMATION.rotate.x,
+            y,
+            z: IDENTITY_TRANSFORMATION.rotate.z
+        }
+    }),
+    "rotate": (z) => ({
+        property: "rotate", value: {
+            x: IDENTITY_TRANSFORMATION.rotate.x,
+            y: IDENTITY_TRANSFORMATION.rotate.y,
+            z
+        }
+    }),
 });
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
@@ -559,11 +579,11 @@ function convertTransformValue(property: string, stringValue: string)
 
     const [x, y = x, z = y] = stringValue.split(",").map(parseFloat);
 
-    if (property === "rotate") {
+    if (property === "rotate" || property === "rotateX" || property === "rotateY") {
         return stringValue.slice(-3) === "rad" ? radiansToDegrees(x) : x;
     }
 
-    return { x, y , z};
+    return { x, y, z };
 }
 
 // Background properties.

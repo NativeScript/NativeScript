@@ -430,6 +430,8 @@ export class CssState {
         this._appliedAnimations = CssState.emptyAnimationArray;
 
         this.view.style["keyframe:rotate"] = unsetValue;
+        this.view.style["keyframe:rotateX"] = unsetValue;
+        this.view.style["keyframe:rotateY"] = unsetValue;
         this.view.style["keyframe:scaleX"] = unsetValue;
         this.view.style["keyframe:scaleY"] = unsetValue;
         this.view.style["keyframe:translateX"] = unsetValue;
