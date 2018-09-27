@@ -1003,16 +1003,16 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     childRight = width - paddingRight;
                     break;
                 case JustifyContent.FLEX_END:
-                    childLeft = width - flexLine._mainSize + paddingRight;
-                    childRight = flexLine._mainSize - paddingLeft;
+                    childLeft = width - flexLine._mainSize - paddingRight;
+                    childRight = flexLine._mainSize + paddingLeft;
                     break;
                 case JustifyContent.CENTER:
-                    childLeft = paddingLeft + (width - flexLine._mainSize) / 2.0;
-                    childRight = width - paddingRight - (width - flexLine._mainSize) / 2.0;
+                    childLeft = paddingLeft + (width - insets.left - insets.right - flexLine._mainSize) / 2.0;
+                    childRight = width - paddingRight - (width - insets.left - insets.right - flexLine._mainSize) / 2.0;
                     break;
                 case JustifyContent.SPACE_AROUND:
                     if (flexLine._itemCount !== 0) {
-                        spaceBetweenItem = (width - flexLine.mainSize) / flexLine._itemCount;
+                        spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / flexLine._itemCount;
                     }
                     childLeft = paddingLeft + spaceBetweenItem / 2.0;
                     childRight = width - paddingRight - spaceBetweenItem / 2.0;
@@ -1020,7 +1020,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 case JustifyContent.SPACE_BETWEEN:
                     childLeft = paddingLeft;
                     let denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
-                    spaceBetweenItem = (width - flexLine.mainSize) / denominator;
+                    spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / denominator;
                     childRight = width - paddingRight;
                     break;
                 default:
@@ -1164,16 +1164,16 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     childBottom = height - paddingBottom;
                     break;
                 case JustifyContent.FLEX_END:
-                    childTop = height - flexLine._mainSize + paddingBottom;
-                    childBottom = flexLine._mainSize - paddingTop;
+                    childTop = height - flexLine._mainSize - paddingBottom;
+                    childBottom = flexLine._mainSize + paddingTop;
                     break;
                 case JustifyContent.CENTER:
-                    childTop = paddingTop + (height - flexLine._mainSize) / 2.0;
-                    childBottom = height - paddingBottom - (height - flexLine._mainSize) / 2.0;
+                    childTop = paddingTop + (height - insets.top - insets.bottom - flexLine._mainSize) / 2.0;
+                    childBottom = height - paddingBottom - (height - insets.top - insets.bottom - flexLine._mainSize) / 2.0;
                     break;
                 case JustifyContent.SPACE_AROUND:
                     if (flexLine._itemCount !== 0) {
-                        spaceBetweenItem = (height - flexLine._mainSize) / flexLine.itemCount;
+                        spaceBetweenItem = (height - insets.top - insets.bottom - flexLine._mainSize) / flexLine.itemCount;
                     }
                     childTop = paddingTop + spaceBetweenItem / 2.0;
                     childBottom = height - paddingBottom - spaceBetweenItem / 2.0;
@@ -1181,7 +1181,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 case JustifyContent.SPACE_BETWEEN:
                     childTop = paddingTop;
                     let denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
-                    spaceBetweenItem = (height - flexLine.mainSize) / denominator;
+                    spaceBetweenItem = (height - insets.top - insets.bottom - flexLine.mainSize) / denominator;
                     childBottom = height - paddingBottom;
                     break;
                 default:
