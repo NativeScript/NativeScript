@@ -266,40 +266,41 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-        const scaleX = this.scaleX || 1e-6;
-        const scaleY = this.scaleY || 1e-6;
-        let rotate = 0;
-        let rotateAxis = {x: 0, y: 0, z: 0};
-        let perspective = this.perspective || 300;
+      const scaleX = this.scaleX || 1e-6;
+      const scaleY = this.scaleY || 1e-6;
+      let perspective = this.perspective || 300;
 
-        if (this.rotate) {
-            rotateAxis.z = 1;
-            rotate = this.rotate;
-        }else if (this.rotateX) {
-            rotateAxis.x = 1;
-            rotate = this.rotateX;
-        }else if (this.rotateY) {
-            rotateAxis.y = 1;
-            rotate = this.rotateY;
+      let transform = CATransform3DIdentity;
+      transform.m34 = -1 / perspective;
+      transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
+      transform = this.applyRotateTransform(transform);
+      transform = CATransform3DScale(transform, scaleX, scaleY, 1);
+      this.ios.layer.transform = transform;
+      if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
+        const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+        if (!updateSuspended) {
+          CATransaction.begin();
         }
-
-        let transform = CATransform3DIdentity;
-        transform.m34 = -1 / perspective;
-        transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
-        transform = CATransform3DRotate(transform, rotate * Math.PI / 180, rotateAxis.x, rotateAxis.y, rotateAxis.z);
-        transform = CATransform3DScale(transform, scaleX, scaleY, 1);
         this.ios.layer.transform = transform;
-        if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
-            const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
-            if (!updateSuspended) {
-                CATransaction.begin();
-            }
-            this.ios.layer.transform = transform;
-            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, CATransform3DIdentity);
-            if (!updateSuspended) {
-                CATransaction.commit();
-            }
+        this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, CATransform3DIdentity);
+        if (!updateSuspended) {
+          CATransaction.commit();
         }
+    }
+  }
+
+    public applyRotateTransform(transform) {
+      if (this.rotate) {
+        transform = CATransform3DRotate(transform, this.rotate * Math.PI / 180, 0, 0, 1);
+      }
+      if (this.rotateX) {
+        transform = CATransform3DRotate(transform, this.rotateX * Math.PI / 180, 1, 0, 0);
+      }
+      if (this.rotateY) {
+       transform = CATransform3DRotate(transform, this.rotateY * Math.PI / 180, 0, 1, 0);
+      }
+
+      return transform;
     }
 
     public updateOriginPoint(originX: number, originY: number) {
