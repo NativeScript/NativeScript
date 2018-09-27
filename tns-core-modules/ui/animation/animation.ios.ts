@@ -297,6 +297,7 @@ export class Animation extends AnimationBase {
                 originalValue = nativeView.layer.opacity;
                 break;
             case Properties.rotate:
+                // TODO: Handle 3D rotations 
                 animation._originalValue = animation.target.rotate !== undefined ? animation.target.rotate : 0;
                 animation._propertyResetCallback = (value, valueSource) => {
                     animation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value.z;
@@ -308,11 +309,14 @@ export class Animation extends AnimationBase {
                 if (animation.target.rotate !== undefined && animation.target.rotate !== 0 && Math.floor(value / 360) - value / 360 === 0) {
                     originalValue = animation.target.rotate * Math.PI / 180;
                 }
-                value = value * Math.PI / 180;
+
+                // Respect only value.z for back-compat until 3D rotations are implemented
+                value = value.z * Math.PI / 180;
                 abs = fabs(originalValue - value);
                 if (abs < 0.001 && originalValue !== tempRotate) {
                     originalValue = tempRotate;
                 }
+
                 break;
             case Properties.translate:
                 animation._originalValue = { x: animation.target.translateX, y: animation.target.translateY };
