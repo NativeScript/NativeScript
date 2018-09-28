@@ -159,8 +159,10 @@ export class GridLayout extends GridLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+        const insets = this.getSafeAreaInsets();
+
+        let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 
         this.columnOffsets.length = 0;
         this.rowOffsets.length = 0;

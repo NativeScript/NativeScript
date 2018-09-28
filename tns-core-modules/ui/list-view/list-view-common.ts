@@ -1,5 +1,5 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
-import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
+import { CoercibleProperty, CssProperty, Style, View, ViewBase, ContainerView, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
 import { parse, parseMultipleTemplates } from "../builder";
 import { Label } from "../label";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
@@ -19,7 +19,7 @@ export module knownMultiTemplates {
 const autoEffectiveRowHeight = -1;
 
 @CSSType("ListView")
-export abstract class ListViewBase extends View implements ListViewDefinition, TemplatedItemsView {
+export abstract class ListViewBase extends ContainerView implements ListViewDefinition, TemplatedItemsView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";

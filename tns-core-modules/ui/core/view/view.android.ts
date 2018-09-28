@@ -816,7 +816,11 @@ export class View extends ViewCommon {
     }
 }
 
-export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
+export class ContainerView extends View {
+    public iosOverflowSafeArea: boolean;
+}
+
+export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
     nativeViewProtected: android.view.ViewGroup;
 
     public createNativeView() {
