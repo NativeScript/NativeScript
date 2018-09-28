@@ -10,19 +10,19 @@ export function pageLoaded(args: EventData) {
 }
 
 export function onAnimateX(args: EventData) {
-    rotate({ x: 60, y: 0, z: 0 });
+    rotate({ x: 360, y: 0, z: 0 });
 }
 
 export function onAnimateY(args: EventData) {
-    rotate({ x: 0, y: 60, z: 0 });
+    rotate({ x: 0, y: 360, z: 0 });
 }
 
 export function onAnimateZ(args: EventData) {
-    rotate({ x: 0, y: 0, z: 60 });
+    rotate({ x: 0, y: 0, z: 360 });
 }
 
 export function onAnimateXYZ(args: EventData) {
-    rotate({ x: 60, y: 60, z: 60 });
+    rotate({ x: 360, y: 360, z: 360 });
 }
 
 function rotate(rotate: Point3D) {
