@@ -1,7 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd"
-    xmlns:fragments="flexboxlayout/fragments"
-    actionBarHidden="true">
-
-    <fragments:flexboxlayout-row-fragment></fragments:flexboxlayout-row-fragment>
-
-</Page>

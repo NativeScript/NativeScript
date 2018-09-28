@@ -1,3 +1,0 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo">
-  <Repeater items="{{ myItems }}" backgroundColor="Pink" />
-</Page>

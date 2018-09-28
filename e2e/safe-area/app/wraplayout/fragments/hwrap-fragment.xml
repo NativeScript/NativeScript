@@ -1,4 +1,0 @@
-<WrapLayout orientation="horizontal" class="wrap">
-    <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
-    <Button text="H" backgroundColor="Pink"></Button>
-</WrapLayout>

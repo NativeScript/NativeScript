@@ -1,7 +1,0 @@
-<Page class="page"
-    xmlns="http://schemas.nativescript.org/tns.xsd"
-    xmlns:fragments="stacklayout/fragments"
-    actionBarHidden="true">
-
-    <fragments:vstack-fragment></fragments:vstack-fragment>
-</Page>

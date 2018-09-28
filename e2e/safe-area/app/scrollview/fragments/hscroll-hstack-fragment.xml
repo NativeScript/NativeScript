@@ -1,9 +1,0 @@
-<ScrollView orientation="horizontal" class="scroll">
-    <StackLayout orientation="horizontal" backgroundColor="Crimson">
-        <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-        <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-        <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-        <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-        <Label text="overflowing text, overflowing text, overflowing text, overflowing text, overflowing text, overflowing text"></Label>
-    </StackLayout>
-</ScrollView>
