@@ -189,7 +189,7 @@ export module ios {
      * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
      * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
      */
-    export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
+    export function getter<T>(_this: any, propertyValue: T | { (): T }): T;
 
     // Common properties between UILabel, UITextView and UITextField 
     export interface TextUIView {
@@ -253,7 +253,17 @@ export module ios {
      * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
      * Returns the visible UIViewController.
      */
-    export function getVisibleViewController(rootViewController: any/* UIViewController*/ ): any/* UIViewController*/;
+    export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
+
+    /**
+     * 
+     * @param transform Applies a rotation transform over X,Y and Y axis
+     * @param x Rotation over X axis in degrees
+     * @param y Rotation over Y axis in degrees
+     * @param z Rotation over Z axis in degrees
+     */
+    export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any /* CATransform3D*/;
+
 }
 
 /**

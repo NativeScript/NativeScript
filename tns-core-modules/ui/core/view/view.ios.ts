@@ -266,41 +266,27 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-      const scaleX = this.scaleX || 1e-6;
-      const scaleY = this.scaleY || 1e-6;
-      let perspective = this.perspective || 300;
+        const scaleX = this.scaleX || 1e-6;
+        const scaleY = this.scaleY || 1e-6;
+        let perspective = this.perspective || 300;
 
-      let transform = CATransform3DIdentity;
-      transform.m34 = -1 / perspective;
-      transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
-      transform = this.applyRotateTransform(transform);
-      transform = CATransform3DScale(transform, scaleX, scaleY, 1);
-      this.ios.layer.transform = transform;
-      if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
-        const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
-        if (!updateSuspended) {
-          CATransaction.begin();
-        }
+        let transform = CATransform3DIdentity;
+        transform.m34 = -1 / perspective;
+        transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
+        transform = iosUtils.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+        transform = CATransform3DScale(transform, scaleX, scaleY, 1);
         this.ios.layer.transform = transform;
-        this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, CATransform3DIdentity);
-        if (!updateSuspended) {
-          CATransaction.commit();
+        if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
+            const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+                CATransaction.begin();
+            }
+            this.ios.layer.transform = transform;
+            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, CATransform3DIdentity);
+            if (!updateSuspended) {
+                CATransaction.commit();
+            }
         }
-    }
-  }
-
-    public applyRotateTransform(transform) {
-      if (this.rotate) {
-        transform = CATransform3DRotate(transform, this.rotate * Math.PI / 180, 0, 0, 1);
-      }
-      if (this.rotateX) {
-        transform = CATransform3DRotate(transform, this.rotateX * Math.PI / 180, 1, 0, 0);
-      }
-      if (this.rotateY) {
-       transform = CATransform3DRotate(transform, this.rotateY * Math.PI / 180, 0, 1, 0);
-      }
-
-      return transform;
     }
 
     public updateOriginPoint(originX: number, originY: number) {
@@ -384,7 +370,7 @@ export class View extends ViewCommon {
     protected _hideNativeModalView(parent: View) {
         if (!parent || !parent.viewController) {
             traceError("Trying to hide modal view but no parent with viewController specified.")
-            return; 
+            return;
         }
 
         const parentController = parent.viewController;
@@ -486,7 +472,7 @@ export class View extends ViewCommon {
     [rotateYProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
-    
+
     [perspectiveProperty.getDefault](): number {
         return 300;
     }

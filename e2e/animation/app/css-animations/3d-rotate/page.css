@@ -46,30 +46,30 @@
 
 @keyframes rotateX {
     from { transform: none; }
-    50%  { transform: rotateX(180) }
+    50%  { transform: rotateX(60) }
     to  { transform: none; }
 }
 
 @keyframes rotateY {
     from { transform: none; }
-    50%  { transform: rotateY(180) }
+    50%  { transform: rotateY(60) }
     to  { transform: none; }
 }
 
 @keyframes rotateZ {
     from { transform: none; }
-    50%  { transform: rotate(180) }
+    50%  { transform: rotate(60) }
     to  { transform: none; }
 }
 
 @keyframes rotateXYZ3D {
     from { transform: none; }
-    50%  { transform: rotate3d(180, 180, 180) }
+    50%  { transform: rotate3d(60, 60, 60) }
     to  { transform: none; }
 }
 
 @keyframes rotateXYZ {
     from { transform: none; }
-    50%  { transform: rotateX(180) rotateY(180) rotate(180) }
+    50%  { transform: rotateX(60) rotateY(60) rotate(60) }
     to  { transform: none; }
 }
