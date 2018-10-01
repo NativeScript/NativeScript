@@ -121,6 +121,10 @@ export class Frame extends FrameBase {
         return this._android;
     }
 
+    get _hasFragments(): boolean {
+        return true;
+    }
+
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
         this._attachedToWindow = true;

@@ -361,6 +361,10 @@ export class TabView extends TabViewBase {
         tabs.push(new WeakRef(this));
     }
 
+    get _hasFragments(): boolean {
+        return true;
+    }
+
     public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
         if (this._pagerAdapter) {
             const fragment: android.support.v4.app.Fragment = (<any>this._pagerAdapter).mCurrentPrimaryItem;

@@ -20,7 +20,7 @@ import {
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
-import { topmost } from "../../frame";
+import { topmost } from "../../frame/frame-stack";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
@@ -265,6 +265,10 @@ export class View extends ViewCommon {
         }
     }
 
+    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
+        return null;
+    }
+
     public _getFragmentManager(): android.support.v4.app.FragmentManager {
         let manager = this._manager;
         if (!manager) {
@@ -287,9 +291,9 @@ export class View extends ViewCommon {
                 // - tabview -> frame1 (frame1 uses tabview item CHILD fm)
                 // - frame1 -> tabview (tabview uses frame1 CHILD fm)
                 // - frame1 -> tabview -> frame2 (tabview uses frame1 CHILD fm; frame2 uses tabview item CHILD fm)
-                if (view.typeName === "Frame" || view.typeName === "TabView") {
+                if (view._hasFragments) {
                     if (frameOrTabFound) {
-                        manager = (<any>view)._getChildFragmentManager();
+                        manager = view._getChildFragmentManager();
                         break;
                     }
 
@@ -422,6 +426,10 @@ export class View extends ViewCommon {
             return !this.nativeViewProtected.isLayoutRequested();
         }
 
+        return false;
+    }
+
+    get _hasFragments(): boolean {
         return false;
     }
 
