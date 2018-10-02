@@ -1,5 +1,5 @@
 ﻿// Required by TypeScript compiler
-require("./decorators");
+require("./ts-helpers");
 
 // Required by V8 snapshot generator
 if (!global.__extends) {

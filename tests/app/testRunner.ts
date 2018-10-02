@@ -33,6 +33,9 @@ export function isRunningOnEmulator(): boolean {
 
 export const allTests = {};
 
+import * as tsTests from "./typescript/ts-tests";
+allTests["TYPESCRIPT"] = tsTests;
+
 import * as domNodeTest from "./debugger/dom-node-tests";
 allTests["DOM-NODE"] = domNodeTest;
 
