@@ -960,7 +960,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isAboveWith(cells[2][2], grid, insets.bottom);
 
                 closeEnough(height(cells[0][1]), height(cells[1][1]), `cell height should be equal - cell01<${height(cells[0][1])}> - cell11<${height(cells[1][1])}>`);
-                equal(height(cells[1][1]), height(cells[2][1]), `cell height should be equal - cell11<${height(cells[1][1])}> - cell21<${height(cells[2][1])}>`);
+                closeEnough(height(cells[1][1]), height(cells[2][1]), `cell height should be equal - cell11<${height(cells[1][1])}> - cell21<${height(cells[2][1])}>`);
                 const sumOfLabelHeightAndInsets = insets.top + height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]) + insets.bottom;
                 closeEnough(height(grid), sumOfLabelHeightAndInsets, `grid height<${height(grid)}> sum of labels height and insets<${sumOfLabelHeightAndInsets}>`);
 
