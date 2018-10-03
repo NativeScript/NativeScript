@@ -50,6 +50,7 @@ export module ad {
 
         if (isSetColorFilterOnlyWidget(nativeView)
             && drawable
+            && !(drawable instanceof org.nativescript.widgets.BorderDrawable)
             && !background.hasBorderWidth()
             && !background.hasBorderRadius()
             && !background.clipPath
@@ -66,6 +67,7 @@ export module ad {
                 backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
                 refreshBorderDrawable(view, backgroundDrawable);
                 nativeView.setBackground(backgroundDrawable);
+                androidView._cachedDrawable = undefined;
             } else {
                 refreshBorderDrawable(view, backgroundDrawable);
             }
