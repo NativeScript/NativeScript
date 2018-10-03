@@ -1003,8 +1003,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     childRight = width - paddingRight;
                     break;
                 case JustifyContent.FLEX_END:
-                    childLeft = width - flexLine._mainSize - paddingRight;
-                    childRight = flexLine._mainSize + paddingLeft;
+                    childLeft = width - flexLine._mainSize + paddingRight;
+                    childRight = flexLine._mainSize - paddingLeft;
                     break;
                 case JustifyContent.CENTER:
                     childLeft = paddingLeft + (width - insets.left - insets.right - flexLine._mainSize) / 2.0;
@@ -1164,8 +1164,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     childBottom = height - paddingBottom;
                     break;
                 case JustifyContent.FLEX_END:
-                    childTop = height - flexLine._mainSize - paddingBottom;
-                    childBottom = flexLine._mainSize + paddingTop;
+                    childTop = height - flexLine._mainSize + paddingBottom;
+                    childBottom = flexLine._mainSize - paddingTop;
                     break;
                 case JustifyContent.CENTER:
                     childTop = paddingTop + (height - insets.top - insets.bottom - flexLine._mainSize) / 2.0;
