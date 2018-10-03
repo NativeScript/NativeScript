@@ -9,7 +9,7 @@ import { ViewModel } from "./list-view-view-model";
 import { UITest } from "../../ui-test";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, check,
+    equal, check, lessOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith
 } from "../layouts/layout-tests-helper";
 
@@ -183,7 +183,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
                 isRightAlignedWith(root, cells[2][2]);
 
                 check(height(cells[0][1]) >= height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or equal cell11 height<${height(cells[1][1])}>`);
-                check(height(cells[1][1]) <= height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
+                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
                 const sumOfNestedListViewHeights = height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]);
                 equal(height(root), sumOfNestedListViewHeights, `grid height<${height(root)}> sum of nested list views height <${sumOfNestedListViewHeights}>`);
 

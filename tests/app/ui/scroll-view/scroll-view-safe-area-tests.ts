@@ -10,7 +10,7 @@ import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, check,
+    equal, check, lessOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftWith, isRightWith, isBelowWith
 } from "../layouts/layout-tests-helper";
@@ -426,7 +426,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
                 isBottomAlignedWith(grid, cells[2][2]);
 
                 check(height(cells[0][1]) >= height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or equal cell11 height<${height(cells[1][1])}>`);
-                check(height(cells[1][1]) <= height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
+                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
                 const sumOfNestedScrollViewHeights = height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]);
                 equal(height(grid), sumOfNestedScrollViewHeights, `grid height<${height(grid)}> sum of nested scroll views height <${sumOfNestedScrollViewHeights}>`);
 
