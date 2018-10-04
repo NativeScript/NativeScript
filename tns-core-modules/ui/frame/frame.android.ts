@@ -17,6 +17,7 @@ import {
     _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
+import { loadCss } from "../styling/style-scope";
 import { profile } from "../../profiling";
 
 // TODO: Remove this and get it from global to decouple builder for angular
@@ -82,13 +83,24 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
     return attachStateChangeListener;
 }
 
-export function reloadPage(): void {
+export function reloadPage(context?: HmrContext): void {
     const activity = application.android.foregroundActivity;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     const rootView: View = callbacks.getRootView();
 
-    if (!rootView || !rootView._onLivesync()) {
-        callbacks.resetActivityContent(activity);
+    let executeLivesync = true;
+    // HMR has context, livesync does not
+    if (context) {
+        if (context.module === application.getCssFileName()) {
+            loadCss(context.module);
+            rootView._onCssStateChange();
+            executeLivesync = false;
+        }
+    }
+    if (executeLivesync) {
+        if (!rootView || !rootView._onLivesync()) {
+            callbacks.resetActivityContent(activity);
+        }
     }
 }
 
@@ -469,19 +481,19 @@ export class Frame extends FrameBase {
         switch (this.actionBarVisibility) {
             case "never":
                 return false;
-            
+
             case "always":
                 return true;
-            
+
             default:
                 if (page.actionBarHidden !== undefined) {
                     return !page.actionBarHidden;
                 }
-        
+
                 if (this._android && this._android.showActionBar !== undefined) {
                     return this._android.showActionBar;
                 }
-        
+
                 return true;
         }
     }
@@ -846,14 +858,14 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
         // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
         const nativeView = page.nativeViewProtected;
-        if (nativeView != null) {	
-            const parentView = nativeView.getParent();	
+        if (nativeView != null) {
+            const parentView = nativeView.getParent();
             if (parentView instanceof android.view.ViewGroup) {
                 if (parentView.getChildCount() === 0) {
                     parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
                 }
 
-                parentView.removeView(nativeView);	
+                parentView.removeView(nativeView);
             }
         }
 

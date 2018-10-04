@@ -17,17 +17,17 @@ export class PageBase extends ContentView implements PageDefinition {
     public static navigatedToEvent = "navigatedTo";
     public static navigatingFromEvent = "navigatingFrom";
     public static navigatedFromEvent = "navigatedFrom";
-  
+
     private _navigationContext: any;
     private _actionBar: ActionBar;
 
     public _frame: Frame;
-    
+
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;
     public backgroundSpanUnderStatusBar: boolean;
     public hasActionBar: boolean;
-    
+
     get navigationContext(): any {
         return this._navigationContext;
     }
@@ -89,7 +89,7 @@ export class PageBase extends ContentView implements PageDefinition {
         const frame = this.parent;
         return frame instanceof Frame ? frame : undefined;
     }
-    
+
     private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
         return {
             eventName: eventName,
@@ -102,6 +102,10 @@ export class PageBase extends ContentView implements PageDefinition {
     @profile
     public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any) {
         this._navigationContext = context;
+
+        if (!this._cssState.isSelectorsLatestVersionApplied()) {
+            this._onCssStateChange();
+        }
 
         //https://github.com/NativeScript/NativeScript/issues/731
         if (!isBackNavigation && bindingContext !== undefined && bindingContext !== null) {

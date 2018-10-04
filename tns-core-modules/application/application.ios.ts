@@ -18,6 +18,7 @@ export * from "./application-common";
 import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
+import { loadCss } from "../ui/styling/style-scope";
 import * as utils from "../utils/utils";
 import { profile, level as profilingLevel, Level } from "../profiling";
 
@@ -225,10 +226,21 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
-    public _onLivesync(): void {
-        // If view can't handle livesync set window controller.
-        if (!this._rootView._onLivesync()) {
-            this.setWindowContent();
+    public _onLivesync(context?: HmrContext): void {
+        let executeLivesync = true;
+        // HMR has context, livesync does not
+        if (context) {
+            if (context.module === getCssFileName()) {
+                loadCss(context.module);
+                this._rootView._onCssStateChange();
+                executeLivesync = false;
+            }
+        }
+        if (executeLivesync) {
+            // If view can't handle livesync set window controller.
+            if (!this._rootView._onLivesync()) {
+                this.setWindowContent();
+            }
         }
     }
 
@@ -264,8 +276,8 @@ exports.ios = iosApp;
 setApplication(iosApp);
 
 // attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = function () {
-    iosApp._onLivesync();
+(<any>global).__onLiveSyncCore = function __onLiveSyncCore(context?: HmrContext) {
+    iosApp._onLivesync(context);
 }
 
 let mainEntry: NavigationEntry;
@@ -373,10 +385,10 @@ function setViewControllerView(view: View): void {
     }
 }
 
-global.__onLiveSync = function () {
+global.__onLiveSync = function __onLiveSync(context?: HmrContext) {
     if (!started) {
         return;
     }
 
-    livesync();
+    livesync(context);
 }
