@@ -377,6 +377,9 @@ export class CssState {
 
     public onUnloaded(): void {
         this.unsubscribeFromDynamicUpdates();
+        this.view = undefined;
+        this._matchInvalid = false;
+        this._match = undefined;
     }
 
     @profile
