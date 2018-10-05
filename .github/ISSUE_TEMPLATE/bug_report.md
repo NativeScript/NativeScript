@@ -7,7 +7,7 @@ about: 'We really appreciate your effort to provide feedback. Before opening a n
 ---
 
 **Environment**
-Provide version numbers for the following components (information can be retrieved by running `tns info` in your project folder or by inspecting the `package.json` of the project:
+Provide version numbers for the following components (information can be retrieved by running `tns info` in your project folder or by inspecting the `package.json` of the project):
  - CLI: 
  - Cross-platform modules:
  - Android Runtime:
