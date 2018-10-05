@@ -22,7 +22,7 @@ for (const fnName of Object.keys(tslib)) {
   }
 
   if (fnName in global) {
-    // Don't override globals __extends and __decorate again.
+    // Don't override globals that are already defined (ex. __extends)
     continue;
   }
 
