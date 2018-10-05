@@ -1,24 +1,15 @@
-import { Page } from "tns-core-modules/ui/page";
-import { GridLayout, ItemSpec } from "tns-core-modules/ui/layouts/grid-layout";
-import { Button } from "tns-core-modules/ui/button";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as TKUnit from "../../TKUnit";
 import * as view from "tns-core-modules/ui/core/view";
-import { unsetValue } from "tns-core-modules/ui/core/view";
-import * as builder from "tns-core-modules/ui/builder";
 import * as testModule from "../../ui-test";
-import * as layoutHelper from "./layout-helper";
 import * as platform from "tns-core-modules/platform";
 import { ios as iosUtils } from "tns-core-modules/utils/utils";
-import * as commonTests from "./common-layout-tests";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    paddingLeft, paddingTop, paddingRight, paddingBottom,
-    equal, closeEnough, notEqual, check,
-    heightEqual, widthEqual,
+    equal, closeEnough, lessOrCloseEnough, check,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
-    isLeftOf, isRightOf, isBelow, isAbove,
     isLeftWith, isAboveWith, isRightWith, isBelowWith
 } from "./layout-tests-helper";
 
@@ -960,12 +951,12 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isAboveWith(cells[2][2], grid, insets.bottom);
 
                 closeEnough(height(cells[0][1]), height(cells[1][1]), `cell height should be equal - cell01<${height(cells[0][1])}> - cell11<${height(cells[1][1])}>`);
-                equal(height(cells[1][1]), height(cells[2][1]), `cell height should be equal - cell11<${height(cells[1][1])}> - cell21<${height(cells[2][1])}>`);
+                closeEnough(height(cells[1][1]), height(cells[2][1]), `cell height should be equal - cell11<${height(cells[1][1])}> - cell21<${height(cells[2][1])}>`);
                 const sumOfLabelHeightAndInsets = insets.top + height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]) + insets.bottom;
                 closeEnough(height(grid), sumOfLabelHeightAndInsets, `grid height<${height(grid)}> sum of labels height and insets<${sumOfLabelHeightAndInsets}>`);
 
-                equal(width(cells[1][0]), width(cells[1][1]), `cell width should be equal - cell10<${width(cells[1][0])}> - cell11<${width(cells[1][1])}>`);
-                equal(width(cells[1][1]), width(cells[1][2]), `cell width should be equal - cell11<${width(cells[1][1])}> - cell12<${width(cells[1][2])}>`);
+                closeEnough(width(cells[1][0]), width(cells[1][1]), `cell width should be equal - cell10<${width(cells[1][0])}> - cell11<${width(cells[1][1])}>`);
+                closeEnough(width(cells[1][1]), width(cells[1][2]), `cell width should be equal - cell11<${width(cells[1][1])}> - cell12<${width(cells[1][2])}>`);
                 const sumOfLabelWidthsAndInsets = insets.left + width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]) + insets.right;
                 equal(width(grid), sumOfLabelWidthsAndInsets, `grid width<${width(grid)}> sum of nested grids width and insets<${sumOfLabelWidthsAndInsets}>`);
             },
@@ -1021,7 +1012,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isBottomAlignedWith(grid, cells[2][2]);
 
                 check(height(cells[0][1]) >= height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or equal cell11 height<${height(cells[1][1])}>`);
-                check(height(cells[1][1]) <= height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
+                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
                 const sumOfNestedGridHeights = height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]);
                 equal(height(grid), sumOfNestedGridHeights, `grid height<${height(grid)}> sum of nested grids height <${sumOfNestedGridHeights}>`);
 
