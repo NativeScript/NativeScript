@@ -20,11 +20,14 @@
     "@types/chai": "~4.1.3",
     "@types/mocha": "~5.2.1",
     "@types/node": "^7.0.5",
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.18.0",
+    "mocha-multi": "^1.0.1",
     "nativescript-dev-appium": "next",
     "nativescript-dev-typescript": "next",
     "nativescript-dev-webpack": "next",
     "rimraf": "^2.6.2",
-    "typescript": "^3.0.3"
+    "typescript": "^3.1.1"
   },
   "scripts": {
     "e2e": "npm run clean-e2e && tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
