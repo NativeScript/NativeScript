@@ -9,11 +9,14 @@ import {
 } from "./page-common";
 
 import { profile } from "../../profiling";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./page-common";
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
+
+const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
@@ -314,6 +317,12 @@ export class Page extends PageBase {
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
 
         const insets = this.getSafeAreaInsets();
+
+        if (majorVersion <= 10) {
+            // ios 10 and below doesn't have safe area insets API
+            // on ios 10 and below we need only the top inset on the Page
+            insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
+        }
 
         const childLeft = 0 + insets.left;
         const childTop = 0 + insets.top;
