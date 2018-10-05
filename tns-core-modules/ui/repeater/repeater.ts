@@ -102,10 +102,16 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         const insets = this.getSafeAreaInsets();
-        const childLeft = left + insets.left;
-        const childTop = top + insets.top;
-        const childRight = right - insets.right;
-        const childBottom = bottom - insets.bottom;
+
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
+
+        const childLeft = paddingLeft;
+        const childTop = paddingTop;
+        const childRight = right - left - paddingRight;
+        const childBottom = bottom - top - paddingBottom;
         View.layoutChild(this, this.itemsLayout, childLeft, childTop, childRight, childBottom);
     }
 

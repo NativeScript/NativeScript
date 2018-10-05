@@ -721,15 +721,6 @@ function toShortString(nativeTransition: android.transition.Transition): string 
     return `${nativeTransition.getClass().getSimpleName()}@${nativeTransition.hashCode().toString(16)}`;
 }
 
-function createDummyZeroDurationAnimation(): android.view.animation.Animation {
-    // NOTE: returning the dummy AlphaAnimation directly does not work for some reason;
-    // animationEnd is fired first, then some animationStart (but for a different animation?)
-    const animationSet = new android.view.animation.AnimationSet(false);
-    animationSet.addAnimation(new android.view.animation.AlphaAnimation(1, 1));
-
-    return animationSet;
-}
-
 function printTransitions(entry: ExpandedEntry) {
     if (entry && traceEnabled()) {
         let result = `${entry.fragmentTag} Transitions:`;
@@ -756,6 +747,14 @@ function printTransitions(entry: ExpandedEntry) {
 
 class NoTransition extends Transition {
     public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
-        return createDummyZeroDurationAnimation();
+        const animation = new android.view.animation.AlphaAnimation(1, 1);
+        // NOTE: this should not be necessary when we revert to Animators API
+        // HACK: Android view animation with zero duration seems to be buggy and raises animation listener events in illogical (wrong?) order:
+        // "enter" start -> "enter" end -> "exit" start -> "exit" end;
+        // we would expect events to overlap "exit" start -> "enter" start -> "exit" end -> "enter" end, or at least
+        // "exit" start / end to be raised before "enter" start / end
+        animation.setDuration(1);
+
+        return animation;
     }
 }
