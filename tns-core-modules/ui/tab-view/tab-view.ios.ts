@@ -53,13 +53,14 @@ class UITabBarControllerImpl extends UITabBarController {
     }
 
     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
+        super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
         UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
             .call(coordinator, null, () => {
                 const owner = this._owner.get();
                 if (owner && owner.items) {
                     owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
                 }
-            })
+            });
     }
 }
 
@@ -153,7 +154,6 @@ function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarI
     const orientation = controller.interfaceOrientation;
     const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
     const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
-    console.log(`UPDATING tabItem: ${tabItem.title} --- isPortrait:${isPortrait}, isPhone:${isPhone}, version: ${majorVersion}, isIconAboveTitle: ${isIconAboveTitle}`);
 
     if (!tabItem.iconSource) {
         if (isIconAboveTitle) {
