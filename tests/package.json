@@ -13,7 +13,8 @@
     }
   },
   "dependencies": {
-    "tns-core-modules": "*"
+    "tns-core-modules": "*",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "babel-traverse": "6.9.0",
