@@ -106,6 +106,8 @@ export function prompt(arg: any): Promise<PromptResult> {
                     arg.keyboardType = UIKeyboardType.EmailAddress;
                 } else if (options && options.inputType === inputType.number) {
                     arg.keyboardType = UIKeyboardType.NumberPad;
+                } else if (options && options.inputType === inputType.phone) {
+                    arg.keyboardType = UIKeyboardType.PhonePad;
                 }
 
                 let color = getTextFieldColor();

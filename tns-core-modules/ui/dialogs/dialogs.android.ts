@@ -186,6 +186,8 @@ export function prompt(arg: any): Promise<PromptResult> {
                     input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 } else if (options.inputType === inputType.number) {
                   input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                } else if (options.inputType === inputType.phone) {
+                  input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
                 }
 
                 switch (options.capitalizationType) {

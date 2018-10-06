@@ -26,6 +26,11 @@ export module inputType {
      * Number input type.
      */
     export var number: string;
+
+    /**
+     * Phone input type.
+     */
+    export var phone: string;
 }
 
 /**

@@ -36,6 +36,11 @@ export module inputType {
      * Number input type
      */
     export const number: string = "number";
+
+    /**
+     * Phone input type
+     */
+    export const phone: string = "phone";
 }
 
 /**
