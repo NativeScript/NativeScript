@@ -120,7 +120,7 @@ class UIViewControllerImpl extends UIViewController {
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
             const newEntry = this[ENTRY];
-            
+
             let isBack: boolean;
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
@@ -231,8 +231,11 @@ export class Page extends PageBase {
         super();
         const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
         this.viewController = this._ios = controller;
-        this.nativeViewProtected = controller.view;
-        this.nativeViewProtected.backgroundColor = whiteColor;
+        controller.view.backgroundColor = whiteColor;
+    }
+
+    createNativeView() {
+        return this.viewController.view;
     }
 
     get ios(): UIViewController {
@@ -309,7 +312,14 @@ export class Page extends PageBase {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
-        View.layoutChild(this, this.layoutView, left, top, right, bottom);
+
+        const insets = this.getSafeAreaInsets();
+
+        const childLeft = 0 + insets.left;
+        const childTop = 0 + insets.top;
+        const childRight = right - left - insets.right;
+        const childBottom = bottom - top - insets.bottom;
+        View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
@@ -327,7 +337,7 @@ export class Page extends PageBase {
             if (this.viewController.presentedViewController === viewController) {
                 return true;
             }
-            
+
             this.viewController.addChildViewController(viewController);
         }
 

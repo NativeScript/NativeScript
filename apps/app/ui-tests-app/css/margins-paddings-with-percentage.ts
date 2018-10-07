@@ -4,7 +4,7 @@ import { EventData } from "tns-core-modules/data/observable";
 import * as button from "tns-core-modules/ui/button";
 
 const cssPercentage = `
-    Page { margin: 5% 10% 15% 8%; background-color: orange; font-size: 8; } 
+    Page { background-color: orange; font-size: 8; } 
     GridLayout { margin: 3%; background-color: lightgreen; font-size: 8; } 
     StackLayout { border-color: red; border-width: 1; } 
     StackLayout * { border-color: blue; border-width: 1; } 
@@ -16,7 +16,7 @@ const cssPercentage = `
     Button { color: black }`;
 
 const cssWithouPercentage = `
-    Page { margin:15 10 15 30; background-color: orange; font-size: 8; } 
+    Page { background-color: orange; font-size: 8; } 
     GridLayout { margin:3; background-color: lightgreen; font-size: 8; } 
     StackLayout { border-color: red; border-width: 1; } 
     StackLayout * { border-color: blue; border-width: 1; } 

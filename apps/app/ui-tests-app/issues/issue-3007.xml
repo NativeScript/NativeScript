@@ -6,7 +6,7 @@
     <Label id="Label" backgroundColor="red" class="elementStyle" text="sample label" textWrap="true"/>
     <TextField id="TextField" backgroundColor="green" class="elementStyle" hint="" text="Sample textfield" />
     <TextView id="TextView" class="elementStyle" text="Sample text view" backgroundColor="yellow" editable="true" />
-    <AbsoluteLayout id="AbsoluteLayout" class="container"/>
+    <AbsoluteLayout id="AbsoluteLayout" class="container" iosOverflowSafeArea="false"></AbsoluteLayout>
   </StackLayout> 
   </ScrollView>
 </Page>

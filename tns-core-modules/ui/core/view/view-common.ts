@@ -74,7 +74,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _measuredWidth: number;
     private _measuredHeight: number;
 
-    private _isLayoutValid: boolean;
+    protected _isLayoutValid: boolean;
     private _cssType: string;
 
     private _localAnimations: Set<am.Animation>;
@@ -607,6 +607,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public originY: number;
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
+    public iosOverflowSafeArea: boolean;
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -863,7 +864,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
-        return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom };
+        return { left: 0, top: 0, right: 0, bottom: 0 };
     }
 
     /**
@@ -898,6 +899,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public focus(): boolean {
         return undefined;
+    }
+
+    public getSafeAreaInsets(): { left, top, right, bottom } {
+        return { left: 0, top: 0, right: 0, bottom: 0 };
     }
 
     public getLocationInWindow(): Point {
@@ -1043,3 +1048,6 @@ isEnabledProperty.register(ViewCommon);
 
 export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true, valueConverter: booleanConverter });
 isUserInteractionEnabledProperty.register(ViewCommon);
+
+export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({ name: "iosOverflowSafeArea", defaultValue: false, valueConverter: booleanConverter });
+iosOverflowSafeAreaProperty.register(ViewCommon);

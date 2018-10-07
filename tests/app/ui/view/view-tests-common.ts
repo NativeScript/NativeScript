@@ -345,19 +345,8 @@ class TestView extends LayoutBase {
         (<any>this.style).customShortHand = value;
     }
 
-    private _nativeView;
     constructor(public name: string) {
         super();
-        this._nativeView = this.nativeViewProtected;
-        this.nativeViewProtected = undefined;
-    }
-
-    public createNativeView() {
-        if (isIOS) {
-            return this._nativeView;
-        }
-
-        return super.createNativeView();
     }
 
     public toString() {
@@ -495,7 +484,7 @@ export function test_NativeSetter_called_only_once_with_cssValue() {
         TKUnit.assertEqual(testView.cssPropNativeValue, "testCssValue", "Native value");
         TKUnit.assertEqual(testView.cssAnimPropNativeValue, "testCssAnimValue", "Native value");
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue", "Native value");
-    }, pageCSS);
+    }, { pageCss: pageCSS });
 };
 
 export function test_NativeSetter_called_only_once_with_cssValue_and_localValue() {
@@ -521,7 +510,7 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
         TKUnit.assertEqual(testView.cssAnimPropNativeValue, "testCssAnimationValueLocal", "Native value");
         // View property set from CSS sets local value
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValueCSS", "Native value");
-    }, pageCSS);
+    }, { pageCss: pageCSS });
 };
 
 export function test_NativeSetter_called_only_once_with_multiple_sets() {
@@ -971,7 +960,7 @@ export function testBackgroundShorthand_With_EmptyBorder() {
 
     helper.buildUIAndRunTest(lbl, (views: Array<View>) => {
         helper.waitUntilLayoutReady(lbl);
-    }, css);
+    }, { pageCss: css });
 };
 
 export function test_automation_text_default_value() {

@@ -74,40 +74,31 @@ export class ListPicker extends ListPickerBase {
     private _selectorWheelPaint: android.graphics.Paint;
 
     public createNativeView() {
-        initializeNativeClasses();
         const picker = new android.widget.NumberPicker(this._context);
-       
         picker.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         picker.setMinValue(0);
         picker.setMaxValue(0);
         picker.setValue(0);
-
-        const formatter = new Formatter(this);
-        picker.setFormatter(formatter);
-        (<any>picker).formatter = formatter;
-
-        const valueChangedListener = new ValueChangeListener(this);
-        picker.setOnValueChangedListener(valueChangedListener);
-        (<any>picker).valueChangedListener = valueChangedListener;
-
-        const editText = getEditText(picker);
-        if (editText) {
-            (<any>picker).editText = editText;
-        }
-
         picker.setWrapSelectorWheel(false);
         return picker;
     }
 
     public initNativeView(): void {
         super.initNativeView();
+        initializeNativeClasses();
         const nativeView = this.nativeViewProtected;
         this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
-        (<any>nativeView).formatter.owner = this;
-        (<any>nativeView).valueChangedListener.owner = this;
-        const editText = (<any>nativeView).editText;
+        const formatter = new Formatter(this);
+        nativeView.setFormatter(formatter);
+        (<any>nativeView).formatter = formatter;
 
+        const valueChangedListener = new ValueChangeListener(this);
+        nativeView.setOnValueChangedListener(valueChangedListener);
+        (<any>nativeView).valueChangedListener = valueChangedListener;
+
+        const editText = getEditText(nativeView);
         if (editText) {
+            (<any>nativeView).editText = editText;
             //Fix the disappearing selected item.
             //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
             editText.setFilters([]);

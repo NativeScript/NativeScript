@@ -6,48 +6,43 @@
 export * from "./progress-common";
 
 export class Progress extends ProgressBase {
-    private _ios: UIProgressView;
+    nativeViewProtected: UIProgressView;
 
-    constructor() {
-        super();
-        this.nativeViewProtected = this._ios = UIProgressView.new();
+    createNativeView() {
+        return UIProgressView.new();
     }
     
-    get ios(): UIProgressView {
-        return this._ios;
+    get ios() {
+        return this.nativeViewProtected;
     }
-
-    // get nativeView(): UIProgressView {
-    //     return this._ios;
-    // }
 
     [valueProperty.getDefault](): number {
         return 0;
     }
     [valueProperty.setNative](value: number) {
-        this._ios.progress = value / this.maxValue;
+        this.ios.progress = value / this.maxValue;
     }
 
     [maxValueProperty.getDefault](): number {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this._ios.progress = this.value / value;
+        this.ios.progress = this.value / value;
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this._ios.progressTintColor;
+        return this.ios.progressTintColor;
     }
     [colorProperty.setNative](value: Color | UIColor) {
-        this._ios.progressTintColor = value instanceof Color ? value.ios : value;
+        this.ios.progressTintColor = value instanceof Color ? value.ios : value;
     }
 
     [backgroundColorProperty.getDefault](): UIColor {
-        return this._ios.trackTintColor;
+        return this.ios.trackTintColor;
     }
     [backgroundColorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
-        this._ios.trackTintColor = color;
+        this.ios.trackTintColor = color;
     }
 
     [backgroundInternalProperty.getDefault](): UIColor {
