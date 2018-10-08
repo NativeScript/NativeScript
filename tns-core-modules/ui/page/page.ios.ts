@@ -326,8 +326,8 @@ export class Page extends PageBase {
 
         const childLeft = 0 + insets.left;
         const childTop = 0 + insets.top;
-        const childRight = right - left - insets.right;
-        const childBottom = bottom - top - insets.bottom;
+        const childRight = right - insets.right;
+        const childBottom = bottom - insets.bottom;
         View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
