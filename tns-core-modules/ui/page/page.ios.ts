@@ -327,7 +327,14 @@ export class Page extends PageBase {
         const childLeft = 0 + insets.left;
         const childTop = 0 + insets.top;
         const childRight = right - insets.right;
-        const childBottom = bottom - insets.bottom;
+        let childBottom = bottom - insets.bottom;
+
+        if (majorVersion >= 11 && this.actionBar.flat) {
+            // on iOS 11 the flat action bar changes the fullscreen size
+            // the top of the page is the new fullscreen
+            childBottom -= top;
+        }
+
         View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
