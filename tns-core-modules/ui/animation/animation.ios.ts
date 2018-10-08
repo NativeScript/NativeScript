@@ -309,30 +309,30 @@ export class Animation extends AnimationBase {
                     style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = value.y;
                 };
 
-              propertyNameToAnimate = "transform.rotation";
-              subPropertyNameToAnimate = ["x", "y", "z"];
-              originalValue = {
-                  x: nativeView.layer.valueForKeyPath("transform.rotation.x"),
-                  y: nativeView.layer.valueForKeyPath("transform.rotation.y"),
-                  z: nativeView.layer.valueForKeyPath("transform.rotation.z")
-              };
+                propertyNameToAnimate = "transform.rotation";
+                subPropertyNameToAnimate = ["x", "y", "z"];
+                originalValue = {
+                    x: nativeView.layer.valueForKeyPath("transform.rotation.x"),
+                    y: nativeView.layer.valueForKeyPath("transform.rotation.y"),
+                    z: nativeView.layer.valueForKeyPath("transform.rotation.z")
+                };
 
-              if (animation.target.rotateX !== undefined && animation.target.rotateX !== 0 && Math.floor(value / 360) - value / 360 === 0) {
-                originalValue.x = animation.target.rotateX * Math.PI / 180;
-              }
-              if (animation.target.rotateY !== undefined && animation.target.rotateY !== 0 && Math.floor(value / 360) - value / 360 === 0) {
-                originalValue.y = animation.target.rotateY * Math.PI / 180;
-              }
-              if (animation.target.rotate !== undefined && animation.target.rotate !== 0 && Math.floor(value / 360) - value / 360 === 0) {
-                originalValue.z = animation.target.rotate * Math.PI / 180;
-              }
+                if (animation.target.rotateX !== undefined && animation.target.rotateX !== 0 && Math.floor(value / 360) - value / 360 === 0) {
+                    originalValue.x = animation.target.rotateX * Math.PI / 180;
+                }
+                if (animation.target.rotateY !== undefined && animation.target.rotateY !== 0 && Math.floor(value / 360) - value / 360 === 0) {
+                    originalValue.y = animation.target.rotateY * Math.PI / 180;
+                }
+                if (animation.target.rotate !== undefined && animation.target.rotate !== 0 && Math.floor(value / 360) - value / 360 === 0) {
+                    originalValue.z = animation.target.rotate * Math.PI / 180;
+                }
 
-              // Respect only value.z for back-compat until 3D rotations are implemented
-              value = {
-                x: value.x * Math.PI / 180,
-                y: value.y * Math.PI / 180,
-                z: value.z * Math.PI / 180
-              };
+                // Respect only value.z for back-compat until 3D rotations are implemented
+                value = {
+                    x: value.x * Math.PI / 180,
+                    y: value.y * Math.PI / 180,
+                    z: value.z * Math.PI / 180
+                };
                 break;
             case Properties.translate:
                 animation._originalValue = { x: view.translateX, y: view.translateY };
@@ -419,10 +419,10 @@ export class Animation extends AnimationBase {
         let nativeView = <UIView>animation.target.nativeViewProtected;
         let nativeAnimation;
 
-        if(args.subPropertiesToAnimate){
-          nativeAnimation = this._createGroupAnimation(args, animation)
-        }else{
-          nativeAnimation = this._createBasicAnimation(args, animation);
+        if (args.subPropertiesToAnimate) {
+            nativeAnimation = this._createGroupAnimation(args, animation)
+        } else {
+            nativeAnimation = this._createBasicAnimation(args, animation);
         }
 
         let animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation, valueSource);
@@ -448,13 +448,13 @@ export class Animation extends AnimationBase {
         const animations = NSMutableArray.alloc().initWithCapacity(3);
 
         args.subPropertiesToAnimate.forEach(property => {
-           const basicAnimationArgs = {...args};
-           basicAnimationArgs.propertyNameToAnimate  = `${args.propertyNameToAnimate}.${property}`;
-           basicAnimationArgs.fromValue  = args.fromValue[property];
-           basicAnimationArgs.toValue  = args.toValue[property];
+            const basicAnimationArgs = { ...args };
+            basicAnimationArgs.propertyNameToAnimate = `${args.propertyNameToAnimate}.${property}`;
+            basicAnimationArgs.fromValue = args.fromValue[property];
+            basicAnimationArgs.toValue = args.toValue[property];
 
-           const basicAnimation = this._createBasicAnimation(basicAnimationArgs, animation);
-           animations.addObject(basicAnimation);
+            const basicAnimation = this._createBasicAnimation(basicAnimationArgs, animation);
+            animations.addObject(basicAnimation);
         });
 
         groupAnimation.animations = animations;
@@ -463,21 +463,21 @@ export class Animation extends AnimationBase {
     }
 
     private static _createBasicAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-      let basicAnimation = CABasicAnimation.animationWithKeyPath(args.propertyNameToAnimate);
-      basicAnimation.fromValue = args.fromValue;
-      basicAnimation.toValue = args.toValue;
-      basicAnimation.duration = args.duration;
-      if (args.repeatCount !== undefined) {
-        basicAnimation.repeatCount = args.repeatCount;
-      }
-      if (args.delay !== undefined) {
-        basicAnimation.beginTime = CACurrentMediaTime() + args.delay;
-      }
-      if (animation.curve !== undefined) {
-        basicAnimation.timingFunction = animation.curve;
-      }
+        let basicAnimation = CABasicAnimation.animationWithKeyPath(args.propertyNameToAnimate);
+        basicAnimation.fromValue = args.fromValue;
+        basicAnimation.toValue = args.toValue;
+        basicAnimation.duration = args.duration;
+        if (args.repeatCount !== undefined) {
+            basicAnimation.repeatCount = args.repeatCount;
+        }
+        if (args.delay !== undefined) {
+            basicAnimation.beginTime = CACurrentMediaTime() + args.delay;
+        }
+        if (animation.curve !== undefined) {
+            basicAnimation.timingFunction = animation.curve;
+        }
 
-      return basicAnimation;
+        return basicAnimation;
     }
 
     private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe", finishedCallback: (cancelled?: boolean) => void) {
