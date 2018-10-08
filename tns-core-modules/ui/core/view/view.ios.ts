@@ -1,4 +1,4 @@
-// Definitions.
+﻿// Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
 import { ViewBase } from "../view-base";
 import { booleanConverter, Property } from "../view";
@@ -8,8 +8,9 @@ import {
     traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, getAncestor
 } from "./view-common";
 
-import { ios as iosBackground, Background } from "../../styling/background";
+import { topmost } from "../../frame/frame-stack";
 import { ios as iosUtils } from "../../../utils/utils";
+import { ios as iosBackground, Background } from "../../styling/background";
 import {
     Visibility,
     visibilityProperty, opacityProperty,
@@ -362,6 +363,8 @@ export class View extends ViewCommon {
     }
 
     protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
+      const that = this;
+      const superCall = super._showNativeModalView;
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
@@ -369,50 +372,57 @@ export class View extends ViewCommon {
             return;
         }
 
-        const parentController = parentWithController.viewController;
+        const openNow = function() {
+          that._setupAsRootView({});
+
+          superCall(parentWithController, context, closeCallback, fullscreen, stretched);
+          let controller = that.viewController;
+          if (!controller) {
+              const nativeView = that.ios || that.nativeViewProtected;
+              controller = ios.UILayoutViewController.initWithOwner(new WeakRef(that));
+
+              if (nativeView instanceof UIView) {
+                  controller.view.addSubview(nativeView);
+              }
+
+              that.viewController = controller;
+          }
+
+          if (fullscreen) {
+              controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
+          } else {
+              controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
+          }
+
+          that.horizontalAlignment = "stretch";
+          that.verticalAlignment = "stretch";
+
+          that._raiseShowingModallyEvent();
+          animated = animated === undefined ? true : !!animated;
+          (<any>controller).animated = animated;
+          parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
+          const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
+          if (transitionCoordinator) {
+              UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
+                  .call(transitionCoordinator, null, () => that._raiseShownModallyEvent());
+          } else {
+              // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
+              // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
+              // Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
+              that._raiseShownModallyEvent();
+          }
+        };
+
+        let parentController = parentWithController.viewController;
         if (!parentController.view || !parentController.view.window) {
-            traceWrite("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!",
-                traceCategories.ViewHierarchy, traceMessageType.error);
-            return;
-        }
-
-        this._setupAsRootView({});
-
-        super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
-        let controller = this.viewController;
-        if (!controller) {
-            const nativeView = this.ios || this.nativeViewProtected;
-            controller = ios.UILayoutViewController.initWithOwner(new WeakRef(this));
-
-            if (nativeView instanceof UIView) {
-                controller.view.addSubview(nativeView);
-            }
-
-            this.viewController = controller;
-        }
-
-        if (fullscreen) {
-            controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
+            // close first
+            parentController.dismissModalViewControllerAnimated(false);
+            // give it a moment to fully close before opening again
+            setTimeout(function() {
+              openNow();
+            }, 300);
         } else {
-            controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
-        }
-
-        this.horizontalAlignment = "stretch";
-        this.verticalAlignment = "stretch";
-
-        this._raiseShowingModallyEvent();
-        animated = animated === undefined ? true : !!animated;
-        (<any>controller).animated = animated;
-        parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
-        const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
-        if (transitionCoordinator) {
-            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-                .call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
-        } else {
-            // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
-            // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
-            // Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
-            this._raiseShownModallyEvent();
+          openNow();
         }
     }
 
