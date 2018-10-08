@@ -260,6 +260,10 @@ export class TabViewItem extends TabViewItemBase {
     public index: number;
     private _defaultTransformationMethod: android.text.method.TransformationMethod;
 
+    get _hasFragments(): boolean {
+        return true;
+    }
+
     public initNativeView(): void {
         super.initNativeView();
         if (this.nativeViewProtected) {
@@ -295,6 +299,24 @@ export class TabViewItem extends TabViewItemBase {
             this.tabItemSpec = createTabItemSpec(this);
             tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
         }
+    }
+
+    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
+        const tabView = this.parent as TabView;
+        let tabFragment = null;
+        const manager = tabView._getFragmentManager();
+        for (let fragment of (<Array<any>>manager.getFragments().toArray())) {
+            if (fragment.index === this.index) {
+                tabFragment = fragment;
+                break;
+            }
+        }
+
+        if (!tabFragment) {
+            throw new Error(`Could not get child fragment manager for tab item with index ${this.index}`);
+        }
+
+        return tabFragment.getChildFragmentManager();
     }
 
     [fontSizeProperty.getDefault](): { nativeSize: number } {
@@ -363,17 +385,6 @@ export class TabView extends TabViewBase {
 
     get _hasFragments(): boolean {
         return true;
-    }
-
-    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
-        if (this._pagerAdapter) {
-            const fragment: android.support.v4.app.Fragment = (<any>this._pagerAdapter).mCurrentPrimaryItem;
-            if (fragment && fragment.isAdded()) {
-                return fragment.getChildFragmentManager();
-            }
-        }
-
-        return null;
     }
 
     public onItemsChanged(oldItems: TabViewItem[], newItems: TabViewItem[]): void {

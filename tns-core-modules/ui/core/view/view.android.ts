@@ -273,7 +273,7 @@ export class View extends ViewCommon {
         let manager = this._manager;
         if (!manager) {
             let view: View = this;
-            let frameOrTabFound = false;
+            let frameOrTabViewItemFound = false;
             while (view) {
                 // when interacting with nested fragments instead of using getSupportFragmentManager 
                 // we must always use getChildFragmentManager instead;
@@ -292,12 +292,12 @@ export class View extends ViewCommon {
                 // - frame1 -> tabview (tabview uses frame1 CHILD fm)
                 // - frame1 -> tabview -> frame2 (tabview uses frame1 CHILD fm; frame2 uses tabview item CHILD fm)
                 if (view._hasFragments) {
-                    if (frameOrTabFound) {
+                    if (frameOrTabViewItemFound) {
                         manager = view._getChildFragmentManager();
                         break;
                     }
 
-                    frameOrTabFound = true;
+                    frameOrTabViewItemFound = true;
                 }
 
                 // the case is needed because _dialogFragment is on View
