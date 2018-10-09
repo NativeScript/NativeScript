@@ -101,7 +101,7 @@ class WKScriptMessageHandlerImpl extends NSObject
             let body: string = message.body;
             let cookies = body.split("; ");
             for (let i = 0; i < cookies.length; i++) {
-                let comps = cookies[i].split('=');
+                let comps = cookies[i].split("=");
 
                 if (comps.length < 2) {
                     continue;
@@ -135,7 +135,7 @@ class WKScriptMessageHandlerImpl extends NSObject
             let uppercaseKey = key.toUpperCase();
 
             if ( uppercaseKey === "DOMAIN" ) {
-                if (!value.startsWith('.') && !value.startsWith('www')) {
+                if (!value.startsWith(".") && !value.startsWith("www")) {
                     value = "." + value;
                 }
 
@@ -190,12 +190,12 @@ class WKScriptMessageHandlerImpl extends NSObject
 
     private cookieMap(cookieWithURL): any {
         let cookieMap = [];
-        let cookieKeyValueStrings = cookieWithURL.split(';');
+        let cookieKeyValueStrings = cookieWithURL.split(";");
 
         for ( let i = 0; i < cookieKeyValueStrings.length; i++ ) {
             let cookieKeyValueString = cookieKeyValueStrings[i];
 
-            let separator = cookieKeyValueString.indexOf('=');
+            let separator = cookieKeyValueString.indexOf("=");
             if ( separator !== -1 && separator > 0 && separator < cookieKeyValueString.length ) {
                 let key = cookieKeyValueString.substring(0, separator).trim();
                 let value = cookieKeyValueString.substring(separator + 1).trim()
@@ -241,7 +241,7 @@ export class WebView extends WebViewBase {
     }
 
     private javascriptStringWithCookie(cookie: NSHTTPCookie) {
-        let cookieString = cookie.name + "=" + cookie.value + ";domain=" + cookie.domain + ";path=" + (cookie.path?cookie.path:'/');
+        let cookieString = cookie.name + "=" + cookie.value + ";domain=" + cookie.domain + ";path=" + (cookie.path?cookie.path:"/");
 
         if (cookie.secure) {
             cookieString += ";secure=true";
@@ -298,7 +298,7 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(src: string) {
-        if (src.startsWith('file:///')) {
+        if (src.startsWith("file:///")) {
             this.ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
         } else {
             this.setupCookieHandlers();
@@ -307,7 +307,7 @@ export class WebView extends WebViewBase {
 
             if (this.syncCookies) {
                 let validDomain = url.host;
-                let requestIsSecure = (url.scheme === 'https');
+                let requestIsSecure = (url.scheme === "https");
 
                 let cookieArray = [];
                 for (let i = 0; i < NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies.count; i++) {
@@ -331,9 +331,9 @@ export class WebView extends WebViewBase {
                     cookieArray.push(cookie.name + "=" + cookie.value);
                 }
 
-                let header = cookieArray.join(';');
+                let header = cookieArray.join(";");
                 traceWrite("cookie header = " + header, traceCategories.Debug);        
-                request.setValueForHTTPHeaderField(header, 'Cookie');
+                request.setValueForHTTPHeaderField(header, "Cookie");
             }
             this.ios.loadRequest(request);
         }
