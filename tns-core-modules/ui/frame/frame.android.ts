@@ -188,7 +188,7 @@ export class Frame extends FrameBase {
         return null;
     }
 
-    _onRootViewReset(): void {
+    public _onRootViewReset(): void {
         this.disposeCurrentFragment();
         super._onRootViewReset();
     }

@@ -67,11 +67,11 @@ export function test_frame_topmost_matches_selectedIndex() {
         create: () => tabView
     };
 
-    waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
+    waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () => _resetRootView(entry));
 
     TKUnit.assertEqual(topmost().id, "Tab0 Frame0");
 
-    waitUntilNavigatedToMaxTimeout([items[1].page], () => tabView.selectedIndex = 1);
+    tabView.selectedIndex = 1;
 
     TKUnit.assertEqual(topmost().id, "Tab1 Frame1");
 }

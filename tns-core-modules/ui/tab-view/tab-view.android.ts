@@ -304,8 +304,8 @@ export class TabViewItem extends TabViewItemBase {
     public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
         const tabView = this.parent as TabView;
         let tabFragment = null;
-        const manager = tabView._getFragmentManager();
-        for (let fragment of (<Array<any>>manager.getFragments().toArray())) {
+        const fragmentManager = tabView._getFragmentManager();
+        for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
             if (fragment.index === this.index) {
                 tabFragment = fragment;
                 break;
@@ -536,6 +536,20 @@ export class TabView extends TabViewBase {
         }
 
         return false;
+    }
+
+    public _onRootViewReset(): void {
+        this.disposeCurrentFragments();
+        super._onRootViewReset();
+    }
+
+    private disposeCurrentFragments(): void {
+        const fragmentManager = this._getFragmentManager();
+        const transaction = fragmentManager.beginTransaction();
+        for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
+            transaction.remove(fragment);
+        }
+        transaction.commitNowAllowingStateLoss();
     }
 
     private shouldUpdateAdapter(items: Array<TabViewItemDefinition>) {
