@@ -122,35 +122,31 @@ export class WrapLayout extends WrapLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
+        const insets = this.getSafeAreaInsets();
         const isVertical = this.orientation === "vertical";
-        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
-        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
-        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
         let childLeft = paddingLeft;
         let childTop = paddingTop;
-        let childrenLength: number;
-        if (isVertical) {
-            childrenLength = bottom - top - paddingBottom;
-        }
-        else {
-            childrenLength = right - left - paddingRight;
-        }
+        let childrenHeight = bottom - top - paddingBottom;
+        let childrenWidth = right - left - paddingRight;
+        let rowOrColumn = 0;
 
-        var rowOrColumn = 0;
         this.eachLayoutChild((child, last) => {
             // Add margins because layoutChild will sustract them.
             // * density converts them to device pixels.
             let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
             let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
-            
+
             let length = this._lengths[rowOrColumn];
             if (isVertical) {
                 childWidth = length;
                 childHeight = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : childHeight;
                 let isFirst = childTop === paddingTop;
-                if (childTop + childHeight > childrenLength) {
+                if (childTop + childHeight > childrenHeight && childLeft + childWidth <= childrenWidth) {
                     // Move to top.
                     childTop = paddingTop;
 
@@ -165,12 +161,18 @@ export class WrapLayout extends WrapLayoutBase {
                     // Take respective column width.
                     childWidth = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
-            }
-            else {
+
+                if (childLeft < childrenWidth && childTop < childrenHeight) {
+                    View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+                }
+
+                // Move next child Top position to bottom.
+                childTop += childHeight;
+            } else {
                 childWidth = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : childWidth;
                 childHeight = length;
                 let isFirst = childLeft === paddingLeft;
-                if (childLeft + childWidth > childrenLength) {
+                if (childLeft + childWidth > childrenWidth && childTop + childHeight <= childrenHeight) {
                     // Move to left.
                     childLeft = paddingLeft;
 
@@ -185,15 +187,11 @@ export class WrapLayout extends WrapLayoutBase {
                     // Take respective row height.
                     childHeight = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
-            }
 
-            View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+                if (childLeft < childrenWidth && childTop < childrenHeight) {
+                    View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+                }
 
-            if (isVertical) {
-                // Move next child Top position to bottom.
-                childTop += childHeight;
-            }
-            else {
                 // Move next child Left position to right.
                 childLeft += childWidth;
             }

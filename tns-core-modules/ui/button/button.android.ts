@@ -37,34 +37,42 @@ function initializeClickListener(): void {
     }
 
     ClickListener = ClickListenerImpl;
-    APILEVEL = android.os.Build.VERSION.SDK_INT;
-    AndroidButton = android.widget.Button;
 }
 
 export class Button extends ButtonBase {
     nativeViewProtected: android.widget.Button;
+
+    constructor() {
+        super();
+        if (!APILEVEL) {
+            APILEVEL = android.os.Build.VERSION.SDK_INT;
+        }
+    }
 
     private _stateListAnimator: any;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     @profile
     public createNativeView() {
-        initializeClickListener();
-        const button = new AndroidButton(this._context);
-        const clickListener = new ClickListener(this);
-        button.setOnClickListener(clickListener);
-        (<any>button).clickListener = clickListener;
-        return button;
+        if (!AndroidButton) {
+            AndroidButton = android.widget.Button;
+        }
+        return new AndroidButton(this._context);
     }
 
     public initNativeView(): void {
-        const nativeView = this.nativeViewProtected;
-        (<any>nativeView).clickListener.owner = this;
         super.initNativeView();
+        const nativeView = this.nativeViewProtected;
+        initializeClickListener();
+        const clickListener = new ClickListener(this);
+        nativeView.setOnClickListener(clickListener);
+        (<any>nativeView).clickListener = clickListener;
     }
 
     public disposeNativeView() {
-        (<any>this.nativeViewProtected).clickListener.owner = null;
+        if (this.nativeViewProtected) {
+            (<any>this.nativeViewProtected).clickListener.owner = null;
+        }
         super.disposeNativeView();
     }
 

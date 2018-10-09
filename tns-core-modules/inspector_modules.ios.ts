@@ -1,5 +1,5 @@
 console.log("Loading inspector modules...");
-require("./globals/decorators");
+require("./globals/ts-helpers");
 require("./debugger/webinspector-network");
 require("./debugger/webinspector-dom");
 require("./debugger/webinspector-css");

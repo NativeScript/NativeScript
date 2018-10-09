@@ -43,21 +43,18 @@ export class TimePicker extends TimePickerBase {
     updatingNativeValue: boolean;
 
     public createNativeView() {
-        initializeTimeChangedListener();
-        const nativeView = new android.widget.TimePicker(this._context);
-        const listener = new TimeChangedListener(this);
-        nativeView.setOnTimeChangedListener(listener);
-        (<any>nativeView).listener = listener;
-        (<any>nativeView).calendar = java.util.Calendar.getInstance();
-        return nativeView;
+        return new android.widget.TimePicker(this._context);
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeViewProtected;
-        nativeView.listener.owner = this;
+        const nativeView = this.nativeViewProtected;
+        initializeTimeChangedListener();
+        const listener = new TimeChangedListener(this);
+        nativeView.setOnTimeChangedListener(listener);
+        (<any>nativeView).listener = listener;
+        const calendar = (<any>nativeView).calendar = java.util.Calendar.getInstance();
 
-        const calendar = (<any>nativeView).calendar;
         const hour = hourProperty.isSet(this) ? this.hour : calendar.get(java.util.Calendar.HOUR_OF_DAY);
         const minute = minuteProperty.isSet(this) ? this.minute : calendar.get(java.util.Calendar.MINUTE);
 

@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 import {
     FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, traceError
 } from "./frame-common";
 
 import {
@@ -138,7 +138,7 @@ export class Frame extends FrameBase {
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events. 
         // As JS instances are alive it is already done for the current page.
-        if (!this.isLoaded || !this._attachedToWindow) {
+        if (!this.isLoaded || this._executingEntry || !this._attachedToWindow) {
             return;
         }
 
@@ -412,9 +412,6 @@ export class Frame extends FrameBase {
         }
 
         super._popFromFrameStack();
-        if (this._android.hasOwnActivity) {
-            this._android.activity.finish();
-        }
     }
 
     public _getNavBarVisible(page: Page): boolean {
@@ -461,7 +458,6 @@ let framesCache = new Array<WeakRef<AndroidFrame>>();
 
 class AndroidFrame extends Observable implements AndroidFrameDefinition {
     public rootViewGroup: android.view.ViewGroup;
-    public hasOwnActivity = false;
     public frameId;
 
     private _showActionBar = true;
@@ -700,8 +696,23 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         const entry = this.entry;
+        if (!entry) {
+            traceError(`${fragment}.onCreateView: entry is null or undefined`);
+            return null;
+        }
+
         const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+            return null;
+        }
+
         const frame = this.frame;
+        if (!frame) {
+            traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+            return null;
+        }
+
         if (page.parent === frame) {
             // If we are navigating to a page that was destroyed
             // reinitialize its UI.
@@ -710,12 +721,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 page._setupUI(context);
             }
         } else {
-            if (!this.frame._styleScope) {
+            if (!frame._styleScope) {
                 // Make sure page will have styleScope even if parents don't.
                 page._updateStyleScope();
             }
 
-            this.frame._addView(page);
+            frame._addView(page);
         }
 
         if (frame.isLoaded && !page.isLoaded) {
@@ -744,6 +755,17 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
         }
+
+        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.
+        // on app resume in nested frame scenarios with support library version greater than 26.0.0
+        const view = fragment.getView();
+        if (view != null) {
+            const viewParent = view.getParent();
+            if (viewParent instanceof android.view.ViewGroup) {
+                viewParent.removeView(view);
+            }
+        }
+
         superFunc.call(fragment);
     }
 

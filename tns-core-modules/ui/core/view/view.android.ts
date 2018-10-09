@@ -1,7 +1,6 @@
 // Definitions.
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
-import { AndroidActivityBackPressedEventData } from "../../../application";
 // Types.
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
@@ -22,6 +21,7 @@ import {
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
+import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 
 export * from "./view-common";
 
@@ -72,12 +72,7 @@ function initializeTouchListener(): void {
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
             const owner = this.owner;
-            for (let type in owner._gestureObservers) {
-                let list = owner._gestureObservers[type];
-                list.forEach(element => {
-                    element.androidOnTouchEvent(event);
-                });
-            }
+            owner.handleGestureTouch(event);
 
             let nativeView = owner.nativeViewProtected;
             if (!nativeView || !nativeView.onTouchEvent) {
@@ -112,6 +107,13 @@ function initializeDialogFragment() {
                 activity: view._context,
                 cancel: false,
             };
+
+            // Fist fire application.android global event
+            androidApp.notify(args);
+            if (args.cancel) {
+                return;
+            }
+
             view.notify(args);
 
             if (!args.cancel && !view.onBackPressed()) {
@@ -178,7 +180,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (!owner.isLoaded) {
+            if (owner && !owner.isLoaded) {
                 owner.callLoaded();
             }
 
@@ -194,7 +196,7 @@ function initializeDialogFragment() {
             }
 
             const owner = this.owner;
-            if (owner.isLoaded) {
+            if (owner && owner.isLoaded) {
                 owner.callUnloaded();
             }
         }
@@ -320,6 +322,18 @@ export class View extends ViewCommon {
         return false;
     }
 
+    public handleGestureTouch(event: android.view.MotionEvent): any {
+        for (let type in this._gestureObservers) {
+            let list = this._gestureObservers[type];
+            list.forEach(element => {
+                element.androidOnTouchEvent(event);
+            });
+        }
+        if (this.parent instanceof View) {
+            this.parent.handleGestureTouch(event);
+        }
+    }
+
     private hasGestureObservers() {
         return this._gestureObservers && Object.keys(this._gestureObservers).length > 0
     }
@@ -343,15 +357,20 @@ export class View extends ViewCommon {
     }
 
     private setOnTouchListener() {
-        if (this.nativeViewProtected && this.hasGestureObservers()) {
-            this.touchListenerIsSet = true;
-            if (this.nativeViewProtected.setClickable) {
-                this.nativeViewProtected.setClickable(true);
-            }
+        if (!this.nativeViewProtected || !this.hasGestureObservers()) {
+            return;
+        }
+        
+        // do not set noop listener that handles the event (disabled listener) if IsUserInteractionEnabled is
+        // false as we might need the ability for the event to pass through to a parent view
+        initializeTouchListener();
+        this.touchListener = this.touchListener || new TouchListener(this);
+        this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
-            initializeTouchListener();
-            this.touchListener = this.touchListener || new TouchListener(this);
-            this.nativeViewProtected.setOnTouchListener(this.touchListener);
+        this.touchListenerIsSet = true;
+
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
         }
     }
 
@@ -490,7 +509,7 @@ export class View extends ViewCommon {
 
     public getLocationRelativeTo(otherView: ViewCommon): Point {
         if (!this.nativeViewProtected || !this.nativeViewProtected.getWindowToken() ||
-            !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
+            !otherView || !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() ||
             this.nativeViewProtected.getWindowToken() !== otherView.nativeViewProtected.getWindowToken()) {
             return undefined;
         }
@@ -591,15 +610,8 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        if (!value) {
-            initializeDisabledListener();
-            // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-            this.nativeViewProtected.setOnTouchListener(disableUserInteractionListener);
-        } else {
-            this.setOnTouchListener();
-            if (!this.touchListenerIsSet) {
-                this.nativeViewProtected.setOnTouchListener(null);
-            }
+        if (this.nativeViewProtected.setClickable) {
+            this.nativeViewProtected.setClickable(value);
         }
     }
 
@@ -785,7 +797,7 @@ export class View extends ViewCommon {
             androidBackground.onBackgroundOrBorderPropertyChanged(this);
         } else {
             const nativeView = this.nativeViewProtected;
-            org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
+            nativeView.setBackground(value);
 
             const style = this.style;
             const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
@@ -804,7 +816,11 @@ export class View extends ViewCommon {
     }
 }
 
-export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
+export class ContainerView extends View {
+    public iosOverflowSafeArea: boolean;
+}
+
+export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
     nativeViewProtected: android.view.ViewGroup;
 
     public createNativeView() {

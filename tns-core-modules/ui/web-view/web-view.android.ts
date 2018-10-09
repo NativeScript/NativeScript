@@ -93,20 +93,19 @@ export class WebView extends WebViewBase {
     nativeViewProtected: android.webkit.WebView;
 
     public createNativeView() {
-        initializeWebViewClient();
-
         const nativeView = new android.webkit.WebView(this._context);
         nativeView.getSettings().setJavaScriptEnabled(true);
         nativeView.getSettings().setBuiltInZoomControls(true);
-        const client = new WebViewClient(this);
-        nativeView.setWebViewClient(client);
-        (<any>nativeView).client = client;
         return nativeView;
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        (<any>this.nativeViewProtected).client.owner = this;
+        initializeWebViewClient();
+        const nativeView = this.nativeViewProtected;
+        const client = new WebViewClient(this);
+        nativeView.setWebViewClient(client);
+        (<any>nativeView).client = client;
     }
 
     public disposeNativeView() {

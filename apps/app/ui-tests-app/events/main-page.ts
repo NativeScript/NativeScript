@@ -14,6 +14,7 @@ export function loadExamples() {
     examples.set("gestures", "events/gestures");
     examples.set("touch", "events/touch-event");
     examples.set("pan", "events/pan-event");
+    examples.set("swipe-passtrough", "events/swipe-event-passtrough");
     examples.set("handlers", "events/handlers");
     examples.set("console", "events/console");
     examples.set("i61", "events/i61");

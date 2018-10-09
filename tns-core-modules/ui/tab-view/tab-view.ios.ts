@@ -11,8 +11,12 @@ import { textTransformProperty, TextTransform, getTransformedText } from "../tex
 import { fromFileOrResource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
-
+import { ios as iosUtils } from "../../utils/utils"
+import { device } from "../../platform";
 export * from "./tab-view-common";
+
+const majorVersion = iosUtils.MajorVersion;
+const isPhone = device.deviceType === "Phone";
 
 class UITabBarControllerImpl extends UITabBarController {
 
@@ -46,6 +50,17 @@ class UITabBarControllerImpl extends UITabBarController {
         if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
             owner.callUnloaded();
         }
+    }
+
+    public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
+        super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
+        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
+            .call(coordinator, null, () => {
+                const owner = this._owner.get();
+                if (owner && owner.items) {
+                    owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
+                }
+            });
     }
 }
 
@@ -130,16 +145,32 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 }
 
-function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
-    if (typeof (<any>tabBarItem).setTitlePositionAdjustment === "function") {
-        (<any>tabBarItem).setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
-    } else {
-        tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarItem, controller: UIViewController) {
+    if (!tabItem || !tabBarItem) {
+        return;
     }
-}
 
-function updateItemIconPosition(tabBarItem: UITabBarItem): void {
-    tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
+    // For iOS <11 icon is *always* above the text.
+    // For iOS 11 icon is above the text *only* on phones in portrait mode.
+    const orientation = controller.interfaceOrientation;
+    const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
+    const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
+
+    if (!tabItem.iconSource) {
+        if (isIconAboveTitle) {
+            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+        } else {
+            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
+        }
+    }
+
+    if (!tabItem.title) {
+        if (isIconAboveTitle) {
+            tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
+        } else {
+            tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
+        }
+    }
 }
 
 export class TabViewItem extends TabViewItemBase {
@@ -175,11 +206,7 @@ export class TabViewItem extends TabViewItemBase {
             const title = getTransformedText(this.title, this.style.textTransform);
 
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
-            if (!icon) {
-                updateItemTitlePosition(tabBarItem);
-            } else if (!title) {
-                updateItemIconPosition(tabBarItem);
-            }
+            updateTitleAndIconPositions(this, tabBarItem, controller);
 
             // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
             // Delete the repeating code.
@@ -189,6 +216,13 @@ export class TabViewItem extends TabViewItemBase {
         }
     }
 
+    public _updateTitleAndIconPositions() {
+        if (!this.__controller || !this.__controller.tabBarItem) {
+            return;
+        }
+        updateTitleAndIconPositions(this, this.__controller.tabBarItem, this.__controller);
+    }
+
     [textTransformProperty.setNative](value: TextTransform) {
         this._update();
     }
@@ -196,6 +230,7 @@ export class TabViewItem extends TabViewItemBase {
 
 export class TabView extends TabViewBase {
     public viewController: UITabBarControllerImpl;
+    public items: TabViewItem[];
     public _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
@@ -206,9 +241,18 @@ export class TabView extends TabViewBase {
 
         this.viewController = this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
         this.nativeViewProtected = this._ios.view;
+    }
+
+    initNativeView() {
+        super.initNativeView();
         this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
-        //This delegate is set on the last line of _addTabs method.
+    }
+
+    disposeNativeView() {
+        this._delegate = null;
+        this._moreNavigationControllerDelegate = null;
+        super.disposeNativeView();
     }
 
     @profile
@@ -372,11 +416,7 @@ export class TabView extends TabViewBase {
             const controller = this.getViewController(item);
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
-            if (!icon) {
-                updateItemTitlePosition(tabBarItem);
-            } else if (!item.title) {
-                updateItemIconPosition(tabBarItem);
-            }
+            updateTitleAndIconPositions(item, tabBarItem, controller);
 
             applyStatesToItem(tabBarItem, states);
 

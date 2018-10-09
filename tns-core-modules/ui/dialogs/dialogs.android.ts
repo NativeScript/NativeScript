@@ -2,7 +2,7 @@
  * Android specific dialogs functions implementation.
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getLabelColor, getButtonColors, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
 import { android as androidApp } from "../../application";
 
 export * from "./dialogs-common";
@@ -184,6 +184,21 @@ export function prompt(arg: any): Promise<PromptResult> {
                     input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 } else if (options.inputType === inputType.email) {
                     input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                }
+
+                switch (options.capitalizationType) {
+                    case capitalizationType.all: {
+                        input.setInputType(input.getInputType() | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+                        break;
+                    }
+                    case capitalizationType.sentences: {
+                        input.setInputType(input.getInputType() | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                        break;
+                    }
+                    case capitalizationType.words: {
+                        input.setInputType(input.getInputType() | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+                        break;
+                    }
                 }
             }
 

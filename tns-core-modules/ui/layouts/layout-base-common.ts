@@ -106,6 +106,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
     }
 
     public clipToBounds: boolean;
+    public isPassThroughParentEnabled: boolean;
 
     public _childIndexToNativeChildIndex(index?: number): number {
         if (index === undefined) {
@@ -151,3 +152,6 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
 export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({ name: "clipToBounds", defaultValue: true, valueConverter: booleanConverter });
 clipToBoundsProperty.register(LayoutBaseCommon);
+
+export const isPassThroughParentEnabledProperty = new Property<LayoutBaseCommon, boolean>({ name: "isPassThroughParentEnabled", defaultValue: false, valueConverter: booleanConverter });
+isPassThroughParentEnabledProperty.register(LayoutBaseCommon);

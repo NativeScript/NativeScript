@@ -22,7 +22,7 @@ export class DockLayout extends DockLayoutBase {
 
         const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
         const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
-        
+
         let remainingWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
         let remainingHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
 
@@ -79,11 +79,12 @@ export class DockLayout extends DockLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
-        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
+        const insets = this.getSafeAreaInsets();
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth + insets.left + insets.right;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth + insets.top + insets.bottom;
 
-        let childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
-        let childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+        let childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+        let childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 
         let x = childLeft;
         let y = childTop;

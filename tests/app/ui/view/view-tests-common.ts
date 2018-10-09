@@ -5,16 +5,15 @@ import { Page } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
-import { Layout } from "tns-core-modules/ui/layouts/layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
-import * as utils from "tns-core-modules/utils/utils";
 import * as types from "tns-core-modules/utils/types";
 import * as helper from "../../ui/helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -292,7 +291,7 @@ const customShortHandProperty = new ShorthandProperty<Style, string>({
 });
 customShortHandProperty.register(Style);
 
-class TestView extends Layout {
+class TestView extends LayoutBase {
     public inheritanceTest: number;
     public booleanInheritanceTest: boolean;
     public dummy: number;
@@ -346,19 +345,8 @@ class TestView extends Layout {
         (<any>this.style).customShortHand = value;
     }
 
-    private _nativeView;
     constructor(public name: string) {
         super();
-        this._nativeView = this.nativeViewProtected;
-        this.nativeViewProtected = undefined;
-    }
-
-    public createNativeView() {
-        if (isIOS) {
-            return this._nativeView;
-        }
-
-        return super.createNativeView();
     }
 
     public toString() {
@@ -496,7 +484,7 @@ export function test_NativeSetter_called_only_once_with_cssValue() {
         TKUnit.assertEqual(testView.cssPropNativeValue, "testCssValue", "Native value");
         TKUnit.assertEqual(testView.cssAnimPropNativeValue, "testCssAnimValue", "Native value");
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue", "Native value");
-    }, pageCSS);
+    }, { pageCss: pageCSS });
 };
 
 export function test_NativeSetter_called_only_once_with_cssValue_and_localValue() {
@@ -522,7 +510,7 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
         TKUnit.assertEqual(testView.cssAnimPropNativeValue, "testCssAnimationValueLocal", "Native value");
         // View property set from CSS sets local value
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValueCSS", "Native value");
-    }, pageCSS);
+    }, { pageCss: pageCSS });
 };
 
 export function test_NativeSetter_called_only_once_with_multiple_sets() {
@@ -972,7 +960,7 @@ export function testBackgroundShorthand_With_EmptyBorder() {
 
     helper.buildUIAndRunTest(lbl, (views: Array<View>) => {
         helper.waitUntilLayoutReady(lbl);
-    }, css);
+    }, { pageCss: css });
 };
 
 export function test_automation_text_default_value() {
