@@ -39,10 +39,10 @@ class WKNavigationDelegateImpl extends NSObject
             if (traceEnabled()) {
                 traceWrite("WKNavigationDelegateClass.webViewDecidePolicyForNavigationActionDecisionHandler(" + navigationAction.request.URL.absoluteString + ", " + navigationAction.navigationType + ")", traceCategories.Debug);
             }
-            
-            if ( owner.syncCookies ) {
+
+            if (owner.syncCookies) {
                 // Following handle will get invoked for subsequent page navigation and updates the sharedHTTPCookieStorage
-                webView.evaluateJavaScriptCompletionHandler("window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);", null);            
+                webView.evaluateJavaScriptCompletionHandler("window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);", null);
             }
             owner._onLoadStarted(navigationAction.request.URL.absoluteString, navType);
         }
@@ -108,7 +108,7 @@ class WKScriptMessageHandlerImpl extends NSObject
                 }
 
                 // we need NSHTTPCookieOriginURL for NSHTTPCookie to be created
-                let cookieWithURL = cookies[i] + "; ORIGINURL=" + owner.ios.URL ;
+                let cookieWithURL = cookies[i] + "; ORIGINURL=" + owner.ios.URL;
                 let httpCookie = this.getCookie(cookieWithURL);
 
                 if (httpCookie) {
@@ -134,38 +134,38 @@ class WKScriptMessageHandlerImpl extends NSObject
             let value = cookieMap[key];
             let uppercaseKey = key.toUpperCase();
 
-            if ( uppercaseKey === "DOMAIN" ) {
+            if (uppercaseKey === "DOMAIN") {
                 if (!value.startsWith(".") && !value.startsWith("www")) {
                     value = "." + value;
                 }
 
                 cookieProperties.setObjectForKey(value, NSHTTPCookieDomain);
-            } else if ( uppercaseKey === "VERSION" ) {
+            } else if (uppercaseKey === "VERSION") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieVersion);
-            } else if ( uppercaseKey === "MAX-AGE" || uppercaseKey === "MAXAGE" ) {
+            } else if (uppercaseKey === "MAX-AGE" || uppercaseKey === "MAXAGE") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieMaximumAge);
-            } else if ( uppercaseKey === "PATH" ) {
+            } else if (uppercaseKey === "PATH") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookiePath);
-            } else if ( uppercaseKey === "ORIGINURL" ) {
+            } else if (uppercaseKey === "ORIGINURL") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieOriginURL);
-            } else if ( uppercaseKey === "PORT" ) {
+            } else if (uppercaseKey === "PORT") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookiePort);
-            } else if ( uppercaseKey === "SECURE" || uppercaseKey === "ISSECURE" ) {
+            } else if (uppercaseKey === "SECURE" || uppercaseKey === "ISSECURE") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieSecure);
-            } else if ( uppercaseKey === "COMMENT" ) {
+            } else if (uppercaseKey === "COMMENT") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieComment);
-            } else if ( uppercaseKey === "COMMENTURL" ) {
+            } else if (uppercaseKey === "COMMENTURL") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieCommentURL);
-            } else if ( uppercaseKey === "EXPIRES" ) {
+            } else if (uppercaseKey === "EXPIRES") {
                 let dateFormatter: NSDateFormatter = NSDateFormatter.new();
                 dateFormatter.locale = NSLocale.alloc().initWithLocaleIdentifier("en_US");
                 dateFormatter.dateFormat = "EEE, dd-MMM-yyyy HH:mm:ss zzz";
                 cookieProperties.setObjectForKey(dateFormatter.dateFromString(value), NSHTTPCookieExpires);
-            } else if ( uppercaseKey === "DISCART" ) {
+            } else if (uppercaseKey === "DISCART") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieDiscard);
-            } else if ( uppercaseKey === "NAME" ) {
+            } else if (uppercaseKey === "NAME") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieName);
-            } else if ( uppercaseKey === "VALUE" ) {
+            } else if (uppercaseKey === "VALUE") {
                 cookieProperties.setObjectForKey(value, NSHTTPCookieValue);
             } else {
                 cookieProperties.setObjectForKey(key, NSHTTPCookieName);
@@ -174,13 +174,13 @@ class WKScriptMessageHandlerImpl extends NSObject
         }
 
         // document.cookie doesn't return cookie expiration date, so added cookieExpiresIn property for overriding
-        if ( !cookieProperties[NSHTTPCookieExpires] && cookieExpiresIn ) {
+        if (!cookieProperties[NSHTTPCookieExpires] && cookieExpiresIn) {
             let currentDate = NSDate.date();
             let expireDate = currentDate.dateByAddingTimeInterval(cookieExpiresIn);
             cookieProperties.setObjectForKey(expireDate, NSHTTPCookieExpires);
         }
 
-        if ( !cookieProperties.objectForKey(NSHTTPCookiePath) ) {
+        if (!cookieProperties.objectForKey(NSHTTPCookiePath)) {
             cookieProperties.setObjectForKey("/", NSHTTPCookiePath);
         }
 
@@ -192,11 +192,11 @@ class WKScriptMessageHandlerImpl extends NSObject
         let cookieMap = [];
         let cookieKeyValueStrings = cookieWithURL.split(";");
 
-        for ( let i = 0; i < cookieKeyValueStrings.length; i++ ) {
+        for (let i = 0; i < cookieKeyValueStrings.length; i++) {
             let cookieKeyValueString = cookieKeyValueStrings[i];
 
             let separator = cookieKeyValueString.indexOf("=");
-            if ( separator !== -1 && separator > 0 && separator < cookieKeyValueString.length ) {
+            if (separator !== -1 && separator > 0 && separator < cookieKeyValueString.length) {
                 let key = cookieKeyValueString.substring(0, separator).trim();
                 let value = cookieKeyValueString.substring(separator + 1).trim()
                 cookieMap[key] = value;
@@ -241,7 +241,7 @@ export class WebView extends WebViewBase {
     }
 
     private javascriptStringWithCookie(cookie: NSHTTPCookie) {
-        let cookieString = cookie.name + "=" + cookie.value + ";domain=" + cookie.domain + ";path=" + (cookie.path?cookie.path:"/");
+        let cookieString = cookie.name + "=" + cookie.value + ";domain=" + cookie.domain + ";path=" + (cookie.path ? cookie.path : "/");
 
         if (cookie.secure) {
             cookieString += ";secure=true";
@@ -313,18 +313,18 @@ export class WebView extends WebViewBase {
                 for (let i = 0; i < NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies.count; i++) {
                     let cookie: NSHTTPCookie = NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies[i];
                     if (cookie.name.includes("'")) {
-                        traceWrite("Skipping " + cookie.properties + " because it contains a '", traceCategories.Debug);                
+                        traceWrite("Skipping " + cookie.properties + " because it contains a '", traceCategories.Debug);
                         continue;
                     }
 
                     if (!cookie.domain.endsWith(validDomain)) {
-                        traceWrite("Skipping " + cookie.properties + " (because not " + validDomain + ")", traceCategories.Debug);     
+                        traceWrite("Skipping " + cookie.properties + " (because not " + validDomain + ")", traceCategories.Debug);
                         continue;
                     }
 
                     // Are we secure only?
                     if (cookie.secure && !requestIsSecure) {
-                        traceWrite("Skipping " + cookie.properties + " (because " + url.absoluteString + " not secure)", traceCategories.Debug);                             
+                        traceWrite("Skipping " + cookie.properties + " (because " + url.absoluteString + " not secure)", traceCategories.Debug);
                         continue;
                     }
 
@@ -332,7 +332,7 @@ export class WebView extends WebViewBase {
                 }
 
                 let header = cookieArray.join(";");
-                traceWrite("cookie header = " + header, traceCategories.Debug);        
+                traceWrite("cookie header = " + header, traceCategories.Debug);
                 request.setValueForHTTPHeaderField(header, "Cookie");
             }
             this.ios.loadRequest(request);
