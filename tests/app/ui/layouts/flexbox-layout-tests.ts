@@ -849,7 +849,7 @@ export const testAlignContent_spaceBetween_withPadding = test(
         isBottomAlignedWith(text3, flexbox);
         isLeftAlignedWith(text3, flexbox);
     }
-);
+);	
 
 export const testAlignContent_spaceAround = test(
     activity_align_content_test,
@@ -862,9 +862,9 @@ export const testAlignContent_spaceAround = test(
         let spaceAround = height(flexbox) - height(text1) - height(text3);
         spaceAround /= 4; // Divide by the number of flex lines * 2
 
-        isBelowWith(flexbox, text1, spaceAround);
+        isBelowWith(flexbox, text1, Math.ceil(spaceAround));
         isBelowWith(text1, text3, height(text1) + 2 * spaceAround);
-        isAboveWith(text3, flexbox, spaceAround);
+        isAboveWith(text3, flexbox, Math.ceil(spaceAround));
         isAboveWith(text1, text3, height(text3) + 2 * spaceAround);
 
         // TODO: equal(flexbox.getFlexLines().size(), is(2));
@@ -992,9 +992,9 @@ export const testAlignContent_spaceAround_flexDirection_column = test(
 
         let spaceAround = width(flexbox) - width(text1) - width(text3);
         spaceAround /= 4; // Divide by the number of flex lines * 2
-        isLeftWith(flexbox, text1, spaceAround);
+        isLeftWith(flexbox, text1, Math.ceil(spaceAround));
         isLeftWith(text1, text3, width(text1) + 2 * spaceAround);
-        isRightWith(text3, flexbox, spaceAround);
+        isRightWith(text3, flexbox, Math.ceil(spaceAround));
         isRightWith(text1, text3, width(text3) + 2 * spaceAround);
     }
 );
