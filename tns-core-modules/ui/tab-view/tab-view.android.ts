@@ -6,7 +6,7 @@ import {
     tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
     fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, Color
+    traceWrite, Color, traceMissingIcon
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -233,11 +233,16 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
     if (item.iconSource) {
         if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
+            if (result.iconId === 0) {
+                traceMissingIcon(item.iconSource);
+            }
         } else {
             const is = fromFileOrResource(item.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
+            } else {
+                traceMissingIcon(item.iconSource);
             }
         }
     }
