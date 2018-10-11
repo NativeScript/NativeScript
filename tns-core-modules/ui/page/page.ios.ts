@@ -9,11 +9,14 @@ import {
 } from "./page-common";
 
 import { profile } from "../../profiling";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./page-common";
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
+
+const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
@@ -315,10 +318,23 @@ export class Page extends PageBase {
 
         const insets = this.getSafeAreaInsets();
 
+        if (majorVersion <= 10) {
+            // iOS 10 and below don't have safe area insets API,
+            // there we need only the top inset on the Page
+            insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
+        }
+
         const childLeft = 0 + insets.left;
         const childTop = 0 + insets.top;
-        const childRight = right - left - insets.right;
-        const childBottom = bottom - top - insets.bottom;
+        const childRight = right - insets.right;
+        let childBottom = bottom - insets.bottom;
+
+        if (majorVersion >= 11 && this.actionBar.flat) {
+            // on iOS 11 the flat action bar changes the fullscreen size
+            // the top of the page is the new fullscreen
+            childBottom -= top;
+        }
+
         View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
