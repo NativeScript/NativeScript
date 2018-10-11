@@ -234,6 +234,7 @@ export class View extends ViewCommon {
     private layoutChangeListenerIsSet: boolean;
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: android.support.v4.app.FragmentManager;
+    private _rootManager: android.support.v4.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
 
@@ -267,6 +268,14 @@ export class View extends ViewCommon {
 
     public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
         return null;
+    }
+
+    public _getRootFragmentManager(): android.support.v4.app.FragmentManager {
+        if (!this._rootManager && this._context) {
+            this._rootManager = (<android.support.v4.app.FragmentActivity>this._context).getSupportFragmentManager();
+        }
+
+        return this._rootManager;
     }
 
     public _getFragmentManager(): android.support.v4.app.FragmentManager {
@@ -318,6 +327,7 @@ export class View extends ViewCommon {
     @profile
     public onLoaded() {
         this._manager = null;
+        this._rootManager = null;
         super.onLoaded();
         this.setOnTouchListener();
     }
@@ -331,6 +341,7 @@ export class View extends ViewCommon {
         }
 
         this._manager = null;
+        this._rootManager = null;
         super.onUnloaded();
     }
 
@@ -599,7 +610,7 @@ export class View extends ViewCommon {
         this._dialogFragment = df;
         this._raiseShowingModallyEvent();
 
-        this._dialogFragment.show(parent._getFragmentManager(), this._domId.toString());
+        this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
     }
 
     protected _hideNativeModalView(parent: View) {
