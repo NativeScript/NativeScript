@@ -5,7 +5,7 @@ import { ios as iosView, ViewBase } from "../core/view";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -451,6 +451,8 @@ export class TabView extends TabViewBase {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
+            } else {
+                traceMissingIcon(iconSource);
             }
         }
 
