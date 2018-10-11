@@ -1,4 +1,4 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData, TabReselectedEventData } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType
@@ -89,6 +89,7 @@ export module knownCollections {
 @CSSType("TabView")
 export class TabViewBase extends View implements TabViewDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
+    public static tabReselectedEvent = "tabReselected";
 
     public items: TabViewItemDefinition[];
     public selectedIndex: number;
@@ -196,11 +197,16 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
         // to be overridden in platform specific files
         this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
     }
+
+    public onTabReselected(tabIndex: number): void {
+        this.notify(<TabReselectedEventData>{ eventName: TabViewBase.tabReselectedEvent, object: this, tabIndex });
+    }
 }
 
 export interface TabViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+    on(event: "tabReselected", callback: (args: TabReselectedEventData) => void, thisArg?: any);
 }
 
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({

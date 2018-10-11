@@ -51,6 +51,16 @@ export interface SelectedIndexChangedEventData extends EventData {
 }
 
 /**
+ * Defines the data for the TabView.tabReselected event.
+ */
+export interface TabReselectedEventData extends EventData {
+    /**
+     * The index of the re-selected tab.
+     */
+    tabIndex: number;
+}
+
+/**
  * Represents a tab view.
  */
 export class TabView extends View {
@@ -128,6 +138,11 @@ export class TabView extends View {
     public static selectedIndexChangedEvent: string;
 
     /**
+     * String value used when hooking to the tabReselected event.
+     */
+    public static tabReselectedEvent: string;
+
+    /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
      * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
      * @param callback - Callback function which will be executed when event is raised.
@@ -139,6 +154,11 @@ export class TabView extends View {
      * Raised when the selected index changes.
      */
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+
+    /**
+     * Raised when a tab is actively reselected by the user.
+     */
+    on(event: "tabReselected", callback: (args: TabReselectedEventData) => void, thisArg?: any);
 }
 
 export const itemsProperty: Property<TabView, TabViewItem[]>;

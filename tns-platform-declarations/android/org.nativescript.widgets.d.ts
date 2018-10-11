@@ -364,6 +364,15 @@
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
+            export class OnTabSelectedListener extends java.lang.Object {
+                public static class: java.lang.Class<org.nativescript.widgets.OnTabSelectedListener>;
+                public constructor(implementation: {
+                    onTabSelected(tabIndex: number): void;
+                });
+                public constructor();
+                public onTabSelected(tabIndex: number): void;
+            }
+
             export class TabLayout extends android.widget.HorizontalScrollView {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
@@ -390,6 +399,7 @@
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
 
+                setOnTabSelectedListener(listener: OnTabSelectedListener): void;
                 setSwipePageEnabled(enabled: boolean): void;
             }
 
