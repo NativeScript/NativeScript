@@ -121,6 +121,10 @@ export class Frame extends FrameBase {
         return this._android;
     }
 
+    get _hasFragments(): boolean {
+        return true;
+    }
+
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
         this._attachedToWindow = true;
@@ -175,7 +179,16 @@ export class Frame extends FrameBase {
         }
     }
 
-    _onRootViewReset(): void {
+    public _getChildFragmentManager() {
+        const backstackEntry = this._executingEntry || this._currentEntry;
+        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
+            return backstackEntry.fragment.getChildFragmentManager();
+        }
+
+        return null;
+    }
+
+    public _onRootViewReset(): void {
         this.disposeCurrentFragment();
         super._onRootViewReset();
     }
@@ -186,7 +199,14 @@ export class Frame extends FrameBase {
     }
 
     private disposeCurrentFragment(): void {
-        if (!this._currentEntry || !this._currentEntry.fragment) {
+        // when interacting with nested fragments it seems Android is smart enough
+        // to automatically remove child fragments when parent fragment is removed;
+        // however, we must add a fragment.isAdded() guard as our logic will try to 
+        // explicitly remove the already removed child fragment causing an 
+        // IllegalStateException: Fragment has not been attached yet.
+        if (!this._currentEntry || 
+            !this._currentEntry.fragment || 
+            !this._currentEntry.fragment.isAdded()) {
             return;
         }
 
