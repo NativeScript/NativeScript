@@ -314,8 +314,8 @@ export class View extends ViewCommon {
                 view = view.parent as View;
             }
 
-            if (!manager && this._context) {
-                manager = (<android.support.v4.app.FragmentActivity>this._context).getSupportFragmentManager();
+            if (!manager) {
+                manager = this._getRootFragmentManager();
             }
 
             this._manager = manager;
