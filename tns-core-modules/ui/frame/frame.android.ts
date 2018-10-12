@@ -13,7 +13,7 @@ import {
 } from "./frame-common";
 
 import {
-    _setAndroidFragmentTransitions, _onFragmentCreateAnimation, _getAnimatedEntries,
+    _setAndroidFragmentTransitions, _onFragmentCreateAnimator, _getAnimatedEntries,
     _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
@@ -667,7 +667,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onCreateAnimation(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.view.animation.Animation {
+    public onCreateAnimator(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
         let nextAnimString: string;
         switch (nextAnim) {
             case AnimationType.enterFakeResourceId: nextAnimString = "enter"; break;
@@ -676,16 +676,16 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             case AnimationType.popExitFakeResourceId: nextAnimString = "popExit"; break;
         }
 
-        let animation = _onFragmentCreateAnimation(this.entry, fragment, nextAnim, enter);
-        if (!animation) {
-            animation = superFunc.call(fragment, transit, enter, nextAnim);
+        let animator = _onFragmentCreateAnimator(this.entry, fragment, nextAnim, enter);
+        if (!animator) {
+            animator = superFunc.call(fragment, transit, enter, nextAnim);
         }
 
         if (traceEnabled()) {
-            traceWrite(`${fragment}.onCreateAnimation(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animation ? "animation" : "no animation"}`, traceCategories.NativeLifecycle);
+            traceWrite(`${fragment}.onCreateAnimator(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animator ? "animator" : "no animator"}`, traceCategories.NativeLifecycle);
         }
 
-        return animation;
+        return animator;
     }
 
     @profile
