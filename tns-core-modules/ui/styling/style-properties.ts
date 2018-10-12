@@ -495,7 +495,7 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 
     const usedTransforms = transformations.map(t => t.property);
     if (!hasDuplicates(usedTransforms)) {
-        const fullTransformations = Object.assign({}, IDENTITY_TRANSFORMATION);
+        const fullTransformations = { ...IDENTITY_TRANSFORMATION };
         transformations.forEach(transform => {
             fullTransformations[transform.property] = transform.value;
         });

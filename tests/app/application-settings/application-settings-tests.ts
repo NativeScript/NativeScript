@@ -112,6 +112,17 @@ export var testFlush = function () {
     TKUnit.assert(appSettings.hasKey(stringKey), "There is no key: " + stringKey);
 };
 
+export var testAllKeys = function () {
+    appSettings.setString(stringKey, "String value");
+    appSettings.setBoolean(boolKey, true);
+    appSettings.setNumber(numberKey, 22);
+
+    var allKeys = appSettings.getAllKeys();
+    TKUnit.assert(allKeys.indexOf(stringKey) !== -1, `${stringKey} is missing from .allKeys()`);
+    TKUnit.assert(allKeys.indexOf(boolKey) !== -1, `${boolKey} is missing from .allKeys()`);
+    TKUnit.assert(allKeys.indexOf(numberKey) !== -1, `${numberKey} is missing from .allKeys()`);
+}
+
 export var testInvalidKey = function () {
     try {
         appSettings.hasKey(undefined);

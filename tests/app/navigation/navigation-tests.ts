@@ -146,7 +146,7 @@ export function test_ClearHistory_WithTransition() {
 // Test case for https://github.com/NativeScript/NativeScript/issues/1948
 export function test_ClearHistoryWithTransitionDoesNotBreakNavigation() {
     let topmost = topmostFrame();
-    let mainTestPage = topmost.currentPage;
+    let mainTestPage = new Page();
     let mainPageFactory = function (): Page {
         return mainTestPage;
     };

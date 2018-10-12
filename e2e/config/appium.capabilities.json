@@ -134,5 +134,13 @@
         "noReset": true,
         "fullReset": false,
         "app": ""
+    },
+    "sim.iPhoneX.iOS120": {
+        "platformName": "iOS",
+        "platformVersion": "12.0",
+        "deviceName": "iPhone X",
+        "noReset": true,
+        "fullReset": false,
+        "app": ""
     }
 }
