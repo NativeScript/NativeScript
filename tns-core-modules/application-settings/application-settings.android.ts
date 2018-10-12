@@ -83,3 +83,15 @@ export function clear(): void {
 export var flush = function (): boolean {
     return sharedPreferences.edit().commit();
 }
+
+export function getAllKeys(): Array<string> {
+    var mappedPreferences = sharedPreferences.getAll();
+    var iterator = mappedPreferences.keySet().iterator();
+    var result = [];
+    while (iterator.hasNext()) {
+        let key = iterator.next();
+        result.push(key);
+    }
+
+    return result;
+}

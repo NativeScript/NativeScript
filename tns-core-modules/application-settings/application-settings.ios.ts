@@ -65,3 +65,7 @@ export var clear = function (): void {
 export var flush = function (): boolean {
     return userDefaults.synchronize();
 }
+
+export function getAllKeys(): Array<string> {
+    return utils.ios.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
+}

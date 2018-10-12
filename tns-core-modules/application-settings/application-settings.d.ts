@@ -67,3 +67,9 @@ export function clear(): void;
  * @return {boolean} flag indicating if changes were saved successfully to disk.
  */
 export function flush(): boolean;
+
+/**
+ * Get all stored keys
+ * @return Array containing all stored keys
+ */
+export function getAllKeys(): Array<string>;
