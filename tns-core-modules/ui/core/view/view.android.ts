@@ -234,6 +234,7 @@ export class View extends ViewCommon {
     private layoutChangeListenerIsSet: boolean;
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: android.support.v4.app.FragmentManager;
+    private _rootManager: android.support.v4.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
 
@@ -265,24 +266,56 @@ export class View extends ViewCommon {
         }
     }
 
+    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
+        return null;
+    }
+
+    public _getRootFragmentManager(): android.support.v4.app.FragmentManager {
+        if (!this._rootManager && this._context) {
+            this._rootManager = (<android.support.v4.app.FragmentActivity>this._context).getSupportFragmentManager();
+        }
+
+        return this._rootManager;
+    }
+
     public _getFragmentManager(): android.support.v4.app.FragmentManager {
         let manager = this._manager;
         if (!manager) {
             let view: View = this;
+            let frameOrTabViewItemFound = false;
             while (view) {
+                // when interacting with nested fragments instead of using getSupportFragmentManager 
+                // we must always use getChildFragmentManager instead;
+                // we have three sources of fragments -- Frame fragments, TabViewItem fragments, and
+                // modal dialog fragments
+
+                // modal -> frame / tabview (frame / tabview use modal CHILD fm)
                 const dialogFragment = view._dialogFragment;
                 if (dialogFragment) {
                     manager = dialogFragment.getChildFragmentManager();
                     break;
-                } else {
-                    // the case is needed because _dialogFragment is on View
-                    // but parent may be ViewBase.
-                    view = view.parent as View;
                 }
+
+                // - frame1 -> frame2 (frame2 uses frame1 CHILD fm)
+                // - tabview -> frame1 (frame1 uses tabview item CHILD fm)
+                // - frame1 -> tabview (tabview uses frame1 CHILD fm)
+                // - frame1 -> tabview -> frame2 (tabview uses frame1 CHILD fm; frame2 uses tabview item CHILD fm)
+                if (view._hasFragments) {
+                    if (frameOrTabViewItemFound) {
+                        manager = view._getChildFragmentManager();
+                        break;
+                    }
+
+                    frameOrTabViewItemFound = true;
+                }
+
+                // the case is needed because _dialogFragment is on View
+                // but parent may be ViewBase.
+                view = view.parent as View;
             }
 
-            if (!manager && this._context) {
-                manager = (<android.support.v4.app.FragmentActivity>this._context).getSupportFragmentManager();
+            if (!manager) {
+                manager = this._getRootFragmentManager();
             }
 
             this._manager = manager;
@@ -294,6 +327,7 @@ export class View extends ViewCommon {
     @profile
     public onLoaded() {
         this._manager = null;
+        this._rootManager = null;
         super.onLoaded();
         this.setOnTouchListener();
     }
@@ -307,6 +341,7 @@ export class View extends ViewCommon {
         }
 
         this._manager = null;
+        this._rootManager = null;
         super.onUnloaded();
     }
 
@@ -402,6 +437,10 @@ export class View extends ViewCommon {
             return !this.nativeViewProtected.isLayoutRequested();
         }
 
+        return false;
+    }
+
+    get _hasFragments(): boolean {
         return false;
     }
 
@@ -571,7 +610,7 @@ export class View extends ViewCommon {
         this._dialogFragment = df;
         this._raiseShowingModallyEvent();
 
-        this._dialogFragment.show(parent._getFragmentManager(), this._domId.toString());
+        this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
     }
 
     protected _hideNativeModalView(parent: View) {
