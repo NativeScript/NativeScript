@@ -150,7 +150,7 @@ export class View extends ViewCommon {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        // 
+        //
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
@@ -361,7 +361,7 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
-    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
+    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, presentationStyle?: UIModalPresentationStyle) {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
@@ -395,6 +395,20 @@ export class View extends ViewCommon {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
         } else {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
+        }
+
+        if (presentationStyle !== undefined) {
+          controller.modalPresentationStyle = presentationStyle;
+
+          if (presentationStyle === UIModalPresentationStyle.Popover) {
+            // TODO: read the width and height of the page and apply it here ?
+            // controller.preferredContentSize = CGSizeMake(400, 400);
+            const popoverPresentationController = controller.popoverPresentationController;
+
+            const view = parent.nativeViewProtected;
+            popoverPresentationController.sourceView = view;
+            popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+          }
         }
 
         this.horizontalAlignment = "stretch";

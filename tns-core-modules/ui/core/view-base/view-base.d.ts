@@ -119,8 +119,9 @@ export abstract class ViewBase extends Observable {
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
      * @param animated - An optional parameter specifying whether to show the modal view with animation.
      * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
+     * @param iOSPresentationStyle - An optional, iOS only parameter specifying the way the modal view is covering the screen.
      */
-    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
+    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iOSPresentationStyle?: UIModalPresentationStyle): ViewBase;
 
     /**
      * Shows the view passed as parameter as a modal view.
@@ -130,8 +131,9 @@ export abstract class ViewBase extends Observable {
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
      * @param animated - An optional parameter specifying whether to show the modal view with animation.
      * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
+     * @param iOSPresentationStyle - An optional, iOS only parameter specifying the way the modal view is covering the screen.
      */
-    showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
+    showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iOSPresentationStyle?: UIModalPresentationStyle): ViewBase;
 
     /**
      * Deprecated. Showing view as modal is deprecated.
@@ -259,7 +261,7 @@ export abstract class ViewBase extends Observable {
     public requestLayout(): void;
 
     /**
-     * Iterates over children of type ViewBase. 
+     * Iterates over children of type ViewBase.
      * @param callback Called for each child of type ViewBase. Iteration stops if this method returns falsy value.
      */
     public eachChild(callback: (child: ViewBase) => boolean): void;
@@ -291,7 +293,7 @@ export abstract class ViewBase extends Observable {
     /**
      * @private
      * Notifies each child's css state for change, recursively.
-     * Either the style scope, className or id properties were changed. 
+     * Either the style scope, className or id properties were changed.
      */
     _onCssStateChange(): void;
 
@@ -309,7 +311,7 @@ export abstract class ViewBase extends Observable {
 
     _context: any /* android.content.Context */;
 
-    /** 
+    /**
      * Setups the UI for ViewBase and all its children recursively.
      * This method should *not* be overridden by derived views.
      */
