@@ -95,10 +95,15 @@ export class SearchBar extends SearchBarBase {
     }
 
     public createNativeView() {
-        initializeNativeClasses();
         const nativeView = new android.support.v7.widget.SearchView(this._context)
         nativeView.setIconified(false);
+        return nativeView;
+    }
 
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
+        initializeNativeClasses();
         const queryTextListener = new QueryTextListener(this);
         nativeView.setOnQueryTextListener(queryTextListener);
         (<any>nativeView).queryTextListener = queryTextListener;
@@ -106,15 +111,6 @@ export class SearchBar extends SearchBarBase {
         const closeListener = new CloseListener(this);
         nativeView.setOnCloseListener(closeListener);
         (<any>nativeView).closeListener = closeListener;
-
-        return nativeView;
-    }
-
-    public initNativeView(): void {
-        super.initNativeView();
-        const nativeView: any = this.nativeViewProtected;
-        nativeView.closeListener.owner = this;
-        nativeView.queryTextListener.owner = this;
     }
 
     public disposeNativeView() {
@@ -205,7 +201,7 @@ export class SearchBar extends SearchBarBase {
         if (value instanceof Color) {
             textView.setBackgroundColor(value.android);
         } else {
-            org.nativescript.widgets.ViewHelper.setBackground(textView, value);
+            textView.setBackground(value);
         }
     }
     [textFieldHintColorProperty.getDefault](): number {

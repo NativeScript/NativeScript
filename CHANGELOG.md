@@ -1,6 +1,25 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="4.2.1"></a>
+## [4.2.1](https://github.com/NativeScript/NativeScript/compare/4.2.0...4.2.1) (2018-09-18)
+
+### Bug Fixes
+
+* enable reportProgress property for NativeScirpt Angular's HTTPClient ([#6154](https://github.com/NativeScript/NativeScript/issues/6154)) ([349850f](https://github.com/NativeScript/NativeScript/commit/349850f))
+* **ios:** listview scrollToIndex crash with async data ([#6182](https://github.com/NativeScript/NativeScript/issues/6182)) ([ca6cccb](https://github.com/NativeScript/NativeScript/commit/ca6cccb))
+* **ios:** touch delegate does not call base class touch methods ([#6113](https://github.com/NativeScript/NativeScript/pull/6113)) ([284cd5](https://github.com/NativeScript/NativeScript/commit/284cd5))
+* **ios:** TimePicker minuteInterval property ([#6116](https://github.com/NativeScript/NativeScript/issues/6116)) ([ca9bad6](https://github.com/NativeScript/NativeScript/commit/ca9bad6))
+* **android:** parallel navigation actions should not be triggered ([#6275](https://github.com/NativeScript/NativeScript/issues/6275)) ([405ccae](https://github.com/NativeScript/NativeScript/commit/405ccae))
+* **android:** HEAD request should return statusCode ([fe35567](https://github.com/NativeScript/NativeScript/commit/fe35567))
+* observable array reduce bug ([#6219](https://github.com/NativeScript/NativeScript/issues/6219)) ([b028dd9](https://github.com/NativeScript/NativeScript/commit/b028dd9))
+* Page and Frame isLoaded undefined checks ([#6255](https://github.com/NativeScript/NativeScript/issues/6255)) ([4a11cf9](https://github.com/NativeScript/NativeScript/commit/4a11cf9))
+* **android/platform:** reinitialise screen metrics on orientation change ([#6164](https://github.com/NativeScript/NativeScript/issues/6164)) ([040781c](https://github.com/NativeScript/NativeScript/commit/040781c))
+* **ios:** nowrap label measure in horizontal stack layout ([#6186](https://github.com/NativeScript/NativeScript/issues/6186)) ([efd5f8d](https://github.com/NativeScript/NativeScript/commit/efd5f8d))
+* **list-view:** Layout list-view items on request ([#6159](https://github.com/NativeScript/NativeScript/issues/6159)) ([115a4c1](https://github.com/NativeScript/NativeScript/commit/115a4c1))
+* **modals:** application activityBackPressed event not fired for modals ([#6261](https://github.com/NativeScript/NativeScript/issues/6261)) ([13d4f34](https://github.com/NativeScript/NativeScript/commit/13d4f34))
+
+
 <a name="4.2.0"></a>
 # [4.2.0](https://github.com/NativeScript/NativeScript/compare/4.1.1...4.2.0) (2018-08-08)
 

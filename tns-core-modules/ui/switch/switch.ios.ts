@@ -33,12 +33,24 @@ export class Switch extends SwitchBase {
 
     constructor() {
         super();
-        const nativeView = UISwitch.new();
-        this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        nativeView.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
-        this.nativeViewProtected = nativeView;
         this.width = 51;
         this.height = 31;
+    }
+
+    public createNativeView() {
+        return UISwitch.new();
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeViewProtected;
+        this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
+        nativeView.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
+    }
+
+    public disposeNativeView() {
+        this._handler = null;
+        super.disposeNativeView();
     }
 
     get ios(): UISwitch {

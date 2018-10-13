@@ -1,0 +1,4 @@
+<StackLayout loaded="onLoaded" unloaded="onUnloaded">
+    <Label text="{{ message }}" />
+    <Label text="{{ 'will cancel next back press: ' + shouldCancel }}" />
+</StackLayout>

@@ -1,6 +1,7 @@
 ﻿import * as frame from "tns-core-modules/ui/frame";
 import { ViewBase, View, unsetValue, isIOS } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
+import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../TKUnit";
@@ -78,13 +79,55 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: [Page, Stack
     newPage.content = null;
 }
 
-//export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
-export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, pageCss?) {
+export interface PageOptions {
+    pageCss?: any,
+    actionBar?: boolean,
+    actionBarFlat?: boolean,
+    actionBarHidden?: boolean,
+    tabBar?: boolean
+}
+
+//export function buildUIAndRunTest(controlToTest, testFunction, options) {
+export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, options?: PageOptions) {
     clearPage();
     let newPage = getCurrentPage();
 
-    newPage.css = pageCss;
-    newPage.content = controlToTest;
+    let testSubject = controlToTest as View;
+
+    if (options) {
+        if (options.pageCss) {
+            newPage.css = options.pageCss;
+        }
+
+        newPage.actionBarHidden = true;
+        newPage.actionBar.flat = false;
+
+        if (options.actionBar) {
+            newPage.actionBarHidden = false;
+            newPage.actionBar.title = "Test ActionBar";
+        }
+
+        if (options.actionBarFlat) {
+            newPage.actionBarHidden = false;
+            newPage.actionBar.title = "Test ActionBar Flat";
+            newPage.actionBar.flat = true;
+        }
+
+        if (options.actionBarHidden) {
+            newPage.actionBarHidden = true;
+        }
+
+        if (options.tabBar) {
+            const tabView = new TabView();
+            const tabEntry = new TabViewItem();
+            tabEntry.title = "Test";
+            tabEntry.view = controlToTest;
+            tabView.items = [tabEntry];
+            testSubject = tabView;
+        }
+    }
+
+    newPage.content = testSubject;
 
     testFunction([controlToTest, newPage]);
     newPage.content = null;

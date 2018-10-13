@@ -24,6 +24,31 @@ export module inputType {
 }
 
 /**
+ * Defines the capitalization type for prompt dialog.
+ */
+export module capitalizationType {
+    /**
+     * No automatic capitalization.
+     */
+    export var none: string;
+
+    /**
+     * Capitalizes every character.
+     */
+    export var all: string;
+
+    /**
+     * Capitalize the first word of each sentence.
+     */
+    export var sentences: string;
+
+    /**
+     * Capitalize the first letter of every word.
+     */
+    export var words: string;
+}
+
+/**
  * The alert() method displays an alert box with a specified message.
  * @param message Specifies the text to display in the alert box.
  */
@@ -177,6 +202,11 @@ export interface PromptOptions extends ConfirmOptions {
      * Gets or sets the prompt input type (plain text, password, or email).
      */
     inputType?: string;
+
+    /**
+     * Gets or sets the prompt capitalizationType (none, all, sentences, or words).
+     */
+    capitalizationType?: string;
 }
 
 /**

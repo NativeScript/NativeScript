@@ -51,22 +51,11 @@ export class ListView extends ListViewBase {
 
     @profile
     public createNativeView() {
-        initializeItemClickListener();
-
         const listView = new android.widget.ListView(this._context);
         listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
         // Fixes issue with black random black items when scrolling
         listView.setCacheColorHint(android.graphics.Color.TRANSPARENT);
-
-        ensureListViewAdapterClass();
-        const adapter = new ListViewAdapterClass(this);
-        listView.setAdapter(adapter);
-        (<any>listView).adapter = adapter;
-
-        const itemClickListener = new ItemClickListener(this);
-        listView.setOnItemClickListener(itemClickListener);
-        (<any>listView).itemClickListener = itemClickListener;
 
         return listView;
     }
@@ -75,11 +64,17 @@ export class ListView extends ListViewBase {
         super.initNativeView();
         this.updateEffectiveRowHeight();
 
-        const nativeView: any = this.nativeViewProtected;
-        (<any>nativeView).itemClickListener.owner = this;
-        const adapter = (<any>nativeView).adapter;
-        adapter.owner = this;
+        const nativeView = this.nativeViewProtected;
+        initializeItemClickListener();
+        ensureListViewAdapterClass();
+        const adapter = new ListViewAdapterClass(this);
         nativeView.setAdapter(adapter);
+        (<any>nativeView).adapter = adapter;
+
+        const itemClickListener = new ItemClickListener(this);
+        nativeView.setOnItemClickListener(itemClickListener);
+        (<any>nativeView).itemClickListener = itemClickListener;
+
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }

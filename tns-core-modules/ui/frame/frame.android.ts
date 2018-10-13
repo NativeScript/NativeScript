@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 import {
     FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, traceError
 } from "./frame-common";
 
 import {
@@ -121,6 +121,10 @@ export class Frame extends FrameBase {
         return this._android;
     }
 
+    get _hasFragments(): boolean {
+        return true;
+    }
+
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
         this._attachedToWindow = true;
@@ -138,7 +142,7 @@ export class Frame extends FrameBase {
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events. 
         // As JS instances are alive it is already done for the current page.
-        if (!this.isLoaded || !this._attachedToWindow) {
+        if (!this.isLoaded || this._executingEntry || !this._attachedToWindow) {
             return;
         }
 
@@ -175,7 +179,16 @@ export class Frame extends FrameBase {
         }
     }
 
-    _onRootViewReset(): void {
+    public _getChildFragmentManager() {
+        const backstackEntry = this._executingEntry || this._currentEntry;
+        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
+            return backstackEntry.fragment.getChildFragmentManager();
+        }
+
+        return null;
+    }
+
+    public _onRootViewReset(): void {
         this.disposeCurrentFragment();
         super._onRootViewReset();
     }
@@ -186,7 +199,14 @@ export class Frame extends FrameBase {
     }
 
     private disposeCurrentFragment(): void {
-        if (!this._currentEntry || !this._currentEntry.fragment) {
+        // when interacting with nested fragments it seems Android is smart enough
+        // to automatically remove child fragments when parent fragment is removed;
+        // however, we must add a fragment.isAdded() guard as our logic will try to 
+        // explicitly remove the already removed child fragment causing an 
+        // IllegalStateException: Fragment has not been attached yet.
+        if (!this._currentEntry || 
+            !this._currentEntry.fragment || 
+            !this._currentEntry.fragment.isAdded()) {
             return;
         }
 
@@ -412,9 +432,6 @@ export class Frame extends FrameBase {
         }
 
         super._popFromFrameStack();
-        if (this._android.hasOwnActivity) {
-            this._android.activity.finish();
-        }
     }
 
     public _getNavBarVisible(page: Page): boolean {
@@ -461,7 +478,6 @@ let framesCache = new Array<WeakRef<AndroidFrame>>();
 
 class AndroidFrame extends Observable implements AndroidFrameDefinition {
     public rootViewGroup: android.view.ViewGroup;
-    public hasOwnActivity = false;
     public frameId;
 
     private _showActionBar = true;
@@ -700,8 +716,23 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         const entry = this.entry;
+        if (!entry) {
+            traceError(`${fragment}.onCreateView: entry is null or undefined`);
+            return null;
+        }
+
         const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+            return null;
+        }
+
         const frame = this.frame;
+        if (!frame) {
+            traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+            return null;
+        }
+
         if (page.parent === frame) {
             // If we are navigating to a page that was destroyed
             // reinitialize its UI.
@@ -710,12 +741,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                 page._setupUI(context);
             }
         } else {
-            if (!this.frame._styleScope) {
+            if (!frame._styleScope) {
                 // Make sure page will have styleScope even if parents don't.
                 page._updateStyleScope();
             }
 
-            this.frame._addView(page);
+            frame._addView(page);
         }
 
         if (frame.isLoaded && !page.isLoaded) {
@@ -744,6 +775,17 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
         }
+
+        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.
+        // on app resume in nested frame scenarios with support library version greater than 26.0.0
+        const view = fragment.getView();
+        if (view != null) {
+            const viewParent = view.getParent();
+            if (viewParent instanceof android.view.ViewGroup) {
+                viewParent.removeView(view);
+            }
+        }
+
         superFunc.call(fragment);
     }
 

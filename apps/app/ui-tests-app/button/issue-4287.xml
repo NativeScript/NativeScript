@@ -1,5 +1,5 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-    <GridLayout columns="auto * auto" rows="auto *" borderWidth="1" borderColor="black">
+    <GridLayout columns="auto * auto" rows="auto *" borderWidth="1" borderColor="black" iosOverflowSafeArea="false">
         
         <StackLayout borderWidth="1" borderColor="black" verticalAlignment="top" width="150">
             <Label text="textWrap: false" horizontalAlignment="center"/>

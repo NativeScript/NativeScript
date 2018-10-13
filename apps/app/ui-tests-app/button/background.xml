@@ -1,6 +1,6 @@
 <Page>
   <GridLayout rows="240, *">
-    <GridLayout width="290" id="test-element" automationText="test-element" />
+    <GridLayout automationText="test-element" id="test-element" width="290" iosOverflowSafeArea="false"></GridLayout>
     <WrapLayout row="1">
       <Button width="40" height="40" text="r" tap="resetTap"/>
 

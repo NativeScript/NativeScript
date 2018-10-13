@@ -47,13 +47,14 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
+        const insets = this.getSafeAreaInsets();
         this.eachLayoutChild((child, last) => {
 
             const childWidth = child.getMeasuredWidth();
             const childHeight = child.getMeasuredHeight();
 
-            const childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + child.effectiveLeft;
-            const childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + child.effectiveTop;
+            const childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + child.effectiveLeft + insets.left;
+            const childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + child.effectiveTop + insets.top;
             const childRight = childLeft + childWidth + child.effectiveMarginLeft + child.effectiveMarginRight;
             const childBottom = childTop + childHeight + child.effectiveMarginTop + child.effectiveMarginBottom;
 

@@ -13,7 +13,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        this.nativeViewProtected.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
+        this.nativeTextViewProtected.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
     }
 }
 
