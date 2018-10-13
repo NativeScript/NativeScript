@@ -157,8 +157,9 @@ export abstract class ViewBase extends Observable {
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
      * @param animated - An optional parameter specifying whether to show the modal view with animation.
      * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
+     * @param iOSPresentationStyle - An optional, iOS only parameter specifying the way the modal view is covering the screen.
      */
-    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
+    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iOSPresentationStyle?: UIModalPresentationStyle): ViewBase;
 
     /**
      * @deprecated Use showModal with ShowModalOptions instead.
@@ -169,8 +170,9 @@ export abstract class ViewBase extends Observable {
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
      * @param animated - An optional parameter specifying whether to show the modal view with animation.
      * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
+     * @param iOSPresentationStyle - An optional, iOS only parameter specifying the way the modal view is covering the screen.
      */
-    showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
+    showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iOSPresentationStyle?: UIModalPresentationStyle): ViewBase;
 
     /**
      * Shows the View contained in moduleName as a modal view.
