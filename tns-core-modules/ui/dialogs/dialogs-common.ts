@@ -151,7 +151,9 @@ export function parseLoginOptions(args: any): LoginOptions {
     let options: LoginOptions;
     let defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
 
-    if (arguments.length === 1) {
+    if (arguments.length === 0) {
+        options = defaultOptions;
+    } else if (arguments.length === 1) {
         if (isString(arguments[0])) {
             options = defaultOptions;
             options.message = arguments[0];
