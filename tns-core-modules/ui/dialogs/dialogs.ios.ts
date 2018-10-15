@@ -154,17 +154,38 @@ export function login(): Promise<LoginResult> {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        if (isString(arguments[0]) && isString(arguments[1])) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3])) {
             options = defaultOptions;
             options.message = arguments[0];
-            options.userName = arguments[1];
+            options.userNameHint = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3])) {
             options = defaultOptions;
             options.message = arguments[0];
-            options.userName = arguments[1];
-            options.password = arguments[2];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+        }
+    } else if (arguments.length === 4) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+            options.userName = arguments[3];
+        }
+    } else if (arguments.length === 5) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3]) && isString(arguments[4])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+            options.userName = arguments[3];
+            options.password = arguments[4];
         }
     }
 
@@ -178,7 +199,13 @@ export function login(): Promise<LoginResult> {
 
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Login";
-                arg.text = isString(options.userName) ? options.userName : "";
+
+                if (!options.userName) {
+                    arg.placeholder = options.userNameHint ? options.userNameHint : "";
+                } else {
+                    arg.placeholder = options.userNameHint ? options.userNameHint : "";
+                    arg.text = isString(options.userName) ? options.userName : "";
+                }
 
                 if (textFieldColor) {
                     arg.textColor = arg.tintColor = textFieldColor.ios;
@@ -188,7 +215,13 @@ export function login(): Promise<LoginResult> {
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Password";
                 arg.secureTextEntry = true;
-                arg.text = isString(options.password) ? options.password : "";
+                
+                if (!options.password) {
+                    arg.placeholder = options.passwordHint ? options.passwordHint : "";
+                } else {
+                    arg.placeholder = options.passwordHint ? options.passwordHint : "";
+                    arg.text = isString(options.password) ? options.password : "";
+                }
 
                 if (textFieldColor) {
                     arg.textColor = arg.tintColor = textFieldColor.ios;

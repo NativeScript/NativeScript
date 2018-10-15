@@ -231,17 +231,38 @@ export function login(arg: any): Promise<LoginResult> {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        if (isString(arguments[0]) && isString(arguments[1])) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3])) {
             options = defaultOptions;
             options.message = arguments[0];
-            options.userName = arguments[1];
+            options.userNameHint = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3])) {
             options = defaultOptions;
             options.message = arguments[0];
-            options.userName = arguments[1];
-            options.password = arguments[2];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+        }
+    } else if (arguments.length === 4) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+            options.userName = arguments[3];
+        }
+    } else if (arguments.length === 5) {
+        console.log("arguments.length: ", arguments.length);
+        if (isString(arguments[0]) && isString(arguments[3]) && isString(arguments[4])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+            options.userName = arguments[3];
+            options.password = arguments[4];
         }
     }
 
@@ -252,11 +273,22 @@ export function login(arg: any): Promise<LoginResult> {
             const alert = createAlertDialog(options);
 
             const userNameInput = new android.widget.EditText(context);
-            userNameInput.setText(options.userName ? options.userName : "");
-
+            if (!options.userName) {
+                userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
+            } else {
+                userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
+                userNameInput.setText(options.userName ? options.userName : "");
+            }
+            
             const passwordInput = new android.widget.EditText(context);
             passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            passwordInput.setText(options.password ? options.password : "");
+            passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
+            if (!options.password) {
+                passwordInput.setHint(options.passwordHint ? options.passwordHint : "");
+            } else {
+                passwordInput.setHint(options.userNameHint ? options.userNameHint : "");
+                passwordInput.setText(options.password ? options.password : "");
+            }
 
             const layout = new android.widget.LinearLayout(context);
             layout.setOrientation(1);
@@ -274,11 +306,9 @@ export function login(arg: any): Promise<LoginResult> {
             });
 
             showDialog(alert);
-
         } catch (ex) {
             reject(ex);
         }
-
     });
 }
 
