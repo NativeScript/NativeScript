@@ -4,6 +4,7 @@ import { Color } from "../../color";
 import { Page } from "../page";
 import { isIOS } from "../../platform";
 import * as frameModule from "../frame";
+import { LoginOptions } from "./dialogs";
 
 export const STRING = "string";
 export const PROMPT = "Prompt";
@@ -141,4 +142,53 @@ export function getTextFieldColor(): Color {
 
 export function isDialogOptions(arg): boolean {
     return arg && (arg.message || arg.title);
+}
+
+function isString(value): value is string {
+    return typeof value === "string";
+}
+export function parseLoginOptions(args: any): LoginOptions {
+    let options: LoginOptions;
+    let defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
+
+    if (arguments.length === 1) {
+        if (isString(arguments[0])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+        } else {
+            options = arguments[0];
+        }
+    } else if (arguments.length === 2) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+        }
+    } else if (arguments.length === 3) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+        }
+    } else if (arguments.length === 4) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+            options.userName = arguments[3];
+        }
+    } else if (arguments.length === 5) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3]) && isString(arguments[4])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userNameHint = arguments[1];
+            options.passwordHint = arguments[2];
+            options.userName = arguments[3];
+            options.password = arguments[4];
+        }
+    }
+
+    return options;
 }

@@ -2,7 +2,7 @@
  * Android specific dialogs functions implementation.
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, parseLoginOptions } from "./dialogs-common";
 import { android as androidApp } from "../../application";
 
 export * from "./dialogs-common";
@@ -220,47 +220,7 @@ export function prompt(arg: any): Promise<PromptResult> {
 }
 
 export function login(arg: any): Promise<LoginResult> {
-    let options: LoginOptions;
-    const defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
-
-    if (arguments.length === 1) {
-        if (isString(arguments[0])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-        } else {
-            options = arguments[0];
-        }
-    } else if (arguments.length === 2) {
-        if (isString(arguments[0]) && isString(arguments[1])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-        }
-    } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-            options.passwordHint = arguments[2];
-        }
-    } else if (arguments.length === 4) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-            options.passwordHint = arguments[2];
-            options.userName = arguments[3];
-        }
-    } else if (arguments.length === 5) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3]) && isString(arguments[4])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-            options.passwordHint = arguments[2];
-            options.userName = arguments[3];
-            options.password = arguments[4];
-        }
-    }
+    let options: LoginOptions = parseLoginOptions(arg);
 
     return new Promise<LoginResult>((resolve, reject) => {
         try {
