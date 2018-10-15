@@ -154,23 +154,20 @@ export function login(): Promise<LoginResult> {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
         }
     } else if (arguments.length === 3) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
             options.passwordHint = arguments[2];
         }
     } else if (arguments.length === 4) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
@@ -178,8 +175,7 @@ export function login(): Promise<LoginResult> {
             options.userName = arguments[3];
         }
     } else if (arguments.length === 5) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3]) && isString(arguments[4])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3]) && isString(arguments[4])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
@@ -188,7 +184,6 @@ export function login(): Promise<LoginResult> {
             options.password = arguments[4];
         }
     }
-
     return new Promise<LoginResult>((resolve, reject) => {
         try {
             let userNameTextField: UITextField;
@@ -215,7 +210,7 @@ export function login(): Promise<LoginResult> {
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Password";
                 arg.secureTextEntry = true;
-                
+
                 if (!options.password) {
                     arg.placeholder = options.passwordHint ? options.passwordHint : "";
                 } else {

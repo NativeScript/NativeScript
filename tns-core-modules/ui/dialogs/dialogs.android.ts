@@ -231,23 +231,20 @@ export function login(arg: any): Promise<LoginResult> {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
         }
     } else if (arguments.length === 3) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
             options.passwordHint = arguments[2];
         }
     } else if (arguments.length === 4) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
@@ -255,8 +252,7 @@ export function login(arg: any): Promise<LoginResult> {
             options.userName = arguments[3];
         }
     } else if (arguments.length === 5) {
-        console.log("arguments.length: ", arguments.length);
-        if (isString(arguments[0]) && isString(arguments[3]) && isString(arguments[4])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3]) && isString(arguments[4])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userNameHint = arguments[1];
