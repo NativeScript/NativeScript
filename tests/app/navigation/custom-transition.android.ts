@@ -5,9 +5,8 @@ export class CustomTransition extends transition.Transition {
         super(duration, curve);
     }
 
-    public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
-        const scaleValues = [];
-
+    public createAndroidAnimator(transitionType: string): android.animation.Animator {
+        var scaleValues = Array.create("float", 2);
         switch (transitionType) {
             case transition.AndroidTransitionType.enter:
             case transition.AndroidTransitionType.popEnter:
@@ -20,22 +19,18 @@ export class CustomTransition extends transition.Transition {
                 scaleValues[1] = 0;
                 break;
         }
-            
-        const animationSet = new android.view.animation.AnimationSet(false);
-        const duration = this.getDuration();
+        var objectAnimators = Array.create(android.animation.Animator, 2);
+        objectAnimators[0] = android.animation.ObjectAnimator.ofFloat(null, "scaleX", scaleValues);
+        objectAnimators[1] = android.animation.ObjectAnimator.ofFloat(null, "scaleY", scaleValues);
+        var animatorSet = new android.animation.AnimatorSet();
+        animatorSet.playTogether(objectAnimators);
+
+        var duration = this.getDuration();
         if (duration !== undefined) {
-            animationSet.setDuration(duration);
+            animatorSet.setDuration(duration);
         }
+        animatorSet.setInterpolator(this.getCurve());
 
-        animationSet.setInterpolator(this.getCurve());
-        animationSet.addAnimation(
-            new android.view.animation.ScaleAnimation(
-                scaleValues[0], 
-                scaleValues[1], 
-                scaleValues[0], 
-                scaleValues[1]
-            ));
-
-        return animationSet;
+        return animatorSet;
     }
 }

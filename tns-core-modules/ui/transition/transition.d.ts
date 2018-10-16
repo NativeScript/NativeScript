@@ -14,6 +14,6 @@ export class Transition {
     public getDuration(): number;
     public getCurve(): any;
     public animateIOSTransition(containerView: any, fromView: any, toView: any, operation: any, completion: (finished: boolean) => void): void;
-    public createAndroidAnimation(transitionType: string): any;
+    public createAndroidAnimator(transitionType: string): any;
     public toString(): string;
 }

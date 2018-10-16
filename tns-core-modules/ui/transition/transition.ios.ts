@@ -24,7 +24,7 @@ export class Transition implements TransitionDefinition {
         throw new Error("Abstract method call");
     }
 
-    public createAndroidAnimation(transitionType: string): any {
+    public createAndroidAnimator(transitionType: string): any {
         throw new Error("Abstract method call");
     }
 
