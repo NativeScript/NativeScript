@@ -14,8 +14,9 @@ class FragmentClass extends android.support.v4.app.Fragment {
         this._callbacks.onHiddenChanged(this, hidden, super.onHiddenChanged);
     }
 
-    public onCreateAnimation(transit: number, enter: boolean, nextAnim: number): android.view.animation.Animation {
-        return this._callbacks.onCreateAnimation(this, transit, enter, nextAnim, super.onCreateAnimation);
+    public onCreateAnimator(transit: number, enter: boolean, nextAnim: number): android.animation.Animator {
+        let result = this._callbacks.onCreateAnimator(this, transit, enter, nextAnim, super.onCreateAnimator);
+        return result;
     }
 
     public onStop(): void {

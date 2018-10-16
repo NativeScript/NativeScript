@@ -1,13 +1,13 @@
 import { EventData, Page } from "tns-core-modules/ui/page";
 import { View } from "tns-core-modules/ui/core/view";
-import { Layout } from "tns-core-modules/ui/layouts/layout";
+import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Image } from "tns-core-modules/ui/image";
 
-let wrapLayout: Layout;
+let wrapLayout: WrapLayout;
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
-    wrapLayout = page.getViewById<Layout>("wrapLayout");
+    wrapLayout = page.getViewById<WrapLayout>("wrapLayout");
 }
 
 export function onAddItem(args: EventData) {
