@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@types/node": "~7.0.5",
-    "tns-platform-declarations": "5.0.0"
+    "tns-platform-declarations": "*"
   },
   "scripts": {
     "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md"
