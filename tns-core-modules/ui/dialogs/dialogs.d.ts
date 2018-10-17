@@ -223,15 +223,16 @@ export interface PromptOptions extends ConfirmOptions {
  * Provides options for the login dialog.
  */
 export interface LoginOptions extends ConfirmOptions {
-       /**
+    /**
      * Gets or sets the default text to display as hint in the user name input box.
      */
     userNameHint?: string;
-
+    
     /**
      * Gets or sets the default text to display as hint in the password input box.
      */
     passwordHint?: string;
+
     /**
      * Gets or sets the default text to display in the user name input box.
      */
