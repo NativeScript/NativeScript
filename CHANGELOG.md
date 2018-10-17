@@ -1,6 +1,187 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="5.0.0"></a>
+## [5.0.0](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0) (2018-10-29)
+
+### Bug Fixes
+
+* Don't crash on missing resources in tab-view and action-bar ([#6388](https://github.com/NativeScript/NativeScript/issues/6388)) ([56a1b12](https://github.com/NativeScript/NativeScript/commit/56a1b12))
+* include mocha and chai typings ([#6246](https://github.com/NativeScript/NativeScript/issues/6246)) ([9f23be1](https://github.com/NativeScript/NativeScript/commit/9f23be1))
+* **ios:** nowrap label measure in horizontal stack layout ([#6186](https://github.com/NativeScript/NativeScript/issues/6186)) ([a1c570c](https://github.com/NativeScript/NativeScript/commit/a1c570c))
+* iOS TimePicker minuteInterval property ([#6116](https://github.com/NativeScript/NativeScript/issues/6116)) ([88f7ed8](https://github.com/NativeScript/NativeScript/commit/88f7ed8))
+* **android:** HEAD request should return statusCode ([7e89f94](https://github.com/NativeScript/NativeScript/commit/7e89f94))
+* **android:** nested frames on app suspend/resume ([#6339](https://github.com/NativeScript/NativeScript/issues/6339)) ([0bf6dc2](https://github.com/NativeScript/NativeScript/commit/0bf6dc2))
+* **android:** parallel navigations should not be triggered ([#6275](https://github.com/NativeScript/NativeScript/issues/6275)) ([6c9fa16](https://github.com/NativeScript/NativeScript/commit/6c9fa16))
+* **android:** second livesync ([#6330](https://github.com/NativeScript/NativeScript/issues/6330)) ([436a318](https://github.com/NativeScript/NativeScript/commit/436a318))
+* **android:** suppress reflection for default animations ([#6141](https://github.com/NativeScript/NativeScript/issues/6141)) ([cc19b40](https://github.com/NativeScript/NativeScript/commit/cc19b40))
+* **android-next:** force frame fragment disposal on unload ([#6189](https://github.com/NativeScript/NativeScript/issues/6189)) ([22cb539](https://github.com/NativeScript/NativeScript/commit/22cb539))
+* **android/platform:** reinitialise screen metrics on orientation change ([#6164](https://github.com/NativeScript/NativeScript/issues/6164)) ([2ee1d7d](https://github.com/NativeScript/NativeScript/commit/2ee1d7d))
+* **ios:** listview scrollToIndex crash with async data ([#6182](https://github.com/NativeScript/NativeScript/issues/6182)) ([a8d016c](https://github.com/NativeScript/NativeScript/commit/a8d016c))
+* **list-view:** Layout list-view items on request ([#6159](https://github.com/NativeScript/NativeScript/issues/6159)) ([ec24c5a](https://github.com/NativeScript/NativeScript/commit/ec24c5a))
+* **modals:** application activityBackPressed event not fired for modals ([#6261](https://github.com/NativeScript/NativeScript/issues/6261)) ([8575c60](https://github.com/NativeScript/NativeScript/commit/8575c60))
+* **tab-view:** Title and icon positioning ([#6362](https://github.com/NativeScript/NativeScript/issues/6362)) ([e3d5f0d](https://github.com/NativeScript/NativeScript/commit/e3d5f0d))
+* nested fragments interact thru child fragment manager ([#6293](https://github.com/NativeScript/NativeScript/issues/6293)) ([3071720](https://github.com/NativeScript/NativeScript/commit/3071720))
+* Page and Frame isLoaded undefined checks ([#6255](https://github.com/NativeScript/NativeScript/issues/6255)) ([12fade7](https://github.com/NativeScript/NativeScript/commit/12fade7))
+* README's images are not visualised in api reference ([#6185](https://github.com/NativeScript/NativeScript/issues/6185)) ([8e9c6d5](https://github.com/NativeScript/NativeScript/commit/8e9c6d5))
+* typo ([f512054](https://github.com/NativeScript/NativeScript/commit/f512054))
+
+
+### Features
+
+* **android:** add Bluetooth connectivity type for Android ([#6162](https://github.com/NativeScript/NativeScript/issues/6162)) ([f1bef48](https://github.com/NativeScript/NativeScript/commit/f1bef48))
+* **android:** migrate to support library apis ([#6129](https://github.com/NativeScript/NativeScript/issues/6129)) ([cf034dd](https://github.com/NativeScript/NativeScript/commit/cf034dd))
+* add platform declarations for Android API 28 (Android 9) ([#6243](https://github.com/NativeScript/NativeScript/issues/6243)) ([b9fc373](https://github.com/NativeScript/NativeScript/commit/b9fc373))
+* **application-settings:** implemented allKeys method ([#6371](https://github.com/NativeScript/NativeScript/issues/6371)) ([829d18b](https://github.com/NativeScript/NativeScript/commit/829d18b))
+* **image-asset-ios:** add autoScaleFactor option to switch auto scaling ([#6127](https://github.com/NativeScript/NativeScript/issues/6127)) ([81e63ee](https://github.com/NativeScript/NativeScript/commit/81e63ee))
+* **iOS:** Safe Area Support ([#6230](https://github.com/NativeScript/NativeScript/issues/6230)) ([982acdc](https://github.com/NativeScript/NativeScript/commit/982acdc))
+* **iOS:** update platform declarations ([f54f71b](https://github.com/NativeScript/NativeScript/commit/f54f71b))
+* **styling:** Added 2 functions to control applicationAdditionalSelectors ([#6124](https://github.com/NativeScript/NativeScript/issues/6124)) ([85b8c01](https://github.com/NativeScript/NativeScript/commit/85b8c01))
+* **tslib:** add tslib helpers to global ([#6351](https://github.com/NativeScript/NativeScript/issues/6351)) ([1232d1e](https://github.com/NativeScript/NativeScript/commit/1232d1e))
+* add ability to pass touch event thru parent view ([#6204](https://github.com/NativeScript/NativeScript/issues/6204)) ([2625683](https://github.com/NativeScript/NativeScript/commit/2625683))
+* implement capitalization type option for prompt dialogs ([#6325](https://github.com/NativeScript/NativeScript/issues/6325)) ([ae6a661](https://github.com/NativeScript/NativeScript/commit/ae6a661))
+
+
+### BREAKING CHANGES
+
+* **android:** NativeScript core framework now extends support library APIs versus native framework classes as per Google's latest guidelines:
+- NativeScript activities now extend `android.support.v7.app.AppCompatActivity` (vs android.app.Activity)
+- NativeScript fragments now extend `android.support.v4.app.Fragment` (vs android.app.Fragment)
+- NativeScript now works internally with `android.support.v4.app.FragmentManager` (vs android.app.FragmentManager) 
+
+The implications of these changes should be mostly transparent to the developer except for the fact that the support library Fragment / FragmentManager work with Animation APIs versus Animator APIs.
+
+For Android API Levels lower than 28 the new Fragment API uses a different fragment enter animation by default. You can customise the transition per navigation entry or globally via the [navigation transitions API](https://docs.nativescript.org/core-concepts/navigation#navigation-transitions)
+Before:
+Default fragment enter animation was fade animation
+
+After:
+Default fragment enter animation for API levels lower than 28 is now a fast "push fade" animation; default fragment enter animation for API levels equal to or greater than 28 remains fade animation
+
+Before:
+AndroidFragmentCallbacks interface exposed the following `onCreateAnimator(...)` method
+``` ts
+export interface AndroidFragmentCallbacks {
+    onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
+    // ...
+}
+```
+
+After:
+AndroidFragmentCallbacks interface now exposes the following `onCreateAnimation(...)` method instead (and `onCreateAnimator(...)` is now removed)
+``` ts
+export interface AndroidFragmentCallbacks {
+    onCreateAnimation(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
+    // ...
+}
+```
+
+Before:
+Transition class exposed the following abstract `createAndroidAnimator(...)` method
+``` ts
+export class Transition {
+    public createAndroidAnimator(transitionType: string): any;
+    // ...
+}
+```
+
+After:
+Transition class now exposes the following abstract `createAndroidAnimation(...)` method instead (and `createAndroidAnimation(...) is now removed)
+``` ts
+export class Transition {
+    public createAndroidAnimation(transitionType: string): any;
+    // ...
+}
+```
+
+To migrate the code of your custom transitions follow the example below:
+
+Before:
+``` ts
+import * as transition from "tns-core-modules/ui/transition";
+
+export class CustomTransition extends transition.Transition {
+    constructor(duration: number, curve: any) {
+        super(duration, curve);
+    }
+
+    public createAndroidAnimator(transitionType: string): android.animation.Animator {
+        var scaleValues = Array.create("float", 2);
+        switch (transitionType) {
+            case transition.AndroidTransitionType.enter:
+            case transition.AndroidTransitionType.popEnter:
+                scaleValues[0] = 0;
+                scaleValues[1] = 1;
+                break;
+            case transition.AndroidTransitionType.exit:
+            case transition.AndroidTransitionType.popExit:
+                scaleValues[0] = 1;
+                scaleValues[1] = 0;
+                break;
+        }
+        var objectAnimators = Array.create(android.animation.Animator, 2);
+        objectAnimators[0] = android.animation.ObjectAnimator.ofFloat(null, "scaleX", scaleValues);
+        objectAnimators[1] = android.animation.ObjectAnimator.ofFloat(null, "scaleY", scaleValues);
+        var animatorSet = new android.animation.AnimatorSet();
+        animatorSet.playTogether(objectAnimators);
+
+        var duration = this.getDuration();
+        if (duration !== undefined) {
+            animatorSet.setDuration(duration);
+        }
+        animatorSet.setInterpolator(this.getCurve());
+
+        return animatorSet;
+    }
+}
+```
+
+After:
+``` ts
+import * as transition from "tns-core-modules/ui/transition";
+
+export class CustomTransition extends transition.Transition {
+    constructor(duration: number, curve: any) {
+        super(duration, curve);
+    }
+
+    public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
+        const scaleValues = [];
+
+        switch (transitionType) {
+            case transition.AndroidTransitionType.enter:
+            case transition.AndroidTransitionType.popEnter:
+                scaleValues[0] = 0;
+                scaleValues[1] = 1;
+                break;
+            case transition.AndroidTransitionType.exit:
+            case transition.AndroidTransitionType.popExit:
+                scaleValues[0] = 1;
+                scaleValues[1] = 0;
+                break;
+        }
+            
+        const animationSet = new android.view.animation.AnimationSet(false);
+        const duration = this.getDuration();
+        if (duration !== undefined) {
+            animationSet.setDuration(duration);
+        }
+
+        animationSet.setInterpolator(this.getCurve());
+        animationSet.addAnimation(
+            new android.view.animation.ScaleAnimation(
+                scaleValues[0], 
+                scaleValues[1], 
+                scaleValues[0], 
+                scaleValues[1]
+            ));
+
+        return animationSet;
+    }
+}
+```
+
+
 <a name="4.2.1"></a>
 ## [4.2.1](https://github.com/NativeScript/NativeScript/compare/4.2.0...4.2.1) (2018-09-18)
 
