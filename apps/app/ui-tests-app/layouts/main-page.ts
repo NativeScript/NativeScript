@@ -21,7 +21,9 @@ export function loadExamples() {
     examples.set("pgrid", "layouts-percent/grid");
     examples.set("pstack", "layouts-percent/stack");
     examples.set("pwrap", "layouts-percent/wrap");
+    examples.set("passThroughParent", "layouts/passThroughParent");
     examples.set("stacklayout-6059", "layouts/stacklayout-6059");
+    examples.set("safe-area", "layouts/safe-area");
 
     return examples;
 }

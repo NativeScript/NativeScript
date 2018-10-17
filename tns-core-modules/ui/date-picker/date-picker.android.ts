@@ -54,19 +54,18 @@ export class DatePicker extends DatePickerBase {
     nativeViewProtected: android.widget.DatePicker;
 
     public createNativeView() {
-        initializeDateChangedListener();
         const picker = new android.widget.DatePicker(this._context);
         picker.setCalendarViewShown(false);
-        const listener = new DateChangedListener(this);
-
-        picker.init(this.year, this.month - 1, this.day, listener);
-        (<any>picker).listener = listener;
         return picker;
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        (<any>this.nativeViewProtected).listener.owner = this;
+        initializeDateChangedListener();
+        const nativeView = this.nativeViewProtected;
+        const listener = new DateChangedListener(this);
+        nativeView.init(this.year, this.month - 1, this.day, listener);
+        (<any>nativeView).listener = listener;
     }
 
     public disposeNativeView() {

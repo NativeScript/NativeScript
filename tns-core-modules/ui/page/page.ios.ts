@@ -9,11 +9,14 @@ import {
 } from "./page-common";
 
 import { profile } from "../../profiling";
+import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./page-common";
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
+
+const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
@@ -120,7 +123,7 @@ class UIViewControllerImpl extends UIViewController {
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
             const newEntry = this[ENTRY];
-            
+
             let isBack: boolean;
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
@@ -231,8 +234,11 @@ export class Page extends PageBase {
         super();
         const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
         this.viewController = this._ios = controller;
-        this.nativeViewProtected = controller.view;
-        this.nativeViewProtected.backgroundColor = whiteColor;
+        controller.view.backgroundColor = whiteColor;
+    }
+
+    createNativeView() {
+        return this.viewController.view;
     }
 
     get ios(): UIViewController {
@@ -309,7 +315,27 @@ export class Page extends PageBase {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
-        View.layoutChild(this, this.layoutView, left, top, right, bottom);
+
+        const insets = this.getSafeAreaInsets();
+
+        if (majorVersion <= 10) {
+            // iOS 10 and below don't have safe area insets API,
+            // there we need only the top inset on the Page
+            insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
+        }
+
+        const childLeft = 0 + insets.left;
+        const childTop = 0 + insets.top;
+        const childRight = right - insets.right;
+        let childBottom = bottom - insets.bottom;
+
+        if (majorVersion >= 11 && this.actionBar.flat) {
+            // on iOS 11 the flat action bar changes the fullscreen size
+            // the top of the page is the new fullscreen
+            childBottom -= top;
+        }
+
+        View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
@@ -327,7 +353,7 @@ export class Page extends PageBase {
             if (this.viewController.presentedViewController === viewController) {
                 return true;
             }
-            
+
             this.viewController.addChildViewController(viewController);
         }
 

@@ -16,14 +16,13 @@ exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { View, PercentLength, Observable, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
+import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
 import { Frame, stack } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
-import { _resetRootView, getRootView } from "tns-core-modules/application";
+import { _resetRootView } from "tns-core-modules/application";
 import { Button } from "tns-core-modules/ui/button/button";
 
 export function addLabelToPage(page: Page, text?: string) {
@@ -1066,8 +1065,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
 
     const modalCloseCallback = function (returnValue: any) {
         TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
-
-        ready = true;
+        setTimeout(() => ready = true, 50);
     }
 
     const modalTabViewShowingModallyEventHandler = function(args: ShownModallyData) {
@@ -1145,42 +1143,4 @@ export function test_percent_width_and_height_support() {
 
     TKUnit.assertTrue(PercentLength.equals(testPage.width, "auto"));
     TKUnit.assertTrue(PercentLength.equals(testPage.height, "auto"));
-}
-
-export function test_percent_margin_support() {
-    const testPage = new Page();
-    const gridLayout = new GridLayout();
-    const stackLayout = new StackLayout();
-    stackLayout.margin = "10%";
-    gridLayout.addChild(stackLayout);
-    testPage.content = gridLayout;
-
-    helper.navigate(() => testPage);
-
-    const parentBounds = gridLayout._getCurrentLayoutBounds();
-    const parentWidth = parentBounds.right - parentBounds.left;
-    const parentHeight = parentBounds.bottom - parentBounds.top;
-
-    const marginLeft = isIOS ? Math.round(parentWidth * 0.1) : Math.floor(parentWidth * 0.1);
-    const marginTop = isIOS ? Math.round(parentHeight * 0.1) : Math.floor(parentHeight * 0.1);
-
-    let bounds = stackLayout._getCurrentLayoutBounds();
-    TKUnit.assertEqual(Math.round(bounds.left), marginLeft, "Stack LEFT position incorrect");
-    TKUnit.assertEqual(Math.round(bounds.top), marginTop, "Stack TOP position incorrect");
-    TKUnit.assertEqual(Math.round(bounds.bottom - bounds.top), parentHeight - (2 * marginTop), "Stack HEIGHT incorrect");
-    TKUnit.assertEqual(Math.round(bounds.right - bounds.left), parentWidth - (2 * marginLeft), "Stack WIDTH incorrect");
-    TKUnit.assertEqual(Math.round(bounds.right), parentWidth - marginLeft, "Stack RIGHT position incorrect");
-    TKUnit.assertEqual(Math.round(bounds.bottom), parentHeight - marginTop, "Stack BOTTOM position incorrect");
-
-    //reset values.
-    stackLayout.margin = "0";
-    TKUnit.waitUntilReady(() => stackLayout.isLayoutValid);
-
-    bounds = stackLayout._getCurrentLayoutBounds();
-    TKUnit.assertEqual(bounds.left, 0, "Stack LEFT position incorrect");
-    TKUnit.assertEqual(bounds.top, 0, "Stack TOP position incorrect");
-    TKUnit.assertEqual(bounds.bottom - bounds.top, parentHeight, "Stack HEIGHT incorrect");
-    TKUnit.assertEqual(bounds.right - bounds.left, parentWidth, "Stack WIDTH incorrect");
-    TKUnit.assertEqual(bounds.right, parentWidth, "Stack RIGHT position incorrect");
-    TKUnit.assertEqual(bounds.bottom, parentHeight, "Stack BOTTOM position incorrect");
 }

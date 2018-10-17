@@ -213,18 +213,16 @@ export class SegmentedBar extends SegmentedBarBase {
         tabHostLayout.addView(frame);
 
         nativeView.addView(tabHostLayout);
-
-        const listener = new TabChangeListener(this);
-        nativeView.setOnTabChangedListener(listener);
-        (<any>nativeView).listener = listener;
-        nativeView.setup();
         return nativeView;
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        const nativeView: any = this.nativeViewProtected;
-        nativeView.listener.owner = this;
+        const nativeView = this.nativeViewProtected;
+        const listener = new TabChangeListener(this);
+        nativeView.setOnTabChangedListener(listener);
+        (<any>nativeView).listener = listener;
+        nativeView.setup();
         this._tabContentFactory = this._tabContentFactory || new TabContentFactory(this);
     }
 

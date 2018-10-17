@@ -10,7 +10,6 @@ import * as layoutHelper from "./layout-helper";
 import * as platform from "tns-core-modules/platform";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../helper";
-
 var DELTA = 1;
 
 class RemovalTrackingGridLayout extends GridLayout {
