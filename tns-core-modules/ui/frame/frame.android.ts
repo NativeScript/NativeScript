@@ -13,7 +13,7 @@ import {
 } from "./frame-common";
 
 import {
-    _setAndroidFragmentTransitions, _onFragmentCreateAnimation, _getAnimatedEntries,
+    _setAndroidFragmentTransitions, _onFragmentCreateAnimator, _getAnimatedEntries,
     _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
@@ -121,6 +121,10 @@ export class Frame extends FrameBase {
         return this._android;
     }
 
+    get _hasFragments(): boolean {
+        return true;
+    }
+
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
         this._attachedToWindow = true;
@@ -175,7 +179,16 @@ export class Frame extends FrameBase {
         }
     }
 
-    _onRootViewReset(): void {
+    public _getChildFragmentManager() {
+        const backstackEntry = this._executingEntry || this._currentEntry;
+        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
+            return backstackEntry.fragment.getChildFragmentManager();
+        }
+
+        return null;
+    }
+
+    public _onRootViewReset(): void {
         this.disposeCurrentFragment();
         super._onRootViewReset();
     }
@@ -186,7 +199,14 @@ export class Frame extends FrameBase {
     }
 
     private disposeCurrentFragment(): void {
-        if (!this._currentEntry || !this._currentEntry.fragment) {
+        // when interacting with nested fragments it seems Android is smart enough
+        // to automatically remove child fragments when parent fragment is removed;
+        // however, we must add a fragment.isAdded() guard as our logic will try to 
+        // explicitly remove the already removed child fragment causing an 
+        // IllegalStateException: Fragment has not been attached yet.
+        if (!this._currentEntry || 
+            !this._currentEntry.fragment || 
+            !this._currentEntry.fragment.isAdded()) {
             return;
         }
 
@@ -647,7 +667,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onCreateAnimation(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.view.animation.Animation {
+    public onCreateAnimator(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
         let nextAnimString: string;
         switch (nextAnim) {
             case AnimationType.enterFakeResourceId: nextAnimString = "enter"; break;
@@ -656,16 +676,16 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             case AnimationType.popExitFakeResourceId: nextAnimString = "popExit"; break;
         }
 
-        let animation = _onFragmentCreateAnimation(this.entry, fragment, nextAnim, enter);
-        if (!animation) {
-            animation = superFunc.call(fragment, transit, enter, nextAnim);
+        let animator = _onFragmentCreateAnimator(this.entry, fragment, nextAnim, enter);
+        if (!animator) {
+            animator = superFunc.call(fragment, transit, enter, nextAnim);
         }
 
         if (traceEnabled()) {
-            traceWrite(`${fragment}.onCreateAnimation(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animation ? "animation" : "no animation"}`, traceCategories.NativeLifecycle);
+            traceWrite(`${fragment}.onCreateAnimator(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animator ? "animator" : "no animator"}`, traceCategories.NativeLifecycle);
         }
 
-        return animation;
+        return animator;
     }
 
     @profile

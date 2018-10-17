@@ -159,6 +159,7 @@ export class View extends ViewCommon {
                 traceWrite(this + " :_setNativeViewFrame: " + JSON.stringify(ios.getPositionFromFrame(frame)), traceCategories.Layout);
             }
             this._cachedFrame = frame;
+            let adjustedFrame = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
                 const transform = nativeView.transform;
@@ -167,11 +168,11 @@ export class View extends ViewCommon {
                 nativeView.transform = transform;
             } else {
                 nativeView.frame = frame;
-            }
-
-            const adjustedFrame = this.applySafeAreaInsets(frame);
-            if (adjustedFrame) {
-                nativeView.frame = adjustedFrame;
+                // apply safe area insets only if no transform is in place
+                adjustedFrame = this.applySafeAreaInsets(frame);
+                if (adjustedFrame) {
+                    nativeView.frame = adjustedFrame;
+                }
             }
 
             const boundsOrigin = nativeView.bounds.origin;

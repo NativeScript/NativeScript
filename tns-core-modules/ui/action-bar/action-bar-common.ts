@@ -9,7 +9,13 @@ import { profile } from "../../profiling";
 
 export * from "../core/view";
 
-import { View, ViewBase, Property, unsetValue, booleanConverter, horizontalAlignmentProperty, verticalAlignmentProperty, CSSType } from "../core/view";
+import {
+    View, ViewBase, Property,
+    unsetValue, booleanConverter,
+    horizontalAlignmentProperty,
+    verticalAlignmentProperty, CSSType,
+    traceWrite, traceCategories, traceMessageType
+} from "../core/view";
 
 export module knownCollections {
     export var actionItems = "actionItems";
@@ -332,6 +338,12 @@ function onItemChanged(item: ActionItemBase, oldValue: string, newValue: string)
 
 function onVisibilityChanged(item: ActionItemBase, oldValue: string, newValue: string) {
     item._onVisibilityChanged(newValue);
+}
+
+export function traceMissingIcon(icon: string) {
+    traceWrite("Could not load action bar icon: " + icon,
+        traceCategories.Error,
+        traceMessageType.error);
 }
 
 export const textProperty = new Property<ActionItemBase, string>({ name: "text", defaultValue: "", valueChanged: onItemChanged });
