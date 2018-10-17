@@ -142,7 +142,7 @@ export function prompt(arg: any): Promise<PromptResult> {
 }
 
 export function login(arg: any): Promise<LoginResult> {
-    let options: LoginOptions = parseLoginOptions(arg);
+    let options: LoginOptions = parseLoginOptions(arguments);
 
     return new Promise<LoginResult>((resolve, reject) => {
         try {

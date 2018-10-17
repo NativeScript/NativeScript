@@ -144,53 +144,48 @@ export function isDialogOptions(arg): boolean {
     return arg && (arg.message || arg.title);
 }
 
-function isString(value): value is string {
-    return typeof value === "string";
-}
 export function parseLoginOptions(args: any): LoginOptions {
     let options: LoginOptions;
-    let defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
 
-    if (arguments.length === 0) {
-        options = defaultOptions;
-    } else if (arguments.length === 1) {
-        if (isString(arguments[0])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-        } else {
-            options = arguments[0];
-        }
-    } else if (arguments.length === 2) {
-        if (isString(arguments[0]) && isString(arguments[1])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-        }
-    } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-            options.passwordHint = arguments[2];
-        }
-    } else if (arguments.length === 4) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-            options.passwordHint = arguments[2];
-            options.userName = arguments[3];
-        }
-    } else if (arguments.length === 5) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2]) && isString(arguments[3]) && isString(arguments[4])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userNameHint = arguments[1];
-            options.passwordHint = arguments[2];
-            options.userName = arguments[3];
-            options.password = arguments[4];
-        }
+    let optionsDictionary = {
+        optionsLenght1 : { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL, message: args[0] },
+        optionsLenght2 : { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL, message: args[0], userNameHint: args[1] },
+        optionsLenght3 : { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL, message: args[0], userNameHint: args[1], passwordHint: args[2] },
+        optionsLenght4 : { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL, message: args[0], userNameHint: args[1], passwordHint: args[2], userName: args[3] },
+        optionsLenght5 : { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL, message: args[0], userNameHint: args[1], passwordHint: args[2], userName: args[3], password: args[4] }
+    }
+
+    switch (args.length) {
+        case 1:
+            isString(args[0]) ? options = optionsDictionary.optionsLenght1 : options = args[0];
+            break;
+        case 2:
+            if (isString(args[0]) && isString(args[1])) {
+                options = optionsDictionary.optionsLenght2;
+            }
+            break;
+        case 3:
+            if (isString(args[0]) && isString(args[1]) && isString(args[2])) {
+                options = optionsDictionary.optionsLenght3;
+            }
+            break;
+        case 4:
+            if (isString(args[0]) && isString(args[1]) && isString(args[2]) && isString(args[3])) {
+                options = optionsDictionary.optionsLenght4;
+            }
+            break;
+        case 5:
+            if (isString(args[0]) && isString(args[1]) && isString(args[2]) && isString(args[3]) && isString(args[4])) {
+                options = optionsDictionary.optionsLenght5;
+            }
+            break;
+        default:
+            break;
     }
 
     return options;
+}
+
+function isString(value): value is string {
+    return typeof value === "string";
 }
