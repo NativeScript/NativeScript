@@ -15,7 +15,6 @@ Cross Platform Modules Changelog
 * **android:** parallel navigations should not be triggered ([#6275](https://github.com/NativeScript/NativeScript/issues/6275)) ([6c9fa16](https://github.com/NativeScript/NativeScript/commit/6c9fa16))
 * **android:** second livesync ([#6330](https://github.com/NativeScript/NativeScript/issues/6330)) ([436a318](https://github.com/NativeScript/NativeScript/commit/436a318))
 * **android:** suppress reflection for default animations ([#6141](https://github.com/NativeScript/NativeScript/issues/6141)) ([cc19b40](https://github.com/NativeScript/NativeScript/commit/cc19b40))
-* **android-next:** force frame fragment disposal on unload ([#6189](https://github.com/NativeScript/NativeScript/issues/6189)) ([22cb539](https://github.com/NativeScript/NativeScript/commit/22cb539))
 * **android/platform:** reinitialise screen metrics on orientation change ([#6164](https://github.com/NativeScript/NativeScript/issues/6164)) ([2ee1d7d](https://github.com/NativeScript/NativeScript/commit/2ee1d7d))
 * **ios:** listview scrollToIndex crash with async data ([#6182](https://github.com/NativeScript/NativeScript/issues/6182)) ([a8d016c](https://github.com/NativeScript/NativeScript/commit/a8d016c))
 * **list-view:** Layout list-view items on request ([#6159](https://github.com/NativeScript/NativeScript/issues/6159)) ([ec24c5a](https://github.com/NativeScript/NativeScript/commit/ec24c5a))
@@ -58,127 +57,40 @@ Default fragment enter animation was fade animation
 After:
 Default fragment enter animation for API levels lower than 28 is now a fast "push fade" animation; default fragment enter animation for API levels equal to or greater than 28 remains fade animation
 
+* Layout class (`tns-core-modules/ui/layouts/layout`) is now removed as it is not used in {N} framework any more.
+
 Before:
-AndroidFragmentCallbacks interface exposed the following `onCreateAnimator(...)` method
-``` ts
-export interface AndroidFragmentCallbacks {
-    onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
-    // ...
-}
-```
+Built-in {N} layouts GridLayout, StackLayout, WrapLayout, etc. extended `Layout` class
 
 After:
-AndroidFragmentCallbacks interface now exposes the following `onCreateAnimation(...)` method instead (and `onCreateAnimator(...)` is now removed)
-``` ts
-export interface AndroidFragmentCallbacks {
-    onCreateAnimation(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
-    // ...
-}
-```
+Built-in {N} layouts GridLayout, StackLayout, WrapLayout, etc. now extend `LayoutBase` class
 
-Before:
-Transition class exposed the following abstract `createAndroidAnimator(...)` method
-``` ts
-export class Transition {
-    public createAndroidAnimator(transitionType: string): any;
-    // ...
-}
-```
-
-After:
-Transition class now exposes the following abstract `createAndroidAnimation(...)` method instead (and `createAndroidAnimation(...) is now removed)
-``` ts
-export class Transition {
-    public createAndroidAnimation(transitionType: string): any;
-    // ...
-}
-```
-
-To migrate the code of your custom transitions follow the example below:
+To migrate your code follow the example below:
 
 Before:
 ``` ts
-import * as transition from "tns-core-modules/ui/transition";
+import { Layout } from "ui/layouts/layout";
+// ...
 
-export class CustomTransition extends transition.Transition {
-    constructor(duration: number, curve: any) {
-        super(duration, curve);
-    }
+let wrapLayout: Layout;
 
-    public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        var scaleValues = Array.create("float", 2);
-        switch (transitionType) {
-            case transition.AndroidTransitionType.enter:
-            case transition.AndroidTransitionType.popEnter:
-                scaleValues[0] = 0;
-                scaleValues[1] = 1;
-                break;
-            case transition.AndroidTransitionType.exit:
-            case transition.AndroidTransitionType.popExit:
-                scaleValues[0] = 1;
-                scaleValues[1] = 0;
-                break;
-        }
-        var objectAnimators = Array.create(android.animation.Animator, 2);
-        objectAnimators[0] = android.animation.ObjectAnimator.ofFloat(null, "scaleX", scaleValues);
-        objectAnimators[1] = android.animation.ObjectAnimator.ofFloat(null, "scaleY", scaleValues);
-        var animatorSet = new android.animation.AnimatorSet();
-        animatorSet.playTogether(objectAnimators);
-
-        var duration = this.getDuration();
-        if (duration !== undefined) {
-            animatorSet.setDuration(duration);
-        }
-        animatorSet.setInterpolator(this.getCurve());
-
-        return animatorSet;
-    }
-}
+export function pageLoaded(args: EventData) {
+     const page = <Page>args.object;
+     wrapLayout = page.getViewById<Layout>("wrapLayout");
+ }
 ```
 
 After:
 ``` ts
-import * as transition from "tns-core-modules/ui/transition";
+import { LayoutBase } from "ui/layouts/layout-base"; // or import { WrapLayout } from "ui/layouts/wrap-layout;
+// ...
 
-export class CustomTransition extends transition.Transition {
-    constructor(duration: number, curve: any) {
-        super(duration, curve);
-    }
+let wrapLayout: LayoutBase; // or let wrapLayout: WrapLayout;
 
-    public createAndroidAnimation(transitionType: string): android.view.animation.Animation {
-        const scaleValues = [];
-
-        switch (transitionType) {
-            case transition.AndroidTransitionType.enter:
-            case transition.AndroidTransitionType.popEnter:
-                scaleValues[0] = 0;
-                scaleValues[1] = 1;
-                break;
-            case transition.AndroidTransitionType.exit:
-            case transition.AndroidTransitionType.popExit:
-                scaleValues[0] = 1;
-                scaleValues[1] = 0;
-                break;
-        }
-            
-        const animationSet = new android.view.animation.AnimationSet(false);
-        const duration = this.getDuration();
-        if (duration !== undefined) {
-            animationSet.setDuration(duration);
-        }
-
-        animationSet.setInterpolator(this.getCurve());
-        animationSet.addAnimation(
-            new android.view.animation.ScaleAnimation(
-                scaleValues[0], 
-                scaleValues[1], 
-                scaleValues[0], 
-                scaleValues[1]
-            ));
-
-        return animationSet;
-    }
-}
+export function pageLoaded(args: EventData) {
+     const page = <Page>args.object;
+     wrapLayout = page.getViewById<LayoutBase>("wrapLayout"); // or wrapLayout = page.getViewById<WrapLayout>("wrapLayout"); 
+ }
 ```
 
 
