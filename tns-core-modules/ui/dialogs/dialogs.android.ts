@@ -219,8 +219,8 @@ export function prompt(arg: any): Promise<PromptResult> {
     });
 }
 
-export function login(arg: any): Promise<LoginResult> {
-    let options: LoginOptions = parseLoginOptions(arguments);
+export function login(...args: any[]): Promise<LoginResult> {
+    let options: LoginOptions = parseLoginOptions(args);
 
     return new Promise<LoginResult>((resolve, reject) => {
         try {
