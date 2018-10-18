@@ -21,9 +21,18 @@ import { Frame, NavigationEntry } from "../ui/frame";
 import * as utils from "../utils/utils";
 import { profile, level as profilingLevel, Level } from "../profiling";
 
-class Responder extends UIResponder {
-    //
-}
+// Must use .extend() to make the "window" be a valid iOS selector
+var Responder = UIResponder.extend({
+    get window() {
+		// TODO: Do we need to actually have a valid initial window value here???
+        return this._window;
+    },
+    set window(setWindow) {
+        this._window = setWindow;
+    }
+}, {
+    protocols: [UIApplicationDelegate]
+});
 
 class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
