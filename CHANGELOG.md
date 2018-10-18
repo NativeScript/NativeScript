@@ -1,8 +1,8 @@
 Cross Platform Modules Changelog
 ==============================
 
-<a name="5.0.0"></a>
-## [5.0.0](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0) (2018-10-29)
+<a name="5.0.0-rc"></a>
+## [5.0.0 - RC](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0) (2018-10-17)
 
 ### Bug Fixes
 
@@ -25,7 +25,7 @@ Cross Platform Modules Changelog
 
 ### Features
 
-* add ability to pass touch event thru parent view ([#6204](https://github.com/NativeScript/NativeScript/issues/6204)) ([2625683](https://github.com/NativeScript/NativeScript/commit/2625683))
+* add ability to pass touch event through parent view ([#6204](https://github.com/NativeScript/NativeScript/issues/6204)) ([2625683](https://github.com/NativeScript/NativeScript/commit/2625683))
 * implement capitalization type option for prompt dialogs ([#6325](https://github.com/NativeScript/NativeScript/issues/6325)) ([ae6a661](https://github.com/NativeScript/NativeScript/commit/ae6a661))
 * **application-settings:** implemented allKeys method ([#6371](https://github.com/NativeScript/NativeScript/issues/6371)) ([829d18b](https://github.com/NativeScript/NativeScript/commit/829d18b))
 * **image-asset-ios:** add autoScaleFactor option to switch auto scaling ([#6127](https://github.com/NativeScript/NativeScript/issues/6127)) ([81e63ee](https://github.com/NativeScript/NativeScript/commit/81e63ee))
