@@ -41,9 +41,9 @@ Cross Platform Modules Changelog
 ### BREAKING CHANGES
 
 * **android:** NativeScript core framework now extends support library APIs versus native framework classes as per Google's latest guidelines:
-- NativeScript activities now extend `android.support.v7.app.AppCompatActivity` (vs android.app.Activity)
-- NativeScript fragments now extend `android.support.v4.app.Fragment` (vs android.app.Fragment)
-- NativeScript now works internally with `android.support.v4.app.FragmentManager` (vs android.app.FragmentManager) 
+    - NativeScript activities now extend `android.support.v7.app.AppCompatActivity` (vs android.app.Activity)
+    - NativeScript fragments now extend `android.support.v4.app.Fragment` (vs android.app.Fragment)
+    - NativeScript now works internally with `android.support.v4.app.FragmentManager` (vs android.app.FragmentManager) 
 
 The implications of these changes should be mostly transparent to the developer except for the fact that the support library Fragment / FragmentManager work with Animation APIs versus Animator APIs.
 
@@ -89,7 +89,35 @@ export function pageLoaded(args: EventData) {
      wrapLayout = page.getViewById<LayoutBase>("wrapLayout"); // or wrapLayout = page.getViewById<WrapLayout>("wrapLayout"); 
  }
 ```
+* **ios:** widgets native view lifecycle refactoring - native view is now created right before they are added to visual tree
 
+The iOS widgets native view lifecycle now matches the Android widgets. Before, the iOS native view was created in the widget constructor and you could manipulate the native view right after the widget is instantiated. After the refactoring, the widget's native view will be created when it's added to the visual tree. The most correct way to manipulate the native view is in the `loaded` event handler.
+
+Before:
+``` ts
+import { Button } from "ui/button";
+// ...
+
+const button = new Button();
+button.nativeView.someNativeAPIMethod();
+```
+
+After:
+``` ts
+import { Button } from "ui/button";
+// ...
+
+const button = new Button();
+button.on("loaded", () => {
+    button.nativeView.someNativeAPIMethod();
+});
+```
+
+* **ios:** Widgets that inherit the `ContainerView` class now overflow the safe area by default.
+
+These are: `AbsoluteLayout`, `DockLayout`, `GridLayout`, `StackLayout`, `WrapLayout`, `FlexboxLayout`, `ScrollView`, `ListView`, `WebView` and `Repeater`.
+
+The change is that now if these widgets touch the edge of the safe area, they will be automatically expanded to the edge of the screen. This will change their width and height. Margins and paddings will still be applied only in the safe area. This behavior can be reverted to the old one by setting the `iosOverflowSafeArea` property of the widget to `false`.
 
 <a name="4.2.1"></a>
 ## [4.2.1](https://github.com/NativeScript/NativeScript/compare/4.2.0...4.2.1) (2018-09-18)
