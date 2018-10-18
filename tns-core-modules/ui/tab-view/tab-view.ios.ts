@@ -12,7 +12,7 @@ import { fromFileOrResource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
 import { ios as iosUtils } from "../../utils/utils"
-import { device } from "../../platform";
+import { device, screen } from "../../platform";
 export * from "./tab-view-common";
 
 const majorVersion = iosUtils.MajorVersion;
@@ -252,6 +252,23 @@ export class TabView extends TabViewBase {
         this._delegate = null;
         this._moreNavigationControllerDelegate = null;
         super.disposeNativeView();
+    }
+
+    public hideTabs() {
+      const tabBar = this.ios.tabBar;
+      let height = tabBar.frame.size.height;
+      if (majorVersion > 10) {
+        // supports safeAreaInsets (account for them)
+        height = height - 59;
+      }
+      this.ios.view.frame = CGRectMake(0, 0, tabBar.frame.size.width, (screen.mainScreen.heightDIPs + height));
+      this.ios.tabBar.hidden = true;
+    }
+
+    public showTabs() {
+      const tabBar = this.ios.tabBar;
+      this.ios.view.frame = CGRectMake(0, 0, tabBar.frame.size.width, screen.mainScreen.heightDIPs);
+      this.ios.tabBar.hidden = false;
     }
 
     @profile

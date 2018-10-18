@@ -534,6 +534,18 @@ export class TabView extends TabViewBase {
         super.disposeNativeView();
     }
 
+    public hideTabs() {
+      if (this._tabLayout) {
+        this._tabLayout.setVisibility(android.view.View.GONE);
+      }
+    }
+
+    public showTabs() {
+      if (this._tabLayout) {
+        this._tabLayout.setVisibility(android.view.View.VISIBLE);
+      }
+    }
+
     public onBackPressed(): boolean {
         const currentView = this._selectedView;
         if (currentView) {
