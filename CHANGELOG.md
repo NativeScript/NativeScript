@@ -38,7 +38,7 @@ Cross Platform Modules Changelog
 
 ### BREAKING CHANGES
 
-* **android:** NativeScript core framework now extends support library APIs versus native framework classes as per Google's latest guidelines:
+* **android:** NativeScript core framework now extends support library APIs versus native framework classes as per Google's latest guidelines ([#6129](https://github.com/NativeScript/NativeScript/issues/6129)) ([cf034dd](https://github.com/NativeScript/NativeScript/commit/cf034dd)):
     - NativeScript activities now extend `android.support.v7.app.AppCompatActivity` (vs android.app.Activity)
     - NativeScript fragments now extend `android.support.v4.app.Fragment` (vs android.app.Fragment)
     - NativeScript now works internally with `android.support.v4.app.FragmentManager` (vs android.app.FragmentManager) 
@@ -87,7 +87,7 @@ export function pageLoaded(args: EventData) {
      wrapLayout = page.getViewById<LayoutBase>("wrapLayout"); // or wrapLayout = page.getViewById<WrapLayout>("wrapLayout"); 
  }
 ```
-* **ios:** widgets native view lifecycle refactoring - native view is now created right before they are added to visual tree
+* **ios:** widgets native view lifecycle refactoring - native view is now created right before they are added to visual tree ([#6102](https://github.com/NativeScript/NativeScript/issues/6102)) ([46705ee](https://github.com/NativeScript/NativeScript/commit/46705ee)):
 
 The iOS widgets native view lifecycle now matches the Android widgets. Before, the iOS native view was created in the widget constructor and you could manipulate the native view right after the widget is instantiated. After the refactoring, the widget's native view will be created when it's added to the visual tree. The most correct way to manipulate the native view is in the `loaded` event handler.
 
@@ -111,7 +111,7 @@ button.on("loaded", () => {
 });
 ```
 
-* **ios:** Widgets that inherit the `ContainerView` class now overflow the safe area by default.
+* **ios:** Widgets that inherit the `ContainerView` class now overflow the safe area by default ([#6230](https://github.com/NativeScript/NativeScript/issues/6230)) ([982acdc](https://github.com/NativeScript/NativeScript/commit/982acdc)):
 
 These are: `AbsoluteLayout`, `DockLayout`, `GridLayout`, `StackLayout`, `WrapLayout`, `FlexboxLayout`, `ScrollView`, `ListView`, `WebView` and `Repeater`.
 
