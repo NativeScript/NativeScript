@@ -7,8 +7,7 @@ Cross Platform Modules Changelog
 ### Bug Fixes
 
 * don't crash on missing resources in tab-view and action-bar ([#6388](https://github.com/NativeScript/NativeScript/issues/6388)) ([56a1b12](https://github.com/NativeScript/NativeScript/commit/56a1b12))
-* include mocha and chai typings ([#6246](https://github.com/NativeScript/NativeScript/issues/6246)) ([9f23be1](https://github.com/NativeScript/NativeScript/commit/9f23be1))
-* nested fragments interact thru child fragment manager ([#6293](https://github.com/NativeScript/NativeScript/issues/6293)) ([3071720](https://github.com/NativeScript/NativeScript/commit/3071720))
+* nested fragments interact through child fragment manager ([#6293](https://github.com/NativeScript/NativeScript/issues/6293)) ([3071720](https://github.com/NativeScript/NativeScript/commit/3071720))
 * Page and Frame isLoaded undefined checks ([#6255](https://github.com/NativeScript/NativeScript/issues/6255)) ([12fade7](https://github.com/NativeScript/NativeScript/commit/12fade7))
 * **modals:** application activityBackPressed event not fired for modals ([#6261](https://github.com/NativeScript/NativeScript/issues/6261)) ([8575c60](https://github.com/NativeScript/NativeScript/commit/8575c60))
 * **list-view:** Layout list-view items on request ([#6159](https://github.com/NativeScript/NativeScript/issues/6159)) ([ec24c5a](https://github.com/NativeScript/NativeScript/commit/ec24c5a))
@@ -16,7 +15,6 @@ Cross Platform Modules Changelog
 * **android:** HEAD request should return statusCode ([7e89f94](https://github.com/NativeScript/NativeScript/commit/7e89f94))
 * **android:** nested frames on app suspend/resume ([#6339](https://github.com/NativeScript/NativeScript/issues/6339)) ([0bf6dc2](https://github.com/NativeScript/NativeScript/commit/0bf6dc2))
 * **android:** parallel navigations should not be triggered ([#6275](https://github.com/NativeScript/NativeScript/issues/6275)) ([6c9fa16](https://github.com/NativeScript/NativeScript/commit/6c9fa16))
-* **android:** second livesync ([#6330](https://github.com/NativeScript/NativeScript/issues/6330)) ([436a318](https://github.com/NativeScript/NativeScript/commit/436a318))
 * **android:** suppress reflection for default animations ([#6141](https://github.com/NativeScript/NativeScript/issues/6141)) ([cc19b40](https://github.com/NativeScript/NativeScript/commit/cc19b40))
 * **android/platform:** reinitialise screen metrics on orientation change ([#6164](https://github.com/NativeScript/NativeScript/issues/6164)) ([2ee1d7d](https://github.com/NativeScript/NativeScript/commit/2ee1d7d))
 * **ios:** listview scrollToIndex crash with async data ([#6182](https://github.com/NativeScript/NativeScript/issues/6182)) ([a8d016c](https://github.com/NativeScript/NativeScript/commit/a8d016c))
@@ -29,7 +27,7 @@ Cross Platform Modules Changelog
 * implement capitalization type option for prompt dialogs ([#6325](https://github.com/NativeScript/NativeScript/issues/6325)) ([ae6a661](https://github.com/NativeScript/NativeScript/commit/ae6a661))
 * **application-settings:** implemented allKeys method ([#6371](https://github.com/NativeScript/NativeScript/issues/6371)) ([829d18b](https://github.com/NativeScript/NativeScript/commit/829d18b))
 * **image-asset-ios:** add autoScaleFactor option to switch auto scaling ([#6127](https://github.com/NativeScript/NativeScript/issues/6127)) ([81e63ee](https://github.com/NativeScript/NativeScript/commit/81e63ee))
-* **styling:** Added 2 functions to control applicationAdditionalSelectors ([#6124](https://github.com/NativeScript/NativeScript/issues/6124)) ([85b8c01](https://github.com/NativeScript/NativeScript/commit/85b8c01))
+* **styling:** Add two functions to control applicationAdditionalSelectors ([#6124](https://github.com/NativeScript/NativeScript/issues/6124)) ([85b8c01](https://github.com/NativeScript/NativeScript/commit/85b8c01))
 * **tslib:** add tslib helpers to global ([#6351](https://github.com/NativeScript/NativeScript/issues/6351)) ([1232d1e](https://github.com/NativeScript/NativeScript/commit/1232d1e))
 * **android:** add Bluetooth connectivity type for Android ([#6162](https://github.com/NativeScript/NativeScript/issues/6162)) ([f1bef48](https://github.com/NativeScript/NativeScript/commit/f1bef48))
 * **android:** migrate to support library apis ([#6129](https://github.com/NativeScript/NativeScript/issues/6129)) ([cf034dd](https://github.com/NativeScript/NativeScript/commit/cf034dd))
