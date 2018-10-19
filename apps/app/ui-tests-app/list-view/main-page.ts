@@ -20,6 +20,7 @@ export function loadExamples() {
     examples.set("row-height", "list-view/row-height");
     examples.set("width-percent", "list-view/width-percent");
     examples.set("item-re-layout", "list-view/item-re-layout");
+    examples.set("safe-area", "list-view/safe-area");
 
     return examples;
 }
