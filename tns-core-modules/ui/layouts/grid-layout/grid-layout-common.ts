@@ -178,6 +178,18 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
         this.invalidate();
     }
 
+    public addChildAtCell(view: View, row: number, column: number, rowSpan?: number, columnSpan?: number): void {
+        this.addChild(view);
+        GridLayoutBase.setRow(view, row);
+        GridLayoutBase.setColumn(view, column);
+        if (rowSpan) {
+            GridLayoutBase.setRowSpan(view, rowSpan);
+        }
+        if (columnSpan) {
+            GridLayoutBase.setColumnSpan(view, columnSpan);
+        }
+    }
+    
     public removeRow(itemSpec: ItemSpec): void {
         if (!itemSpec) {
             throw new Error("Value is null.");
