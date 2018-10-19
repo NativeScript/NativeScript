@@ -10,7 +10,7 @@ import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, check, lessOrCloseEnough,
+    equal, check, lessOrCloseEnough, greaterOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftWith, isRightWith, isBelowWith
 } from "../layouts/layout-tests-helper";
@@ -425,13 +425,14 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
                 isBottomAlignedWith(grid, cells[2][1]);
                 isBottomAlignedWith(grid, cells[2][2]);
 
-                check(height(cells[0][1]) >= height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or equal cell11 height<${height(cells[1][1])}>`);
-                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
+                greaterOrCloseEnough(height(cells[0][1]), height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or close enough cell11 height<${height(cells[1][1])}>`);
+                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or close enough cell21 height<${height(cells[2][1])}>`);
+
                 const sumOfNestedScrollViewHeights = height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]);
                 equal(height(grid), sumOfNestedScrollViewHeights, `grid height<${height(grid)}> sum of nested scroll views height <${sumOfNestedScrollViewHeights}>`);
 
-                check(width(cells[1][0]) >= width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or equal cell11 width<${width(cells[1][1])}>`);
-                check(width(cells[1][1]) <= width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or equal cell12 width<${width(cells[1][2])}>`);
+                greaterOrCloseEnough(width(cells[1][0]), width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or close enough cell11 width<${width(cells[1][1])}>`);
+                lessOrCloseEnough(width(cells[1][1]), width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or close enough cell12 width<${width(cells[1][2])}>`);
                 const sumOfNestedScrollViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
                 equal(width(grid), sumOfNestedScrollViewWidths, `grid width<${width(grid)}> sum of nested scroll views width <${sumOfNestedScrollViewWidths}>`);
             },
