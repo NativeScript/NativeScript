@@ -160,19 +160,24 @@ export class View extends ViewCommon {
             }
             this._cachedFrame = frame;
             let adjustedFrame = null;
+            let transform = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                const transform = nativeView.transform;
+                transform = nativeView.transform;
                 nativeView.transform = CGAffineTransformIdentity;
                 nativeView.frame = frame;
-                nativeView.transform = transform;
             } else {
                 nativeView.frame = frame;
-                // apply safe area insets only if no transform is in place
-                adjustedFrame = this.applySafeAreaInsets(frame);
-                if (adjustedFrame) {
-                    nativeView.frame = adjustedFrame;
-                }
+            }
+
+            adjustedFrame = this.applySafeAreaInsets(frame);
+            if (adjustedFrame) {
+                nativeView.frame = adjustedFrame;
+            }
+
+            if (this._hasTransfrom) {
+                // re-apply the transform after the frame is adjusted
+                nativeView.transform = transform;
             }
 
             const boundsOrigin = nativeView.bounds.origin;
