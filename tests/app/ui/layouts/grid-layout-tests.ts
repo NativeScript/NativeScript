@@ -183,6 +183,121 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         GridLayout.setColumnSpan(new Button(), 0);
     }
 
+    public test_addChildAtCell_with_all_params() {
+        let btn = new Button();
+        let row: number = 1;
+        let column: number = 2;
+        let rowSpan: number = 3;
+        let columnSpan: number = 4;
+        this.testView.addChildAtCell(btn, row, column, rowSpan, columnSpan);
+        TKUnit.assertEqual(
+            this.row(btn),
+            row,
+            "'row' property not applied For GridLayout addChildAtCell."
+        );
+        TKUnit.assertEqual(
+            this.col(btn),
+            column,
+            "'column' property not applied For GridLayout addChildAtCell."
+        );
+        TKUnit.assertEqual(
+            this.rowSpan(btn),
+            rowSpan,
+            "'rowSpan' property not applied For GridLayout addChildAtCell."
+        );
+        TKUnit.assertEqual(
+            this.colSpan(btn),
+            columnSpan,
+            "'columnSpan' property not applied For GridLayout addChildAtCell."
+        );
+    }
+
+    public test_addChildAtCell_without_optional_params() {
+        let btn = new Button();
+        let row: number = 1;
+        let column: number = 2;
+        let defaultSpanValue: number = 1;
+        this.testView.addChildAtCell(btn, row, column);
+        TKUnit.assertEqual(
+            this.row(btn),
+            row,
+            "'row' property not applied For GridLayout addChildAtCell."
+        );
+        TKUnit.assertEqual(
+            this.col(btn),
+            column,
+            "'column' property not applied For GridLayout addChildAtCell."
+        );
+        TKUnit.assertEqual(
+            this.rowSpan(btn),
+            defaultSpanValue,
+            "'rowSpan' property not applied For GridLayout addChildAtCell without optional params."
+        );
+        TKUnit.assertEqual(
+            this.colSpan(btn),
+            defaultSpanValue,
+            "'colSpan' property not applied For GridLayout addChildAtCell without optional params."
+        );
+    }
+
+    public test_addChildAtCell_without_rowSpan() {
+        let btn = new Button();
+        let row: number = 1;
+        let column: number = 2;
+        let columnSpan: number = 2;
+        let defaultSpanValue: number = 1;
+        this.testView.addChildAtCell(btn, row, column, undefined, columnSpan);
+        TKUnit.assertEqual(
+            this.row(btn),
+            row,
+            "'row' property not applied For GridLayout addChildAtCell without rowspan."
+        );
+        TKUnit.assertEqual(
+            this.col(btn),
+            column,
+            "'column' property not applied For GridLayout addChildAtCell without rowspan."
+        );
+        TKUnit.assertEqual(
+            this.rowSpan(btn),
+            defaultSpanValue,
+            "'rowSpan' property not applied For GridLayout addChildAtCell without rowspan."
+        );
+        TKUnit.assertEqual(
+            this.colSpan(btn),
+            columnSpan,
+            "'columnSpan' property not applied For GridLayout addChildAtCell without rowspan."
+        );
+    }
+
+    public test_addChildAtCell_without_columnSpan() {
+        let btn = new Button();
+        let row: number = 1;
+        let column: number = 2;
+        let rowSpan: number = 2;
+        let defaultSpanValue: number = 1;
+        this.testView.addChildAtCell(btn, row, column, rowSpan);
+        TKUnit.assertEqual(
+            this.row(btn),
+            row,
+            "'row' property not applied For GridLayout addChildAtCell without columnSpan."
+        );
+        TKUnit.assertEqual(
+            this.col(btn),
+            column,
+            "'column' property not applied For GridLayout addChildAtCell without columnSpan."
+        );
+        TKUnit.assertEqual(
+            this.rowSpan(btn),
+            rowSpan,
+            "'rowSpan' property not applied For GridLayout addChildAtCell without columnSpan."
+        );
+        TKUnit.assertEqual(
+            this.colSpan(btn),
+            defaultSpanValue,
+            "'columnSpan' property not applied For GridLayout addChildAtCell without columnSpan."
+        );
+    }
+
     public test_addRow_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
             this.testView.addRow(null);
