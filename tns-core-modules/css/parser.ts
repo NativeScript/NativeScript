@@ -780,7 +780,7 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
     let value = <Selector>[];
     let combinator: Parsed<Combinator>;
     let expectSimpleSelector = true; // Must have at least one
-    let pair = <SelectorCombinatorPair>[];
+    let pair: SelectorCombinatorPair;
     do {
         const simpleSelectorSequence = parseSimpleSelectorSequence(text, end);
         if (!simpleSelectorSequence) {
