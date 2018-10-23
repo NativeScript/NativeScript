@@ -204,8 +204,8 @@ export class Frame extends FrameBase {
         // however, we must add a fragment.isAdded() guard as our logic will try to 
         // explicitly remove the already removed child fragment causing an 
         // IllegalStateException: Fragment has not been attached yet.
-        if (!this._currentEntry || 
-            !this._currentEntry.fragment || 
+        if (!this._currentEntry ||
+            !this._currentEntry.fragment ||
             !this._currentEntry.fragment.isAdded()) {
             return;
         }
@@ -423,6 +423,7 @@ export class Frame extends FrameBase {
         }
 
         this._android.rootViewGroup = null;
+        this._removeFromFrameStack();
         super.disposeNativeView();
     }
 
