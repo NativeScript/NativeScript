@@ -102,6 +102,11 @@ export class GridLayout extends LayoutBase {
     public addRow(itemSpec: ItemSpec): void;
 
     /**
+     * Adds a child at specific cell in GridLayout. Optional rowSpan and columnSpan attributes
+     */
+    public addChildAtCell(view: View, row: number, column: number, rowSpan?: number, columnSpan?: number): void;
+
+    /**
      * Removes a column specification from a GridLayout.
      */
     public removeColumn(itemSpec: ItemSpec): void;
