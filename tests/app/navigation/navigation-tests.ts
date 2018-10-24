@@ -1,9 +1,11 @@
 ﻿import * as TKUnit from "../TKUnit";
 import { EventData, Page, NavigatedData } from "tns-core-modules/ui/page";
 import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
+import { StackLayout, } from "tns-core-modules/ui/layouts/stack-layout";
+import { GridLayout, } from "tns-core-modules/ui/layouts/grid-layout";
 import { Color } from "tns-core-modules/color";
 import * as helper from "../ui/helper";
-
+import * as frame from "tns-core-modules/ui/frame";
 // Creates a random colorful page full of meaningless stuff.
 let id = 0;
 let pageFactory = function (): Page {
@@ -49,6 +51,65 @@ export function test_backstackVisible() {
 
 export function test_backstackVisible_WithTransition() {
     _test_backstackVisible({ name: "fade", duration: 10 });
+}
+
+export function test_backAndForwardParentPage_nestedFrames() {
+    const topmost = topmostFrame();
+    const mainTestPage = topmost.currentPage;
+    let innerFrame;
+
+    const page = (title) => {
+        const p = new Page();
+        p["tag"] = title;
+        return p;
+    };
+
+    const parentPage = (title, innerPage) => {
+        const parentPage = new Page();
+        parentPage["tag"] = title;
+
+        const stack = new StackLayout();
+        innerFrame = new frame.Frame();
+        innerFrame.navigate({ create: () => innerPage });
+        stack.addChild(innerFrame);
+        parentPage.content = stack;
+
+        return parentPage;
+    }
+
+    const back = pages => topmostFrame().goBack(topmostFrame().backStack[topmostFrame().backStack.length - pages]);
+    const currentPageMustBe = tag => TKUnit.assertEqual(topmostFrame().currentPage["tag"], tag, "Expected current page to be " + tag + " it was " + topmostFrame().currentPage["tag"] + " instead.");
+
+    let parentPage1, parentPage2, innerPage1, innerPage2;
+    innerPage1 = page("InnerPage1");
+    innerPage2 = page("InnerPage2");
+    parentPage1 = page("ParentPage1");
+    parentPage2 = parentPage("ParentPage2", innerPage1);
+
+    helper.waitUntilNavigatedTo(parentPage1, () => topmost.navigate({ create: () => parentPage1 }));
+    currentPageMustBe("ParentPage1");
+
+    helper.waitUntilNavigatedTo(parentPage2, () => topmost.navigate({ create: () => parentPage2 }));
+    currentPageMustBe("ParentPage2");
+
+    helper.waitUntilNavigatedTo(innerPage2, () => innerFrame.navigate({ create: () => innerPage2 }));
+    currentPageMustBe("InnerPage2");
+
+    helper.waitUntilNavigatedTo(innerPage1, () => frame.goBack());
+    currentPageMustBe("InnerPage1");
+
+    helper.waitUntilNavigatedTo(parentPage1, () => frame.goBack());
+    currentPageMustBe("ParentPage1");
+
+    helper.waitUntilNavigatedTo(parentPage2, () => topmost.navigate({ create: () => parentPage2 }));
+    currentPageMustBe("ParentPage2");
+
+    back(2);
+    TKUnit.waitUntilReady(() => topmostFrame().navigationQueueIsEmpty());
+
+    const frameStack = frame.stack();
+    TKUnit.assertEqual(frameStack.length, 1, "There should be only one frame left in the stack");
+    TKUnit.assertEqual(topmostFrame().currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
 function _test_backToEntry(transition?: NavigationTransition) {
@@ -362,10 +423,10 @@ function _test_NavigationEvents_WithClearHistory(transition?: NavigationTransiti
     // Go to second page
     helper.navigateWithEntry({ create: secondPageFactory, transition: transition, animated: !!transition, clearHistory: true });
 
-    const expectedMainPageEvents = [ "main-page navigatingFrom forward", "main-page navigatedFrom forward" ];
+    const expectedMainPageEvents = ["main-page navigatingFrom forward", "main-page navigatedFrom forward"];
     TKUnit.arrayAssert(actualMainPageEvents, expectedMainPageEvents, "Actual main-page events are different from expected.");
 
-    const expectedSecondPageEvents = [ "second-page navigatingTo forward", "second-page navigatedTo forward" ];
+    const expectedSecondPageEvents = ["second-page navigatingTo forward", "second-page navigatedTo forward"];
     TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, "Actual main-page events are different from expected.");
 
     TKUnit.assertEqual(topmost.currentPage, secondPage, "We should be on the second page at the end of the test.");
@@ -393,7 +454,7 @@ function _test_Navigate_From_Page_Event_Handler(eventName: string) {
     const firstPageFactory = function (): Page {
         const firstPage = new Page();
         firstPage.id = "first-page";
-        firstPage.on(eventName, (args: EventData) => { 
+        firstPage.on(eventName, (args: EventData) => {
             const page = <Page>args.object;
             const frame = page.frame;
 

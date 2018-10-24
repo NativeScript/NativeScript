@@ -36,6 +36,11 @@ export class Frame extends FrameBase {
         return this.viewController.view;
     }
 
+    public disposeNativeView() {
+        this._removeFromFrameStack();
+        super.disposeNativeView();
+    }
+
     public get ios(): iOSFrame {
         return this._ios;
     }
