@@ -42,6 +42,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     private _backStack = new Array<BackstackEntry>();
     private _navigationQueue = new Array<NavigationContext>();
 
+    public actionBarVisibility: "auto" | "never" | "always";
     public _currentEntry: BackstackEntry;
     public _executingEntry: BackstackEntry;
     public _isInFrameStack = false;
@@ -612,5 +613,7 @@ export const defaultPage = new Property<FrameBase, string>({
         frame.navigate({ moduleName: newValue });
     }
 });
-
 defaultPage.register(FrameBase)
+
+export const actionBarVisibilityProperty = new Property<FrameBase, "auto" | "never" | "always">({ name: "actionBarVisibility", defaultValue: "auto", affectsLayout: isIOS });
+actionBarVisibilityProperty.register(FrameBase);
