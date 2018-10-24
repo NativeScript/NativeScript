@@ -436,15 +436,24 @@ export class Frame extends FrameBase {
     }
 
     public _getNavBarVisible(page: Page): boolean {
-        if (page.actionBarHidden !== undefined) {
-            return !page.actionBarHidden;
+        switch (this.actionBarVisibility) {
+            case "never":
+                return false;
+            
+            case "always":
+                return true;
+            
+            default:
+                if (page.actionBarHidden !== undefined) {
+                    return !page.actionBarHidden;
+                }
+        
+                if (this._android && this._android.showActionBar !== undefined) {
+                    return this._android.showActionBar;
+                }
+        
+                return true;
         }
-
-        if (this._android && this._android.showActionBar !== undefined) {
-            return this._android.showActionBar;
-        }
-
-        return true;
     }
 
     public _saveFragmentsState(): void {
