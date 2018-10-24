@@ -122,13 +122,15 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
             },
             toFile: (destinationFilePath: string) => {
                var fs: typeof fsModule = require("file-system");
-                                    
+
                 if (!destinationFilePath) {
                     destinationFilePath = getFilenameFromUrl(callbacks.url);
                 }
                 var stream: java.io.FileOutputStream;
                 try {
+
                     var javaFile = new java.io.File(destinationFilePath);
+                    javaFile.mkdirs();
                     stream = new java.io.FileOutputStream(javaFile);
                     stream.write(result.raw.toByteArray());
                     return fs.File.fromPath(destinationFilePath);

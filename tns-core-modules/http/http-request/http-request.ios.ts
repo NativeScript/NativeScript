@@ -149,13 +149,14 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                         });
                                     });
                                 },
-                                toFile: (destinationFilePath?: string) => {  
+                                toFile: (destinationFilePath?: string) => {
                                     var fs: typeof fsModule = require("file-system");
-                                    
+
                                     if (!destinationFilePath) {
                                         destinationFilePath = getFilenameFromUrl(options.url);
                                     }
                                     if (data instanceof NSData) {
+                                        new NSFileManager().createFileAtPathContentsAttributes(destinationFilePath, data, null);
                                         data.writeToFileAtomically(destinationFilePath, true);
                                         return fs.File.fromPath(destinationFilePath);
                                     } else {

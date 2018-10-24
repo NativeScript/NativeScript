@@ -43,8 +43,8 @@ allTests["PLATFORM"] = platformTests;
 import * as fsTests from "./file-system/file-system-tests";
 allTests["FILE-SYSTEM"] = fsTests;
 
-// import * as httpTests from "./http/http-tests";
-// allTests["HTTP"] = httpTests;
+import * as httpTests from "./http/http-tests";
+allTests["HTTP"] = httpTests;
 
 // import * as xhrTests from "./xhr/xhr-tests";
 // allTests["XHR"] = xhrTests;
