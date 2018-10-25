@@ -22,6 +22,10 @@ export interface DownloadRequest {
      * An optional function to be called when the download is complete.
      */
     completed?: (image: any, key: string) => void;
+    /**
+     * An optional function to be called if the download errors.
+     */
+    error?: (key: string) => void;
 }
 
 /**
@@ -32,6 +36,10 @@ export class Cache extends observable.Observable {
      * String value used when hooking to downloaded event.
      */
     public static downloadedEvent: string;
+    /**
+     * String value used when hooking to download error event.
+     */
+    public static downloadErrorEvent: string;
     /**
      * The image to be used to notify for a pending download request - e.g. loading indicator.
      */
@@ -89,6 +97,11 @@ export class Cache extends observable.Observable {
      */
     on(event: "downloaded", callback: (args: DownloadedData) => void , thisArg?: any);
 
+    /**
+     * Raised if the image download errors.
+     */
+    on(event: "downloadError", callback: (args: DownloadedData) => void , thisArg?: any);
+
     //@private
     /**
      * @private
@@ -98,6 +111,11 @@ export class Cache extends observable.Observable {
      * @private
      */
     _onDownloadCompleted(key: string, image: any);
+    //@endprivate
+    /**
+     * @private
+     */
+    _onDownloadError(key: string);
     //@endprivate
 }
 
@@ -112,5 +130,5 @@ export interface DownloadedData extends observable.EventData {
     /**
      * Gets the cached image.
      */
-    image: imageSource.ImageSource;
+    image?: imageSource.ImageSource;
 }

@@ -1,4 +1,5 @@
 ﻿import * as common from "./image-cache-common";
+import * as trace from "../../trace";
 
 var LruBitmapCacheClass;
 function ensureLruBitmapCacheClass() {
@@ -45,8 +46,18 @@ export class Cache extends common.Cache {
             onComplete: function (result: any, context: any) {
                 var instance = that.get();
                 if (instance) {
-                    instance._onDownloadCompleted(context, result)
+                  if (result && result != null) {
+                    instance._onDownloadCompleted(context, result);
+                  } else {
+                    instance._onDownloadError(context);
+                  }
                 }
+            },
+            onError: function (context: any) {
+              var instance = that.get();
+              if (instance) {
+                instance._onDownloadError(context);
+              }
             }
         });
     }
@@ -61,7 +72,15 @@ export class Cache extends common.Cache {
     }
 
     public set(key: string, image: any): void {
-        this._cache.put(key, image);
+      try {
+        if (key && key != null && image && image != null) {
+          this._cache.put(key, image);
+        }
+      } catch (err) {
+        if (trace.isEnabled()) {
+          trace.write("Cache set error: " + err, trace.categories.Debug);
+        }
+      }
     }
 
     public remove(key: string): void {

@@ -86,8 +86,17 @@ export class Cache extends common.Cache {
         var that = this;
         httpRequest.request({ url: request.url, method: "GET" })
             .then(response => {
+              try {
                 var image = UIImage.alloc().initWithData(response.content.raw);
                 that._onDownloadCompleted(request.key, image);
+              } catch (err) {
+                that._onDownloadError(request.key);
+              }
+            }, function(err) {
+              that._onDownloadError(request.key);
+              if (trace.isEnabled()) {
+                trace.write("request error: " + err, trace.categories.Debug);
+              }
             });
     }
 
