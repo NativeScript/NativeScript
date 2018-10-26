@@ -154,7 +154,8 @@ export class View extends ViewCommon {
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
-        if (!CGRectEqualToRect(nativeView.frame, frame)) {
+        let oldFrame = this._cachedFrame || nativeView.frame;
+        if (!CGRectEqualToRect(oldFrame, frame)) {
             if (traceEnabled()) {
                 traceWrite(this + " :_setNativeViewFrame: " + JSON.stringify(ios.getPositionFromFrame(frame)), traceCategories.Layout);
             }
