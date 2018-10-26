@@ -24,6 +24,14 @@ import { createViewFromEntry } from "../builder";
 
 export * from "./frame-common";
 
+interface AnimatorState {
+    enterAnimator: android.animation.Animator;
+    exitAnimator: android.animation.Animator;
+    popEnterAnimator: android.animation.Animator;
+    popExitAnimator: android.animation.Animator;
+    transitionName: string;
+}
+
 const INTENT_EXTRA = "com.tns.activity";
 const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
 const FRAMEID = "_frameId";
@@ -93,6 +101,7 @@ export class Frame extends FrameBase {
     private _tearDownPending = false;
     private _attachedToWindow = false;
     public _isBack: boolean = true;
+    private _cachedAnimatorState: AnimatorState;
 
     constructor() {
         super();
@@ -170,6 +179,17 @@ export class Frame extends FrameBase {
         const entry = this._currentEntry;
         if (entry && manager && !manager.findFragmentByTag(entry.fragmentTag)) {
             // Simulate first navigation (e.g. no animations or transitions)
+            // we need to cache the original animation settings so we can restore them later; otherwise as the 
+            // simulated first navigation is not animated (it is actually a zero duration animator) the "popExit" animation 
+            // is broken when transaction.setCustomAnimations(...) is used in a scenario with:
+            // 1) forward navigation
+            // 2) suspend / resume app
+            // 3) back navigation -- the exiting fragment is erroneously animated with the exit animator from the 
+            // simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears; 
+            // the user only sees the animation of the entering fragment as per its specific enter animation settings.
+            // NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
+            this._cachedAnimatorState = getAnimatorState(this._currentEntry);
+
             this._currentEntry = null;
             // NavigateCore will eventually call _processNextNavigationEntry again.
             this._navigateCore(entry);
@@ -194,8 +214,12 @@ export class Frame extends FrameBase {
     }
 
     onUnloaded() {
-        this.disposeCurrentFragment();
         super.onUnloaded();
+
+        // calling dispose fragment after super.onUnloaded() means we are not relying on the built-in Android logic
+        // to automatically remove child fragments when parent fragment is removed;
+        // this fixes issue with missing nested fragment on app suspend / resume;
+        this.disposeCurrentFragment();
     }
 
     private disposeCurrentFragment(): void {
@@ -278,6 +302,14 @@ export class Frame extends FrameBase {
             // Continue with next item in the queue.
             this._processNextNavigationEntry();
         }
+
+        // restore cached animation settings if we just completed simulated first navigation (no animation)
+        if (this._cachedAnimatorState) {
+            restoreAnimatorState(this._currentEntry, this._cachedAnimatorState);
+
+            this._cachedAnimatorState = null;
+        }
+        
     }
 
     public onBackPressed(): boolean {
@@ -332,7 +364,7 @@ export class Frame extends FrameBase {
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);
         const transaction = manager.beginTransaction();
-        const animated = this._getIsAnimatedNavigation(newEntry.entry);
+        const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
         // NOTE: Don't use transition for the initial navigation (same as on iOS)
         // On API 21+ transition won't be triggered unless there was at least one
         // layout pass so we will wait forever for transitionCompleted handler...
@@ -346,7 +378,7 @@ export class Frame extends FrameBase {
         }
 
         transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
@@ -369,11 +401,12 @@ export class Frame extends FrameBase {
         const transitionReversed = _reverseTransitions(backstackEntry, this._currentEntry);
         if (!transitionReversed) {
             // If transition were not reversed then use animations.
-            transaction.setCustomAnimations(AnimationType.popEnterFakeResourceId, AnimationType.popExitFakeResourceId, AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
+            // we do not use Android backstack so setting popEnter / popExit is meaningless (3rd and 4th optional args)
+            transaction.setCustomAnimations(AnimationType.popEnterFakeResourceId, AnimationType.popExitFakeResourceId);
         }
 
         transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     public _removeEntry(removed: BackstackEntry): void {
@@ -468,6 +501,27 @@ export class Frame extends FrameBase {
             }
         });
     }
+}
+
+function getAnimatorState(entry: BackstackEntry): AnimatorState {
+    const expandedEntry = <any>entry;
+    const animatorState = <AnimatorState>{};
+    animatorState.enterAnimator = expandedEntry.enterAnimator;
+    animatorState.exitAnimator = expandedEntry.exitAnimator;
+    animatorState.popEnterAnimator = expandedEntry.popEnterAnimator;
+    animatorState.popExitAnimator = expandedEntry.popExitAnimator;
+    animatorState.transitionName = expandedEntry.transitionName;
+
+    return animatorState;
+}
+
+function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): void {
+    const expandedEntry = <any>entry;
+    expandedEntry.enterAnimator = snapshot.enterAnimator;
+    expandedEntry.exitAnimator = snapshot.exitAnimator;
+    expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
+    expandedEntry.popExitAnimator = snapshot.popExitAnimator;
+    expandedEntry.transitionName = snapshot.transitionName;
 }
 
 function clearEntry(entry: BackstackEntry): void {
@@ -784,16 +838,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     public onDestroyView(fragment: android.support.v4.app.Fragment, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
-        }
-
-        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.
-        // on app resume in nested frame scenarios with support library version greater than 26.0.0
-        const view = fragment.getView();
-        if (view != null) {
-            const viewParent = view.getParent();
-            if (viewParent instanceof android.view.ViewGroup) {
-                viewParent.removeView(view);
-            }
         }
 
         superFunc.call(fragment);
