@@ -283,7 +283,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
         }
     }
 
-    public _eachSetPropertyValue(callback: (property: Property, value: any) => void): void {
+    public _eachSetPropertyValue(callback: (property: Property, value: any) => boolean): void {
         for (let i = 0, keys = Object.keys(this._propertyEntries); i < keys.length; i++) {
             let key = keys[i];
             let entry: PropertyEntry = this._propertyEntries[key];

@@ -160,19 +160,24 @@ export class View extends ViewCommon {
             }
             this._cachedFrame = frame;
             let adjustedFrame = null;
+            let transform = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                const transform = nativeView.transform;
+                transform = nativeView.transform;
                 nativeView.transform = CGAffineTransformIdentity;
                 nativeView.frame = frame;
-                nativeView.transform = transform;
             } else {
                 nativeView.frame = frame;
-                // apply safe area insets only if no transform is in place
-                adjustedFrame = this.applySafeAreaInsets(frame);
-                if (adjustedFrame) {
-                    nativeView.frame = adjustedFrame;
-                }
+            }
+
+            adjustedFrame = this.applySafeAreaInsets(frame);
+            if (adjustedFrame) {
+                nativeView.frame = adjustedFrame;
+            }
+
+            if (this._hasTransfrom) {
+                // re-apply the transform after the frame is adjusted
+                nativeView.transform = transform;
             }
 
             const boundsOrigin = nativeView.bounds.origin;
@@ -699,21 +704,6 @@ export namespace ios {
     }
 
     export function layoutView(controller: UIViewController, owner: View): void {
-        if (majorVersion >= 11) {
-            // apply parent page additional top insets if any. The scenario is when there is a parent page with action bar.
-            const parentPage = getAncestor(owner, "Page");
-            if (parentPage) {
-                const parentPageInsetsTop = parentPage.viewController.view.safeAreaInsets.top;
-                const currentInsetsTop = controller.view.safeAreaInsets.top;
-                const additionalInsetsTop = parentPageInsetsTop - currentInsetsTop;
-
-                if (additionalInsetsTop > 0) {
-                    const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: 0, right: 0 });
-                    controller.additionalSafeAreaInsets = additionalInsets;
-                }
-            }
-        }
-
         let layoutGuide = controller.view.safeAreaLayoutGuide;
         if (!layoutGuide) {
             traceWrite(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,
@@ -892,6 +882,29 @@ export namespace ios {
             super.viewDidLayoutSubviews();
             const owner = this.owner.get();
             if (owner) {
+                if (majorVersion >= 11) {
+                    // Handle nested UILayoutViewController safe area application.
+                    // Currently, UILayoutViewController can be nested only in a TabView.
+                    // The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
+                    const tabViewItem = owner.parent;
+                    const tabView = tabViewItem && tabViewItem.parent;
+                    const parent = tabView && tabView.parent;
+                    if (parent) {
+                        const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
+                        const currentInsetsTop = this.view.safeAreaInsets.top;
+                        const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+    
+                        const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
+                        const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+                        const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+    
+                        if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+                            const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: additionalInsetsBottom, right: 0 });
+                            this.additionalSafeAreaInsets = additionalInsets;
+                        }
+                    }
+                }
+
                 layoutView(this, owner);
             }
         }
