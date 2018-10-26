@@ -217,6 +217,30 @@ class UIViewControllerImpl extends UIViewController {
         if (owner) {
             // layout(owner.actionBar)
             // layout(owner.content)
+
+            if (majorVersion >= 11) {
+                // Handle nested Page safe area insets application.
+                // A Page is nested if its Frame has a parent.
+                // If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
+                const frame = owner.parent;
+                // There is a legacy scenario where Page is not in a Frame - the root of a Modal View, so it has no parent.
+                const frameParent = frame && frame.parent;
+                if (frameParent) {
+                    const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
+                    const currentInsetsTop = this.view.safeAreaInsets.top;
+                    const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+
+                    const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
+                    const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+                    const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+
+                    if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+                        const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: additionalInsetsBottom, right: 0 });
+                        this.additionalSafeAreaInsets = additionalInsets;
+                    }
+                }
+            }
+
             iosView.layoutView(this, owner);
         }
     }
