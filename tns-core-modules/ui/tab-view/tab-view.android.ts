@@ -211,6 +211,10 @@ function initializeNativeClasses() {
         }
 
         saveState(): android.os.Parcelable {
+            if (this.mCurTransaction != null) {
+                (<any>this.mCurTransaction).commitNowAllowingStateLoss();
+                this.mCurTransaction = null;
+            }
             return null;
         }
 
