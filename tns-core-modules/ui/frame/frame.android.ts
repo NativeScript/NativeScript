@@ -364,7 +364,7 @@ export class Frame extends FrameBase {
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);
         const transaction = manager.beginTransaction();
-        const animated = this._getIsAnimatedNavigation(newEntry.entry);
+        const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
         // NOTE: Don't use transition for the initial navigation (same as on iOS)
         // On API 21+ transition won't be triggered unless there was at least one
         // layout pass so we will wait forever for transitionCompleted handler...
