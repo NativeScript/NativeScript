@@ -224,7 +224,15 @@ class UIViewControllerImpl extends UIViewController {
                 // If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
                 const frame = owner.parent;
                 // There is a legacy scenario where Page is not in a Frame - the root of a Modal View, so it has no parent.
-                const frameParent = frame && frame.parent;
+                let frameParent = frame && frame.parent;
+
+                // Handle Angular scenario where TabView is in a ProxyViewContainer
+                // Not using instanceof ProxyViewContainer to avoid circular dependency
+                // TODO: Try moving UIViewControllerImpl out of page module
+                if (frameParent && !frameParent.nativeViewProtected) {
+                    frameParent = frameParent.parent;
+                }
+
                 if (frameParent) {
                     const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
                     const currentInsetsTop = this.view.safeAreaInsets.top;
