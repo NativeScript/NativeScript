@@ -892,9 +892,10 @@ export namespace ios {
                     let parent = tabView && tabView.parent;
 
                     // Handle Angular scenario where TabView is in a ProxyViewContainer
+                    // It is possible to wrap components in ProxyViewContainers indefinitely
                     // Not using instanceof ProxyViewContainer to avoid circular dependency
                     // TODO: Try moving UILayoutViewController out of view module
-                    if (parent && !parent.nativeViewProtected) {
+                    while (parent && !parent.nativeViewProtected) {
                         parent = parent.parent;
                     }
 
