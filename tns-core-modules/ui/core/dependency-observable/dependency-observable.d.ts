@@ -240,7 +240,7 @@ export class DependencyObservable extends Observable {
      */
     _resetValues(valueSource: number): void;
     _eachSetProperty(callback: (property: Property) => boolean): void;
-    _eachSetPropertyValue(callback: (property: Property, value: any) => void): void;
+    _eachSetPropertyValue(callback: (property: Property, value: any) => boolean): void;
     //@endprivate
 }
 

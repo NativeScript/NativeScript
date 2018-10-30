@@ -36,6 +36,11 @@ export class Frame extends FrameBase {
         return this.viewController.view;
     }
 
+    public disposeNativeView() {
+        this._removeFromFrameStack();
+        super.disposeNativeView();
+    }
+
     public get ios(): iOSFrame {
         return this._ios;
     }
@@ -203,7 +208,7 @@ export class Frame extends FrameBase {
     }
 
     public _getNavBarVisible(page: Page): boolean {
-        switch (this._ios.navBarVisibility) {
+        switch (this.actionBarVisibility) {
             case "always":
                 return true;
 
@@ -211,17 +216,26 @@ export class Frame extends FrameBase {
                 return false;
 
             case "auto":
-                let newValue: boolean;
-
-                if (page && page.actionBarHidden !== undefined) {
-                    newValue = !page.actionBarHidden;
+                switch (this._ios.navBarVisibility) {
+                    case "always":
+                        return true;
+        
+                    case "never":
+                        return false;
+        
+                    case "auto":
+                        let newValue: boolean;
+        
+                        if (page && page.actionBarHidden !== undefined) {
+                            newValue = !page.actionBarHidden;
+                        }
+                        else {
+                            newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
+                        }
+        
+                        newValue = !!newValue; // Make sure it is boolean
+                        return newValue;
                 }
-                else {
-                    newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
-                }
-
-                newValue = !!newValue; // Make sure it is boolean
-                return newValue;
         }
     }
 
@@ -588,7 +602,7 @@ class iOSFrame implements iOSFrameDefinition {
     }
     public set showNavigationBar(value: boolean) {
         this._showNavigationBar = value;
-        this._controller.setNavigationBarHiddenAnimated(!value, true);
+        this._controller.setNavigationBarHiddenAnimated(!value, !this._disableNavBarAnimation);
     }
 
     public get navBarVisibility(): "auto" | "never" | "always" {

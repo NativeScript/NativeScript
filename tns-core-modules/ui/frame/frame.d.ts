@@ -57,6 +57,11 @@ export class Frame extends View {
     navigate(entry: NavigationEntry);
 
     /**
+     * Used to control the visibility the Navigation Bar in iOS and the Action Bar in Android.
+     */
+    public actionBarVisibility: "auto" | "never" | "always";
+
+    /**
      * Gets the back stack of this instance.
      */
     backStack: Array<BackstackEntry>;
