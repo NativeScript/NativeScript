@@ -227,9 +227,10 @@ class UIViewControllerImpl extends UIViewController {
                 let frameParent = frame && frame.parent;
 
                 // Handle Angular scenario where TabView is in a ProxyViewContainer
+                // It is possible to wrap components in ProxyViewContainers indefinitely
                 // Not using instanceof ProxyViewContainer to avoid circular dependency
                 // TODO: Try moving UIViewControllerImpl out of page module
-                if (frameParent && !frameParent.nativeViewProtected) {
+                while (frameParent && !frameParent.nativeViewProtected) {
                     frameParent = frameParent.parent;
                 }
 
