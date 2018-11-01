@@ -1,6 +1,25 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="5.0.0"></a>
+# [5.0.0](https://github.com/NativeScript/NativeScript/compare/5.0.0-rc...5.0.0) (2018-11-01)
+
+Version **5.0.0** includes a few more features and fixes in addition to the 5.0.0 RC and the major features **iOS Safe Area support** and migration to **Android support library APIs**.
+
+For more details, refer to [5.0.0 RC](https://github.com/NativeScript/NativeScript/blob/master/CHANGELOG.md#500---rc-2018-10-17) change log below.
+
+### Bug Fixes
+
+* **connectivity:** making startMonitoring() behave on iOS as on Android ([#6373](https://github.com/NativeScript/NativeScript/issues/6373)) ([a58fc52](https://github.com/NativeScript/NativeScript/commit/a58fc52))
+* **observable-array:** reduce no longer ignores zero as initial value ([#6402](https://github.com/NativeScript/NativeScript/issues/6402)) ([c0438df](https://github.com/NativeScript/NativeScript/commit/c0438df))
+* **tab-view:** change androidOffscreenTabLimit to 1 when using bottom tabs for android([#6476](https://github.com/NativeScript/NativeScript/issues/6476)) ([371fc9b](https://github.com/NativeScript/NativeScript/commit/371fc9b))
+
+### Features
+
+* **frame:** add new actionBarVisibility property ([#6449](https://github.com/NativeScript/NativeScript/issues/6449)) ([0002624](https://github.com/NativeScript/NativeScript/commit/0002624))
+* **frame:** hardware back in parent frame when back states available ([#6446](https://github.com/NativeScript/NativeScript/issues/6446)) ([af651d6](https://github.com/NativeScript/NativeScript/commit/af651d6))
+* **grid:** implement addChildAtCell ([#6411](https://github.com/NativeScript/NativeScript/issues/6411)) ([a3f1493](https://github.com/NativeScript/NativeScript/commit/a3f1493))
+
 <a name="5.0.0-rc"></a>
 ## [5.0.0 - RC](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0-rc) (2018-10-17)
 
