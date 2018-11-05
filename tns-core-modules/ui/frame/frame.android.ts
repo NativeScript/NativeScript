@@ -25,10 +25,10 @@ import { createViewFromEntry } from "../builder";
 export * from "./frame-common";
 
 interface AnimatorState {
-    enterAnimator: android.animation.Animator;
-    exitAnimator: android.animation.Animator;
-    popEnterAnimator: android.animation.Animator;
-    popExitAnimator: android.animation.Animator;
+    enterAnimator: any;
+    exitAnimator: any;
+    popEnterAnimator: any;
+    popExitAnimator: any;
     transitionName: string;
 }
 
@@ -306,10 +306,8 @@ export class Frame extends FrameBase {
         // restore cached animation settings if we just completed simulated first navigation (no animation)
         if (this._cachedAnimatorState) {
             restoreAnimatorState(this._currentEntry, this._cachedAnimatorState);
-
             this._cachedAnimatorState = null;
         }
-        
     }
 
     public onBackPressed(): boolean {
@@ -503,13 +501,26 @@ export class Frame extends FrameBase {
     }
 }
 
+function cloneExpandedAnimator(expandedAnimator: any) {
+    if (!expandedAnimator) {
+        return null;
+    }
+
+    const clone = expandedAnimator.clone();
+    clone.entry = expandedAnimator.entry;
+    clone.transitionType = expandedAnimator.transitionType;
+
+    return clone;
+}
+
 function getAnimatorState(entry: BackstackEntry): AnimatorState {
     const expandedEntry = <any>entry;
     const animatorState = <AnimatorState>{};
-    animatorState.enterAnimator = expandedEntry.enterAnimator;
-    animatorState.exitAnimator = expandedEntry.exitAnimator;
-    animatorState.popEnterAnimator = expandedEntry.popEnterAnimator;
-    animatorState.popExitAnimator = expandedEntry.popExitAnimator;
+
+    animatorState.enterAnimator = cloneExpandedAnimator(expandedEntry.enterAnimator);
+    animatorState.exitAnimator = cloneExpandedAnimator(expandedEntry.exitAnimator);
+    animatorState.popEnterAnimator = cloneExpandedAnimator(expandedEntry.popEnterAnimator);
+    animatorState.popExitAnimator = cloneExpandedAnimator(expandedEntry.popExitAnimator);
     animatorState.transitionName = expandedEntry.transitionName;
 
     return animatorState;
