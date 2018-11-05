@@ -25,10 +25,10 @@ import { createViewFromEntry } from "../builder";
 export * from "./frame-common";
 
 interface AnimatorState {
-    enterAnimator: android.animation.Animator;
-    exitAnimator: android.animation.Animator;
-    popEnterAnimator: android.animation.Animator;
-    popExitAnimator: android.animation.Animator;
+    enterAnimator: any;
+    exitAnimator: any;
+    popEnterAnimator: any;
+    popExitAnimator: any;
     transitionName: string;
 }
 
@@ -306,10 +306,8 @@ export class Frame extends FrameBase {
         // restore cached animation settings if we just completed simulated first navigation (no animation)
         if (this._cachedAnimatorState) {
             restoreAnimatorState(this._currentEntry, this._cachedAnimatorState);
-
             this._cachedAnimatorState = null;
         }
-        
     }
 
     public onBackPressed(): boolean {
@@ -364,7 +362,7 @@ export class Frame extends FrameBase {
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);
         const transaction = manager.beginTransaction();
-        const animated = this._getIsAnimatedNavigation(newEntry.entry);
+        const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
         // NOTE: Don't use transition for the initial navigation (same as on iOS)
         // On API 21+ transition won't be triggered unless there was at least one
         // layout pass so we will wait forever for transitionCompleted handler...
@@ -503,13 +501,26 @@ export class Frame extends FrameBase {
     }
 }
 
+function cloneExpandedAnimator(expandedAnimator: any) {
+    if (!expandedAnimator) {
+        return null;
+    }
+
+    const clone = expandedAnimator.clone();
+    clone.entry = expandedAnimator.entry;
+    clone.transitionType = expandedAnimator.transitionType;
+
+    return clone;
+}
+
 function getAnimatorState(entry: BackstackEntry): AnimatorState {
     const expandedEntry = <any>entry;
     const animatorState = <AnimatorState>{};
-    animatorState.enterAnimator = expandedEntry.enterAnimator;
-    animatorState.exitAnimator = expandedEntry.exitAnimator;
-    animatorState.popEnterAnimator = expandedEntry.popEnterAnimator;
-    animatorState.popExitAnimator = expandedEntry.popExitAnimator;
+
+    animatorState.enterAnimator = cloneExpandedAnimator(expandedEntry.enterAnimator);
+    animatorState.exitAnimator = cloneExpandedAnimator(expandedEntry.exitAnimator);
+    animatorState.popEnterAnimator = cloneExpandedAnimator(expandedEntry.popEnterAnimator);
+    animatorState.popExitAnimator = cloneExpandedAnimator(expandedEntry.popExitAnimator);
     animatorState.transitionName = expandedEntry.transitionName;
 
     return animatorState;
@@ -848,7 +859,38 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroy()`, traceCategories.NativeLifecycle);
         }
+
         superFunc.call(fragment);
+
+        const entry = this.entry;
+        if (!entry) {
+            traceError(`${fragment}.onDestroy: entry is null or undefined`);
+            return null;
+        }
+
+        const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onDestroy: entry has no resolvedPage`);
+            return null;
+        }
+
+        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.	
+        // on app resume in nested frame scenarios with support library version greater than 26.0.0
+        // HACK: this whole code block shouldn't be necessary as the native view is supposedly removed from its parent 
+        // right after onDestroyView(...) is called but for some reason the fragment view (page) still thinks it has a 
+        // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
+        // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
+        const nativeView = page.nativeViewProtected;
+        if (nativeView != null) {	
+            const parentView = nativeView.getParent();	
+            if (parentView instanceof android.view.ViewGroup) {
+                if (parentView.getChildCount() === 0) {
+                    parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
+                }
+
+                parentView.removeView(nativeView);	
+            }
+        }
     }
 
     @profile
