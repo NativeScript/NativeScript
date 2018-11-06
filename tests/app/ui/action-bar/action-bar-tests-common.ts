@@ -4,8 +4,9 @@ import * as builder from "tns-core-modules/ui/builder";
 import { Label } from "tns-core-modules/ui/label";
 import { Button } from "tns-core-modules/ui/button";
 import { Page } from "tns-core-modules/ui/page";
-import { View } from "tns-core-modules/ui/core/view";
+import { View, isIOS } from "tns-core-modules/ui/core/view";
 import { fromObject } from "tns-core-modules/data/observable";
+import { topmost } from "tns-core-modules/ui/frame";
 
 // >> actionbar-common-require
 import * as actionBarModule from "tns-core-modules/ui/action-bar";
@@ -300,6 +301,87 @@ export function test_LoadedEventsOrder_WithoutPageContent() {
     helper.navigate(pageFactory);
 
     TKUnit.arrayAssert(loadedEvents, new Array<string>("action-bar", "page"));
+}
+
+export function test_ActionBarVisibility_Never_ShouldNotShowDeclaredActionBar() {
+    const frame = topmost();
+    frame.actionBarVisibility = "never";
+
+    const page = <Page>builder.parse(
+        `<Page>
+            <ActionBar>
+                <ActionBar.titleView>
+                    <Button text="test" />
+                </ActionBar.titleView>
+            </ActionBar>
+        </Page>
+        `);
+
+    helper.navigate(() => page);
+    let actionBarHidden = false;
+    if (isIOS) {
+        actionBarHidden = page.actionBar.nativeView.hidden;
+    } else {
+        actionBarHidden = !page.actionBar.nativeView.isShown();
+    }
+    TKUnit.assertTrue(actionBarHidden, `ActionBar hidden: expected true, actual ${actionBarHidden}`);
+
+    // restore default actionBarVisibility
+    frame.actionBarVisibility = "auto";
+}
+
+export function test_ActionBarVisibility_Always_ShouldShownHiddenActionBar() {
+    const frame = topmost();
+    frame.actionBarVisibility = "always";
+
+    const page = <Page>builder.parse(
+        `<Page actionBarHidden="true">
+            <ActionBar>
+                <ActionBar.titleView>
+                    <Button text="test" />
+                </ActionBar.titleView>
+            </ActionBar>
+        </Page>
+        `);
+
+    helper.navigate(() => page);
+    let actionBarHidden = false;
+    if (isIOS) {
+        actionBarHidden = page.actionBar.nativeView.hidden;
+    } else {
+        actionBarHidden = !page.actionBar.nativeView.isShown();
+    }
+    TKUnit.assertFalse(actionBarHidden, `ActionBar hidden: expected false, actual ${actionBarHidden}`);
+
+    // restore default actionBarVisibility
+    frame.actionBarVisibility = "auto";
+}
+
+export function test_ActionBarVisibility_Auto_ShouldRespectPageActionBarHiddenProperty() {
+    const frame = topmost();
+    frame.actionBarVisibility = "auto";
+
+    const page = <Page>builder.parse(
+        `<Page actionBarHidden="true">
+            <ActionBar>
+                <ActionBar.titleView>
+                    <Button text="test" />
+                </ActionBar.titleView>
+            </ActionBar>
+        </Page>
+        `);
+
+    helper.navigate(() => page);
+    let actionBarHidden = false;
+    if (isIOS) {
+        actionBarHidden = page.actionBar.nativeView.hidden;
+    } else {
+        actionBarHidden = !page.actionBar.nativeView.isShown();
+    }
+    TKUnit.assertTrue(actionBarHidden, `ActionBar hidden: expected true, actual ${actionBarHidden}`);
+
+    // restore default actionBarVisibility
+    frame.actionBarVisibility = "auto";
 }
 
 export function test_setId() {

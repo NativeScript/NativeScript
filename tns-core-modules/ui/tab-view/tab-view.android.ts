@@ -317,8 +317,13 @@ export class TabViewItem extends TabViewItemBase {
             }
         }
 
+        // TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
         if (!tabFragment) {
-            throw new Error(`Could not get child fragment manager for tab item with index ${this.index}`);
+            if (traceEnabled()) {
+                traceWrite(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
+            }
+
+            return (<any>tabView)._getRootFragmentManager();
         }
 
         return tabFragment.getChildFragmentManager();
@@ -477,7 +482,7 @@ export class TabView extends TabViewBase {
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
         const lastIndex = this.items.length - 1;
-        const offsideItems = this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 0;
+        const offsideItems = this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
 
         let toUnload = [];
         let toLoad = [];
