@@ -229,22 +229,16 @@ export function login(...args: any[]): Promise<LoginResult> {
             const alert = createAlertDialog(options);
 
             const userNameInput = new android.widget.EditText(context);
-            if (!options.userName) {
-                userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
-            } else {
-                userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
-                userNameInput.setText(options.userName ? options.userName : "");
-            }
-            
+
+            userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
+            userNameInput.setText(options.userName ? options.userName : "");
+
             const passwordInput = new android.widget.EditText(context);
             passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
-            if (!options.password) {
-                passwordInput.setHint(options.passwordHint ? options.passwordHint : "");
-            } else {
-                passwordInput.setHint(options.userNameHint ? options.userNameHint : "");
-                passwordInput.setText(options.password ? options.password : "");
-            }
+
+            passwordInput.setHint(options.userNameHint ? options.userNameHint : "");
+            passwordInput.setText(options.password ? options.password : "");
 
             const layout = new android.widget.LinearLayout(context);
             layout.setOrientation(1);

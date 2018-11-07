@@ -154,13 +154,8 @@ export function login(...args: any[]): Promise<LoginResult> {
 
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Login";
-
-                if (!options.userName) {
-                    arg.placeholder = options.userNameHint ? options.userNameHint : "";
-                } else {
-                    arg.placeholder = options.userNameHint ? options.userNameHint : "";
-                    arg.text = isString(options.userName) ? options.userName : "";
-                }
+                arg.placeholder = options.userNameHint ? options.userNameHint : "";
+                arg.text = isString(options.userName) ? options.userName : "";
 
                 if (textFieldColor) {
                     arg.textColor = arg.tintColor = textFieldColor.ios;
@@ -170,13 +165,8 @@ export function login(...args: any[]): Promise<LoginResult> {
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Password";
                 arg.secureTextEntry = true;
-
-                if (!options.password) {
-                    arg.placeholder = options.passwordHint ? options.passwordHint : "";
-                } else {
-                    arg.placeholder = options.passwordHint ? options.passwordHint : "";
-                    arg.text = isString(options.password) ? options.password : "";
-                }
+                arg.placeholder = options.passwordHint ? options.passwordHint : "";
+                arg.text = isString(options.password) ? options.password : "";
 
                 if (textFieldColor) {
                     arg.textColor = arg.tintColor = textFieldColor.ios;
