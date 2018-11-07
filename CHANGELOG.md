@@ -2,7 +2,7 @@ Cross Platform Modules Changelog
 ==============================
 
 <a name="5.0.2"></a>
-## [5.0.2](https://github.com/NativeScript/NativeScript/compare/5.0.0-rc...5.0.2) (2018-11-07)
+## [5.0.2](https://github.com/NativeScript/NativeScript/compare/5.0.0...5.0.2) (2018-11-07)
 
 
 ### Bug Fixes
