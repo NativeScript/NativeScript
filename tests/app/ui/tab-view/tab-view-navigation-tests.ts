@@ -4,7 +4,7 @@ import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as frameModule from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
+import { Page, NavigatedData } from "tns-core-modules/ui/page";
 import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { Button } from "tns-core-modules/ui/button";
@@ -66,6 +66,56 @@ function _clickHandlerFactory(index: number) {
 
         helper.navigateWithHistory(pageFactory);
     }
+}
+
+function _createFrameView(): frameModule.Frame {
+    const frame = new frameModule.Frame();
+    frame.navigate({ create: () => new Page() });
+    return frame;
+}
+
+export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
+    // https://github.com/NativeScript/NativeScript/issues/6490
+    const topFrame = frameModule.topmost();
+
+    let tabViewPage: Page;
+    let tabView: TabView;
+
+    const pageFactory = function (): Page {
+        tabView = _createTabView();
+        let items = Array<TabViewItem>();
+        let tabViewitem = new TabViewItem();
+        tabViewitem.title = "Item1";
+        tabViewitem.view = _createFrameView();
+        items.push(tabViewitem);
+
+        let tabViewitem2 = new TabViewItem();
+        tabViewitem2.title = "Item2";
+        tabViewitem2.view = _createFrameView();
+        items.push(tabViewitem2);
+
+        tabView.items = items;
+
+        tabViewPage = new Page();
+        tabViewPage.id = "tab-view-page";
+        tabViewPage.content = tabView;
+
+        return tabViewPage;
+    }
+
+    helper.waitUntilNavigatedFrom(() => topFrame.navigate(pageFactory), topFrame);
+
+    TKUnit.waitUntilReady(() => topFrame.currentPage === tabViewPage);
+    TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView));
+
+    // navigate to a different page
+    helper.waitUntilNavigatedFrom(() => topFrame.navigate({ create: () => new Page(), animated: false }), topFrame);
+
+    // navigate back to the page that hold the tabview with nested frames
+    topFrame.goBack();
+
+    // make sure the app did not crash
+    TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
 }
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
