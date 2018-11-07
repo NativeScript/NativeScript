@@ -506,7 +506,7 @@ export class CssState {
         this._appliedChangeMap.forEach((changes, view) => {
             if (changes.attributes) {
                 changes.attributes.forEach(attribute => {
-                    view.removeEventListener("onPropertyChanged:" + attribute, this._onDynamicStateChangeHandler);
+                    view.removeEventListener(attribute + "Change", this._onDynamicStateChangeHandler);
                 });
             }
             if (changes.pseudoClasses) {

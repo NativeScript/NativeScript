@@ -154,7 +154,8 @@ export class View extends ViewCommon {
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
-        if (!CGRectEqualToRect(nativeView.frame, frame)) {
+        let oldFrame = this._cachedFrame || nativeView.frame;
+        if (!CGRectEqualToRect(oldFrame, frame)) {
             if (traceEnabled()) {
                 traceWrite(this + " :_setNativeViewFrame: " + JSON.stringify(ios.getPositionFromFrame(frame)), traceCategories.Layout);
             }
@@ -888,7 +889,16 @@ export namespace ios {
                     // The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
                     const tabViewItem = owner.parent;
                     const tabView = tabViewItem && tabViewItem.parent;
-                    const parent = tabView && tabView.parent;
+                    let parent = tabView && tabView.parent;
+
+                    // Handle Angular scenario where TabView is in a ProxyViewContainer
+                    // It is possible to wrap components in ProxyViewContainers indefinitely
+                    // Not using instanceof ProxyViewContainer to avoid circular dependency
+                    // TODO: Try moving UILayoutViewController out of view module
+                    while (parent && !parent.nativeViewProtected) {
+                        parent = parent.parent;
+                    }
+
                     if (parent) {
                         const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
                         const currentInsetsTop = this.view.safeAreaInsets.top;

@@ -6,6 +6,8 @@ import * as platform from "tns-core-modules/platform";
 import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
+import { Page } from "tns-core-modules/ui/page";
+import { Label } from "tns-core-modules/ui/label";
 import {
     dipToDp, left, top, right, bottom, height, width,
     equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, check,
@@ -36,6 +38,30 @@ export class SafeAreaTests extends testModule.UITest<any> {
     private noop() {
         // no operation
     };
+
+    public test_layout_changed_event_count() {
+        const page = <Page>parse(`
+        <Page>
+            <GridLayout id="grid" backgroundColor="Crimson">
+                <Label id="label" text="label1" backgroundColor="Gold"></Label>
+            </GridLayout>
+        </Page>
+        `);
+        let gridLayoutChangedCounter = 0;
+        let labelLayoutChangedCounter = 0;
+        const grid = page.getViewById("grid");
+        grid.on(view.View.layoutChangedEvent, () => {
+            gridLayoutChangedCounter++;
+        });
+        const label = <Label>page.getViewById("label");
+        label.on(view.View.layoutChangedEvent, () => {
+            labelLayoutChangedCounter++;
+        });
+        helper.navigate(() => page);
+        label.height = 100;
+        TKUnit.waitUntilReady(() => labelLayoutChangedCounter === 2);
+        TKUnit.assert(gridLayoutChangedCounter === 1, `${grid} layoutChanged event count - actual:${gridLayoutChangedCounter}; expected: 1`)
+    }
 
     // Common
     private getViews(template: string) {
