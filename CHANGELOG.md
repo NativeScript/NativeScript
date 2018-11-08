@@ -1,6 +1,18 @@
 Cross Platform Modules Changelog
 ==============================
 
+<a name="5.0.2"></a>
+## [5.0.2](https://github.com/NativeScript/NativeScript/compare/5.0.1...5.0.2) (2018-11-07)
+
+
+### Bug Fixes
+
+* **android:** back navigation on app suspend/resume ([#6489](https://github.com/NativeScript/NativeScript/issues/6489)) ([999e378](https://github.com/NativeScript/NativeScript/commit/999e378))
+* **android:** IllegalStateException with tabview and nested frames ([#6495](https://github.com/NativeScript/NativeScript/issues/6495)) ([7d21b5c](https://github.com/NativeScript/NativeScript/commit/7d21b5c))
+* Resolve incorrect name of listener when unsubscribing ([#6487](https://github.com/NativeScript/NativeScript/issues/6487)) ([af5eb73](https://github.com/NativeScript/NativeScript/commit/af5eb73))
+
+
+
 <a name="5.0.0"></a>
 # [5.0.0](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0) (2018-11-01)
 
