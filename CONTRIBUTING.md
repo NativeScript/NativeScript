@@ -219,7 +219,7 @@ Instructions how to release a new version for **NativeScript Core Team Members**
 ```
 git checkout release
 ```
-#### If you want to prepare modules for major release where release branch should be the same as master branch, execute step 2, otherwise skip and continue to step 3.
+#### If you want to prepare tns-core-modules for a major release where the release branch should be the same as the master branch, execute step 2, otherwise skip and continue to step 3.
 2. Merge master in release branch:
 ```
 git merge --ff-only origin/master
