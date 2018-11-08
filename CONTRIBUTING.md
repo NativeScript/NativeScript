@@ -215,39 +215,91 @@ If you want to contribute, but you are not sure where to start - look for [issue
 
 Instructions how to release a new version for **NativeScript Core Team Members**.
 
-1. Execute `npm install` to install dependencies:
-```bash
+1. Checkout release branch:
+```
+git checkout release
+```
+#### If you want to prepare modules for major release where release would be reset as master branch, execute step 2, otherwise skip and continue to step 3.
+2. Merge master in release branch:
+```
+git merge --ff-only origin/master
+```
+#### If you need to cherry-pick some commits from master to release go to step 3, 4 and 5, otherwise continue to step 6.
+3. Create a PR:
+```
+git checkout -b username/prepare-version
+```
+4. Cherry pick commit:
+```
+git cherry-pick commit-sha
+git push 
+```
+5. Merge the PR into release branch.
+
+6. Create a PR to cut the release:
+```
+git checkout -b username/release-version
+```
+7. Execute `npm install` to install dependencies:
+```
 npm install
 ```
-
-2. Add the following to your `.npmrc`:
+8. Add the following to your `.npmrc`:
 ```
 tag-version-prefix=""
 message="release: cut the %s release"
 ```
 
-3. Create new branch based on `master`:
-```bash
-git checkout -b username/release-version
+9. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
 ```
-
-4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
-```bash
 cd tns-platform-declarations
 npm --no-git-tag-version version [patch|minor|major]
 cd ..
 ```
 
-5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, tag the release and update the CHANGELOG.md:
-```bash
+10. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, tag the release and update the CHANGELOG.md:
+ In case we need to publish release version we need simply to use npm version x.x.x-rc
+```
 cd tns-core-modules
 npm version [patch|minor|major]
 cd ..
 ```
 
-6. Push all the changes to your branch and open a pull request:
-```bash
+11. Push all the changes to your branch and open a pull request:
+```
 git push --set-upstream origin username/release-version --tags
 ```
 
-7. Create `release` branch after the pull request is merged to `master` and publish the packages built on CI to `npm`.
+12. Merge PR into release branch.
+13. If all checks has passed publish paclage.
+
+## Merge changes from release into master
+
+15. Make sure you are in release branch:
+```
+git cheakout release
+git pull
+```
+
+16. Create PR to merge changes back in master and preserve history:
+```
+git checkout -b merge-release-in-master
+git push --set-upstream origin merge-release-in-master
+git merge origin/master
+```
+17. Rlove conflicts.
+18. Add confilicts:
+```
+git add resolved files
+```
+19. Commit changes with default merge message:
+```
+git commit
+```
+20. Revert version of modules and platform declarations to take the one from master:
+```
+git checkout origin/master tns-platform-declarations/package.json tns-core-modules/package.json
+git commit --amend
+git push --force-with-lease
+```
+21. If the tests pass **merge the PR whithout sqaushing** to preserve the history.
