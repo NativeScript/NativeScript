@@ -190,6 +190,9 @@ export class View extends ViewCommon {
         } else if (!this._isLaidOut) {
             // Rects could be equal on the first layout and an event should be raised.
             this._raiseLayoutChangedEvent();
+            // But make sure event is raised only once if rects are equal on the first layout as
+            // this method is called twice with equal rects in landscape mode (vs only once in portrait)
+            this._isLaidOut = true;
         }
     }
 
