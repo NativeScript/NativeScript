@@ -75,6 +75,7 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
         _connectionTypeChangedCallback = <any>zonedCallback(connectionTypeChangedCallback);
         SCNetworkReachabilitySetCallback(_monitorReachabilityRef, _reachabilityCallbackFunctionRef, null);
         SCNetworkReachabilityScheduleWithRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        _connectionTypeChangedCallback(_getConnectionType());
     }
 }
 

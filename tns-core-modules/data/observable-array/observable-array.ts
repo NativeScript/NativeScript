@@ -1,4 +1,4 @@
-﻿import * as observable from "../observable";
+import * as observable from "../observable";
 import * as observableArrayDef from ".";
 import * as types from "../../utils/types";
 
@@ -314,7 +314,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
     reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T {
-        return initialValue ? this._array.reduce(callbackfn, initialValue) : this._array.reduce(callbackfn);
+        return initialValue !== undefined ? this._array.reduce(callbackfn, initialValue) : this._array.reduce(callbackfn);
     }
 
     /**
@@ -323,7 +323,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
     reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T {
-        return this._array.reduceRight(callbackfn, initialValue);
+        return initialValue !== undefined ? this._array.reduceRight(callbackfn, initialValue) : this._array.reduceRight(callbackfn);
     }
 }
 

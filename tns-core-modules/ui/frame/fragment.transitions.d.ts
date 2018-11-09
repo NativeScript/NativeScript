@@ -28,7 +28,7 @@ export function _setAndroidFragmentTransitions(
 /**
  * @private
  */
-export function _onFragmentCreateAnimation(entry: BackstackEntry, fragment: any, nextAnim: number, enter: boolean): any;
+export function _onFragmentCreateAnimator(entry: BackstackEntry, fragment: any, nextAnim: number, enter: boolean): any;
 /**
  * @private
  */

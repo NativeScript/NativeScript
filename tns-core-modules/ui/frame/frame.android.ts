@@ -13,7 +13,7 @@ import {
 } from "./frame-common";
 
 import {
-    _setAndroidFragmentTransitions, _onFragmentCreateAnimation, _getAnimatedEntries,
+    _setAndroidFragmentTransitions, _onFragmentCreateAnimator, _getAnimatedEntries,
     _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
@@ -23,6 +23,14 @@ import { profile } from "../../profiling";
 import { createViewFromEntry } from "../builder";
 
 export * from "./frame-common";
+
+interface AnimatorState {
+    enterAnimator: any;
+    exitAnimator: any;
+    popEnterAnimator: any;
+    popExitAnimator: any;
+    transitionName: string;
+}
 
 const INTENT_EXTRA = "com.tns.activity";
 const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
@@ -93,6 +101,7 @@ export class Frame extends FrameBase {
     private _tearDownPending = false;
     private _attachedToWindow = false;
     public _isBack: boolean = true;
+    private _cachedAnimatorState: AnimatorState;
 
     constructor() {
         super();
@@ -119,6 +128,10 @@ export class Frame extends FrameBase {
 
     get android(): AndroidFrame {
         return this._android;
+    }
+
+    get _hasFragments(): boolean {
+        return true;
     }
 
     _onAttachedToWindow(): void {
@@ -166,6 +179,17 @@ export class Frame extends FrameBase {
         const entry = this._currentEntry;
         if (entry && manager && !manager.findFragmentByTag(entry.fragmentTag)) {
             // Simulate first navigation (e.g. no animations or transitions)
+            // we need to cache the original animation settings so we can restore them later; otherwise as the 
+            // simulated first navigation is not animated (it is actually a zero duration animator) the "popExit" animation 
+            // is broken when transaction.setCustomAnimations(...) is used in a scenario with:
+            // 1) forward navigation
+            // 2) suspend / resume app
+            // 3) back navigation -- the exiting fragment is erroneously animated with the exit animator from the 
+            // simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears; 
+            // the user only sees the animation of the entering fragment as per its specific enter animation settings.
+            // NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
+            this._cachedAnimatorState = getAnimatorState(this._currentEntry);
+
             this._currentEntry = null;
             // NavigateCore will eventually call _processNextNavigationEntry again.
             this._navigateCore(entry);
@@ -175,18 +199,38 @@ export class Frame extends FrameBase {
         }
     }
 
-    _onRootViewReset(): void {
+    public _getChildFragmentManager() {
+        const backstackEntry = this._executingEntry || this._currentEntry;
+        if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
+            return backstackEntry.fragment.getChildFragmentManager();
+        }
+
+        return null;
+    }
+
+    public _onRootViewReset(): void {
         this.disposeCurrentFragment();
         super._onRootViewReset();
     }
 
     onUnloaded() {
-        this.disposeCurrentFragment();
         super.onUnloaded();
+
+        // calling dispose fragment after super.onUnloaded() means we are not relying on the built-in Android logic
+        // to automatically remove child fragments when parent fragment is removed;
+        // this fixes issue with missing nested fragment on app suspend / resume;
+        this.disposeCurrentFragment();
     }
 
     private disposeCurrentFragment(): void {
-        if (!this._currentEntry || !this._currentEntry.fragment) {
+        // when interacting with nested fragments it seems Android is smart enough
+        // to automatically remove child fragments when parent fragment is removed;
+        // however, we must add a fragment.isAdded() guard as our logic will try to 
+        // explicitly remove the already removed child fragment causing an 
+        // IllegalStateException: Fragment has not been attached yet.
+        if (!this._currentEntry ||
+            !this._currentEntry.fragment ||
+            !this._currentEntry.fragment.isAdded()) {
             return;
         }
 
@@ -258,6 +302,12 @@ export class Frame extends FrameBase {
             // Continue with next item in the queue.
             this._processNextNavigationEntry();
         }
+
+        // restore cached animation settings if we just completed simulated first navigation (no animation)
+        if (this._cachedAnimatorState) {
+            restoreAnimatorState(this._currentEntry, this._cachedAnimatorState);
+            this._cachedAnimatorState = null;
+        }
     }
 
     public onBackPressed(): boolean {
@@ -312,7 +362,7 @@ export class Frame extends FrameBase {
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);
         const transaction = manager.beginTransaction();
-        const animated = this._getIsAnimatedNavigation(newEntry.entry);
+        const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
         // NOTE: Don't use transition for the initial navigation (same as on iOS)
         // On API 21+ transition won't be triggered unless there was at least one
         // layout pass so we will wait forever for transitionCompleted handler...
@@ -326,7 +376,7 @@ export class Frame extends FrameBase {
         }
 
         transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
@@ -349,11 +399,12 @@ export class Frame extends FrameBase {
         const transitionReversed = _reverseTransitions(backstackEntry, this._currentEntry);
         if (!transitionReversed) {
             // If transition were not reversed then use animations.
-            transaction.setCustomAnimations(AnimationType.popEnterFakeResourceId, AnimationType.popExitFakeResourceId, AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
+            // we do not use Android backstack so setting popEnter / popExit is meaningless (3rd and 4th optional args)
+            transaction.setCustomAnimations(AnimationType.popEnterFakeResourceId, AnimationType.popExitFakeResourceId);
         }
 
         transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     public _removeEntry(removed: BackstackEntry): void {
@@ -403,6 +454,7 @@ export class Frame extends FrameBase {
         }
 
         this._android.rootViewGroup = null;
+        this._removeFromFrameStack();
         super.disposeNativeView();
     }
 
@@ -415,15 +467,24 @@ export class Frame extends FrameBase {
     }
 
     public _getNavBarVisible(page: Page): boolean {
-        if (page.actionBarHidden !== undefined) {
-            return !page.actionBarHidden;
+        switch (this.actionBarVisibility) {
+            case "never":
+                return false;
+            
+            case "always":
+                return true;
+            
+            default:
+                if (page.actionBarHidden !== undefined) {
+                    return !page.actionBarHidden;
+                }
+        
+                if (this._android && this._android.showActionBar !== undefined) {
+                    return this._android.showActionBar;
+                }
+        
+                return true;
         }
-
-        if (this._android && this._android.showActionBar !== undefined) {
-            return this._android.showActionBar;
-        }
-
-        return true;
     }
 
     public _saveFragmentsState(): void {
@@ -438,6 +499,40 @@ export class Frame extends FrameBase {
             }
         });
     }
+}
+
+function cloneExpandedAnimator(expandedAnimator: any) {
+    if (!expandedAnimator) {
+        return null;
+    }
+
+    const clone = expandedAnimator.clone();
+    clone.entry = expandedAnimator.entry;
+    clone.transitionType = expandedAnimator.transitionType;
+
+    return clone;
+}
+
+function getAnimatorState(entry: BackstackEntry): AnimatorState {
+    const expandedEntry = <any>entry;
+    const animatorState = <AnimatorState>{};
+
+    animatorState.enterAnimator = cloneExpandedAnimator(expandedEntry.enterAnimator);
+    animatorState.exitAnimator = cloneExpandedAnimator(expandedEntry.exitAnimator);
+    animatorState.popEnterAnimator = cloneExpandedAnimator(expandedEntry.popEnterAnimator);
+    animatorState.popExitAnimator = cloneExpandedAnimator(expandedEntry.popExitAnimator);
+    animatorState.transitionName = expandedEntry.transitionName;
+
+    return animatorState;
+}
+
+function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): void {
+    const expandedEntry = <any>entry;
+    expandedEntry.enterAnimator = snapshot.enterAnimator;
+    expandedEntry.exitAnimator = snapshot.exitAnimator;
+    expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
+    expandedEntry.popExitAnimator = snapshot.popExitAnimator;
+    expandedEntry.transitionName = snapshot.transitionName;
 }
 
 function clearEntry(entry: BackstackEntry): void {
@@ -647,7 +742,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onCreateAnimation(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.view.animation.Animation {
+    public onCreateAnimator(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
         let nextAnimString: string;
         switch (nextAnim) {
             case AnimationType.enterFakeResourceId: nextAnimString = "enter"; break;
@@ -656,16 +751,16 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             case AnimationType.popExitFakeResourceId: nextAnimString = "popExit"; break;
         }
 
-        let animation = _onFragmentCreateAnimation(this.entry, fragment, nextAnim, enter);
-        if (!animation) {
-            animation = superFunc.call(fragment, transit, enter, nextAnim);
+        let animator = _onFragmentCreateAnimator(this.entry, fragment, nextAnim, enter);
+        if (!animator) {
+            animator = superFunc.call(fragment, transit, enter, nextAnim);
         }
 
         if (traceEnabled()) {
-            traceWrite(`${fragment}.onCreateAnimation(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animation ? "animation" : "no animation"}`, traceCategories.NativeLifecycle);
+            traceWrite(`${fragment}.onCreateAnimator(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animator ? "animator" : "no animator"}`, traceCategories.NativeLifecycle);
         }
 
-        return animation;
+        return animator;
     }
 
     @profile
@@ -756,16 +851,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
         }
 
-        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.
-        // on app resume in nested frame scenarios with support library version greater than 26.0.0
-        const view = fragment.getView();
-        if (view != null) {
-            const viewParent = view.getParent();
-            if (viewParent instanceof android.view.ViewGroup) {
-                viewParent.removeView(view);
-            }
-        }
-
         superFunc.call(fragment);
     }
 
@@ -774,7 +859,38 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroy()`, traceCategories.NativeLifecycle);
         }
+
         superFunc.call(fragment);
+
+        const entry = this.entry;
+        if (!entry) {
+            traceError(`${fragment}.onDestroy: entry is null or undefined`);
+            return null;
+        }
+
+        const page = entry.resolvedPage;
+        if (!page) {
+            traceError(`${fragment}.onDestroy: entry has no resolvedPage`);
+            return null;
+        }
+
+        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.	
+        // on app resume in nested frame scenarios with support library version greater than 26.0.0
+        // HACK: this whole code block shouldn't be necessary as the native view is supposedly removed from its parent 
+        // right after onDestroyView(...) is called but for some reason the fragment view (page) still thinks it has a 
+        // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
+        // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
+        const nativeView = page.nativeViewProtected;
+        if (nativeView != null) {	
+            const parentView = nativeView.getParent();	
+            if (parentView instanceof android.view.ViewGroup) {
+                if (parentView.getChildCount() === 0) {
+                    parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
+                }
+
+                parentView.removeView(nativeView);	
+            }
+        }
     }
 
     @profile
