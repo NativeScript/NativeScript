@@ -759,17 +759,6 @@ export class ListViewTest extends UITest<ListView> {
         TKUnit.assertEqual(lastNativeElementVisible, false, "Last element is not visible");
     }
 
-    public test_scrollToIndex_should_coerce_negative_index_to_zero_index() {
-        var listView = this.testView;
-
-        listView.items = MANY_ITEMS;
-        listView.scrollToIndex(-1);
-        TKUnit.wait(0.1);
-
-        var firstNativeElementVisible = this.checkItemVisibleAtIndex(listView, 0);
-        TKUnit.assertEqual(firstNativeElementVisible, true, "first element is visible");        
-    }
-
     public test_scrollToIndex_should_coerce_larger_index_to_last_item_index() {
         var listView = this.testView;
 
