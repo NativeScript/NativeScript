@@ -161,6 +161,10 @@ export class Frame extends View {
     /**
      * @private
      */
+    _pushInFrameStackRecursive();
+    /**
+     * @private
+     */
     _removeFromFrameStack();
     /**
      * @private

@@ -12,8 +12,6 @@ import { textTransformProperty, TextTransform, getTransformedText } from "../tex
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
 import { Frame } from "../frame";
-import { frameStack } from "../frame/frame-stack";
-import { getAncestor } from "../core/view-base";
 
 export * from "./tab-view-common";
 
@@ -40,18 +38,6 @@ function getTabById(id: number): TabView {
     });
 
     return ref && ref.get();
-}
-
-function isFrameNested(frame: Frame, parentFrameCandidate: Frame) {
-    let frameAncestor = frame;
-    while (frameAncestor) {
-        frameAncestor = <Frame>getAncestor(frameAncestor, Frame);
-        if (frameAncestor === parentFrameCandidate) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 function initializeNativeClasses() {
@@ -520,15 +506,7 @@ export class TabView extends TabViewBase {
         const newItem = items[newIndex];
         const selectedView = newItem && newItem.view;
         if (selectedView instanceof Frame) {
-            selectedView._pushInFrameStack();
-
-            // make sure nested frames order is kept intact i.e. the nested one should always be on top;
-            // see https://github.com/NativeScript/nativescript-angular/issues/1596 for more information
-            for (const frame of frameStack) {
-                if (isFrameNested(frame, selectedView)) {
-                    frame._pushInFrameStack();
-                }
-            }
+            selectedView._pushInFrameStackRecursive();
         }
 
         toLoad.forEach(index => {
