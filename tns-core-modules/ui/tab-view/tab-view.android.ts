@@ -229,6 +229,7 @@ function initializeNativeClasses() {
             }
         }
     }
+}
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
     const result = new org.nativescript.widgets.TabItemSpec();
