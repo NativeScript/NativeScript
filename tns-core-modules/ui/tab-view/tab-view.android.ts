@@ -200,10 +200,7 @@ function initializeNativeClasses() {
         }
 
         finishUpdate(container: android.view.ViewGroup): void {
-            if (this.mCurTransaction != null) {
-                (<any>this.mCurTransaction).commitNowAllowingStateLoss();
-                this.mCurTransaction = null;
-            }
+            this._commitCurrentTransaction();
         }
 
         isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
@@ -211,10 +208,9 @@ function initializeNativeClasses() {
         }
 
         saveState(): android.os.Parcelable {
-            if (this.mCurTransaction != null) {
-                (<any>this.mCurTransaction).commitNowAllowingStateLoss();
-                this.mCurTransaction = null;
-            }
+            // Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
+            // Related to: https://github.com/NativeScript/NativeScript/issues/6466
+            this._commitCurrentTransaction();
             return null;
         }
 
@@ -225,10 +221,14 @@ function initializeNativeClasses() {
         getItemId(position: number): number {
             return position;
         }
-    }
 
-    PagerAdapter = FragmentPagerAdapter;
-}
+        private _commitCurrentTransaction() {
+            if (this.mCurTransaction != null) {
+                this.mCurTransaction.commitNowAllowingStateLoss();
+                this.mCurTransaction = null;
+            }
+        }
+    }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
     const result = new org.nativescript.widgets.TabItemSpec();
