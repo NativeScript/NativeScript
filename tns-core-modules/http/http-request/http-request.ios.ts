@@ -70,7 +70,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
         if (!options.url) {
-          reject('Request url was empty.');
+          reject(new Error('Request url was empty.'));
           return;
         }
 
