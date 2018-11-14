@@ -32,6 +32,6 @@
   },
   "homepage": "https://github.com/NativeScript/NativeScript#readme",
   "devDependencies": {
-    "typescript": "~2.6.1"
+    "typescript": "^3.1.6"
   }
 }
