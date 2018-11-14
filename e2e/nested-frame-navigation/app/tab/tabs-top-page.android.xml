@@ -1,0 +1,19 @@
+<Page codeFile="~/tab/tabs-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <ActionBar class="action-bar">
+        <NavigationButton tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
+        <Label class="action-bar-title" text="tab page" horizontalAlignment="center" />
+    </ActionBar>
+
+    <GridLayout rows="auto, *">
+        <Button text="Navigate to still other page" tap="onNavigate" />
+        <TabView row="1" androidTabsPosition="top">
+            <TabViewItem title="First">
+                <Frame defaultPage="tab/tab-first-page" />
+            </TabViewItem>
+            <TabViewItem title="Second">
+                <Frame defaultPage="tab/tab-second-page" />
+            </TabViewItem>
+        </TabView>
+    </GridLayout>
+</Page>

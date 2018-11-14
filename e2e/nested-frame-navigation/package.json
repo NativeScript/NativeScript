@@ -1,0 +1,36 @@
+{
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "readme": "NativeScript Application",
+  "repository": "<fill-your-repository-here>",
+  "nativescript": {
+    "id": "org.nativescript.nestedframenavigation",
+    "tns-ios": {
+      "version": "next"
+    },
+    "tns-android": {
+      "version": "next"
+    }
+  },
+  "dependencies": {
+    "nativescript-theme-core": "~1.0.4",
+    "tns-core-modules": "next"
+  },
+  "devDependencies": {
+    "@types/chai": "~4.1.3",
+    "@types/mocha": "~5.2.1",
+    "@types/node": "^7.0.5",
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.18.0",
+    "mocha-multi": "^1.0.1",
+    "nativescript-dev-appium": "next",
+    "nativescript-dev-typescript": "next",
+    "nativescript-dev-webpack": "next",
+    "rimraf": "^2.6.2"
+  },
+  "scripts": {
+    "e2e": "npm run clean-e2e && tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
+    "e2e-watch": "tsc -p e2e --watch",
+    "clean-e2e": "rimraf 'e2e/**/*.js' 'e2e/**/*.js.map' 'e2e/**/*.map'"
+  }
+}
