@@ -229,6 +229,8 @@ function initializeNativeClasses() {
             }
         }
     }
+    
+    PagerAdapter = FragmentPagerAdapter;
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
