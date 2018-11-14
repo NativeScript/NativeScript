@@ -506,7 +506,7 @@ export class TabView extends TabViewBase {
         const newItem = items[newIndex];
         const selectedView = newItem && newItem.view;
         if (selectedView instanceof Frame) {
-            selectedView._pushInFrameStack();
+            selectedView._pushInFrameStackRecursive();
         }
 
         toLoad.forEach(index => {
