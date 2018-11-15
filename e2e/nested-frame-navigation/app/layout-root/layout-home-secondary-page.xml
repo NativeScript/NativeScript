@@ -5,9 +5,9 @@
     </ActionBar>
 
     <GridLayout rows="auto, *">
-        <Button text="navigate to still other page" tap="onNavigate" />
+        <Button text="navigate to other page" tap="onNavigate" />
         <GridLayout row="1">
-            <Frame defaultPage="layout-root/layout-second-page" />
+            <Frame defaultPage="teams/teams-items-page" />
         </GridLayout>
     </GridLayout>
 

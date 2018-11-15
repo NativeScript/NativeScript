@@ -22,12 +22,12 @@ export function onNavigateToPageMultiFrame(args: EventData) {
 
 export function onNavigateToTabsTopPage(args: EventData) {
     const button = <Button>args.object;
-    button.page.frame.navigate("tab/tabs-top-page");
+    button.page.frame.navigate("tab-page/tabs-top-page");
 }
 
 export function onNavigateToTabsBottomPage(args: EventData) {
     const button = <Button>args.object;
-    button.page.frame.navigate("tab/tabs-bottom-page");
+    button.page.frame.navigate("tab-page/tabs-bottom-page");
 }
 
 export function onNavigateToTabsTopRoot(args: EventData) {

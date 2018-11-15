@@ -6,12 +6,12 @@
     </ActionBar>
 
     <GridLayout rows="auto, *, *">
-        <Button text="navigate to still other page" tap="onNavigate" />
+        <Button text="navigate to some page" tap="onNavigate" />
         <GridLayout row="1">
-            <Frame defaultPage="frame-root/frame-first-page" />
+            <Frame defaultPage="players/players-items-page" />
         </GridLayout>
         <GridLayout row="2">
-            <Frame defaultPage="frame-root/frame-second-page" />
+            <Frame defaultPage="teams/teams-items-page" />
         </GridLayout>
     </GridLayout>
 

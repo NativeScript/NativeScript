@@ -1,8 +1,14 @@
-<TabView androidTabsPosition="top">
+<TabView codeFile="~/tab-root/tab-root" androidTabsPosition="top">
     <TabViewItem title="First">
-        <Frame defaultPage="tab-root/tab-first-page" />
+        <GridLayout rows="auto, *">
+            <Button text="reset app" tap="onReset" />
+            <Frame row="1" defaultPage="players/players-items-page" />
+        </GridLayout>
     </TabViewItem>
     <TabViewItem title="Second">
-        <Frame defaultPage="tab-root/tab-second-page" />
+        <GridLayout rows="auto, *">
+            <Button text="reset app" tap="onReset" />
+            <Frame row="1" defaultPage="teams/teams-items-page" />
+        </GridLayout>
     </TabViewItem>
 </TabView>

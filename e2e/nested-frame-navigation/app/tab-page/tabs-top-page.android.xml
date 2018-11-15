@@ -1,4 +1,4 @@
-<Page codeFile="~/tab/tabs-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+<Page codeFile="~/tab-page/tabs-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
 
     <ActionBar class="action-bar">
         <NavigationButton tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
@@ -6,13 +6,13 @@
     </ActionBar>
 
     <GridLayout rows="auto, *">
-        <Button text="Navigate to still other page" tap="onNavigate" />
+        <Button text="Navigate to some page" tap="onNavigate" />
         <TabView row="1" androidTabsPosition="top">
             <TabViewItem title="First">
-                <Frame defaultPage="tab/tab-first-page" />
+                <Frame defaultPage="players/players-items-page" />
             </TabViewItem>
             <TabViewItem title="Second">
-                <Frame defaultPage="tab/tab-second-page" />
+                <Frame defaultPage="teams/teams-items-page" />
             </TabViewItem>
         </TabView>
     </GridLayout>

@@ -5,9 +5,9 @@
     </ActionBar>
 
     <GridLayout rows="auto, *">
-        <Button text="navigate to still other page" tap="onNavigate" />
+        <Button text="navigate to some page" tap="onNavigate" />
         <GridLayout row="1">
-            <Frame defaultPage="layout-root/layout-first-page" />
+            <Frame defaultPage="players/players-items-page" />
         </GridLayout>
     </GridLayout>
 
