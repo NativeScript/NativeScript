@@ -7,7 +7,7 @@
 
     <GridLayout>
         <ScrollView>
-            <StackLayout>
+            <StackLayout backgroundColor="teal">
                 <GridLayout height="30" backgroundColor="red" />
                 <GridLayout height="30" backgroundColor="yellow" />
                 <GridLayout height="30" backgroundColor="green" />
