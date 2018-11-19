@@ -1,86 +1,32 @@
-import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen } from "./screen"
+import { Screen, Item } from "./screen";
+import { AppiumDriver } from "nativescript-dev-appium";
 
-const time = 1;
-
-export const roots = ["setFrameRootView", "setLayoutRootView", "setTabRootView"];
-
-export async function modalFrameBackground(driver: AppiumDriver, screen: Screen) {
-    await driver.backgroundApp(time);
-    await screen.loadedModalFrame();
+export async function testPlayerNavigated(player: Item, screen: Screen) {
+    await screen.navigateToPlayerDetails(player);
+    await screen.loadedPlayerDetails(player);
 }
 
-export async function testDialogBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
-    await screen.showDialogConfirm();
-    await screen.loadedConfirmDialog();
-
-    await driver.backgroundApp(time);
-    await screen.loadedConfirmDialog();
-
-    await screen.closeDialog();
-    if (isInFrame) {
-        await screen.loadedModalFrame();
-    }
+export async function testPlayerNavigatedBack(screen: Screen, driver: AppiumDriver) {
+    await driver.navBack();
+    await screen.loadedPlayersList();
 }
 
-export async function testSecondPageBackground(driver: AppiumDriver, screen: Screen) {
-    await screen.navigateToSecondPage();
-    await screen.loadedSecondPage();
-
-    await driver.backgroundApp(time);
-    await screen.loadedSecondPage();
-
-    await screen.goBackFromSecondPage();
-    await screen.loadedModalFrame();
+export async function testSomePageNavigated(screen: Screen) {
+    await screen.navigateToSomePage();
+    await screen.loadedSomePage();
 }
 
-export async function testSecondPageClose(driver: AppiumDriver, screen: Screen) {
-    await screen.navigateToSecondPage();
-    await screen.loadedSecondPage();
-
-    await screen.closeModal();
-    await screen.loadedHome();
+export async function testTeamNavigated(team: Item, screen: Screen) {
+    await screen.navigateToTeamDetails(team);
+    await screen.loadedTeamDetails(team);
 }
 
-export async function testNestedModalFrameBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
-    await screen.showNestedModalFrame();
-    await screen.loadedNestedModalFrame();
-
-    await driver.backgroundApp(time);
-    await screen.loadedNestedModalFrame();
-
-    await screen.closeModalNested();
-    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
+export async function testTeamNavigatedBack(screen: Screen, driver: AppiumDriver) {
+    await driver.navBack();
+    await screen.loadedTeamsList();
 }
 
-export async function testNestedModalPageBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
-    await screen.showNestedModalPage();
-    await screen.loadedNestedModalPage();
-
-    await driver.backgroundApp(time);
-    await screen.loadedNestedModalPage();
-
-    await screen.closeModalNested();
-    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
-}
-
-export async function modalPageBackground(driver: AppiumDriver, screen: Screen, isInFrame: boolean = true) {
-    await driver.backgroundApp(time);
-    isInFrame ? await screen.loadedModalFrame() : await screen.loadedModalPage();
-}
-
-export async function modalTabViewBackground(driver: AppiumDriver, screen: Screen) {
-    await driver.backgroundApp(time);
-    await screen.loadedModalTabView();
-}
-
-export async function testSecondItemBackground(driver: AppiumDriver, screen: Screen) {
-    await screen.navigateToSecondItem();
-    await screen.loadedSecondItem();
-
-    await driver.backgroundApp(time);
-    await screen.loadedSecondItem();
-
-    await screen.navigateToFirstItem();
-    await screen.loadedFirstItem();
+export async function testOtherPageNavigated(screen: Screen) {
+    await screen.navigateToOtherPage();
+    await screen.loadedOtherPage();
 }

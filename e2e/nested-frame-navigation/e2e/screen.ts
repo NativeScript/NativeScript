@@ -1,32 +1,59 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { assert } from "chai";
 
-const home = "Home"
-const first = "First"
-const modal = "Modal";
-const modalFirst = "Modal First";
-const dialogConfirm = "Dialog";
-const modalSecond = "Modal Second";
-const modalNested = "Modal Nested";
+const home = "Home";
+const layoutWithFrame = "Layout w/ frame";
+const layoutWithMultiFrame = "Layout w/ multi frame";
+const pageWithFrame = "Page w/ frame";
+const pageWithMultiFrame = "Page w/ multi frame";
+const pageTabTopWithFrames = "Page w/ tabs (top)";
+const pageTabBottomWithFrames = "Page w/ tabs (bottom)";
+const tabTopRootWithFrames = "Root tabs (top)";
+const tabBottomRootWithFrames = "Root tabs (bottom)";
+const layoutHome = "layout home page";
+const layoutHomeSecondary = "layout home secondary page";
+const frameHome = "frame home page";
+const frameHomeSecondary = "multi frame home page";
+const tabTopHome = "tab top page";
+const tabBottomHome = "tab bottom page";
+const tabRootTopHome = "tab root top home";
+const tabRootBottomHome = "tab root bottom home";
+const navigateToSomePage = "navigate to some page";
+const navigateToOtherPage = "navigate to other page";
+const somePage = "some page";
+const otherPage = "other page";
+const players = "Players";
+const teams = "Teams";
+const playerBack = "playerBack";
+const somePageBack = "somePageBack";
+const otherPageBack = "otherPageBack";
+const teamBack = "teamBack";
+const frameHomeBack = "frameHomeBack";
+const tabTopBack = "tabTopBack";
+const tabBottomBack = "tabBottomBack";
+const resetApp = "reset app";
 
-const modalFrame = "Show Modal Page With Frame";
-const modalPage = "Show Modal Page";
-const modalLayout = "Show Modal Layout";
-const modalTabView = "Show Modal TabView";
-const navToSecondPage = "Navigate To Second Page";
-const showDialog = "Show Dialog";
-const resetFrameRootView = "Reset Frame Root View";
-const resetTabRootView = "Reset Tab Root View";
-const resetLayoutRootView = "Reset Layout Root View";
+export const playerOne = {
+    name: "Player One",
+    description: "Goalkeeper"
+};
+export const playerTwo = {
+    name: "Player Two",
+    description: "Defender"
+}
+export const teamOne = {
+    name: "Team One",
+    description: "u17"
+};
+export const teamTwo = {
+    name: "Team Two",
+    description: "u21"
+}
 
-const showNestedModalFrame = "Show Nested Modal Page With Frame";
-const showNestedModalPage = "Show Nested Modal Page";
-
-const confirmDialog = "Yes";
-const confirmDialogMessage = "Message";
-const closeModalNested = "Close Modal Nested";
-const closeModal = "Close Modal";
-const goBack = "Go Back";
+export interface Item {
+    name: string;
+    description: string;
+}
 
 export class Screen {
 
@@ -36,223 +63,192 @@ export class Screen {
         this._driver = driver;
     }
 
+    navigateToLayoutWithFrame = async () => {
+        await this.navigateToPage(layoutWithFrame);
+    };
+
+    navigateToLayoutWithMultiFrame = async () => {
+        await this.navigateToPage(layoutWithMultiFrame);
+    }
+
+    navigateToPageWithFrame = async () => {
+        await this.navigateToPage(pageWithFrame);
+    }
+
+    navigateToPageWithMultiFrame = async () => {
+        await this.navigateToPage(pageWithMultiFrame);
+    }
+
+    navigateToPageTabTopWithFrames = async () => {
+        await this.navigateToPage(pageTabTopWithFrames);
+    }
+
+    navigateToPageTabBottomWithFrames = async () => {
+        await this.navigateToPage(pageTabBottomWithFrames);
+    }
+
+    navigateToTabTopRootWithFrames = async () => {
+        await this.navigateToPage(tabTopRootWithFrames);
+    }
+
+    navigateToTabBottomRootWithFrames = async () => {
+        await this.navigateToPage(tabBottomRootWithFrames);
+    }
+
+    navigateToSomePage = async () => {
+        await this.navigateToPage(navigateToSomePage);
+    };
+
+    navigateToOtherPage = async () => {
+        await this.navigateToPage(navigateToOtherPage);
+    }
+
+    navigateToPlayerDetails = async (player: Item) => {
+        await this.navigateToItem(player);
+    };
+
+    resetToHome = async () => {
+        const btnReset = await this._driver.findElementByText(resetApp);
+        await btnReset.tap();
+    };
+
+    navigateToTeamDetails = async (team: Item) => {
+        await this.navigateToItem(team);
+    };
+
+    goBackToPlayersList = async () => {
+        await this.goBack(playerBack);
+    };
+
+    goBackToTeamsList = async () => {
+        await this.goBack(teamBack);
+    };
+
+    goBackFromSomePage = async () => {
+        await this.goBack(somePageBack);
+    }
+
+    goBackFromOtherPage = async () => {
+        await this.goBack(otherPageBack);
+    }
+
+    goBackFromFrameHome = async () => {
+        await this.goBack(frameHomeBack);
+    }
+
+    goBackFromTabTopPage = async () => {
+        await this.goBack(tabTopBack);
+    }
+
+    goBackFromTabBottomPage = async () => {
+        await this.goBack(tabBottomBack);
+    }
+
+    togglePlayersTab = async () => {
+        const lblPlayers = await this._driver.findElementByText(players);
+        await lblPlayers.tap();
+    }
+
+    toggleTeamsTab = async () => {
+        const lblTeams = await this._driver.findElementByText(teams);
+        await lblTeams.tap();
+    }
+
     loadedHome = async () => {
         const lblHome = await this._driver.findElementByText(home);
         assert.isTrue(await lblHome.isDisplayed());
         console.log(home + " loaded!");
+    };
+
+    loadedLayoutWithFrame = async () => {
+        await this.loadedPage(layoutHome);
+    };
+
+    loadedLayoutWithMultiFrame = async () => {
+        await this.loadedPage(layoutHome);
+        await this.loadedPage(layoutHomeSecondary);
+    };
+
+    loadedPageWithFrame = async () => {
+        await this.loadedPage(frameHome);
     }
 
-    resetFrameRootView = async () => {
-        console.log("Setting frame root ...");
-        const btnResetFrameRootView = await this._driver.findElementByText(resetFrameRootView);
-        await btnResetFrameRootView.tap();
+    loadedPageWithMultiFrame = async () => {
+        await this.loadedPage(frameHomeSecondary);
     }
 
-    resetLayoutRootView = async () => {
-        console.log("Setting layout root ...");
-        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
-        await btnResetLayoutRootView.tap();
+    loadedPageTabTopWithFrames = async () => {
+        await this.loadedPage(tabTopHome);
     }
 
-    resetTabRootView = async () => {
-        const btnResetTabRootView = await this._driver.findElementByText(resetTabRootView);
-        await btnResetTabRootView.tap();
+    loadedPageTabBottomWithFrames = async () => {
+        await this.loadedPage(tabBottomHome);
     }
 
-    loadedTabRootView = async () => {
-        const tabFirst = await this._driver.findElementByText(first);
-        assert.isTrue(await tabFirst.isDisplayed());
-        console.log("Tab root view loaded!");
+    loadedTabTopRootWithFrames = async () => {
+        await this.loadedPage(tabRootTopHome);
     }
 
-    setFrameRootView = async () => {
-        // should load frame root, no need to verify it is loaded
-        await this.loadedHome();
-        await this.resetFrameRootView();
+    loadedTabBottomRootWithFrames = async () => {
+        await this.loadedPage(tabRootBottomHome);
+    } 
+
+    loadedSomePage = async () => {
+        await this.loadedPage(somePage);
     }
 
-    setTabRootView = async () => {
-        // should load tab root
-        await this.loadedHome();
-        try {
-            await this.loadedTabRootView();
-        } catch (err) {
-            await this.resetTabRootView();
-            await this.loadedTabRootView();
-        }
+    loadedOtherPage = async () => {
+        await this.loadedPage(otherPage);
     }
 
-    setLayoutRootView = async () => {
-        // should load layout root, no need to verify it is loaded
-        await this.loadedHome();
-        await this.resetLayoutRootView();
+    loadedPlayersList = async () => {
+        const lblPlayerOne = await this._driver.findElementByText(playerOne.name);
+        assert.isTrue(await lblPlayerOne.isDisplayed());
+        console.log(players + " loaded!");
     }
 
-    showModalFrame = async () => {
-        const btnModalFrame = await this._driver.findElementByText(modalFrame);
-        await btnModalFrame.tap();
+    loadedPlayerDetails = async (player: Item) => {
+        await this.loadedItem(player);
     }
 
-    loadedModalFrame = async () => {
-        const lblModal = await this._driver.findElementByText(modal);
-        assert.isTrue(await lblModal.isDisplayed());
-        console.log(modal + " loaded!");
+    loadedTeamsList = async () => {
+        const lblTeamOne = await this._driver.findElementByText(teamOne.name);
+        assert.isTrue(await lblTeamOne.isDisplayed());
+        console.log(teams + " loaded!");
     }
 
-    showModalPage = async () => {
-        const btnModalPage = await this._driver.findElementByText(modalPage);
-        await btnModalPage.tap();
+    loadedTeamDetails = async (team: Item) => {
+        await this.loadedItem(team);
     }
 
-    loadedModalPage = async () => {
-        const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
-        assert.isTrue(await btnShowNestedModalPage.isDisplayed());
-        console.log("Modal Page loaded!");
+    private navigateToPage = async (page: string) => {
+        const btnPage = await this._driver.findElementByText(page);
+        await btnPage.tap();
+    };
+
+    private loadedPage = async (page: string) => {
+        const lblPage = await this._driver.findElementByText(page);
+        assert.isTrue(await lblPage.isDisplayed());
+        console.log(page + " loaded!");
+    };
+
+    private navigateToItem = async (item: Item) => {
+        const lblItem = await this._driver.findElementByText(item.name);
+        await lblItem.tap();
     }
 
-    showModalLayout = async () => {
-        const btnModalLayout = await this._driver.findElementByText(modalLayout);
-        await btnModalLayout.tap();
+    private loadedItem = async (item: Item) => {
+        const lblItemName = await this._driver.findElementByText(item.name);
+        assert.isTrue(await lblItemName.isDisplayed());
+
+        const lblItemDescription = await this._driver.findElementByText(item.description);
+        assert.isTrue(await lblItemDescription.isDisplayed()); 
+
+        console.log(item.name + " loaded!");
     }
 
-    loadedModalLayout = async () => {
-        await this.loadedModalFrame();
-    }
-
-    showModalTabView = async () => {
-        const btnModalTabView = await this._driver.findElementByText(modalTabView);
-        await btnModalTabView.tap();
-    }
-
-    loadedModalTabView = async () => {
-        const itemModalFirst = await this._driver.findElementByText(modalFirst);
-        assert.isTrue(await itemModalFirst.isDisplayed());
-        console.log("Modal TabView loaded!");
-    }
-
-    navigateToSecondPage = async () => {
-        const btnNavToSecondPage = await this._driver.findElementByText(navToSecondPage);
-        await btnNavToSecondPage.tap();
-    }
-
-    showDialogConfirm = async () => {
-        const btnShowDialogConfirm = await this._driver.findElementByText(showDialog);
-        await btnShowDialogConfirm.tap();
-    }
-
-    navigateToFirstItem = async () => {
-        const itemModalFirst = await this._driver.findElementByText(modalFirst);
-        await itemModalFirst.tap();
-    }
-
-    navigateToSecondItem = async () => {
-        const itemModalSecond = await this._driver.findElementByText(modalSecond);
-        await itemModalSecond.tap();
-    }
-
-    loadedConfirmDialog = async () => {
-        const lblDialogMessage = await this._driver.findElementByText(confirmDialogMessage);
-        assert.isTrue(await lblDialogMessage.isDisplayed());
-        console.log(dialogConfirm + " shown!");
-    }
-
-    loadedSecondPage = async () => {
-        const lblModalSecond = await this._driver.findElementByText(modalSecond);
-        assert.isTrue(await lblModalSecond.isDisplayed());
-        console.log(modalSecond + " loaded!");
-    }
-
-    loadedFirstItem = async () => {
-        const lblModal = await this._driver.findElementByText(modal);
-        assert.isTrue(await lblModal.isDisplayed());
-        console.log("First Item loaded!");
-    }
-
-    loadedSecondItem = async () => {
-        const btnGoBack = await this._driver.findElementByText(goBack);
-        assert.isTrue(await btnGoBack.isDisplayed());
-        console.log("Second Item loaded!");
-    }
-
-    closeDialog = async () => {
-        const btnYesDialog = await this._driver.findElementByText(confirmDialog);
-        await btnYesDialog.tap();
-    }
-
-    goBackFromSecondPage = async () => {
-        const btnGoBackFromSecondPage = await this._driver.findElementByText(goBack);
-        await btnGoBackFromSecondPage.tap();
-    }
-
-    showNestedModalFrame = async () => {
-        const btnShowNestedModalFrame = await this._driver.findElementByText(showNestedModalFrame);
-        await btnShowNestedModalFrame.tap();
-    }
-
-    loadedNestedModalFrame = async () => {
-        const lblModalNested = await this._driver.findElementByText(modalNested);
-        assert.isTrue(await lblModalNested.isDisplayed());
-        console.log(modalNested + " loaded!");
-    }
-
-    closeModalNested = async () => {
-        const btnCloseNestedModal = await this._driver.findElementByText(closeModalNested);
-        await btnCloseNestedModal.tap();
-    }
-
-    showNestedModalPage = async () => {
-        const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
-        await btnShowNestedModalPage.tap();
-    }
-
-    loadedNestedModalPage = async () => {
-        const btnCloseModalNested = await this._driver.findElementByText(closeModalNested);
-        assert.isTrue(await btnCloseModalNested.isDisplayed());
-        console.log(closeModalNested + " loaded!");
-    }
-
-    closeModal = async () => {
-        const btnCloseModal = await this._driver.findElementByText(closeModal);
-        await btnCloseModal.tap();
-    }
-
-    loadModalFrame = async () => {
-        try {
-            await this.loadedModalFrame();
-        } catch (err) {
-            // should show modal page with frame
-            await this.showModalFrame();
-            await this.loadedModalFrame();
-        }
-    }
-
-    loadModalPage = async () => {
-        try {
-            await this.loadedModalPage();
-        } catch (err) {
-            // should show modal page
-            await this.showModalPage();
-            await this.loadedModalPage();
-        }
-    }
-
-    loadModalLayout = async () => {
-        try {
-            await this.loadedModalLayout();
-        } catch (err) {
-            // should show modal layout
-            await this.showModalLayout();
-            await this.loadedModalLayout();
-        }
-    }
-
-    loadModalTabView = async () => {
-        try {
-            await this.loadedModalTabView();
-        } catch (err) {
-            // should show modal tab view with frame
-            await this.showModalTabView();
-            await this.loadedModalTabView();
-        }
+    private goBack = async (accessibilityId: string) => {
+        const btnBack = await this._driver.findElementByAccessibilityId(accessibilityId);
+        await btnBack.tap();
     }
 }

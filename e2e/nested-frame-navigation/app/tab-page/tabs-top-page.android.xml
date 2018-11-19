@@ -1,17 +1,20 @@
 <Page codeFile="~/tab-page/tabs-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
 
     <ActionBar class="action-bar">
-        <NavigationButton tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
-        <Label class="action-bar-title" text="tab page" horizontalAlignment="center" />
+        <NavigationButton text="tabTopBack" tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
+        <Label class="action-bar-title" text="tab top page" horizontalAlignment="center" />
     </ActionBar>
 
     <GridLayout rows="auto, *">
         <Button text="Navigate to some page" tap="onNavigate" />
         <TabView row="1" androidTabsPosition="top">
-            <TabViewItem title="First">
+            <TabViewItem title="Players">
                 <Frame defaultPage="players/players-items-page" />
             </TabViewItem>
-            <TabViewItem title="Second">
+            <TabViewItem title="Dummy">
+                <Label text="this is a tab" />
+            </TabViewItem>
+            <TabViewItem title="Teams">
                 <Frame defaultPage="teams/teams-items-page" />
             </TabViewItem>
         </TabView>
