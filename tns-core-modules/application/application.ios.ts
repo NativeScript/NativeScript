@@ -24,7 +24,7 @@ import { profile, level as profilingLevel, Level } from "../profiling";
 // Must use .extend() to make the "window" be a valid iOS selector
 var Responder = UIResponder.extend({
     get window() {
-		// TODO: Do we need to actually have a valid initial window value here???
+        // TODO: Do we need to actually have a valid initial window value here???
         return this._window;
     },
     set window(setWindow) {
