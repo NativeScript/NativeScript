@@ -177,7 +177,7 @@ module (usually named AppModule).
 ApplicationModule.
 All other NgModules in the app (both feature and lazy-loaded ones)
 should import the NativeScriptCommonModule instead.
-The behaviour is alligned with BrowserModule and CommonModule in web
+The behavior is aligned with BrowserModule and CommonModule in web
 Angular apps. angular.io/guide/ngmodule-faq#q-browser-vs-common-module
 Migration steps:
 In all NgModules, instead of the root one, replace:
@@ -247,13 +247,12 @@ npm install
 8. Add the following to your `.npmrc`:
 ```
 tag-version-prefix=""
-message="release: cut the %s release"
 ```
 
 9. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
 ```
 cd tns-platform-declarations
-npm --no-git-tag-version version [patch|minor|major]
+npm --no-git-tag-version version [patch|minor|major] -m "release: cut the %s release"
 cd ..
 ```
 
@@ -261,23 +260,23 @@ cd ..
  In case we need to publish release version we need simply to use npm version x.x.x-rc
 ```
 cd tns-core-modules
-npm version [patch|minor|major]
+npm version [patch|minor|major] -m "release: cut the %s release"
 cd ..
 ```
 
 11. Push all the changes to your branch and open a pull request:
 ```
-git push --set-upstream origin username/release-version --tags
+git push --set-upstream origin release-version --tags
 ```
 
 12. Merge PR into release branch.
-13. If all checks has passed publish paclage.
+13. If all checks has passed publish package.
 
 ## Merge changes from release into master
 
 15. Make sure you are in release branch:
 ```
-git cheakout release
+git checkout release
 git pull
 ```
 
@@ -287,8 +286,8 @@ git checkout -b merge-release-in-master
 git push --set-upstream origin merge-release-in-master
 git merge origin/master
 ```
-17. Rlove conflicts.
-18. Add confilicts:
+17. Resolve conflicts.
+18. Add conflicts:
 ```
 git add resolved files
 ```
@@ -303,3 +302,6 @@ git commit --amend
 git push --force-with-lease
 ```
 21. If the tests pass **merge the PR whithout sqaushing** to preserve the history.
+
+
+
