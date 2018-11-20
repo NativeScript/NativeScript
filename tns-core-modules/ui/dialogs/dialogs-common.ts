@@ -31,6 +31,16 @@ export module inputType {
      * Email input type.
      */
     export const email: string = "email";
+
+    /**
+     * Number input type
+     */
+    export const number: string = "number";
+
+    /**
+     * Phone input type
+     */
+    export const phone: string = "phone";
 }
 
 /**
