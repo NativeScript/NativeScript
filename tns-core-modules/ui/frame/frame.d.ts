@@ -161,6 +161,10 @@ export class Frame extends View {
     /**
      * @private
      */
+    _pushInFrameStackRecursive();
+    /**
+     * @private
+     */
     _removeFromFrameStack();
     /**
      * @private
@@ -253,7 +257,7 @@ export interface NavigationEntry extends ViewEntry {
     transitioniOS?: NavigationTransition;
 
     /**
-     * Specifies an optional navigation transition for iOS. If not specified, the default platform transition will be used.
+     * Specifies an optional navigation transition for Android. If not specified, the default platform transition will be used.
      */
     transitionAndroid?: NavigationTransition;
 
