@@ -21,6 +21,41 @@ export module inputType {
      * Email input type.
      */
     export var email: string;
+
+    /**
+     * Number input type.
+     */
+    export var number: string;
+
+    /**
+     * Phone input type.
+     */
+    export var phone: string;
+}
+
+/**
+ * Defines the capitalization type for prompt dialog.
+ */
+export module capitalizationType {
+    /**
+     * No automatic capitalization.
+     */
+    export var none: string;
+
+    /**
+     * Capitalizes every character.
+     */
+    export var all: string;
+
+    /**
+     * Capitalize the first word of each sentence.
+     */
+    export var sentences: string;
+
+    /**
+     * Capitalize the first letter of every word.
+     */
+    export var words: string;
 }
 
 /**
@@ -56,7 +91,7 @@ export function prompt(message: string, defaultText?: string): Promise<PromptRes
 
 /**
  * The prompt() method displays a dialog box that prompts the visitor for input.
- * @param options The options for the dialog box. 
+ * @param options The options for the dialog box.
  */
 export function prompt(options: PromptOptions): Promise<PromptResult>;
 
@@ -70,7 +105,7 @@ export function login(message: string, userName?: string, password?: string): Pr
 
 /**
  * The login() method displays a login dialog box that prompts the visitor for user name and password.
- * @param options The options for the dialog box. 
+ * @param options The options for the dialog box.
  */
 export function login(options: LoginOptions): Promise<LoginResult>;
 
@@ -84,7 +119,7 @@ export function action(message: string, cancelButtonText: string, actions: Array
 
 /**
  * The action() method displays a action box that prompts the visitor to choose some action.
- * @param options The options for the dialog box. 
+ * @param options The options for the dialog box.
  */
 export function action(options: ActionOptions): Promise<string>;
 
@@ -177,6 +212,11 @@ export interface PromptOptions extends ConfirmOptions {
      * Gets or sets the prompt input type (plain text, password, or email).
      */
     inputType?: string;
+
+    /**
+     * Gets or sets the prompt capitalizationType (none, all, sentences, or words).
+     */
+    capitalizationType?: string;
 }
 
 /**

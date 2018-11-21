@@ -137,5 +137,121 @@ export class SettingsViewModel extends observable.Observable {
             }
         });
     }
+
+    public promptNumber(args: observable.EventData) {
+      dialogs.prompt({
+          title: "Name",
+          message: "Enter a number:",
+          cancelButtonText: "Cancel",
+          neutralButtonText: "Ignore",
+          okButtonText: "OK",
+          defaultText: "1234",
+          inputType: dialogs.inputType.number
+      }).then((promptResult) => {
+          console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+          if (promptResult.result) {
+              this.set("name", promptResult.text);
+          }
+          else {
+              this.set("name", "1234");
+          }
+      });
+    }
+
+    public promptPhone(args: observable.EventData) {
+      dialogs.prompt({
+          title: "Name",
+          message: "Enter a phone:",
+          cancelButtonText: "Cancel",
+          neutralButtonText: "Ignore",
+          okButtonText: "OK",
+          defaultText: "1234",
+          inputType: dialogs.inputType.phone
+      }).then((promptResult) => {
+          console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+          if (promptResult.result) {
+              this.set("name", promptResult.text);
+          }
+          else {
+              this.set("name", "1234");
+          }
+      });
+    }
+
+    public promptCapitalizationNone(args: observable.EventData) {
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter name:",
+            cancelButtonText: "Cancel",
+            okButtonText: "OK",
+            inputType: dialogs.inputType.text,
+            capitalizationType: dialogs.capitalizationType.none
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
+            }
+        });
+    }
+
+    public promptCapitalizationAll(args: observable.EventData) {
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter name:",
+            cancelButtonText: "Cancel",
+            okButtonText: "OK",
+            inputType: dialogs.inputType.text,
+            capitalizationType: dialogs.capitalizationType.all
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
+            }
+        });
+    }
+
+    public promptCapitalizationSentences(args: observable.EventData) {
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter name:",
+            cancelButtonText: "Cancel",
+            okButtonText: "OK",
+            inputType: dialogs.inputType.text,
+            capitalizationType: dialogs.capitalizationType.sentences
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
+            }
+        });
+    }
+
+    public promptCapitalizationWords(args: observable.EventData) {
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter name:",
+            cancelButtonText: "Cancel",
+            okButtonText: "OK",
+            inputType: dialogs.inputType.text,
+            capitalizationType: dialogs.capitalizationType.words
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
+            }
+        });
+    }
 }
 export var settingsViewModel = new SettingsViewModel();

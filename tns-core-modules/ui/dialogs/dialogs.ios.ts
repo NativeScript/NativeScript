@@ -3,7 +3,7 @@
  */
 import { View, ios as iosView } from "../core/view";
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
 import { getRootView } from "../../application";
 
@@ -104,6 +104,10 @@ export function prompt(arg: any): Promise<PromptResult> {
 
                 if (options && options.inputType === inputType.email) {
                     arg.keyboardType = UIKeyboardType.EmailAddress;
+                } else if (options && options.inputType === inputType.number) {
+                    arg.keyboardType = UIKeyboardType.NumberPad;
+                } else if (options && options.inputType === inputType.phone) {
+                    arg.keyboardType = UIKeyboardType.PhonePad;
                 }
 
                 let color = getTextFieldColor();
@@ -113,6 +117,23 @@ export function prompt(arg: any): Promise<PromptResult> {
             });
 
             textField = alertController.textFields.firstObject;
+
+            if (options) {
+                switch (options.capitalizationType) {
+                    case capitalizationType.all: {
+                        textField.autocapitalizationType = UITextAutocapitalizationType.AllCharacters; break;
+                    }
+                    case capitalizationType.sentences: {
+                        textField.autocapitalizationType = UITextAutocapitalizationType.Sentences; break;
+                    }
+                    case capitalizationType.words: {
+                        textField.autocapitalizationType = UITextAutocapitalizationType.Words; break;
+                    }
+                    default: {
+                        textField.autocapitalizationType = UITextAutocapitalizationType.None;
+                    }
+                }
+            }
 
             addButtonsToAlertController(alertController, options,
                 (r) => { resolve({ result: r, text: textField.text }); });

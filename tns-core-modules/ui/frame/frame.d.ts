@@ -57,6 +57,11 @@ export class Frame extends View {
     navigate(entry: NavigationEntry);
 
     /**
+     * Used to control the visibility the Navigation Bar in iOS and the Action Bar in Android.
+     */
+    public actionBarVisibility: "auto" | "never" | "always";
+
+    /**
      * Gets the back stack of this instance.
      */
     backStack: Array<BackstackEntry>;
@@ -125,6 +130,10 @@ export class Frame extends View {
      * @private
      */
     _currentEntry: BackstackEntry;
+    /**
+     * @private
+     */
+    _executingEntry: BackstackEntry;
     /**
      * @private
      */
@@ -410,7 +419,7 @@ export interface AndroidActivityCallbacks {
 
 export interface AndroidFragmentCallbacks {
     onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
-    onCreateAnimation(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
+    onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
     onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
     onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
     onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;

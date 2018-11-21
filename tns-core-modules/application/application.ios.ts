@@ -227,6 +227,8 @@ class IOSApplication implements IOSApplicationDefinition {
             this._rootView._onRootViewReset();
         }
         const rootView = createRootView(view);
+        const controller = getViewController(rootView);
+
         this._rootView = rootView;
 
         if (createRootFrame.value) {
@@ -236,7 +238,7 @@ class IOSApplication implements IOSApplicationDefinition {
             // setup view as styleScopeHost
             rootView._setupAsRootView({});
         }
-        const controller = getViewController(rootView);
+        setViewControllerView(rootView);
         const haveController = this._window.rootViewController !== null;
         this._window.rootViewController = controller;
         if (!haveController) {
@@ -339,16 +341,25 @@ function getViewController(view: View): UIViewController {
     if (viewController instanceof UIViewController) {
         return viewController;
     } else {
-        const nativeView = view.ios || view.nativeViewProtected;
-        if (nativeView instanceof UIView) {
-            viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
-            viewController.view.addSubview(nativeView);
-            view.viewController = viewController;
-            return viewController;
-        }
+        // We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
+        // At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
+        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
+        view.viewController = viewController;
+        return viewController;
+    }
+}
+
+function setViewControllerView(view: View): void {
+    const viewController: UIViewController = view.viewController || view.ios;
+    const nativeView = view.ios || view.nativeViewProtected;
+
+    if (!nativeView || !viewController) {
+        throw new Error("Root should be either UIViewController or UIView");
     }
 
-    throw new Error("Root should be either UIViewController or UIView");
+    if (viewController instanceof iosView.UILayoutViewController) {
+        viewController.view.addSubview(nativeView);
+    }
 }
 
 global.__onLiveSync = function () {

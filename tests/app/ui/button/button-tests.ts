@@ -412,8 +412,10 @@ export function test_Native_Background_Color_BorderRadius_Change() {
         let page = <pagesModule.Page>views[1];
         page.css = ".border { background-color: #00FF00; border-radius: 1; } .colorfilter { background-color: #FF0000; }";
         view.className = "border";
+        helper.waitUntilLayoutReady(view);
         TKUnit.assertEqual(buttonTestsNative.getNativeBackgroundColor(view).hex, "#00FF00");
         view.className = "colorfilter";
+        helper.waitUntilLayoutReady(view);
         TKUnit.assertEqual(buttonTestsNative.getNativeBackgroundColor(view).hex, "#FF0000");
     });
 }

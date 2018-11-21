@@ -31,6 +31,41 @@ export module inputType {
      * Email input type.
      */
     export const email: string = "email";
+
+    /**
+     * Number input type
+     */
+    export const number: string = "number";
+
+    /**
+     * Phone input type
+     */
+    export const phone: string = "phone";
+}
+
+/**
+ * Defines the capitalization type for prompt dialog.
+ */
+export module capitalizationType {
+    /**
+     * No automatic capitalization.
+     */
+    export const none: string = "none";
+
+    /**
+     * Capitalizes every character.
+     */
+    export const all: string = "all";
+
+    /**
+     * Capitalize the first word of each sentence.
+     */
+    export const sentences: string = "sentences";
+
+    /**
+     * Capitalize the first letter of every word.
+     */
+    export const words: string = "words";
 }
 
 let frame: typeof frameModule;

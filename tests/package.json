@@ -6,14 +6,15 @@
   "nativescript": {
     "id": "org.nativescript.UnitTestApp",
     "tns-ios": {
-      "version": "4.2.0"
+      "version": "5.0.0"
     },
     "tns-android": {
-      "version": "4.2.0"
+      "version": "5.0.0"
     }
   },
   "dependencies": {
-    "tns-core-modules": "*"
+    "tns-core-modules": "*",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "babel-traverse": "6.9.0",

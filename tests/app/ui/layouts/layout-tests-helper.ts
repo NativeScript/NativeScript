@@ -33,6 +33,18 @@ export function closeEnough(a: number, b: number, message?: string) {
     message ? TKUnit.assertTrue(Math.abs(a - b) <= EPS, message) : TKUnit.assertTrue(Math.abs(a - b) <= EPS);
 }
 
+export function lessOrCloseEnough(a: number, b: number, message?: string) {
+    const less = a < b;
+    const close = Math.abs(a - b) <= EPS;
+    message ? TKUnit.assertTrue(less || close, message) : TKUnit.assertTrue(less || close);
+}
+
+export function greaterOrCloseEnough(a: number, b: number, message?: string) {
+    const greater = a > b;
+    const close = Math.abs(a - b) <= EPS;
+    message ? TKUnit.assertTrue(greater || close, message) : TKUnit.assertTrue(greater || close);
+}
+
 export function notEqual<T>(a: T, b: T, message?: string) {
     message ? TKUnit.assertNotEqual(a, b, message) : TKUnit.assertNotEqual(a, b);
 }
