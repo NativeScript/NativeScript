@@ -69,6 +69,11 @@ function ensureImageSource() {
 export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
+        if (!options.url) {
+          reject(new Error("Request url was empty."));
+          return;
+        }
+
         try {
             var network = domainDebugger.getNetwork();
             var debugRequest = network && network.create();
