@@ -1,5 +1,29 @@
-Cross Platform Modules Changelog
-==============================
+<a name="5.0.3"></a>
+## [5.0.3](https://github.com/NativeScript/NativeScript/compare/5.0.2...5.0.3) (2018-11-20)
+
+
+### Bug Fixes
+
+* crash on Android Tab-View [#6466](https://github.com/NativeScript/NativeScript/issues/6466) ([#6467](https://github.com/NativeScript/NativeScript/issues/6467)) ([db33cf3](https://github.com/NativeScript/NativeScript/commit/db33cf3)), closes [ac04ede#diff-f1459d509d1432b432c29bcd30e462fbL97](https://github.com/ac04ede/issues/diff-f1459d509d1432b432c29bcd30e462fbL97)
+* doc of transitionAndroid property of NavigationEntry interface ([#6563](https://github.com/NativeScript/NativeScript/issues/6563)) ([efe3318](https://github.com/NativeScript/NativeScript/commit/efe3318))
+* layoutChanged event in landscape ([#6520](https://github.com/NativeScript/NativeScript/issues/6520)) ([7fbdc7a](https://github.com/NativeScript/NativeScript/commit/7fbdc7a))
+* nested frames order with tabs & suspend/resume ([#6528](https://github.com/NativeScript/NativeScript/issues/6528)) ([7df8038](https://github.com/NativeScript/NativeScript/commit/7df8038))
+* Resolve incorrect name of listener when unsubscribing ([#6487](https://github.com/NativeScript/NativeScript/issues/6487)) ([af5eb73](https://github.com/NativeScript/NativeScript/commit/af5eb73))
+* Resolve incorrect name of listener when unsubscribing ([#6487](https://github.com/NativeScript/NativeScript/issues/6487)) ([2933a9a](https://github.com/NativeScript/NativeScript/commit/2933a9a))
+* **image:** uncaught error in promise with image handling ([#6453](https://github.com/NativeScript/NativeScript/issues/6453)) ([950fdcf](https://github.com/NativeScript/NativeScript/commit/950fdcf))
+* **android:** back navigation on app suspend/resume ([#6489](https://github.com/NativeScript/NativeScript/issues/6489)) ([999e378](https://github.com/NativeScript/NativeScript/commit/999e378))
+* **android:** back navigation on app suspend/resume ([#6489](https://github.com/NativeScript/NativeScript/issues/6489)) ([fac970e](https://github.com/NativeScript/NativeScript/commit/fac970e))
+* **android:** IllegalStateException with tabview&nested frames ([#6495](https://github.com/NativeScript/NativeScript/issues/6495)) ([7d21b5c](https://github.com/NativeScript/NativeScript/commit/7d21b5c))
+* **android:** IllegalStateException with tabview&nested frames ([#6495](https://github.com/NativeScript/NativeScript/issues/6495)) ([41ba93d](https://github.com/NativeScript/NativeScript/commit/41ba93d))
+* **ios:** safe area handling in scrollview ([#6561](https://github.com/NativeScript/NativeScript/issues/6561)) ([51a191f](https://github.com/NativeScript/NativeScript/commit/51a191f))
+* **ios:** scrollview safe area when no scroll ([#6568](https://github.com/NativeScript/NativeScript/issues/6568)) ([f90995f](https://github.com/NativeScript/NativeScript/commit/f90995f))
+
+
+### Features
+
+* add number and phone input types for prompt dialog ([#6365](https://github.com/NativeScript/NativeScript/issues/6365)) ([7e7c050](https://github.com/NativeScript/NativeScript/commit/7e7c050))
+
+
 
 <a name="5.0.2"></a>
 ## [5.0.2](https://github.com/NativeScript/NativeScript/compare/5.0.1...5.0.2) (2018-11-07)
