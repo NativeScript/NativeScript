@@ -5,7 +5,13 @@
     </ActionBar>
 
     <GridLayout rows="auto, *">
-        <Button text="navigate to other page" tap="onNavigate" />
+        <StackLayout>
+            <Button text="navigate to other page (default transition)" tap="onNavigate" />
+            <Button text="navigate to other page (no transition)" tap="onNavigateNone" />
+            <Button text="navigate to other page (slide transition)" tap="onNavigateSlide" />
+            <Button text="navigate to other page (flip transition)" tap="onNavigateFlip" />
+        </StackLayout>
+
         <GridLayout row="1">
             <Frame defaultPage="teams/teams-items-page" />
         </GridLayout>

@@ -1,7 +1,7 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { assert } from "chai";
 
-const home = "Home";
+export const home = "Home";
 const layoutWithFrame = "Layout w/ frame";
 const layoutWithMultiFrame = "Layout w/ multi frame";
 const pageWithFrame = "Page w/ frame";
@@ -18,10 +18,16 @@ const tabTopHome = "tab top page";
 const tabBottomHome = "tab bottom page";
 const tabRootTopHome = "tab root top home";
 const tabRootBottomHome = "tab root bottom home";
-const navigateToSomePage = "navigate to some page";
-const navigateToOtherPage = "navigate to other page";
-const somePage = "some page";
-const otherPage = "other page";
+const navigateToSomePageDefault = "navigate to some page (default transition)";
+const navigateToSomePageNone = "navigate to some page (no transition)";
+const navigateToSomePageSlide = "navigate to some page (slide transition)";
+const navigateToSomePageFlip = "navigate to some page (flip transition)";
+const navigateToOtherPageDefault = "navigate to other page (default transition)";
+const navigateToOtherPageNone = "navigate to other page (no transition)";
+const navigateToOtherPageSlide = "navigate to other page (slide transition)";
+const navigateToOtherPageFlip = "navigate to other page (flip transition)";
+export const somePage = "some page";
+export const otherPage = "other page";
 const players = "Players";
 const teams = "Teams";
 const playerBack = "playerBack";
@@ -33,23 +39,91 @@ const tabTopBack = "tabTopBack";
 const tabBottomBack = "tabBottomBack";
 const resetApp = "reset app";
 
-export const playerOne = {
-    name: "Player One",
-    description: "Goalkeeper"
-};
-export const playerTwo = {
-    name: "Player Two",
-    description: "Defender"
-}
-export const teamOne = {
-    name: "Team One",
-    description: "u17"
-};
-export const teamTwo = {
-    name: "Team Two",
-    description: "u21"
+export const playersData = {
+    playerOneDefault: {
+        name: "Player One (default transition)",
+        description: "Goalkeeper",
+        transition: "default"
+    },
+    playerTwoDefault: {
+        name: "Player Two (default transition)",
+        description: "Defender",
+        transition: "default"
+    },
+    playerOneNone: {
+        name: "Player One (no transition)",
+        description: "Goalkeeper",
+        transition: "none"
+    },
+    playerTwoNone: {
+        name: "Player Two (no transition)",
+        description: "Defender",
+        transition: "none"
+    },
+    playerOneSlide: {
+        name: "Player One (slide transition)",
+        description: "Goalkeeper",
+        transition: "slide"
+    },
+    playerTwoSlide: {
+        name: "Player Two (slide transition)",
+        description: "Defender",
+        transition: "slide"
+    },
+    playerOneFlip: {
+        name: "Player One (flip transition)",
+        description: "Goalkeeper",
+        transition: "flip"
+    },
+    playerTwoFlip: {
+        name: "Player Two (flip transition)",
+        description: "Defender",
+        transition: "flip"
+    }
 }
 
+export const teamsData = {
+    teamOneDefault: {
+        name: "Team One (default transition)",
+        description: "u17",
+        transition: "default"
+    },
+    teamTwoDefault: {
+        name: "Team Two (default transition)",
+        description: "u21",
+        transition: "default"
+    },
+    teamOneNone: {
+        name: "Team One (no transition)",
+        description: "u17",
+        transition: "none"
+    },
+    teamTwoNone: {
+        name: "Team Two (no transition)",
+        description: "u21",
+        transition: "none"
+    },
+    teamOneSlide: {
+        name: "Team One (slide transition)",
+        description: "u17",
+        transition: "slide"
+    },
+    teamTwoSlide: {
+        name: "Team Two (slide transition)",
+        description: "u21",
+        transition: "slide"
+    },
+    teamOneFlip: {
+        name: "Team One (flip transition)",
+        description: "u17",
+        transition: "flip"
+    },
+    teamTwoFlip: {
+        name: "Team Two (flip transition)",
+        description: "u21",
+        transition: "flip"
+    },
+}
 export interface Item {
     name: string;
     description: string;
@@ -58,6 +132,8 @@ export interface Item {
 export class Screen {
 
     private _driver: AppiumDriver
+
+    public currentAnimation: string;
 
     constructor(driver: AppiumDriver) {
         this._driver = driver;
@@ -95,12 +171,36 @@ export class Screen {
         await this.navigateToPage(tabBottomRootWithFrames);
     }
 
-    navigateToSomePage = async () => {
-        await this.navigateToPage(navigateToSomePage);
+    navigateToSomePageDefault = async () => {
+        await this.navigateToPage(navigateToSomePageDefault);
     };
 
-    navigateToOtherPage = async () => {
-        await this.navigateToPage(navigateToOtherPage);
+    navigateToSomePageNone = async () => {
+        await this.navigateToPage(navigateToSomePageNone);
+    };
+
+    navigateToSomePageSlide = async () => {
+        await this.navigateToPage(navigateToSomePageSlide);
+    };
+
+    navigateToSomePageFlip = async () => {
+        await this.navigateToPage(navigateToSomePageFlip);
+    };
+
+    navigateToOtherPageDefault = async () => {
+        await this.navigateToPage(navigateToOtherPageDefault);
+    }
+
+    navigateToOtherPageNone = async () => {
+        await this.navigateToPage(navigateToOtherPageNone);
+    }
+
+    navigateToOtherPageSlide = async () => {
+        await this.navigateToPage(navigateToOtherPageSlide);
+    }
+
+    navigateToOtherPageFlip = async () => {
+        await this.navigateToPage(navigateToOtherPageFlip);
     }
 
     navigateToPlayerDetails = async (player: Item) => {
@@ -108,7 +208,7 @@ export class Screen {
     };
 
     resetToHome = async () => {
-        const btnReset = await this._driver.findElementByText(resetApp);
+        const btnReset = await this._driver.findElementByAutomationText(resetApp);
         await btnReset.tap();
     };
 
@@ -145,17 +245,17 @@ export class Screen {
     }
 
     togglePlayersTab = async () => {
-        const lblPlayers = await this._driver.findElementByText(players);
+        const lblPlayers = await this._driver.findElementByAutomationText(players);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
-        const lblTeams = await this._driver.findElementByText(teams);
+        const lblTeams = await this._driver.findElementByAutomationText(teams);
         await lblTeams.tap();
     }
 
     loadedHome = async () => {
-        const lblHome = await this._driver.findElementByText(home);
+        const lblHome = await this._driver.findElementByAutomationText(home);
         assert.isTrue(await lblHome.isDisplayed());
         console.log(home + " loaded!");
     };
@@ -202,7 +302,7 @@ export class Screen {
     }
 
     loadedPlayersList = async () => {
-        const lblPlayerOne = await this._driver.findElementByText(playerOne.name);
+        const lblPlayerOne = await this._driver.findElementByAutomationText(playersData["playerOneDefault"].name);
         assert.isTrue(await lblPlayerOne.isDisplayed());
         console.log(players + " loaded!");
     }
@@ -212,7 +312,7 @@ export class Screen {
     }
 
     loadedTeamsList = async () => {
-        const lblTeamOne = await this._driver.findElementByText(teamOne.name);
+        const lblTeamOne = await this._driver.findElementByAutomationText(teamsData["teamOneDefault"].name);
         assert.isTrue(await lblTeamOne.isDisplayed());
         console.log(teams + " loaded!");
     }
@@ -222,26 +322,26 @@ export class Screen {
     }
 
     private navigateToPage = async (page: string) => {
-        const btnPage = await this._driver.findElementByText(page);
+        const btnPage = await this._driver.findElementByAutomationText(page);
         await btnPage.tap();
     };
 
     private loadedPage = async (page: string) => {
-        const lblPage = await this._driver.findElementByText(page);
+        const lblPage = await this._driver.findElementByAutomationText(page);
         assert.isTrue(await lblPage.isDisplayed());
         console.log(page + " loaded!");
     };
 
     private navigateToItem = async (item: Item) => {
-        const lblItem = await this._driver.findElementByText(item.name);
+        const lblItem = await this._driver.findElementByAutomationText(item.name);
         await lblItem.tap();
     }
 
     private loadedItem = async (item: Item) => {
-        const lblItemName = await this._driver.findElementByText(item.name);
+        const lblItemName = await this._driver.findElementByAutomationText(item.name);
         assert.isTrue(await lblItemName.isDisplayed());
 
-        const lblItemDescription = await this._driver.findElementByText(item.description);
+        const lblItemDescription = await this._driver.findElementByAutomationText(item.description);
         assert.isTrue(await lblItemDescription.isDisplayed()); 
 
         console.log(item.name + " loaded!");
