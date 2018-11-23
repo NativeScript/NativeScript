@@ -264,13 +264,13 @@ declare class CIContext extends NSObject {
 
 	constructor(o: { options: NSDictionary<string, any>; });
 
-	HEIFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
+	HEIFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
-	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<any, any>): NSData;
+	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
-	PNGRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
+	PNGRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
-	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
+	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
 	clearCaches(): void;
 
@@ -279,6 +279,12 @@ declare class CIContext extends NSObject {
 	createCGImageFromRectFormatColorSpace(image: CIImage, fromRect: CGRect, format: number, colorSpace: any): any;
 
 	createCGImageFromRectFormatColorSpaceDeferred(image: CIImage, fromRect: CGRect, format: number, colorSpace: any, deferred: boolean): any;
+
+	depthBlurEffectFilterForImageDataOptions(data: NSData, options: NSDictionary<any, any>): CIFilter;
+
+	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
+
+	depthBlurEffectFilterForImageURLOptions(url: NSURL, options: NSDictionary<any, any>): CIFilter;
 
 	drawImageAtPointFromRect(image: CIImage, atPoint: CGPoint, fromRect: CGRect): void;
 
@@ -306,13 +312,13 @@ declare class CIContext extends NSObject {
 
 	startTaskToRenderToDestinationError(image: CIImage, destination: CIRenderDestination): CIRenderTask;
 
-	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
+	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
-	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<any, any>): boolean;
+	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
-	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
+	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
-	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
+	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 }
 
 declare class CIDataMatrixCodeDescriptor extends CIBarcodeDescriptor {
@@ -464,11 +470,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static filterNamesInCategory(category: string): NSArray<string>;
 
-	static filterWithCVPixelBufferPropertiesOptions(pixelBuffer: any, properties: NSDictionary<any, any>, options: NSDictionary<any, any>): CIFilter;
+	static filterWithCVPixelBufferPropertiesOptions(pixelBuffer: any, properties: NSDictionary<any, any>, options: NSDictionary<string, any>): CIFilter;
 
-	static filterWithImageDataOptions(data: NSData, options: NSDictionary<any, any>): CIFilter;
+	static filterWithImageDataOptions(data: NSData, options: NSDictionary<string, any>): CIFilter;
 
-	static filterWithImageURLOptions(url: NSURL, options: NSDictionary<any, any>): CIFilter;
+	static filterWithImageURLOptions(url: NSURL, options: NSDictionary<string, any>): CIFilter;
 
 	static filterWithName(name: string): CIFilter;
 
@@ -583,9 +589,17 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static imageWithDataOptions(data: NSData, options: NSDictionary<string, any>): CIImage;
 
+	static imageWithDepthData(data: AVDepthData): CIImage;
+
+	static imageWithDepthDataOptions(data: AVDepthData, options: NSDictionary<string, any>): CIImage;
+
 	static imageWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): CIImage;
 
 	static imageWithMTLTextureOptions(texture: MTLTexture, options: NSDictionary<string, any>): CIImage;
+
+	static imageWithPortaitEffectsMatte(matte: AVPortraitEffectsMatte): CIImage;
+
+	static imageWithPortaitEffectsMatteOptions(matte: AVPortraitEffectsMatte, options: NSDictionary<string, any>): CIImage;
 
 	static imageWithTextureSizeFlippedColorSpace(name: number, size: CGSize, flipped: boolean, colorSpace: any): CIImage;
 
@@ -600,6 +614,8 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	readonly extent: CGRect;
 
 	readonly pixelBuffer: any;
+
+	readonly portraitEffectsMatte: AVPortraitEffectsMatte;
 
 	readonly properties: NSDictionary<string, any>;
 
@@ -633,13 +649,21 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { data: NSData; options: NSDictionary<string, any>; });
 
+	constructor(o: { depthData: AVDepthData; });
+
+	constructor(o: { depthData: AVDepthData; options: NSDictionary<string, any>; });
+
 	constructor(o: { image: UIImage; });
 
-	constructor(o: { image: UIImage; options: NSDictionary<any, any>; });
+	constructor(o: { image: UIImage; options: NSDictionary<string, any>; });
 
 	constructor(o: { imageProvider: any; size: number; format: number; colorSpace: number; options: any; });
 
 	constructor(o: { MTLTexture: MTLTexture; options: NSDictionary<string, any>; });
+
+	constructor(o: { portaitEffectsMatte: AVPortraitEffectsMatte; });
+
+	constructor(o: { portaitEffectsMatte: AVPortraitEffectsMatte; options: NSDictionary<string, any>; });
 
 	constructor(o: { texture: number; size: CGSize; flipped: boolean; colorSpace: any; });
 
@@ -674,6 +698,8 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	imageByCompositingOverImage(dest: CIImage): CIImage;
 
 	imageByCroppingToRect(rect: CGRect): CIImage;
+
+	imageByInsertingIntermediate(cache: boolean): CIImage;
 
 	imageByPremultiplyingAlpha(): CIImage;
 
@@ -717,13 +743,21 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithDataOptions(data: NSData, options: NSDictionary<string, any>): this;
 
+	initWithDepthData(data: AVDepthData): this;
+
+	initWithDepthDataOptions(data: AVDepthData, options: NSDictionary<string, any>): this;
+
 	initWithImage(image: UIImage): this;
 
-	initWithImageOptions(image: UIImage, options: NSDictionary<any, any>): this;
+	initWithImageOptions(image: UIImage, options: NSDictionary<string, any>): this;
 
 	initWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): this;
 
 	initWithMTLTextureOptions(texture: MTLTexture, options: NSDictionary<string, any>): this;
+
+	initWithPortaitEffectsMatte(matte: AVPortraitEffectsMatte): this;
+
+	initWithPortaitEffectsMatteOptions(matte: AVPortraitEffectsMatte, options: NSDictionary<string, any>): this;
 
 	initWithTextureSizeFlippedColorSpace(name: number, size: CGSize, flipped: boolean, colorSpace: any): this;
 
@@ -1362,6 +1396,8 @@ declare var kCIImageAuxiliaryDepth: string;
 
 declare var kCIImageAuxiliaryDisparity: string;
 
+declare var kCIImageAuxiliaryPortraitEffectsMatte: string;
+
 declare var kCIImageColorSpace: string;
 
 declare var kCIImageNearestSampling: string;
@@ -1374,11 +1410,17 @@ declare var kCIImageProviderUserInfo: string;
 
 declare var kCIImageRepresentationAVDepthData: string;
 
+declare var kCIImageRepresentationAVPortraitEffectsMatte: string;
+
 declare var kCIImageRepresentationDepthImage: string;
 
 declare var kCIImageRepresentationDisparityImage: string;
 
+declare var kCIImageRepresentationPortraitEffectsMatteImage: string;
+
 declare var kCIInputAllowDraftModeKey: string;
+
+declare var kCIInputAmountKey: string;
 
 declare var kCIInputAngleKey: string;
 
@@ -1437,6 +1479,8 @@ declare var kCIInputLinearSpaceFilter: string;
 declare var kCIInputLuminanceNoiseReductionAmountKey: string;
 
 declare var kCIInputMaskImageKey: string;
+
+declare var kCIInputMatteImageKey: string;
 
 declare var kCIInputMoireAmountKey: string;
 

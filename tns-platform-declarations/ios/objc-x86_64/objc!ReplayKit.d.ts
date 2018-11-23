@@ -295,4 +295,33 @@ declare var RPScreenRecorderDelegate: {
 	prototype: RPScreenRecorderDelegate;
 };
 
+declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
+
+	static alloc(): RPSystemBroadcastPickerView; // inherited from NSObject
+
+	static appearance(): RPSystemBroadcastPickerView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): RPSystemBroadcastPickerView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): RPSystemBroadcastPickerView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): RPSystemBroadcastPickerView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): RPSystemBroadcastPickerView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): RPSystemBroadcastPickerView; // inherited from UIAppearance
+
+	static new(): RPSystemBroadcastPickerView; // inherited from NSObject
+
+	preferredExtension: string;
+
+	showsMicrophoneButton: boolean;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
 declare var RPVideoSampleOrientationKey: string;

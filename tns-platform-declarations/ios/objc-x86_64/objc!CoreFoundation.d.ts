@@ -3026,17 +3026,51 @@ declare var kCFSocketRetrieveCommand: string;
 
 declare var kCFSocketValueKey: string;
 
+declare var kCFStreamErrorDomainSOCKS: number;
+
+declare var kCFStreamErrorDomainSSL: number;
+
 declare var kCFStreamPropertyAppendToFile: any;
 
 declare var kCFStreamPropertyDataWritten: any;
 
 declare var kCFStreamPropertyFileCurrentOffset: any;
 
+declare var kCFStreamPropertySOCKSPassword: string;
+
+declare var kCFStreamPropertySOCKSProxy: string;
+
+declare var kCFStreamPropertySOCKSProxyHost: string;
+
+declare var kCFStreamPropertySOCKSProxyPort: string;
+
+declare var kCFStreamPropertySOCKSUser: string;
+
+declare var kCFStreamPropertySOCKSVersion: string;
+
+declare var kCFStreamPropertyShouldCloseNativeSocket: string;
+
 declare var kCFStreamPropertySocketNativeHandle: any;
 
 declare var kCFStreamPropertySocketRemoteHostName: any;
 
 declare var kCFStreamPropertySocketRemotePortNumber: any;
+
+declare var kCFStreamPropertySocketSecurityLevel: string;
+
+declare var kCFStreamSocketSOCKSVersion4: string;
+
+declare var kCFStreamSocketSOCKSVersion5: string;
+
+declare var kCFStreamSocketSecurityLevelNegotiatedSSL: string;
+
+declare var kCFStreamSocketSecurityLevelNone: string;
+
+declare var kCFStreamSocketSecurityLevelSSLv2: string;
+
+declare var kCFStreamSocketSecurityLevelSSLv3: string;
+
+declare var kCFStreamSocketSecurityLevelTLSv1: string;
 
 declare var kCFStringBinaryHeapCallBacks: CFBinaryHeapCallBacks;
 

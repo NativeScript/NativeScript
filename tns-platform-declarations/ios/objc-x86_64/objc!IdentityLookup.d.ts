@@ -1,4 +1,130 @@
 
+declare class ILCallClassificationRequest extends ILClassificationRequest implements NSSecureCoding {
+
+	static alloc(): ILCallClassificationRequest; // inherited from NSObject
+
+	static new(): ILCallClassificationRequest; // inherited from NSObject
+
+	readonly callCommunications: NSArray<ILCallCommunication>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class ILCallCommunication extends ILCommunication {
+
+	static alloc(): ILCallCommunication; // inherited from NSObject
+
+	static new(): ILCallCommunication; // inherited from NSObject
+
+	isEqualToCallCommunication(communication: ILCallCommunication): boolean;
+}
+
+declare const enum ILClassificationAction {
+
+	None = 0,
+
+	ReportNotJunk = 1,
+
+	ReportJunk = 2,
+
+	ReportJunkAndBlockSender = 3
+}
+
+declare class ILClassificationRequest extends NSObject implements NSSecureCoding {
+
+	static alloc(): ILClassificationRequest; // inherited from NSObject
+
+	static new(): ILClassificationRequest; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class ILClassificationResponse extends NSObject implements NSSecureCoding {
+
+	static alloc(): ILClassificationResponse; // inherited from NSObject
+
+	static new(): ILClassificationResponse; // inherited from NSObject
+
+	readonly action: ILClassificationAction;
+
+	userInfo: NSDictionary<string, any>;
+
+	userString: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { classificationAction: ILClassificationAction; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithClassificationAction(action: ILClassificationAction): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class ILCommunication extends NSObject implements NSSecureCoding {
+
+	static alloc(): ILCommunication; // inherited from NSObject
+
+	static new(): ILCommunication; // inherited from NSObject
+
+	readonly dateReceived: Date;
+
+	readonly sender: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	isEqualToCommunication(communication: ILCommunication): boolean;
+}
+
+declare class ILMessageClassificationRequest extends ILClassificationRequest implements NSSecureCoding {
+
+	static alloc(): ILMessageClassificationRequest; // inherited from NSObject
+
+	static new(): ILMessageClassificationRequest; // inherited from NSObject
+
+	readonly messageCommunications: NSArray<ILMessageCommunication>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class ILMessageCommunication extends ILCommunication {
+
+	static alloc(): ILMessageCommunication; // inherited from NSObject
+
+	static new(): ILMessageCommunication; // inherited from NSObject
+
+	readonly messageBody: string;
+
+	isEqualToMessageCommunication(communication: ILMessageCommunication): boolean;
+}
+
 declare const enum ILMessageFilterAction {
 
 	None = 0,

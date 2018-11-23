@@ -177,10 +177,6 @@ declare const kSCNetworkFlagsTransientConnection: number;
 
 declare const kSCStatusAccessError: number;
 
-declare const kSCStatusConnectionIgnore: number;
-
-declare const kSCStatusConnectionNoService: number;
-
 declare const kSCStatusFailed: number;
 
 declare const kSCStatusInvalidArgument: number;
