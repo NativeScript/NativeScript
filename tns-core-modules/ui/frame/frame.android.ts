@@ -834,6 +834,24 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             entry.viewSavedState = null;
         }
 
+        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.	
+        // on app resume in nested frame scenarios with support library version greater than 26.0.0
+        // HACK: this whole code block shouldn't be necessary as the native view is supposedly removed from its parent 
+        // right after onDestroyView(...) is called but for some reason the fragment view (page) still thinks it has a 
+        // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
+        // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
+        const nativeView = page.nativeViewProtected;
+        if (nativeView != null) {	
+            const parentView = nativeView.getParent();	
+            if (parentView instanceof android.view.ViewGroup) {
+                if (parentView.getChildCount() === 0) {
+                    parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
+                }
+
+                parentView.removeView(nativeView);	
+            }
+        }
+
         return page.nativeViewProtected;
     }
 
@@ -872,24 +890,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         if (!page) {
             traceError(`${fragment}.onDestroy: entry has no resolvedPage`);
             return null;
-        }
-
-        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.	
-        // on app resume in nested frame scenarios with support library version greater than 26.0.0
-        // HACK: this whole code block shouldn't be necessary as the native view is supposedly removed from its parent 
-        // right after onDestroyView(...) is called but for some reason the fragment view (page) still thinks it has a 
-        // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
-        // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
-        const nativeView = page.nativeViewProtected;
-        if (nativeView != null) {	
-            const parentView = nativeView.getParent();	
-            if (parentView instanceof android.view.ViewGroup) {
-                if (parentView.getChildCount() === 0) {
-                    parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
-                }
-
-                parentView.removeView(nativeView);	
-            }
         }
     }
 
