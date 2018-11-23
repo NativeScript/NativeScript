@@ -616,7 +616,7 @@ export function goBack(): boolean {
             if (parentFrame && parentFrame.canGoBack()) {
                 parentFrameCanGoBack = true;
             } else {
-                parentFrame = <FrameBase>getAncestor(top, "Frame");
+                parentFrame = <FrameBase>getAncestor(parentFrame, "Frame");
             }
         }
 
