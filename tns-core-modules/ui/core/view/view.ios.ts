@@ -361,7 +361,7 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
-    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, presentationStyle?: UIModalPresentationStyle) {
+    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
@@ -397,16 +397,17 @@ export class View extends ViewCommon {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
         }
 
-        if (presentationStyle !== undefined) {
-          controller.modalPresentationStyle = presentationStyle;
+        if (iosOpts && iosOpts.presentationStyle) {
+          controller.modalPresentationStyle = iosOpts.presentationStyle;
 
-          if (presentationStyle === UIModalPresentationStyle.Popover) {
-            // TODO: read the width and height of the page and apply it here ?
+          if (iosOpts.presentationStyle === UIModalPresentationStyle.Popover) {
+            // TODO: get the width and height of the page and apply it here ?
             // controller.preferredContentSize = CGSizeMake(400, 400);
             const popoverPresentationController = controller.popoverPresentationController;
 
             const view = parent.nativeViewProtected;
             popoverPresentationController.sourceView = view;
+            // popoverPresentationController.backgroundColor = this.ios.view.backgroundColor;
             popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
           }
         }

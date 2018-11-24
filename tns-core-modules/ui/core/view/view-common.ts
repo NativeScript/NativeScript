@@ -215,23 +215,40 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public showModal(): ViewDefinition {
-        if (arguments.length === 0) {
-            throw new Error("showModal without parameters is deprecated. Please call showModal on a view instance instead.");
+      if (arguments.length === 0) {
+          throw new Error("showModal without parameters is deprecated. Please call showModal on a view instance instead.");
+      } else {
+        var firstAgrument;
+        var context: any;
+        var closeCallback: Function;
+        var fullscreen: boolean;
+        var animated;
+        var stretched;
+        var iosOpts;
+
+        if (arguments.length === 4) {
+          firstAgrument = arguments[0];
+          context = arguments[1];
+          closeCallback = arguments[2];
+          fullscreen = arguments[3].fullscreen;
+          animated = arguments[3].animated;
+          stretched = arguments[3].stretched;
+          iosOpts = arguments[3].ios;
         } else {
-            const firstAgrument = arguments[0];
-            const context: any = arguments[1];
-            const closeCallback: Function = arguments[2];
-            const fullscreen: boolean = arguments[3];
-            const animated = arguments[4];
-            const stretched = arguments[5];
-            const presentationStyle = arguments[6];
-
-            const view: ViewDefinition = firstAgrument instanceof ViewCommon
-                ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
-
-            (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched, presentationStyle);
-            return view;
+          firstAgrument = arguments[0];
+          context = arguments[1];
+          closeCallback = arguments[2];
+          fullscreen = arguments[3];
+          animated = arguments[4];
+          stretched = arguments[5];
         }
+
+        const view: ViewDefinition = firstAgrument instanceof ViewCommon
+            ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
+
+        (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched, iosOpts);
+        return view;
+      }
     }
 
     public closeModal(...args) {
@@ -250,7 +267,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return this._modal;
     }
 
-    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, presentationStyle?: UIModalPresentationStyle) {
+    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
         _rootModalViews.push(this);
 
         parent._modal = this;
