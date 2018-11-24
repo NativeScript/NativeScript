@@ -241,6 +241,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
             return { view, options };
         }
+
+        const view: ViewDefinition = firstAgrument instanceof ViewCommon
+            ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
+
+        (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched, iosOpts);
+        return view;
+      }
     }
 
     public showModal(): ViewDefinition {
