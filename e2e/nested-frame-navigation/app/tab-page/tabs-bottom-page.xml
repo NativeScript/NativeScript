@@ -6,7 +6,13 @@
     </ActionBar>
     
     <GridLayout rows="auto, *">
-        <Button text="Navigate to some page" tap="onNavigate" />
+        <StackLayout>
+            <Button text="navigate to some page (default transition)" tap="onNavigate" />
+            <Button text="navigate to some page (no transition)" tap="onNavigateNone" />
+            <Button text="navigate to some page (slide transition)" tap="onNavigateSlide" />
+            <Button text="navigate to some page (flip transition)" tap="onNavigateFlip" />
+        </StackLayout>
+
         <GridLayout row="1">
             <TabView androidTabsPosition="bottom">
                 <TabViewItem title="Players">

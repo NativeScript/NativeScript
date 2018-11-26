@@ -3,7 +3,7 @@ import { Screen, playersData, home, somePage, teamsData } from "./screen"
 import * as shared from "./shared.e2e-spec"
 
 const suspendTime = 1;
-const appSuspendResume = false;
+const appSuspendResume = true;
 
 const transitions = ["Default", "None", "Slide", "Flip"];
 
