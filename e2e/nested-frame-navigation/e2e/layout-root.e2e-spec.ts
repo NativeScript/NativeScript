@@ -2,7 +2,7 @@ import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 import { Screen, playersData, home, somePage, otherPage, teamsData } from "./screen"
 import * as shared from "./shared.e2e-spec"
 
-const time = 1;
+const suspendTime = 1;
 const appSuspendResume = true;
 
 const transitions = ["Default", "None", "Slide", "Flip"];
@@ -21,18 +21,18 @@ describe("layout-root:", () => {
         console.log("Quit driver!");
     });
 
+    afterEach(async function () {
+        if (this.currentTest.state === "failed") {
+            await driver.logTestArtifacts(this.currentTest.title);
+        }
+    });
+
     transitions.forEach(transition => {
         const playerOne = playersData[`playerOne${transition}`];
         const playerTwo = playersData[`playerTwo${transition}`];
         const teamOne = teamsData[`teamOne${transition}`];
 
         describe(`transition: ${transition} scenarios:`, () => {
-
-            afterEach(async function () {
-                if (this.currentTest.state === "failed") {
-                    await driver.logTestArtifacts(this.currentTest.title);
-                }
-            });
 
             it("loaded home page", async () => {
                 await screen.loadedHome();
@@ -51,14 +51,14 @@ describe("layout-root:", () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerTwo.name) // wait for player
                 }
 
                 await shared.testPlayerNavigatedBack(screen, driver);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerOne.name); // wait for players list
                 }
 
@@ -70,7 +70,7 @@ describe("layout-root:", () => {
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
 
@@ -82,13 +82,14 @@ describe("layout-root:", () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerTwo.name); // wait for player
                 }
+
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
@@ -104,7 +105,7 @@ describe("layout-root:", () => {
                 await screen.loadedHome();
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(home); // wait for home page
                 }
             });
@@ -126,14 +127,14 @@ describe("layout-root:", () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerTwo.name) // wait for player
                 }
 
                 await shared.testPlayerNavigatedBack(screen, driver);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerOne.name) // wait for players list
                 }
         
@@ -145,7 +146,7 @@ describe("layout-root:", () => {
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
                 
@@ -157,14 +158,14 @@ describe("layout-root:", () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerTwo.name); // wait for player
                 }
 
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
@@ -191,14 +192,14 @@ describe("layout-root:", () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerTwo.name); // wait for player
                 }
         
                 await shared[`testOtherPageNavigated${transition}`](screen); // "teams" parent frame navigation
                 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(otherPage); // wait for other page
                 }
 
@@ -207,7 +208,7 @@ describe("layout-root:", () => {
                 await driver.navBack(); // other page back navigation
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(teamOne.name); // wait for teams list
                 }
 
@@ -217,14 +218,14 @@ describe("layout-root:", () => {
                 await shared[`testOtherPageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(otherPage); // wait for other page
                 }
 
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
 
@@ -237,14 +238,14 @@ describe("layout-root:", () => {
                 await screen.loadedPlayersList();
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerOne.name); // wait for players list
                 }
         
                 await screen.goBackFromOtherPage();
 
                 if (appSuspendResume) {
-                    await driver.backgroundApp(time);
+                    await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(teamOne.name); // wait for team
                 }
 
@@ -275,7 +276,7 @@ describe("layout-root:", () => {
             await shared.testPlayerNavigated(playerTwo, screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
@@ -284,14 +285,14 @@ describe("layout-root:", () => {
             await shared.testSomePageNavigatedDefault(screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
     
             await driver.navBack(); // some page back navigation
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
 
@@ -302,7 +303,7 @@ describe("layout-root:", () => {
             await screen.goBackToPlayersList();
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerOne.name); // wait for players list
             }
         });
@@ -330,7 +331,7 @@ describe("layout-root:", () => {
             await shared.testPlayerNavigated(playerTwo, screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
@@ -339,14 +340,14 @@ describe("layout-root:", () => {
             await shared.testSomePageNavigatedNone(screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
     
             await driver.navBack(); // some page back navigation
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
 
@@ -357,7 +358,7 @@ describe("layout-root:", () => {
             await screen.goBackToPlayersList();
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerOne.name); // wait for players list
             }
         });
@@ -385,7 +386,7 @@ describe("layout-root:", () => {
             await shared.testPlayerNavigated(playerTwo, screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
@@ -394,14 +395,14 @@ describe("layout-root:", () => {
             await shared.testSomePageNavigatedDefault(screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
     
             await driver.navBack(); // some page back navigation
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
 
@@ -412,7 +413,7 @@ describe("layout-root:", () => {
             await screen.goBackToPlayersList();
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerOne.name); // wait for players list
             }
         });
@@ -440,7 +441,7 @@ describe("layout-root:", () => {
             await shared.testPlayerNavigated(playerTwo, screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
@@ -449,14 +450,14 @@ describe("layout-root:", () => {
             await shared.testSomePageNavigatedNone(screen);
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
     
             await driver.navBack(); // some page back navigation
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
 
@@ -467,7 +468,7 @@ describe("layout-root:", () => {
             await screen.goBackToPlayersList();
 
             if (appSuspendResume) {
-                await driver.backgroundApp(time);
+                await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerOne.name); // wait for players list
             }
         });
