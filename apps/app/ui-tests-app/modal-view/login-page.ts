@@ -1,32 +1,29 @@
-﻿import * as pages from "tns-core-modules/ui/page";
-import * as textField from "tns-core-modules/ui/text-field";
-import * as observable from "tns-core-modules/data/observable";
+﻿import { Page, ShownModallyData } from "tns-core-modules/ui/page";
+import { EventData, fromObject } from "tns-core-modules/data/observable";
 
-var context: any;
-var closeCallback: Function;
+export function onShowingModally(args: ShownModallyData) {
+    console.log("login-page.onShowingModally, context: " + args.context);
+    const page = <Page>args.object;
 
-var page: pages.Page;
-var usernameTextField: textField.TextField;
-var passwordTextField: textField.TextField;
-
-export function onShownModally(args: pages.ShownModallyData) {
-    console.log("login-page.onShownModally, context: " + args.context);
-    context = args.context;
-    closeCallback = args.closeCallback;
+    page.bindingContext = fromObject({
+        username: "username",
+        password: "password",
+        context: args.context,
+        onLoginButtonTap: function() {
+            console.log("login-page.onLoginButtonTap");
+            args.closeCallback(this.username, this.password);
+        }
+    })
 }
 
-export function onLoaded(args: observable.EventData) {
+export function onShownModally(args: ShownModallyData) {
+    console.log("login-page.onShownModally, context: " + args.context);
+}
+
+export function onLoaded(args: EventData) {
     console.log("login-page.onLoaded");
-    page = <pages.Page>args.object;
-    usernameTextField = page.getViewById<textField.TextField>("username");
-    passwordTextField = page.getViewById<textField.TextField>("password");
 }
 
 export function onUnloaded() {
     console.log("login-page.onUnloaded");
-}
-
-export function onLoginButtonTap() {
-    console.log("login-page.onLoginButtonTap");
-    closeCallback(usernameTextField.text, passwordTextField.text);
 }
