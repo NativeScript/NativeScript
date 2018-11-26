@@ -6,8 +6,8 @@
     </Page.actionBar>
 
     <GridLayout>
-        <ScrollView height="50" verticalAlignment="top">
-            <StackLayout>
+        <ScrollView>
+            <StackLayout backgroundColor="teal">
                 <GridLayout height="30" backgroundColor="red" />
                 <GridLayout height="30" backgroundColor="yellow" />
                 <GridLayout height="30" backgroundColor="green" />
