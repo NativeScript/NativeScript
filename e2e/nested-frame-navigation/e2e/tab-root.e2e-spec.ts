@@ -1,15 +1,14 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen, playerOne, playerTwo, teamOne, teamTwo } from "./screen"
-import {
-    testPlayerNavigated,
-    testPlayerNavigatedBack,
-    testTeamNavigated
-} from "./shared.e2e-spec"
+import { Screen, playersData, teamsData } from "./screen"
+import * as shared from "./shared.e2e-spec"
 
+const suspendTime = 1;
+const appSuspendResume = true;
+const transitions = ["Default", "None", "Slide", "Flip"];
 const roots = ["TabTop", "TabBottom"];
 
 function hyphenate(s: string) {
-    return s.replace(/([a-zA-Z])(?=[A-Z])/g, '$1-').toLowerCase();
+    return s.replace(/([a-zA-Z])(?=[A-Z])/g, "$1-").toLowerCase();
 }
 
 describe("tab-root:", () => {
@@ -26,75 +25,128 @@ describe("tab-root:", () => {
         console.log("Quit driver!");
     });
 
+    afterEach(async function () {
+        if (this.currentTest.state === "failed") {
+            await driver.logTestArtifacts(this.currentTest.title);
+        }
+    });
+
     roots.forEach(root => {
         const rootWithHyphen = hyphenate(root);
 
         describe(`${rootWithHyphen} scenarios:`, () => {
 
-            afterEach(async function () {
-                if (this.currentTest.state === "failed") {
-                    await driver.logTestArtifacts(this.currentTest.title);
-                }
-            });
+            transitions.forEach(transition => {
+                const playerOne = playersData[`playerOne${transition}`];
+                const playerTwo = playersData[`playerTwo${transition}`];
+                const teamOne = teamsData[`teamOne${transition}`];
+                const teamTwo = teamsData[`teamTwo${transition}`];
 
-            it("loaded home page", async () => {
-                await screen.loadedHome();
-            });
+                describe(`transition: ${transition} scenarios:`, () => {
 
-            it(`loaded ${rootWithHyphen} root with frames`, async () => {
-                await screen[`navigateTo${root}RootWithFrames`]();
-                await screen[`loaded${root}RootWithFrames`]();
-            });
+                    it("loaded home page", async () => {
+                        await screen.loadedHome();
+                    });
 
-            it("loaded players list", async () => {
-                await screen.loadedPlayersList();
-            });
+                    it(`loaded ${rootWithHyphen} root with frames`, async () => {
+                        await screen[`navigateTo${root}RootWithFrames`]();
+                        await screen[`loaded${root}RootWithFrames`]();
+                    });
 
-            it("loaded player details and go back twice", async () => {
-                await testPlayerNavigated(playerOne, screen);
-                await testPlayerNavigatedBack(screen, driver);
-        
-                await testPlayerNavigated(playerTwo, screen);
-                await testPlayerNavigatedBack(screen, driver);
-            });
+                    it("loaded players list", async () => {
+                        await screen.loadedPlayersList();
+                    });
 
-            it("toggle teams tab", async () => {
-                await screen.toggleTeamsTab();
-            });
+                    it("loaded player details and go back twice", async () => {
+                        await shared.testPlayerNavigated(playerTwo, screen);
 
-            it("loaded teams list", async () => {
-                await screen.loadedTeamsList();
-            });
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(playerTwo.name) // wait for player
+                        }
 
-            it("mix player and team list actions and go back", async () => {
-                await screen.togglePlayersTab();
-                await screen.loadedPlayersList();
+                        await shared.testPlayerNavigatedBack(screen, driver);
 
-                await testPlayerNavigated(playerTwo, screen);
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(playerOne.name) // wait for players list
+                        }
 
-                await screen.toggleTeamsTab();
-                await screen.loadedTeamsList();
+                        await shared.testPlayerNavigated(playerTwo, screen);
+                        await shared.testPlayerNavigatedBack(screen, driver);
+                    });
 
-                await testTeamNavigated(teamOne, screen);
+                    it("toggle teams tab", async () => {
+                        await screen.toggleTeamsTab();
 
-                await screen.togglePlayersTab();
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(teamOne.name) // wait for teams list
+                        }
+                    });
 
-                await screen.loadedPlayerDetails(playerTwo);
+                    it("loaded teams list", async () => {
+                        await screen.loadedTeamsList();
+                    });
 
-                await screen.toggleTeamsTab();
+                    it("mix player and team list actions and go back", async () => {
+                        await screen.togglePlayersTab();
 
-                await screen.goBackToTeamsList();
-                await screen.loadedTeamsList();
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(playerOne.name) // wait for players list
+                        }
 
-                await screen.togglePlayersTab();
-                
-                await screen.goBackToPlayersList();
-                await screen.loadedPlayersList();
-            });
+                        await screen.loadedPlayersList();
 
-            it("loaded home page again", async () => {
-                await screen.resetToHome();
-                await screen.loadedHome();
+                        await shared.testPlayerNavigated(playerTwo, screen);
+
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(playerTwo.name) // wait for player
+                        }
+
+                        await screen.toggleTeamsTab();
+
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(teamOne.name) // wait for teams list
+                        }
+
+                        await screen.loadedTeamsList();
+
+                        await shared.testTeamNavigated(teamTwo, screen);
+
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(teamTwo.name) // wait for team
+                        }
+
+                        await screen.togglePlayersTab();
+
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await driver.waitForElement(playerTwo.name) // wait for player
+                        }
+
+                        await screen.loadedPlayerDetails(playerTwo);
+
+                        await screen.toggleTeamsTab();
+
+                        await screen.goBackToTeamsList();
+                        await screen.loadedTeamsList();
+
+                        await screen.togglePlayersTab();
+
+                        await screen.goBackToPlayersList();
+                        await screen.loadedPlayersList();
+                    });
+
+                    it("loaded home page again", async () => {
+                        await screen.resetToHome();
+                        await screen.loadedHome();
+                    });
+                });
             });
         });
     });

@@ -1,7 +1,6 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { assert } from "chai";
 
-export const home = "Home";
 const layoutWithFrame = "Layout w/ frame";
 const layoutWithMultiFrame = "Layout w/ multi frame";
 const pageWithFrame = "Page w/ frame";
@@ -26,8 +25,6 @@ const navigateToOtherPageDefault = "navigate to other page (default transition)"
 const navigateToOtherPageNone = "navigate to other page (no transition)";
 const navigateToOtherPageSlide = "navigate to other page (slide transition)";
 const navigateToOtherPageFlip = "navigate to other page (flip transition)";
-export const somePage = "some page";
-export const otherPage = "other page";
 const players = "Players";
 const teams = "Teams";
 const playerBack = "playerBack";
@@ -38,6 +35,10 @@ const frameHomeBack = "frameHomeBack";
 const tabTopBack = "tabTopBack";
 const tabBottomBack = "tabBottomBack";
 const resetApp = "reset app";
+
+export const home = "Home";
+export const somePage = "some page";
+export const otherPage = "other page";
 
 export const playersData = {
     playerOneDefault: {
@@ -207,13 +208,13 @@ export class Screen {
         await this.navigateToItem(player);
     };
 
+    navigateToTeamDetails = async (team: Item) => {
+        await this.navigateToItem(team);
+    };
+
     resetToHome = async () => {
         const btnReset = await this._driver.findElementByAutomationText(resetApp);
         await btnReset.tap();
-    };
-
-    navigateToTeamDetails = async (team: Item) => {
-        await this.navigateToItem(team);
     };
 
     goBackToPlayersList = async () => {

@@ -4,11 +4,11 @@ import * as shared from "./shared.e2e-spec"
 
 const suspendTime = 1;
 const appSuspendResume = true;
-const transitions = ["Default" , "None", "Slide", "Flip"];
+const transitions = ["Default", "None", "Slide", "Flip"];
 const roots = ["TabTop", "TabBottom"];
 
 function hyphenate(s: string) {
-    return s.replace(/([a-zA-Z])(?=[A-Z])/g, '$1-').toLowerCase();
+    return s.replace(/([a-zA-Z])(?=[A-Z])/g, "$1-").toLowerCase();
 }
 
 describe("frame-tab-root:", () => {
