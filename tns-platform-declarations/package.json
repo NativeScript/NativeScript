@@ -1,6 +1,10 @@
 {
   "name": "tns-platform-declarations",
+<<<<<<< HEAD
   "version": "5.0.5",
+=======
+  "version": "5.1.0",
+>>>>>>> origin/master
   "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
   "main": "",
   "scripts": {
