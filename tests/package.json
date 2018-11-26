@@ -23,6 +23,6 @@
     "filewalker": "0.1.2",
     "lazy": "1.0.11",
     "tns-platform-declarations": "*",
-    "typescript": "^2.6.1"
+    "typescript": "^3.1.6"
   }
 }

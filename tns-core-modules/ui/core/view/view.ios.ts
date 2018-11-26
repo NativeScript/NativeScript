@@ -798,11 +798,11 @@ export namespace ios {
         }
 
         if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right + fullscreenPosition.left) {
-            adjustedPosition.right = fullscreenPosition.right - fullscreenPosition.left;
+            adjustedPosition.right += fullscreenPosition.right - inWindowRight;
         }
 
         if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
-            adjustedPosition.bottom = fullscreenPosition.bottom - fullscreenPosition.top;
+            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowBottom;
         }
 
         const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
@@ -853,7 +853,8 @@ export namespace ios {
 
             if (parent.nativeViewProtected instanceof UIScrollView) {
                 const nativeView = parent.nativeViewProtected;
-                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+                const insets = nativeView.safeAreaInsets;
+                safeArea = CGRectMake(insets.left, insets.top, nativeView.contentSize.width - insets.left - insets.right, nativeView.contentSize.height - insets.top - insets.bottom);
                 fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
             } else if (parent.viewController) {
                 const nativeView = parent.viewController.view;
