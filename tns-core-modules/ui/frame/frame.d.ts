@@ -57,6 +57,11 @@ export class Frame extends View {
     navigate(entry: NavigationEntry);
 
     /**
+     * Used to control the visibility the Navigation Bar in iOS and the Action Bar in Android.
+     */
+    public actionBarVisibility: "auto" | "never" | "always";
+
+    /**
      * Gets the back stack of this instance.
      */
     backStack: Array<BackstackEntry>;
@@ -128,6 +133,10 @@ export class Frame extends View {
     /**
      * @private
      */
+    _executingEntry: BackstackEntry;
+    /**
+     * @private
+     */
     _processNavigationQueue(page: Page);
     /**
      * @private
@@ -149,6 +158,10 @@ export class Frame extends View {
      * @private
      */
     _pushInFrameStack();
+    /**
+     * @private
+     */
+    _pushInFrameStackRecursive();
     /**
      * @private
      */
@@ -244,7 +257,7 @@ export interface NavigationEntry extends ViewEntry {
     transitioniOS?: NavigationTransition;
 
     /**
-     * Specifies an optional navigation transition for iOS. If not specified, the default platform transition will be used.
+     * Specifies an optional navigation transition for Android. If not specified, the default platform transition will be used.
      */
     transitionAndroid?: NavigationTransition;
 
@@ -410,7 +423,7 @@ export interface AndroidActivityCallbacks {
 
 export interface AndroidFragmentCallbacks {
     onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
-    onCreateAnimation(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
+    onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
     onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
     onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
     onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;

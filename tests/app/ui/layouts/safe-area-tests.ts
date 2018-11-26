@@ -6,9 +6,11 @@ import * as platform from "tns-core-modules/platform";
 import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
+import { Page } from "tns-core-modules/ui/page";
+import { Label } from "tns-core-modules/ui/label";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, closeEnough, lessOrCloseEnough, check,
+    equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, check,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftWith, isAboveWith, isRightWith, isBelowWith
 } from "./layout-tests-helper";
@@ -36,6 +38,30 @@ export class SafeAreaTests extends testModule.UITest<any> {
     private noop() {
         // no operation
     };
+
+    public test_layout_changed_event_count() {
+        const page = <Page>parse(`
+        <Page>
+            <GridLayout id="grid" backgroundColor="Crimson">
+                <Label id="label" text="label1" backgroundColor="Gold"></Label>
+            </GridLayout>
+        </Page>
+        `);
+        let gridLayoutChangedCounter = 0;
+        let labelLayoutChangedCounter = 0;
+        const grid = page.getViewById("grid");
+        grid.on(view.View.layoutChangedEvent, () => {
+            gridLayoutChangedCounter++;
+        });
+        const label = <Label>page.getViewById("label");
+        label.on(view.View.layoutChangedEvent, () => {
+            labelLayoutChangedCounter++;
+        });
+        helper.navigate(() => page);
+        label.height = 100;
+        TKUnit.waitUntilReady(() => labelLayoutChangedCounter === 2);
+        TKUnit.assert(gridLayoutChangedCounter === 1, `${grid} layoutChanged event count - actual:${gridLayoutChangedCounter}; expected: 1`)
+    }
 
     // Common
     private getViews(template: string) {
@@ -1011,13 +1037,15 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 isBottomAlignedWith(grid, cells[2][1]);
                 isBottomAlignedWith(grid, cells[2][2]);
 
-                check(height(cells[0][1]) >= height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or equal cell11 height<${height(cells[1][1])}>`);
-                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or equal cell21 height<${height(cells[2][1])}>`);
+                greaterOrCloseEnough(height(cells[0][1]), height(cells[1][1]), `cell01 height<${height(cells[0][1])}> not greater or close enough cell11 height<${height(cells[1][1])}>`);
+                lessOrCloseEnough(height(cells[1][1]), height(cells[2][1]), `cell11 height<${height(cells[1][1])}> not less or close enough cell21 height<${height(cells[2][1])}>`);
+
                 const sumOfNestedGridHeights = height(cells[0][1]) + height(cells[1][1]) + height(cells[2][1]);
                 equal(height(grid), sumOfNestedGridHeights, `grid height<${height(grid)}> sum of nested grids height <${sumOfNestedGridHeights}>`);
 
-                check(width(cells[1][0]) >= width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or equal cell11 width<${width(cells[1][1])}>`);
-                check(width(cells[1][1]) <= width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or equal cell12 width<${width(cells[1][2])}>`);
+                greaterOrCloseEnough(width(cells[1][0]), width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or close enough cell11 width<${width(cells[1][1])}>`);
+                lessOrCloseEnough(width(cells[1][1]), width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or close enough cell12 width<${width(cells[1][2])}>`);
+                
                 const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
                 equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
             },
@@ -1364,8 +1392,8 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     private wrap_horizontal_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
-        <WrapLayout id="wrap" orientation="horizontal">
-            <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
+        <WrapLayout id="wrap" orientation="horizontal" backgroundColor="Crimson">
+            <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet." height="100%"></Button>
             <Button id="child1" text="H" backgroundColor="Pink"></Button>
         </WrapLayout>
         `;
@@ -1400,8 +1428,8 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     private wrap_vertical_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
         const snippet = `
-        <WrapLayout id="wrap" orientation="vertical">
-            <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet" height="100%"></Button>
+        <WrapLayout id="wrap" orientation="vertical" backgroundColor="Crimson">
+            <Button id="child0" text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet." height="100%"></Button>
             <Button id="child1" text="V" backgroundColor="Pink"></Button>
         </WrapLayout>
         `;
@@ -1438,7 +1466,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         const snippet = `
         <WrapLayout id="wrap" backgroundColor="Crimson">
             <WrapLayout id="child0" backgroundColor="SkyBlue">
-                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"/>
+                <Button text="Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet."/>
             </WrapLayout>
         </WrapLayout>
         `;

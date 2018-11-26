@@ -154,24 +154,31 @@ export class View extends ViewCommon {
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
-        if (!CGRectEqualToRect(nativeView.frame, frame)) {
+        let oldFrame = this._cachedFrame || nativeView.frame;
+        if (!CGRectEqualToRect(oldFrame, frame)) {
             if (traceEnabled()) {
                 traceWrite(this + " :_setNativeViewFrame: " + JSON.stringify(ios.getPositionFromFrame(frame)), traceCategories.Layout);
             }
             this._cachedFrame = frame;
+            let adjustedFrame = null;
+            let transform = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                const transform = nativeView.transform;
+                transform = nativeView.transform;
                 nativeView.transform = CGAffineTransformIdentity;
                 nativeView.frame = frame;
-                nativeView.transform = transform;
             } else {
                 nativeView.frame = frame;
             }
 
-            const adjustedFrame = this.applySafeAreaInsets(frame);
+            adjustedFrame = this.applySafeAreaInsets(frame);
             if (adjustedFrame) {
                 nativeView.frame = adjustedFrame;
+            }
+
+            if (this._hasTransfrom) {
+                // re-apply the transform after the frame is adjusted
+                nativeView.transform = transform;
             }
 
             const boundsOrigin = nativeView.bounds.origin;
@@ -183,6 +190,9 @@ export class View extends ViewCommon {
         } else if (!this._isLaidOut) {
             // Rects could be equal on the first layout and an event should be raised.
             this._raiseLayoutChangedEvent();
+            // But make sure event is raised only once if rects are equal on the first layout as
+            // this method is called twice with equal rects in landscape mode (vs only once in portrait)
+            this._isLaidOut = true;
         }
     }
 
@@ -713,19 +723,6 @@ export namespace ios {
     }
 
     export function layoutView(controller: UIViewController, owner: View): void {
-        // apply parent page additional top insets if any. The scenario is when there is a parent page with action bar.
-        const parentPage = getAncestor(owner, "Page");
-        if (parentPage) {
-            const parentPageInsetsTop = parentPage.viewController.view.safeAreaInsets.top;
-            const currentInsetsTop = controller.view.safeAreaInsets.top;
-            const additionalInsetsTop = parentPageInsetsTop - currentInsetsTop;
-
-            if (additionalInsetsTop > 0) {
-                const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: 0, right: 0 });
-                controller.additionalSafeAreaInsets = additionalInsets;
-            }
-        }
-
         let layoutGuide = controller.view.safeAreaLayoutGuide;
         if (!layoutGuide) {
             traceWrite(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,
@@ -816,11 +813,11 @@ export namespace ios {
         }
 
         if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right + fullscreenPosition.left) {
-            adjustedPosition.right = fullscreenPosition.right - fullscreenPosition.left;
+            adjustedPosition.right += fullscreenPosition.right - inWindowRight;
         }
 
         if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
-            adjustedPosition.bottom = fullscreenPosition.bottom - fullscreenPosition.top;
+            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowBottom;
         }
 
         const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
@@ -871,7 +868,8 @@ export namespace ios {
 
             if (parent.nativeViewProtected instanceof UIScrollView) {
                 const nativeView = parent.nativeViewProtected;
-                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+                const insets = nativeView.safeAreaInsets;
+                safeArea = CGRectMake(insets.left, insets.top, nativeView.contentSize.width - insets.left - insets.right, nativeView.contentSize.height - insets.top - insets.bottom);
                 fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
             } else if (parent.viewController) {
                 const nativeView = parent.viewController.view;
@@ -904,6 +902,38 @@ export namespace ios {
             super.viewDidLayoutSubviews();
             const owner = this.owner.get();
             if (owner) {
+                if (majorVersion >= 11) {
+                    // Handle nested UILayoutViewController safe area application.
+                    // Currently, UILayoutViewController can be nested only in a TabView.
+                    // The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
+                    const tabViewItem = owner.parent;
+                    const tabView = tabViewItem && tabViewItem.parent;
+                    let parent = tabView && tabView.parent;
+
+                    // Handle Angular scenario where TabView is in a ProxyViewContainer
+                    // It is possible to wrap components in ProxyViewContainers indefinitely
+                    // Not using instanceof ProxyViewContainer to avoid circular dependency
+                    // TODO: Try moving UILayoutViewController out of view module
+                    while (parent && !parent.nativeViewProtected) {
+                        parent = parent.parent;
+                    }
+
+                    if (parent) {
+                        const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
+                        const currentInsetsTop = this.view.safeAreaInsets.top;
+                        const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+    
+                        const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
+                        const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+                        const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+    
+                        if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+                            const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: additionalInsetsBottom, right: 0 });
+                            this.additionalSafeAreaInsets = additionalInsets;
+                        }
+                    }
+                }
+
                 layoutView(this, owner);
             }
         }

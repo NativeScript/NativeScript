@@ -17,7 +17,9 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
 
     var handler = function (data) {
         page.off(PageModule.Page.navigatedToEvent, handler);
-        navBarIsVisible = (<any>page.frame.ios).showNavigationBar;
+        navBarIsVisible = !page.actionBar.nativeView.hidden;
+        console.log(navBarIsVisible);
+        console.log(page.actionBar.nativeView.hidden);
     }
 
     var pageFactory = function (): PageModule.Page {

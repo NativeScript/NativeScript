@@ -5,7 +5,7 @@ import { ios as iosView, ViewBase } from "../core/view";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -261,7 +261,7 @@ export class TabView extends TabViewBase {
         const selectedIndex = this.selectedIndex;
         const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].view;
         if (selectedView instanceof Frame) {
-            selectedView._pushInFrameStack();
+            selectedView._pushInFrameStackRecursive();
         }
 
         this._ios.delegate = this._delegate;
@@ -300,7 +300,7 @@ export class TabView extends TabViewBase {
         if (newItem && this.isLoaded) {
             const selectedView = items[newIndex].view;
             if (selectedView instanceof Frame) {
-                selectedView._pushInFrameStack();
+                selectedView._pushInFrameStackRecursive();
             }
 
             newItem.loadView(newItem.view);
@@ -451,6 +451,8 @@ export class TabView extends TabViewBase {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
+            } else {
+                traceMissingIcon(iconSource);
             }
         }
 

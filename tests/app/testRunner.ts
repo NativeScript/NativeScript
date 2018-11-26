@@ -1,17 +1,15 @@
 ﻿/* tslint:disable */
 import * as TKUnit from "./TKUnit";
-import { _resetRootView, getRootView } from "tns-core-modules/application";
+import { _resetRootView } from "tns-core-modules/application";
 import { messageType } from "tns-core-modules/trace";
-import { topmost, Frame, NavigationEntry } from "tns-core-modules/ui/frame";
+import { topmost, Frame } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { Button } from "tns-core-modules/ui/button";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as platform from "tns-core-modules/platform";
 import "./ui-test";
-import * as fs from "tns-core-modules/file-system";
-import { unsetValue } from "tns-core-modules/ui/core/properties";
-import { ad, ios } from "tns-core-modules/utils/utils";
+import { ios } from "tns-core-modules/utils/utils";
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -138,21 +136,25 @@ allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
 import * as safeAreaListViewtTests from "./ui/list-view/list-view-safe-area-tests";
 import * as scrollViewSafeAreaTests from "./ui/scroll-view/scroll-view-safe-area-tests";
+import * as repeaterSafeAreaTests from "./ui/repeater/repeater-safe-area-tests";
+import * as webViewSafeAreaTests from "./ui/web-view/web-view-safe-area-tests";
 
 if (platform.isIOS && ios.MajorVersion > 10) {
     allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
     allTests["SAFEAREA-LISTVIEW"] = safeAreaListViewtTests;
     allTests["SAFEAREA-SCROLL-VIEW"] = scrollViewSafeAreaTests;
+    allTests["SAFEAREA-REPEATER"] = repeaterSafeAreaTests;
+    allTests["SAFEAREA-WEBVIEW"] = webViewSafeAreaTests;
 }
 
 import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
 allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 
-import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
-allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
-
 import * as frameTests from "./ui/frame/frame-tests";
 allTests["FRAME"] = frameTests;
+
+import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
+allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 
 import * as viewTests from "./ui/view/view-tests";
 allTests["VIEW"] = viewTests;

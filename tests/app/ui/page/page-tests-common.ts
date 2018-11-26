@@ -497,6 +497,11 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => modalClosedWithResult);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 }
 
 export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() {
@@ -554,6 +559,11 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => modalClosed);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 }
 
 export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal() {
@@ -618,6 +628,7 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
 
 export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
     let navigatedTo = false;
+    let modalThrows = false;
 
     const createTabItems = function(count: number) {
         var items = new Array<TabViewItem>();
@@ -641,7 +652,11 @@ export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
      
         const hostPage = <Page>args.object;
         const tabViewItem = (<TabView>page.content).items[0];
-        TKUnit.assertThrows(() => tabViewItem.showModal());
+        try {
+            tabViewItem.showModal();
+        } catch (e) {
+            modalThrows = true;
+        }
 
         navigatedTo = true;
     }
@@ -661,6 +676,7 @@ export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => navigatedTo);
+    TKUnit.assertTrue(modalThrows);
 }
 
 export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
@@ -756,6 +772,11 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => modalClosed);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
@@ -835,6 +856,11 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     TKUnit.assertEqual(modalUnloaded, 1, "modalUnloaded");
 
     masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 }
 
 export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised() {
@@ -905,6 +931,11 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => ready);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 
     // only raised by the initial navigation to the master page
     TKUnit.assertTrue(hostNavigatingToCount === 1);
@@ -986,6 +1017,11 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
 
     TKUnit.waitUntilReady(() => ready && !modalFrame.isLoaded);
 
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
+
     // only raised by the initial show modal navigation
     TKUnit.assertTrue(modalNavigatingToCount === 1);
     TKUnit.assertTrue(modalNavigatedToCount === 1);
@@ -1056,6 +1092,11 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
 
     TKUnit.waitUntilReady(() => ready && !modalFrame.isLoaded);
 
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
+
     TKUnit.assertTrue(showingModallyCount === 1);
     TKUnit.assertTrue(shownModallyCount === 1);
 }
@@ -1112,6 +1153,11 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => ready);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 
     TKUnit.assertTrue(showingModallyCount === 1);
     TKUnit.assertTrue(shownModallyCount === 1);
@@ -1174,6 +1220,11 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
     TKUnit.assertEqual(stack().length, 2, "Host and modal tab frame should be instantiated at this point!");
 
     TKUnit.waitUntilReady(() => ready);
+
+    if (isIOS) {
+        // Remove this line when we have a good way to detect actual modal close on ios
+        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
+    }
 
     TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
 
