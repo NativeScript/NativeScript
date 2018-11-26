@@ -1,3 +1,8 @@
+<a name="5.0.5"></a>
+## [5.0.5](https://github.com/NativeScript/NativeScript/compare/5.0.4...5.0.5) (2018-11-26)
+
+
+
 <a name="5.0.4"></a>
 ## [5.0.4](https://github.com/NativeScript/NativeScript/compare/5.0.3...5.0.4) (2018-11-26)
 
