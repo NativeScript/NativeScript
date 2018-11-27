@@ -50,6 +50,7 @@ export module ad {
 
         if (isSetColorFilterOnlyWidget(nativeView)
             && drawable
+            && !(drawable instanceof org.nativescript.widgets.BorderDrawable)
             && !background.hasBorderWidth()
             && !background.hasBorderRadius()
             && !background.clipPath
