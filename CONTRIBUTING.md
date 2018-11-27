@@ -214,6 +214,7 @@ If you want to contribute, but you are not sure where to start - look for [issue
 
 ## <a name="release"></a> Releasing new versions
 Instructions how to release a new version for **NativeScript Core Team Members**.
+
 ![](./release-contribution-guide-schema.png?raw=true)
 
 1. Checkout release branch
@@ -301,6 +302,3 @@ git commit --amend
 git push --force-with-lease
 ```
 This will require to repeat steps from 1 to 4, since we need to keep the branches with the same history
-
-
-
