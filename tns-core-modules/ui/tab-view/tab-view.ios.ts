@@ -261,7 +261,7 @@ export class TabView extends TabViewBase {
         const selectedIndex = this.selectedIndex;
         const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].view;
         if (selectedView instanceof Frame) {
-            selectedView._pushInFrameStack();
+            selectedView._pushInFrameStackRecursive();
         }
 
         this._ios.delegate = this._delegate;
@@ -300,7 +300,7 @@ export class TabView extends TabViewBase {
         if (newItem && this.isLoaded) {
             const selectedView = items[newIndex].view;
             if (selectedView instanceof Frame) {
-                selectedView._pushInFrameStack();
+                selectedView._pushInFrameStackRecursive();
             }
 
             newItem.loadView(newItem.view);
