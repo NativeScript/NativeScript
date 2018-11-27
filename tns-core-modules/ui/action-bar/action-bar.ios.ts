@@ -260,9 +260,11 @@ export class ActionBar extends ActionBarBase {
         const color = this.color;
         if (color) {
             navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
+            navBar.largeTitleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
             navBar.tintColor = color.ios;
         } else {
             navBar.titleTextAttributes = null;
+            navBar.largeTitleTextAttributes = null;
             navBar.tintColor = null;
         }
 
