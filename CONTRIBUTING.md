@@ -212,33 +212,27 @@ If you want to contribute, but you are not sure where to start - look for [issue
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
 
 
-Instructions how to release a new version for **NativeScript Core Team Members**.
-
 ## <a name="release"></a> Releasing new versions
-
+Instructions how to release a new version for **NativeScript Core Team Members**.
 ![](./release-contribution-guide-schema.png?raw=true)
 
 1. Checkout release branch
 ```
 git checkout release
 ```
-
-Merge master in release branch or cherry-pick commits. If the commits are in release branch **skip this step**.
-```
-git checkout -b prep-release-version
-git merge --ff-only origin/master or git cherry-pick commit-sha
-git push push --set-upstream origin prep-release-version
-```
-Merge the PR into release branch.
-
 2. Create a PR to cut the release:
 ```
 git checkout -b release-version
 git push --set-upstream origin release-version
 ```
-3. Execute `npm install` to install dependencies:
+#### Merge master in release branch or cherry-pick commits. If the commits are in release branch **skip this step**.
 ```
-npm install
+git merge --ff-only origin/master or git cherry-pick commit-sha
+git push push --set-upstream origin prep-release-version
+```
+3. Execute `npm i` to install dependencies:
+```
+npm i
 ```
 4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
 ```
@@ -255,7 +249,8 @@ cd tns-core-modules
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```
-6. Set correct version of **tns-core-modules-widgets**.
+6. Set correct version of **tns-core-modules-widgets** in tns-core-modules/package.json.
+Usually tns-core-modules-widgets should already have been released and we need to set the official version.
 
 7. Add changes
 ```
@@ -269,7 +264,8 @@ git tag release-version
 git push --tags
 ```
 9. Merge PR into release branch.
-11. If all checks has passed publish package.
+
+10. If all checks has passed publish package.
 
 ## Merge changes from release into master
 
@@ -280,25 +276,25 @@ git push --tags
 git checkout release
 git pull
 ```
-
 2. Create PR to merge changes back in master and preserve history:
 ```
 git checkout -b merge-release-in-master
 git push --set-upstream origin merge-release-in-master
 git merge origin/master
 ```
-3. Resolve conflicts.
-3. Add conflicts:
+3. Resolve conflicts. Choose to keep the version of master branch. If it is needed to revert versions of modules, see at the bottom.
+
+4. Add conflicts:
 ```
 git add resolved files
 ```
-4. Commit changes with default merge message:
+5. Commit changes with default merge message:
 ```
 git commit
 git push
 ```
 
-If needed, revert version of modules and platform declarations to take the one from master:
+**If needed, revert version of modules and platform declarations to take the one from master:**
 ```
 git checkout origin/master tns-platform-declarations/package.json tns-core-modules/package.json
 git commit --amend
