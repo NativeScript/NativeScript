@@ -1,11 +1,7 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen, playersData, home, somePage, teamsData } from "./screen"
-import * as shared from "./shared.e2e-spec"
-
-const suspendTime = 1;
-const appSuspendResume = true;
-
-const transitions = ["Default", "None", "Slide", "Flip"];
+import { Screen, playersData, home, somePage, teamsData } from "./screen";
+import * as shared from "./shared.e2e-spec";
+import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
 describe("frame-root:", () => {
     let driver: AppiumDriver;
@@ -14,9 +10,15 @@ describe("frame-root:", () => {
     before(async () => {
         driver = await createDriver();
         screen = new Screen(driver);
+        if (dontKeepActivities) {
+            await driver.setDontKeepActivities(true);
+        }
     });
 
     after(async () => {
+        if (dontKeepActivities) {
+            await driver.setDontKeepActivities(false);
+        }
         await driver.quit();
         console.log("Quit driver!");
     });

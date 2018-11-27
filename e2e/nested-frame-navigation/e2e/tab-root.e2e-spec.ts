@@ -1,10 +1,8 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen, playersData, teamsData } from "./screen"
-import * as shared from "./shared.e2e-spec"
+import { Screen, playersData, teamsData } from "./screen";
+import * as shared from "./shared.e2e-spec";
+import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
-const suspendTime = 1;
-const appSuspendResume = true;
-const transitions = ["Default", "None", "Slide", "Flip"];
 const roots = ["TabTop", "TabBottom"];
 
 function hyphenate(s: string) {
@@ -18,9 +16,15 @@ describe("tab-root:", () => {
     before(async () => {
         driver = await createDriver();
         screen = new Screen(driver);
+        if (dontKeepActivities) {
+            await driver.setDontKeepActivities(true);
+        }
     });
 
     after(async () => {
+        if (dontKeepActivities) {
+            await driver.setDontKeepActivities(false);
+        }
         await driver.quit();
         console.log("Quit driver!");
     });

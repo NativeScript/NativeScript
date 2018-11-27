@@ -8,7 +8,6 @@ export async function testPlayerNavigated(player: Item, screen: Screen) {
 
 export async function testPlayerNavigatedBack(screen: Screen, driver: AppiumDriver) {
     await driver.navBack();
-    // await screen.goBackToPlayersList();
     await screen.loadedPlayersList();
 }
 
