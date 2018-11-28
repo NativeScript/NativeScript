@@ -66,6 +66,11 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
             });
             this._itemTemplateSelector = (item: any, index: number, items: any) => {
                 item["$index"] = index;
+
+                if (this._itemTemplateSelectorBindable.bindingContext === item) {
+                    this._itemTemplateSelectorBindable.bindingContext = null;
+                }
+
                 this._itemTemplateSelectorBindable.bindingContext = item;
                 return this._itemTemplateSelectorBindable.get("templateKey");
             };
