@@ -177,7 +177,7 @@ module (usually named AppModule).
 ApplicationModule.
 All other NgModules in the app (both feature and lazy-loaded ones)
 should import the NativeScriptCommonModule instead.
-The behaviour is alligned with BrowserModule and CommonModule in web
+The behavior is aligned with BrowserModule and CommonModule in web
 Angular apps. angular.io/guide/ngmodule-faq#q-browser-vs-common-module
 Migration steps:
 In all NgModules, instead of the root one, replace:
@@ -211,43 +211,98 @@ If you want to contribute, but you are not sure where to start - look for [issue
 
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
 
-## <a name="release"></a> Releasing new versions
 
+## <a name="release"></a> Releasing new versions
 Instructions how to release a new version for **NativeScript Core Team Members**.
 
-1. Execute `npm install` to install dependencies:
-```bash
-npm install
-```
+![](./release-contribution-guide-schema.png?raw=true)
 
-2. Add the following to your `.npmrc`:
-```
-tag-version-prefix=""
-message="release: cut the %s release"
-```
+### Here are the steps described in the diagram above.
 
-3. Create new branch based on `master`:
-```bash
-git checkout -b username/release-version
+1. Checkout release branch
 ```
-
+git checkout release
+```
+2. Create a PR to cut the release:
+```
+git checkout -b release-version
+git push --set-upstream origin release-version
+```
+#### Merge master in release branch or cherry-pick commits. If the commits are in release branch **skip this step**.
+```
+git merge --ff-only origin/master or git cherry-pick commit-sha
+git push --set-upstream origin prep-release-version
+```
+3. Execute `npm i` to install dependencies:
+```
+npm i
+```
 4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
-```bash
+```
 cd tns-platform-declarations
-npm --no-git-tag-version version [patch|minor|major]
+npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```
 
-5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, tag the release and update the CHANGELOG.md:
-```bash
+5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
+tag the release and update the CHANGELOG.md.
+In case we need to publish release version we need simply to use npm version x.x.x-rc
+```
 cd tns-core-modules
-npm version [patch|minor|major]
+npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```
+6. Set correct version of **tns-core-modules-widgets** in tns-core-modules/package.json.
+Usually tns-core-modules-widgets should already have been released and we need to set the official version.
 
-6. Push all the changes to your branch and open a pull request:
-```bash
-git push --set-upstream origin username/release-version --tags
+7. Add changes
+```
+git add changed-files
+git commit -m "release: cut the %s release"
+git push
+```
+8. Create git tag
+```
+git tag release-version
+git push --tags
+```
+9. Merge PR into release branch.
+
+10. If all checks has passed publish package.
+
+## Merge changes from release into master
+
+![](./merge-guidance-schema.png)
+
+### Here are steps described in the diagram above.
+
+1. Make sure you are in release branch:
+```
+git checkout release
+git pull
+```
+2. Create PR to merge changes back in master and preserve history:
+```
+git checkout -b merge-release-in-master
+git push --set-upstream origin merge-release-in-master
+git merge origin/master
+```
+3. Resolve conflicts. Choose to keep the version of master branch. If it is needed to revert versions of modules, see at the bottom.
+
+4. Add conflicts:
+```
+git add resolved files
+```
+5. Commit changes with default merge message:
+```
+git commit
+git push
 ```
 
-7. Create `release` branch after the pull request is merged to `master` and publish the packages built on CI to `npm`.
+**If needed, revert version of modules and platform declarations to take the one from master:**
+```
+git checkout origin/master tns-platform-declarations/package.json tns-core-modules/package.json
+git commit --amend
+git push --force-with-lease
+```
+This will require to repeat steps from 1 to 4, since we need to keep the branches with the same history
