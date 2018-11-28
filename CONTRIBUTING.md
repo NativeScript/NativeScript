@@ -229,7 +229,7 @@ git push --set-upstream origin release-version
 #### Merge master in release branch or cherry-pick commits. If the commits are in release branch **skip this step**.
 ```
 git merge --ff-only origin/master or git cherry-pick commit-sha
-git push push --set-upstream origin prep-release-version
+git push --set-upstream origin prep-release-version
 ```
 3. Execute `npm i` to install dependencies:
 ```
