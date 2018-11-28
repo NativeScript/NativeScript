@@ -217,7 +217,7 @@ Instructions how to release a new version for **NativeScript Core Team Members**
 
 ![](./release-contribution-guide-schema.png?raw=true)
 
-### Here are the steps describes in the diagram above.
+### Here are the steps described in the diagram above.
 
 1. Checkout release branch
 ```
