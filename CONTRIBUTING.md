@@ -217,6 +217,8 @@ Instructions how to release a new version for **NativeScript Core Team Members**
 
 ![](./release-contribution-guide-schema.png?raw=true)
 
+### Here are the steps describes in the diagram above.
+
 1. Checkout release branch
 ```
 git checkout release
@@ -271,6 +273,8 @@ git push --tags
 ## Merge changes from release into master
 
 ![](./merge-guidance-schema.png)
+
+### Here are steps described in the diagram above.
 
 1. Make sure you are in release branch:
 ```
