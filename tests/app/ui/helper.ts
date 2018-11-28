@@ -150,9 +150,13 @@ export function buildUIWithWeakRefAndInteract<T extends View>(createFunc: () => 
         // Could cause GC on the next call.
         // NOTE: Don't replace this with forceGC();
         new ArrayBuffer(4 * 1024 * 1024);
+
+        // An additional GC and wait are needed since WebKit upgrade to version 12.0
+        // (TEXT-FIELD.testMemoryLeak test started failing sporadically)
+        utils.GC();
+        TKUnit.wait(0.1);
     }
     utils.GC();
-
     try {
         TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
         done(null);
@@ -683,13 +687,13 @@ function setupSetters(): void {
     cssSetters.set("selectedTabTextColor", "red");
     cssSetters.set("androidSelectedTabHighlightColor", "red");
 
-    // ListView-specific props 
+    // ListView-specific props
     cssSetters.set("separatorColor", "red");
 
     // SegmentedBar-specific props
     cssSetters.set("selectedBackgroundColor", "red");
 
-    // Page-specific props 
+    // Page-specific props
     cssSetters.set("statusBarStyle", "light");
     cssSetters.set("androidStatusBarBackground", "red");
 
