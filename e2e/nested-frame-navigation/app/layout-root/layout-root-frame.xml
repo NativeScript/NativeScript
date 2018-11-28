@@ -1,0 +1,6 @@
+<GridLayout rows="auto, *">
+    <Button text="reset app" tap="onReset" />
+    <GridLayout row="1">
+        <Frame defaultPage="layout-root/layout-home-page" />
+    </GridLayout>
+</GridLayout>
