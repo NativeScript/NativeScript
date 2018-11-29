@@ -1,7 +1,8 @@
 ﻿import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
-    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty,
+    isEnabledProperty, isUserInteractionEnabledProperty
 } from "./search-bar-common";
 import { ad } from "../../utils/utils";
 
@@ -76,6 +77,33 @@ function initializeNativeClasses(): void {
     CloseListener = CompatCloseListenerImpl;
 }
 
+function enableSearchView(nativeView: any, value: boolean) {
+    nativeView.setEnabled(value);
+
+    if (!(nativeView instanceof android.view.ViewGroup)) {
+        return;
+    }
+
+    for (let i = 0; i < nativeView.getChildCount(); i++) {
+        let child = nativeView.getChildAt(i);
+        enableSearchView(child, value);
+    }
+}
+
+function enableUserInteractionSearchView(nativeView: any, value: boolean) {
+    nativeView.setClickable(value);
+    nativeView.setFocusable(value);
+
+    if (!(nativeView instanceof android.view.ViewGroup)) {
+        return;
+    }
+    
+    for (let i = 0; i < nativeView.getChildCount(); i++) {
+        let child = nativeView.getChildAt(i);
+        enableUserInteractionSearchView(child, value);
+    }
+}
+
 export class SearchBar extends SearchBarBase {
     nativeViewProtected: android.support.v7.widget.SearchView;
     private _searchTextView: android.widget.TextView;
@@ -120,6 +148,14 @@ export class SearchBar extends SearchBarBase {
         this._searchPlate = null;
         this._searchTextView = null;
         super.disposeNativeView();
+    }
+
+    [isEnabledProperty.setNative](value: boolean) {
+        enableSearchView(this.nativeViewProtected, value);
+    }
+
+    [isUserInteractionEnabledProperty.setNative](value: boolean) {
+        enableUserInteractionSearchView(this.nativeViewProtected, value);
     }
 
     [backgroundColorProperty.getDefault](): number {
