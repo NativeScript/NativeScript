@@ -1,0 +1,31 @@
+<Page codeFile="~/tab-page/tabs-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <ActionBar class="action-bar">
+        <NavigationButton text="tabBottomBack" tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
+        <Label class="action-bar-title" text="tab bottom page" horizontalAlignment="center" />
+    </ActionBar>
+    
+    <GridLayout rows="auto, *">
+        <StackLayout>
+            <Button text="navigate to some page (default transition)" tap="onNavigate" />
+            <Button text="navigate to some page (no transition)" tap="onNavigateNone" />
+            <Button text="navigate to some page (slide transition)" tap="onNavigateSlide" />
+            <Button text="navigate to some page (flip transition)" tap="onNavigateFlip" />
+        </StackLayout>
+
+        <GridLayout row="1">
+            <TabView androidTabsPosition="bottom">
+                <TabViewItem title="Players">
+                    <Frame defaultPage="players/players-items-page" />
+                </TabViewItem>
+                <TabViewItem title="Dummy">
+                    <!-- this tab serves as dummy so the actual teams tab is not loaded by default  -->
+                    <Label text="this is a tab" />
+                </TabViewItem>
+                <TabViewItem title="Teams">
+                    <Frame defaultPage="teams/teams-items-page" />
+                </TabViewItem>
+            </TabView>
+        </GridLayout>
+    </GridLayout>
+</Page>
