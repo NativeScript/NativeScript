@@ -156,7 +156,7 @@ export class Cache extends observable.Observable implements definition.Cache {
                 eventName: Cache.downloadedEvent,
                 object: this,
                 key: key,
-                image: image 
+                image: image
             });
         }
 
@@ -165,7 +165,7 @@ export class Cache extends observable.Observable implements definition.Cache {
         this._updateQueue();
     }
 
-    public _onDownloadError(key: string) {
+    public _onDownloadError(key: string, err: Error) {
         var request = <DownloadRequest>this._pendingDownloads[key];
         this._currentDownloads--;
 
@@ -177,7 +177,8 @@ export class Cache extends observable.Observable implements definition.Cache {
             this.notify({
                 eventName: Cache.downloadErrorEvent,
                 object: this,
-                key: key
+                key: key,
+                error: err
             });
         }
 
@@ -222,7 +223,7 @@ export class Cache extends observable.Observable implements definition.Cache {
     }
 }
 export interface Cache {
-    on(eventNames: string, callback: (args: observable.EventData) => void , thisArg?: any);
-    on(event: "downloaded", callback: (args: definition.DownloadedData) => void , thisArg?: any);
-    on(event: "downloadError", callback: (args: definition.DownloadedData) => void , thisArg?: any);
+    on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
+    on(event: "downloaded", callback: (args: definition.DownloadedData) => void, thisArg?: any);
+    on(event: "downloadError", callback: (args: definition.DownloadError) => void, thisArg?: any);
 }
