@@ -46,18 +46,18 @@ export class Cache extends common.Cache {
             onComplete: function (result: any, context: any) {
                 var instance = that.get();
                 if (instance) {
-                  if (result && result != null) {
-                    instance._onDownloadCompleted(context, result);
-                  } else {
-                    instance._onDownloadError(context);
-                  }
+                    if (result) {
+                        instance._onDownloadCompleted(context, result);
+                    } else {
+                        instance._onDownloadError(context, new Error("No result in CompletionCallback"));
+                    }
                 }
             },
-            onError: function (context: any) {
-              var instance = that.get();
-              if (instance) {
-                instance._onDownloadError(context);
-              }
+            onError: function (err: string, context: any) {
+                var instance = that.get();
+                if (instance) {
+                    instance._onDownloadError(context, new Error(err));
+                }
             }
         });
     }
@@ -72,15 +72,13 @@ export class Cache extends common.Cache {
     }
 
     public set(key: string, image: any): void {
-      try {
-        if (key && key != null && image && image != null) {
-          this._cache.put(key, image);
+        try {
+            if (key && image) {
+                this._cache.put(key, image);
+            }
+        } catch (err) {
+            trace.write("Cache set error: " + err, trace.categories.Error, trace.messageType.error);
         }
-      } catch (err) {
-        if (trace.isEnabled()) {
-          trace.write("Cache set error: " + err, trace.categories.Debug);
-        }
-      }
     }
 
     public remove(key: string): void {
