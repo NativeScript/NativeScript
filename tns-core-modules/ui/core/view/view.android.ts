@@ -613,14 +613,14 @@ export class View extends ViewCommon {
         this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
     }
 
-    protected _hideNativeModalView(parent: View) {
+    protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         const manager = this._dialogFragment.getFragmentManager();
         if (manager) {
             this._dialogFragment.dismissAllowingStateLoss();
         }
 
         this._dialogFragment = null;
-        super._hideNativeModalView(parent);
+        whenClosedCallback();
     }
 
     [isEnabledProperty.setNative](value: boolean) {
