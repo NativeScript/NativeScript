@@ -1,7 +1,7 @@
 ﻿import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
-    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, isEnabledProperty
 } from "./search-bar-common";
 import { ios as iosUtils } from "../../utils/utils";
 
@@ -121,6 +121,18 @@ export class SearchBar extends SearchBarBase {
         }
 
         return this.__placeholderLabel;
+    }
+
+    [isEnabledProperty.setNative](value: boolean) {
+        const nativeView = this.nativeViewProtected;
+        if (nativeView instanceof UIControl) {
+            nativeView.enabled = value;
+        }
+
+        const textField = this._textField;
+        if (textField) {
+            textField.enabled = value;
+        }
     }
 
     [backgroundColorProperty.getDefault](): UIColor {

@@ -738,6 +738,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         TKUnit.assertTrue(ctx.shownModally, "Modal-page must be shown!");
         TKUnit.assertEqual(returnValue, "return value", "Modal-page must return value!");
         modalClosed = true;
+        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
     let modalPage: Page;
@@ -758,7 +759,6 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     const onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
-        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
     const navigatedToEventHandler = function (args) {

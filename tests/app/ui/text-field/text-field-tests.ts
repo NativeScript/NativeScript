@@ -200,7 +200,7 @@ if (isIOS) {
         helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
             var textField = <TextField>views[0];
             textField.color = new Color("red");
-            TKUnit.assertEqual(textField.color.ios.CGColor, textField.ios.textColor.CGColor, "textField.color");
+            TKUnit.assert(textField.color.ios.CGColor.isEqual(textField.ios.textColor.CGColor), "textField.color");
         });
     }
 }
@@ -633,7 +633,7 @@ export function test_android_ime_actions_move_focus() {
     if (isIOS) {
         return;
     }
-    
+
     const stack = new StackLayout();
     const addTextField = () => {
         const tf = new TextField();
@@ -655,7 +655,7 @@ export function test_android_ime_actions_move_focus() {
 
         let edittext = stack._context.getCurrentFocus();
         TKUnit.assertNotNull(edittext, "TextField not focused.");
-        
+
         edittext.onEditorAction(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
         assert(0, 1);
         assert(1, 0);
