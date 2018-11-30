@@ -258,16 +258,22 @@ export class ActionBar extends ActionBarBase {
 
     private updateColors(navBar: UINavigationBar) {
         const color = this.color;
-        if (color) {
-            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
-            navBar.tintColor = color.ios;
-        } else {
-            navBar.titleTextAttributes = null;
-            navBar.tintColor = null;
-        }
+        this.setColor(navBar, color);
 
         const bgColor = <Color>this.backgroundColor;
         navBar.barTintColor = bgColor ? bgColor.ios : null;
+    }
+
+    private setColor(navBar: UINavigationBar, color?: Color) {
+        if (color) {
+            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
+            navBar.largeTitleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
+            navBar.tintColor = color.ios;
+        } else {
+            navBar.titleTextAttributes = null;
+            navBar.largeTitleTextAttributes = null;
+            navBar.tintColor = null;
+        }
     }
 
     public _onTitlePropertyChanged() {
@@ -359,13 +365,7 @@ export class ActionBar extends ActionBarBase {
     }
     [colorProperty.setNative](color: Color) {
         const navBar = this.navBar;
-        if (color) {
-            navBar.tintColor = color.ios;
-            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
-        } else {
-            navBar.tintColor = null;
-            navBar.titleTextAttributes = null;
-        }
+        this.setColor(navBar, color);
     }
 
     [backgroundColorProperty.getDefault](): UIColor {
