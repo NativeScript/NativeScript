@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -26,6 +27,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
     private int scrollableLength = 0;    
     private SavedState mSavedState;
     private boolean isFirstLayout = true;
+    private boolean scrollEnabled = true;
 
     /**
      * True when the layout has changed but the traversal has not come through yet.
@@ -47,7 +49,34 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
     public int getScrollableLength() {
     	return this.scrollableLength;
     }
-    
+
+    public boolean getScrollEnabled() {
+        return this.scrollEnabled;
+    }
+
+    public void setScrollEnabled(boolean value) {
+        this.scrollEnabled = value;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        // Do nothing with intercepted touch events if we are not scrollable
+        if (!this.scrollEnabled) {
+            return false;
+        }
+
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        if (!this.scrollEnabled && ev.getAction() == MotionEvent.ACTION_DOWN) {
+            return false;
+        }
+
+        return super.onTouchEvent(ev);
+    }
+
     @Override
     public void requestLayout() {
         this.mIsLayoutDirty = true;
