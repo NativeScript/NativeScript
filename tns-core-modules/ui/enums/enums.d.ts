@@ -3,6 +3,19 @@
  */ /** */
 
 import * as animationModule from "../animation";
+import { 
+    KeyboardType as BaseKeyboardType,
+    ReturnKeyType as BaseReturnKeyType,
+    UpdateTextTrigger as BaseUpdateTrigger,
+    AutocapitalizationType as BaseAutocapitalizationType
+} from "../editable-text-base";
+
+import {
+    WhiteSpace as BaseWhiteSpace,
+    TextAlignment as BaseTextAlignment,
+    TextTransform as BaseTextTransform,
+    TextDecoration as BaseTextDecoration
+} from "../text-base";
 
 /**
  * Represents a soft keyboard flavor.
@@ -12,31 +25,30 @@ export module KeyboardType {
      * Android: [TYPE_CLASS_DATETIME](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_DATETIME) | [TYPE_DATETIME_VARIATION_NORMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_DATETIME_VARIATION_NORMAL)
      * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var datetime: string;
-
+    export var datetime: BaseKeyboardType
     /**
      * Android: [TYPE_CLASS_PHONE](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_PHONE)
      * iOS:  [UIKeyboardTypePhonePad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var phone: string;
+    export var phone: BaseKeyboardType
 
     /**
      * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | [TYPE_NUMBER_VARIATION_NORMAL](http://developer.android.com/intl/es/reference/android/text/InputType.html#TYPE_NUMBER_VARIATION_NORMAL) | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
      * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var number: string;
+    export var number: BaseKeyboardType
 
     /**
      * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_URI](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_URI)
      * iOS:  [UIKeyboardTypeURL](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var url: string;
+    export var url: BaseKeyboardType
 
     /**
      * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_EMAIL_ADDRESS](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
      * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var email: string;
+    export var email: BaseKeyboardType
 }
 
 /**
@@ -47,25 +59,25 @@ export module ReturnKeyType {
      * Android: [IME_ACTION_DONE](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_DONE)
      * iOS: [UIReturnKeyDone](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var done: string;
+    export var done: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_NEXT](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_NEXT)
      * iOS: [UIReturnKeyNext](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var next: string;
+    export var next: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_GO](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_GO)
      * iOS: [UIReturnKeyGo](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var go: string;
+    export var go: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_SEARCH](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEARCH)
      * iOS: [UIReturnKeySearch](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var search: string;
+    export var search: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_SEND](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEND)
@@ -81,17 +93,17 @@ export module TextAlignment {
     /**
      * Represents left text-align.
      */
-    export var left: string;
+    export var left: BaseTextAlignment;
 
     /**
      * Represents center text-align.
      */
-    export var center: string;
+    export var center: BaseTextAlignment;
 
     /**
      * Represents right text-align.
      */
-    export var right: string;
+    export var right: BaseTextAlignment;
 }
 
 /**
@@ -271,12 +283,12 @@ export module UpdateTextTrigger {
     /**
      * The text property will be udpaded when the widget loses focus.
      */
-    export var focusLost: string;
+    export var focusLost: BaseUpdateTrigger;
 
     /**
      * The text property will be udpaded on every single character typed by the user.
      */
-    export var textChanged: string;
+    export var textChanged: BaseUpdateTrigger;
 }
 
 /**
@@ -326,22 +338,22 @@ export module AutocapitalizationType {
     /**
      * Do not capitalize any text automatically.
      */
-    export var none: string;
+    export var none: BaseAutocapitalizationType;
 
     /**
      * Capitalize the first letter of each word automatically.
      */
-    export var words: string;
+    export var words: BaseAutocapitalizationType;
 
     /**
      * Capitalize the first letter of each sentence automatically.
      */
-    export var sentences: string;
+    export var sentences: BaseAutocapitalizationType;
 
     /**
      * Capitalize all characters automatically.
      */
-    export var allCharacters: string;
+    export var allCharacters: BaseAutocapitalizationType;
 }
 
 /**
@@ -435,17 +447,17 @@ export module TextDecoration {
     /**
      * No decoration.
      */
-    export var none: string;
+    export var none: BaseTextDecoration;
 
     /**
      * Text decoration underline.
      */
-    export var underline: string;
+    export var underline: BaseTextDecoration;
 
     /**
      * Text decoration line-through.
      */
-    export var lineThrough: string;
+    export var lineThrough: BaseTextDecoration;
 }
 
 /**
@@ -455,22 +467,22 @@ export module TextTransform {
     /**
      * No transform.
      */
-    export var none: string;
+    export var none: BaseTextTransform;
 
     /**
      * Text transform capitalize.
      */
-    export var capitalize: string;
+    export var capitalize: BaseTextTransform;
 
     /**
      * Text transform uppercase.
      */
-    export var uppercase: string;
+    export var uppercase: BaseTextTransform;
 
     /**
      * Text transform lowercase.
      */
-    export var lowercase: string;
+    export var lowercase: BaseTextTransform;
 }
 
 /**
@@ -480,12 +492,12 @@ export module WhiteSpace {
     /**
      * Normal wrap.
      */
-    export var normal: string;
+    export var normal: BaseWhiteSpace;
 
     /**
      * No wrap.
      */
-    export var nowrap: string;
+    export var nowrap: BaseWhiteSpace;
 }
 
 /**
