@@ -225,10 +225,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             const animated = arguments[4];
             const stretched = arguments[5];
 
-            const view: ViewDefinition = firstAgrument instanceof ViewCommon
-                ? firstAgrument : createViewFromEntry({ moduleName: firstAgrument });
+            const view = firstAgrument instanceof ViewCommon
+                ? firstAgrument : <ViewCommon>createViewFromEntry({ moduleName: firstAgrument });
 
-            (<ViewCommon>view)._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched);
+            view._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched);
             return view;
         }
     }
@@ -256,27 +256,29 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this._modalParent = parent;
         this._modalContext = context;
         const that = this;
-        this._closeModalCallback = function () {
+        this._closeModalCallback = function (...originalArgs) {
             if (that._closeModalCallback) {
                 const modalIndex = _rootModalViews.indexOf(that);
                 _rootModalViews.splice(modalIndex);
-                that._hideNativeModalView(parent);
-                that._modalParent = null;
-                that._modalContext = null;
-                that._closeModalCallback = null;
-                that._dialogClosed();
-                parent._modal = null;
 
-                if (typeof closeCallback === "function") {
-                    closeCallback.apply(undefined, arguments);
+                const whenClosedCallback = () => {
+                    that._modalParent = null;
+                    that._modalContext = null;
+                    that._closeModalCallback = null;
+                    that._dialogClosed();
+                    parent._modal = null;
+
+                    if (typeof closeCallback === "function") {
+                        closeCallback.apply(undefined, originalArgs);
+                    }
                 }
+
+                that._hideNativeModalView(parent, whenClosedCallback);
             }
         };
     }
 
-    protected _hideNativeModalView(parent: ViewCommon) {
-        //
-    }
+    protected abstract _hideNativeModalView(parent: ViewCommon, whenClosedCallback: () => void);
 
     protected _raiseLayoutChangedEvent() {
         const args: EventData = {
