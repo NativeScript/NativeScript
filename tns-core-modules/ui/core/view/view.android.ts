@@ -31,7 +31,6 @@ const androidBackPressedEvent = "androidBackPressed";
 const modalMap = new Map<number, DialogOptions>();
 
 let TouchListener: TouchListener;
-let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
 let DialogFragment: DialogFragment;
 
 interface DialogOptions {
@@ -48,14 +47,6 @@ interface TouchListener {
 
 interface DialogFragment {
     new(): android.support.v4.app.DialogFragment;
-}
-
-function initializeDisabledListener(): void {
-    if (disableUserInteractionListener) {
-        return;
-    }
-
-    disableUserInteractionListener = new org.nativescript.widgets.DisableUserInteractionListener();
 }
 
 function initializeTouchListener(): void {
@@ -649,9 +640,8 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        if (this.nativeViewProtected.setClickable) {
-            this.nativeViewProtected.setClickable(value);
-        }
+        this.nativeViewProtected.setClickable(value);
+        this.nativeViewProtected.setFocusable(value);
     }
 
     [visibilityProperty.getDefault](): Visibility {

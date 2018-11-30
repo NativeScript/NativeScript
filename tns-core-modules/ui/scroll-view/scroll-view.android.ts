@@ -1,5 +1,8 @@
 ﻿import { ScrollEventData } from ".";
-import { ScrollViewBase, layout, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
+import { 
+    ScrollViewBase, layout, scrollBarIndicatorVisibleProperty,
+    isUserInteractionEnabledProperty, isScrollEnabledProperty 
+} from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 
@@ -44,6 +47,21 @@ export class ScrollView extends ScrollViewBase {
         return nativeView.getScrollableLength() / layout.getDisplayDensity();
     }
 
+    [isUserInteractionEnabledProperty.setNative](value: boolean) {
+        // NOTE: different behavior on iOS & Android: 
+        // iOS disables user interaction recursively for all subviews as well
+        this.nativeViewProtected.setClickable(value);
+        this.nativeViewProtected.setFocusable(value);
+        this.nativeViewProtected.setScrollEnabled(value);
+    }
+
+    [isScrollEnabledProperty.getDefault](): boolean {
+        return this.nativeViewProtected.getScrollEnabled();
+    }
+    [isScrollEnabledProperty.setNative](value: boolean) {
+        this.nativeViewProtected.setScrollEnabled(value);
+    }
+
     [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
         return true;
     }
@@ -57,7 +75,7 @@ export class ScrollView extends ScrollViewBase {
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
         const nativeView = this.nativeViewProtected;
-        if (nativeView && this.orientation === "vertical") {
+        if (nativeView && this.orientation === "vertical" && this.isScrollEnabled) {
             value *= layout.getDisplayDensity();
 
             if (animated) {
@@ -70,7 +88,7 @@ export class ScrollView extends ScrollViewBase {
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
         const nativeView = this.nativeViewProtected;
-        if (nativeView && this.orientation === "horizontal") {
+        if (nativeView && this.orientation === "horizontal" && this.isScrollEnabled) {
             value *= layout.getDisplayDensity();
 
             if (animated) {

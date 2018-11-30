@@ -15,6 +15,11 @@ export class ScrollView extends ContentView {
     public static scrollEvent: string;
 
     /**
+     * Gets or sets a value indicating whether scroll is enabled.
+     */
+    isScrollEnabled: boolean;
+
+    /**
      * Gets a value that contains the vertical offset of the scrolled content.
      */
     verticalOffset: number;
