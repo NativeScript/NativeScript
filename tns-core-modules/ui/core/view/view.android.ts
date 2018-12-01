@@ -31,7 +31,6 @@ const androidBackPressedEvent = "androidBackPressed";
 const modalMap = new Map<number, DialogOptions>();
 
 let TouchListener: TouchListener;
-let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
 let DialogFragment: DialogFragment;
 
 interface DialogOptions {
@@ -48,14 +47,6 @@ interface TouchListener {
 
 interface DialogFragment {
     new(): android.support.v4.app.DialogFragment;
-}
-
-function initializeDisabledListener(): void {
-    if (disableUserInteractionListener) {
-        return;
-    }
-
-    disableUserInteractionListener = new org.nativescript.widgets.DisableUserInteractionListener();
 }
 
 function initializeTouchListener(): void {
@@ -613,14 +604,14 @@ export class View extends ViewCommon {
         this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
     }
 
-    protected _hideNativeModalView(parent: View) {
+    protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         const manager = this._dialogFragment.getFragmentManager();
         if (manager) {
             this._dialogFragment.dismissAllowingStateLoss();
         }
 
         this._dialogFragment = null;
-        super._hideNativeModalView(parent);
+        whenClosedCallback();
     }
 
     [isEnabledProperty.setNative](value: boolean) {
@@ -649,9 +640,8 @@ export class View extends ViewCommon {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        if (this.nativeViewProtected.setClickable) {
-            this.nativeViewProtected.setClickable(value);
-        }
+        this.nativeViewProtected.setClickable(value);
+        this.nativeViewProtected.setFocusable(value);
     }
 
     [visibilityProperty.getDefault](): Visibility {

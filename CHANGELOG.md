@@ -1,3 +1,19 @@
+<a name="5.0.5"></a>
+## [5.0.5](https://github.com/NativeScript/NativeScript/compare/5.0.4...5.0.5) (2018-11-26)
+
+
+
+<a name="5.0.4"></a>
+## [5.0.4](https://github.com/NativeScript/NativeScript/compare/5.0.3...5.0.4) (2018-11-26)
+
+
+### Bug Fixes
+
+* **android-fragment:** child already has a parent ([#6589](https://github.com/NativeScript/NativeScript/issues/6589)) ([5b9b335](https://github.com/NativeScript/NativeScript/commit/5b9b335))
+* **back-navigation:** app freeze on going back in parent frame with states ([#6595](https://github.com/NativeScript/NativeScript/issues/6595)) ([fc1f8c1](https://github.com/NativeScript/NativeScript/commit/fc1f8c1))
+
+
+
 <a name="5.0.3"></a>
 ## [5.0.3](https://github.com/NativeScript/NativeScript/compare/5.0.2...5.0.3) (2018-11-20)
 
