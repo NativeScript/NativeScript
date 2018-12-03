@@ -123,6 +123,11 @@ export class TabView extends View {
     androidTabsPosition: "top" | "bottom";
 
     /**
+     * Gets or sets a value indicating whether swipe gesture is enabled for Android.
+     */
+    androidSwipeEnabled: boolean;
+
+    /**
      * String value used when hooking to the selectedIndexChanged event.
      */
     public static selectedIndexChangedEvent: string;
