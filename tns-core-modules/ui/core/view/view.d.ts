@@ -3,7 +3,7 @@
  */ /** */
 
 ///<reference path="../../../tns-core-modules.d.ts" /> Include global typings
-import { ViewBase, Property, EventData, Color } from "../view-base";
+import { ViewBase, Property, InheritedProperty, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
@@ -348,6 +348,11 @@ export abstract class View extends ViewBase {
      * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: false
      */
     iosOverflowSafeArea: boolean;
+
+    /**
+     * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
+     */
+    iosOverflowSafeAreaEnabled: boolean;
 
     /**
      * Gets is layout is valid. This is a read-only property.
@@ -797,6 +802,7 @@ export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaProperty: Property<View, boolean>;
+export const iosOverflowSafeAreaEnabledProperty: InheritedProperty<View, boolean>;
 
 export namespace ios {
     /**
