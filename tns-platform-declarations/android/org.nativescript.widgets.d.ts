@@ -342,11 +342,15 @@
             export class VerticalScrollView extends android.widget.ScrollView {
                 constructor(context: android.content.Context);
                 public getScrollableLength(): number;
+                public getScrollEnabled(): boolean;
+                public setScrollEnabled(value: boolean): void;
             }
 
             export class HorizontalScrollView extends android.widget.HorizontalScrollView {
                 constructor(context: android.content.Context);
                 public getScrollableLength(): number;
+                public getScrollEnabled(): boolean;
+                public setScrollEnabled(value: boolean): void;
             }
 
             export class ImageView extends android.widget.ImageView {
