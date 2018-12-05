@@ -32,7 +32,14 @@ export function hasLaunched(): boolean {
 
 export { Observable };
 
-import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData, LoadAppCSSEventData } from ".";
+import {
+    AndroidApplication,
+    CssChangedEventData,
+    getRootView,
+    iOSApplication,
+    LoadAppCSSEventData,
+    UnhandledErrorEventData
+} from "./application";
 
 export { UnhandledErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
@@ -73,8 +80,19 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
 export function livesync(context?: HmrContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    if (liveSyncCore) {
-        liveSyncCore(context);
+    let reapplyAppCss = false
+
+    if (context) {
+        const fullFileName = getCssFileName();
+        const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
+        const extensions = ["css", "scss"];
+        reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+    }
+
+    if (reapplyAppCss) {
+        getRootView()._onCssStateChange();
+    } else if (liveSyncCore) {
+        liveSyncCore();
     }
 }
 

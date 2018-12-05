@@ -307,7 +307,7 @@ function onLiveSync(args: applicationCommon.CssChangedEventData): void {
     loadCss(applicationCommon.getCssFileName());
 }
 
-export const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
+const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
     if (!cssFile) {
         return undefined;
     }
@@ -369,12 +369,7 @@ export class CssState {
     }
 
     public isSelectorsLatestVersionApplied(): boolean {
-        if (this._appliedSelectorsVersion && this.view._styleScope) {
-            this.view._styleScope.ensureSelectors();
-            return this.view._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
-        } else {
-            return true;
-        }
+        return this.view._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
     }
 
     public onLoaded(): void {

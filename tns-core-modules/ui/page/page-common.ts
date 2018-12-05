@@ -103,8 +103,11 @@ export class PageBase extends ContentView implements PageDefinition {
     public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any) {
         this._navigationContext = context;
 
-        if (!this._cssState.isSelectorsLatestVersionApplied()) {
-            this._onCssStateChange();
+        if (isBackNavigation && this._styleScope) {
+            this._styleScope.ensureSelectors();
+            if (!this._cssState.isSelectorsLatestVersionApplied()) {
+                this._onCssStateChange();
+            }
         }
 
         //https://github.com/NativeScript/NativeScript/issues/731
