@@ -1,3 +1,26 @@
+<a name="5.1.0"></a>
+# [5.1.0](https://github.com/NativeScript/NativeScript/compare/5.0.5...5.1.0) (2018-12-05)
+
+
+### Bug Fixes
+
+* **android-styling:** correctly detect if drawable uses ColorFilter ([#6342](https://github.com/NativeScript/NativeScript/issues/6342)) ([11d3884](https://github.com/NativeScript/NativeScript/commit/11d3884)), closes [#6341](https://github.com/NativeScript/NativeScript/issues/6341)
+* **listview:** incorrect layout when scroll ([#6656](https://github.com/NativeScript/NativeScript/issues/6656)) ([63be78a](https://github.com/NativeScript/NativeScript/commit/63be78a))
+* **modals:** regression with modals in angular ([#6655](https://github.com/NativeScript/NativeScript/issues/6655)) ([30df4d9](https://github.com/NativeScript/NativeScript/commit/30df4d9))
+* **searchbar:** isEnabled and isUserInteractionEnabled ([#6636](https://github.com/NativeScript/NativeScript/issues/6636)) ([25c99d8](https://github.com/NativeScript/NativeScript/commit/25c99d8))
+* **tests:** Sporadic failures after upgrade to WebKit 12.0 ([#6635](https://github.com/NativeScript/NativeScript/issues/6635)) ([65e3a19](https://github.com/NativeScript/NativeScript/commit/65e3a19))
+
+
+### Features
+
+* add hints options for username and password fields ([#6416](https://github.com/NativeScript/NativeScript/issues/6416)) ([c834181](https://github.com/NativeScript/NativeScript/commit/c834181))
+* **ActionBar:** apply text color when largeTitletextAttribute is set on iOS ([#6631](https://github.com/NativeScript/NativeScript/issues/6631)) ([b58dff0](https://github.com/NativeScript/NativeScript/commit/b58dff0))
+* **modals:** Enable modal dialog chaining in IOS ([#6637](https://github.com/NativeScript/NativeScript/issues/6637)) ([64bccb9](https://github.com/NativeScript/NativeScript/commit/64bccb9))
+* **scrollbar:** add isScrollEnabled property ([#6640](https://github.com/NativeScript/NativeScript/issues/6640)) ([ae0fa90](https://github.com/NativeScript/NativeScript/commit/ae0fa90))
+* **tabview:** add androidSwipeEnabled property ([#6652](https://github.com/NativeScript/NativeScript/issues/6652)) ([0b239d7](https://github.com/NativeScript/NativeScript/commit/0b239d7))
+
+
+
 <a name="5.0.5"></a>
 ## [5.0.5](https://github.com/NativeScript/NativeScript/compare/5.0.4...5.0.5) (2018-11-26)
 
