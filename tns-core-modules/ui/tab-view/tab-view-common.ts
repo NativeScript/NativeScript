@@ -2,7 +2,7 @@
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
-    traceWrite, traceCategories, traceMessageType
+    traceWrite, traceCategories, traceMessageType, booleanConverter
 } from "../core/view";
 
 export * from "../core/view";
@@ -95,6 +95,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     public selectedIndex: number;
     public androidOffscreenTabLimit: number;
     public androidTabsPosition: "top" | "bottom";
+    public androidSwipeEnabled: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     get androidSelectedTabHighlightColor(): Color {
@@ -251,6 +252,9 @@ androidOffscreenTabLimitProperty.register(TabViewBase);
 
 export const androidTabsPositionProperty = new Property<TabViewBase, "top" | "bottom">({ name: "androidTabsPosition", defaultValue: "top" });
 androidTabsPositionProperty.register(TabViewBase);
+
+export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({ name: "androidSwipeEnabled", defaultValue: true, valueConverter: booleanConverter });
+androidSwipeEnabledProperty.register(TabViewBase);
 
 export const tabTextFontSizeProperty = new CssProperty<Style, number>({ name: "tabTextFontSize", cssName: "tab-text-font-size", valueConverter: (v) => parseFloat(v) });
 tabTextFontSizeProperty.register(Style);

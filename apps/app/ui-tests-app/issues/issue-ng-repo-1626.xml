@@ -1,0 +1,28 @@
+<Page loaded="onLoaded">
+    <ActionBar title="issue-ng-repo-1626"></ActionBar>
+
+    <StackLayout backgroundColor="red">
+        <ListView items="{{ items }}" class="list-group">
+            <ListView.itemTemplate>
+                <StackLayout>
+                    <StackLayout backgroundColor="gray">
+                        <Label text="{{ name }}" class="list-group-item"></Label>
+                        <Label text="{{ id }}" class="list-group-item"></Label>
+                    </StackLayout>
+                    <StackLayout backgroundColor="darkgray">
+                        <StackLayout backgroundColor="darkblue">
+                            <Label text="{{ role }}"></Label>
+                            <Label text="id is odd" visibility="{{ id%2 == 1 ? 'visible' : 'collapsed' }}"></Label>
+                        </StackLayout>
+                        <StackLayout backgroundColor="darkred">
+                            <Label text="{{ role }}"></Label>
+                            <Label text="id is odd" visibility="{{ id%2 == 1 ? 'visible' : 'collapsed' }}"></Label>
+                        </StackLayout>
+                        <Label text="{{ role }}"></Label>
+                        <Label text="id is odd" visibility="{{ id%2 == 1 ? 'visible' : 'collapsed' }}"></Label>
+                    </StackLayout>
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView>
+    </StackLayout>
+</Page>

@@ -437,6 +437,10 @@ export class TabView extends TabViewBase {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
             viewPager.setLayoutParams(lp);
+
+            if (!this.androidSwipeEnabled) {
+                viewPager.setSwipePageEnabled(false);
+            }
         } else {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));

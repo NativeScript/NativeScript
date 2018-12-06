@@ -95,6 +95,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
                 let width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
                 let rowHeight = owner._effectiveRowHeight;
                 let cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
+                cellView.iosOverflowSafeAreaEnabled = false;
                 View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
             }
         }
@@ -389,6 +390,7 @@ export class ListView extends ListViewBase {
             let cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
             if (cellHeight) {
                 let width = layout.getMeasureSpecSize(this.widthMeasureSpec);
+                childView.iosOverflowSafeAreaEnabled = false;
                 View.layoutChild(this, childView, 0, 0, width, cellHeight);
             }
         });
