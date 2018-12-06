@@ -6,7 +6,8 @@ import {
 
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
-    getEventOrGestureName, traceEnabled, traceWrite, traceCategories
+    getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
+    InheritedProperty
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -260,14 +261,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             if (that._closeModalCallback) {
                 const modalIndex = _rootModalViews.indexOf(that);
                 _rootModalViews.splice(modalIndex);
+                that._modalParent = null;
+                that._modalContext = null;
+                that._closeModalCallback = null;
+                that._dialogClosed();
+                parent._modal = null;
 
                 const whenClosedCallback = () => {
-                    that._modalParent = null;
-                    that._modalContext = null;
-                    that._closeModalCallback = null;
-                    that._dialogClosed();
-                    parent._modal = null;
-
                     if (typeof closeCallback === "function") {
                         closeCallback.apply(undefined, originalArgs);
                     }
@@ -589,6 +589,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
     public iosOverflowSafeArea: boolean;
+    public iosOverflowSafeAreaEnabled: boolean;
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -1032,3 +1033,6 @@ isUserInteractionEnabledProperty.register(ViewCommon);
 
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({ name: "iosOverflowSafeArea", defaultValue: false, valueConverter: booleanConverter });
 iosOverflowSafeAreaProperty.register(ViewCommon);
+
+export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewCommon, boolean>({ name: "iosOverflowSafeAreaEnabled", defaultValue: true, valueConverter: booleanConverter });
+iosOverflowSafeAreaEnabledProperty.register(ViewCommon);

@@ -11,6 +11,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 
     public orientation: Orientation;
     public scrollBarIndicatorVisible: boolean;
+    public isScrollEnabled: boolean;
 
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
@@ -103,3 +104,9 @@ export const scrollBarIndicatorVisibleProperty = new Property<ScrollViewBase, bo
     valueConverter: booleanConverter
 });
 scrollBarIndicatorVisibleProperty.register(ScrollViewBase);
+
+export const isScrollEnabledProperty = new Property<ScrollViewBase, boolean>({
+    name: "isScrollEnabled", defaultValue: true,
+    valueConverter: booleanConverter
+});
+isScrollEnabledProperty.register(ScrollViewBase);
