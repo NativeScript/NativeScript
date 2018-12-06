@@ -12,6 +12,7 @@ import { textTransformProperty, TextTransform, getTransformedText } from "../tex
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
 import { Frame } from "../frame";
+import { AnimationType } from "../frame/fragment.transitions";
 
 export * from "./tab-view-common";
 
@@ -40,6 +41,17 @@ function getTabById(id: number): TabView {
     return ref && ref.get();
 }
 
+function createDummyAnimator(duration: number): android.animation.Animator {
+    const alphaValues = Array.create("float", 2);
+    alphaValues[0] = 1;
+    alphaValues[1] = 1;
+    
+    const animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", alphaValues);
+    animator.setDuration(duration);
+
+    return animator;
+}
+
 function initializeNativeClasses() {
     if (PagerAdapter) {
         return;
@@ -55,7 +67,6 @@ function initializeNativeClasses() {
         }
 
         static newInstance(tabId: number, index: number): TabFragmentImplementation {
-
             const args = new android.os.Bundle();
             args.putInt(TABID, tabId);
             args.putInt(INDEX, index);
@@ -74,14 +85,38 @@ function initializeNativeClasses() {
             }
         }
 
+        public onCreateAnimator(transit: number, enter: boolean, nextAnim: number): android.animation.Animator {
+            // [nested frames / fragments] apply dummy animator to the nested fragment with
+            // the same duration as the exit animator of the removing parent fragment to work around
+            // https://code.google.com/p/android/issues/detail?id=55228 (child fragments disappear
+            // when parent fragment is removed as all children are first removed from parent)
+            if (!enter) {
+                const removingParentFragment = this.getRemovingParentFragment();
+                if (removingParentFragment) {
+                    const parentAnimator = removingParentFragment.onCreateAnimator(transit, enter, AnimationType.exitFakeResourceId);
+                    if (parentAnimator) {
+                        const duration = parentAnimator.getDuration();
+                        return createDummyAnimator(duration);
+                    }
+                }
+            }
+
+            return super.onCreateAnimator(transit, enter, nextAnim);
+        }
+
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const tabItem = this.tab.items[this.index];
 
             return tabItem.view.nativeViewProtected;
         }
 
-        public onDestroyView() {
-            super.onDestroyView();
+        private getRemovingParentFragment(): android.support.v4.app.Fragment {
+            let parentFragment = this.getParentFragment();
+            while (parentFragment && !parentFragment.isRemoving()) {
+                parentFragment = parentFragment.getParentFragment();
+            }
+        
+            return parentFragment;
         }
     }
 
