@@ -96,7 +96,10 @@ function initializeNativeClasses() {
                     const parentAnimator = removingParentFragment.onCreateAnimator(transit, enter, AnimationType.exitFakeResourceId);
                     if (parentAnimator) {
                         const duration = parentAnimator.getDuration();
-                        return createDummyAnimator(duration);
+                        
+                        // duration will be -1 if an animator is an AnimatorSet (like our FlipTransition)
+                        // and it does not have its duration set
+                        return createDummyAnimator(duration > 0 ? duration : 0);
                     }
                 }
             }

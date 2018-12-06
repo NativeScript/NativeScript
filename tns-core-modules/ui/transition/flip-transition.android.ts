@@ -112,6 +112,7 @@ export class FlipTransition extends Transition {
         }
 
         animatorSet.playTogether(objectAnimators);
+        animatorSet.setDuration(fullDuration);
         return animatorSet;
     }
 }
