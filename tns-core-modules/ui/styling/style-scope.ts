@@ -386,8 +386,12 @@ export class CssState {
 
     @profile
     private updateMatch() {
-        this._appliedSelectorsVersion = this.view._styleScope._getSelectorsVersion();
-        this._match = this.view._styleScope ? this.view._styleScope.matchSelectors(this.view) : CssState.emptyMatch;
+        if (this.view._styleScope) {
+            this._appliedSelectorsVersion = this.view._styleScope._getSelectorsVersion();
+            this._match = this.view._styleScope.matchSelectors(this.view);
+        } else {
+            this._match = CssState.emptyMatch;
+        }
         this._matchInvalid = false;
     }
 
