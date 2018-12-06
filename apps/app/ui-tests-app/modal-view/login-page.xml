@@ -1,8 +1,11 @@
-﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" shownModally="onShownModally" 
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd"  
+  showingModally="onShowingModally"
+  shownModally="onShownModally" 
   loaded="onLoaded" unloaded="onUnloaded" backgroundColor="Red">
   <StackLayout backgroundColor="PaleGreen" margin="10">
-    <TextField hint="username" id="username" text="username"/>
-    <TextField hint="password" id="password" text="password" secure="true"/>
-    <Button text="Login" tap="onLoginButtonTap"/>
+    <Label text="{{ context }}"/>
+    <TextField hint="username" text="{{ username }}"/>
+    <TextField hint="password" text="{{ password }}" secure="true"/>
+    <Button text="Login" tap="{{ onLoginButtonTap }}"/>
   </StackLayout>
 </Page>

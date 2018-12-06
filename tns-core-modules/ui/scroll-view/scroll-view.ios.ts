@@ -1,5 +1,7 @@
 ﻿import { ScrollEventData } from ".";
-import { View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
+import {
+    View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty
+} from "./scroll-view-common";
 import { ios as iosUtils } from "../../utils/utils";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
@@ -99,6 +101,13 @@ export class ScrollView extends ScrollViewBase {
         return Math.max(0, this.nativeViewProtected.contentSize.height - this.nativeViewProtected.bounds.size.height);
     }
 
+    [isScrollEnabledProperty.getDefault](): boolean {
+        return this.nativeViewProtected.scrollEnabled;
+    }
+    [isScrollEnabledProperty.setNative](value: boolean) {
+        this.nativeViewProtected.scrollEnabled = value;
+    }
+
     [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
         return true;
     }
@@ -107,14 +116,14 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
-        if (this.nativeViewProtected  && this.orientation === "vertical") {
+        if (this.nativeViewProtected && this.orientation === "vertical" && this.isScrollEnabled) {
             const bounds = this.nativeViewProtected.bounds.size;
             this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
         }
     }
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
-        if (this.nativeViewProtected  && this.orientation === "horizontal") {
+        if (this.nativeViewProtected && this.orientation === "horizontal" && this.isScrollEnabled) {
             const bounds = this.nativeViewProtected.bounds.size;
             this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
         }

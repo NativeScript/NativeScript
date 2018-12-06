@@ -3,7 +3,7 @@
  */
 import { View, ios as iosView } from "../core/view";
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, parseLoginOptions } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
 import { getRootView } from "../../application";
 
@@ -145,32 +145,8 @@ export function prompt(arg: any): Promise<PromptResult> {
     });
 }
 
-export function login(): Promise<LoginResult> {
-    let options: LoginOptions;
-
-    let defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
-
-    if (arguments.length === 1) {
-        if (isString(arguments[0])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-        } else {
-            options = arguments[0];
-        }
-    } else if (arguments.length === 2) {
-        if (isString(arguments[0]) && isString(arguments[1])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userName = arguments[1];
-        }
-    } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userName = arguments[1];
-            options.password = arguments[2];
-        }
-    }
+export function login(...args: any[]): Promise<LoginResult> {
+    let options: LoginOptions = parseLoginOptions(args);
 
     return new Promise<LoginResult>((resolve, reject) => {
         try {
@@ -182,6 +158,7 @@ export function login(): Promise<LoginResult> {
 
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Login";
+                arg.placeholder = options.userNameHint ? options.userNameHint : "";
                 arg.text = isString(options.userName) ? options.userName : "";
 
                 if (textFieldColor) {
@@ -192,6 +169,7 @@ export function login(): Promise<LoginResult> {
             alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                 arg.placeholder = "Password";
                 arg.secureTextEntry = true;
+                arg.placeholder = options.passwordHint ? options.passwordHint : "";
                 arg.text = isString(options.password) ? options.password : "";
 
                 if (textFieldColor) {

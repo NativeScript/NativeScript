@@ -2,7 +2,7 @@
  * Android specific dialogs functions implementation.
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
-import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, parseLoginOptions } from "./dialogs-common";
 import { android as androidApp } from "../../application";
 
 export * from "./dialogs-common";
@@ -223,31 +223,8 @@ export function prompt(arg: any): Promise<PromptResult> {
     });
 }
 
-export function login(arg: any): Promise<LoginResult> {
-    let options: LoginOptions;
-    const defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
-
-    if (arguments.length === 1) {
-        if (isString(arguments[0])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-        } else {
-            options = arguments[0];
-        }
-    } else if (arguments.length === 2) {
-        if (isString(arguments[0]) && isString(arguments[1])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userName = arguments[1];
-        }
-    } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
-            options = defaultOptions;
-            options.message = arguments[0];
-            options.userName = arguments[1];
-            options.password = arguments[2];
-        }
-    }
+export function login(...args: any[]): Promise<LoginResult> {
+    let options: LoginOptions = parseLoginOptions(args);
 
     return new Promise<LoginResult>((resolve, reject) => {
         try {
@@ -256,10 +233,15 @@ export function login(arg: any): Promise<LoginResult> {
             const alert = createAlertDialog(options);
 
             const userNameInput = new android.widget.EditText(context);
+
+            userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
             userNameInput.setText(options.userName ? options.userName : "");
 
             const passwordInput = new android.widget.EditText(context);
             passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
+
+            passwordInput.setHint(options.userNameHint ? options.userNameHint : "");
             passwordInput.setText(options.password ? options.password : "");
 
             const layout = new android.widget.LinearLayout(context);
@@ -278,11 +260,9 @@ export function login(arg: any): Promise<LoginResult> {
             });
 
             showDialog(alert);
-
         } catch (ex) {
             reject(ex);
         }
-
     });
 }
 
