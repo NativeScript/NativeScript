@@ -5,7 +5,7 @@ import { booleanConverter, Property } from "../view";
 
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, getAncestor
+    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, ShowModalOptions
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
@@ -371,7 +371,7 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
-    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
@@ -394,7 +394,7 @@ export class View extends ViewCommon {
 
         this._setupAsRootView({});
 
-        super._showNativeModalView(parentWithController, context, closeCallback, fullscreen, stretched);
+        super._showNativeModalView(parentWithController, options);
         let controller = this.viewController;
         if (!controller) {
             const nativeView = this.ios || this.nativeViewProtected;
@@ -407,32 +407,33 @@ export class View extends ViewCommon {
             this.viewController = controller;
         }
 
-        if (fullscreen) {
+        if (options.fullscreen) {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
         } else {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
         }
 
-        if (iosOpts && iosOpts.presentationStyle) {
-          controller.modalPresentationStyle = iosOpts.presentationStyle;
+        if (options.ios && options.ios.presentationStyle) {
+            const presentationStyle = options.ios.presentationStyle;
+            controller.modalPresentationStyle = presentationStyle;
 
-          if (iosOpts.presentationStyle === UIModalPresentationStyle.Popover) {
-            // TODO: get the width and height of the page and apply it here ?
-            // controller.preferredContentSize = CGSizeMake(400, 400);
-            const popoverPresentationController = controller.popoverPresentationController;
+            if (presentationStyle === UIModalPresentationStyle.Popover) {
+                // TODO: get the width and height of the page and apply it here ?
+                // controller.preferredContentSize = CGSizeMake(400, 400);
+                const popoverPresentationController = controller.popoverPresentationController;
 
-            const view = parent.nativeViewProtected;
-            popoverPresentationController.sourceView = view;
-            // popoverPresentationController.backgroundColor = this.ios.view.backgroundColor;
-            popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
-          }
+                const view = parent.nativeViewProtected;
+                popoverPresentationController.sourceView = view;
+                // popoverPresentationController.backgroundColor = this.ios.view.backgroundColor;
+                popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+            }
         }
 
         this.horizontalAlignment = "stretch";
         this.verticalAlignment = "stretch";
 
         this._raiseShowingModallyEvent();
-        animated = animated === undefined ? true : !!animated;
+        const animated = options.animated === undefined ? true : !!options.animated;
         (<any>controller).animated = animated;
         parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
         const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
