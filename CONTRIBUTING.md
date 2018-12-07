@@ -225,8 +225,10 @@ git checkout release
 ```
 2. Create a PR to cut the release:
 ```
-git checkout -b release-version
-git push --set-upstream origin release-version
+export RELEASE_VERSION=version
+export BRANCH="release-${RELEASE_VERSION}"
+git checkout -b ${BRANCH}
+git push --set-upstream origin ${BRANCH}
 ```
 #### Merge master in release branch or cherry-pick commits. If the commits are in release branch **skip this step**.
 ```
@@ -266,9 +268,13 @@ git push
 git tag release-version
 git push --tags
 ```
-9. Merge PR into release branch.
+9. Create a pull request. Replace env variables ${RELEASE_VERSION} and ${BRANCH} with their values
+```
+curl -d '{"title": "release: cut the ${RELEASE_VERSION} release","body": "docs: update changelog","head": "${BRANCH}","base": "release"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
+```
+10. Merge PR into release branch.
 
-10. If all checks has passed publish package.
+11. If all checks has passed publish package.
 
 ## Merge changes from release into master
 
@@ -283,8 +289,9 @@ git pull
 ```
 2. Create PR to merge changes back in master and preserve history:
 ```
-git checkout -b merge-release-in-master
-git push --set-upstream origin merge-release-in-master
+export MERGE_BRANCH='merge-release-in-master'
+git checkout -b ${MERGE_BRANCH}
+git push --set-upstream origin ${MERGE_BRANCH}
 git merge origin/master
 ```
 3. Resolve conflicts. Choose to keep the version of master branch. If it is needed to revert versions of modules, see at the bottom.
@@ -297,6 +304,11 @@ git add resolved files
 ```
 git commit
 git push
+```
+
+6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
+```
+curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "merge-release-in-master","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
 
 **If needed, revert version of modules and platform declarations to take the one from master:**
