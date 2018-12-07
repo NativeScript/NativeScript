@@ -308,7 +308,7 @@ git push
 
 6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
 ```
-git curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "${MERGE_BRANCH}","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
+curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "merge-release-in-master","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
 
 **If needed, revert version of modules and platform declarations to take the one from master:**
