@@ -268,7 +268,7 @@ git push
 git tag release-version
 git push --tags
 ```
-9. Create a pull request
+9. Create a pull request. Replace env variables ${RELEASE_VERSION} and ${BRANCH} with their values
 ```
 curl -d '{"title": "release: cut the ${RELEASE_VERSION} release","body": "docs: update changelog","head": "${BRANCH}","base": "release"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
@@ -306,7 +306,7 @@ git commit
 git push
 ```
 
-6. Create pull request
+6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
 ```
 git curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "${MERGE_BRANCH}","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
