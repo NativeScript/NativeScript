@@ -1,19 +1,7 @@
 import { AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass } from "./frame";
-import { AnimationType } from "./fragment.transitions";
-
-function createDummyAnimator(duration: number): android.animation.Animator {
-    const alphaValues = Array.create("float", 2);
-    alphaValues[0] = 1;
-    alphaValues[1] = 1;
-    
-    const animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", alphaValues);
-    animator.setDuration(duration);
-
-    return animator;
-}
 
 @JavaProxy("com.tns.FragmentClass")
-class FragmentClass extends android.support.v4.app.Fragment {
+class FragmentClass extends org.nativescript.widgets.FragmentBase {
     // This field is updated in the frame module upon `new` (although hacky this eases the Fragment->callbacks association a lot)
     private _callbacks: AndroidFragmentCallbacks;
     
@@ -27,24 +15,6 @@ class FragmentClass extends android.support.v4.app.Fragment {
     }
 
     public onCreateAnimator(transit: number, enter: boolean, nextAnim: number): android.animation.Animator {
-        // [nested frames / fragments] apply dummy animator to the nested fragment with
-        // the same duration as the exit animator of the removing parent fragment to work around
-        // https://code.google.com/p/android/issues/detail?id=55228 (child fragments disappear
-        // when parent fragment is removed as all children are first removed from parent)
-        if (!enter) {
-            const removingParentFragment = this.getRemovingParentFragment();
-            if (removingParentFragment) {
-                const parentAnimator = removingParentFragment.onCreateAnimator(transit, enter, AnimationType.exitFakeResourceId);
-                if (parentAnimator) {
-                    const duration = parentAnimator.getDuration();
-
-                    // duration will be -1 if an animator is an AnimatorSet (like our FlipTransition)
-                    // and it does not have its duration set
-                    return createDummyAnimator(duration > 0 ? duration : 0);
-                }
-            }
-        }
-
         return this._callbacks.onCreateAnimator(this, transit, enter, nextAnim, super.onCreateAnimator);
     }
 
@@ -85,15 +55,6 @@ class FragmentClass extends android.support.v4.app.Fragment {
         } else {
             super.toString();
         }
-    }
-
-    private getRemovingParentFragment(): android.support.v4.app.Fragment {
-        let parentFragment = this.getParentFragment();
-        while (parentFragment && !parentFragment.isRemoving()) {
-            parentFragment = parentFragment.getParentFragment();
-        }
-    
-        return parentFragment;
     }
 }
 

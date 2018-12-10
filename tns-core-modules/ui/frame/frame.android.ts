@@ -742,7 +742,13 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onCreateAnimator(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
+    public onCreateAnimator(fragment: org.nativescript.widgets.FragmentBase, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
+        // HACK: FragmentBase class MUST handle removing nested fragment scenario to workaround
+        // https://code.google.com/p/android/issues/detail?id=55228
+        if (!enter && fragment.getRemovingParentFragment()) {
+            return superFunc.call(fragment, transit, enter, nextAnim);
+        }
+
         let nextAnimString: string;
         switch (nextAnim) {
             case AnimationType.enterFakeResourceId: nextAnimString = "enter"; break;
