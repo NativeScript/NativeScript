@@ -5,10 +5,12 @@
                 export class CompleteCallback {
                     constructor(implementation: ICompleteCallback);
                     onComplete(result: Object, context: Object): void;
+                    onError(error: string, context: Object): void;
                 }
 
                 export interface ICompleteCallback {
                     onComplete(result: Object, context: Object): void;
+                    onError(error: string, context: Object): void;
                 }
 
                 export module Image {
