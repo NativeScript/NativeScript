@@ -151,9 +151,7 @@ function initializeDialogFragment() {
                 this.owner.horizontalAlignment = "stretch";
                 this.owner.verticalAlignment = "stretch";
             }
-            console.log("this._cancelable");
-            console.log(this._cancelable);
-            console.log("--------------------------");
+            dialog.setCanceledOnTouchOutside(this._cancelable);
             return dialog;
         }
 
