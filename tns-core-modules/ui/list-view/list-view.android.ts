@@ -14,8 +14,13 @@ const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
 
+interface RealizedItem {
+    convertView: any,
+    view: View
+}
+
 interface ItemClickListener {
-    new (owner: ListView): android.widget.AdapterView.OnItemClickListener;
+    new(owner: ListView): android.widget.AdapterView.OnItemClickListener;
 }
 
 let ItemClickListener: ItemClickListener;
@@ -48,6 +53,7 @@ export class ListView extends ListViewBase {
 
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
+    public _realizedTemplatesByIndex = new Map<string, Map<number, RealizedItem>>();
 
     @profile
     public createNativeView() {
@@ -169,13 +175,14 @@ export class ListView extends ListViewBase {
 
         this._realizedItems.clear();
         this._realizedTemplates.clear();
+        this._realizedTemplatesByIndex.clear();
     }
 
     public isItemAtIndexVisible(index: number): boolean {
         let nativeView = this.nativeViewProtected;
         const start = nativeView.getFirstVisiblePosition();
-        const end =  nativeView.getLastVisiblePosition();
-        return ( index >= start && index <= end );
+        const end = nativeView.getLastVisiblePosition();
+        return (index >= start && index <= end);
     }
 
     [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
@@ -266,23 +273,15 @@ function ensureListViewAdapterClass() {
                 return null;
             }
 
+            const template = this.owner._getItemTemplate(index);
             let totalItemCount = this.owner.items ? this.owner.items.length : 0;
+            let view: View;
             if (index === (totalItemCount - 1)) {
                 this.owner.notify({ eventName: LOADMOREITEMS, object: this.owner });
             }
 
             // Recycle an existing view or create a new one if needed.
-            let template = this.owner._getItemTemplate(index);
-            let view: View;
-            if (convertView) {
-                view = this.owner._realizedTemplates.get(template.key).get(convertView);
-                if (!view) {
-                    throw new Error(`There is no entry with key '${convertView}' in the realized views cache for template with key'${template.key}'.`);
-                }
-            }
-            else {
-                view = template.createView();
-            }
+            ({ view, convertView } = this.recycleExistingView(index, convertView, template));
 
             let args: ItemEventData = {
                 eventName: ITEMLOADING, object: this.owner, index: index, view: view,
@@ -319,19 +318,74 @@ function ensureListViewAdapterClass() {
 
                         convertView = sp.nativeViewProtected;
                     }
+                    this.cacheViewByIndex(index, template.key, convertView, args.view);
                 }
 
                 // Cache the view for recycling
-                let realizedItemsForTemplateKey = this.owner._realizedTemplates.get(template.key);
-                if (!realizedItemsForTemplateKey) {
-                    realizedItemsForTemplateKey = new Map<android.view.View, View>();
-                    this.owner._realizedTemplates.set(template.key, realizedItemsForTemplateKey);
-                }
-                realizedItemsForTemplateKey.set(convertView, args.view);
-                this.owner._realizedItems.set(convertView, args.view);
+                this.cacheView(index, template.key, convertView, args.view);
             }
 
             return convertView;
+        }
+
+        private recycleExistingView(index: number, convertView: android.view.View, template: KeyedTemplate): { view: View, convertView: android.view.View } {
+            const realizedItemForTemplate = this.getRealizedItemByIndex(template.key, index);
+            let view: View;
+
+            if (convertView) {
+                view = this.owner._realizedTemplates.get(template.key).get(convertView);
+
+                if (!view) {
+                    throw new Error(`There is no entry with key '${convertView}' in the realized views cache for template with key'${template.key}'.`);
+                }
+            }
+            else if (realizedItemForTemplate) {
+                convertView = realizedItemForTemplate.convertView;
+                view = realizedItemForTemplate.view;
+
+                if (!view) {
+                    throw new Error(`There is no entry for index '${index}' in the realized views cache for template with key'${template.key}'.`);
+                }
+            }
+            else {
+                view = template.createView();
+            }
+
+            return { view: view, convertView: convertView };
+        }
+
+        private cacheView(index: number, templateKey: string, convertView: android.view.View, view: View) {
+            let realizedItemsForTemplateKey = this.owner._realizedTemplates.get(templateKey);
+
+            if (!realizedItemsForTemplateKey) {
+                realizedItemsForTemplateKey = new Map<android.view.View, View>();
+                this.owner._realizedTemplates.set(templateKey, realizedItemsForTemplateKey);
+            }
+
+            realizedItemsForTemplateKey.set(convertView, view);
+            this.owner._realizedItems.set(convertView, view);
+        }
+
+        private cacheViewByIndex(index: number, templateKey: string, convertView: android.view.View, view: View) {
+            let realizedItemsByIndex = this.owner._realizedTemplatesByIndex.get(templateKey);
+
+            if (!realizedItemsByIndex) {
+                realizedItemsByIndex = new Map<number, RealizedItem>();
+                this.owner._realizedTemplatesByIndex.set(templateKey, realizedItemsByIndex);
+            }
+
+            realizedItemsByIndex.set(index, { view: view, convertView: convertView });
+        }
+
+        private getRealizedItemByIndex(templateKey: string, index: number) {
+            const realizedItemsByIndex = this.owner._realizedTemplatesByIndex.get(templateKey);
+            let realizedItem: RealizedItem;
+
+            if (realizedItemsByIndex) {
+                realizedItem = realizedItemsByIndex.get(index);
+            }
+
+            return realizedItem;
         }
     }
 
