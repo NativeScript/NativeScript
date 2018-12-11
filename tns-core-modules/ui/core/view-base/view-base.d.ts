@@ -73,6 +73,10 @@ export interface ShowModalOptions {
     stretched?: boolean;
 
     /**
+     * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
+     */
+    cancelable?: boolean;
+    /**
      * An optional parameter that specify options specific to iOS as an object.
      */
     ios?: {
@@ -155,6 +159,7 @@ export abstract class ViewBase extends Observable {
      * @param closeCallback - A function that will be called when the view is closed.
      * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
+     * @param cancelable - An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
      * @param animated - An optional parameter specifying whether to show the modal view with animation.
      * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
      */
@@ -167,6 +172,7 @@ export abstract class ViewBase extends Observable {
      * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
      * @param closeCallback - A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
      * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
+     * @param cancelable - An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
      * @param animated - An optional parameter specifying whether to show the modal view with animation.
      * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
      */
