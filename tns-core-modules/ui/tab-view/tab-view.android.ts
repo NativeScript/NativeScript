@@ -555,8 +555,13 @@ export class TabView extends TabViewBase {
     }
 
     public _onRootViewReset(): void {
-        this.disposeCurrentFragments();
         super._onRootViewReset();
+        
+        // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
+        // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
+        // cleanup the tab fragments to avoid
+        // android.content.res.Resources$NotFoundException: Unable to find resource ID #0xfffffff6
+        this.disposeCurrentFragments();
     }
 
     private disposeCurrentFragments(): void {
