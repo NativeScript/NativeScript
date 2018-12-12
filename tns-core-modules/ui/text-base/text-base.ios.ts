@@ -154,14 +154,14 @@ export class TextBase extends TextBaseCommon {
             case "none":
                 break;
             case "underline":
-                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
                 break;
             case "line-through":
-                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
                 break;
             case "underline line-through":
-                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
-                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
+                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
                 break;
             default:
                 throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
@@ -196,7 +196,7 @@ export class TextBase extends TextBaseCommon {
                 // UITextView's font seems to change inside.
                 dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
             }
-            
+
             const result = NSMutableAttributedString.alloc().initWithString(source);
             result.setAttributesRange(<any>dict, { location: 0, length: source.length });
             if (this.nativeTextViewProtected instanceof UIButton) {
