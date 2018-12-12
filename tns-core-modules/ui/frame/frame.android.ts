@@ -209,8 +209,12 @@ export class Frame extends FrameBase {
     }
 
     public _onRootViewReset(): void {
-        this.disposeCurrentFragment();
         super._onRootViewReset();
+
+        // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
+        // i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
+        // fragments first, and then cleanup the parent fragments
+        this.disposeCurrentFragment();
     }
 
     onUnloaded() {
@@ -223,11 +227,6 @@ export class Frame extends FrameBase {
     }
 
     private disposeCurrentFragment(): void {
-        // when interacting with nested fragments it seems Android is smart enough
-        // to automatically remove child fragments when parent fragment is removed;
-        // however, we must add a fragment.isAdded() guard as our logic will try to 
-        // explicitly remove the already removed child fragment causing an 
-        // IllegalStateException: Fragment has not been attached yet.
         if (!this._currentEntry ||
             !this._currentEntry.fragment ||
             !this._currentEntry.fragment.isAdded()) {
@@ -742,7 +741,13 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onCreateAnimator(fragment: android.support.v4.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
+    public onCreateAnimator(fragment: org.nativescript.widgets.FragmentBase, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
+        // HACK: FragmentBase class MUST handle removing nested fragment scenario to workaround
+        // https://code.google.com/p/android/issues/detail?id=55228
+        if (!enter && fragment.getRemovingParentFragment()) {
+            return superFunc.call(fragment, transit, enter, nextAnim);
+        }
+
         let nextAnimString: string;
         switch (nextAnim) {
             case AnimationType.enterFakeResourceId: nextAnimString = "enter"; break;
