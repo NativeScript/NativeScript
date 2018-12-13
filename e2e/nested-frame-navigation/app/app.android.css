@@ -1,0 +1,35 @@
+﻿Button {
+    font-size: 8;
+    padding-left: 5;
+    padding-right: 5;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-right: 0;
+    height: 50px;
+    color: blue;
+}
+
+TextView {
+    font-size: 10;
+    margin: 0;
+    padding: 0;
+    color: green;
+}
+
+Label {
+    font-size: 10;
+    margin: 0;
+    padding: 0;
+}
+
+GridLayout {
+    margin: 0;
+    padding: 0;
+}
+
+ActionBar {
+    height: 30;
+    margin: 0;
+}

@@ -1,0 +1,24 @@
+<Page codeFile="~/frame-root/frame-home-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <ActionBar class="action-bar">
+        <NavigationButton text="frameHomeBack" tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
+        <Label class="action-bar-title" text="multi frame home page" horizontalAlignment="center" />
+    </ActionBar>
+
+    <GridLayout rows="auto, *, *">
+        <StackLayout>
+            <Button text="navigate to some page (default transition)" tap="onNavigate" />
+            <Button text="navigate to some page (no transition)" tap="onNavigateNone" />
+            <Button text="navigate to some page (slide transition)" tap="onNavigateSlide" />
+            <Button text="navigate to some page (flip transition)" tap="onNavigateFlip" />
+        </StackLayout>
+
+        <GridLayout row="1">
+            <Frame defaultPage="players/players-items-page" />
+        </GridLayout>
+        <GridLayout row="2">
+            <Frame defaultPage="teams/teams-items-page" />
+        </GridLayout>
+    </GridLayout>
+
+</Page>

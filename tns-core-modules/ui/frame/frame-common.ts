@@ -251,6 +251,18 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
     }
 
+    private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
+        let frameAncestor: FrameBase = this;
+        while (frameAncestor) {
+            frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
+            if (frameAncestor === parentFrameCandidate) {
+                return true;
+            }
+        }
+    
+        return false;
+    }
+
     private raiseCurrentPageNavigatedEvents(isBack: boolean) {
         const page = this.currentPage;
         if (page) {
@@ -410,6 +422,23 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return null;
     }
 
+    public _pushInFrameStackRecursive() {
+        this._pushInFrameStack();
+
+        // make sure nested frames order is kept intact i.e. the nested one should always be on top;
+        // see https://github.com/NativeScript/nativescript-angular/issues/1596 for more information
+        const framesToPush = [];
+        for (const frame of frameStack) {
+            if (frame.isNestedWithin(this)) {
+                framesToPush.push(frame);
+            }
+        }
+
+        for (const frame of framesToPush) {
+            frame._pushInFrameStack();
+        }
+    }
+
     public _pushInFrameStack() {
         _pushInFrameStack(this);
     }
@@ -428,8 +457,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _onRootViewReset(): void {
-        this._removeFromFrameStack();
         super._onRootViewReset();
+        this._removeFromFrameStack();
     }
 
     get _childrenCount(): number {
@@ -587,7 +616,7 @@ export function goBack(): boolean {
             if (parentFrame && parentFrame.canGoBack()) {
                 parentFrameCanGoBack = true;
             } else {
-                parentFrame = <FrameBase>getAncestor(top, "Frame");
+                parentFrame = <FrameBase>getAncestor(parentFrame, "Frame");
             }
         }
 

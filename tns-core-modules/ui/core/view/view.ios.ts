@@ -190,6 +190,9 @@ export class View extends ViewCommon {
         } else if (!this._isLaidOut) {
             // Rects could be equal on the first layout and an event should be raised.
             this._raiseLayoutChangedEvent();
+            // But make sure event is raised only once if rects are equal on the first layout as
+            // this method is called twice with equal rects in landscape mode (vs only once in portrait)
+            this._isLaidOut = true;
         }
     }
 
@@ -240,7 +243,7 @@ export class View extends ViewCommon {
             return null;
         }
 
-        if (!this.iosOverflowSafeArea) {
+        if (!this.iosOverflowSafeArea || !this.iosOverflowSafeAreaEnabled) {
             return ios.shrinkToSafeArea(this, frame);
         } else if (this.nativeViewProtected && this.nativeViewProtected.window) {
             return ios.expandBeyondSafeArea(this, frame);
@@ -377,8 +380,14 @@ export class View extends ViewCommon {
         }
 
         const parentController = parentWithController.viewController;
+        if (parentController.presentedViewController) {
+            traceWrite("Parent is already presenting view controller. Close the current modal page before showing another one!",
+                traceCategories.ViewHierarchy, traceMessageType.error);
+            return;
+        }
+
         if (!parentController.view || !parentController.view.window) {
-            traceWrite("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!",
+            traceWrite("Parent page is not part of the window hierarchy.",
                 traceCategories.ViewHierarchy, traceMessageType.error);
             return;
         }
@@ -423,7 +432,7 @@ export class View extends ViewCommon {
         }
     }
 
-    protected _hideNativeModalView(parent: View) {
+    protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         if (!parent || !parent.viewController) {
             traceError("Trying to hide modal view but no parent with viewController specified.")
             return;
@@ -432,8 +441,7 @@ export class View extends ViewCommon {
         const parentController = parent.viewController;
         const animated = (<any>this.viewController).animated;
 
-        super._hideNativeModalView(parent);
-        parentController.dismissModalViewControllerAnimated(animated);
+        parentController.dismissViewControllerAnimatedCompletion(animated, whenClosedCallback);
     }
 
     [isEnabledProperty.getDefault](): boolean {
@@ -795,11 +803,11 @@ export namespace ios {
         }
 
         if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right + fullscreenPosition.left) {
-            adjustedPosition.right = fullscreenPosition.right - fullscreenPosition.left;
+            adjustedPosition.right += fullscreenPosition.right - inWindowRight;
         }
 
         if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
-            adjustedPosition.bottom = fullscreenPosition.bottom - fullscreenPosition.top;
+            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowBottom;
         }
 
         const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
@@ -850,7 +858,8 @@ export namespace ios {
 
             if (parent.nativeViewProtected instanceof UIScrollView) {
                 const nativeView = parent.nativeViewProtected;
-                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
+                const insets = nativeView.safeAreaInsets;
+                safeArea = CGRectMake(insets.left, insets.top, nativeView.contentSize.width - insets.left - insets.right, nativeView.contentSize.height - insets.top - insets.bottom);
                 fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
             } else if (parent.viewController) {
                 const nativeView = parent.viewController.view;
@@ -892,9 +901,10 @@ export namespace ios {
                     let parent = tabView && tabView.parent;
 
                     // Handle Angular scenario where TabView is in a ProxyViewContainer
+                    // It is possible to wrap components in ProxyViewContainers indefinitely
                     // Not using instanceof ProxyViewContainer to avoid circular dependency
                     // TODO: Try moving UILayoutViewController out of view module
-                    if (parent && !parent.nativeViewProtected) {
+                    while (parent && !parent.nativeViewProtected) {
                         parent = parent.parent;
                     }
 
@@ -902,11 +912,11 @@ export namespace ios {
                         const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
                         const currentInsetsTop = this.view.safeAreaInsets.top;
                         const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-    
+
                         const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
                         const currentInsetsBottom = this.view.safeAreaInsets.bottom;
                         const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
-    
+
                         if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
                             const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: additionalInsetsBottom, right: 0 });
                             this.additionalSafeAreaInsets = additionalInsets;

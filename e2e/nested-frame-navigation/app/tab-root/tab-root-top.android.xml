@@ -1,0 +1,21 @@
+<TabView codeFile="~/tab-root/tab-root" androidTabsPosition="top">
+    <TabViewItem title="Players">
+        <GridLayout rows="auto, auto, *">
+            <Label text="tab root top home" />
+            <Button row="1" text="reset app" tap="onReset" />
+            <GridLayout row="2">
+                <Frame defaultPage="players/players-items-page" />
+            </GridLayout>
+        </GridLayout>
+    </TabViewItem>
+    <TabViewItem title="Dummy">
+        <!-- this tab serves as dummy so the actual teams tab is not loaded by default  -->
+        <Label text="this is a tab" />
+    </TabViewItem>
+    <TabViewItem title="Teams">
+        <GridLayout rows="auto, *">
+            <Button text="reset app" tap="onReset" />
+            <Frame row="1" defaultPage="teams/teams-items-page" />
+        </GridLayout>
+    </TabViewItem>
+</TabView>

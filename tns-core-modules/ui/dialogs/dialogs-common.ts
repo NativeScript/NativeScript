@@ -4,6 +4,8 @@ import { Color } from "../../color";
 import { Page } from "../page";
 import { isIOS } from "../../platform";
 import * as frameModule from "../frame";
+import { LoginOptions } from "./dialogs";
+import { isObject, isString } from "../../utils/types";
 
 export const STRING = "string";
 export const PROMPT = "Prompt";
@@ -31,6 +33,16 @@ export module inputType {
      * Email input type.
      */
     export const email: string = "email";
+
+    /**
+     * Number input type
+     */
+    export const number: string = "number";
+
+    /**
+     * Phone input type
+     */
+    export const phone: string = "phone";
 }
 
 /**
@@ -141,4 +153,35 @@ export function getTextFieldColor(): Color {
 
 export function isDialogOptions(arg): boolean {
     return arg && (arg.message || arg.title);
+}
+
+export function parseLoginOptions(args: any[]): LoginOptions {
+    // Handle options object first
+    if (args.length === 1 && isObject(args[0])) {
+        return args[0];
+    }
+
+    let options: LoginOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
+
+    if (isString(args[0])) {
+        options.message = args[0];
+    }
+
+    if (isString(args[1])) {
+        options.userNameHint = args[1];
+    }
+
+    if (isString(args[2])) {
+        options.passwordHint = args[2];
+    }
+
+    if (isString(args[3])) {
+        options.userName = args[3];
+    }
+
+    if (isString(args[4])) {
+        options.password = args[4];
+    }
+
+    return options;
 }

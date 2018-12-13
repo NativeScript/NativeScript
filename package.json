@@ -43,7 +43,7 @@
     "tslint": "^5.4.3",
     "typedoc": "^0.5.10",
     "typedoc-plugin-external-module-name": "git://github.com/PanayotCankov/typedoc-plugin-external-module-name.git#with-js",
-    "typescript": "^2.6.1"
+    "typescript": "^3.1.6"
   },
   "scripts": {
     "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps && npm run dev-link-e2e-modal",

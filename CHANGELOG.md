@@ -1,17 +1,95 @@
-Cross Platform Modules Changelog
-==============================
+<a name="5.1.0"></a>
+# [5.1.0](https://github.com/NativeScript/NativeScript/compare/5.0.5...5.1.0) (2018-12-05)
 
-<a name="5.0.0-rc"></a>
-## [5.0.0 - RC](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0-rc) (2018-10-17)
+
+### Bug Fixes
+
+* **android-styling:** correctly detect if drawable uses ColorFilter ([#6342](https://github.com/NativeScript/NativeScript/issues/6342)) ([11d3884](https://github.com/NativeScript/NativeScript/commit/11d3884)), closes [#6341](https://github.com/NativeScript/NativeScript/issues/6341)
+* **listview:** incorrect layout when scroll ([#6656](https://github.com/NativeScript/NativeScript/issues/6656)) ([63be78a](https://github.com/NativeScript/NativeScript/commit/63be78a))
+* **modals:** regression with modals in angular ([#6655](https://github.com/NativeScript/NativeScript/issues/6655)) ([30df4d9](https://github.com/NativeScript/NativeScript/commit/30df4d9))
+* **searchbar:** isEnabled and isUserInteractionEnabled ([#6636](https://github.com/NativeScript/NativeScript/issues/6636)) ([25c99d8](https://github.com/NativeScript/NativeScript/commit/25c99d8))
+* **tests:** Sporadic failures after upgrade to WebKit 12.0 ([#6635](https://github.com/NativeScript/NativeScript/issues/6635)) ([65e3a19](https://github.com/NativeScript/NativeScript/commit/65e3a19))
+
+
+### Features
+
+* add hints options for username and password fields ([#6416](https://github.com/NativeScript/NativeScript/issues/6416)) ([c834181](https://github.com/NativeScript/NativeScript/commit/c834181))
+* **ActionBar:** apply text color when largeTitletextAttribute is set on iOS ([#6631](https://github.com/NativeScript/NativeScript/issues/6631)) ([b58dff0](https://github.com/NativeScript/NativeScript/commit/b58dff0))
+* **modals:** Enable modal dialog chaining in IOS ([#6637](https://github.com/NativeScript/NativeScript/issues/6637)) ([64bccb9](https://github.com/NativeScript/NativeScript/commit/64bccb9))
+* **scrollbar:** add isScrollEnabled property ([#6640](https://github.com/NativeScript/NativeScript/issues/6640)) ([ae0fa90](https://github.com/NativeScript/NativeScript/commit/ae0fa90))
+* **tabview:** add androidSwipeEnabled property ([#6652](https://github.com/NativeScript/NativeScript/issues/6652)) ([0b239d7](https://github.com/NativeScript/NativeScript/commit/0b239d7))
+
+
+
+<a name="5.0.5"></a>
+## [5.0.5](https://github.com/NativeScript/NativeScript/compare/5.0.4...5.0.5) (2018-11-26)
+
+
+
+<a name="5.0.4"></a>
+## [5.0.4](https://github.com/NativeScript/NativeScript/compare/5.0.3...5.0.4) (2018-11-26)
+
+
+### Bug Fixes
+
+* **android-fragment:** child already has a parent ([#6589](https://github.com/NativeScript/NativeScript/issues/6589)) ([5b9b335](https://github.com/NativeScript/NativeScript/commit/5b9b335))
+* **back-navigation:** app freeze on going back in parent frame with states ([#6595](https://github.com/NativeScript/NativeScript/issues/6595)) ([fc1f8c1](https://github.com/NativeScript/NativeScript/commit/fc1f8c1))
+
+
+
+<a name="5.0.3"></a>
+## [5.0.3](https://github.com/NativeScript/NativeScript/compare/5.0.2...5.0.3) (2018-11-20)
+
+
+### Bug Fixes
+
+* crash on Android Tab-View [#6466](https://github.com/NativeScript/NativeScript/issues/6466) ([#6467](https://github.com/NativeScript/NativeScript/issues/6467)) ([db33cf3](https://github.com/NativeScript/NativeScript/commit/db33cf3)), closes [ac04ede#diff-f1459d509d1432b432c29bcd30e462fbL97](https://github.com/ac04ede/issues/diff-f1459d509d1432b432c29bcd30e462fbL97)
+* doc of transitionAndroid property of NavigationEntry interface ([#6563](https://github.com/NativeScript/NativeScript/issues/6563)) ([efe3318](https://github.com/NativeScript/NativeScript/commit/efe3318))
+* layoutChanged event in landscape ([#6520](https://github.com/NativeScript/NativeScript/issues/6520)) ([7fbdc7a](https://github.com/NativeScript/NativeScript/commit/7fbdc7a))
+* nested frames order with tabs & suspend/resume ([#6528](https://github.com/NativeScript/NativeScript/issues/6528)) ([7df8038](https://github.com/NativeScript/NativeScript/commit/7df8038))
+* Resolve incorrect name of listener when unsubscribing ([#6487](https://github.com/NativeScript/NativeScript/issues/6487)) ([af5eb73](https://github.com/NativeScript/NativeScript/commit/af5eb73))
+* Resolve incorrect name of listener when unsubscribing ([#6487](https://github.com/NativeScript/NativeScript/issues/6487)) ([2933a9a](https://github.com/NativeScript/NativeScript/commit/2933a9a))
+* **image:** uncaught error in promise with image handling ([#6453](https://github.com/NativeScript/NativeScript/issues/6453)) ([950fdcf](https://github.com/NativeScript/NativeScript/commit/950fdcf))
+* **android:** back navigation on app suspend/resume ([#6489](https://github.com/NativeScript/NativeScript/issues/6489)) ([999e378](https://github.com/NativeScript/NativeScript/commit/999e378))
+* **android:** back navigation on app suspend/resume ([#6489](https://github.com/NativeScript/NativeScript/issues/6489)) ([fac970e](https://github.com/NativeScript/NativeScript/commit/fac970e))
+* **android:** IllegalStateException with tabview&nested frames ([#6495](https://github.com/NativeScript/NativeScript/issues/6495)) ([7d21b5c](https://github.com/NativeScript/NativeScript/commit/7d21b5c))
+* **android:** IllegalStateException with tabview&nested frames ([#6495](https://github.com/NativeScript/NativeScript/issues/6495)) ([41ba93d](https://github.com/NativeScript/NativeScript/commit/41ba93d))
+* **ios:** safe area handling in scrollview ([#6561](https://github.com/NativeScript/NativeScript/issues/6561)) ([51a191f](https://github.com/NativeScript/NativeScript/commit/51a191f))
+* **ios:** scrollview safe area when no scroll ([#6568](https://github.com/NativeScript/NativeScript/issues/6568)) ([f90995f](https://github.com/NativeScript/NativeScript/commit/f90995f))
+
+
+### Features
+
+* add number and phone input types for prompt dialog ([#6365](https://github.com/NativeScript/NativeScript/issues/6365)) ([7e7c050](https://github.com/NativeScript/NativeScript/commit/7e7c050))
+
+
+
+<a name="5.0.2"></a>
+## [5.0.2](https://github.com/NativeScript/NativeScript/compare/5.0.1...5.0.2) (2018-11-07)
+
+
+### Bug Fixes
+
+* **android:** back navigation on app suspend/resume ([#6489](https://github.com/NativeScript/NativeScript/issues/6489)) ([999e378](https://github.com/NativeScript/NativeScript/commit/999e378))
+* **android:** IllegalStateException with tabview and nested frames ([#6495](https://github.com/NativeScript/NativeScript/issues/6495)) ([7d21b5c](https://github.com/NativeScript/NativeScript/commit/7d21b5c))
+* Resolve incorrect name of listener when unsubscribing ([#6487](https://github.com/NativeScript/NativeScript/issues/6487)) ([af5eb73](https://github.com/NativeScript/NativeScript/commit/af5eb73))
+
+
+
+<a name="5.0.0"></a>
+# [5.0.0](https://github.com/NativeScript/NativeScript/compare/4.2.1...5.0.0) (2018-11-01)
 
 ### Bug Fixes
 
 * don't crash on missing resources in tab-view and action-bar ([#6388](https://github.com/NativeScript/NativeScript/issues/6388)) ([56a1b12](https://github.com/NativeScript/NativeScript/commit/56a1b12))
 * nested fragments interact through child fragment manager ([#6293](https://github.com/NativeScript/NativeScript/issues/6293)) ([3071720](https://github.com/NativeScript/NativeScript/commit/3071720))
 * Page and Frame isLoaded undefined checks ([#6255](https://github.com/NativeScript/NativeScript/issues/6255)) ([12fade7](https://github.com/NativeScript/NativeScript/commit/12fade7))
+* **connectivity:** making startMonitoring() behave on iOS as on Android ([#6373](https://github.com/NativeScript/NativeScript/issues/6373)) ([a58fc52](https://github.com/NativeScript/NativeScript/commit/a58fc52))
+* **observable-array:** reduce no longer ignores zero as initial value ([#6402](https://github.com/NativeScript/NativeScript/issues/6402)) ([c0438df](https://github.com/NativeScript/NativeScript/commit/c0438df))
 * **modals:** application activityBackPressed event not fired for modals ([#6261](https://github.com/NativeScript/NativeScript/issues/6261)) ([8575c60](https://github.com/NativeScript/NativeScript/commit/8575c60))
 * **list-view:** Layout list-view items on request ([#6159](https://github.com/NativeScript/NativeScript/issues/6159)) ([ec24c5a](https://github.com/NativeScript/NativeScript/commit/ec24c5a))
 * **tab-view:** Title and icon positioning ([#6362](https://github.com/NativeScript/NativeScript/issues/6362)) ([e3d5f0d](https://github.com/NativeScript/NativeScript/commit/e3d5f0d))
+* **tab-view:** change androidOffscreenTabLimit to 1 when using bottom tabs for android([#6476](https://github.com/NativeScript/NativeScript/issues/6476)) ([371fc9b](https://github.com/NativeScript/NativeScript/commit/371fc9b))
 * **android:** HEAD request should return statusCode ([7e89f94](https://github.com/NativeScript/NativeScript/commit/7e89f94))
 * **android:** nested frames on app suspend/resume ([#6339](https://github.com/NativeScript/NativeScript/issues/6339)) ([0bf6dc2](https://github.com/NativeScript/NativeScript/commit/0bf6dc2))
 * **android:** parallel navigations should not be triggered ([#6275](https://github.com/NativeScript/NativeScript/issues/6275)) ([6c9fa16](https://github.com/NativeScript/NativeScript/commit/6c9fa16))
@@ -26,6 +104,9 @@ Cross Platform Modules Changelog
 * add ability to pass touch event through parent view ([#6204](https://github.com/NativeScript/NativeScript/issues/6204)) ([2625683](https://github.com/NativeScript/NativeScript/commit/2625683))
 * implement capitalization type option for prompt dialogs ([#6325](https://github.com/NativeScript/NativeScript/issues/6325)) ([ae6a661](https://github.com/NativeScript/NativeScript/commit/ae6a661))
 * **application-settings:** implemented allKeys method ([#6371](https://github.com/NativeScript/NativeScript/issues/6371)) ([829d18b](https://github.com/NativeScript/NativeScript/commit/829d18b))
+* **frame:** add new actionBarVisibility property ([#6449](https://github.com/NativeScript/NativeScript/issues/6449)) ([0002624](https://github.com/NativeScript/NativeScript/commit/0002624))
+* **frame:** hardware back in parent frame when back states available ([#6446](https://github.com/NativeScript/NativeScript/issues/6446)) ([af651d6](https://github.com/NativeScript/NativeScript/commit/af651d6))
+* **grid:** implement addChildAtCell ([#6411](https://github.com/NativeScript/NativeScript/issues/6411)) ([a3f1493](https://github.com/NativeScript/NativeScript/commit/a3f1493))
 * **image-asset-ios:** add autoScaleFactor option to switch auto scaling ([#6127](https://github.com/NativeScript/NativeScript/issues/6127)) ([81e63ee](https://github.com/NativeScript/NativeScript/commit/81e63ee))
 * **styling:** Add two functions to control applicationAdditionalSelectors ([#6124](https://github.com/NativeScript/NativeScript/issues/6124)) ([85b8c01](https://github.com/NativeScript/NativeScript/commit/85b8c01))
 * **tslib:** add tslib helpers to global ([#6351](https://github.com/NativeScript/NativeScript/issues/6351)) ([1232d1e](https://github.com/NativeScript/NativeScript/commit/1232d1e))
@@ -87,6 +168,8 @@ export function pageLoaded(args: EventData) {
      wrapLayout = page.getViewById<LayoutBase>("wrapLayout"); // or wrapLayout = page.getViewById<WrapLayout>("wrapLayout"); 
  }
 ```
+* **android:** change androidOffscreenTabLimit to 1 when using bottom tabs of tab-view([#6476](https://github.com/NativeScript/NativeScript/issues/6476)) ([371fc9b](https://github.com/NativeScript/NativeScript/commit/371fc9b))
+
 * **ios:** widgets native view lifecycle refactoring - native view is now created right before they are added to visual tree ([#6102](https://github.com/NativeScript/NativeScript/issues/6102)) ([46705ee](https://github.com/NativeScript/NativeScript/commit/46705ee)):
 
 The iOS widgets native view lifecycle now matches the Android widgets. Before, the iOS native view was created in the widget constructor and you could manipulate the native view right after the widget is instantiated. After the refactoring, the widget's native view will be created when it's added to the visual tree. The most correct way to manipulate the native view is in the `loaded` event handler.
