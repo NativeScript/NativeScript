@@ -21,18 +21,20 @@ import { Frame, NavigationEntry } from "../ui/frame";
 import * as utils from "../utils/utils";
 import { profile, level as profilingLevel, Level } from "../profiling";
 
-// Must use .extend() to make the "window" be a valid iOS selector
-var Responder = UIResponder.extend({
+// NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430 
+// TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
+// https://github.com/NativeScript/ios-runtime/issues/1012
+var Responder = (<any>UIResponder).extend({
     get window() {
-        // TODO: Do we need to actually have a valid initial window value here???
-        return this._window;
+        return iosApp ? iosApp.window : undefined;
     },
     set window(setWindow) {
-        this._window = setWindow;
+        // NOOP
     }
 }, {
-    protocols: [UIApplicationDelegate]
-});
+        protocols: [UIApplicationDelegate]
+    }
+);
 
 class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
@@ -159,7 +161,7 @@ class IOSApplication implements IOSApplicationDefinition {
             this.setWindowContent(args.root);
         } else {
             this._window = UIApplication.sharedApplication.delegate.window;
-        }   
+        }
     }
 
     @profile
