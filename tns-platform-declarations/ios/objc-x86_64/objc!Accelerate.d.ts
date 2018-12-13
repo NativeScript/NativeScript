@@ -1,6 +1,4 @@
 
-declare function ATLU_DestroyThreadMemory(): void;
-
 interface BNNSActivation {
 	function: BNNSActivationFunction;
 	alpha: number;

@@ -160,14 +160,3 @@ interface Array<T> {
 //Dialogs
 declare function alert(message?: any): void;
 declare function confirm(message?: string): boolean;
-
-// Embedding
-declare interface NativeScriptEmbedderDelegate /* NSObject */ {
-    presentNativeScriptApp(any/* UIViewController*/): any;
-    performSelectorWithObject(string, any): any;
-}
-
-declare class NativeScriptEmbedder {
-    public static sharedInstance(): NativeScriptEmbedder;
-    public delegate: NativeScriptEmbedderDelegate;
-}

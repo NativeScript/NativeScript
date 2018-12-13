@@ -83,6 +83,8 @@ declare function CTFontCollectionCreateMatchingFontDescriptors(collection: any):
 
 declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback(collection: any, sortCallback: interop.FunctionReference<(p1: UIFontDescriptor, p2: UIFontDescriptor, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, refCon: interop.Pointer | interop.Reference<any>): NSArray<any>;
 
+declare function CTFontCollectionCreateMatchingFontDescriptorsWithOptions(collection: any, options: NSDictionary<any, any>): NSArray<any>;
+
 declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any>, options: NSDictionary<any, any>): any;
 
 declare function CTFontCollectionGetTypeID(): number;
@@ -591,6 +593,8 @@ declare const enum CTFrameProgression {
 declare function CTFramesetterCreateFrame(framesetter: any, stringRange: CFRange, path: any, frameAttributes: NSDictionary<any, any>): any;
 
 declare function CTFramesetterCreateWithAttributedString(string: NSAttributedString): any;
+
+declare function CTFramesetterCreateWithTypesetter(typesetter: any): any;
 
 declare function CTFramesetterGetTypeID(): number;
 
@@ -1961,6 +1965,8 @@ declare var kCTStrokeWidthAttributeName: string;
 declare var kCTSuperscriptAttributeName: string;
 
 declare var kCTTabColumnTerminatorsAttributeName: string;
+
+declare var kCTTypesetterOptionAllowUnboundedLayout: string;
 
 declare var kCTTypesetterOptionDisableBidiProcessing: string;
 

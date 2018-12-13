@@ -122,6 +122,8 @@ declare const kDNSServiceErr_Unsupported: number;
 
 declare const kDNSServiceFlagsAdd: number;
 
+declare const kDNSServiceFlagsAllowExpiredAnswers: number;
+
 declare const kDNSServiceFlagsAllowRemoteQuery: number;
 
 declare const kDNSServiceFlagsAutoTrigger: number;
@@ -133,6 +135,8 @@ declare const kDNSServiceFlagsBogus: number;
 declare const kDNSServiceFlagsBrowseDomains: number;
 
 declare const kDNSServiceFlagsDefault: number;
+
+declare const kDNSServiceFlagsExpiredAnswer: number;
 
 declare const kDNSServiceFlagsForce: number;
 

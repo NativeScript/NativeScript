@@ -502,8 +502,6 @@ declare var kCFHTTPAuthenticationSchemeNegotiate: string;
 
 declare var kCFHTTPAuthenticationSchemeNegotiate2: string;
 
-declare var kCFHTTPAuthenticationSchemeOAuth1: string;
-
 declare var kCFHTTPAuthenticationSchemeXMobileMeAuthToken: string;
 
 declare var kCFHTTPAuthenticationUsername: string;
@@ -572,10 +570,6 @@ declare var kCFStreamErrorDomainNetDB: number;
 
 declare var kCFStreamErrorDomainNetServices: number;
 
-declare var kCFStreamErrorDomainSOCKS: number;
-
-declare var kCFStreamErrorDomainSSL: number;
-
 declare var kCFStreamErrorDomainSystemConfiguration: number;
 
 declare var kCFStreamErrorDomainWinSock: number;
@@ -609,6 +603,8 @@ declare var kCFStreamNetworkServiceType: string;
 declare var kCFStreamNetworkServiceTypeBackground: string;
 
 declare var kCFStreamNetworkServiceTypeCallSignaling: string;
+
+declare var kCFStreamNetworkServiceTypeResponsiveData: string;
 
 declare var kCFStreamNetworkServiceTypeVideo: string;
 
@@ -668,18 +664,6 @@ declare var kCFStreamPropertyNoCellular: string;
 
 declare var kCFStreamPropertyProxyLocalBypass: string;
 
-declare var kCFStreamPropertySOCKSPassword: string;
-
-declare var kCFStreamPropertySOCKSProxy: string;
-
-declare var kCFStreamPropertySOCKSProxyHost: string;
-
-declare var kCFStreamPropertySOCKSProxyPort: string;
-
-declare var kCFStreamPropertySOCKSUser: string;
-
-declare var kCFStreamPropertySOCKSVersion: string;
-
 declare var kCFStreamPropertySSLContext: string;
 
 declare var kCFStreamPropertySSLPeerCertificates: string;
@@ -688,15 +672,11 @@ declare var kCFStreamPropertySSLPeerTrust: string;
 
 declare var kCFStreamPropertySSLSettings: string;
 
-declare var kCFStreamPropertyShouldCloseNativeSocket: string;
-
 declare var kCFStreamPropertySocketExtendedBackgroundIdleMode: string;
 
 declare var kCFStreamPropertySocketRemoteHost: string;
 
 declare var kCFStreamPropertySocketRemoteNetService: string;
-
-declare var kCFStreamPropertySocketSecurityLevel: string;
 
 declare var kCFStreamSSLAllowsAnyRoot: string;
 
@@ -713,20 +693,6 @@ declare var kCFStreamSSLLevel: string;
 declare var kCFStreamSSLPeerName: string;
 
 declare var kCFStreamSSLValidatesCertificateChain: string;
-
-declare var kCFStreamSocketSOCKSVersion4: string;
-
-declare var kCFStreamSocketSOCKSVersion5: string;
-
-declare var kCFStreamSocketSecurityLevelNegotiatedSSL: string;
-
-declare var kCFStreamSocketSecurityLevelNone: string;
-
-declare var kCFStreamSocketSecurityLevelSSLv2: string;
-
-declare var kCFStreamSocketSecurityLevelSSLv3: string;
-
-declare var kCFStreamSocketSecurityLevelTLSv1: string;
 
 declare var kCFURLErrorFailingURLErrorKey: string;
 
