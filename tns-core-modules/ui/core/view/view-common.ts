@@ -7,7 +7,8 @@ import {
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty
+    InheritedProperty,
+    ShowModalOptions
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -215,23 +216,39 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return undefined;
     }
 
-    public showModal(): ViewDefinition {
-        if (arguments.length === 0) {
+    private getModalOptions(args: IArguments): { view: ViewCommon, options: ShowModalOptions } {
+        if (args.length === 0) {
             throw new Error("showModal without parameters is deprecated. Please call showModal on a view instance instead.");
         } else {
-            const firstAgrument = arguments[0];
-            const context: any = arguments[1];
-            const closeCallback: Function = arguments[2];
-            const fullscreen: boolean = arguments[3];
-            const animated = arguments[4];
-            const stretched = arguments[5];
+            let options: ShowModalOptions = null;
 
-            const view = firstAgrument instanceof ViewCommon
-                ? firstAgrument : <ViewCommon>createViewFromEntry({ moduleName: firstAgrument });
+            if (args.length === 2) {
+                options = <ShowModalOptions>args[1];
+            } else {
+                // TODO: Add deprecation warning
+                options = {
+                    context: args[1],
+                    closeCallback: args[2],
+                    fullscreen: args[3],
+                    animated: args[4],
+                    stretched: args[5]
+                };
+            }
 
-            view._showNativeModalView(this, context, closeCallback, fullscreen, animated, stretched);
-            return view;
+            const firstArgument = args[0];
+            const view = firstArgument instanceof ViewCommon
+                ? firstArgument : <ViewCommon>createViewFromEntry({ moduleName: firstArgument });
+
+            return { view, options };
         }
+    }
+
+    public showModal(): ViewDefinition {
+        const { view, options } = this.getModalOptions(arguments);
+
+        view._showNativeModalView(this, options);
+
+        return view;
     }
 
     public closeModal(...args) {
@@ -250,12 +267,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return this._modal;
     }
 
-    protected _showNativeModalView(parent: ViewCommon, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
+    protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
         _rootModalViews.push(this);
 
         parent._modal = this;
         this._modalParent = parent;
-        this._modalContext = context;
+        this._modalContext = options.context;
         const that = this;
         this._closeModalCallback = function (...originalArgs) {
             if (that._closeModalCallback) {
@@ -268,8 +285,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 parent._modal = null;
 
                 const whenClosedCallback = () => {
-                    if (typeof closeCallback === "function") {
-                        closeCallback.apply(undefined, originalArgs);
+                    if (typeof options.closeCallback === "function") {
+                        options.closeCallback.apply(undefined, originalArgs);
                     }
                 }
 
