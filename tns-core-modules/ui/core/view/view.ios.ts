@@ -418,13 +418,11 @@ export class View extends ViewCommon {
             controller.modalPresentationStyle = presentationStyle;
 
             if (presentationStyle === UIModalPresentationStyle.Popover) {
-                // TODO: get the width and height of the page and apply it here ?
-                // controller.preferredContentSize = CGSizeMake(400, 400);
                 const popoverPresentationController = controller.popoverPresentationController;
-
                 const view = parent.nativeViewProtected;
+                // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
+                // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
                 popoverPresentationController.sourceView = view;
-                // popoverPresentationController.backgroundColor = this.ios.view.backgroundColor;
                 popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
             }
         }
