@@ -457,8 +457,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _onRootViewReset(): void {
-        this._removeFromFrameStack();
         super._onRootViewReset();
+        this._removeFromFrameStack();
     }
 
     get _childrenCount(): number {

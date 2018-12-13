@@ -37,7 +37,6 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
     let onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
-        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
     var navigatedToEventHandler = function (args) {

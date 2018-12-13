@@ -45,7 +45,7 @@ function initializeNativeClasses() {
         return;
     }
 
-    class TabFragmentImplementation extends android.support.v4.app.Fragment {
+    class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
         private tab: TabView;
         private index: number;
 
@@ -55,7 +55,6 @@ function initializeNativeClasses() {
         }
 
         static newInstance(tabId: number, index: number): TabFragmentImplementation {
-
             const args = new android.os.Bundle();
             args.putInt(TABID, tabId);
             args.putInt(INDEX, index);
@@ -78,10 +77,6 @@ function initializeNativeClasses() {
             const tabItem = this.tab.items[this.index];
 
             return tabItem.view.nativeViewProtected;
-        }
-
-        public onDestroyView() {
-            super.onDestroyView();
         }
     }
 
@@ -437,6 +432,10 @@ export class TabView extends TabViewBase {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
             viewPager.setLayoutParams(lp);
+
+            if (!this.androidSwipeEnabled) {
+                viewPager.setSwipePageEnabled(false);
+            }
         } else {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
@@ -556,8 +555,13 @@ export class TabView extends TabViewBase {
     }
 
     public _onRootViewReset(): void {
-        this.disposeCurrentFragments();
         super._onRootViewReset();
+        
+        // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
+        // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
+        // cleanup the tab fragments to avoid
+        // android.content.res.Resources$NotFoundException: Unable to find resource ID #0xfffffff6
+        this.disposeCurrentFragments();
     }
 
     private disposeCurrentFragments(): void {
