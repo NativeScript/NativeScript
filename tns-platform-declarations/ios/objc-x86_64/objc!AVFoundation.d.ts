@@ -2466,6 +2466,33 @@ declare var AVAudioSessionDelegate: {
 
 declare const enum AVAudioSessionErrorCode {
 
+	// TODO: Remove the deprecated Code... values with the next typings update
+	// (should happen automatically when they are produced from the script)
+	CodeNone = 0,
+
+	CodeMediaServicesFailed = 1836282486,
+
+	CodeIsBusy = 560030580,
+
+	CodeIncompatibleCategory = 560161140,
+
+	CodeCannotInterruptOthers = 560557684,
+
+	CodeMissingEntitlement = 1701737535,
+
+	CodeSiriIsRecording = 1936290409,
+
+	CodeCannotStartPlaying = 561015905,
+
+	CodeCannotStartRecording = 561145187,
+
+	CodeBadParam = -50,
+
+	CodeResourceNotAvailable = 561145203,
+
+	CodeUnspecified = 2003329396,
+	// /TODO
+
 	None = 0,
 
 	MediaServicesFailed = 1836282486,

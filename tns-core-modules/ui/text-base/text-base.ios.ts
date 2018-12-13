@@ -154,14 +154,17 @@ export class TextBase extends TextBaseCommon {
             case "none":
                 break;
             case "underline":
-                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
+                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
+                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             case "line-through":
-                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
+                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
+                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             case "underline line-through":
-                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
-                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
+                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
+                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             default:
                 throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
