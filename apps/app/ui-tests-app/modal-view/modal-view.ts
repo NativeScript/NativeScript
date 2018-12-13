@@ -4,7 +4,7 @@ import { Label } from "tns-core-modules/ui/label";
 function createCloseCallback(label: Label, context?: string): (username: string, password: string) => void {
     return function (username: string, password: string) {
         let result = username + "/" + password;
-        result = context ? context + ": " + result : result;
+        result = context ? context + "/" + result : result;
         console.log(result);
         label.text = result;
     }
