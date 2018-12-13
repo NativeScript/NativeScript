@@ -153,8 +153,8 @@ allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 import * as frameTests from "./ui/frame/frame-tests";
 allTests["FRAME"] = frameTests;
 
-import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
-allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
+// import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
+// allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 
 import * as viewTests from "./ui/view/view-tests";
 allTests["VIEW"] = viewTests;
@@ -255,8 +255,8 @@ allTests["SEARCH-BAR"] = searchBarTests;
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
-import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
-allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
+// import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
+// allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
 import * as rootViewTests from "./ui/root-view/root-view-tests";
 allTests["ROOT-VIEW"] = rootViewTests;
