@@ -2,11 +2,9 @@ import * as app from "tns-core-modules/application/application";
 import * as frame from "tns-core-modules/ui/frame";
 import * as helper from "../ui/helper";
 import * as TKUnit from "../TKUnit";
-import { Button } from "tns-core-modules/ui/button/button";
 import { Color } from "tns-core-modules/color";
+import { parse } from "tns-core-modules/ui/builder";
 import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 
 const appCssFileName = "./app/application.css";
 const appNewCssFileName = "./app/app-new.css";
@@ -19,27 +17,19 @@ const mainPageXmlFileName = "./app/main-page.xml";
 
 const green = new Color("green");
 
-const mainPageFactory = function (): Page {
-    const page = new Page();
-    const stack = new StackLayout();
-    const label = new Label();
-    label.id = "label";
-    label.text = "label";
-    stack.addChild(label);
-    page.content = stack;
-    return page;
-}
+const mainPageTemplate = `
+    <Page>
+        <StackLayout>
+            <Label id="label" text="label"></Label>
+        </StackLayout>
+    </Page>`;
 
-const pageFactory = function (): Page {
-    const page = new Page();
-    const stack = new StackLayout();
-    const button = new Button();
-    button.id = "button";
-    button.text = "button";
-    stack.addChild(button);
-    page.content = stack;
-    return page;
-}
+const pageTemplate = `
+    <Page>
+        <StackLayout>
+            <Button id="button" text="button"></Button>
+        </StackLayout>
+    </Page>`;
 
 export function test_onLiveSync_HmrContext_AppStyle_AppNewCss() {
     _test_onLiveSync_HmrContext_AppStyle(appNewCssFileName);
@@ -78,7 +68,8 @@ export function test_onLiveSync_HmrContext_Markup_MainPageXml() {
 }
 
 export function setUpModule() {
-    helper.navigate(mainPageFactory);
+    const mainPage = <Page>parse(mainPageTemplate);
+    helper.navigate(() => mainPage);
 }
 
 export function tearDown() {
@@ -88,7 +79,8 @@ export function tearDown() {
 function _test_onLiveSync_HmrContext_AppStyle(styleFileName: string) {
     const pageBeforeNavigation = helper.getCurrentPage();
 
-    helper.navigateWithHistory(pageFactory);
+    const page = <Page>parse(pageTemplate);
+    helper.navigateWithHistory(() => page);
     app.setCssFileName(styleFileName);
 
     const pageBeforeLiveSync = helper.getCurrentPage();
@@ -110,7 +102,8 @@ function _test_onLiveSync_HmrContext_AppStyle(styleFileName: string) {
 }
 
 function _test_onLiveSync_HmrContext(context: { type, module }) {
-    helper.navigateWithHistory(pageFactory);
+    const page = <Page>parse(pageTemplate);
+    helper.navigateWithHistory(() => page);
     global.__onLiveSync({ type: context.type, module: context.module });
 
     TKUnit.waitUntilReady(() => !!frame.topmost());
