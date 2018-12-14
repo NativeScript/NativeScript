@@ -2,6 +2,8 @@
 import * as trace from "tns-core-modules/trace";
 import * as tests from "../testRunner";
 
+let executeTests = true;
+
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
@@ -21,6 +23,8 @@ function runTests() {
 
 export function onNavigatedTo(args) {
     args.object.off(Page.loadedEvent, onNavigatedTo);
-
-    runTests();
+    if (executeTests) {
+        executeTests = false;
+        runTests();
+    }
 }

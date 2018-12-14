@@ -161,7 +161,7 @@ class IOSApplication implements IOSApplicationDefinition {
             this.setWindowContent(args.root);
         } else {
             this._window = UIApplication.sharedApplication.delegate.window;
-        }
+        }   
     }
 
     @profile
@@ -373,10 +373,10 @@ function setViewControllerView(view: View): void {
     }
 }
 
-global.__onLiveSync = function () {
+global.__onLiveSync = function __onLiveSync(context?: HmrContext) {
     if (!started) {
         return;
     }
 
-    livesync();
+    livesync(context);
 }

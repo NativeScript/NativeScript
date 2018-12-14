@@ -32,7 +32,14 @@ export function hasLaunched(): boolean {
 
 export { Observable };
 
-import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData, LoadAppCSSEventData } from ".";
+import {
+    AndroidApplication,
+    CssChangedEventData,
+    getRootView,
+    iOSApplication,
+    LoadAppCSSEventData,
+    UnhandledErrorEventData
+} from "./application";
 
 export { UnhandledErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
@@ -70,10 +77,21 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
     app = instance;
 }
 
-export function livesync() {
+export function livesync(context?: HmrContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    if (liveSyncCore) {
+    let reapplyAppCss = false
+
+    if (context) {
+        const fullFileName = getCssFileName();
+        const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
+        const extensions = ["css", "scss"];
+        reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+    }
+
+    if (reapplyAppCss) {
+        getRootView()._onCssStateChange();
+    } else if (liveSyncCore) {
         liveSyncCore();
     }
 }
@@ -92,7 +110,7 @@ export function loadAppCss(): void {
         events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
     } catch (e) {
         throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
-           `You may need to register it inside ./app/vendor.ts.`);
+            `You may need to register it inside ./app/vendor.ts.`);
     }
 }
 
