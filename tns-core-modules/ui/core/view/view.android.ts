@@ -6,7 +6,7 @@ import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Color, EventData
+    Color, EventData, ShowModalOptions
 } from "./view-common";
 
 import {
@@ -574,9 +574,8 @@ export class View extends ViewCommon {
 
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
-
-    protected _showNativeModalView(parent: View, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) {
-        super._showNativeModalView(parent, context, closeCallback, fullscreen, stretched);
+    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
+        super._showNativeModalView(parent, options);
         if (!this.backgroundColor) {
             this.backgroundColor = new Color("White");
         }
@@ -590,8 +589,8 @@ export class View extends ViewCommon {
 
         const dialogOptions: DialogOptions = {
             owner: this,
-            fullscreen: !!fullscreen,
-            stretched: !!stretched,
+            fullscreen: !!options.fullscreen,
+            stretched: !!options.stretched,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
         }

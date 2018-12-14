@@ -21,9 +21,20 @@ import { Frame, NavigationEntry } from "../ui/frame";
 import * as utils from "../utils/utils";
 import { profile, level as profilingLevel, Level } from "../profiling";
 
-class Responder extends UIResponder {
-    //
-}
+// NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430 
+// TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
+// https://github.com/NativeScript/ios-runtime/issues/1012
+var Responder = (<any>UIResponder).extend({
+    get window() {
+        return iosApp ? iosApp.window : undefined;
+    },
+    set window(setWindow) {
+        // NOOP
+    }
+}, {
+        protocols: [UIApplicationDelegate]
+    }
+);
 
 class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
