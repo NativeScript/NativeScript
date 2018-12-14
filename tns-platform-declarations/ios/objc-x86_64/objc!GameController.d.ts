@@ -150,11 +150,15 @@ declare class GCExtendedGamepad extends NSObject {
 
 	readonly leftThumbstick: GCControllerDirectionPad;
 
+	readonly leftThumbstickButton: GCControllerButtonInput;
+
 	readonly leftTrigger: GCControllerButtonInput;
 
 	readonly rightShoulder: GCControllerButtonInput;
 
 	readonly rightThumbstick: GCControllerDirectionPad;
+
+	readonly rightThumbstickButton: GCControllerButtonInput;
 
 	readonly rightTrigger: GCControllerButtonInput;
 

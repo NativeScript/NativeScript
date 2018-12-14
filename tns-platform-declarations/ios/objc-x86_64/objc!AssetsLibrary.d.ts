@@ -89,7 +89,7 @@ declare class ALAssetRepresentation extends NSObject {
 
 	fullScreenImage(): any;
 
-	getBytesFromOffsetLengthError(buffer: string, offset: number, length: number): number;
+	getBytesFromOffsetLengthError(buffer: string | interop.Pointer | interop.Reference<any>, offset: number, length: number): number;
 
 	metadata(): NSDictionary<any, any>;
 

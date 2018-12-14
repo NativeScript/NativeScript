@@ -604,7 +604,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	renderInContext(ctx: any): void;
 
-	replaceSublayerWith(layer: CALayer, layer2: CALayer): void;
+	replaceSublayerWith(oldLayer: CALayer, newLayer: CALayer): void;
 
 	scrollPoint(p: CGPoint): void;
 
@@ -1059,6 +1059,10 @@ declare var kCAFilterNearest: string;
 declare var kCAFilterTrilinear: string;
 
 declare var kCAGradientLayerAxial: string;
+
+declare var kCAGradientLayerConic: string;
+
+declare var kCAGradientLayerRadial: string;
 
 declare var kCAGravityBottom: string;
 

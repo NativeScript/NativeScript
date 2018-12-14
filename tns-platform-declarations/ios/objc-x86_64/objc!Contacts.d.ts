@@ -30,7 +30,11 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	static predicateForContactsInGroupWithIdentifier(groupIdentifier: string): NSPredicate;
 
+	static predicateForContactsMatchingEmailAddress(emailAddress: string): NSPredicate;
+
 	static predicateForContactsMatchingName(name: string): NSPredicate;
+
+	static predicateForContactsMatchingPhoneNumber(phoneNumber: CNPhoneNumber): NSPredicate;
 
 	static predicateForContactsWithIdentifiers(identifiers: NSArray<string> | string[]): NSPredicate;
 
@@ -491,6 +495,8 @@ declare const enum CNErrorCode {
 
 	ParentRecordDoesNotExist = 204,
 
+	RecordIdentifierInvalid = 205,
+
 	ValidationMultipleErrors = 300,
 
 	ValidationTypeMismatch = 301,
@@ -505,7 +511,9 @@ declare const enum CNErrorCode {
 
 	ClientIdentifierDoesNotExist = 601,
 
-	VCardMalformed = 700
+	VCardMalformed = 700,
+
+	VCardSummarizationError = 701
 }
 
 declare var CNErrorDomain: string;

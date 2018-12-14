@@ -87,7 +87,9 @@ declare const enum MSMessageErrorCode {
 
 	SendWithoutRecentInteraction = 9,
 
-	SendWhileNotVisible = 10
+	SendWhileNotVisible = 10,
+
+	APIUnavailableInPresentationContext = 11
 }
 
 declare class MSMessageLayout extends NSObject implements NSCopying {
@@ -135,6 +137,13 @@ declare class MSMessageTemplateLayout extends MSMessageLayout {
 	trailingSubcaption: string;
 }
 
+declare const enum MSMessagesAppPresentationContext {
+
+	Messages = 0,
+
+	Media = 1
+}
+
 declare const enum MSMessagesAppPresentationStyle {
 
 	Compact = 0,
@@ -160,6 +169,8 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 	static new(): MSMessagesAppViewController; // inherited from NSObject
 
 	readonly activeConversation: MSConversation;
+
+	readonly presentationContext: MSMessagesAppPresentationContext;
 
 	readonly presentationStyle: MSMessagesAppPresentationStyle;
 

@@ -405,18 +405,6 @@ declare class GKGameSession extends NSObject {
 
 	static new(): GKGameSession; // inherited from NSObject
 
-	static postSessionDidAddPlayer(session: GKGameSession, player: GKCloudPlayer): void;
-
-	static postSessionDidReceiveDataFromPlayer(session: GKGameSession, data: NSData, player: GKCloudPlayer): void;
-
-	static postSessionDidReceiveMessageWithDataFromPlayer(session: GKGameSession, message: string, data: NSData, player: GKCloudPlayer): void;
-
-	static postSessionDidRemovePlayer(session: GKGameSession, player: GKCloudPlayer): void;
-
-	static postSessionPlayerDidChangeConnectionState(session: GKGameSession, player: GKCloudPlayer, newState: GKConnectionState): void;
-
-	static postSessionPlayerDidSaveData(session: GKGameSession, player: GKCloudPlayer, data: NSData): void;
-
 	static removeEventListener(listener: NSObject): void;
 
 	static removeSessionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
@@ -685,8 +673,6 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	static anonymousGuestPlayerWithIdentifier(guestIdentifier: string): GKLocalPlayer; // inherited from GKPlayer
 
-	static localPlayer(): GKLocalPlayer;
-
 	static new(): GKLocalPlayer; // inherited from NSObject
 
 	authenticateHandler: (p1: UIViewController, p2: NSError) => void;
@@ -696,6 +682,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	readonly friends: NSArray<string>;
 
 	readonly underage: boolean;
+
+	static readonly localPlayer: GKLocalPlayer;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 

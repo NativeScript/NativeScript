@@ -1427,7 +1427,9 @@ declare const enum HMErrorCode {
 
 	IncompatibleAccessory = 93,
 
-	IncompatibleHomeHub = 92
+	IncompatibleHomeHub = 92,
+
+	ObjectWithSimilarNameExists = 95
 }
 
 declare var HMErrorDomain: string;

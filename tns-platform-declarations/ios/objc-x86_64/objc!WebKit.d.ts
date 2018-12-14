@@ -654,7 +654,7 @@ declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 
 	removeDataOfTypesForDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebsiteDataRecord> | WKWebsiteDataRecord[], completionHandler: () => void): void;
 
-	removeDataOfTypesModifiedSinceCompletionHandler(websiteDataTypes: NSSet<string>, date: Date, completionHandler: () => void): void;
+	removeDataOfTypesModifiedSinceCompletionHandler(dataTypes: NSSet<string>, date: Date, completionHandler: () => void): void;
 }
 
 declare var WKWebsiteDataTypeCookies: string;

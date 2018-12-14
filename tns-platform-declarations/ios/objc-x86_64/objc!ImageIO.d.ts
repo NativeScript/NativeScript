@@ -144,6 +144,8 @@ declare function CGImageSourceCreateWithURL(url: NSURL, options: NSDictionary<an
 
 declare function CGImageSourceGetCount(isrc: any): number;
 
+declare function CGImageSourceGetPrimaryImageIndex(isrc: any): number;
+
 declare function CGImageSourceGetStatus(isrc: any): CGImageSourceStatus;
 
 declare function CGImageSourceGetStatusAtIndex(isrc: any, index: number): CGImageSourceStatus;
@@ -184,6 +186,8 @@ declare var kCGImageAuxiliaryDataInfoMetadata: string;
 declare var kCGImageAuxiliaryDataTypeDepth: string;
 
 declare var kCGImageAuxiliaryDataTypeDisparity: string;
+
+declare var kCGImageAuxiliaryDataTypePortraitEffectsMatte: string;
 
 declare var kCGImageDestinationBackgroundColor: string;
 
@@ -321,7 +325,19 @@ declare var kCGImagePropertyColorModelLab: string;
 
 declare var kCGImagePropertyColorModelRGB: string;
 
+declare var kCGImagePropertyDNGActiveArea: string;
+
+declare var kCGImagePropertyDNGAnalogBalance: string;
+
+declare var kCGImagePropertyDNGAntiAliasStrength: string;
+
+declare var kCGImagePropertyDNGAsShotICCProfile: string;
+
 declare var kCGImagePropertyDNGAsShotNeutral: string;
+
+declare var kCGImagePropertyDNGAsShotPreProfileMatrix: string;
+
+declare var kCGImagePropertyDNGAsShotProfileName: string;
 
 declare var kCGImagePropertyDNGAsShotWhiteXY: string;
 
@@ -329,11 +345,27 @@ declare var kCGImagePropertyDNGBackwardVersion: string;
 
 declare var kCGImagePropertyDNGBaselineExposure: string;
 
+declare var kCGImagePropertyDNGBaselineExposureOffset: string;
+
 declare var kCGImagePropertyDNGBaselineNoise: string;
 
 declare var kCGImagePropertyDNGBaselineSharpness: string;
 
+declare var kCGImagePropertyDNGBayerGreenSplit: string;
+
+declare var kCGImagePropertyDNGBestQualityScale: string;
+
 declare var kCGImagePropertyDNGBlackLevel: string;
+
+declare var kCGImagePropertyDNGBlackLevelDeltaH: string;
+
+declare var kCGImagePropertyDNGBlackLevelDeltaV: string;
+
+declare var kCGImagePropertyDNGBlackLevelRepeatDim: string;
+
+declare var kCGImagePropertyDNGCFALayout: string;
+
+declare var kCGImagePropertyDNGCFAPlaneColor: string;
 
 declare var kCGImagePropertyDNGCalibrationIlluminant1: string;
 
@@ -347,23 +379,127 @@ declare var kCGImagePropertyDNGCameraCalibrationSignature: string;
 
 declare var kCGImagePropertyDNGCameraSerialNumber: string;
 
+declare var kCGImagePropertyDNGChromaBlurRadius: string;
+
 declare var kCGImagePropertyDNGColorMatrix1: string;
 
 declare var kCGImagePropertyDNGColorMatrix2: string;
 
+declare var kCGImagePropertyDNGColorimetricReference: string;
+
+declare var kCGImagePropertyDNGCurrentICCProfile: string;
+
+declare var kCGImagePropertyDNGCurrentPreProfileMatrix: string;
+
+declare var kCGImagePropertyDNGDefaultBlackRender: string;
+
+declare var kCGImagePropertyDNGDefaultCropOrigin: string;
+
+declare var kCGImagePropertyDNGDefaultCropSize: string;
+
+declare var kCGImagePropertyDNGDefaultScale: string;
+
+declare var kCGImagePropertyDNGDefaultUserCrop: string;
+
 declare var kCGImagePropertyDNGDictionary: string;
+
+declare var kCGImagePropertyDNGExtraCameraProfiles: string;
 
 declare var kCGImagePropertyDNGFixVignetteRadial: string;
 
+declare var kCGImagePropertyDNGForwardMatrix1: string;
+
+declare var kCGImagePropertyDNGForwardMatrix2: string;
+
 declare var kCGImagePropertyDNGLensInfo: string;
+
+declare var kCGImagePropertyDNGLinearResponseLimit: string;
+
+declare var kCGImagePropertyDNGLinearizationTable: string;
 
 declare var kCGImagePropertyDNGLocalizedCameraModel: string;
 
+declare var kCGImagePropertyDNGMakerNoteSafety: string;
+
+declare var kCGImagePropertyDNGMaskedAreas: string;
+
+declare var kCGImagePropertyDNGNewRawImageDigest: string;
+
 declare var kCGImagePropertyDNGNoiseProfile: string;
+
+declare var kCGImagePropertyDNGNoiseReductionApplied: string;
+
+declare var kCGImagePropertyDNGOpcodeList1: string;
+
+declare var kCGImagePropertyDNGOpcodeList2: string;
+
+declare var kCGImagePropertyDNGOpcodeList3: string;
+
+declare var kCGImagePropertyDNGOriginalBestQualityFinalSize: string;
+
+declare var kCGImagePropertyDNGOriginalDefaultCropSize: string;
+
+declare var kCGImagePropertyDNGOriginalDefaultFinalSize: string;
+
+declare var kCGImagePropertyDNGOriginalRawFileData: string;
+
+declare var kCGImagePropertyDNGOriginalRawFileDigest: string;
+
+declare var kCGImagePropertyDNGOriginalRawFileName: string;
+
+declare var kCGImagePropertyDNGPreviewApplicationName: string;
+
+declare var kCGImagePropertyDNGPreviewApplicationVersion: string;
+
+declare var kCGImagePropertyDNGPreviewColorSpace: string;
+
+declare var kCGImagePropertyDNGPreviewDateTime: string;
+
+declare var kCGImagePropertyDNGPreviewSettingsDigest: string;
+
+declare var kCGImagePropertyDNGPreviewSettingsName: string;
 
 declare var kCGImagePropertyDNGPrivateData: string;
 
 declare var kCGImagePropertyDNGProfileCalibrationSignature: string;
+
+declare var kCGImagePropertyDNGProfileCopyright: string;
+
+declare var kCGImagePropertyDNGProfileEmbedPolicy: string;
+
+declare var kCGImagePropertyDNGProfileHueSatMapData1: string;
+
+declare var kCGImagePropertyDNGProfileHueSatMapData2: string;
+
+declare var kCGImagePropertyDNGProfileHueSatMapDims: string;
+
+declare var kCGImagePropertyDNGProfileHueSatMapEncoding: string;
+
+declare var kCGImagePropertyDNGProfileLookTableData: string;
+
+declare var kCGImagePropertyDNGProfileLookTableDims: string;
+
+declare var kCGImagePropertyDNGProfileLookTableEncoding: string;
+
+declare var kCGImagePropertyDNGProfileName: string;
+
+declare var kCGImagePropertyDNGProfileToneCurve: string;
+
+declare var kCGImagePropertyDNGRawDataUniqueID: string;
+
+declare var kCGImagePropertyDNGRawImageDigest: string;
+
+declare var kCGImagePropertyDNGRawToPreviewGain: string;
+
+declare var kCGImagePropertyDNGReductionMatrix1: string;
+
+declare var kCGImagePropertyDNGReductionMatrix2: string;
+
+declare var kCGImagePropertyDNGRowInterleaveFactor: string;
+
+declare var kCGImagePropertyDNGShadowScale: string;
+
+declare var kCGImagePropertyDNGSubTileBlockSize: string;
 
 declare var kCGImagePropertyDNGUniqueCameraModel: string;
 
@@ -1207,6 +1343,8 @@ declare var kCGImagePropertyPNGAuthor: string;
 
 declare var kCGImagePropertyPNGChromaticities: string;
 
+declare var kCGImagePropertyPNGComment: string;
+
 declare var kCGImagePropertyPNGCompressionFilter: string;
 
 declare var kCGImagePropertyPNGCopyright: string;
@@ -1217,6 +1355,8 @@ declare var kCGImagePropertyPNGDescription: string;
 
 declare var kCGImagePropertyPNGDictionary: string;
 
+declare var kCGImagePropertyPNGDisclaimer: string;
+
 declare var kCGImagePropertyPNGGamma: string;
 
 declare var kCGImagePropertyPNGInterlaceType: string;
@@ -1225,7 +1365,11 @@ declare var kCGImagePropertyPNGModificationTime: string;
 
 declare var kCGImagePropertyPNGSoftware: string;
 
+declare var kCGImagePropertyPNGSource: string;
+
 declare var kCGImagePropertyPNGTitle: string;
+
+declare var kCGImagePropertyPNGWarning: string;
 
 declare var kCGImagePropertyPNGXPixelsPerMeter: string;
 
@@ -1238,6 +1382,8 @@ declare var kCGImagePropertyPixelFormat: string;
 declare var kCGImagePropertyPixelHeight: string;
 
 declare var kCGImagePropertyPixelWidth: string;
+
+declare var kCGImagePropertyPrimaryImage: string;
 
 declare var kCGImagePropertyProfileName: string;
 
