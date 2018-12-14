@@ -231,8 +231,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     closeCallback: args[2],
                     fullscreen: args[3],
                     animated: args[4],
-                    stretched: args[5],
-                    cancelable: args[6]
+                    stretched: args[5]
                 };
             }
 
