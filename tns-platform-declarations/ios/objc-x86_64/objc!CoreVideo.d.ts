@@ -374,6 +374,8 @@ declare var kCVImageBufferTransferFunction_ITU_R_2100_HLG: string;
 
 declare var kCVImageBufferTransferFunction_ITU_R_709_2: string;
 
+declare var kCVImageBufferTransferFunction_Linear: string;
+
 declare var kCVImageBufferTransferFunction_SMPTE_240M_1995: string;
 
 declare var kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ: string;
@@ -477,6 +479,8 @@ declare var kCVPixelFormatComponentRange_WideRange: string;
 declare var kCVPixelFormatConstant: string;
 
 declare var kCVPixelFormatContainsAlpha: string;
+
+declare var kCVPixelFormatContainsGrayscale: string;
 
 declare var kCVPixelFormatContainsRGB: string;
 

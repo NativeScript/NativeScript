@@ -482,7 +482,7 @@ declare const enum EKParticipantType {
 	Group = 4
 }
 
-declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying {
+declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): EKRecurrenceDayOfWeek; // inherited from NSObject
 
@@ -496,14 +496,22 @@ declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying {
 
 	readonly weekNumber: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { dayOfTheWeek: EKWeekday; weekNumber: number; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
 	initWithDayOfTheWeekWeekNumber(dayOfTheWeek: EKWeekday, weekNumber: number): this;
 }
 
-declare class EKRecurrenceEnd extends NSObject implements NSCopying {
+declare class EKRecurrenceEnd extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): EKRecurrenceEnd; // inherited from NSObject
 
@@ -517,7 +525,15 @@ declare class EKRecurrenceEnd extends NSObject implements NSCopying {
 
 	readonly occurrenceCount: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare const enum EKRecurrenceFrequency {

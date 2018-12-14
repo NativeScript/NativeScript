@@ -1,4 +1,6 @@
 
+declare const DISPATCH_WALLTIME_NOW: number;
+
 interface OS_dispatch_data extends OS_dispatch_object {
 }
 declare var OS_dispatch_data: {
@@ -39,6 +41,34 @@ interface OS_dispatch_queue_attr extends OS_dispatch_object {
 declare var OS_dispatch_queue_attr: {
 
 	prototype: OS_dispatch_queue_attr;
+};
+
+interface OS_dispatch_queue_concurrent extends OS_dispatch_queue {
+}
+declare var OS_dispatch_queue_concurrent: {
+
+	prototype: OS_dispatch_queue_concurrent;
+};
+
+interface OS_dispatch_queue_global extends OS_dispatch_queue {
+}
+declare var OS_dispatch_queue_global: {
+
+	prototype: OS_dispatch_queue_global;
+};
+
+interface OS_dispatch_queue_main extends OS_dispatch_queue_serial {
+}
+declare var OS_dispatch_queue_main: {
+
+	prototype: OS_dispatch_queue_main;
+};
+
+interface OS_dispatch_queue_serial extends OS_dispatch_queue {
+}
+declare var OS_dispatch_queue_serial: {
+
+	prototype: OS_dispatch_queue_serial;
 };
 
 interface OS_dispatch_semaphore extends OS_dispatch_object {

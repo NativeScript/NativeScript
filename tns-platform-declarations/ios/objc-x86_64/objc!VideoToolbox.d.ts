@@ -5,7 +5,7 @@ declare function VTCompressionSessionCompleteFrames(session: any, completeUntilP
 
 declare function VTCompressionSessionCreate(allocator: any, width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, sourceImageBufferAttributes: NSDictionary<any, any>, compressedDataAllocator: any, outputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTEncodeInfoFlags, p5: any) => void>, outputCallbackRefCon: interop.Pointer | interop.Reference<any>, compressionSessionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>): number;
+declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefcon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>): number;
 
 declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
 
@@ -26,7 +26,7 @@ declare const enum VTCompressionSessionOptionFlags {
 
 declare function VTCompressionSessionPrepareToEncodeFrames(session: any): number;
 
-declare function VTCopySupportedPropertyDictionaryForEncoder(width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, outEncoderID: interop.Pointer | interop.Reference<string>, outSupportedProperties: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function VTCopySupportedPropertyDictionaryForEncoder(width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, encoderIDOut: interop.Pointer | interop.Reference<string>, supportedPropertiesOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
 declare function VTCopyVideoEncoderList(options: NSDictionary<any, any>, listOfVideoEncodersOut: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
@@ -87,9 +87,9 @@ declare function VTFrameSiloAddSampleBuffer(silo: any, sampleBuffer: any): numbe
 
 declare function VTFrameSiloCallBlockForEachSampleBuffer(silo: any, timeRange: CMTimeRange, handler: (p1: any) => number): number;
 
-declare function VTFrameSiloCallFunctionForEachSampleBuffer(silo: any, timeRange: CMTimeRange, callbackInfo: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any) => number>): number;
+declare function VTFrameSiloCallFunctionForEachSampleBuffer(silo: any, timeRange: CMTimeRange, refcon: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any) => number>): number;
 
-declare function VTFrameSiloCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, siloOut: interop.Pointer | interop.Reference<any>): number;
+declare function VTFrameSiloCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, frameSiloOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function VTFrameSiloGetProgressOfCurrentPass(silo: any, progressOut: interop.Pointer | interop.Reference<number>): number;
 
@@ -137,6 +137,8 @@ declare const kVTColorSyncTransformConvertFailedErr: number;
 
 declare var kVTCompressionPropertyKey_AllowFrameReordering: string;
 
+declare var kVTCompressionPropertyKey_AllowOpenGOP: string;
+
 declare var kVTCompressionPropertyKey_AllowTemporalCompression: string;
 
 declare var kVTCompressionPropertyKey_AspectRatio16x9: string;
@@ -178,6 +180,8 @@ declare var kVTCompressionPropertyKey_MaxH264SliceBytes: string;
 declare var kVTCompressionPropertyKey_MaxKeyFrameInterval: string;
 
 declare var kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration: string;
+
+declare var kVTCompressionPropertyKey_MaximizePowerEfficiency: string;
 
 declare var kVTCompressionPropertyKey_MoreFramesAfterEnd: string;
 
@@ -226,6 +230,8 @@ declare var kVTDecompressionPropertyKey_DeinterlaceMode: string;
 declare var kVTDecompressionPropertyKey_FieldMode: string;
 
 declare var kVTDecompressionPropertyKey_MaxOutputPresentationTimeStampOfFramesBeingDecoded: string;
+
+declare var kVTDecompressionPropertyKey_MaximizePowerEfficiency: string;
 
 declare var kVTDecompressionPropertyKey_MinOutputPresentationTimeStampOfFramesBeingDecoded: string;
 

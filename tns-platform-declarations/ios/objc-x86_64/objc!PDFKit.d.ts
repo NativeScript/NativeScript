@@ -192,6 +192,8 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	readonly paths: NSArray<UIBezierPath>;
 
+	popup: PDFAnnotation;
+
 	quadrilateralPoints: NSArray<NSValue>;
 
 	radiosInUnison: boolean;
@@ -1038,6 +1040,8 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 	minScaleFactor: number;
 
 	pageBreakMargins: UIEdgeInsets;
+
+	pageShadowsEnabled: boolean;
 
 	scaleFactor: number;
 

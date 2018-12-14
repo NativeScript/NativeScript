@@ -18,7 +18,13 @@ declare const enum UNAuthorizationOptions {
 
 	Alert = 4,
 
-	CarPlay = 8
+	CarPlay = 8,
+
+	CriticalAlert = 16,
+
+	ProvidesAppNotificationSettings = 32,
+
+	Provisional = 64
 }
 
 declare const enum UNAuthorizationStatus {
@@ -27,7 +33,9 @@ declare const enum UNAuthorizationStatus {
 
 	Denied = 1,
 
-	Authorized = 2
+	Authorized = 2,
+
+	Provisional = 3
 }
 
 declare class UNCalendarNotificationTrigger extends UNNotificationTrigger {
@@ -96,6 +104,10 @@ declare class UNMutableNotificationContent extends UNNotificationContent {
 	sound: UNNotificationSound;
 
 	subtitle: string;
+
+	summaryArgument: string;
+
+	summaryArgumentCount: number;
 
 	threadIdentifier: string;
 
@@ -198,6 +210,8 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 
 	static alloc(): UNNotificationCategory; // inherited from NSObject
 
+	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderCategorySummaryFormatOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], hiddenPreviewsBodyPlaceholder: string, categorySummaryFormat: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
+
 	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], hiddenPreviewsBodyPlaceholder: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
 
 	static categoryWithIdentifierActionsIntentIdentifiersOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], options: UNNotificationCategoryOptions): UNNotificationCategory;
@@ -205,6 +219,8 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 	static new(): UNNotificationCategory; // inherited from NSObject
 
 	readonly actions: NSArray<UNNotificationAction>;
+
+	readonly categorySummaryFormat: string;
 
 	readonly hiddenPreviewsBodyPlaceholder: string;
 
@@ -257,6 +273,10 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 	readonly sound: UNNotificationSound;
 
 	readonly subtitle: string;
+
+	readonly summaryArgument: string;
+
+	readonly summaryArgumentCount: number;
 
 	readonly threadIdentifier: string;
 
@@ -374,9 +394,13 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	readonly carPlaySetting: UNNotificationSetting;
 
+	readonly criticalAlertSetting: UNNotificationSetting;
+
 	readonly lockScreenSetting: UNNotificationSetting;
 
 	readonly notificationCenterSetting: UNNotificationSetting;
+
+	readonly providesAppNotificationSettings: boolean;
 
 	readonly showPreviewsSetting: UNShowPreviewsSetting;
 
@@ -397,11 +421,19 @@ declare class UNNotificationSound extends NSObject implements NSCopying, NSSecur
 
 	static alloc(): UNNotificationSound; // inherited from NSObject
 
-	static defaultSound(): UNNotificationSound;
+	static criticalSoundNamed(name: string): UNNotificationSound;
+
+	static criticalSoundNamedWithAudioVolume(name: string, volume: number): UNNotificationSound;
+
+	static defaultCriticalSoundWithAudioVolume(volume: number): UNNotificationSound;
 
 	static new(): UNNotificationSound; // inherited from NSObject
 
 	static soundNamed(name: string): UNNotificationSound;
+
+	static readonly defaultCriticalSound: UNNotificationSound;
+
+	static readonly defaultSound: UNNotificationSound;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -524,6 +556,8 @@ declare class UNUserNotificationCenter extends NSObject {
 interface UNUserNotificationCenterDelegate extends NSObjectProtocol {
 
 	userNotificationCenterDidReceiveNotificationResponseWithCompletionHandler?(center: UNUserNotificationCenter, response: UNNotificationResponse, completionHandler: () => void): void;
+
+	userNotificationCenterOpenSettingsForNotification?(center: UNUserNotificationCenter, notification: UNNotification): void;
 
 	userNotificationCenterWillPresentNotificationWithCompletionHandler?(center: UNUserNotificationCenter, notification: UNNotification, completionHandler: (p1: UNNotificationPresentationOptions) => void): void;
 }

@@ -72,6 +72,8 @@ declare var ADBannerViewDelegate: {
 	prototype: ADBannerViewDelegate;
 };
 
+declare function ADClampedBannerSize(size: CGSize): CGSize;
+
 declare class ADClient extends NSObject {
 
 	static alloc(): ADClient; // inherited from NSObject
@@ -166,6 +168,19 @@ declare var ADInterstitialAdDelegate: {
 
 	prototype: ADInterstitialAdDelegate;
 };
+
+declare class ADInterstitialAdPresentationViewController extends UIViewController {
+
+	static alloc(): ADInterstitialAdPresentationViewController; // inherited from NSObject
+
+	static new(): ADInterstitialAdPresentationViewController; // inherited from NSObject
+
+	constructor(o: { forInterstitialAd: ADInterstitialAd; });
+
+	initForInterstitialAd(interstitialAd: ADInterstitialAd): this;
+
+	shouldTestVisibilityAtPoint(point: CGPoint): boolean;
+}
 
 declare const enum ADInterstitialPresentationPolicy {
 
