@@ -18,9 +18,9 @@ declare function MTAudioProcessingTapGetStorage(tap: any): interop.Pointer | int
 
 declare function MTAudioProcessingTapGetTypeID(): number;
 
-declare function MTCopyLocalizedNameForMediaSubType(mediaType: number, mediaSubType: number): interop.Unmanaged<string>;
+declare function MTCopyLocalizedNameForMediaSubType(mediaType: number, mediaSubType: number): string;
 
-declare function MTCopyLocalizedNameForMediaType(mediaType: number): interop.Unmanaged<string>;
+declare function MTCopyLocalizedNameForMediaType(mediaType: number): string;
 
 declare const kMTAudioProcessingTapCallbacksVersion_0: number;
 

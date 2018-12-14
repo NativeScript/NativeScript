@@ -118,7 +118,7 @@ declare class CSLocalizedString extends NSString {
 
 	static string(): CSLocalizedString; // inherited from NSString
 
-	static stringWithCStringEncoding(cString: string, enc: number): CSLocalizedString; // inherited from NSString
+	static stringWithCStringEncoding(cString: string | interop.Pointer | interop.Reference<any>, enc: number): CSLocalizedString; // inherited from NSString
 
 	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): CSLocalizedString; // inherited from NSString
 
@@ -132,7 +132,7 @@ declare class CSLocalizedString extends NSString {
 
 	static stringWithString(string: string): CSLocalizedString; // inherited from NSString
 
-	static stringWithUTF8String(nullTerminatedCString: string): CSLocalizedString; // inherited from NSString
+	static stringWithUTF8String(nullTerminatedCString: string | interop.Pointer | interop.Reference<any>): CSLocalizedString; // inherited from NSString
 
 	constructor(o: { localizedStrings: NSDictionary<any, any>; });
 

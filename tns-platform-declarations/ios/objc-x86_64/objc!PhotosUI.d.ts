@@ -16,6 +16,13 @@ declare var PHContentEditingController: {
 	prototype: PHContentEditingController;
 };
 
+declare class PHEditingExtensionContext extends NSExtensionContext {
+
+	static alloc(): PHEditingExtensionContext; // inherited from NSObject
+
+	static new(): PHEditingExtensionContext; // inherited from NSObject
+}
+
 declare const enum PHLivePhotoBadgeOptions {
 
 	OverContent = 1,

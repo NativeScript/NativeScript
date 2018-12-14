@@ -305,7 +305,7 @@ export function start(entry?: string | NavigationEntry) {
     started = true;
 
     if (!iosApp.nativeApp) {
-        // Normal NativeScript app will need UIApplicationMain. 
+        // Normal NativeScript app will need UIApplicationMain.
         UIApplicationMain(0, null, null, iosApp && iosApp.delegate ? NSStringFromClass(<any>iosApp.delegate) : NSStringFromClass(Responder));
     } else {
         // TODO: this rootView should be held alive until rootController dismissViewController is called.
@@ -320,7 +320,7 @@ export function start(entry?: string | NavigationEntry) {
                     rootView._setupAsRootView({});
                     let embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
                     if (embedderDelegate) {
-                        embedderDelegate.performSelectorWithObject("presentNativeScriptApp:", controller);
+                        embedderDelegate.presentNativeScriptApp(controller);
                     } else {
                         let visibleVC = utils.ios.getVisibleViewController(rootController);
                         visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);

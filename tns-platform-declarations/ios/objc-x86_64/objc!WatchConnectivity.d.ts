@@ -152,6 +152,8 @@ declare class WCSessionFileTransfer extends NSObject {
 
 	readonly file: WCSessionFile;
 
+	readonly progress: NSProgress;
+
 	readonly transferring: boolean;
 
 	cancel(): void;
