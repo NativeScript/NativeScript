@@ -164,6 +164,12 @@
                 public verticalAlignment: VerticalAlignment;
             }
 
+            export class FragmentBase extends android.support.v4.app.Fragment {
+                constructor();
+
+                public getRemovingParentFragment(): android.support.v4.app.Fragment;
+            }
+
             export enum Stretch {
                 none,
                 aspectFill,

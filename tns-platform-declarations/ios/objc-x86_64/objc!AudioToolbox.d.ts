@@ -101,6 +101,8 @@ declare class AUAudioUnit extends NSObject {
 
 	readonly parameterTree: AUParameterTree;
 
+	profileChangedBlock: (p1: number, p2: number, p3: MIDICIProfile, p4: boolean) => void;
+
 	readonly providesUserInterface: boolean;
 
 	readonly renderBlock: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>, p6: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number) => number;
@@ -135,11 +137,17 @@ declare class AUAudioUnit extends NSObject {
 
 	deallocateRenderResources(): void;
 
+	disableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number): boolean;
+
+	enableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number): boolean;
+
 	initWithComponentDescriptionError(componentDescription: AudioComponentDescription): this;
 
 	initWithComponentDescriptionOptionsError(componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions): this;
 
 	parametersForOverviewWithCount(count: number): NSArray<number>;
+
+	profileStateForCableChannel(cable: number, channel: number): MIDICIProfileState;
 
 	removeRenderObserver(token: number): void;
 
@@ -2104,6 +2112,8 @@ declare const kAudioComponentErr_DuplicateDescription: number;
 declare const kAudioComponentErr_InitializationTimedOut: number;
 
 declare const kAudioComponentErr_InstanceInvalidated: number;
+
+declare const kAudioComponentErr_InstanceTimedOut: number;
 
 declare const kAudioComponentErr_InvalidFormat: number;
 

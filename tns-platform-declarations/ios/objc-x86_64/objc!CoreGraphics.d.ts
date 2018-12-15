@@ -197,6 +197,8 @@ declare function CGColorSpaceCopyICCProfile(space: any): NSData;
 
 declare function CGColorSpaceCopyName(space: any): string;
 
+declare function CGColorSpaceCopyPropertyList(space: any): any;
+
 declare function CGColorSpaceCreateCalibratedGray(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: number): any;
 
 declare function CGColorSpaceCreateCalibratedRGB(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: interop.Reference<number>, matrix: interop.Reference<number>): any;
@@ -222,6 +224,8 @@ declare function CGColorSpaceCreateWithICCProfile(data: NSData): any;
 declare function CGColorSpaceCreateWithName(name: string): any;
 
 declare function CGColorSpaceCreateWithPlatformColorSpace(ref: interop.Pointer | interop.Reference<any>): any;
+
+declare function CGColorSpaceCreateWithPropertyList(plist: any): any;
 
 declare function CGColorSpaceGetBaseColorSpace(space: any): any;
 
@@ -255,7 +259,9 @@ declare const enum CGColorSpaceModel {
 
 	kCGColorSpaceModelIndexed = 5,
 
-	kCGColorSpaceModelPattern = 6
+	kCGColorSpaceModelPattern = 6,
+
+	kCGColorSpaceModelXYZ = 7
 }
 
 declare function CGColorSpaceRelease(space: any): void;
@@ -753,6 +759,8 @@ declare function CGImageGetBitsPerComponent(image: any): number;
 
 declare function CGImageGetBitsPerPixel(image: any): number;
 
+declare function CGImageGetByteOrderInfo(image: any): CGImageByteOrderInfo;
+
 declare function CGImageGetBytesPerRow(image: any): number;
 
 declare function CGImageGetColorSpace(image: any): any;
@@ -762,6 +770,8 @@ declare function CGImageGetDataProvider(image: any): any;
 declare function CGImageGetDecode(image: any): interop.Pointer | interop.Reference<number>;
 
 declare function CGImageGetHeight(image: any): number;
+
+declare function CGImageGetPixelFormatInfo(image: any): CGImagePixelFormatInfo;
 
 declare function CGImageGetRenderingIntent(image: any): CGColorRenderingIntent;
 
@@ -776,6 +786,21 @@ declare function CGImageGetWidth(image: any): number;
 declare function CGImageIsMask(image: any): boolean;
 
 declare function CGImageMaskCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean): any;
+
+declare const enum CGImagePixelFormatInfo {
+
+	kCGImagePixelFormatMask = 983040,
+
+	kCGImagePixelFormatPacked = 0,
+
+	kCGImagePixelFormatRGB555 = 65536,
+
+	kCGImagePixelFormatRGB565 = 131072,
+
+	kCGImagePixelFormatRGB101010 = 196608,
+
+	kCGImagePixelFormatRGBCIF10 = 262144
+}
 
 declare function CGImageRelease(image: any): void;
 
@@ -842,6 +867,8 @@ declare const enum CGPDFAccessPermissions {
 
 	kCGPDFAllowsFormFieldEntry = 128
 }
+
+declare function CGPDFArrayApplyBlock(array: interop.Pointer | interop.Reference<any>, block: (p1: number, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean, info: interop.Pointer | interop.Reference<any>): void;
 
 declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
@@ -918,6 +945,8 @@ declare const enum CGPDFDataFormat {
 
 	JPEG2000 = 2
 }
+
+declare function CGPDFDictionaryApplyBlock(dict: interop.Pointer | interop.Reference<any>, block: (p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean, info: interop.Pointer | interop.Reference<any>): void;
 
 declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, info: interop.Pointer | interop.Reference<any>): void;
 

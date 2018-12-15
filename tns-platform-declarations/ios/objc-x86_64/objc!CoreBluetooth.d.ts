@@ -273,7 +273,11 @@ declare const enum CBError {
 
 	ConnectionLimitReached = 11,
 
-	UnkownDevice = 12
+	UnkownDevice = 12,
+
+	UnknownDevice = 12,
+
+	OperationNotSupported = 13
 }
 
 declare var CBErrorDomain: string;

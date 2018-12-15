@@ -113,7 +113,7 @@ declare class ABPersonViewController extends UIViewController implements UIViewC
 
 	static new(): ABPersonViewController; // inherited from NSObject
 
-	static viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<any> | any[], coder: NSCoder): UIViewController;
+	static viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<string> | string[], coder: NSCoder): UIViewController;
 
 	addressBook: any;
 

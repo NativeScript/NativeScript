@@ -544,6 +544,8 @@ declare function objc_setExceptionPreprocessor(fn: interop.FunctionReference<(p1
 
 declare function objc_setForwardHandler(fwd: interop.Pointer | interop.Reference<any>, fwd_stret: interop.Pointer | interop.Reference<any>): void;
 
+declare function objc_setHook_getImageName(newValue: interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>>): void;
+
 declare function objc_setUncaughtExceptionHandler(fn: interop.FunctionReference<(p1: any) => void>): interop.FunctionReference<(p1: any) => void>;
 
 declare function objc_storeWeak(location: interop.Pointer | interop.Reference<any>, obj: any): any;

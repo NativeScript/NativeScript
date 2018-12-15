@@ -7,6 +7,8 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 
 	static observationWithBoundingBox(boundingBox: CGRect): VNBarcodeObservation; // inherited from VNDetectedObjectObservation
 
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNBarcodeObservation; // inherited from VNDetectedObjectObservation
+
 	readonly barcodeDescriptor: CIBarcodeDescriptor;
 
 	readonly payloadStringValue: string;
@@ -94,6 +96,8 @@ declare class VNCoreMLRequest extends VNImageBasedRequest {
 	initWithModelCompletionHandler(model: VNCoreMLModel, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
 }
 
+declare var VNCoreMLRequestRevision1: number;
+
 declare class VNDetectBarcodesRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectBarcodesRequest; // inherited from NSObject
@@ -104,6 +108,8 @@ declare class VNDetectBarcodesRequest extends VNImageBasedRequest {
 
 	static readonly supportedSymbologies: NSArray<string>;
 }
+
+declare var VNDetectBarcodesRequestRevision1: number;
 
 declare class VNDetectFaceLandmarksRequest extends VNImageBasedRequest implements VNFaceObservationAccepting {
 
@@ -148,6 +154,10 @@ declare class VNDetectFaceLandmarksRequest extends VNImageBasedRequest implement
 	self(): this;
 }
 
+declare var VNDetectFaceLandmarksRequestRevision1: number;
+
+declare var VNDetectFaceLandmarksRequestRevision2: number;
+
 declare class VNDetectFaceRectanglesRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectFaceRectanglesRequest; // inherited from NSObject
@@ -155,12 +165,18 @@ declare class VNDetectFaceRectanglesRequest extends VNImageBasedRequest {
 	static new(): VNDetectFaceRectanglesRequest; // inherited from NSObject
 }
 
+declare var VNDetectFaceRectanglesRequestRevision1: number;
+
+declare var VNDetectFaceRectanglesRequestRevision2: number;
+
 declare class VNDetectHorizonRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectHorizonRequest; // inherited from NSObject
 
 	static new(): VNDetectHorizonRequest; // inherited from NSObject
 }
+
+declare var VNDetectHorizonRequestRevision1: number;
 
 declare class VNDetectRectanglesRequest extends VNImageBasedRequest {
 
@@ -181,6 +197,8 @@ declare class VNDetectRectanglesRequest extends VNImageBasedRequest {
 	quadratureTolerance: number;
 }
 
+declare var VNDetectRectanglesRequestRevision1: number;
+
 declare class VNDetectTextRectanglesRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectTextRectanglesRequest; // inherited from NSObject
@@ -190,6 +208,8 @@ declare class VNDetectTextRectanglesRequest extends VNImageBasedRequest {
 	reportCharacterBoxes: boolean;
 }
 
+declare var VNDetectTextRectanglesRequestRevision1: number;
+
 declare class VNDetectedObjectObservation extends VNObservation {
 
 	static alloc(): VNDetectedObjectObservation; // inherited from NSObject
@@ -197,6 +217,8 @@ declare class VNDetectedObjectObservation extends VNObservation {
 	static new(): VNDetectedObjectObservation; // inherited from NSObject
 
 	static observationWithBoundingBox(boundingBox: CGRect): VNDetectedObjectObservation;
+
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNDetectedObjectObservation;
 
 	readonly boundingBox: CGRect;
 }
@@ -233,7 +255,9 @@ declare const enum VNErrorCode {
 
 	InvalidArgument = 14,
 
-	InvalidModel = 15
+	InvalidModel = 15,
+
+	UnsupportedRevision = 16
 }
 
 declare var VNErrorDomain: string;
@@ -304,11 +328,19 @@ declare class VNFaceObservation extends VNDetectedObjectObservation {
 
 	static alloc(): VNFaceObservation; // inherited from NSObject
 
+	static faceObservationWithRequestRevisionBoundingBoxRollYaw(requestRevision: number, boundingBox: CGRect, roll: number, yaw: number): VNFaceObservation;
+
 	static new(): VNFaceObservation; // inherited from NSObject
 
 	static observationWithBoundingBox(boundingBox: CGRect): VNFaceObservation; // inherited from VNDetectedObjectObservation
 
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNFaceObservation; // inherited from VNDetectedObjectObservation
+
 	readonly landmarks: VNFaceLandmarks2D;
+
+	readonly roll: number;
+
+	readonly yaw: number;
 }
 
 interface VNFaceObservationAccepting extends NSObjectProtocol {
@@ -326,6 +358,8 @@ declare class VNHomographicImageRegistrationRequest extends VNImageRegistrationR
 
 	static new(): VNHomographicImageRegistrationRequest; // inherited from NSObject
 }
+
+declare var VNHomographicImageRegistrationRequestRevision1: number;
 
 declare class VNHorizonObservation extends VNObservation {
 
@@ -457,7 +491,7 @@ declare function VNNormalizedRectForImageRect(imageRect: CGRect, imageWidth: num
 
 declare function VNNormalizedRectIsIdentityRect(normalizedRect: CGRect): boolean;
 
-declare class VNObservation extends NSObject implements NSCopying, NSSecureCoding {
+declare class VNObservation extends NSObject implements NSCopying, NSSecureCoding, VNRequestRevisionProviding {
 
 	static alloc(): VNObservation; // inherited from NSObject
 
@@ -466,6 +500,8 @@ declare class VNObservation extends NSObject implements NSCopying, NSSecureCodin
 	readonly confidence: number;
 
 	readonly uuid: NSUUID;
+
+	readonly requestRevision: number; // inherited from VNRequestRevisionProviding
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -487,6 +523,19 @@ declare class VNPixelBufferObservation extends VNObservation {
 	readonly pixelBuffer: any;
 }
 
+declare class VNRecognizedObjectObservation extends VNDetectedObjectObservation {
+
+	static alloc(): VNRecognizedObjectObservation; // inherited from NSObject
+
+	static new(): VNRecognizedObjectObservation; // inherited from NSObject
+
+	static observationWithBoundingBox(boundingBox: CGRect): VNRecognizedObjectObservation; // inherited from VNDetectedObjectObservation
+
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNRecognizedObjectObservation; // inherited from VNDetectedObjectObservation
+
+	readonly labels: NSArray<VNClassificationObservation>;
+}
+
 declare class VNRectangleObservation extends VNDetectedObjectObservation {
 
 	static alloc(): VNRectangleObservation; // inherited from NSObject
@@ -494,6 +543,8 @@ declare class VNRectangleObservation extends VNDetectedObjectObservation {
 	static new(): VNRectangleObservation; // inherited from NSObject
 
 	static observationWithBoundingBox(boundingBox: CGRect): VNRectangleObservation; // inherited from VNDetectedObjectObservation
+
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNRectangleObservation; // inherited from VNDetectedObjectObservation
 
 	readonly bottomLeft: CGPoint;
 
@@ -516,7 +567,15 @@ declare class VNRequest extends NSObject implements NSCopying {
 
 	readonly results: NSArray<any>;
 
+	revision: number;
+
 	usesCPUOnly: boolean;
+
+	static readonly currentRevision: number;
+
+	static readonly defaultRevision: number;
+
+	static readonly supportedRevisions: NSIndexSet;
 
 	constructor(o: { completionHandler: (p1: VNRequest, p2: NSError) => void; });
 
@@ -524,6 +583,17 @@ declare class VNRequest extends NSObject implements NSCopying {
 
 	initWithCompletionHandler(completionHandler: (p1: VNRequest, p2: NSError) => void): this;
 }
+
+interface VNRequestRevisionProviding {
+
+	requestRevision: number;
+}
+declare var VNRequestRevisionProviding: {
+
+	prototype: VNRequestRevisionProviding;
+};
+
+declare var VNRequestRevisionUnspecified: number;
 
 declare const enum VNRequestTrackingLevel {
 
@@ -646,13 +716,15 @@ declare class VNTargetedImageRequest extends VNImageBasedRequest {
 	initWithTargetedImageURLOrientationOptionsCompletionHandler(imageURL: NSURL, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
 }
 
-declare class VNTextObservation extends VNDetectedObjectObservation {
+declare class VNTextObservation extends VNRectangleObservation {
 
 	static alloc(): VNTextObservation; // inherited from NSObject
 
 	static new(): VNTextObservation; // inherited from NSObject
 
 	static observationWithBoundingBox(boundingBox: CGRect): VNTextObservation; // inherited from VNDetectedObjectObservation
+
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNTextObservation; // inherited from VNDetectedObjectObservation
 
 	readonly characterBoxes: NSArray<VNRectangleObservation>;
 }
@@ -672,6 +744,8 @@ declare class VNTrackObjectRequest extends VNTrackingRequest {
 	initWithDetectedObjectObservationCompletionHandler(observation: VNDetectedObjectObservation, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
 }
 
+declare var VNTrackObjectRequestRevision1: number;
+
 declare class VNTrackRectangleRequest extends VNTrackingRequest {
 
 	static alloc(): VNTrackRectangleRequest; // inherited from NSObject
@@ -686,6 +760,8 @@ declare class VNTrackRectangleRequest extends VNTrackingRequest {
 
 	initWithRectangleObservationCompletionHandler(observation: VNRectangleObservation, completionHandler: (p1: VNRequest, p2: NSError) => void): this;
 }
+
+declare var VNTrackRectangleRequestRevision1: number;
 
 declare class VNTrackingRequest extends VNImageBasedRequest {
 
@@ -706,5 +782,7 @@ declare class VNTranslationalImageRegistrationRequest extends VNImageRegistratio
 
 	static new(): VNTranslationalImageRegistrationRequest; // inherited from NSObject
 }
+
+declare var VNTranslationalImageRegistrationRequestRevision1: number;
 
 declare var VNVisionVersionNumber: number;

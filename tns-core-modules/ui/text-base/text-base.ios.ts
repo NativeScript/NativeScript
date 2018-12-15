@@ -154,12 +154,15 @@ export class TextBase extends TextBaseCommon {
             case "none":
                 break;
             case "underline":
+                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
                 dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             case "line-through":
+                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
                 dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             case "underline line-through":
+                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
                 dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
@@ -196,7 +199,7 @@ export class TextBase extends TextBaseCommon {
                 // UITextView's font seems to change inside.
                 dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
             }
-            
+
             const result = NSMutableAttributedString.alloc().initWithString(source);
             result.setAttributesRange(<any>dict, { location: 0, length: source.length });
             if (this.nativeTextViewProtected instanceof UIButton) {

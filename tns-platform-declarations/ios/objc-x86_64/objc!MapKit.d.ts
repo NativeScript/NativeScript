@@ -990,6 +990,8 @@ interface MKMapViewDelegate extends NSObjectProtocol {
 
 	mapViewDidChangeUserTrackingModeAnimated?(mapView: MKMapView, mode: MKUserTrackingMode, animated: boolean): void;
 
+	mapViewDidChangeVisibleRegion?(mapView: MKMapView): void;
+
 	mapViewDidDeselectAnnotationView?(mapView: MKMapView, view: MKAnnotationView): void;
 
 	mapViewDidFailLoadingMapWithError?(mapView: MKMapView, error: NSError): void;

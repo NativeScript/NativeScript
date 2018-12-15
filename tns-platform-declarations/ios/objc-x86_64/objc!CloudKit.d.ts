@@ -461,11 +461,36 @@ declare class CKFetchRecordChangesOperation extends CKDatabaseOperation {
 	initWithRecordZoneIDPreviousServerChangeToken(recordZoneID: CKRecordZoneID, previousServerChangeToken: CKServerChangeToken): this;
 }
 
+declare class CKFetchRecordZoneChangesConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CKFetchRecordZoneChangesConfiguration; // inherited from NSObject
+
+	static new(): CKFetchRecordZoneChangesConfiguration; // inherited from NSObject
+
+	desiredKeys: NSArray<string>;
+
+	previousServerChangeToken: CKServerChangeToken;
+
+	resultsLimit: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
 declare class CKFetchRecordZoneChangesOperation extends CKDatabaseOperation {
 
 	static alloc(): CKFetchRecordZoneChangesOperation; // inherited from NSObject
 
 	static new(): CKFetchRecordZoneChangesOperation; // inherited from NSObject
+
+	configurationsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesConfiguration>;
 
 	fetchAllChanges: boolean;
 
@@ -483,7 +508,11 @@ declare class CKFetchRecordZoneChangesOperation extends CKDatabaseOperation {
 
 	recordZoneIDs: NSArray<CKRecordZoneID>;
 
+	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]; configurationsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesConfiguration>; });
+
 	constructor(o: { recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]; optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>; });
+
+	initWithRecordZoneIDsConfigurationsByRecordZoneID(recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[], configurationsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesConfiguration>): this;
 
 	initWithRecordZoneIDsOptionsByRecordZoneID(recordZoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[], optionsByRecordZoneID: NSDictionary<CKRecordZoneID, CKFetchRecordZoneChangesOptions>): this;
 }
@@ -1094,7 +1123,7 @@ declare const enum CKQuerySubscriptionOptions {
 	FiresOnce = 8
 }
 
-declare class CKRecord extends NSObject implements NSCopying, NSSecureCoding {
+declare class CKRecord extends NSObject implements CKRecordKeyValueSetting, NSCopying, NSSecureCoding {
 
 	static alloc(): CKRecord; // inherited from NSObject
 
@@ -1118,6 +1147,18 @@ declare class CKRecord extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly share: CKReference;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -1134,6 +1175,10 @@ declare class CKRecord extends NSObject implements NSCopying, NSSecureCoding {
 
 	changedKeys(): NSArray<string>;
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeSystemFieldsWithCoder(coder: NSCoder): void;
@@ -1148,9 +1193,27 @@ declare class CKRecord extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithRecordTypeZoneID(recordType: string, zoneID: CKRecordZoneID): this;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	objectForKey(key: string): CKRecordValue;
 
 	objectForKeyedSubscript(key: string): CKRecordValue;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 
 	setObjectForKey(object: CKRecordValue, key: string): void;
 
@@ -1195,6 +1258,25 @@ declare class CKRecordID extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithRecordNameZoneID(recordName: string, zoneID: CKRecordZoneID): this;
 }
+
+interface CKRecordKeyValueSetting extends NSObjectProtocol {
+
+	allKeys(): NSArray<string>;
+
+	changedKeys(): NSArray<string>;
+
+	objectForKey(key: string): CKRecordValue;
+
+	objectForKeyedSubscript(key: string): CKRecordValue;
+
+	setObjectForKey(object: CKRecordValue, key: string): void;
+
+	setObjectForKeyedSubscript(object: CKRecordValue, key: string): void;
+}
+declare var CKRecordKeyValueSetting: {
+
+	prototype: CKRecordKeyValueSetting;
+};
 
 declare var CKRecordParentKey: string;
 
@@ -1457,6 +1539,8 @@ declare class CKShareMetadata extends NSObject implements NSCopying, NSSecureCod
 
 	readonly participantPermission: CKShareParticipantPermission;
 
+	readonly participantRole: CKShareParticipantRole;
+
 	readonly participantStatus: CKShareParticipantAcceptanceStatus;
 
 	readonly participantType: CKShareParticipantType;
@@ -1487,6 +1571,8 @@ declare class CKShareParticipant extends NSObject implements NSCopying, NSSecure
 	readonly acceptanceStatus: CKShareParticipantAcceptanceStatus;
 
 	permission: CKShareParticipantPermission;
+
+	role: CKShareParticipantRole;
 
 	type: CKShareParticipantType;
 
@@ -1523,6 +1609,17 @@ declare const enum CKShareParticipantPermission {
 	ReadOnly = 2,
 
 	ReadWrite = 3
+}
+
+declare const enum CKShareParticipantRole {
+
+	Unknown = 0,
+
+	Owner = 1,
+
+	PrivateUser = 3,
+
+	PublicUser = 4
 }
 
 declare const enum CKShareParticipantType {
