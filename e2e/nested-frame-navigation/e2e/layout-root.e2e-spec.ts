@@ -1,4 +1,5 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+
 import { Screen, playersData, home, somePage, otherPage, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
@@ -261,223 +262,223 @@ describe("layout-root:", () => {
         });
     });
 
-    describe("players list slide transition with parent frame default transition:", () => {
-        const playerOne = playersData["playerOneSlide"];
-        const playerTwo = playersData["playerTwoSlide"];
+    // describe("players list slide transition with parent frame default transition:", () => {
+    //     const playerOne = playersData["playerOneSlide"];
+    //     const playerTwo = playersData["playerTwoSlide"];
 
-        it("loaded layout root with nested frames", async () => {
-            await screen.navigateToLayoutWithFrame();
-            await screen.loadedLayoutWithFrame();
-        });
+    //     it("loaded layout root with nested frames", async () => {
+    //         await screen.navigateToLayoutWithFrame();
+    //         await screen.loadedLayoutWithFrame();
+    //     });
     
-        it("loaded players list", async () => {
-            await screen.loadedPlayersList();
-        });
+    //     it("loaded players list", async () => {
+    //         await screen.loadedPlayersList();
+    //     });
 
-        it("loaded player details with slide", async () => {
-            await shared.testPlayerNavigated(playerTwo, screen);
+    //     it("loaded player details with slide", async () => {
+    //         await shared.testPlayerNavigated(playerTwo, screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
+    //     });
     
-        it("navigate parent frame and go back", async () => {
-            await shared.testSomePageNavigatedDefault(screen);
+    //     it("navigate parent frame and go back", async () => {
+    //         await shared.testSomePageNavigatedDefault(screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(somePage); // wait for some page
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(somePage); // wait for some page
+    //         }
     
-            await driver.navBack(); // some page back navigation
+    //         await driver.navBack(); // some page back navigation
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
 
-            await screen.loadedPlayerDetails(playerTwo);
-        });
+    //         await screen.loadedPlayerDetails(playerTwo);
+    //     });
 
-        it("loaded player list", async () => {
-            await screen.goBackToPlayersList();
+    //     it("loaded player list", async () => {
+    //         await screen.goBackToPlayersList();
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerOne.name); // wait for players list
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerOne.name); // wait for players list
+    //         }
+    //     });
 
-        it("loaded home page again", async () => {
-            await screen.resetToHome();
-            await screen.loadedHome();
-        });
-    });
+    //     it("loaded home page again", async () => {
+    //         await screen.resetToHome();
+    //         await screen.loadedHome();
+    //     });
+    // });
 
-    describe("players list slide transition with parent frame no transition:", () => {
-        const playerOne = playersData["playerOneSlide"];
-        const playerTwo = playersData["playerTwoSlide"];
+    // describe("players list slide transition with parent frame no transition:", () => {
+    //     const playerOne = playersData["playerOneSlide"];
+    //     const playerTwo = playersData["playerTwoSlide"];
 
-        it("loaded layout root with nested frames", async () => {
-            await screen.navigateToLayoutWithFrame();
-            await screen.loadedLayoutWithFrame();
-        });
+    //     it("loaded layout root with nested frames", async () => {
+    //         await screen.navigateToLayoutWithFrame();
+    //         await screen.loadedLayoutWithFrame();
+    //     });
     
-        it("loaded players list", async () => {
-            await screen.loadedPlayersList();
-        });
+    //     it("loaded players list", async () => {
+    //         await screen.loadedPlayersList();
+    //     });
 
-        it("loaded player details with slide", async () => {
-            await shared.testPlayerNavigated(playerTwo, screen);
+    //     it("loaded player details with slide", async () => {
+    //         await shared.testPlayerNavigated(playerTwo, screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
+    //     });
     
-        it("navigate parent frame and go back", async () => {
-            await shared.testSomePageNavigatedNone(screen);
+    //     it("navigate parent frame and go back", async () => {
+    //         await shared.testSomePageNavigatedNone(screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(somePage); // wait for some page
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(somePage); // wait for some page
+    //         }
     
-            await driver.navBack(); // some page back navigation
+    //         await driver.navBack(); // some page back navigation
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
 
-            await screen.loadedPlayerDetails(playerTwo);
-        });
+    //         await screen.loadedPlayerDetails(playerTwo);
+    //     });
 
-        it("loaded player list", async () => {
-            await screen.goBackToPlayersList();
+    //     it("loaded player list", async () => {
+    //         await screen.goBackToPlayersList();
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerOne.name); // wait for players list
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerOne.name); // wait for players list
+    //         }
+    //     });
 
-        it("loaded home page again", async () => {
-            await screen.resetToHome();
-            await screen.loadedHome();
-        });
-    });
+    //     it("loaded home page again", async () => {
+    //         await screen.resetToHome();
+    //         await screen.loadedHome();
+    //     });
+    // });
 
-    describe("players list flip transition with parent frame default transition:", () => {
-        const playerOne = playersData["playerOneFlip"];
-        const playerTwo = playersData["playerTwoFlip"];
+    // describe("players list flip transition with parent frame default transition:", () => {
+    //     const playerOne = playersData["playerOneFlip"];
+    //     const playerTwo = playersData["playerTwoFlip"];
 
-        it("loaded layout root with nested frames", async () => {
-            await screen.navigateToLayoutWithFrame();
-            await screen.loadedLayoutWithFrame();
-        });
+    //     it("loaded layout root with nested frames", async () => {
+    //         await screen.navigateToLayoutWithFrame();
+    //         await screen.loadedLayoutWithFrame();
+    //     });
     
-        it("loaded players list", async () => {
-            await screen.loadedPlayersList();
-        });
+    //     it("loaded players list", async () => {
+    //         await screen.loadedPlayersList();
+    //     });
 
-        it("loaded player details with slide", async () => {
-            await shared.testPlayerNavigated(playerTwo, screen);
+    //     it("loaded player details with slide", async () => {
+    //         await shared.testPlayerNavigated(playerTwo, screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
+    //     });
     
-        it("navigate parent frame and go back", async () => {
-            await shared.testSomePageNavigatedDefault(screen);
+    //     it("navigate parent frame and go back", async () => {
+    //         await shared.testSomePageNavigatedDefault(screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(somePage); // wait for some page
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(somePage); // wait for some page
+    //         }
     
-            await driver.navBack(); // some page back navigation
+    //         await driver.navBack(); // some page back navigation
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
 
-            await screen.loadedPlayerDetails(playerTwo);
-        });
+    //         await screen.loadedPlayerDetails(playerTwo);
+    //     });
 
-        it("loaded player list", async () => {
-            await screen.goBackToPlayersList();
+    //     it("loaded player list", async () => {
+    //         await screen.goBackToPlayersList();
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerOne.name); // wait for players list
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerOne.name); // wait for players list
+    //         }
+    //     });
 
-        it("loaded home page again", async () => {
-            await screen.resetToHome();
-            await screen.loadedHome();
-        });
-    });
+    //     it("loaded home page again", async () => {
+    //         await screen.resetToHome();
+    //         await screen.loadedHome();
+    //     });
+    // });
 
-    describe("players list flip transition with parent frame no transition:", () => {
-        const playerOne = playersData["playerOneFlip"];
-        const playerTwo = playersData["playerTwoFlip"];
+    // describe("players list flip transition with parent frame no transition:", () => {
+    //     const playerOne = playersData["playerOneFlip"];
+    //     const playerTwo = playersData["playerTwoFlip"];
 
-        it("loaded layout root with nested frames", async () => {
-            await screen.navigateToLayoutWithFrame();
-            await screen.loadedLayoutWithFrame();
-        });
+    //     it("loaded layout root with nested frames", async () => {
+    //         await screen.navigateToLayoutWithFrame();
+    //         await screen.loadedLayoutWithFrame();
+    //     });
     
-        it("loaded players list", async () => {
-            await screen.loadedPlayersList();
-        });
+    //     it("loaded players list", async () => {
+    //         await screen.loadedPlayersList();
+    //     });
 
-        it("loaded player details with slide", async () => {
-            await shared.testPlayerNavigated(playerTwo, screen);
+    //     it("loaded player details with slide", async () => {
+    //         await shared.testPlayerNavigated(playerTwo, screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
+    //     });
     
-        it("navigate parent frame and go back", async () => {
-            await shared.testSomePageNavigatedNone(screen);
+    //     it("navigate parent frame and go back", async () => {
+    //         await shared.testSomePageNavigatedNone(screen);
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(somePage); // wait for some page
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(somePage); // wait for some page
+    //         }
     
-            await driver.navBack(); // some page back navigation
+    //         await driver.navBack(); // some page back navigation
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerTwo.name); // wait for player
-            }
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerTwo.name); // wait for player
+    //         }
 
-            await screen.loadedPlayerDetails(playerTwo);
-        });
+    //         await screen.loadedPlayerDetails(playerTwo);
+    //     });
 
-        it("loaded player list", async () => {
-            await screen.goBackToPlayersList();
+    //     it("loaded player list", async () => {
+    //         await screen.goBackToPlayersList();
 
-            if (appSuspendResume) {
-                await driver.backgroundApp(suspendTime);
-                await driver.waitForElement(playerOne.name); // wait for players list
-            }
-        });
+    //         if (appSuspendResume) {
+    //             await driver.backgroundApp(suspendTime);
+    //             await driver.waitForElement(playerOne.name); // wait for players list
+    //         }
+    //     });
 
-        it("loaded home page again", async () => {
-            await screen.resetToHome();
-            await screen.loadedHome();
-        });
-    });
+    //     it("loaded home page again", async () => {
+    //         await screen.resetToHome();
+    //         await screen.loadedHome();
+    //     });
+    // });
 });
