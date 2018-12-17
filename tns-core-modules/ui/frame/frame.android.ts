@@ -527,10 +527,22 @@ function getAnimatorState(entry: BackstackEntry): AnimatorState {
 
 function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): void {
     const expandedEntry = <any>entry;
-    expandedEntry.enterAnimator = snapshot.enterAnimator;
-    expandedEntry.exitAnimator = snapshot.exitAnimator;
-    expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
-    expandedEntry.popExitAnimator = snapshot.popExitAnimator;
+    if (snapshot.enterAnimator) {
+        expandedEntry.enterAnimator = snapshot.enterAnimator;
+    }
+    
+    if (snapshot.exitAnimator) {
+        expandedEntry.exitAnimator = snapshot.exitAnimator;
+    }
+
+    if (snapshot.popEnterAnimator) {
+        expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
+    }
+    
+    if (snapshot.popExitAnimator) {
+        expandedEntry.popExitAnimator = snapshot.popExitAnimator;
+    }
+
     expandedEntry.transitionName = snapshot.transitionName;
 }
 
