@@ -5,10 +5,12 @@
                 export class CompleteCallback {
                     constructor(implementation: ICompleteCallback);
                     onComplete(result: Object, context: Object): void;
+                    onError(error: string, context: Object): void;
                 }
 
                 export interface ICompleteCallback {
                     onComplete(result: Object, context: Object): void;
+                    onError(error: string, context: Object): void;
                 }
 
                 export module Image {
@@ -162,6 +164,12 @@
 
                 public horizontalAlignment: HorizontalAlignment;
                 public verticalAlignment: VerticalAlignment;
+            }
+
+            export class FragmentBase extends android.support.v4.app.Fragment {
+                constructor();
+
+                public getRemovingParentFragment(): android.support.v4.app.Fragment;
             }
 
             export enum Stretch {

@@ -113,6 +113,8 @@ declare class SKDownload extends NSObject {
 
 	readonly progress: number;
 
+	readonly state: SKDownloadState;
+
 	readonly timeRemaining: number;
 
 	readonly transaction: SKPaymentTransaction;
@@ -313,6 +315,8 @@ declare class SKProduct extends NSObject {
 	readonly priceLocale: NSLocale;
 
 	readonly productIdentifier: string;
+
+	readonly subscriptionGroupIdentifier: string;
 
 	readonly subscriptionPeriod: SKProductSubscriptionPeriod;
 }

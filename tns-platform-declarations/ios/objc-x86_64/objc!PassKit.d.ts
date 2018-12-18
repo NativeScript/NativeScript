@@ -109,9 +109,18 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 
 	requiresFelicaSecureElement: boolean;
 
+	style: PKAddPaymentPassStyle;
+
 	constructor(o: { encryptionScheme: string; });
 
 	initWithEncryptionScheme(encryptionScheme: string): this;
+}
+
+declare const enum PKAddPaymentPassStyle {
+
+	Payment = 0,
+
+	Access = 1
 }
 
 declare class PKAddPaymentPassViewController extends UIViewController {
@@ -542,6 +551,8 @@ declare class PKPaymentButton extends UIButton {
 
 	static new(): PKPaymentButton; // inherited from NSObject
 
+	cornerRadius: number;
+
 	constructor(o: { paymentButtonType: PKPaymentButtonType; paymentButtonStyle: PKPaymentButtonStyle; });
 
 	initWithPaymentButtonTypePaymentButtonStyle(type: PKPaymentButtonType, style: PKPaymentButtonStyle): this;
@@ -566,7 +577,13 @@ declare const enum PKPaymentButtonType {
 
 	InStore = 3,
 
-	Donate = 4
+	Donate = 4,
+
+	Checkout = 5,
+
+	Book = 6,
+
+	Subscribe = 7
 }
 
 declare const enum PKPaymentErrorCode {
@@ -626,11 +643,17 @@ declare var PKPaymentNetworkChinaUnionPay: string;
 
 declare var PKPaymentNetworkDiscover: string;
 
+declare var PKPaymentNetworkEftpos: string;
+
+declare var PKPaymentNetworkElectron: string;
+
 declare var PKPaymentNetworkIDCredit: string;
 
 declare var PKPaymentNetworkInterac: string;
 
 declare var PKPaymentNetworkJCB: string;
+
+declare var PKPaymentNetworkMaestro: string;
 
 declare var PKPaymentNetworkMasterCard: string;
 
@@ -639,6 +662,8 @@ declare var PKPaymentNetworkPrivateLabel: string;
 declare var PKPaymentNetworkQuicPay: string;
 
 declare var PKPaymentNetworkSuica: string;
+
+declare var PKPaymentNetworkVPay: string;
 
 declare var PKPaymentNetworkVisa: string;
 

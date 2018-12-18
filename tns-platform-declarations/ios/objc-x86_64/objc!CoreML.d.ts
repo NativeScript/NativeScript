@@ -1,4 +1,45 @@
 
+declare class MLArrayBatchProvider extends NSObject implements MLBatchProvider {
+
+	static alloc(): MLArrayBatchProvider; // inherited from NSObject
+
+	static new(): MLArrayBatchProvider; // inherited from NSObject
+
+	readonly array: NSArray<MLFeatureProvider>;
+
+	readonly count: number; // inherited from MLBatchProvider
+
+	constructor(o: { dictionary: NSDictionary<string, NSArray<any>>; });
+
+	constructor(o: { featureProviderArray: NSArray<MLFeatureProvider> | MLFeatureProvider[]; });
+
+	featuresAtIndex(index: number): MLFeatureProvider;
+
+	initWithDictionaryError(dictionary: NSDictionary<string, NSArray<any>>): this;
+
+	initWithFeatureProviderArray(array: NSArray<MLFeatureProvider> | MLFeatureProvider[]): this;
+}
+
+interface MLBatchProvider {
+
+	count: number;
+
+	featuresAtIndex(index: number): MLFeatureProvider;
+}
+declare var MLBatchProvider: {
+
+	prototype: MLBatchProvider;
+};
+
+declare const enum MLComputeUnits {
+
+	CPUOnly = 0,
+
+	CPUAndGPU = 1,
+
+	All = 2
+}
+
 interface MLCustomLayer {
 
 	encodeToCommandBufferInputsOutputsError?(commandBuffer: MTLCommandBuffer, inputs: NSArray<MTLTexture> | MTLTexture[], outputs: NSArray<MTLTexture> | MTLTexture[]): boolean;
@@ -14,6 +55,19 @@ interface MLCustomLayer {
 declare var MLCustomLayer: {
 
 	prototype: MLCustomLayer;
+};
+
+interface MLCustomModel {
+
+	initWithModelDescriptionParameterDictionaryError?(modelDescription: MLModelDescription, parameters: NSDictionary<string, any>): MLCustomModel;
+
+	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions): MLFeatureProvider;
+
+	predictionsFromBatchOptionsError?(inputBatch: MLBatchProvider, options: MLPredictionOptions): MLBatchProvider;
+}
+declare var MLCustomModel: {
+
+	prototype: MLCustomModel;
 };
 
 declare class MLDictionaryConstraint extends NSObject {
@@ -61,6 +115,8 @@ declare class MLFeatureDescription extends NSObject implements NSCopying {
 
 	readonly optional: boolean;
 
+	readonly sequenceConstraint: MLSequenceConstraint;
+
 	readonly type: MLFeatureType;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -93,7 +149,9 @@ declare const enum MLFeatureType {
 
 	MultiArray = 5,
 
-	Dictionary = 6
+	Dictionary = 6,
+
+	Sequence = 7
 }
 
 declare class MLFeatureValue extends NSObject implements NSCopying {
@@ -110,6 +168,8 @@ declare class MLFeatureValue extends NSObject implements NSCopying {
 
 	static featureValueWithPixelBuffer(value: any): MLFeatureValue;
 
+	static featureValueWithSequence(sequence: MLSequence): MLFeatureValue;
+
 	static featureValueWithString(value: string): MLFeatureValue;
 
 	static new(): MLFeatureValue; // inherited from NSObject
@@ -125,6 +185,8 @@ declare class MLFeatureValue extends NSObject implements NSCopying {
 	readonly int64Value: number;
 
 	readonly multiArrayValue: MLMultiArray;
+
+	readonly sequenceValue: MLSequence;
 
 	readonly stringValue: string;
 
@@ -148,6 +210,43 @@ declare class MLImageConstraint extends NSObject {
 	readonly pixelsHigh: number;
 
 	readonly pixelsWide: number;
+
+	readonly sizeConstraint: MLImageSizeConstraint;
+}
+
+declare class MLImageSize extends NSObject {
+
+	static alloc(): MLImageSize; // inherited from NSObject
+
+	static new(): MLImageSize; // inherited from NSObject
+
+	readonly pixelsHigh: number;
+
+	readonly pixelsWide: number;
+}
+
+declare class MLImageSizeConstraint extends NSObject {
+
+	static alloc(): MLImageSizeConstraint; // inherited from NSObject
+
+	static new(): MLImageSizeConstraint; // inherited from NSObject
+
+	readonly enumeratedImageSizes: NSArray<MLImageSize>;
+
+	readonly pixelsHighRange: NSRange;
+
+	readonly pixelsWideRange: NSRange;
+
+	readonly type: MLImageSizeConstraintType;
+}
+
+declare const enum MLImageSizeConstraintType {
+
+	Unspecified = 0,
+
+	Enumerated = 2,
+
+	Range = 3
 }
 
 declare class MLModel extends NSObject {
@@ -156,18 +255,35 @@ declare class MLModel extends NSObject {
 
 	static compileModelAtURLError(modelURL: NSURL): NSURL;
 
+	static modelWithContentsOfURLConfigurationError(url: NSURL, configuration: MLModelConfiguration): MLModel;
+
 	static modelWithContentsOfURLError(url: NSURL): MLModel;
 
 	static new(): MLModel; // inherited from NSObject
+
+	readonly configuration: MLModelConfiguration;
 
 	readonly modelDescription: MLModelDescription;
 
 	predictionFromFeaturesError(input: MLFeatureProvider): MLFeatureProvider;
 
 	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions): MLFeatureProvider;
+
+	predictionsFromBatchOptionsError(inputBatch: MLBatchProvider, options: MLPredictionOptions): MLBatchProvider;
 }
 
 declare var MLModelAuthorKey: string;
+
+declare class MLModelConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): MLModelConfiguration; // inherited from NSObject
+
+	static new(): MLModelConfiguration; // inherited from NSObject
+
+	computeUnits: MLComputeUnits;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
 
 declare var MLModelCreatorDefinedKey: string;
 
@@ -198,7 +314,9 @@ declare const enum MLModelError {
 
 	IO = 3,
 
-	CustomLayer = 4
+	CustomLayer = 4,
+
+	CustomModel = 5
 }
 
 declare var MLModelErrorDomain: string;
@@ -250,6 +368,8 @@ declare class MLMultiArrayConstraint extends NSObject {
 	readonly dataType: MLMultiArrayDataType;
 
 	readonly shape: NSArray<number>;
+
+	readonly shapeConstraint: MLMultiArrayShapeConstraint;
 }
 
 declare const enum MLMultiArrayDataType {
@@ -261,6 +381,28 @@ declare const enum MLMultiArrayDataType {
 	Int32 = 131104
 }
 
+declare class MLMultiArrayShapeConstraint extends NSObject {
+
+	static alloc(): MLMultiArrayShapeConstraint; // inherited from NSObject
+
+	static new(): MLMultiArrayShapeConstraint; // inherited from NSObject
+
+	readonly enumeratedShapes: NSArray<NSArray<number>>;
+
+	readonly sizeRangeForDimension: NSArray<NSValue>;
+
+	readonly type: MLMultiArrayShapeConstraintType;
+}
+
+declare const enum MLMultiArrayShapeConstraintType {
+
+	Unspecified = 1,
+
+	Enumerated = 2,
+
+	Range = 3
+}
+
 declare class MLPredictionOptions extends NSObject {
 
 	static alloc(): MLPredictionOptions; // inherited from NSObject
@@ -268,4 +410,34 @@ declare class MLPredictionOptions extends NSObject {
 	static new(): MLPredictionOptions; // inherited from NSObject
 
 	usesCPUOnly: boolean;
+}
+
+declare class MLSequence extends NSObject {
+
+	static alloc(): MLSequence; // inherited from NSObject
+
+	static emptySequenceWithType(type: MLFeatureType): MLSequence;
+
+	static new(): MLSequence; // inherited from NSObject
+
+	static sequenceWithInt64Array(int64Values: NSArray<number> | number[]): MLSequence;
+
+	static sequenceWithStringArray(stringValues: NSArray<string> | string[]): MLSequence;
+
+	readonly int64Values: NSArray<number>;
+
+	readonly stringValues: NSArray<string>;
+
+	readonly type: MLFeatureType;
+}
+
+declare class MLSequenceConstraint extends NSObject {
+
+	static alloc(): MLSequenceConstraint; // inherited from NSObject
+
+	static new(): MLSequenceConstraint; // inherited from NSObject
+
+	readonly countRange: NSRange;
+
+	readonly valueDescription: MLFeatureDescription;
 }

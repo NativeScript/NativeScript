@@ -271,7 +271,7 @@ export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
             changed = true;
         }
     }
-    if (changed) {  mergeCssSelectors(); }
+    if (changed) { mergeCssSelectors(); }
     return changed;
 }
 
@@ -343,6 +343,7 @@ export class CssState {
     _appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
     _appliedPropertyValues: Readonly<{}>;
     _appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
+    _appliedSelectorsVersion: number;
 
     _match: SelectorsMatch<ViewBase>;
     _matchInvalid: boolean;
@@ -367,6 +368,10 @@ export class CssState {
         }
     }
 
+    public isSelectorsLatestVersionApplied(): boolean {
+        return this.view._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
+    }
+
     public onLoaded(): void {
         if (this._matchInvalid) {
             this.updateMatch();
@@ -381,7 +386,12 @@ export class CssState {
 
     @profile
     private updateMatch() {
-        this._match = this.view._styleScope ? this.view._styleScope.matchSelectors(this.view) : CssState.emptyMatch;
+        if (this.view._styleScope) {
+            this._appliedSelectorsVersion = this.view._styleScope._getSelectorsVersion();
+            this._match = this.view._styleScope.matchSelectors(this.view);
+        } else {
+            this._match = CssState.emptyMatch;
+        }
         this._matchInvalid = false;
     }
 
@@ -597,14 +607,22 @@ export class StyleScope {
     }
 
     public ensureSelectors(): number {
-        if (this._applicationCssSelectorsAppliedVersion !== applicationCssSelectorVersion ||
-            this._localCssSelectorVersion !== this._localCssSelectorsAppliedVersion ||
+        if (!this.isApplicationCssSelectorsLatestVersionApplied() ||
+            !this.isLocalCssSelectorsLatestVersionApplied() ||
             !this._mergedCssSelectors) {
 
             this._createSelectors();
         }
 
         return this._getSelectorsVersion();
+    }
+
+    public isApplicationCssSelectorsLatestVersionApplied(): boolean {
+        return this._applicationCssSelectorsAppliedVersion === applicationCssSelectorVersion;
+    }
+
+    public isLocalCssSelectorsLatestVersionApplied(): boolean {
+        return this._localCssSelectorsAppliedVersion === this._localCssSelectorVersion;
     }
 
     @profile

@@ -1,9 +1,18 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
 import { Page } from "tns-core-modules/ui/page";
+import { isAndroid } from "tns-core-modules/platform";
 import { Frame, NavigationEntry, stack } from "tns-core-modules/ui/frame";
 import { _resetRootView, getRootView } from "tns-core-modules/application";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
+
+function waitUntilTabViewReady(page: Page, action: Function) {
+    helper.waitUntilNavigatedTo(page, action);
+
+    if (isAndroid) {
+        TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment.isAdded());
+    }
+}
 
 function createTestFrameRootEntry() {
     const page = new Page();
@@ -77,7 +86,7 @@ export function test_reset_frame_to_tab() {
 
     const testTabRoot = createTestTabRootEntry();
 
-    helper.waitUntilNavigatedTo(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
+    waitUntilTabViewReady(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
@@ -88,7 +97,7 @@ export function test_reset_frame_to_tab() {
 export function test_reset_tab_to_frame() {
     const testTabRoot = createTestTabRootEntry();
 
-    helper.waitUntilNavigatedTo(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
+    waitUntilTabViewReady(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
@@ -108,7 +117,7 @@ export function test_reset_tab_to_frame() {
 export function test_reset_tab_to_tab() {
     const testTabRoot1 = createTestTabRootEntry();
 
-    helper.waitUntilNavigatedTo(testTabRoot1.page, () => _resetRootView(testTabRoot1.entry));
+    waitUntilTabViewReady(testTabRoot1.page, () => _resetRootView(testTabRoot1.entry));
 
     const rootView1 = getRootView();
     const frameStack1 = stack();
@@ -117,7 +126,7 @@ export function test_reset_tab_to_tab() {
 
     const testTabRoot2 = createTestTabRootEntry();
 
-    helper.waitUntilNavigatedTo(testTabRoot2.page, () => _resetRootView(testTabRoot2.entry));
+    waitUntilTabViewReady(testTabRoot2.page, () => _resetRootView(testTabRoot2.entry));
 
     const rootView2 = getRootView();
     const frameStack2 = stack();
@@ -128,7 +137,7 @@ export function test_reset_tab_to_tab() {
 export function test_reset_during_tab_index_change() {
     const testTabRoot = createTestTabRootEntry();
 
-    helper.waitUntilNavigatedTo(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
+    waitUntilTabViewReady(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     testTabRoot.root.selectedIndex = 1;
 

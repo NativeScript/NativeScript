@@ -66,6 +66,53 @@ declare const enum CTCellularDataRestrictedState {
 	kCTCellularDataNotRestricted = 2
 }
 
+declare class CTCellularPlanProvisioning extends NSObject {
+
+	static alloc(): CTCellularPlanProvisioning; // inherited from NSObject
+
+	static new(): CTCellularPlanProvisioning; // inherited from NSObject
+
+	addPlanWithCompletionHandler(request: CTCellularPlanProvisioningRequest, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
+
+	supportsCellularPlan(): boolean;
+}
+
+declare const enum CTCellularPlanProvisioningAddPlanResult {
+
+	Unknown = 0,
+
+	Fail = 1,
+
+	Success = 2
+}
+
+declare class CTCellularPlanProvisioningRequest extends NSObject implements NSSecureCoding {
+
+	static alloc(): CTCellularPlanProvisioningRequest; // inherited from NSObject
+
+	static new(): CTCellularPlanProvisioningRequest; // inherited from NSObject
+
+	EID: string;
+
+	ICCID: string;
+
+	OID: string;
+
+	address: string;
+
+	confirmationCode: string;
+
+	matchingID: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
 interface CTError {
 	domain: number;
 	error: number;
@@ -96,6 +143,8 @@ declare var CTRadioAccessTechnologyWCDMA: string;
 
 declare var CTRadioAccessTechnologyeHRPD: string;
 
+declare var CTServiceRadioAccessTechnologyDidChangeNotification: string;
+
 declare class CTSubscriber extends NSObject {
 
 	static alloc(): CTSubscriber; // inherited from NSObject
@@ -103,7 +152,20 @@ declare class CTSubscriber extends NSObject {
 	static new(): CTSubscriber; // inherited from NSObject
 
 	readonly carrierToken: NSData;
+
+	delegate: CTSubscriberDelegate;
+
+	readonly identifier: string;
 }
+
+interface CTSubscriberDelegate {
+
+	subscriberTokenRefreshed(subscriber: CTSubscriber): void;
+}
+declare var CTSubscriberDelegate: {
+
+	prototype: CTSubscriberDelegate;
+};
 
 declare class CTSubscriberInfo extends NSObject {
 
@@ -112,6 +174,8 @@ declare class CTSubscriberInfo extends NSObject {
 	static new(): CTSubscriberInfo; // inherited from NSObject
 
 	static subscriber(): CTSubscriber;
+
+	static subscribers(): NSArray<CTSubscriber>;
 }
 
 declare var CTSubscriberTokenRefreshed: string;
@@ -123,6 +187,12 @@ declare class CTTelephonyNetworkInfo extends NSObject {
 	static new(): CTTelephonyNetworkInfo; // inherited from NSObject
 
 	readonly currentRadioAccessTechnology: string;
+
+	readonly serviceCurrentRadioAccessTechnology: NSDictionary<string, string>;
+
+	readonly serviceSubscriberCellularProviders: NSDictionary<string, CTCarrier>;
+
+	serviceSubscriberCellularProvidersDidUpdateNotifier: (p1: string) => void;
 
 	readonly subscriberCellularProvider: CTCarrier;
 

@@ -1,4 +1,96 @@
 
+interface MIDICIDeviceIdentification {
+	manufacturer: interop.Reference<number>;
+	family: interop.Reference<number>;
+	modelNumber: interop.Reference<number>;
+	revisionLevel: interop.Reference<number>;
+	reserved: interop.Reference<number>;
+}
+declare var MIDICIDeviceIdentification: interop.StructType<MIDICIDeviceIdentification>;
+
+declare class MIDICIProfile extends NSObject implements NSSecureCoding {
+
+	static alloc(): MIDICIProfile; // inherited from NSObject
+
+	static new(): MIDICIProfile; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly profileID: NSData;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { data: NSData; name: string; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDataName(data: NSData, inName: string): this;
+}
+
+declare class MIDICIProfileState extends NSObject implements NSSecureCoding {
+
+	static alloc(): MIDICIProfileState; // inherited from NSObject
+
+	static new(): MIDICIProfileState; // inherited from NSObject
+
+	readonly disabledProfiles: NSArray<MIDICIProfile>;
+
+	readonly enabledProfiles: NSArray<MIDICIProfile>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { enabledProfiles: NSArray<MIDICIProfile> | MIDICIProfile[]; disabledProfiles: NSArray<MIDICIProfile> | MIDICIProfile[]; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithEnabledProfilesDisabledProfiles(enabled: NSArray<MIDICIProfile> | MIDICIProfile[], disabled: NSArray<MIDICIProfile> | MIDICIProfile[]): this;
+}
+
+declare class MIDICISession extends NSObject {
+
+	static alloc(): MIDICISession; // inherited from NSObject
+
+	static new(): MIDICISession; // inherited from NSObject
+
+	readonly deviceIdentification: MIDICIDeviceIdentification;
+
+	readonly entity: number;
+
+	profileChangedCallback: (p1: MIDICISession, p2: number, p3: MIDICIProfile, p4: boolean) => void;
+
+	propertyChangedCallback: (p1: MIDICISession, p2: number, p3: NSData) => void;
+
+	readonly supportsProfileCapability: boolean;
+
+	readonly supportsPropertyCapability: boolean;
+
+	constructor(o: { MIDIEntity: number; dataReadyHandler: () => void; });
+
+	disableProfileOnChannelError(profile: MIDICIProfile, channel: number): boolean;
+
+	enableProfileOnChannelError(profile: MIDICIProfile, channel: number): boolean;
+
+	getPropertyOnChannelResponseHandler(inquiry: NSData, channel: number, handler: (p1: MIDICISession, p2: number, p3: NSData, p4: NSError) => void): void;
+
+	hasPropertyOnChannelResponseHandler(inquiry: NSData, channel: number, handler: (p1: MIDICISession, p2: number, p3: NSData, p4: NSError) => void): void;
+
+	initWithMIDIEntityDataReadyHandler(entity: number, handler: () => void): this;
+
+	profileStateForChannel(channel: number): MIDICIProfileState;
+
+	setPropertyOnChannelResponseHandler(inquiry: NSData, channel: number, handler: (p1: MIDICISession, p2: number, p3: NSData, p4: NSError) => void): void;
+}
+
+declare var MIDIChannelsWholePort: number;
+
 declare function MIDIClientCreate(name: string, notifyProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDINotification>, p2: interop.Pointer | interop.Reference<any>) => void>, notifyRefCon: interop.Pointer | interop.Reference<any>, outClient: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIClientCreateWithBlock(name: string, outClient: interop.Pointer | interop.Reference<number>, notifyBlock: (p1: interop.Pointer | interop.Reference<MIDINotification>) => void): number;
@@ -542,6 +634,8 @@ declare const kMIDISetupFormatErr: number;
 declare const kMIDIThruConnection_MaxEndpoints: number;
 
 declare const kMIDIUnknownEndpoint: number;
+
+declare const kMIDIUnknownError: number;
 
 declare const kMIDIUnknownProperty: number;
 

@@ -1323,7 +1323,9 @@ declare const enum SCNGeometryPrimitiveType {
 
 	Line = 2,
 
-	Point = 3
+	Point = 3,
+
+	Polygon = 4
 }
 
 declare class SCNGeometrySource extends NSObject implements NSSecureCoding {
@@ -2219,11 +2221,17 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
+
+	readonly frame: CGRect; // inherited from UIFocusItem
+
 	readonly hasActions: boolean; // inherited from SCNActionable
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
 
 	readonly preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
 
@@ -2276,6 +2284,8 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	convertVectorToNode(vector: SCNVector3, node: SCNNode): SCNVector3;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	didHintFocusMovement(hint: UIFocusMovementHint): void;
 
 	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
 
@@ -2847,11 +2857,15 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	angularDamping: number;
 
+	angularRestingThreshold: number;
+
 	angularVelocity: SCNVector4;
 
 	angularVelocityFactor: SCNVector3;
 
 	categoryBitMask: number;
+
+	centerOfMassOffset: SCNVector3;
 
 	charge: number;
 
@@ -2859,11 +2873,15 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	contactTestBitMask: number;
 
+	continuousCollisionDetectionThreshold: number;
+
 	damping: number;
 
 	friction: number;
 
 	readonly isResting: boolean;
+
+	linearRestingThreshold: number;
 
 	mass: number;
 
@@ -2902,6 +2920,8 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(aDecoder: NSCoder): this;
 
 	resetTransform(): void;
+
+	setResting(resting: boolean): void;
 }
 
 declare const enum SCNPhysicsBodyType {
