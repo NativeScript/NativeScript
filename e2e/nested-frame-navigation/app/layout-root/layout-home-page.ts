@@ -21,7 +21,7 @@ export function onNavigateSlide(args: EventData) {
         animated: true,
         transition: {
             name: "slide",
-            duration: 380,
+            duration: 300,
             curve: "easeIn"
         }
     });
@@ -34,7 +34,7 @@ export function onNavigateFlip(args: EventData) {
         animated: true,
         transition: {
             name: "flip",
-            duration: 380,
+            duration: 300,
             curve: "easeIn"
         }
     });
