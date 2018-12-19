@@ -527,10 +527,22 @@ function getAnimatorState(entry: BackstackEntry): AnimatorState {
 
 function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): void {
     const expandedEntry = <any>entry;
-    expandedEntry.enterAnimator = snapshot.enterAnimator;
-    expandedEntry.exitAnimator = snapshot.exitAnimator;
-    expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
-    expandedEntry.popExitAnimator = snapshot.popExitAnimator;
+    if (snapshot.enterAnimator) {
+        expandedEntry.enterAnimator = snapshot.enterAnimator;
+    }
+    
+    if (snapshot.exitAnimator) {
+        expandedEntry.exitAnimator = snapshot.exitAnimator;
+    }
+
+    if (snapshot.popEnterAnimator) {
+        expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
+    }
+    
+    if (snapshot.popExitAnimator) {
+        expandedEntry.popExitAnimator = snapshot.popExitAnimator;
+    }
+
     expandedEntry.transitionName = snapshot.transitionName;
 }
 
@@ -890,6 +902,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             traceError(`${fragment}.onDestroy: entry is null or undefined`);
             return null;
         }
+
+        // [nested frames / fragments] see https://github.com/NativeScript/NativeScript/issues/6629
+        // retaining reference to a destroyed fragment here somehow causes a cryptic 
+        // "IllegalStateException: Failure saving state: active fragment has cleared index: -1" 
+        // in a specific mixed parent / nested frame navigation scenario
+        entry.fragment = null;
 
         const page = entry.resolvedPage;
         if (!page) {
