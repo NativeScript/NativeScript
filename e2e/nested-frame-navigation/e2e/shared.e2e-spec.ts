@@ -1,5 +1,6 @@
-import { Screen, Item } from "./screen";
 import { AppiumDriver } from "nativescript-dev-appium";
+
+import { Screen, Item } from "./screen";
 
 export async function testPlayerNavigated(player: Item, screen: Screen) {
     await screen.navigateToPlayerDetails(player);
@@ -7,7 +8,12 @@ export async function testPlayerNavigated(player: Item, screen: Screen) {
 }
 
 export async function testPlayerNavigatedBack(screen: Screen, driver: AppiumDriver) {
-    await driver.navBack();
+    if (driver.isAndroid) {
+        await driver.navBack();
+    } else {
+        await screen.goBackToPlayersList();
+    }
+
     await screen.loadedPlayersList();
 }
 
@@ -37,7 +43,12 @@ export async function testTeamNavigated(team: Item, screen: Screen) {
 }
 
 export async function testTeamNavigatedBack(screen: Screen, driver: AppiumDriver) {
-    await driver.navBack();
+    if (driver.isAndroid) {
+        await driver.navBack();
+    } else {
+        await screen.goBackToTeamsList();
+    }
+
     await screen.loadedTeamsList();
 }
 
