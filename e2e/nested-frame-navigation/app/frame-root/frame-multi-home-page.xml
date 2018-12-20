@@ -1,4 +1,4 @@
-<Page codeFile="~/frame-root/frame-home-page" xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
 
     <ActionBar class="action-bar">
         <NavigationButton text="frameHomeBack" tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
