@@ -93,7 +93,7 @@ describe("frame-tab-root:", () => {
                         if (driver.isAndroid) {
                             await driver.navBack();
                         } else {
-                            await screen.goBackToPlayersList();
+                            await screen.goBackFromSomePage();
                         }
 
                         await screen.loadedPlayersList();
