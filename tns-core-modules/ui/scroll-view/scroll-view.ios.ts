@@ -3,9 +3,6 @@ import {
     View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty
 } from "./scroll-view-common";
 import { ios as iosUtils } from "../../utils/utils";
-// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
-// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
-import * as uiUtils from "tns-core-modules/ui/utils";
 
 export * from "./scroll-view-common";
 
@@ -191,20 +188,6 @@ export class ScrollView extends ScrollViewBase {
     public _onOrientationChanged() {
         this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
     }
-}
-
-function getTabBarHeight(scrollView: ScrollView): number {
-    let parent = scrollView.parent;
-    while (parent) {
-        const controller = parent.viewController;
-        if (controller instanceof UITabBarController) {
-            return uiUtils.ios.getActualHeight(controller.tabBar);
-        }
-
-        parent = parent.parent;
-    }
-
-    return 0;
 }
 
 ScrollView.prototype.recycleNativeView = "auto";
