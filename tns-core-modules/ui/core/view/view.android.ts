@@ -135,9 +135,10 @@ function initializeDialogFragment() {
             this._shownCallback = options.shownCallback;
             this.owner._dialogFragment = this;
             this.setStyle(android.support.v4.app.DialogFragment.STYLE_NO_TITLE, 0);
-
+            
             let theme = this.getTheme();
             if (this._fullscreen) {
+                // In fullscreen mode, get the application's theme.
                 theme = this.getActivity().getApplicationInfo().theme;
             }
 
