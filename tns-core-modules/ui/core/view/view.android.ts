@@ -195,8 +195,17 @@ function initializeDialogFragment() {
         public onDestroy(): void {
             super.onDestroy();
             const owner = this.owner;
-            owner._isAddedToNativeVisualTree = false;
-            owner._tearDownUI(true);
+
+            if (owner) {
+                // Android calls onDestroy before onDismiss. 
+                // Make sure we unload first and then call _tearDownUI.
+                if (owner.isLoaded) {
+                    owner.callUnloaded();
+                }
+
+                owner._isAddedToNativeVisualTree = false;
+                owner._tearDownUI(true);
+            }
         }
     }
 
@@ -386,7 +395,7 @@ export class View extends ViewCommon {
         if (!this.nativeViewProtected || !this.hasGestureObservers()) {
             return;
         }
-        
+
         // do not set noop listener that handles the event (disabled listener) if IsUserInteractionEnabled is
         // false as we might need the ability for the event to pass through to a parent view
         initializeTouchListener();
