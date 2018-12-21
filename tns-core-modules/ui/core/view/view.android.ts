@@ -577,7 +577,7 @@ export class View extends ViewCommon {
 
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
-    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, cancelable?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any, androidOpts?: any) {
         super._showNativeModalView(parent, options);
         if (!this.backgroundColor) {
             this.backgroundColor = new Color("White");
@@ -589,12 +589,12 @@ export class View extends ViewCommon {
         const args = new android.os.Bundle();
         args.putInt(DOMID, this._domId);
         df.setArguments(args);
-
+        
         const dialogOptions: DialogOptions = {
             owner: this,
             fullscreen: !!options.fullscreen,
             stretched: !!options.stretched,
-            cancelable: !!options.cancelable,
+            cancelable: options.android ? !!options.android.cancelable : true,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
         }

@@ -71,11 +71,6 @@ export interface ShowModalOptions {
      * An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
      */
     stretched?: boolean;
-
-    /**
-     * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
-     */
-    cancelable?: boolean;
     /**
      * An optional parameter that specify options specific to iOS as an object.
      */
@@ -84,6 +79,12 @@ export interface ShowModalOptions {
          * The UIModalPresentationStyle to be used when showing the dialog in iOS .
          */
         presentationStyle: any /* UIModalPresentationStyle */
+    }
+    android?: {
+        /**
+        * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
+        */
+        cancelable?: boolean
     }
 }
 
