@@ -1,5 +1,6 @@
 import { EventData } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
+import { isAndroid } from "tns-core-modules/platform";
 
 export function onNavigate(args: EventData) {
     const button = <Button>args.object;
@@ -20,7 +21,8 @@ export function onNavigateSlide(args: EventData) {
         moduleName: "other-page/other-page",
         animated: true,
         transition: {
-            name: "slide",
+            // TODO: restore "slide" when https://github.com/NativeScript/NativeScript/issues/6728 is fixed
+            name: isAndroid ? "slide" : "slideRight",
             duration: 300,
             curve: "easeIn"
         }

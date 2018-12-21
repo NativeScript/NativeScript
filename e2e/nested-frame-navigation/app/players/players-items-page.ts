@@ -3,6 +3,7 @@ import { View } from "tns-core-modules/ui/core/view";
 import { ItemEventData } from "tns-core-modules/ui/list-view";
 import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { NavigationEntry } from "tns-core-modules/ui/frame";
+import { isAndroid } from "tns-core-modules/platform";
 
 import { ItemsViewModel } from "../shared/items-view-model";
 import { Item } from "../shared/item";
@@ -37,7 +38,8 @@ export function onItemTap(args: ItemEventData) {
             break;
         case "slide":
             entry.transition = {
-                name: "slide",
+                // TODO: restore "slide" when https://github.com/NativeScript/NativeScript/issues/6728 is fixed
+                name: isAndroid ? "slide" : "slideRight",
                 duration: 300,
                 curve: "easeIn"
             };

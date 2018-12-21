@@ -14,6 +14,8 @@ describe("frame-root:", () => {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
+
+        driver.defaultWaitTime = 8000;
     });
 
     after(async () => {
