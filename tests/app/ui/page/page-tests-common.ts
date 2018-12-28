@@ -569,68 +569,6 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
         modalClosed = true;
     }
 
-    const createTabItems = function (count: number) {
-        var items = new Array<TabViewItem>();
-
-        for (var i = 0; i < count; i++) {
-            var label = new Label();
-            label.text = "Tab " + i;
-            var tabEntry = new TabViewItem();
-            tabEntry.title = "Tab " + i;
-            tabEntry.view = label;
-
-            items.push(tabEntry);
-        }
-
-        return items;
-    }
-
-    const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
-        const page = <Page>args.object;
-        page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
-        args.closeCallback();
-    }
-
-    const hostNavigatedToEventHandler = function (args) {
-        const page = <Page>args.object;
-        page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
-
-        const modalPage = new Page();
-        modalPage.id = "modalPage_test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal";
-        modalPage.on(View.shownModallyEvent, modalPageShownModallyEventHandler);
-        const tabViewItem = (<TabView>page.content).items[0];
-        tabViewItem.showModal(modalPage, {
-            context: {},
-            closeCallback: modalCloseCallback,
-            fullscreen: false,
-            animated: false
-        });
-    }
-
-    const masterPageFactory = function (): Page {
-        const masterPage = new Page();
-        masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
-
-        const tabView = new TabView();
-        tabView.items = createTabItems(2);
-        masterPage.content = tabView;
-
-        return masterPage;
-    };
-
-    helper.navigate(masterPageFactory);
-
-    TKUnit.waitUntilReady(() => modalClosed);
-}
-
-export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal() {
-    let modalClosed = false;
-
-    const modalCloseCallback = function (returnValue: any) {
-        modalClosed = true;
-    }
-
     const createTabItems = function(count: number) {
         var items = new Array<TabViewItem>();
 
