@@ -371,7 +371,7 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
-    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, cancelable?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any, androidOpts?: any) {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
