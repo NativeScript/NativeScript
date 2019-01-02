@@ -89,8 +89,9 @@ export function livesync(context?: HmrContext) {
         reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
     }
 
-    if (reapplyAppCss) {
-        getRootView()._onCssStateChange();
+    const rootView = getRootView();
+    if (reapplyAppCss && rootView) {
+        rootView._onCssStateChange();
     } else if (liveSyncCore) {
         liveSyncCore();
     }

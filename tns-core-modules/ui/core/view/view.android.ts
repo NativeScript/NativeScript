@@ -135,8 +135,14 @@ function initializeDialogFragment() {
             this._shownCallback = options.shownCallback;
             this.owner._dialogFragment = this;
             this.setStyle(android.support.v4.app.DialogFragment.STYLE_NO_TITLE, 0);
+            
+            let theme = this.getTheme();
+            if (this._fullscreen) {
+                // In fullscreen mode, get the application's theme.
+                theme = this.getActivity().getApplicationInfo().theme;
+            }
 
-            const dialog = new DialogImpl(this, this.getActivity(), this.getTheme());
+            const dialog = new DialogImpl(this, this.getActivity(), theme);
 
             // do not override alignment unless fullscreen modal will be shown;
             // otherwise we might break component-level layout:
