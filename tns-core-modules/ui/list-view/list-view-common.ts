@@ -1,5 +1,5 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
-import { CoercibleProperty, CssProperty, Style, View, ViewBase, ContainerView, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
+import { CoercibleProperty, CssProperty, Style, View, ContainerView, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
 import { parse, parseMultipleTemplates } from "../builder";
 import { Label } from "../label";
 import { ObservableArray, ChangedData } from "../../data/observable-array";

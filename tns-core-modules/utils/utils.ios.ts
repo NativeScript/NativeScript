@@ -129,7 +129,6 @@ export module ios {
         }
 
         if (rootViewController.isKindOfClass(UITabBarController.class())) {
-            let selectedTab = (<UITabBarController>rootViewController).selectedViewController;
             return getVisibleViewController(<UITabBarController>rootViewController);
         }
 
