@@ -9,6 +9,8 @@ declare class SK3DNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SK3DNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SK3DNode; // inherited from SKNode
+
 	static nodeWithViewportSize(viewportSize: CGSize): SK3DNode;
 
 	autoenablesDefaultLighting: boolean;
@@ -36,7 +38,7 @@ declare class SK3DNode extends SKNode {
 	unprojectPoint(point: interop.Reference<number>): interop.Reference<number>;
 }
 
-declare class SKAction extends NSObject implements NSCoding, NSCopying {
+declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static actionNamed(name: string): SKAction;
 
@@ -238,6 +240,8 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	timingMode: SKActionTimingMode;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -260,7 +264,7 @@ declare const enum SKActionTimingMode {
 	EaseInEaseOut = 3
 }
 
-declare class SKAttribute extends NSObject implements NSCoding {
+declare class SKAttribute extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKAttribute; // inherited from NSObject
 
@@ -271,6 +275,8 @@ declare class SKAttribute extends NSObject implements NSCoding {
 	readonly name: string;
 
 	readonly type: SKAttributeType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -304,7 +310,7 @@ declare const enum SKAttributeType {
 	VectorHalfFloat4 = 8
 }
 
-declare class SKAttributeValue extends NSObject implements NSCoding {
+declare class SKAttributeValue extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKAttributeValue; // inherited from NSObject
 
@@ -326,6 +332,8 @@ declare class SKAttributeValue extends NSObject implements NSCoding {
 
 	vectorFloat4Value: interop.Reference<number>;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	encodeWithCoder(aCoder: NSCoder): void;
@@ -333,7 +341,7 @@ declare class SKAttributeValue extends NSObject implements NSCoding {
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare class SKAudioNode extends SKNode implements NSCoding {
+declare class SKAudioNode extends SKNode implements NSSecureCoding {
 
 	static alloc(): SKAudioNode; // inherited from NSObject
 
@@ -343,11 +351,15 @@ declare class SKAudioNode extends SKNode implements NSCoding {
 
 	static nodeWithFileNamed(filename: string): SKAudioNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKAudioNode; // inherited from SKNode
+
 	autoplayLooped: boolean;
 
 	avAudioNode: AVAudioNode;
 
 	positional: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { AVAudioNode: AVAudioNode; });
 
@@ -395,12 +407,14 @@ declare class SKCameraNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKCameraNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKCameraNode; // inherited from SKNode
+
 	containedNodeSet(): NSSet<SKNode>;
 
 	containsNode(node: SKNode): boolean;
 }
 
-declare class SKConstraint extends NSObject implements NSCoding, NSCopying {
+declare class SKConstraint extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKConstraint; // inherited from NSObject
 
@@ -430,6 +444,8 @@ declare class SKConstraint extends NSObject implements NSCoding, NSCopying {
 
 	referenceNode: SKNode;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -449,6 +465,8 @@ declare class SKCropNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKCropNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKCropNode; // inherited from SKNode
+
 	maskNode: SKNode;
 }
 
@@ -461,6 +479,8 @@ declare class SKEffectNode extends SKNode implements SKWarpable {
 	static node(): SKEffectNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKEffectNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKEffectNode; // inherited from SKNode
 
 	blendMode: SKBlendMode;
 
@@ -522,6 +542,8 @@ declare class SKEmitterNode extends SKNode {
 	static node(): SKEmitterNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKEmitterNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKEmitterNode; // inherited from SKNode
 
 	emissionAngle: number;
 
@@ -644,6 +666,8 @@ declare class SKFieldNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKFieldNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKFieldNode; // inherited from SKNode
+
 	static noiseFieldWithSmoothnessAnimationSpeed(smoothness: number, speed: number): SKFieldNode;
 
 	static radialGravityField(): SKFieldNode;
@@ -690,7 +714,7 @@ declare const enum SKInterpolationMode {
 	Step = 3
 }
 
-declare class SKKeyframeSequence extends NSObject implements NSCoding, NSCopying {
+declare class SKKeyframeSequence extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKKeyframeSequence; // inherited from NSObject
 
@@ -699,6 +723,8 @@ declare class SKKeyframeSequence extends NSObject implements NSCoding, NSCopying
 	interpolationMode: SKInterpolationMode;
 
 	repeatMode: SKRepeatMode;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { capacity: number; });
 
@@ -762,6 +788,8 @@ declare class SKLabelNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKLabelNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKLabelNode; // inherited from SKNode
+
 	attributedText: NSAttributedString;
 
 	blendMode: SKBlendMode;
@@ -813,6 +841,8 @@ declare class SKLightNode extends SKNode {
 	static node(): SKLightNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKLightNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKLightNode; // inherited from SKNode
 
 	ambientColor: UIColor;
 
@@ -866,7 +896,7 @@ declare class SKMutableTexture extends SKTexture {
 	modifyPixelDataWithBlock(block: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
 }
 
-declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocusItem {
+declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, UIFocusItem {
 
 	static alloc(): SKNode; // inherited from NSObject
 
@@ -875,6 +905,8 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 	static node(): SKNode;
 
 	static nodeWithFileNamed(filename: string): SKNode;
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKNode;
 
 	static obstaclesFromNodeBounds(nodes: NSArray<SKNode> | SKNode[]): NSArray<GKPolygonObstacle>;
 
@@ -893,8 +925,6 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 	entity: GKEntity;
 
 	focusBehavior: SKNodeFocusBehavior;
-
-	readonly frame: CGRect;
 
 	hidden: boolean;
 
@@ -932,9 +962,15 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
+
+	readonly frame: CGRect; // inherited from UIFocusItem
+
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
 
 	readonly preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
 
@@ -943,6 +979,8 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -965,6 +1003,8 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 	convertPointToNode(point: CGPoint, node: SKNode): CGPoint;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	didHintFocusMovement(hint: UIFocusMovementHint): void;
 
 	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
 
@@ -1057,7 +1097,7 @@ declare const enum SKParticleRenderOrder {
 	DontCare = 2
 }
 
-declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
+declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKPhysicsBody; // inherited from NSObject
 
@@ -1131,6 +1171,8 @@ declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
 
 	velocity: CGVector;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	allContactedBodies(): NSArray<SKPhysicsBody>;
@@ -1182,7 +1224,7 @@ declare var SKPhysicsContactDelegate: {
 	prototype: SKPhysicsContactDelegate;
 };
 
-declare class SKPhysicsJoint extends NSObject implements NSCoding {
+declare class SKPhysicsJoint extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKPhysicsJoint; // inherited from NSObject
 
@@ -1195,6 +1237,8 @@ declare class SKPhysicsJoint extends NSObject implements NSCoding {
 	readonly reactionForce: CGVector;
 
 	readonly reactionTorque: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1270,7 +1314,7 @@ declare class SKPhysicsJointSpring extends SKPhysicsJoint {
 	frequency: number;
 }
 
-declare class SKPhysicsWorld extends NSObject implements NSCoding {
+declare class SKPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKPhysicsWorld; // inherited from NSObject
 
@@ -1281,6 +1325,8 @@ declare class SKPhysicsWorld extends NSObject implements NSCoding {
 	gravity: CGVector;
 
 	speed: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1309,7 +1355,7 @@ declare class SKPhysicsWorld extends NSObject implements NSCoding {
 	sampleFieldsAt(position: interop.Reference<number>): interop.Reference<number>;
 }
 
-declare class SKRange extends NSObject implements NSCoding, NSCopying {
+declare class SKRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKRange; // inherited from NSObject
 
@@ -1331,6 +1377,8 @@ declare class SKRange extends NSObject implements NSCoding, NSCopying {
 
 	upperLimit: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { lowerLimit: number; upperLimit: number; });
@@ -1344,7 +1392,7 @@ declare class SKRange extends NSObject implements NSCoding, NSCopying {
 	initWithLowerLimitUpperLimit(lower: number, upper: number): this;
 }
 
-declare class SKReachConstraints extends NSObject implements NSCoding {
+declare class SKReachConstraints extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKReachConstraints; // inherited from NSObject
 
@@ -1353,6 +1401,8 @@ declare class SKReachConstraints extends NSObject implements NSCoding {
 	lowerAngleLimit: number;
 
 	upperAngleLimit: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1375,6 +1425,8 @@ declare class SKReferenceNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKReferenceNode; // inherited from SKNode
 
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKReferenceNode; // inherited from SKNode
+
 	static referenceNodeWithFileNamed(fileName: string): SKReferenceNode;
 
 	static referenceNodeWithURL(referenceURL: NSURL): SKReferenceNode;
@@ -1392,7 +1444,7 @@ declare class SKReferenceNode extends SKNode {
 	resolveReferenceNode(): void;
 }
 
-declare class SKRegion extends NSObject implements NSCoding, NSCopying {
+declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKRegion; // inherited from NSObject
 
@@ -1401,6 +1453,8 @@ declare class SKRegion extends NSObject implements NSCoding, NSCopying {
 	static new(): SKRegion; // inherited from NSObject
 
 	readonly path: any;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1449,6 +1503,8 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 	static node(): SKScene; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKScene; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKScene; // inherited from SKNode
 
 	static sceneWithSize(size: CGSize): SKScene;
 
@@ -1561,7 +1617,7 @@ declare const enum SKSceneScaleMode {
 	ResizeFill = 3
 }
 
-declare class SKShader extends NSObject implements NSCoding, NSCopying {
+declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKShader; // inherited from NSObject
 
@@ -1580,6 +1636,8 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 	source: string;
 
 	uniforms: NSArray<SKUniform>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1613,6 +1671,8 @@ declare class SKShapeNode extends SKNode {
 	static node(): SKShapeNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKShapeNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKShapeNode; // inherited from SKNode
 
 	static shapeNodeWithCircleOfRadius(radius: number): SKShapeNode;
 
@@ -1676,6 +1736,8 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 	static node(): SKSpriteNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKSpriteNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKSpriteNode; // inherited from SKNode
 
 	static spriteNodeWithColorSize(color: UIColor, size: CGSize): SKSpriteNode;
 
@@ -1770,7 +1832,7 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 	self(): this;
 }
 
-declare class SKTexture extends NSObject implements NSCoding, NSCopying {
+declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTexture; // inherited from NSObject
 
@@ -1802,6 +1864,8 @@ declare class SKTexture extends NSObject implements NSCoding, NSCopying {
 
 	usesMipmaps: boolean;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	CGImage(): any;
@@ -1825,7 +1889,7 @@ declare class SKTexture extends NSObject implements NSCoding, NSCopying {
 	textureRect(): CGRect;
 }
 
-declare class SKTextureAtlas extends NSObject implements NSCoding {
+declare class SKTextureAtlas extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKTextureAtlas; // inherited from NSObject
 
@@ -1840,6 +1904,8 @@ declare class SKTextureAtlas extends NSObject implements NSCoding {
 	static preloadTextureAtlasesWithCompletionHandler(textureAtlases: NSArray<SKTextureAtlas> | SKTextureAtlas[], completionHandler: () => void): void;
 
 	readonly textureNames: NSArray<string>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1932,7 +1998,7 @@ declare const enum SKTileAdjacencyMask {
 	AdjacencyUpperLeftCorner = 247
 }
 
-declare class SKTileDefinition extends NSObject implements NSCoding, NSCopying {
+declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileDefinition; // inherited from NSObject
 
@@ -1967,6 +2033,8 @@ declare class SKTileDefinition extends NSObject implements NSCoding, NSCopying {
 	timePerFrame: number;
 
 	userData: NSMutableDictionary<any, any>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2008,7 +2076,7 @@ declare const enum SKTileDefinitionRotation {
 	Rotation270 = 3
 }
 
-declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
+declare class SKTileGroup extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileGroup; // inherited from NSObject
 
@@ -2023,6 +2091,8 @@ declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
 	name: string;
 
 	rules: NSArray<SKTileGroupRule>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2041,7 +2111,7 @@ declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
 	initWithTileDefinition(tileDefinition: SKTileDefinition): this;
 }
 
-declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
+declare class SKTileGroupRule extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileGroupRule; // inherited from NSObject
 
@@ -2054,6 +2124,8 @@ declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
 	name: string;
 
 	tileDefinitions: NSArray<SKTileDefinition>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { adjacency: SKTileAdjacencyMask; tileDefinitions: NSArray<SKTileDefinition> | SKTileDefinition[]; });
 
@@ -2068,7 +2140,7 @@ declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
+declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileMapNode; // inherited from NSObject
 
@@ -2077,6 +2149,8 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 	static node(): SKTileMapNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKTileMapNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKTileMapNode; // inherited from SKNode
 
 	static tileMapNodeWithTileSetColumnsRowsTileSize(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize): SKTileMapNode;
 
@@ -2109,6 +2183,8 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 	tileSet: SKTileSet;
 
 	tileSize: CGSize;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2147,7 +2223,7 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 	tileRowIndexFromPosition(position: CGPoint): number;
 }
 
-declare class SKTileSet extends NSObject implements NSCoding, NSCopying {
+declare class SKTileSet extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileSet; // inherited from NSObject
 
@@ -2170,6 +2246,8 @@ declare class SKTileSet extends NSObject implements NSCoding, NSCopying {
 	tileGroups: NSArray<SKTileGroup>;
 
 	type: SKTileSetType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2208,6 +2286,8 @@ declare class SKTransformNode extends SKNode {
 	static node(): SKTransformNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKTransformNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKTransformNode; // inherited from SKNode
 
 	xRotation: number;
 
@@ -2278,7 +2358,7 @@ declare const enum SKTransitionDirection {
 	Left = 3
 }
 
-declare class SKUniform extends NSObject implements NSCoding, NSCopying {
+declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKUniform; // inherited from NSObject
 
@@ -2321,6 +2401,8 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 	vectorFloat3Value: interop.Reference<number>;
 
 	vectorFloat4Value: interop.Reference<number>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2397,6 +2479,8 @@ declare class SKVideoNode extends SKNode {
 	static node(): SKVideoNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKVideoNode; // inherited from SKNode
+
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKVideoNode; // inherited from SKNode
 
 	static videoNodeWithAVPlayer(player: AVPlayer): SKVideoNode;
 
@@ -2509,11 +2593,13 @@ declare var SKViewDelegate: {
 	prototype: SKViewDelegate;
 };
 
-declare class SKWarpGeometry extends NSObject implements NSCoding, NSCopying {
+declare class SKWarpGeometry extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKWarpGeometry; // inherited from NSObject
 
 	static new(): SKWarpGeometry; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2524,7 +2610,7 @@ declare class SKWarpGeometry extends NSObject implements NSCoding, NSCopying {
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSCoding {
+declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCoding {
 
 	static alloc(): SKWarpGeometryGrid; // inherited from NSObject
 
@@ -2541,6 +2627,8 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSCoding {
 	readonly numberOfRows: number;
 
 	readonly vertexCount: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

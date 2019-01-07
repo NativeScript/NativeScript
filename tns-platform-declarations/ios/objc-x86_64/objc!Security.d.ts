@@ -1,4 +1,46 @@
 
+interface OS_sec_certificate extends NSObjectProtocol {
+}
+declare var OS_sec_certificate: {
+
+	prototype: OS_sec_certificate;
+};
+
+interface OS_sec_identity extends NSObjectProtocol {
+}
+declare var OS_sec_identity: {
+
+	prototype: OS_sec_identity;
+};
+
+interface OS_sec_object extends NSObjectProtocol {
+}
+declare var OS_sec_object: {
+
+	prototype: OS_sec_object;
+};
+
+interface OS_sec_protocol_metadata extends NSObjectProtocol {
+}
+declare var OS_sec_protocol_metadata: {
+
+	prototype: OS_sec_protocol_metadata;
+};
+
+interface OS_sec_protocol_options extends NSObjectProtocol {
+}
+declare var OS_sec_protocol_options: {
+
+	prototype: OS_sec_protocol_options;
+};
+
+interface OS_sec_trust extends NSObjectProtocol {
+}
+declare var OS_sec_trust: {
+
+	prototype: OS_sec_trust;
+};
+
 declare function SSLAddDistinguishedName(context: any, derDN: interop.Pointer | interop.Reference<any>, derDNLen: number): number;
 
 declare const enum SSLAuthenticate {
@@ -8,6 +50,19 @@ declare const enum SSLAuthenticate {
 	kAlwaysAuthenticate = 1,
 
 	kTryAuthenticate = 2
+}
+
+declare const enum SSLCiphersuiteGroup {
+
+	kSSLCiphersuiteGroupDefault = 0,
+
+	kSSLCiphersuiteGroupCompatibility = 1,
+
+	kSSLCiphersuiteGroupLegacy = 2,
+
+	kSSLCiphersuiteGroupATS = 3,
+
+	kSSLCiphersuiteGroupATSCompatibility = 4
 }
 
 declare const enum SSLClientCertificateState {
@@ -299,6 +354,8 @@ declare function SecCertificateCopyData(certificate: any): NSData;
 
 declare function SecCertificateCopyEmailAddresses(certificate: any, emailAddresses: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+declare function SecCertificateCopyKey(certificate: any): any;
+
 declare function SecCertificateCopyNormalizedIssuerSequence(certificate: any): NSData;
 
 declare function SecCertificateCopyNormalizedSubjectSequence(certificate: any): NSData;
@@ -442,6 +499,8 @@ declare function SecTrustCreateWithCertificates(certificates: any, policies: any
 declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
 
 declare function SecTrustEvaluateAsync(trust: any, queue: NSObject, result: (p1: any, p2: SecTrustResultType) => void): number;
+
+declare function SecTrustEvaluateWithError(trust: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any;
 
@@ -2160,8 +2219,6 @@ declare var kSecUseAuthenticationUIFail: string;
 
 declare var kSecUseAuthenticationUISkip: string;
 
-declare var kSecUseItemList: string;
-
 declare var kSecUseNoAuthenticationUI: string;
 
 declare var kSecUseOperationPrompt: string;
@@ -2171,3 +2228,89 @@ declare var kSecValueData: string;
 declare var kSecValuePersistentRef: string;
 
 declare var kSecValueRef: string;
+
+declare function sec_certificate_copy_ref(certificate: NSObject): interop.Unmanaged<any>;
+
+declare function sec_certificate_create(certificate: any): NSObject;
+
+declare function sec_identity_copy_certificates_ref(identity: NSObject): interop.Unmanaged<NSArray<any>>;
+
+declare function sec_identity_copy_ref(identity: NSObject): interop.Unmanaged<any>;
+
+declare function sec_identity_create(identity: any): NSObject;
+
+declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any>): NSObject;
+
+declare function sec_protocol_metadata_access_distinguished_names(metadata: NSObject, handler: (p1: NSObject) => void): boolean;
+
+declare function sec_protocol_metadata_access_ocsp_response(metadata: NSObject, handler: (p1: NSObject) => void): boolean;
+
+declare function sec_protocol_metadata_access_peer_certificate_chain(metadata: NSObject, handler: (p1: NSObject) => void): boolean;
+
+declare function sec_protocol_metadata_access_supported_signature_algorithms(metadata: NSObject, handler: (p1: number) => void): boolean;
+
+declare function sec_protocol_metadata_challenge_parameters_are_equal(metadataA: NSObject, metadataB: NSObject): boolean;
+
+declare function sec_protocol_metadata_copy_peer_public_key(metadata: NSObject): NSObject;
+
+declare function sec_protocol_metadata_create_secret(metadata: NSObject, label_len: number, label: string, exporter_length: number): NSObject;
+
+declare function sec_protocol_metadata_create_secret_with_context(metadata: NSObject, label_len: number, label: string, context_len: number, context: string, exporter_length: number): NSObject;
+
+declare function sec_protocol_metadata_get_early_data_accepted(metadata: NSObject): boolean;
+
+declare function sec_protocol_metadata_get_negotiated_ciphersuite(metadata: NSObject): number;
+
+declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject): string;
+
+declare function sec_protocol_metadata_get_negotiated_protocol_version(metadata: NSObject): SSLProtocol;
+
+declare function sec_protocol_metadata_peers_are_equal(metadataA: NSObject, metadataB: NSObject): boolean;
+
+declare function sec_protocol_options_add_pre_shared_key(options: NSObject, psk: NSObject, psk_identity: NSObject): void;
+
+declare function sec_protocol_options_add_tls_application_protocol(options: NSObject, application_protocol: string): void;
+
+declare function sec_protocol_options_add_tls_ciphersuite(options: NSObject, ciphersuite: number): void;
+
+declare function sec_protocol_options_add_tls_ciphersuite_group(options: NSObject, group: SSLCiphersuiteGroup): void;
+
+declare function sec_protocol_options_set_challenge_block(options: NSObject, challenge_block: (p1: NSObject, p2: (p1: NSObject) => void) => void, challenge_queue: NSObject): void;
+
+declare function sec_protocol_options_set_key_update_block(options: NSObject, key_update_block: (p1: NSObject, p2: () => void) => void, key_update_queue: NSObject): void;
+
+declare function sec_protocol_options_set_local_identity(options: NSObject, identity: NSObject): void;
+
+declare function sec_protocol_options_set_peer_authentication_required(options: NSObject, peer_authentication_required: boolean): void;
+
+declare function sec_protocol_options_set_tls_diffie_hellman_parameters(options: NSObject, params: NSObject): void;
+
+declare function sec_protocol_options_set_tls_false_start_enabled(options: NSObject, false_start_enabled: boolean): void;
+
+declare function sec_protocol_options_set_tls_is_fallback_attempt(options: NSObject, is_fallback_attempt: boolean): void;
+
+declare function sec_protocol_options_set_tls_max_version(options: NSObject, version: SSLProtocol): void;
+
+declare function sec_protocol_options_set_tls_min_version(options: NSObject, version: SSLProtocol): void;
+
+declare function sec_protocol_options_set_tls_ocsp_enabled(options: NSObject, ocsp_enabled: boolean): void;
+
+declare function sec_protocol_options_set_tls_renegotiation_enabled(options: NSObject, renegotiation_enabled: boolean): void;
+
+declare function sec_protocol_options_set_tls_resumption_enabled(options: NSObject, resumption_enabled: boolean): void;
+
+declare function sec_protocol_options_set_tls_sct_enabled(options: NSObject, sct_enabled: boolean): void;
+
+declare function sec_protocol_options_set_tls_server_name(options: NSObject, server_name: string): void;
+
+declare function sec_protocol_options_set_tls_tickets_enabled(options: NSObject, tickets_enabled: boolean): void;
+
+declare function sec_protocol_options_set_verify_block(options: NSObject, verify_block: (p1: NSObject, p2: NSObject, p3: (p1: boolean) => void) => void, verify_block_queue: NSObject): void;
+
+declare function sec_release(obj: interop.Pointer | interop.Reference<any>): void;
+
+declare function sec_retain(obj: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function sec_trust_copy_ref(trust: NSObject): interop.Unmanaged<any>;
+
+declare function sec_trust_create(trust: any): NSObject;

@@ -73,7 +73,7 @@ export class Cache extends common.Cache {
         super();
 
         this._cache = new NSCache<any, any>();
-        
+
         //this._delegate = NSCacheDelegateImpl.new();
         //this._cache.delegate = this._delegate;
 
@@ -83,11 +83,16 @@ export class Cache extends common.Cache {
     public _downloadCore(request: common.DownloadRequest) {
         ensureHttpRequest();
 
-        var that = this;
         httpRequest.request({ url: request.url, method: "GET" })
-            .then(response => {
-                var image = UIImage.alloc().initWithData(response.content.raw);
-                that._onDownloadCompleted(request.key, image);
+            .then((response) => {
+                try {
+                    var image = UIImage.alloc().initWithData(response.content.raw);
+                    this._onDownloadCompleted(request.key, image);
+                } catch (err) {
+                    this._onDownloadError(request.key, err);
+                }
+            }, (err) => {
+                this._onDownloadError(request.key, err);
             });
     }
 

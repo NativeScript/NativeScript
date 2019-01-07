@@ -247,6 +247,12 @@ declare const kAudioChannelLabel_Ambisonic_Y: number;
 
 declare const kAudioChannelLabel_Ambisonic_Z: number;
 
+declare const kAudioChannelLabel_BeginReserved: number;
+
+declare const kAudioChannelLabel_BinauralLeft: number;
+
+declare const kAudioChannelLabel_BinauralRight: number;
+
 declare const kAudioChannelLabel_Center: number;
 
 declare const kAudioChannelLabel_CenterSurround: number;
@@ -292,6 +298,8 @@ declare const kAudioChannelLabel_Discrete_7: number;
 declare const kAudioChannelLabel_Discrete_8: number;
 
 declare const kAudioChannelLabel_Discrete_9: number;
+
+declare const kAudioChannelLabel_EndReserved: number;
 
 declare const kAudioChannelLabel_ForeignLanguage: number;
 
@@ -465,6 +473,8 @@ declare const kAudioChannelLayoutTag_AudioUnit_7_1_Front: number;
 
 declare const kAudioChannelLayoutTag_AudioUnit_8: number;
 
+declare const kAudioChannelLayoutTag_BeginReserved: number;
+
 declare const kAudioChannelLayoutTag_Binaural: number;
 
 declare const kAudioChannelLayoutTag_Cube: number;
@@ -570,6 +580,8 @@ declare const kAudioChannelLayoutTag_EAC_6_0_A: number;
 declare const kAudioChannelLayoutTag_EAC_7_0_A: number;
 
 declare const kAudioChannelLayoutTag_Emagic_Default_7_1: number;
+
+declare const kAudioChannelLayoutTag_EndReserved: number;
 
 declare const kAudioChannelLayoutTag_HOA_ACN_N3D: number;
 

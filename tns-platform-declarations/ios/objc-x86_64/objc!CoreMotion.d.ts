@@ -117,6 +117,31 @@ declare class CMDeviceMotion extends CMLogItem {
 	readonly userAcceleration: CMAcceleration;
 }
 
+declare class CMDyskineticSymptomResult extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMDyskineticSymptomResult; // inherited from NSObject
+
+	static new(): CMDyskineticSymptomResult; // inherited from NSObject
+
+	readonly endDate: Date;
+
+	readonly percentLikely: number;
+
+	readonly percentUnlikely: number;
+
+	readonly startDate: Date;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
 declare const enum CMError {
 
 	NULL = 100,
@@ -494,4 +519,37 @@ declare class CMStepCounter extends NSObject {
 	startStepCountingUpdatesToQueueUpdateOnWithHandler(queue: NSOperationQueue, stepCounts: number, handler: (p1: number, p2: Date, p3: NSError) => void): void;
 
 	stopStepCountingUpdates(): void;
+}
+
+declare class CMTremorResult extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMTremorResult; // inherited from NSObject
+
+	static new(): CMTremorResult; // inherited from NSObject
+
+	readonly endDate: Date;
+
+	readonly percentMild: number;
+
+	readonly percentModerate: number;
+
+	readonly percentNone: number;
+
+	readonly percentSlight: number;
+
+	readonly percentStrong: number;
+
+	readonly percentUnknown: number;
+
+	readonly startDate: Date;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }

@@ -37,3 +37,12 @@ d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option 
 * To generate android dependencies use [android-dts-generator](https://github.com/NativeScript/android-dts-generator) with the appropriate android version and android support jars
 * To regenerate android-*.d.ts file use the **android-dts-generator** passing the corresponding android jar (described [here](https://github.com/NativeScript/android-dts-generator/blob/master/README.md#generate-definitons-for-android-sdk))
 * More details for using the **android-dts-generator** can be found in [this article](https://docs.nativescript.org/core-concepts/android-runtime/metadata/generating-typescript-declarations).
+
+## Generate ios .d.ts files
+
+The `.d.ts` files for iOS are generated using iOS Runtime's metadata generator. You can use the [typings-gen.sh](./typings-gen.sh) script like this:
+
+```BASH
+./typings-gen.sh rc [<path-to-medatadata-generator-binary>]
+```
+Where `rc` can be an NPM tag/version of `tns-ios` that will be used for generating the typings. If the metadata generator to be used has not been released in NPM, you can optionally specify its path as a 2nd argument.
