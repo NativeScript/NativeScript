@@ -1,7 +1,6 @@
 // Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
 import { ViewBase } from "../view-base";
-import { booleanConverter, Property } from "../view";
 
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,

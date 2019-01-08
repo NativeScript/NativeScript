@@ -6,7 +6,6 @@ import {
     layout, Color, traceMissingIcon } from "./action-bar-common";
 import { fromFileOrResource } from "../../image-source";
 import { ios as iosUtils } from "../../utils/utils";
-import { write as traceWrite, categories, messageType } from "../../trace";
 
 export * from "./action-bar-common";
 
