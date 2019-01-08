@@ -1,3 +1,21 @@
+<a name="5.1.1"></a>
+## [5.1.1](https://github.com/NativeScript/NativeScript/compare/5.1.0...5.1.1) (2018-12-19)
+
+
+### Bug Fixes
+
+* **android:** animator restore logic on simulated nav ([#6710](https://github.com/NativeScript/NativeScript/issues/6710)) ([54b6df6](https://github.com/NativeScript/NativeScript/commit/54b6df6))
+* **android:** failure saving state in mixed parent/nested frame nav ([#6719](https://github.com/NativeScript/NativeScript/issues/6719)) ([e5f110f](https://github.com/NativeScript/NativeScript/commit/e5f110f))
+* **android:** nested fragment disappears on parent fragment removal ([#6677](https://github.com/NativeScript/NativeScript/issues/6677)) ([c084660](https://github.com/NativeScript/NativeScript/commit/c084660))
+
+
+### Features
+
+* **tns-platform-declarations:** Generate iOS typings from iOS 12.1 SDK ([#6693](https://github.com/NativeScript/NativeScript/issues/6693)) ([1c0218e](https://github.com/NativeScript/NativeScript/commit/1c0218e))
+* **view:** added iOS parameter for modal presentation style ([#6409](https://github.com/NativeScript/NativeScript/issues/6409)) ([540b2b4](https://github.com/NativeScript/NativeScript/commit/540b2b4))
+
+
+
 <a name="5.1.0"></a>
 # [5.1.0](https://github.com/NativeScript/NativeScript/compare/5.0.5...5.1.0) (2018-12-05)
 
