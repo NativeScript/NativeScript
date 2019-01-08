@@ -290,15 +290,10 @@ function initLifecycleCallbacks() {
         onActivityResumed: profile("onActivityResumed", function (activity: android.support.v7.app.AppCompatActivity) {
             androidApp.foregroundActivity = activity;
 
-            if ((<any>activity).isNativeScriptActivity) {
-                notify(<ApplicationEventData>{ eventName: resumeEvent, object: androidApp, android: activity });
-                androidApp.paused = false;
-            }
-
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityResumed, object: androidApp, activity: activity });
         }),
 
-        onActivitySaveInstanceState: profile("onActivityResumed", function (activity: android.support.v7.app.AppCompatActivity, outState: android.os.Bundle) {
+        onActivitySaveInstanceState: profile("onActivitySaveInstanceState", function (activity: android.support.v7.app.AppCompatActivity, outState: android.os.Bundle) {
             androidApp.notify(<AndroidActivityBundleEventData>{ eventName: SaveActivityState, object: androidApp, activity: activity, bundle: outState });
         }),
 

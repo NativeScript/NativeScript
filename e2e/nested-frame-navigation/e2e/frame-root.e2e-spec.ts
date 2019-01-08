@@ -1,4 +1,5 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+
 import { Screen, playersData, home, somePage, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
@@ -13,6 +14,8 @@ describe("frame-root:", () => {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
+
+        driver.defaultWaitTime = 8000;
     });
 
     after(async () => {
@@ -76,7 +79,12 @@ describe("frame-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
                 
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayersList();
             });
         
@@ -95,7 +103,12 @@ describe("frame-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayerDetails(playerTwo);
         
                 await screen.goBackToPlayersList();
@@ -152,7 +165,12 @@ describe("frame-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+                
                 await screen.loadedPlayersList();
             });
         
@@ -171,7 +189,12 @@ describe("frame-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage(); 
+                }
+
                 await screen.loadedPlayerDetails(playerTwo);
                 await screen.loadedTeamsList(); // assert visible & no changes
         
@@ -206,7 +229,11 @@ describe("frame-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
@@ -230,7 +257,12 @@ describe("frame-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
         
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayerDetails(playerTwo);  // assert no changes after back navigation
                 await screen.loadedTeamDetails(teamTwo);
         

@@ -256,8 +256,8 @@ export class Screen {
     }
 
     loadedHome = async () => {
-        const lblHome = await this._driver.findElementByAutomationText(home);
-        assert.isTrue(await lblHome.isDisplayed());
+        const lblHome = await this._driver.waitForElement(home);
+        assert.isNotNull(lblHome);
         console.log(home + " loaded!");
     };
 
@@ -303,8 +303,8 @@ export class Screen {
     }
 
     loadedPlayersList = async () => {
-        const lblPlayerOne = await this._driver.findElementByAutomationText(playersData["playerOneDefault"].name);
-        assert.isTrue(await lblPlayerOne.isDisplayed());
+        const lblPlayerOne = await this._driver.waitForElement(playersData["playerOneDefault"].name);
+        assert.isNotNull(lblPlayerOne);
         console.log(players + " loaded!");
     }
 
@@ -313,8 +313,8 @@ export class Screen {
     }
 
     loadedTeamsList = async () => {
-        const lblTeamOne = await this._driver.findElementByAutomationText(teamsData["teamOneDefault"].name);
-        assert.isTrue(await lblTeamOne.isDisplayed());
+        const lblTeamOne = await this._driver.waitForElement(teamsData["teamOneDefault"].name);
+        assert.isNotNull(lblTeamOne);
         console.log(teams + " loaded!");
     }
 
@@ -328,8 +328,8 @@ export class Screen {
     };
 
     private loadedPage = async (page: string) => {
-        const lblPage = await this._driver.findElementByAutomationText(page);
-        assert.isTrue(await lblPage.isDisplayed());
+        const lblPage = await this._driver.waitForElement(page);
+        assert.isNotNull(lblPage);
         console.log(page + " loaded!");
     };
 
@@ -339,11 +339,11 @@ export class Screen {
     }
 
     private loadedItem = async (item: Item) => {
-        const lblItemName = await this._driver.findElementByAutomationText(item.name);
-        assert.isTrue(await lblItemName.isDisplayed());
+        const lblItemName = await this._driver.waitForElement(item.name);
+        assert.isNotNull(lblItemName);
 
-        const lblItemDescription = await this._driver.findElementByAutomationText(item.description);
-        assert.isTrue(await lblItemDescription.isDisplayed()); 
+        const lblItemDescription = await this._driver.waitForElement(item.description);
+        assert.isNotNull(lblItemDescription);
 
         console.log(item.name + " loaded!");
     }

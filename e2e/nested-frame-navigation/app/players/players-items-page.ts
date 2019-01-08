@@ -38,14 +38,14 @@ export function onItemTap(args: ItemEventData) {
         case "slide":
             entry.transition = {
                 name: "slide",
-                duration: 380,
+                duration: 300,
                 curve: "easeIn"
             };
             break;
         case "flip":
             entry.transition = {
                 name: "flip",
-                duration: 380,
+                duration: 300,
                 curve: "easeIn"
             };
             break;
