@@ -13,6 +13,7 @@ export function loadExamples() {
     const examples = new Map<string, string>();    
     examples.set("list-view-templates", "list-view/list-view");
     examples.set("images-template", "list-view/images-template");
+    examples.set("dynamic-templates", "list-view/dynamic-templates");
     examples.set("bindings", "list-view/listview-binding");
     examples.set("listview-bg-separator-color", "list-view/listview-bg-separator-color");
     examples.set("csslv", "list-view/csslv");

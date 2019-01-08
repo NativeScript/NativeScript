@@ -415,6 +415,7 @@ export interface AndroidActivityCallbacks {
     onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
     onStart(activity: any, superFunc: Function): void;
     onStop(activity: any, superFunc: Function): void;
+    onPostResume(activity: any, superFunc: Function): void;
     onDestroy(activity: any, superFunc: Function): void;
     onBackPressed(activity: any, superFunc: Function): void;
     onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void;

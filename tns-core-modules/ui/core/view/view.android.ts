@@ -37,6 +37,7 @@ interface DialogOptions {
     owner: View;
     fullscreen: boolean;
     stretched: boolean;
+    cancelable: boolean;
     shownCallback: () => void;
     dismissCallback: () => void;
 }
@@ -117,6 +118,7 @@ function initializeDialogFragment() {
         public owner: View;
         private _fullscreen: boolean;
         private _stretched: boolean;
+        private _cancelable: boolean;
         private _shownCallback: () => void;
         private _dismissCallback: () => void;
 
@@ -130,6 +132,7 @@ function initializeDialogFragment() {
             const options = getModalOptions(ownerId);
             this.owner = options.owner;
             this._fullscreen = options.fullscreen;
+            this._cancelable = options.cancelable;
             this._stretched = options.stretched;
             this._dismissCallback = options.dismissCallback;
             this._shownCallback = options.shownCallback;
@@ -155,6 +158,7 @@ function initializeDialogFragment() {
                 this.owner.verticalAlignment = "stretch";
             }
 
+            dialog.setCanceledOnTouchOutside(this._cancelable);
             return dialog;
         }
 
@@ -589,7 +593,7 @@ export class View extends ViewCommon {
 
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
-    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: View, options: ShowModalOptions) {
         super._showNativeModalView(parent, options);
         if (!this.backgroundColor) {
             this.backgroundColor = new Color("White");
@@ -606,6 +610,7 @@ export class View extends ViewCommon {
             owner: this,
             fullscreen: !!options.fullscreen,
             stretched: !!options.stretched,
+            cancelable: options.android ? !!options.android.cancelable : true,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
         }

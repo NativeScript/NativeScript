@@ -1,8 +1,10 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+
 import { Screen, playersData, somePage, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
+// NOTE: TabTop is Android only scenario (for iOS we will essentially execute 2x TabBottom)
 const roots = ["TabTop", "TabBottom"];
 
 function hyphenate(s: string) {
@@ -19,6 +21,8 @@ describe("frame-tab-root:", () => {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
+
+        driver.defaultWaitTime = 8000;
     });
 
     after(async () => {
@@ -88,7 +92,12 @@ describe("frame-tab-root:", () => {
                             await driver.waitForElement(somePage) // wait for some page
                         }
                         
-                        await driver.navBack();
+                        if (driver.isAndroid) {
+                            await driver.navBack();
+                        } else {
+                            await screen.goBackFromSomePage();
+                        }
+
                         await screen.loadedPlayersList();
                     });
                 
@@ -107,7 +116,12 @@ describe("frame-tab-root:", () => {
                             await driver.waitForElement(somePage); // wait for some page
                         }
                 
-                        await driver.navBack();
+                        if (driver.isAndroid) {
+                            await driver.navBack();
+                        } else {
+                            await screen.goBackFromSomePage();
+                        }
+
                         await screen.loadedPlayerDetails(playerTwo);
                 
                         await screen.goBackToPlayersList();
@@ -151,7 +165,11 @@ describe("frame-tab-root:", () => {
                             await driver.waitForElement(somePage); // wait for some page
                         }
 
-                        await driver.navBack();
+                        if (driver.isAndroid) {
+                            await driver.navBack();
+                        } else {
+                            await screen.goBackFromSomePage();
+                        }
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
@@ -183,7 +201,11 @@ describe("frame-tab-root:", () => {
                             await driver.waitForElement(somePage); // wait for some page
                         }
 
-                        await driver.navBack();
+                        if (driver.isAndroid) {
+                            await driver.navBack();
+                        } else {
+                            await screen.goBackFromSomePage();
+                        }
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);

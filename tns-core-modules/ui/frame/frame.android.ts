@@ -1011,6 +1011,30 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     @profile
+    public onPostResume(activity: any, superFunc: Function): void {
+        superFunc.call(activity);
+
+        if (traceEnabled()) {
+            traceWrite("NativeScriptActivity.onPostResume();", traceCategories.NativeLifecycle);
+        }
+
+        // NOTE: activity.onPostResume() is called when activity resume is complete and we can
+        // safely raise the application resume event; 
+        // onActivityResumed(...) lifecycle callback registered in application is called too early
+        // and raising the application resume event there causes issues like 
+        // https://github.com/NativeScript/NativeScript/issues/6708
+        if ((<any>activity).isNativeScriptActivity) {
+            const args = <application.ApplicationEventData>{
+                eventName: application.resumeEvent,
+                object: application.android, 
+                android: activity 
+            };
+            application.notify(args);
+            application.android.paused = false;
+        }
+    }
+
+    @profile
     public onDestroy(activity: any, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onDestroy();", traceCategories.NativeLifecycle);
