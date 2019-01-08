@@ -90,6 +90,12 @@ application.on(application.uncaughtErrorEvent, function (args: application.Unhan
     console.log((<any>args.error).stackTrace || (<any>args.error).stack);
 });
 
+application.on(application.discardedErrorEvent, function (args: application.DiscardedErrorEventData) {
+    console.log("[Discarded] NativeScriptError: " + args.error);
+    console.log((<any>args.error).nativeException || (<any>args.error).nativeError);
+    console.log((<any>args.error).stackTrace || (<any>args.error).stack);
+});
+
 // Android activity events
 if (application.android) {
     application.android.on(application.AndroidApplication.activityCreatedEvent, function (args: application.AndroidActivityBundleEventData) {
