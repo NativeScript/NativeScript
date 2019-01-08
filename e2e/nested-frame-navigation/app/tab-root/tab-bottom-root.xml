@@ -1,4 +1,4 @@
-<TabView codeFile="~/tab-root/tab-root" androidTabsPosition="bottom">
+<TabView androidTabsPosition="bottom">
     <TabViewItem title="Players">
         <GridLayout rows="auto, auto, *">
             <Label text="tab root bottom home" />

@@ -10,9 +10,9 @@
             <Button text="Layout w/ multi frame" tap="onNavigateToLayoutMultiFrame" />
             <Button text="Page w/ frame" tap="onNavigateToPageFrame" />
             <Button text="Page w/ multi frame" tap="onNavigateToPageMultiFrame" />
-            <Button ios:visibility="collapsed" text="Page w/ tabs (top)" tap="onNavigateToTabsTopPage" />
+            <Button text="Page w/ tabs (top)" tap="onNavigateToTabsTopPage" />
             <Button text="Page w/ tabs (bottom)" tap="onNavigateToTabsBottomPage" />
-            <Button ios:visibility="collapsed" text="Root tabs (top)" tap="onNavigateToTabsTopRoot" />
+            <Button text="Root tabs (top)" tap="onNavigateToTabsTopRoot" />
             <Button text="Root tabs (bottom)" tap="onNavigateToTabsBottomRoot" />
         </StackLayout>
     </GridLayout>
