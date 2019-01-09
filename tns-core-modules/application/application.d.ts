@@ -112,8 +112,6 @@ export interface UnhandledErrorEventData extends ApplicationEventData {
  * Event data containing information about discarded application errors.
  */
 export interface DiscardedErrorEventData extends ApplicationEventData {
-    ios?: NativeScriptError;
-    android?: NativeScriptError;
     error: NativeScriptError;
 }
 

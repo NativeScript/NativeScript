@@ -126,5 +126,5 @@ global.__onUncaughtError = function (error: NativeScriptError) {
 }
 
 global.__onDiscardedError = function (error: NativeScriptError) {
-    events.notify(<DiscardedErrorEventData>{ eventName: discardedErrorEvent, object: app, android: error, ios: error, error: error });
+    events.notify(<DiscardedErrorEventData>{ eventName: discardedErrorEvent, object: app, error: error });
 }
