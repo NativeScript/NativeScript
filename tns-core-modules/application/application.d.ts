@@ -22,6 +22,11 @@ export var displayedEvent: string;
 export var uncaughtErrorEvent: string;
 
 /**
+ * String value used when hooking to discardedError event.
+ */
+export var discardedErrorEvent: string;
+
+/**
  * String value used when hooking to suspend event.
  */
 export var suspendEvent: string;
@@ -104,6 +109,13 @@ export interface UnhandledErrorEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information about discarded application errors.
+ */
+export interface DiscardedErrorEventData extends ApplicationEventData {
+    error: NativeScriptError;
+}
+
+/**
  * Event data containing information about application css change.
  */
 export interface CssChangedEventData extends EventData {
@@ -137,7 +149,7 @@ export function setResources(res: any): void;
 export function setResources(resources: any);
 
 /**
- * Sets css file name for the application. 
+ * Sets css file name for the application.
  */
 export function setCssFileName(cssFile: string): void;
 
@@ -199,7 +211,7 @@ export function shouldCreateRootFrame(): boolean;
 
 /**
  * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
- * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend"). 
+ * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend").
  * @param callback - Callback function which will be executed when event is raised.
  * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
  */
@@ -261,6 +273,11 @@ export function on(event: "lowMemory", callback: (args: ApplicationEventData) =>
  * This event is raised when an uncaught error occurs while the application is running.
  */
 export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventData) => void, thisArg?: any);
+
+/**
+ * This event is raised when an discarded error occurs while the application is running.
+ */
+export function on(event: "discardedError", callback: (args: DiscardedErrorEventData) => void, thisArg?: any);
 
 /**
  * This event is raised the orientation of the current device has changed.
@@ -403,13 +420,13 @@ export class AndroidApplication extends Observable {
     /**
      * Initialized the android-specific application object with the native android.app.Application instance.
      * This is useful when creating custom application types.
-     * @param nativeApp - the android.app.Application instance that started the app. 
+     * @param nativeApp - the android.app.Application instance that started the app.
      */
     init: (nativeApp) => void;
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
@@ -516,7 +533,7 @@ export class AndroidApplication extends Observable {
     public static activityRequestPermissionsEvent: string;
 
     /**
-     * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread. 
+     * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread.
      * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#registerReceiver%28android.content.BroadcastReceiver,%20android.content.IntentFilter%29'
      * @param intentFilter A string containing the intent filter.
      * @param onReceiveCallback A callback function that will be called each time the receiver receives a broadcast.
@@ -524,7 +541,7 @@ export class AndroidApplication extends Observable {
     registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: any /* android.content.Context */, intent: any /* android.content.Intent */) => void): void;
 
     /**
-     * Unregister a previously registered BroadcastReceiver. 
+     * Unregister a previously registered BroadcastReceiver.
      * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#unregisterReceiver(android.content.BroadcastReceiver)'
      * @param intentFilter A string containing the intent filter with which the receiver was originally registered.
      */
