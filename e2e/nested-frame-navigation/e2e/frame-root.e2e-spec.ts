@@ -1,6 +1,6 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 
-import { Screen, playersData, home, somePage, teamsData } from "./screen";
+import { Screen, playersData, home, somePage, teamsData, driverDefaultWaitTime } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
@@ -15,7 +15,7 @@ describe("frame-root:", () => {
             await driver.setDontKeepActivities(true);
         }
 
-        driver.defaultWaitTime = 8000;
+        driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
     after(async () => {

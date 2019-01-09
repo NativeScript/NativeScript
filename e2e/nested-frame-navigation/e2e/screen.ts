@@ -36,6 +36,7 @@ const tabTopBack = "tabTopBack";
 const tabBottomBack = "tabBottomBack";
 const resetApp = "reset app";
 
+export const driverDefaultWaitTime = 10000;
 export const home = "Home";
 export const somePage = "some page";
 export const otherPage = "other page";
@@ -213,7 +214,7 @@ export class Screen {
     };
 
     resetToHome = async () => {
-        const btnReset = await this._driver.findElementByAutomationText(resetApp);
+        const btnReset = await this._driver.waitForElement(resetApp);
         await btnReset.tap();
     };
 
@@ -246,12 +247,12 @@ export class Screen {
     }
 
     togglePlayersTab = async () => {
-        const lblPlayers = await this._driver.findElementByAutomationText(players);
+        const lblPlayers = await this._driver.waitForElement(players);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
-        const lblTeams = await this._driver.findElementByAutomationText(teams);
+        const lblTeams = await this._driver.waitForElement(teams);
         await lblTeams.tap();
     }
 
@@ -323,7 +324,7 @@ export class Screen {
     }
 
     private navigateToPage = async (page: string) => {
-        const btnPage = await this._driver.findElementByAutomationText(page);
+        const btnPage = await this._driver.waitForElement(page);
         await btnPage.tap();
     };
 
@@ -334,7 +335,7 @@ export class Screen {
     };
 
     private navigateToItem = async (item: Item) => {
-        const lblItem = await this._driver.findElementByAutomationText(item.name);
+        const lblItem = await this._driver.waitForElement(item.name);
         await lblItem.tap();
     }
 
@@ -349,7 +350,7 @@ export class Screen {
     }
 
     private goBack = async (accessibilityId: string) => {
-        const btnBack = await this._driver.findElementByAccessibilityId(accessibilityId);
+        const btnBack = await this._driver.waitForElement(accessibilityId);
         await btnBack.tap();
     }
 }
