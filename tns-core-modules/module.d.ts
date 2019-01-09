@@ -3,7 +3,7 @@ declare var global: NodeJS.Global;
 interface ModuleResolver {
     /**
      * A function used to resolve the exports for a module.
-     * @param uri The name of the module to be resolved. 
+     * @param uri The name of the module to be resolved.
      */
     (uri: string): any;
 }
@@ -18,7 +18,7 @@ declare namespace NodeJS {
          * Register all modules from a webpack context.
          * The context is one created using the following webpack utility:
          * https://webpack.github.io/docs/context.html
-         * 
+         *
          * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
          * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
          * ```
@@ -54,6 +54,7 @@ declare namespace NodeJS {
         __onLiveSync: (context?: { type: string, module: string }) => void;
         __onLiveSyncCore: () => void;
         __onUncaughtError: (error: NativeScriptError) => void;
+        __onDiscardedError: (error: NativeScriptError) => void;
         TNS_WEBPACK?: boolean;
         __requireOverride?: (name: string, dir: string) => any;
     }
