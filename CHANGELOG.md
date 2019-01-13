@@ -1,3 +1,13 @@
+<a name="5.1.2"></a>
+## [5.1.2](https://github.com/NativeScript/NativeScript/compare/5.1.1...5.1.2) (2019-01-13)
+
+
+### Bug Fixes
+
+* **list-view-android:** app crashes on ListView item template change ([#6634](https://github.com/NativeScript/NativeScript/issues/6634)) ([e03f5f9](https://github.com/NativeScript/NativeScript/commit/e03f5f9))
+
+
+
 <a name="5.1.1"></a>
 ## [5.1.1](https://github.com/NativeScript/NativeScript/compare/5.1.0...5.1.1) (2018-12-19)
 
