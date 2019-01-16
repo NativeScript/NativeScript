@@ -81,6 +81,13 @@ application.on(application.uncaughtErrorEvent, function(args: application.Unhand
     console.log("### stack: " + args.error.stack);
 });
 
+application.on(application.discardedErrorEvent, function(args: application.DiscardedErrorEventData) {
+    console.log("### [Discarded] NativeScriptError: " + args.error);
+    console.log("### [Discarded] nativeException: " + (<any>args.error).nativeException);
+    console.log("### [Discarded] stackTrace: " + (<any>args.error).stackTrace);
+    console.log("### [Discarded] stack: " + args.error.stack);
+});
+
 application.setCssFileName("ui-tests-app/app.css");
 
 application.start({ moduleName: "ui-tests-app/main-page" });

@@ -85,10 +85,14 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 export function reloadPage(): void {
     const activity = application.android.foregroundActivity;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
-    const rootView: View = callbacks.getRootView();
+    if (callbacks) {
+        const rootView: View = callbacks.getRootView();
 
-    if (!rootView || !rootView._onLivesync()) {
-        callbacks.resetActivityContent(activity);
+        if (!rootView || !rootView._onLivesync()) {
+            callbacks.resetActivityContent(activity);
+        }
+    } else {
+        traceError(`${activity}[CALLBACKS] is null or undefined`);
     }
 }
 
@@ -469,19 +473,19 @@ export class Frame extends FrameBase {
         switch (this.actionBarVisibility) {
             case "never":
                 return false;
-            
+
             case "always":
                 return true;
-            
+
             default:
                 if (page.actionBarHidden !== undefined) {
                     return !page.actionBarHidden;
                 }
-        
+
                 if (this._android && this._android.showActionBar !== undefined) {
                     return this._android.showActionBar;
                 }
-        
+
                 return true;
         }
     }
@@ -530,7 +534,7 @@ function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): v
     if (snapshot.enterAnimator) {
         expandedEntry.enterAnimator = snapshot.enterAnimator;
     }
-    
+
     if (snapshot.exitAnimator) {
         expandedEntry.exitAnimator = snapshot.exitAnimator;
     }
@@ -538,7 +542,7 @@ function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): v
     if (snapshot.popEnterAnimator) {
         expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
     }
-    
+
     if (snapshot.popExitAnimator) {
         expandedEntry.popExitAnimator = snapshot.popExitAnimator;
     }
@@ -858,7 +862,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
         // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
         const nativeView = page.nativeViewProtected;
-        if (nativeView != null) {	
+        if (nativeView != null) {
             const parentView = nativeView.getParent();
             if (parentView instanceof android.view.ViewGroup) {
                 if (parentView.getChildCount() === 0) {

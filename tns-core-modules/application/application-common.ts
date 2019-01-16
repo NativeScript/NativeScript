@@ -38,10 +38,11 @@ import {
     getRootView,
     iOSApplication,
     LoadAppCSSEventData,
-    UnhandledErrorEventData
+    UnhandledErrorEventData,
+    DiscardedErrorEventData
 } from "./application";
 
-export { UnhandledErrorEventData, CssChangedEventData, LoadAppCSSEventData };
+export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -50,6 +51,7 @@ export const resumeEvent = "resume";
 export const exitEvent = "exit";
 export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
+export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
 
 let cssFile: string = "./app.css";
@@ -121,4 +123,8 @@ export function addCss(cssText: string): void {
 
 global.__onUncaughtError = function (error: NativeScriptError) {
     events.notify(<UnhandledErrorEventData>{ eventName: uncaughtErrorEvent, object: app, android: error, ios: error, error: error });
+}
+
+global.__onDiscardedError = function (error: NativeScriptError) {
+    events.notify(<DiscardedErrorEventData>{ eventName: discardedErrorEvent, object: app, error: error });
 }
