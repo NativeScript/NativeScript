@@ -32,9 +32,17 @@ export function hasLaunched(): boolean {
 
 export { Observable };
 
-import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData, LoadAppCSSEventData } from ".";
+import {
+    AndroidApplication,
+    CssChangedEventData,
+    getRootView,
+    iOSApplication,
+    LoadAppCSSEventData,
+    UnhandledErrorEventData,
+    DiscardedErrorEventData
+} from "./application";
 
-export { UnhandledErrorEventData, CssChangedEventData, LoadAppCSSEventData };
+export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -43,6 +51,7 @@ export const resumeEvent = "resume";
 export const exitEvent = "exit";
 export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
+export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
 
 let cssFile: string = "./app.css";
@@ -70,10 +79,22 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
     app = instance;
 }
 
-export function livesync() {
+export function livesync(context?: HmrContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    if (liveSyncCore) {
+    let reapplyAppCss = false
+
+    if (context) {
+        const fullFileName = getCssFileName();
+        const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
+        const extensions = ["css", "scss"];
+        reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+    }
+
+    const rootView = getRootView();
+    if (reapplyAppCss && rootView) {
+        rootView._onCssStateChange();
+    } else if (liveSyncCore) {
         liveSyncCore();
     }
 }
@@ -92,7 +113,7 @@ export function loadAppCss(): void {
         events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
     } catch (e) {
         throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
-           `You may need to register it inside ./app/vendor.ts.`);
+            `You may need to register it inside ./app/vendor.ts.`);
     }
 }
 
@@ -102,4 +123,8 @@ export function addCss(cssText: string): void {
 
 global.__onUncaughtError = function (error: NativeScriptError) {
     events.notify(<UnhandledErrorEventData>{ eventName: uncaughtErrorEvent, object: app, android: error, ios: error, error: error });
+}
+
+global.__onDiscardedError = function (error: NativeScriptError) {
+    events.notify(<DiscardedErrorEventData>{ eventName: discardedErrorEvent, object: app, error: error });
 }

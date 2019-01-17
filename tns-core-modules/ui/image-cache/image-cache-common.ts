@@ -6,10 +6,12 @@ export interface DownloadRequest {
     url: string;
     key: string;
     completed?: (image: any, key: string) => void;
+    error?: (key: string) => void;
 }
 
 export class Cache extends observable.Observable implements definition.Cache {
     public static downloadedEvent = "downloaded";
+    public static downloadErrorEvent = "downloadError";
 
     public placeholder: imageSource.ImageSource;
     public maxRequests = 5;
@@ -93,6 +95,20 @@ export class Cache extends observable.Observable implements definition.Cache {
         else {
             existingRequest.completed = newRequest.completed;
         }
+        if (existingRequest.error) {
+            if (newRequest.error) {
+                var existingError = existingRequest.error;
+                var stackError = function (key: string) {
+                    existingError(key);
+                    newRequest.error(key);
+                }
+
+                existingRequest.error = stackError;
+            }
+        }
+        else {
+            existingRequest.error = newRequest.error;
+        }
     }
 
     public get(key: string): any {
@@ -125,10 +141,7 @@ export class Cache extends observable.Observable implements definition.Cache {
     public _onDownloadCompleted(key: string, image: any) {
         var request = <DownloadRequest>this._pendingDownloads[key];
 
-        if (request.key && image) {
-            this.set(request.key, image);
-        }
-
+        this.set(request.key, image);
         this._currentDownloads--;
 
         if (request.completed) {
@@ -140,7 +153,29 @@ export class Cache extends observable.Observable implements definition.Cache {
                 eventName: Cache.downloadedEvent,
                 object: this,
                 key: key,
-                image: image 
+                image: image
+            });
+        }
+
+        delete this._pendingDownloads[request.key];
+
+        this._updateQueue();
+    }
+
+    public _onDownloadError(key: string, err: Error) {
+        var request = <DownloadRequest>this._pendingDownloads[key];
+        this._currentDownloads--;
+
+        if (request.error) {
+            request.error(request.key);
+        }
+
+        if (this.hasListeners(Cache.downloadErrorEvent)) {
+            this.notify({
+                eventName: Cache.downloadErrorEvent,
+                object: this,
+                key: key,
+                error: err
             });
         }
 
@@ -185,6 +220,7 @@ export class Cache extends observable.Observable implements definition.Cache {
     }
 }
 export interface Cache {
-    on(eventNames: string, callback: (args: observable.EventData) => void , thisArg?: any);
-    on(event: "downloaded", callback: (args: definition.DownloadedData) => void , thisArg?: any);
+    on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
+    on(event: "downloaded", callback: (args: definition.DownloadedData) => void, thisArg?: any);
+    on(event: "downloadError", callback: (args: definition.DownloadError) => void, thisArg?: any);
 }

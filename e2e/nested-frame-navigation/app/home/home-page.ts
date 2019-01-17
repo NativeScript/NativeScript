@@ -3,11 +3,11 @@ import { EventData } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 
 export function onNavigateToLayoutFrame(args: EventData) {
-    application._resetRootView({ moduleName: "layout-root/layout-root-frame" });
+    application._resetRootView({ moduleName: "layout-root/layout-frame-root" });
 }
 
 export function onNavigateToLayoutMultiFrame(args: EventData) {
-    application._resetRootView({ moduleName: "layout-root/layout-root-multi-frame" });
+    application._resetRootView({ moduleName: "layout-root/layout-multi-frame-root" });
 }
 
 export function onNavigateToPageFrame(args: EventData) {
@@ -31,9 +31,9 @@ export function onNavigateToTabsBottomPage(args: EventData) {
 }
 
 export function onNavigateToTabsTopRoot(args: EventData) {
-    application._resetRootView({ moduleName: "tab-root/tab-root-top" });
+    application._resetRootView({ moduleName: "tab-root/tab-top-root" });
 }
 
 export function onNavigateToTabsBottomRoot(args: EventData) {
-    application._resetRootView({ moduleName: "tab-root/tab-root-bottom" });
+    application._resetRootView({ moduleName: "tab-root/tab-bottom-root" });
 }

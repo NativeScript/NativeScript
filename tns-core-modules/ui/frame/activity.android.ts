@@ -50,6 +50,10 @@ class NativeScriptActivity extends android.support.v7.app.AppCompatActivity {
         this._callbacks.onDestroy(this, super.onDestroy);
     }
 
+    public onPostResume(): void {
+        this._callbacks.onPostResume(this, super.onPostResume);
+    }
+
     public onBackPressed(): void {
         this._callbacks.onBackPressed(this, super.onBackPressed);
     }

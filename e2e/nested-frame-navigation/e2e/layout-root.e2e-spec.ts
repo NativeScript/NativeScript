@@ -1,5 +1,6 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen, playersData, home, somePage, otherPage, teamsData } from "./screen";
+
+import { Screen, playersData, home, somePage, otherPage, teamsData, driverDefaultWaitTime } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
@@ -13,6 +14,8 @@ describe("layout-root:", () => {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
+
+        driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
     after(async () => {
@@ -39,16 +42,16 @@ describe("layout-root:", () => {
             it("loaded home page", async () => {
                 await screen.loadedHome();
             });
-        
+
             it("loaded layout root with nested frames", async () => {
                 await screen.navigateToLayoutWithFrame();
                 await screen.loadedLayoutWithFrame();
             });
-        
+
             it("loaded players list", async () => {
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded player details and go back twice", async () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
@@ -67,7 +70,7 @@ describe("layout-root:", () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
                 await shared.testPlayerNavigatedBack(screen, driver);
             });
-        
+
             it("navigate parent frame and go back", async () => {
                 await shared[`testSomePageNavigated${transition}`](screen);
 
@@ -76,10 +79,15 @@ describe("layout-root:", () => {
                     await driver.waitForElement(somePage); // wait for some page
                 }
 
-                await driver.navBack(); // some page back navigation
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded player details and navigate parent frame and go back", async () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
@@ -94,14 +102,19 @@ describe("layout-root:", () => {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
-        
-                await driver.navBack(); // some page back navigation
+
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayerDetails(playerTwo);
-        
+
                 await screen.goBackToPlayersList();
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded home page again", async () => {
                 await screen.resetToHome();
                 await screen.loadedHome();
@@ -111,20 +124,20 @@ describe("layout-root:", () => {
                     await driver.waitForElement(home); // wait for home page
                 }
             });
-        
+
             it("loaded layout root with multi nested frames", async () => {
                 await screen.navigateToLayoutWithMultiFrame();
                 await screen.loadedLayoutWithMultiFrame();
             });
-        
+
             it("loaded players list", async () => {
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded teams list", async () => {
                 await screen.loadedTeamsList();
             });
-        
+
             it("loaded player details and go back twice", async () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
@@ -139,11 +152,11 @@ describe("layout-root:", () => {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerOne.name) // wait for players list
                 }
-        
+
                 await shared.testPlayerNavigated(playerTwo, screen);
                 await shared.testPlayerNavigatedBack(screen, driver);
             });
-        
+
             it("navigate players parent frame and go back", async () => {
                 await shared[`testSomePageNavigated${transition}`](screen);
 
@@ -151,11 +164,16 @@ describe("layout-root:", () => {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
-                
-                await driver.navBack(); // some page back navigation
+
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded players details and navigate parent frame and go back", async () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
@@ -170,44 +188,53 @@ describe("layout-root:", () => {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(somePage); // wait for some page
                 }
-        
-                await driver.navBack(); // some page back navigation
+
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayerDetails(playerTwo);
-        
+
                 await screen.goBackToPlayersList();
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded layout root with multi nested frames again", async () => {
                 await screen.loadedLayoutWithMultiFrame();
             });
-        
+
             it("loaded players list", async () => {
                 await screen.loadedPlayersList();
             });
-        
+
             it("loaded teams list", async () => {
                 await screen.loadedTeamsList();
             });
-        
-            it ("mix player and team list actions and go back", async () => {
+
+            it("mix player and team list actions and go back", async () => {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerTwo.name); // wait for player
                 }
-        
+
                 await shared[`testOtherPageNavigated${transition}`](screen); // "teams" parent frame navigation
-                
+
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(otherPage); // wait for other page
                 }
 
                 await screen.loadedPlayerDetails(playerTwo);  // assert no changes in the sibling frame
-        
-                await driver.navBack(); // other page back navigation
+
+                if (driver.isAndroid) {
+                    await driver.navBack(); // other page back navigation
+                } else {
+                    await screen.goBackFromOtherPage();
+                }
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
@@ -216,7 +243,7 @@ describe("layout-root:", () => {
 
                 await screen.loadedTeamsList();
                 await screen.loadedPlayerDetails(playerTwo);  // assert no changes in the sibling frame
-        
+
                 await shared[`testOtherPageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
@@ -232,10 +259,15 @@ describe("layout-root:", () => {
                 }
 
                 await screen.loadedOtherPage(); // assert no changes in the sibling frame
-        
-                await driver.navBack(); // some page back navigation
+
+                if (driver.isAndroid) {
+                    await driver.navBack(); // some page back navigation
+                } else {
+                    await screen.goBackFromSomePage();
+                }
+
                 await screen.loadedPlayerDetails(playerTwo);
-        
+
                 await screen.goBackToPlayersList();
                 await screen.loadedPlayersList();
 
@@ -243,7 +275,7 @@ describe("layout-root:", () => {
                     await driver.backgroundApp(suspendTime);
                     await driver.waitForElement(playerOne.name); // wait for players list
                 }
-        
+
                 await screen.goBackFromOtherPage();
 
                 if (appSuspendResume) {
@@ -269,7 +301,7 @@ describe("layout-root:", () => {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();
         });
-    
+
         it("loaded players list", async () => {
             await screen.loadedPlayersList();
         });
@@ -282,7 +314,7 @@ describe("layout-root:", () => {
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
-    
+
         it("navigate parent frame and go back", async () => {
             await shared.testSomePageNavigatedDefault(screen);
 
@@ -290,8 +322,12 @@ describe("layout-root:", () => {
                 await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
-    
-            await driver.navBack(); // some page back navigation
+
+            if (driver.isAndroid) {
+                await driver.navBack(); // some page back navigation
+            } else {
+                await screen.goBackFromSomePage();
+            }
 
             if (appSuspendResume) {
                 await driver.backgroundApp(suspendTime);
@@ -324,7 +360,7 @@ describe("layout-root:", () => {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();
         });
-    
+
         it("loaded players list", async () => {
             await screen.loadedPlayersList();
         });
@@ -337,7 +373,7 @@ describe("layout-root:", () => {
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
-    
+
         it("navigate parent frame and go back", async () => {
             await shared.testSomePageNavigatedNone(screen);
 
@@ -345,8 +381,12 @@ describe("layout-root:", () => {
                 await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
-    
-            await driver.navBack(); // some page back navigation
+
+            if (driver.isAndroid) {
+                await driver.navBack(); // some page back navigation
+            } else {
+                await screen.goBackFromSomePage();
+            }
 
             if (appSuspendResume) {
                 await driver.backgroundApp(suspendTime);
@@ -379,7 +419,7 @@ describe("layout-root:", () => {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();
         });
-    
+
         it("loaded players list", async () => {
             await screen.loadedPlayersList();
         });
@@ -392,7 +432,7 @@ describe("layout-root:", () => {
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
-    
+
         it("navigate parent frame and go back", async () => {
             await shared.testSomePageNavigatedDefault(screen);
 
@@ -400,8 +440,12 @@ describe("layout-root:", () => {
                 await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
-    
-            await driver.navBack(); // some page back navigation
+
+            if (driver.isAndroid) {
+                await driver.navBack(); // some page back navigation
+            } else {
+                await screen.goBackFromSomePage();
+            }
 
             if (appSuspendResume) {
                 await driver.backgroundApp(suspendTime);
@@ -434,7 +478,7 @@ describe("layout-root:", () => {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();
         });
-    
+
         it("loaded players list", async () => {
             await screen.loadedPlayersList();
         });
@@ -447,7 +491,7 @@ describe("layout-root:", () => {
                 await driver.waitForElement(playerTwo.name); // wait for player
             }
         });
-    
+
         it("navigate parent frame and go back", async () => {
             await shared.testSomePageNavigatedNone(screen);
 
@@ -455,8 +499,12 @@ describe("layout-root:", () => {
                 await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(somePage); // wait for some page
             }
-    
-            await driver.navBack(); // some page back navigation
+
+            if (driver.isAndroid) {
+                await driver.navBack(); // some page back navigation
+            } else {
+                await screen.goBackFromSomePage();
+            }
 
             if (appSuspendResume) {
                 await driver.backgroundApp(suspendTime);

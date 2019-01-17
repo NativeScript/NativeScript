@@ -85,10 +85,14 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 export function reloadPage(): void {
     const activity = application.android.foregroundActivity;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
-    const rootView: View = callbacks.getRootView();
+    if (callbacks) {
+        const rootView: View = callbacks.getRootView();
 
-    if (!rootView || !rootView._onLivesync()) {
-        callbacks.resetActivityContent(activity);
+        if (!rootView || !rootView._onLivesync()) {
+            callbacks.resetActivityContent(activity);
+        }
+    } else {
+        traceError(`${activity}[CALLBACKS] is null or undefined`);
     }
 }
 
@@ -469,19 +473,19 @@ export class Frame extends FrameBase {
         switch (this.actionBarVisibility) {
             case "never":
                 return false;
-            
+
             case "always":
                 return true;
-            
+
             default:
                 if (page.actionBarHidden !== undefined) {
                     return !page.actionBarHidden;
                 }
-        
+
                 if (this._android && this._android.showActionBar !== undefined) {
                     return this._android.showActionBar;
                 }
-        
+
                 return true;
         }
     }
@@ -530,7 +534,7 @@ function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): v
     if (snapshot.enterAnimator) {
         expandedEntry.enterAnimator = snapshot.enterAnimator;
     }
-    
+
     if (snapshot.exitAnimator) {
         expandedEntry.exitAnimator = snapshot.exitAnimator;
     }
@@ -538,7 +542,7 @@ function restoreAnimatorState(entry: BackstackEntry, snapshot: AnimatorState): v
     if (snapshot.popEnterAnimator) {
         expandedEntry.popEnterAnimator = snapshot.popEnterAnimator;
     }
-    
+
     if (snapshot.popExitAnimator) {
         expandedEntry.popExitAnimator = snapshot.popExitAnimator;
     }
@@ -858,14 +862,14 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
         // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
         const nativeView = page.nativeViewProtected;
-        if (nativeView != null) {	
-            const parentView = nativeView.getParent();	
+        if (nativeView != null) {
+            const parentView = nativeView.getParent();
             if (parentView instanceof android.view.ViewGroup) {
                 if (parentView.getChildCount() === 0) {
                     parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
                 }
 
-                parentView.removeView(nativeView);	
+                parentView.removeView(nativeView);
             }
         }
 
@@ -1003,6 +1007,30 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         const rootView = this._rootView;
         if (rootView && rootView.isLoaded) {
             rootView.callUnloaded();
+        }
+    }
+
+    @profile
+    public onPostResume(activity: any, superFunc: Function): void {
+        superFunc.call(activity);
+
+        if (traceEnabled()) {
+            traceWrite("NativeScriptActivity.onPostResume();", traceCategories.NativeLifecycle);
+        }
+
+        // NOTE: activity.onPostResume() is called when activity resume is complete and we can
+        // safely raise the application resume event; 
+        // onActivityResumed(...) lifecycle callback registered in application is called too early
+        // and raising the application resume event there causes issues like 
+        // https://github.com/NativeScript/NativeScript/issues/6708
+        if ((<any>activity).isNativeScriptActivity) {
+            const args = <application.ApplicationEventData>{
+                eventName: application.resumeEvent,
+                object: application.android, 
+                android: activity 
+            };
+            application.notify(args);
+            application.android.paused = false;
         }
     }
 

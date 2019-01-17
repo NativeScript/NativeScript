@@ -52,7 +52,10 @@ function ensureCompleteCallback() {
         onComplete: function (result: any, context: any) {
             // as a context we will receive the id of the request
             onRequestComplete(context, result);
-        }
+        },
+        onError: function (error: string, context: any) {
+            onRequestError(error, context);
+      },
     });
 }
 
@@ -146,6 +149,14 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
         statusCode: result.statusCode,
         headers: headers
     });
+}
+
+function onRequestError(error: string, requestId: number) {
+    var callbacks = pendingRequests[requestId];
+    delete pendingRequests[requestId];
+    if (callbacks) {
+        callbacks.rejectCallback(new Error(error));
+    }
 }
 
 function buildJavaOptions(options: http.HttpRequestOptions) {

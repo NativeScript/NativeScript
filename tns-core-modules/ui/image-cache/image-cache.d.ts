@@ -22,6 +22,10 @@ export interface DownloadRequest {
      * An optional function to be called when the download is complete.
      */
     completed?: (image: any, key: string) => void;
+    /**
+     * An optional function to be called if the download errors.
+     */
+    error?: (key: string) => void;
 }
 
 /**
@@ -32,6 +36,10 @@ export class Cache extends observable.Observable {
      * String value used when hooking to downloaded event.
      */
     public static downloadedEvent: string;
+    /**
+     * String value used when hooking to download error event.
+     */
+    public static downloadErrorEvent: string;
     /**
      * The image to be used to notify for a pending download request - e.g. loading indicator.
      */
@@ -82,12 +90,17 @@ export class Cache extends observable.Observable {
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    on(eventNames: string, callback: (args: observable.EventData) => void , thisArg?: any);
+    on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
 
     /**
      * Raised when the image has been downloaded.
      */
-    on(event: "downloaded", callback: (args: DownloadedData) => void , thisArg?: any);
+    on(event: "downloaded", callback: (args: DownloadedData) => void, thisArg?: any);
+
+    /**
+     * Raised if the image download errors.
+     */
+    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
 
     //@private
     /**
@@ -98,6 +111,11 @@ export class Cache extends observable.Observable {
      * @private
      */
     _onDownloadCompleted(key: string, image: any);
+    //@endprivate
+    /**
+     * @private
+     */
+    _onDownloadError(key: string, err: Error);
     //@endprivate
 }
 
@@ -113,4 +131,18 @@ export interface DownloadedData extends observable.EventData {
      * Gets the cached image.
      */
     image: imageSource.ImageSource;
+}
+
+/**
+ * Provides data for download error.
+ */
+export interface DownloadError extends observable.EventData {
+    /**
+     * A string indentifier of the cached image.
+     */
+    key: string;
+    /**
+     * Gets the error.
+     */
+    error: Error;
 }
