@@ -39,6 +39,19 @@ describe("layout-root:", () => {
 
         describe(`transition: ${transition} scenarios:`, () => {
 
+            before(async function () {
+                if (transition === "Flip" &&
+                    driver.isAndroid && parseInt(driver.platformVersion) === 19) {
+                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                    console.log("skipping flip transition tests on api level 19");
+                    this.skip();
+                } else if (transition === "Slide" && driver.isIOS) {
+                    // TODO: https://github.com/NativeScript/NativeScript/issues/6728
+                    console.log("skipping slide transition tests with layout root on iOS");
+                    this.skip();
+                }
+            });
+
             it("loaded home page", async () => {
                 await screen.loadedHome();
             });
