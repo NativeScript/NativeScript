@@ -82,18 +82,25 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
 export function livesync(context?: HmrContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    let reapplyAppCss = false
+    let reapplyAppCss = false;
+    let reapplyLocalCss = false;
 
     if (context) {
+        const extensions = ["css", "scss"];
         const fullFileName = getCssFileName();
         const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
-        const extensions = ["css", "scss"];
         reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+        if (!reapplyAppCss) {
+            reapplyLocalCss = extensions.some(ext => context.module.endsWith(ext));
+        }
     }
 
     const rootView = getRootView();
+    const rootViewPage = (<any>rootView).currentPage;
     if (reapplyAppCss && rootView) {
         rootView._onCssStateChange();
+    } else if (reapplyLocalCss && rootViewPage) {
+        rootViewPage.addCssFile(context.module);
     } else if (liveSyncCore) {
         liveSyncCore();
     }
