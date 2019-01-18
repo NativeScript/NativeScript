@@ -568,6 +568,18 @@ export class StyleScope {
         this.appendCss(null, cssFileName);
     }
 
+    public changeCssFile(cssFileName: string): void {
+        if (!cssFileName) {
+            return;
+        }
+
+        let cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
+        this._css = cssSelectors.source;
+        this._localCssSelectors = cssSelectors.selectors;
+        this._localCssSelectorVersion++;
+        this.ensureSelectors();
+    }
+
     @profile
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;

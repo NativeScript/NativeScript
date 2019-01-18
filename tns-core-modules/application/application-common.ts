@@ -85,7 +85,7 @@ export function livesync(context?: ModuleContext) {
     let reapplyAppCss = false;
     let reapplyLocalCss = false;
 
-    if (context) {
+    if (context && context.module) {
         const extensions = ["css", "scss"];
         const fullFileName = getCssFileName();
         const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
@@ -100,7 +100,7 @@ export function livesync(context?: ModuleContext) {
     if (reapplyAppCss && rootView) {
         rootView._onCssStateChange();
     } else if (reapplyLocalCss && rootViewPage) {
-        rootViewPage.addCssFile(context.module);
+        rootViewPage.changeCssFile(context.module);
     } else if (liveSyncCore) {
         liveSyncCore();
     }
