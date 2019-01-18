@@ -9,6 +9,7 @@
     <Button text="promptPass" tap="{{ promptPass }}" />
     <Button text="promptEmail" tap="{{ promptEmail }}" />
     <Button text="promptNumber" tap="{{ promptNumber }}" />
+    <Button text="promptDecimal" tap="{{ promptDecimal }}" />
     <Button text="promptPhone" tap="{{ promptPhone }}" />
     <Button text="promptCapitalizationNone" tap="{{ promptCapitalizationNone }}" />
     <Button text="promptCapitalizationAll" tap="{{ promptCapitalizationAll }}" />

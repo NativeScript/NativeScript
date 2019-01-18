@@ -158,6 +158,26 @@ export class SettingsViewModel extends observable.Observable {
       });
     }
 
+    public promptDecimal(args: observable.EventData) {
+      dialogs.prompt({
+          title: "Name",
+          message: "Enter a decimal number:",
+          cancelButtonText: "Cancel",
+          neutralButtonText: "Ignore",
+          okButtonText: "OK",
+          defaultText: "13.50",
+          inputType: dialogs.inputType.decimal
+      }).then((promptResult) => {
+          console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+          if (promptResult.result) {
+              this.set("name", promptResult.text);
+          }
+          else {
+              this.set("name", "13.50");
+          }
+      });
+    }
+
     public promptPhone(args: observable.EventData) {
       dialogs.prompt({
           title: "Name",
