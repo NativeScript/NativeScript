@@ -225,8 +225,6 @@ export class View extends ViewCommon {
         const { sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.updateBackground(sizeChanged);
         this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
-        // NOTE: if there is transformation this frame will be incorrect.
-        this._cachedFrame = this.nativeViewProtected.frame;
     }
 
     public focus(): boolean {
