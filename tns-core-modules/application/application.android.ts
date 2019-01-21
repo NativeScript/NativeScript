@@ -217,7 +217,8 @@ global.__onLiveSync = function __onLiveSync(context?: HmrContext) {
         return;
     }
 
-    livesync(context);
+    const rootView = getRootView();
+    livesync(rootView, context);
 };
 
 function initLifecycleCallbacks() {
