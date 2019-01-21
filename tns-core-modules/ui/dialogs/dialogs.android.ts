@@ -241,7 +241,7 @@ export function login(...args: any[]): Promise<LoginResult> {
             passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
 
-            passwordInput.setHint(options.userNameHint ? options.userNameHint : "");
+            passwordInput.setHint(options.passwordHint ? options.passwordHint : "");
             passwordInput.setText(options.password ? options.password : "");
 
             const layout = new android.widget.LinearLayout(context);
