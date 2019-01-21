@@ -177,7 +177,7 @@ class UIViewControllerImpl extends UIViewController {
         // or because we are closing a modal page, 
         // or because we are in tab and another controller is selected.
         const tab = this.tabBarController;
-        if (!owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
+        if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
             const willSelectViewController = tab && (<any>tab)._willSelectViewController;
             if (!willSelectViewController
                 || willSelectViewController === tab.selectedViewController) {
