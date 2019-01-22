@@ -298,15 +298,18 @@ export class TextBase extends TextBaseCommon {
 }
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
-    switch (textTransform) {
-        case "uppercase":
-            return NSStringFromNSAttributedString(text).uppercaseString;
-        case "lowercase":
-            return NSStringFromNSAttributedString(text).lowercaseString;
-        case "capitalize":
-            return NSStringFromNSAttributedString(text).capitalizedString;
-        default:
-            return text;
+    if (!text || (typeof text !== "string")) { return ""; }
+    else {
+        switch (textTransform) {
+            case "uppercase":
+                return NSStringFromNSAttributedString(text).uppercaseString;
+            case "lowercase":
+                return NSStringFromNSAttributedString(text).lowercaseString;
+            case "capitalize":
+                return NSStringFromNSAttributedString(text).capitalizedString;
+            default:
+                return text;
+        }
     }
 }
 

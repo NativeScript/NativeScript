@@ -323,16 +323,19 @@ function getCapitalizedString(str: string): string {
 }
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
-    switch (textTransform) {
-        case "uppercase":
-            return text.toUpperCase();
-        case "lowercase":
-            return text.toLowerCase();
-        case "capitalize":
-            return getCapitalizedString(text);
-        case "none":
-        default:
-            return text;
+    if (!text || (typeof text !== "string")) { return ""; }
+    else {
+        switch (textTransform) {
+            case "uppercase":
+                return text.toUpperCase();
+            case "lowercase":
+                return text.toLowerCase();
+            case "capitalize":
+                return getCapitalizedString(text);
+            case "none":
+            default:
+                return text;
+        }
     }
 }
 
