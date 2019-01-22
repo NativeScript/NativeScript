@@ -23,8 +23,7 @@ let navDepth = -1;
 export class Frame extends FrameBase {
     public viewController: UINavigationControllerImpl;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
-
-    private _ios: iOSFrame;
+    public _ios: iOSFrame;
 
     constructor() {
         super();
@@ -219,20 +218,20 @@ export class Frame extends FrameBase {
                 switch (this._ios.navBarVisibility) {
                     case "always":
                         return true;
-        
+
                     case "never":
                         return false;
-        
+
                     case "auto":
                         let newValue: boolean;
-        
+
                         if (page && page.actionBarHidden !== undefined) {
                             newValue = !page.actionBarHidden;
                         }
                         else {
                             newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
                         }
-        
+
                         newValue = !!newValue; // Make sure it is boolean
                         return newValue;
                 }
@@ -390,6 +389,9 @@ class UINavigationControllerImpl extends UINavigationController {
         const owner = this._owner.get();
         if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
             owner.callUnloaded();
+
+            owner.viewController = null;
+            owner.ios.controller = null;
         }
     }
 
@@ -595,6 +597,9 @@ class iOSFrame implements iOSFrameDefinition {
 
     public get controller() {
         return this._controller;
+    }
+    public set controller(value: UINavigationControllerImpl) {
+        this._controller = value;
     }
 
     public get showNavigationBar(): boolean {
