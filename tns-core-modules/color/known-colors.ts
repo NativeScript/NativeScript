@@ -112,6 +112,7 @@ export var Pink = "#FFC0CB";
 export var Plum = "#DDA0DD";
 export var PowderBlue = "#B0E0E6";
 export var Purple = "#800080";
+export var RebeccaPurple = "#663399";
 export var Red = "#FF0000";
 export var RosyBrown = "#BC8F8F";
 export var RoyalBlue = "#4169E1";
