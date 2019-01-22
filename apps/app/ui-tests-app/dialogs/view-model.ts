@@ -121,11 +121,11 @@ export class SettingsViewModel extends observable.Observable {
     public promptEmail(args: observable.EventData) {
         dialogs.prompt({
             title: "Name",
-            message: "Enter name:",
+            message: "Enter email:",
             cancelButtonText: "Cancel",
             neutralButtonText: "Ignore",
             okButtonText: "OK",
-            defaultText: "John Reese",
+            defaultText: "john.reese@nativescript.org",
             inputType: dialogs.inputType.email
         }).then((promptResult) => {
             console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
