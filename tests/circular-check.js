@@ -6,11 +6,15 @@ const workingDirecotry = process.cwd();
 const androidApp = path.join(workingDirecotry, "platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules");
 const iosApp = path.join(workingDirecotry, "platforms/ios/tests/app/tns_modules/tns-core-modules");
 
-const iosWhiteList = ['image-source/image-source.js',
-    'http/http.js',
-    'http/http-request/http-request.js'];
+const iosWhiteList = ['image-source/image-source.js'];
+const androidWhiteList = ['image-source/image-source.js', 'ui/frame/frame.js'];
 
-const androidWhiteList = ['ui/frame/frame.js', 'ui/frame/fragment.js'];
+const printResult = (allCircleDeps) => {
+    allCircleDeps.forEach(circleDeps => {
+        const log = circleDeps.join(" -> ");
+        console.log(log);
+    });
+}
 
 const checkAppForCircualr = async (appName, whiteList) => {
     if (!fs.existsSync(appName)) {
@@ -23,13 +27,13 @@ const checkAppForCircualr = async (appName, whiteList) => {
     console.info(`Check ${appName}`);
     console.log(`Initial check: `, circular);
 
-    const filteredResult = circular && circular.length > 0 && (whiteList ? circular.filter(c => whiteList.indexOf(c) >= 0) : circular);
+    const filteredResult = circular && circular.length > 0 && (whiteList ? circular.filter(c => whiteList.indexOf(c[0]) < 0) : circular);
 
     if (circular && circular.length > 0 && filteredResult.length > 0) {
-        console.log(`Found circular deps!`, filteredResult);
+
+        console.log(`Found circular deps!`);
+        printResult(filteredResult);
         process.exit(1);
-    } else {
-        console.log(`Check of circular deps after filtering white list: `, filteredResult);
     }
 }
 
