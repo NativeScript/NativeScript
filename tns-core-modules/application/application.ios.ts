@@ -21,7 +21,7 @@ import { Frame, NavigationEntry } from "../ui/frame";
 import * as utils from "../utils/utils";
 import { profile, level as profilingLevel, Level } from "../profiling";
 
-// NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430 
+// NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
 // https://github.com/NativeScript/ios-runtime/issues/1012
 var Responder = (<any>UIResponder).extend({
@@ -161,7 +161,7 @@ class IOSApplication implements IOSApplicationDefinition {
             this.setWindowContent(args.root);
         } else {
             this._window = UIApplication.sharedApplication.delegate.window;
-        }   
+        }
     }
 
     @profile
@@ -378,5 +378,6 @@ global.__onLiveSync = function __onLiveSync(context?: HmrContext) {
         return;
     }
 
-    livesync(context);
+    const rootView = getRootView();
+    livesync(rootView, context);
 }
