@@ -33,6 +33,12 @@ export class Frame extends FrameBase {
         this.nativeViewProtected = this._ios.controller.view;
     }
 
+    public disposeNativeView() {
+        this._ios.controller = null;
+        this.viewController = null;
+        super.disposeNativeView();
+    }
+
     public get ios(): iOSFrame {
         return this._ios;
     }
@@ -373,6 +379,7 @@ class UINavigationControllerImpl extends UINavigationController {
         const owner = this._owner.get();
         if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
             owner.callUnloaded();
+            owner._tearDownUI(true);
         }
     }
 
@@ -578,6 +585,10 @@ class iOSFrame implements iOSFrameDefinition {
 
     public get controller() {
         return this._controller;
+    }
+
+    public set controller(value: UINavigationControllerImpl) {
+        this._controller = value;
     }
 
     public get showNavigationBar(): boolean {
