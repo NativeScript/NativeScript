@@ -233,6 +233,7 @@ export enum colors {
     plum = 0xFFDDA0DD,
     powderblue = 0xFFB0E0E6,
     purple = 0xFF800080,
+    rebeccapurple = 0xFF663399,
     red = 0xFFFF0000,
     rosybrown = 0xFFBC8F8F,
     royalblue = 0xFF4169E1,
