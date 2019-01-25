@@ -185,7 +185,9 @@ export function prompt(arg: any): Promise<PromptResult> {
                 } else if (options.inputType === inputType.email) {
                     input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 } else if (options.inputType === inputType.number) {
-                  input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                    input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                } else if (options.inputType === inputType.decimal) {
+                    input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 } else if (options.inputType === inputType.phone) {
                   input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
                 }
