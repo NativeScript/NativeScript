@@ -40,6 +40,11 @@ export module inputType {
     export const number: string = "number";
 
     /**
+     * Decimal input type
+     */
+    export const decimal: string = "decimal";
+
+    /**
      * Phone input type
      */
     export const phone: string = "phone";
