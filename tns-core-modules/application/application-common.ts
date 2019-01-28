@@ -79,7 +79,7 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
     app = instance;
 }
 
-export function livesync(rootView: View, context?: HmrContext) {
+export function livesync(rootView: View, context?: ModuleContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
     let reapplyAppCss = false;
