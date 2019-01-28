@@ -279,7 +279,7 @@ if (a) return "winning";
 
 ```TypeScript
 
-if(condition) {
+if (condition) {
     console.log("winning");
 }
 
@@ -293,15 +293,15 @@ if (!condition) {
 
 ```TypeScript
 
-if(condition === true) {
+if (condition === true) {
     console.log("losing");
 }
 
-if(condition !== true) {
+if (condition !== true) {
     console.log("losing");
 }
 
-if(condition !== false) {
+if (condition !== false) {
     console.log("losing");
 }
 
@@ -314,7 +314,7 @@ Do not use the **Yoda Conditions** when writing boolean expressions:
 
 ```TypeScript
 let num;
-if(num >= 0) {
+if (num >= 0) {
     console.log("winning");
 }
 ```
@@ -323,14 +323,14 @@ if(num >= 0) {
 
 ```TypeScript
 let num;
-if(0 <= num) {
+if (0 <= num) {
     console.log("losing");
 }
 ```
 
 **NOTE** It is OK to use constants on the left when comparing for a range.
 ```TypeScript
-if(0 <= num && num <= 100) {
+if (0 <= num && num <= 100) {
     console.log("winning");
 }
 ```

@@ -12,7 +12,7 @@ export function pageLoaded(args: EventData) {
     examples.set("bindings", "bindings/main-page");
     examples.set("button", "button/main-page");
     examples.set("css", "css/main-page");
-    examples.set("dialogs", "dialogs/dialogs");
+    examples.set("dialogs", "dialogs/main-page");
     examples.set("events", "events/main-page");
     examples.set("fonts", "font/main-page");
     examples.set("flexbox", "flexbox/flexbox-main-page");
