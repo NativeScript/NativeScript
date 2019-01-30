@@ -6,6 +6,7 @@ import { NavigationEntry } from "tns-core-modules/ui/frame";
 
 import { ItemsViewModel } from "../shared/items-view-model";
 import { Item } from "../shared/item";
+import { defaultTransitionTime } from "../app-settings";
 
 export function onNavigatingTo(args: NavigatedData) {
     const page = <Page>args.object;
@@ -38,14 +39,14 @@ export function onItemTap(args: ItemEventData) {
         case "slide":
             entry.transition = {
                 name: "slide",
-                duration: 300,
+                duration: defaultTransitionTime,
                 curve: "easeIn"
             };
             break;
         case "flip":
             entry.transition = {
                 name: "flip",
-                duration: 300,
+                duration: defaultTransitionTime,
                 curve: "easeIn"
             };
             break;

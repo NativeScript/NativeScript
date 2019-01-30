@@ -31,7 +31,7 @@
         "lt": 60000,
         "appActivity": "com.tns.NativeScriptActivity",
         "newCommandTimeout": 720,
-        "noReset": true,
+        "noReset": false,
         "fullReset": false,
         "app": ""
     },

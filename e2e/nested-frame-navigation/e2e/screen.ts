@@ -254,6 +254,7 @@ export class Screen {
     toggleTeamsTab = async () => {
         const lblTeams = await this._driver.waitForElement(teams);
         await lblTeams.tap();
+        await this._driver.sleep(4000);
     }
 
     loadedHome = async () => {

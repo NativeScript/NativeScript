@@ -9,12 +9,12 @@
       "version": "next"
     },
     "tns-android": {
-      "version": "next"
+      "version": "5.2.0-2019-01-21-120230-01"
     }
   },
   "dependencies": {
     "nativescript-theme-core": "~1.0.4",
-    "tns-core-modules": "next"
+    "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
     "@types/chai": "~4.1.3",
@@ -23,7 +23,7 @@
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-multi": "^1.0.1",
-    "nativescript-dev-appium": "next",
+    "nativescript-dev-appium": "file:../../../nativescript-dev-appium/nativescript-dev-appium-5.0.0.tgz",
     "nativescript-dev-typescript": "next",
     "nativescript-dev-webpack": "next",
     "rimraf": "^2.6.2"

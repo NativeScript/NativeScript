@@ -1,5 +1,6 @@
 import { EventData } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
+import { defaultTransitionTime } from "../app-settings";
 
 export function onNavigate(args: EventData) {
     const button = <Button>args.object;
@@ -21,7 +22,7 @@ export function onNavigateSlide(args: EventData) {
         animated: true,
         transition: {
             name: "slide",
-            duration: 300,
+            duration: defaultTransitionTime,
             curve: "easeIn"
         }
     });
@@ -34,7 +35,7 @@ export function onNavigateFlip(args: EventData) {
         animated: true,
         transition: {
             name: "flip",
-            duration: 300,
+            duration: defaultTransitionTime,
             curve: "easeIn"
         }
     });
