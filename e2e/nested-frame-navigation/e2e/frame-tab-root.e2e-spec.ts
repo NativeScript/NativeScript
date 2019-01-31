@@ -180,10 +180,10 @@ describe("frame-tab-root:", () => {
                             await screen.goBackFromSomePage();
                         }
 
-                        if (appSuspendResume) {
-                            await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name); // wait for player
-                        }
+                        // if (appSuspendResume) {
+                        //     await driver.backgroundApp(suspendTime);
+                        //     await driver.waitForElement(playerTwo.name); // wait for player
+                        // }
 
                         await screen.loadedPlayerDetails(playerTwo);
 
