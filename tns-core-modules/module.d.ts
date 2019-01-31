@@ -51,7 +51,7 @@ declare namespace NodeJS {
         __native?: any;
         __inspector?: any;
         __extends: any;
-        __onLiveSync: (context?: { type: string, module: string }) => void;
+        __onLiveSync: (context?: { type: string, path: string }) => void;
         __onLiveSyncCore: () => void;
         __onUncaughtError: (error: NativeScriptError) => void;
         __onDiscardedError: (error: NativeScriptError) => void;
@@ -76,14 +76,14 @@ declare enum ModuleType {
  */
 interface ModuleContext {
     /**
-     * The type of module for replacement.
+     * The type of the module for replacement.
      */
     type: ModuleType;
 
     /**
-     * The module for replacement.
+     * The path of the module for replacement.
      */
-    module: string;
+    path: string;
 }
 
 /**

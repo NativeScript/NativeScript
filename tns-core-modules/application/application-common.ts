@@ -88,7 +88,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
         const fullFileName = getCssFileName();
         const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
         const extensions = ["css", "scss"];
-        reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+        reapplyAppCss = extensions.some(ext => context.path === fileName.concat(ext));
     }
 
     if (reapplyAppCss && rootView) {

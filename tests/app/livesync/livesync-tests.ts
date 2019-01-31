@@ -40,31 +40,31 @@ export function test_onLiveSync_ModuleContext_AppStyle_AppNewScss() {
 }
 
 export function test_onLiveSync_ModuleContext_ContextUndefined() {
-    _test_onLiveSync_ModuleContext({ type: undefined, module: undefined });
+    _test_onLiveSync_ModuleContext({ type: undefined, path: undefined });
 }
 
 export function test_onLiveSync_ModuleContext_ModuleUndefined() {
-    _test_onLiveSync_ModuleContext({ type: "script", module: undefined });
+    _test_onLiveSync_ModuleContext({ type: "script", path: undefined });
 }
 
 export function test_onLiveSync_ModuleContext_Script_AppJs() {
-    _test_onLiveSync_ModuleContext({ type: "script", module: appJsFileName });
+    _test_onLiveSync_ModuleContext({ type: "script", path: appJsFileName });
 }
 
 export function test_onLiveSync_ModuleContext_Script_AppTs() {
-    _test_onLiveSync_ModuleContext({ type: "script", module: appTsFileName });
+    _test_onLiveSync_ModuleContext({ type: "script", path: appTsFileName });
 }
 
 export function test_onLiveSync_ModuleContext_Style_MainPageCss() {
-    _test_onLiveSync_ModuleContext({ type: "style", module: mainPageCssFileName });
+    _test_onLiveSync_ModuleContext({ type: "style", path: mainPageCssFileName });
 }
 
 export function test_onLiveSync_ModuleContext_Markup_MainPageHtml() {
-    _test_onLiveSync_ModuleContext({ type: "markup", module: mainPageHtmlFileName });
+    _test_onLiveSync_ModuleContext({ type: "markup", path: mainPageHtmlFileName });
 }
 
 export function test_onLiveSync_ModuleContext_Markup_MainPageXml() {
-    _test_onLiveSync_ModuleContext({ type: "markup", module: mainPageXmlFileName });
+    _test_onLiveSync_ModuleContext({ type: "markup", path: mainPageXmlFileName });
 }
 
 export function setUpModule() {
@@ -84,7 +84,7 @@ function _test_onLiveSync_ModuleContext_AppStyle(styleFileName: string) {
     app.setCssFileName(styleFileName);
 
     const pageBeforeLiveSync = helper.getCurrentPage();
-    global.__onLiveSync({ type: "style", module: styleFileName });
+    global.__onLiveSync({ type: "style", path: styleFileName });
 
     const pageAfterLiveSync = helper.getCurrentPage();
     TKUnit.waitUntilReady(() => pageAfterLiveSync.getViewById("button").style.color.toString() === green.toString());
@@ -101,10 +101,10 @@ function _test_onLiveSync_ModuleContext_AppStyle(styleFileName: string) {
     TKUnit.assertTrue(pageAfterNavigationBack._cssState.isSelectorsLatestVersionApplied(), "Latest selectors version is NOT applied!");
 }
 
-function _test_onLiveSync_ModuleContext(context: { type, module }) {
+function _test_onLiveSync_ModuleContext(context: { type, path }) {
     const page = <Page>parse(pageTemplate);
     helper.navigateWithHistory(() => page);
-    global.__onLiveSync({ type: context.type, module: context.module });
+    global.__onLiveSync({ type: context.type, path: context.path });
 
     TKUnit.waitUntilReady(() => !!frame.topmost());
     const topmostFrame = frame.topmost();
