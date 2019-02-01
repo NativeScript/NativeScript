@@ -18,14 +18,14 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 /**
  * Specifies the type name for the instances of this View class,
  * that is used when matching CSS type selectors.
- * 
+ *
  * Usage:
  * ```
  * @CSSType("Button")
  * class Button extends View {
  * }
  * ```
- * 
+ *
  * Internally the decorator set `Button.prototype.cssType = "Button"`.
  * @param type The type name, e. g. "Button", "Label", etc.
  */
@@ -50,8 +50,8 @@ export type px = number;
 export type percent = number;
 
 /**
- * The Point interface describes a two dimensional location. 
- * It has two properties x and y, representing the x and y coordinate of the location. 
+ * The Point interface describes a two dimensional location.
+ * It has two properties x and y, representing the x and y coordinate of the location.
  */
 export interface Point {
     /**
@@ -66,8 +66,8 @@ export interface Point {
 }
 
 /**
- * The Size interface describes abstract dimensions in two dimensional space. 
- * It has two properties width and height, representing the width and height values of the size. 
+ * The Size interface describes abstract dimensions in two dimensional space.
+ * It has two properties width and height, representing the width and height values of the size.
  */
 export interface Size {
     /**
@@ -99,8 +99,8 @@ export interface ShownModallyData extends EventData {
 }
 
 /**
- * This class is the base class for all UI components. 
- * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
+ * This class is the base class for all UI components.
+ * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
  */
 export abstract class View extends ViewBase {
     /**
@@ -475,13 +475,13 @@ export abstract class View extends ViewBase {
      * [Deprecated. Please use the on() instead.] Adds a gesture observer.
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when gesture is received.
-     * @param thisArg - An optional parameter which will be used as `this` context for callback execution. 
+     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any);
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types. 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
@@ -527,12 +527,12 @@ export abstract class View extends ViewBase {
     modal: View;
 
     /**
-     * Animates one or more properties of the view based on the supplied options. 
+     * Animates one or more properties of the view based on the supplied options.
      */
     public animate(options: AnimationDefinition): AnimationPromise;
 
     /**
-     * Creates an Animation object based on the supplied options. 
+     * Creates an Animation object based on the supplied options.
      */
     public createAnimation(options: AnimationDefinition): Animation;
 
@@ -562,7 +562,7 @@ export abstract class View extends ViewBase {
     public getActualSize(): Size;
 
     /**
-     * Derived classes can override this method to handle Android back button press. 
+     * Derived classes can override this method to handle Android back button press.
      */
     onBackPressed(): boolean;
 
@@ -575,7 +575,7 @@ export abstract class View extends ViewBase {
     /**
      * @private
      * Adds a new values to current css.
-     * @param cssString - A valid css which will be added to current css. 
+     * @param cssString - A valid css which will be added to current css.
      */
     addCss(cssString: string): void;
 
@@ -586,13 +586,20 @@ export abstract class View extends ViewBase {
      */
     addCssFile(cssFileName: string): void;
 
+    /**
+     * @private
+     * Changes the current css to the content of the file.
+     * @param cssFileName - A valid file name (from the application root) which contains a valid css.
+     */
+    changeCssFile(cssFileName: string): void;
+
     // Lifecycle events
     _getNativeViewsCount(): number;
 
     _eachLayoutView(callback: (View) => void): void;
-    
+
     /**
-     * Iterates over children of type View. 
+     * Iterates over children of type View.
      * @param callback Called for each child of type View. Iteration stops if this method returns falsy value.
      */
     public eachChildView(callback: (view: View) => boolean): void;
@@ -673,7 +680,7 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _onLivesync(): boolean;
+    _onLivesync(context?: { type: string, path: string }): boolean;
     /**
      * @private
      */
@@ -681,9 +688,9 @@ export abstract class View extends ViewBase {
 
     /**
      * Updates styleScope or create new styleScope.
-     * @param cssFileName 
-     * @param cssString 
-     * @param css 
+     * @param cssFileName
+     * @param cssString
+     * @param css
      */
     _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void;
 
@@ -715,7 +722,7 @@ export abstract class View extends ViewBase {
 }
 
 /**
- * Base class for all UI components that are containers. 
+ * Base class for all UI components that are containers.
  */
 export class ContainerView extends View {
     /**
@@ -725,7 +732,7 @@ export class ContainerView extends View {
 }
 
 /**
- * Base class for all UI components that implement custom layouts. 
+ * Base class for all UI components that implement custom layouts.
  */
 export class CustomLayoutView extends ContainerView {
     //@private

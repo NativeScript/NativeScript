@@ -225,9 +225,9 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
-    public _onLivesync(): void {
+    public _onLivesync(context?: ModuleContext): void {
         // If view can't handle livesync set window controller.
-        if (this._rootView && !this._rootView._onLivesync()) {
+        if (this._rootView && !this._rootView._onLivesync(context)) {
             this.setWindowContent();
         }
     }
@@ -264,8 +264,8 @@ exports.ios = iosApp;
 setApplication(iosApp);
 
 // attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = function () {
-    iosApp._onLivesync();
+(<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
+    iosApp._onLivesync(context);
 }
 
 let mainEntry: NavigationEntry;
