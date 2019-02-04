@@ -91,6 +91,11 @@ function initializeDialogFragment() {
             return global.__native(this);
         }
 
+        public onDetachedFromWindow(): void {
+            super.onDetachedFromWindow();
+            this.fragment = null;
+        };
+
         public onBackPressed(): void {
             const view = this.fragment.owner;
             const args = <AndroidActivityBackPressedEventData>{
@@ -136,9 +141,8 @@ function initializeDialogFragment() {
             this._stretched = options.stretched;
             this._dismissCallback = options.dismissCallback;
             this._shownCallback = options.shownCallback;
-            this.owner._dialogFragment = this;
             this.setStyle(android.support.v4.app.DialogFragment.STYLE_NO_TITLE, 0);
-            
+
             let theme = this.getTheme();
             if (this._fullscreen) {
                 // In fullscreen mode, get the application's theme.
