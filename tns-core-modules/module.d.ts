@@ -51,7 +51,7 @@ declare namespace NodeJS {
         __native?: any;
         __inspector?: any;
         __extends: any;
-        __onLiveSync: (context?: { type: string, module: string }) => void;
+        __onLiveSync: (context?: { type: string, path: string }) => void;
         __onLiveSyncCore: () => void;
         __onUncaughtError: (error: NativeScriptError) => void;
         __onDiscardedError: (error: NativeScriptError) => void;
@@ -65,25 +65,25 @@ declare function clearTimeout(timeoutId: number): void;
 declare function setInterval(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearInterval(intervalId: number): void;
 
-declare enum HmrType {
+declare enum ModuleType {
     markup = "markup",
     script = "script",
     style = "style"
 }
 
 /**
- * Define a context for Hot Module Replacement.
+ * Define a module context for Hot Module Replacement.
  */
-interface HmrContext {
+interface ModuleContext {
     /**
-     * The type of module for replacement.
+     * The type of the module for replacement.
      */
-    type: HmrType;
+    type: ModuleType;
 
     /**
-     * The module for replacement.
+     * The path of the module for replacement.
      */
-    module: string;
+    path: string;
 }
 
 /**
