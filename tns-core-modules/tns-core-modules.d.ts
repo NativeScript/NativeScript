@@ -153,10 +153,6 @@ declare class WeakRef<T> {
     clear(): void;
 }
 
-interface Array<T> {
-    filter<U extends T>(pred: (a: T) => a is U): U[];
-}
-
 //Dialogs
 declare function alert(message?: any): void;
 declare function confirm(message?: string): boolean;
