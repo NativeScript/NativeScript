@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar flat="true" backgroundColor="blue">
+        <Label text="flat action bar"></Label>
+    </ActionBar>
+
+    <ScrollView backgroundColor="green">
+        <Label text="lorem ipsum" backgroundColor="red"></Label>
+    </ScrollView>
+</Page>
