@@ -235,9 +235,14 @@ class UIViewControllerImpl extends UIViewController {
                 }
 
                 if (frameParent) {
-                    const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-                    const currentInsetsTop = this.view.safeAreaInsets.top;
-                    const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+                    let additionalInsetsTop = 0;
+
+                    // if current page has flat action bar, inherited top insets should be ignored.
+                    if (!owner.actionBar.flat) {
+                        const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
+                        const currentInsetsTop = this.view.safeAreaInsets.top;
+                        additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+                    }
 
                     const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
                     const currentInsetsBottom = this.view.safeAreaInsets.bottom;
