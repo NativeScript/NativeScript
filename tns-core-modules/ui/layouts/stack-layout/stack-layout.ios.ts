@@ -59,7 +59,7 @@ export class StackLayout extends StackLayoutBase {
                 childSize = View.measureChild(this, child, childMeasureSpec, layout.makeMeasureSpec(remainingLength, measureSpec));
 
                 if (measureSpec === layout.AT_MOST && this.isUnsizedScrollableView(child)) {
-                    trace.write("Avoid using ListView or ScrollView with no explicit height set inside StackLayout. Doing so might results in poor user interface performance and a poor user experience.", trace.categories.Layout, trace.messageType.warn);
+                    trace.write("Avoid using ListView or ScrollView with no explicit height set inside StackLayout. Doing so might result in poor user interface performance and poor user experience.", trace.categories.Layout, trace.messageType.warn);
                 }
 
                 measureWidth = Math.max(measureWidth, childSize.measuredWidth);
