@@ -31,40 +31,40 @@ const pageTemplate = `
         </StackLayout>
     </Page>`;
 
-export function test_onLiveSync_HmrContext_AppStyle_AppNewCss() {
-    _test_onLiveSync_HmrContext_AppStyle(appNewCssFileName);
+export function test_onLiveSync_ModuleContext_AppStyle_AppNewCss() {
+    _test_onLiveSync_ModuleContext_AppStyle(appNewCssFileName);
 }
 
-export function test_onLiveSync_HmrContext_AppStyle_AppNewScss() {
-    _test_onLiveSync_HmrContext_AppStyle(appNewScssFileName);
+export function test_onLiveSync_ModuleContext_AppStyle_AppNewScss() {
+    _test_onLiveSync_ModuleContext_AppStyle(appNewScssFileName);
 }
 
-export function test_onLiveSync_HmrContext_ContextUndefined() {
-    _test_onLiveSync_HmrContext({ type: undefined, module: undefined });
+export function test_onLiveSync_ModuleContext_ContextUndefined() {
+    _test_onLiveSync_ModuleContext({ type: undefined, path: undefined });
 }
 
-export function test_onLiveSync_HmrContext_ModuleUndefined() {
-    _test_onLiveSync_HmrContext({ type: "script", module: undefined });
+export function test_onLiveSync_ModuleContext_ModuleUndefined() {
+    _test_onLiveSync_ModuleContext({ type: "script", path: undefined });
 }
 
-export function test_onLiveSync_HmrContext_Script_AppJs() {
-    _test_onLiveSync_HmrContext({ type: "script", module: appJsFileName });
+export function test_onLiveSync_ModuleContext_Script_AppJs() {
+    _test_onLiveSync_ModuleContext({ type: "script", path: appJsFileName });
 }
 
-export function test_onLiveSync_HmrContext_Script_AppTs() {
-    _test_onLiveSync_HmrContext({ type: "script", module: appTsFileName });
+export function test_onLiveSync_ModuleContext_Script_AppTs() {
+    _test_onLiveSync_ModuleContext({ type: "script", path: appTsFileName });
 }
 
-export function test_onLiveSync_HmrContext_Style_MainPageCss() {
-    _test_onLiveSync_HmrContext({ type: "style", module: mainPageCssFileName });
+export function test_onLiveSync_ModuleContext_Style_MainPageCss() {
+    _test_onLiveSync_ModuleContext({ type: "style", path: mainPageCssFileName });
 }
 
-export function test_onLiveSync_HmrContext_Markup_MainPageHtml() {
-    _test_onLiveSync_HmrContext({ type: "markup", module: mainPageHtmlFileName });
+export function test_onLiveSync_ModuleContext_Markup_MainPageHtml() {
+    _test_onLiveSync_ModuleContext({ type: "markup", path: mainPageHtmlFileName });
 }
 
-export function test_onLiveSync_HmrContext_Markup_MainPageXml() {
-    _test_onLiveSync_HmrContext({ type: "markup", module: mainPageXmlFileName });
+export function test_onLiveSync_ModuleContext_Markup_MainPageXml() {
+    _test_onLiveSync_ModuleContext({ type: "markup", path: mainPageXmlFileName });
 }
 
 export function setUpModule() {
@@ -76,7 +76,7 @@ export function tearDown() {
     app.setCssFileName(appCssFileName);
 }
 
-function _test_onLiveSync_HmrContext_AppStyle(styleFileName: string) {
+function _test_onLiveSync_ModuleContext_AppStyle(styleFileName: string) {
     const pageBeforeNavigation = helper.getCurrentPage();
 
     const page = <Page>parse(pageTemplate);
@@ -84,7 +84,7 @@ function _test_onLiveSync_HmrContext_AppStyle(styleFileName: string) {
     app.setCssFileName(styleFileName);
 
     const pageBeforeLiveSync = helper.getCurrentPage();
-    global.__onLiveSync({ type: "style", module: styleFileName });
+    global.__onLiveSync({ type: "style", path: styleFileName });
 
     const pageAfterLiveSync = helper.getCurrentPage();
     TKUnit.waitUntilReady(() => pageAfterLiveSync.getViewById("button").style.color.toString() === green.toString());
@@ -101,10 +101,10 @@ function _test_onLiveSync_HmrContext_AppStyle(styleFileName: string) {
     TKUnit.assertTrue(pageAfterNavigationBack._cssState.isSelectorsLatestVersionApplied(), "Latest selectors version is NOT applied!");
 }
 
-function _test_onLiveSync_HmrContext(context: { type, module }) {
+function _test_onLiveSync_ModuleContext(context: { type, path }) {
     const page = <Page>parse(pageTemplate);
     helper.navigateWithHistory(() => page);
-    global.__onLiveSync({ type: context.type, module: context.module });
+    global.__onLiveSync({ type: context.type, path: context.path });
 
     TKUnit.waitUntilReady(() => !!frame.topmost());
     const topmostFrame = frame.topmost();

@@ -2,6 +2,7 @@
 require("globals");
 
 import { Observable, EventData } from "../data/observable";
+import { View } from "../ui/core/view";
 import {
     trace as profilingTrace,
     time,
@@ -35,7 +36,6 @@ export { Observable };
 import {
     AndroidApplication,
     CssChangedEventData,
-    getRootView,
     iOSApplication,
     LoadAppCSSEventData,
     UnhandledErrorEventData,
@@ -79,19 +79,18 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
     app = instance;
 }
 
-export function livesync(context?: HmrContext) {
+export function livesync(rootView: View, context?: ModuleContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    let reapplyAppCss = false
+    let reapplyAppCss = false;
 
     if (context) {
         const fullFileName = getCssFileName();
         const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
         const extensions = ["css", "scss"];
-        reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+        reapplyAppCss = extensions.some(ext => context.path === fileName.concat(ext));
     }
 
-    const rootView = getRootView();
     if (reapplyAppCss && rootView) {
         rootView._onCssStateChange();
     } else if (liveSyncCore) {

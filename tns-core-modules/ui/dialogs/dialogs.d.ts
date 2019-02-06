@@ -28,6 +28,11 @@ export module inputType {
     export var number: string;
 
     /**
+     * Decimal input type.
+     */
+    export var decimal: string;
+
+    /**
      * Phone input type.
      */
     export var phone: string;
