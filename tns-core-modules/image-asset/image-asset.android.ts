@@ -71,17 +71,17 @@ export class ImageAsset extends common.ImageAsset {
 
 var calculateAngleFromFile = function (filename: string) {
     let rotationAngle = 0;
-    const ei = new android.media.ExifInterface(filename);
-    const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+    const ei = new android.support.media.ExifInterface(filename);
+    const orientation = ei.getAttributeInt(android.support.media.ExifInterface.TAG_ORIENTATION, android.support.media.ExifInterface.ORIENTATION_NORMAL);
 
     switch (orientation) {
-        case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+        case android.support.media.ExifInterface.ORIENTATION_ROTATE_90:
             rotationAngle = 90;
             break;
-        case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+        case android.support.media.ExifInterface.ORIENTATION_ROTATE_180:
             rotationAngle = 180;
             break;
-        case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+        case android.support.media.ExifInterface.ORIENTATION_ROTATE_270:
             rotationAngle = 270;
             break;
     }

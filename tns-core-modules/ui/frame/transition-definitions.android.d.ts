@@ -4,6 +4,21 @@
 
 // Definitions for Android API lvl 21 transitions
 declare module android {
+    export module support {
+      export module media {
+        export class ExifInterface {
+          public static TAG_ORIENTATION: number;
+          public static ORIENTATION_NORMAL: number;
+          public static ORIENTATION_ROTATE_90: number;
+          public static ORIENTATION_ROTATE_180: number;
+          public static ORIENTATION_ROTATE_270: number;
+
+          constructor(filename?: string);
+
+          public getAttributeInt(attr: number, attr2: number): number;
+        }
+      }
+    }
     export module transition {
         export abstract class Transition extends java.lang.Object {
             addListener(transition: Transition.TransitionListener): Transition;
