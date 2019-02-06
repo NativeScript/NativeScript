@@ -323,8 +323,9 @@ function getCapitalizedString(str: string): string {
 }
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
-    if (!text || (typeof text !== "string")) { return ""; }
-    else {
+    if (!text || (typeof text !== "string")) {
+        return ""; 
+    } else {
         switch (textTransform) {
             case "uppercase":
                 return text.toUpperCase();
