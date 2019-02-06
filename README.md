@@ -76,7 +76,7 @@ We love PRs, and accept them for all of our repositories—even docs! Please fol
 
 ## Angular
 
-We [worked together with the Google Angular team](http://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2+ work on top of NativeScript. [To use Angular with NativeScript please follow the getting started article](http://docs.nativescript.org/angular/tutorial/ng-chapter-0).
+We [worked together with the Google Angular team](http://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2+ work on top of NativeScript. To use Angular with NativeScript please follow the [getting started](http://docs.nativescript.org/angular/tutorial/ng-chapter-0) article.
 
 ## Get Help
 

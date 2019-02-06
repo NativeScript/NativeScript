@@ -3,7 +3,7 @@ declare var global: NodeJS.Global;
 interface ModuleResolver {
     /**
      * A function used to resolve the exports for a module.
-     * @param uri The name of the module to be resolved. 
+     * @param uri The name of the module to be resolved.
      */
     (uri: string): any;
 }
@@ -18,7 +18,7 @@ declare namespace NodeJS {
          * Register all modules from a webpack context.
          * The context is one created using the following webpack utility:
          * https://webpack.github.io/docs/context.html
-         * 
+         *
          * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
          * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
          * ```
@@ -51,9 +51,10 @@ declare namespace NodeJS {
         __native?: any;
         __inspector?: any;
         __extends: any;
-        __onLiveSync: () => void;
+        __onLiveSync: (context?: { type: string, path: string }) => void;
         __onLiveSyncCore: () => void;
         __onUncaughtError: (error: NativeScriptError) => void;
+        __onDiscardedError: (error: NativeScriptError) => void;
         TNS_WEBPACK?: boolean;
         __requireOverride?: (name: string, dir: string) => any;
     }
@@ -63,6 +64,27 @@ declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...a
 declare function clearTimeout(timeoutId: number): void;
 declare function setInterval(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearInterval(intervalId: number): void;
+
+declare enum ModuleType {
+    markup = "markup",
+    script = "script",
+    style = "style"
+}
+
+/**
+ * Define a module context for Hot Module Replacement.
+ */
+interface ModuleContext {
+    /**
+     * The type of the module for replacement.
+     */
+    type: ModuleType;
+
+    /**
+     * The path of the module for replacement.
+     */
+    path: string;
+}
 
 /**
  * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.

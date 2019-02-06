@@ -177,7 +177,7 @@ class UIViewControllerImpl extends UIViewController {
         // or because we are closing a modal page, 
         // or because we are in tab and another controller is selected.
         const tab = this.tabBarController;
-        if (!owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
+        if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
             const willSelectViewController = tab && (<any>tab)._willSelectViewController;
             if (!willSelectViewController
                 || willSelectViewController === tab.selectedViewController) {
@@ -235,9 +235,14 @@ class UIViewControllerImpl extends UIViewController {
                 }
 
                 if (frameParent) {
-                    const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-                    const currentInsetsTop = this.view.safeAreaInsets.top;
-                    const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+                    let additionalInsetsTop = 0;
+
+                    // if current page has flat action bar, inherited top insets should be ignored.
+                    if (!owner.actionBar.flat) {
+                        const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
+                        const currentInsetsTop = this.view.safeAreaInsets.top;
+                        additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+                    }
 
                     const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
                     const currentInsetsBottom = this.view.safeAreaInsets.bottom;

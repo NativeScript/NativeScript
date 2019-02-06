@@ -7,7 +7,6 @@ import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { profile } from "../../profiling";
 import * as trace from "../../trace";
-import { ios as iosUtils } from "../../utils/utils";
 
 export * from "./list-view-common";
 
@@ -23,7 +22,6 @@ interface ViewItemIndex {
 }
 
 type ItemView = View & ViewItemIndex;
-const majorVersion = iosUtils.MajorVersion;
 
 class ListViewCell extends UITableViewCell {
     public static initWithEmptyBackground(): ListViewCell {

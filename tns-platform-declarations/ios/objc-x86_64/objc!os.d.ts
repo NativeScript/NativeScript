@@ -28,6 +28,8 @@ declare function _os_log_fault_impl(dso: interop.Pointer | interop.Reference<any
 
 declare function _os_log_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject, type: os_log_type_t, format: string, buf: string, size: number): void;
 
+declare function _os_signpost_emit_with_name_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject, type: os_signpost_type_t, spid: number, name: string, format: string, buf: string, size: number): void;
+
 declare function os_activity_end(activity: number): void;
 
 declare const enum os_activity_flag_t {
@@ -67,4 +69,19 @@ declare const enum os_log_type_t {
 	OS_LOG_TYPE_ERROR = 16,
 
 	OS_LOG_TYPE_FAULT = 17
+}
+
+declare function os_signpost_enabled(log: NSObject): boolean;
+
+declare function os_signpost_id_generate(log: NSObject): number;
+
+declare function os_signpost_id_make_with_pointer(log: NSObject, ptr: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum os_signpost_type_t {
+
+	OS_SIGNPOST_EVENT = 0,
+
+	OS_SIGNPOST_INTERVAL_BEGIN = 1,
+
+	OS_SIGNPOST_INTERVAL_END = 2
 }

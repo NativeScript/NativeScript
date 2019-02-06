@@ -153,21 +153,6 @@ declare class WeakRef<T> {
     clear(): void;
 }
 
-interface Array<T> {
-    filter<U extends T>(pred: (a: T) => a is U): U[];
-}
-
 //Dialogs
 declare function alert(message?: any): void;
 declare function confirm(message?: string): boolean;
-
-// Embedding
-declare interface NativeScriptEmbedderDelegate /* NSObject */ {
-    presentNativeScriptApp(any/* UIViewController*/): any;
-    performSelectorWithObject(string, any): any;
-}
-
-declare class NativeScriptEmbedder {
-    public static sharedInstance(): NativeScriptEmbedder;
-    public delegate: NativeScriptEmbedderDelegate;
-}

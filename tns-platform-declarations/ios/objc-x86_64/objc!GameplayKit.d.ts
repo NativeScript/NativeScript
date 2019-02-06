@@ -14,7 +14,7 @@ declare class GKARC4RandomSource extends GKRandomSource {
 	initWithSeed(seed: NSData): this;
 }
 
-declare class GKAgent extends GKComponent implements NSCoding {
+declare class GKAgent extends GKComponent implements NSSecureCoding {
 
 	static alloc(): GKAgent; // inherited from NSObject
 
@@ -34,6 +34,8 @@ declare class GKAgent extends GKComponent implements NSCoding {
 
 	speed: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	encodeWithCoder(aCoder: NSCoder): void;
@@ -41,7 +43,7 @@ declare class GKAgent extends GKComponent implements NSCoding {
 	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare class GKAgent2D extends GKAgent implements NSCoding {
+declare class GKAgent2D extends GKAgent implements NSSecureCoding {
 
 	static alloc(): GKAgent2D; // inherited from NSObject
 
@@ -52,6 +54,8 @@ declare class GKAgent2D extends GKAgent implements NSCoding {
 	rotation: number;
 
 	readonly velocity: interop.Reference<number>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -189,13 +193,15 @@ declare class GKCoherentNoiseSource extends GKNoiseSource {
 	seed: number;
 }
 
-declare class GKComponent extends NSObject implements NSCoding, NSCopying {
+declare class GKComponent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKComponent; // inherited from NSObject
 
 	static new(): GKComponent; // inherited from NSObject
 
 	readonly entity: GKEntity;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -357,7 +363,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 	initWithURLError(url: NSURL, error: NSError): this;
 }
 
-declare class GKEntity extends NSObject implements NSCoding, NSCopying {
+declare class GKEntity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKEntity; // inherited from NSObject
 
@@ -366,6 +372,8 @@ declare class GKEntity extends NSObject implements NSCoding, NSCopying {
 	static new(): GKEntity; // inherited from NSObject
 
 	readonly components: NSArray<GKComponent>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -487,7 +495,7 @@ declare class GKGoal extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class GKGraph extends NSObject implements NSCoding, NSCopying {
+declare class GKGraph extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKGraph; // inherited from NSObject
 
@@ -496,6 +504,8 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 	static new(): GKGraph; // inherited from NSObject
 
 	readonly nodes: NSArray<GKGraphNode>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -518,13 +528,15 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 	removeNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): void;
 }
 
-declare class GKGraphNode extends NSObject implements NSCoding {
+declare class GKGraphNode extends NSObject implements NSSecureCoding {
 
 	static alloc(): GKGraphNode; // inherited from NSObject
 
 	static new(): GKGraphNode; // inherited from NSObject
 
 	readonly connectedNodes: NSArray<GKGraphNode>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1063,7 +1075,7 @@ declare class GKPerlinNoiseSource extends GKCoherentNoiseSource {
 	initWithFrequencyOctaveCountPersistenceLacunaritySeed(frequency: number, octaveCount: number, persistence: number, lacunarity: number, seed: number): this;
 }
 
-declare class GKPolygonObstacle extends GKObstacle implements NSCoding {
+declare class GKPolygonObstacle extends GKObstacle implements NSSecureCoding {
 
 	static alloc(): GKPolygonObstacle; // inherited from NSObject
 
@@ -1072,6 +1084,8 @@ declare class GKPolygonObstacle extends GKObstacle implements NSCoding {
 	static obstacleWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>>, numPoints: number): GKPolygonObstacle;
 
 	readonly vertexCount: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1414,7 +1428,7 @@ declare class GKSKNodeComponent extends GKComponent implements GKAgentDelegate {
 	self(): this;
 }
 
-declare class GKScene extends NSObject implements NSCoding, NSCopying {
+declare class GKScene extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKScene; // inherited from NSObject
 
@@ -1429,6 +1443,8 @@ declare class GKScene extends NSObject implements NSCoding, NSCopying {
 	readonly graphs: NSDictionary<string, GKGraph>;
 
 	rootNode: GKSceneRootNodeType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

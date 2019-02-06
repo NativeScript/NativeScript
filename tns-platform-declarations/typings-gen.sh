@@ -1,42 +1,52 @@
-
 #!/usr/bin/env bash
+set -e -o pipefail
 
-for i in "$@"
-do
-case $i in
-    --binary-path=*)
-    BINPATH="${i#*=}"
-    shift
-    ;;
-    --isysroot=*)
-    SDKROOT="${i#*=}"
-    shift
-    ;;
-    --output-folder=*)
-    OUTPUT_FOLDER="${i#*=}"
-    shift
-    ;;
-    --no-apply-manual-changes)
-    NO_APPLY_MANUAL_CHANGES="--no-apply-manual-changes"
-    shift
-    ;;
-esac
-done
+IOS_RUNTIME_VERSION=$1
+METADATA_GENERATOR_PATH=$2
 
-echo "BINPATH:" $OUTPUT_FOLDER
-if [ -n "$OUTPUT_FOLDER"]; then
-    echo "Output path is not set."
-    echo "Usage: ./typings-gen.sh --isysroot=<path to the sdk folder> --output-folder=<declarations parent folder> --binary-path=<path to the metadata generator binary"
-    echo "Add --no-apply-manual-changes to disable conflicting declarations renaming."
-    exit
+if [ -z "$1" ]
+then
+    printf "Usage:\n"
+    printf "./typings-gen.sh <tns-ios-npm-version> [<objc-metadata-generator-binary>]\n"
+    printf "\n\nExample:\n"
+    printf "./typings-gen.sh rc ~/work/ios-runtime/cmake-build/metadataGenerator/bin/objc-metadata-generator\n\n"
+    exit -1
 fi
 
+if [ -n "$METADATA_GENERATOR_PATH" -a ! -f "$METADATA_GENERATOR_PATH" ]
+then
+    echo "error: Specified metadata generator binary \"$METADATA_GENERATOR_PATH\" does not exist!"
+    exit -2
+fi
 
-eval $BINPATH "-output-typescript" $OUTPUT_FOLDER "Xclang" "-isysroot" $SDKROOT "-arch" "x86_64" "-miphoneos-version-min=8.0" "-std=gnu99" $NO_APPLY_MANUAL_CHANGES
+echo "Creating typings project with tns-ios@$IOS_RUNTIME_VERSION..."
+rm -rf ios-typings-prj
+tns create --js ios-typings-prj
+tns platform add ios@$IOS_RUNTIME_VERSION --path ios-typings-prj/
 
+if [ -n "$METADATA_GENERATOR_PATH" ]
+then
+    echo "Replacing metadata generator binary with: $METADATA_GENERATOR_PATH"
+    rm ios-typings-prj/platforms/ios/internal/metadata-generator/bin/objc-metadata-generator
+    cp $METADATA_GENERATOR_PATH ios-typings-prj/platforms/ios/internal/metadata-generator/bin/objc-metadata-generator
 
+fi
 
-exit
+echo "Building project and generating typings..."
+TNS_TYPESCRIPT_DECLARATIONS_PATH=$(pwd)/ios-typings-prj/typings tns build ios --debug --path ios-typings-prj/
 
+echo "Deleting old ios typings (ios/objc-x86_64)..."
+rm ios/objc-x86_64/*
+echo "Moving generated typings to ios/objc-x86_64..."
+mv ios-typings-prj/typings/x86_64/* ios/objc-x86_64/
 
+echo "Emitting (ios/ios.d.ts)..."
+pushd ios
+echo '/// <reference path="interop.d.ts" />' > ios.d.ts
 
+for i in `ls objc-x86_64/*.d.ts`; do
+echo "/// <reference path=\"$i\" />" >> ios.d.ts
+done
+
+echo 'declare function __collect(): void;' >> ios.d.ts
+popd

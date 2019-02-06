@@ -744,6 +744,7 @@
                     <xs:enumeration value="Plum"/>
                     <xs:enumeration value="PowderBlue"/>
                     <xs:enumeration value="Purple"/>
+                    <xs:enumeration value="RebeccaPurple"/>
                     <xs:enumeration value="Red"/>
                     <xs:enumeration value="RosyBrown"/>
                     <xs:enumeration value="RoyalBlue"/>

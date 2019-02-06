@@ -1,46 +1,61 @@
 import { Page } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
 
+function createCloseCallback(label: Label, context?: string): (username: string, password: string) => void {
+    return function (username: string, password: string) {
+        let result = username + "/" + password;
+        result = context ? context + "/" + result : result;
+        console.log(result);
+        label.text = result;
+    }
+}
+
+function openModal(page: Page, label: Label, context: string) {
+    page.showModal("ui-tests-app/modal-view/login-page", {
+        context,
+        closeCallback: createCloseCallback(label, context),
+        fullscreen: false,
+    });
+}
+
 export function onTap(args) {
     const page = <Page>args.object.page;
     const label = page.getViewById<Label>("label");
     var fullscreen = (<any>args.object).text.indexOf("(full-screen)") !== -1;
-    page.showModal("ui-tests-app/modal-view/login-page", "context", function (username: string, password: string) {
-        console.log(username + "/" + password);
-        label.text = username + "/" + password;
-    }, fullscreen);
+
+    page.showModal("ui-tests-app/modal-view/login-page", {
+        context: "context",
+        closeCallback: createCloseCallback(label),
+        fullscreen
+    });
 }
 
 export function onTapStretched(args) {
     const page = <Page>args.object.page;
     const label = page.getViewById<Label>("label");
-    var fullscreen = false;
-    var stretched = true;
 
-    page.showModal("ui-tests-app/modal-view/login-page", "context", function (username: string, password: string) {
-        console.log(username + "/" + password);
-        label.text = username + "/" + password;
-    }, fullscreen, false, stretched);
-}
-
-function openModal(page: Page, label: Label, context: string) {
-    page.showModal("ui-tests-app/modal-view/login-page", context, function (username: string, password: string) {
-        const result = context + "/" + username + "/" + password;
-        console.log(result);
-        label.text = result;
-    }, false);
+    page.showModal("ui-tests-app/modal-view/login-page", {
+        context: "context",
+        closeCallback: createCloseCallback(label),
+        fullscreen: false,
+        animated: false,
+        stretched: true
+    });
 }
 
 export function onTapSecondModalInCB(args) {
     const page = <Page>args.object.page;
     const label = page.getViewById<Label>("label");
-    page.showModal("ui-tests-app/modal-view/login-page", "First", function (username: string, password: string) {
-        const result = "First/" + username + "/" + password;
-        console.log(result);
-        label.text = result;
+    page.showModal("ui-tests-app/modal-view/login-page", {
+        context: "First",
+        closeCallback: (username: string, password: string) => {
+            const result = "First/" + username + "/" + password;
+            console.log(result);
+            label.text = result;
 
-        // Open second modal in the close callback of the first one.
-        openModal(page, label, "Second");
+            // Open second modal in the close callback of the first one.
+            openModal(page, label, "Second");
+        }
     });
 }
 

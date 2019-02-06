@@ -546,6 +546,8 @@ declare class MDLCheckerboardTexture extends MDLTexture {
 
 	static textureNamed(name: string): MDLCheckerboardTexture; // inherited from MDLTexture
 
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLCheckerboardTexture; // inherited from MDLTexture
+
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLCheckerboardTexture; // inherited from MDLTexture
 
 	color1: any;
@@ -574,6 +576,8 @@ declare class MDLColorSwatchTexture extends MDLTexture {
 	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLColorSwatchTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLColorSwatchTexture; // inherited from MDLTexture
+
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLColorSwatchTexture; // inherited from MDLTexture
 
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLColorSwatchTexture; // inherited from MDLTexture
 
@@ -1437,6 +1441,8 @@ declare class MDLNoiseTexture extends MDLTexture {
 
 	static textureNamed(name: string): MDLNoiseTexture; // inherited from MDLTexture
 
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLNoiseTexture; // inherited from MDLTexture
+
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLNoiseTexture; // inherited from MDLTexture
 
 	constructor(o: { cellularNoiseWithFrequency: number; name: string; textureDimensions: interop.Reference<number>; channelEncoding: MDLTextureChannelEncoding; });
@@ -1467,6 +1473,8 @@ declare class MDLNormalMapTexture extends MDLTexture {
 	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLNormalMapTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLNormalMapTexture; // inherited from MDLTexture
+
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLNormalMapTexture; // inherited from MDLTexture
 
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLNormalMapTexture; // inherited from MDLTexture
 
@@ -1848,6 +1856,8 @@ declare class MDLSkeleton extends MDLObject implements NSCopying {
 
 	readonly jointPaths: NSArray<string>;
 
+	readonly jointRestTransforms: MDLMatrix4x4Array;
+
 	constructor(o: { name: string; jointPaths: NSArray<string> | string[]; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -1870,6 +1880,8 @@ declare class MDLSkyCubeTexture extends MDLTexture {
 	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLSkyCubeTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLSkyCubeTexture; // inherited from MDLTexture
+
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLSkyCubeTexture; // inherited from MDLTexture
 
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLSkyCubeTexture; // inherited from MDLTexture
 
@@ -2028,6 +2040,8 @@ declare class MDLTexture extends NSObject implements MDLNamed {
 	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLTexture;
 
 	static textureNamed(name: string): MDLTexture;
+
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLTexture;
 
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLTexture;
 
@@ -2514,6 +2528,8 @@ declare class MDLURLTexture extends MDLTexture {
 	static textureCubeWithImagesNamedBundle(names: NSArray<string> | string[], bundleOrNil: NSBundle): MDLURLTexture; // inherited from MDLTexture
 
 	static textureNamed(name: string): MDLURLTexture; // inherited from MDLTexture
+
+	static textureNamedAssetResolver(name: string, resolver: MDLAssetResolver): MDLURLTexture; // inherited from MDLTexture
 
 	static textureNamedBundle(name: string, bundleOrNil: NSBundle): MDLURLTexture; // inherited from MDLTexture
 

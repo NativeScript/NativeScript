@@ -1,5 +1,5 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
-import { Screen } from "./screen"
+import { Screen, driverDefaultWaitTime } from "./screen"
 import {
     roots,
     modalFrameBackground,
@@ -19,6 +19,7 @@ describe("modal-tab:", () => {
 
     before(async () => {
         driver = await createDriver();
+        driver.defaultWaitTime = driverDefaultWaitTime;
         screen = new Screen(driver);
     });
 

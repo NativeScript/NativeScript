@@ -28,6 +28,9 @@ const closeModalNested = "Close Modal Nested";
 const closeModal = "Close Modal";
 const goBack = "Go Back";
 
+export const driverDefaultWaitTime = 10000;
+export const elementDefaultWaitTimeInSeconds = 10;
+
 export class Screen {
 
     private _driver: AppiumDriver
@@ -37,30 +40,30 @@ export class Screen {
     }
 
     loadedHome = async () => {
-        const lblHome = await this._driver.findElementByText(home);
+        const lblHome = await this._driver.waitForElement(home);
         assert.isTrue(await lblHome.isDisplayed());
         console.log(home + " loaded!");
     }
 
     resetFrameRootView = async () => {
         console.log("Setting frame root ...");
-        const btnResetFrameRootView = await this._driver.findElementByText(resetFrameRootView);
+        const btnResetFrameRootView = await this._driver.waitForElement(resetFrameRootView);
         await btnResetFrameRootView.tap();
     }
 
     resetLayoutRootView = async () => {
         console.log("Setting layout root ...");
-        const btnResetLayoutRootView = await this._driver.findElementByText(resetLayoutRootView);
+        const btnResetLayoutRootView = await this._driver.waitForElement(resetLayoutRootView);
         await btnResetLayoutRootView.tap();
     }
 
     resetTabRootView = async () => {
-        const btnResetTabRootView = await this._driver.findElementByText(resetTabRootView);
+        const btnResetTabRootView = await this._driver.waitForElement(resetTabRootView);
         await btnResetTabRootView.tap();
     }
 
     loadedTabRootView = async () => {
-        const tabFirst = await this._driver.findElementByText(first);
+        const tabFirst = await this._driver.waitForElement(first);
         assert.isTrue(await tabFirst.isDisplayed());
         console.log("Tab root view loaded!");
     }
@@ -89,29 +92,29 @@ export class Screen {
     }
 
     showModalFrame = async () => {
-        const btnModalFrame = await this._driver.findElementByText(modalFrame);
+        const btnModalFrame = await this._driver.waitForElement(modalFrame);
         await btnModalFrame.tap();
     }
 
     loadedModalFrame = async () => {
-        const lblModal = await this._driver.findElementByText(modal);
+        const lblModal = await this._driver.waitForElement(modal);
         assert.isTrue(await lblModal.isDisplayed());
         console.log(modal + " loaded!");
     }
 
     showModalPage = async () => {
-        const btnModalPage = await this._driver.findElementByText(modalPage);
+        const btnModalPage = await this._driver.waitForElement(modalPage);
         await btnModalPage.tap();
     }
 
     loadedModalPage = async () => {
-        const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
+        const btnShowNestedModalPage = await this._driver.waitForElement(showNestedModalPage);
         assert.isTrue(await btnShowNestedModalPage.isDisplayed());
         console.log("Modal Page loaded!");
     }
 
     showModalLayout = async () => {
-        const btnModalLayout = await this._driver.findElementByText(modalLayout);
+        const btnModalLayout = await this._driver.waitForElement(modalLayout);
         await btnModalLayout.tap();
     }
 
@@ -120,99 +123,99 @@ export class Screen {
     }
 
     showModalTabView = async () => {
-        const btnModalTabView = await this._driver.findElementByText(modalTabView);
+        const btnModalTabView = await this._driver.waitForElement(modalTabView);
         await btnModalTabView.tap();
     }
 
     loadedModalTabView = async () => {
-        const itemModalFirst = await this._driver.findElementByText(modalFirst);
+        const itemModalFirst = await this._driver.waitForElement(modalFirst);
         assert.isTrue(await itemModalFirst.isDisplayed());
         console.log("Modal TabView loaded!");
     }
 
     navigateToSecondPage = async () => {
-        const btnNavToSecondPage = await this._driver.findElementByText(navToSecondPage);
+        const btnNavToSecondPage = await this._driver.waitForElement(navToSecondPage);
         await btnNavToSecondPage.tap();
     }
 
     showDialogConfirm = async () => {
-        const btnShowDialogConfirm = await this._driver.findElementByText(showDialog);
+        const btnShowDialogConfirm = await this._driver.waitForElement(showDialog);
         await btnShowDialogConfirm.tap();
     }
 
     navigateToFirstItem = async () => {
-        const itemModalFirst = await this._driver.findElementByText(modalFirst);
+        const itemModalFirst = await this._driver.waitForElement(modalFirst);
         await itemModalFirst.tap();
     }
 
     navigateToSecondItem = async () => {
-        const itemModalSecond = await this._driver.findElementByText(modalSecond);
+        const itemModalSecond = await this._driver.waitForElement(modalSecond);
         await itemModalSecond.tap();
     }
 
     loadedConfirmDialog = async () => {
-        const lblDialogMessage = await this._driver.findElementByText(confirmDialogMessage);
+        const lblDialogMessage = await this._driver.waitForElement(confirmDialogMessage);
         assert.isTrue(await lblDialogMessage.isDisplayed());
         console.log(dialogConfirm + " shown!");
     }
 
     loadedSecondPage = async () => {
-        const lblModalSecond = await this._driver.findElementByText(modalSecond);
+        const lblModalSecond = await this._driver.waitForElement(modalSecond);
         assert.isTrue(await lblModalSecond.isDisplayed());
         console.log(modalSecond + " loaded!");
     }
 
     loadedFirstItem = async () => {
-        const lblModal = await this._driver.findElementByText(modal);
+        const lblModal = await this._driver.waitForElement(modal);
         assert.isTrue(await lblModal.isDisplayed());
         console.log("First Item loaded!");
     }
 
     loadedSecondItem = async () => {
-        const btnGoBack = await this._driver.findElementByText(goBack);
+        const btnGoBack = await this._driver.waitForElement(goBack);
         assert.isTrue(await btnGoBack.isDisplayed());
         console.log("Second Item loaded!");
     }
 
     closeDialog = async () => {
-        const btnYesDialog = await this._driver.findElementByText(confirmDialog);
+        const btnYesDialog = await this._driver.waitForElement(confirmDialog);
         await btnYesDialog.tap();
     }
 
     goBackFromSecondPage = async () => {
-        const btnGoBackFromSecondPage = await this._driver.findElementByText(goBack);
+        const btnGoBackFromSecondPage = await this._driver.waitForElement(goBack);
         await btnGoBackFromSecondPage.tap();
     }
 
     showNestedModalFrame = async () => {
-        const btnShowNestedModalFrame = await this._driver.findElementByText(showNestedModalFrame);
+        const btnShowNestedModalFrame = await this._driver.waitForElement(showNestedModalFrame);
         await btnShowNestedModalFrame.tap();
     }
 
     loadedNestedModalFrame = async () => {
-        const lblModalNested = await this._driver.findElementByText(modalNested);
+        const lblModalNested = await this._driver.waitForElement(modalNested);
         assert.isTrue(await lblModalNested.isDisplayed());
         console.log(modalNested + " loaded!");
     }
 
     closeModalNested = async () => {
-        const btnCloseNestedModal = await this._driver.findElementByText(closeModalNested);
+        const btnCloseNestedModal = await this._driver.waitForElement(closeModalNested);
         await btnCloseNestedModal.tap();
     }
 
     showNestedModalPage = async () => {
-        const btnShowNestedModalPage = await this._driver.findElementByText(showNestedModalPage);
+        const btnShowNestedModalPage = await this._driver.waitForElement(showNestedModalPage);
         await btnShowNestedModalPage.tap();
     }
 
     loadedNestedModalPage = async () => {
-        const btnCloseModalNested = await this._driver.findElementByText(closeModalNested);
+        const btnCloseModalNested = await this._driver.waitForElement(closeModalNested);
         assert.isTrue(await btnCloseModalNested.isDisplayed());
         console.log(closeModalNested + " loaded!");
     }
 
     closeModal = async () => {
-        const btnCloseModal = await this._driver.findElementByText(closeModal);
+        const btnCloseModal = await this._driver.waitForElement(closeModal);
         await btnCloseModal.tap();
     }
 

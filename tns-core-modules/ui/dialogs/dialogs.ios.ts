@@ -1,7 +1,7 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-import { View, ios as iosView } from "../core/view";
+import { ios as iosView } from "../core/view";
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
 import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, parseLoginOptions } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
@@ -106,6 +106,8 @@ export function prompt(arg: any): Promise<PromptResult> {
                     arg.keyboardType = UIKeyboardType.EmailAddress;
                 } else if (options && options.inputType === inputType.number) {
                     arg.keyboardType = UIKeyboardType.NumberPad;
+                } else if (options && options.inputType === inputType.decimal) {
+                    arg.keyboardType = UIKeyboardType.DecimalPad;
                 } else if (options && options.inputType === inputType.phone) {
                     arg.keyboardType = UIKeyboardType.PhonePad;
                 }

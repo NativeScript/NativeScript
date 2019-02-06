@@ -1,8 +1,10 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+
 import { Screen, playersData, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
+// NOTE: TabTop is Android only scenario (for iOS we will essentially execute 2x TabBottom)
 const roots = ["TabTop", "TabBottom"];
 
 function hyphenate(s: string) {
@@ -19,6 +21,8 @@ describe("tab-root:", () => {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
+
+        driver.defaultWaitTime = 8000;
     });
 
     after(async () => {

@@ -7,7 +7,9 @@ declare const enum CLActivityType {
 
 	Fitness = 3,
 
-	OtherNavigation = 4
+	OtherNavigation = 4,
+
+	Airborne = 5
 }
 
 declare const enum CLAuthorizationStatus {
@@ -17,12 +19,12 @@ declare const enum CLAuthorizationStatus {
 	kCLAuthorizationStatusRestricted = 1,
 
 	kCLAuthorizationStatusDenied = 2,
-	
-	kCLAuthorizationStatusAuthorized = 3,
 
-	kCLAuthorizationStatusAuthorizedAlways = 4,
+	kCLAuthorizationStatusAuthorizedAlways = 3,
 
-	kCLAuthorizationStatusAuthorizedWhenInUse = 5
+	kCLAuthorizationStatusAuthorizedWhenInUse = 4,
+
+	kCLAuthorizationStatusAuthorized = 3
 }
 
 declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
