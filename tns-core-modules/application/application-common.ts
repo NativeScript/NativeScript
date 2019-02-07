@@ -85,11 +85,10 @@ export function livesync(rootView: View, context?: ModuleContext) {
     let reapplyAppStyles = false;
     let reapplyLocalStyles = false;
 
-    if (context) {
+    if (context && context.path) {
         const extensions = ["css", "scss"];
         const appStylesFullFileName = getCssFileName();
         const appStylesFileName = appStylesFullFileName.substring(0, appStylesFullFileName.lastIndexOf(".") + 1);
-        // context.path
         reapplyAppStyles = extensions.some(ext => context.path === appStylesFileName.concat(ext));
         if (!reapplyAppStyles) {
             reapplyLocalStyles = extensions.some(ext => context.path.endsWith(ext));

@@ -573,8 +573,9 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         const currentEntry = this._currentEntry.entry;
         if (context && context.path) {
             const topmostFrame = topmost();
-            const reapplyStyles = context.path.includes(topmostFrame.currentEntry.moduleName);
-            if (reapplyStyles) {
+            const moduleName = topmostFrame.currentEntry.moduleName;
+            const reapplyStyles = context.path.includes(moduleName);
+            if (reapplyStyles && moduleName) {
                 topmostFrame.currentPage.changeCssFile(context.path);
                 return true;
             }
