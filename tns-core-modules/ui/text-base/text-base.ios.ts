@@ -5,6 +5,7 @@ import {
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
     FormattedString, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
+import { isString } from "../../utils/types";
 
 export * from "./text-base-common";
 
@@ -298,6 +299,10 @@ export class TextBase extends TextBaseCommon {
 }
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
+    if (!text || !isString(text)) {
+        return "";
+    }
+
     switch (textTransform) {
         case "uppercase":
             return NSStringFromNSAttributedString(text).uppercaseString;
