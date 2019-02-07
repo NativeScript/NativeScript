@@ -1,4 +1,5 @@
 ﻿import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
+import * as trace from "../../../trace";
 
 export * from "./stack-layout-common";
 
@@ -51,7 +52,16 @@ export class StackLayout extends StackLayoutBase {
 
         this.eachLayoutChild((child, last) => {
             if (isVertical) {
+
+                // Measuring ListView, with no height property set, with layout.AT_MOST will 
+                // result in total height equal to the count ot all items multiplied by DEFAULT_HEIGHT = 44 or the 
+                // maximum available space for the StackLayout. Any following controls will be visible only if enough space left.
                 childSize = View.measureChild(this, child, childMeasureSpec, layout.makeMeasureSpec(remainingLength, measureSpec));
+
+                if (measureSpec === layout.AT_MOST && this.isUnsizedScrollableView(child)) {
+                    trace.write("Avoid using ListView or ScrollView with no explicit height set inside StackLayout. Doing so might result in poor user interface performance and poor user experience.", trace.categories.Layout, trace.messageType.warn);
+                }
+
                 measureWidth = Math.max(measureWidth, childSize.measuredWidth);
                 let viewHeight = childSize.measuredHeight;
                 measureHeight += viewHeight;
@@ -93,7 +103,7 @@ export class StackLayout extends StackLayoutBase {
         }
     }
 
-    private layoutVertical(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
+    private layoutVertical(left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }): void {
         const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
         const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
         const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
@@ -127,7 +137,7 @@ export class StackLayout extends StackLayoutBase {
         })
     }
 
-    private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: {left, top, right, bottom}): void {
+    private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }): void {
         const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
         const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
         const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
@@ -159,5 +169,13 @@ export class StackLayout extends StackLayoutBase {
             View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childBottom);
             childLeft += childWidth;
         });
+    }
+
+    private isUnsizedScrollableView(child: View): boolean {
+        if (child.height === "auto" && (child.ios instanceof UITableView || child.ios instanceof UIScrollView)) {
+            return true;
+        }
+
+        return false;
     }
 }
