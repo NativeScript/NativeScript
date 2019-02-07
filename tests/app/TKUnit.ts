@@ -7,7 +7,7 @@
  4. tests should use TKUnit.assert(condition, message) to mark error. If no assert fails test is successful
  5. (if exists) at the end of each test tearDown() module function is called
  6. (if exists) at the end of module test tearDownModule() module function is called
- 
+
 */
 
 import * as Application from "tns-core-modules/application";
@@ -317,6 +317,12 @@ export function assertAreClose(actual: number, expected: number, delta: number, 
     }
 }
 
+export function assertMatches(actual: string, expected: RegExp, message?: string) {
+    if (expected.test(actual) !== true) {
+        throw new Error(`"${actual}" doesn't match "${expected}". ${message}`);
+    }
+}
+
 export function arrayAssert(actual: Array<any>, expected: Array<any>, message?: string) {
     if (actual.length !== expected.length) {
         throw new Error(message + " Actual array length: " + actual.length + " Expected array length: " + expected.length);
@@ -330,6 +336,11 @@ export function arrayAssert(actual: Array<any>, expected: Array<any>, message?: 
 }
 
 export function assertThrows(testFunc: () => void, assertMessage?: string, expectedMessage?: string) {
+    const re = expectedMessage ? new RegExp(`^${expectedMessage}$`) : null;
+    return assertThrowsRegExp(testFunc, assertMessage, re);
+}
+
+export function assertThrowsRegExp(testFunc: () => void, assertMessage?: string, expectedMessage?: RegExp) {
     let actualError: Error;
     try {
         testFunc();
@@ -341,8 +352,8 @@ export function assertThrows(testFunc: () => void, assertMessage?: string, expec
         throw new Error("Missing expected exception. " + assertMessage);
     }
 
-    if (expectedMessage && actualError.message !== expectedMessage) {
-        throw new Error("Got unwanted exception. Actual error: " + actualError.message + " Expected error: " + expectedMessage);
+    if (expectedMessage && !expectedMessage.test(actualError.message)) {
+        throw new Error("Got unwanted exception. Actual error: " + actualError.message + " Expected to match: " + expectedMessage);
     }
 }
 

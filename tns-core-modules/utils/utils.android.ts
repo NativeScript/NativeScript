@@ -206,6 +206,10 @@ export function GC() {
     gc();
 }
 
+export function releaseNativeObject(object: java.lang.Object) {
+    __releaseNativeCounterpart(object);
+}
+
 export function openUrl(location: string): boolean {
     const context = ad.getApplicationContext();
     try {

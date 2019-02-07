@@ -105,7 +105,7 @@ export module ios {
             // Strip part after tns_modules to obtain app root
             appPath = currentDir.substring(0, tnsModulesIndex);
         }
-        
+
         return appPath;
     }
 
@@ -138,6 +138,10 @@ export module ios {
 
 export function GC() {
     __collect();
+}
+
+export function releaseNativeObject(object: NSObject) {
+    __releaseNativeCounterpart(object);
 }
 
 export function openUrl(location: string): boolean {
