@@ -6,7 +6,6 @@
 
 * call onNavigatingFrom event only if it exists ([#6773](https://github.com/NativeScript/NativeScript/issues/6773)) ([19dfd16](https://github.com/NativeScript/NativeScript/commit/19dfd16))
 * **android:** raise resume event on activity.onPostResume() ([#6766](https://github.com/NativeScript/NativeScript/issues/6766)) ([46c9de0](https://github.com/NativeScript/NativeScript/commit/46c9de0))
-* iOS tests ([4c15f71](https://github.com/NativeScript/NativeScript/commit/4c15f71))
 * **android:** animator restore logic on simulated nav ([#6710](https://github.com/NativeScript/NativeScript/issues/6710)) ([c034d6e](https://github.com/NativeScript/NativeScript/commit/c034d6e))
 * **android:** failure saving state in mixed parent/nested frame nav ([#6719](https://github.com/NativeScript/NativeScript/issues/6719)) ([4dc35a5](https://github.com/NativeScript/NativeScript/commit/4dc35a5))
 * **Android:** a crash on application restart after livesync changes ([#6756](https://github.com/NativeScript/NativeScript/issues/6756)) ([1f1d722](https://github.com/NativeScript/NativeScript/commit/1f1d722))
@@ -18,13 +17,13 @@
 * **modal:** Fix crash if modal is destroyed before dismissed in Android ([#6723](https://github.com/NativeScript/NativeScript/issues/6723)) ([8a32102](https://github.com/NativeScript/NativeScript/commit/8a32102))
 * **tab-view:** remove onBackPressed override ([#6755](https://github.com/NativeScript/NativeScript/issues/6755)) ([984f162](https://github.com/NativeScript/NativeScript/commit/984f162))
 * **view-android:** clear dialog fragment when closing modal view ([#6852](https://github.com/NativeScript/NativeScript/issues/6852)) ([8c80044](https://github.com/NativeScript/NativeScript/commit/8c80044))
+* **action-bar:** flat mode breaks ios safe area ([#6862](https://github.com/NativeScript/NativeScript/issues/6862)) ([603c901](https://github.com/NativeScript/NativeScript/commit/603c901))
 
 
 ### Features
 
 * add rebeccapurple to known css colors ([#6819](https://github.com/NativeScript/NativeScript/issues/6819)) ([672c821](https://github.com/NativeScript/NativeScript/commit/672c821))
 * OnDiscardedError typings and event ([#6777](https://github.com/NativeScript/NativeScript/issues/6777)) ([28db2af](https://github.com/NativeScript/NativeScript/commit/28db2af))
-* **action-bar:** flat mode breaks ios safe area ([#6862](https://github.com/NativeScript/NativeScript/issues/6862)) ([603c901](https://github.com/NativeScript/NativeScript/commit/603c901))
 * **dialog:** add decimal input type for prompt dialog ([#6805](https://github.com/NativeScript/NativeScript/issues/6805)) ([408614d](https://github.com/NativeScript/NativeScript/commit/408614d))
 * **HMR:** apply changes in application styles at runtime ([42a1491](https://github.com/NativeScript/NativeScript/commit/42a1491))
 * **image-cache:** expose onError callback ([#6458](https://github.com/NativeScript/NativeScript/issues/6458)) ([3481e6f](https://github.com/NativeScript/NativeScript/commit/3481e6f))
