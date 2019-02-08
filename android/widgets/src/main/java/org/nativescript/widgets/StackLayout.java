@@ -7,13 +7,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
+import android.util.Log;
 
 /**
  * @author hhristov
  *
  */
 public class StackLayout extends LayoutBase {
-	
+    static final String TAG = "JS";
     private int _totalLength = 0;
     private Orientation _orientation = Orientation.vertical;
     
@@ -80,7 +81,15 @@ public class StackLayout extends LayoutBase {
             }
 
             if (isVertical) {
-            	CommonLayoutParams.measureChild(child, childMeasureSpec, MeasureSpec.makeMeasureSpec(remainingLength, measureSpecMode));
+                // Measuring android.widget.ListView, with no height property set, with MeasureSpec.AT_MOST will 
+                // result in height required for all list view items or the maximum available space for the StackLayout. 
+                // Any following controls will be visible only if enough space left.
+                CommonLayoutParams.measureChild(child, childMeasureSpec, MeasureSpec.makeMeasureSpec(remainingLength, measureSpecMode));
+
+                if(measureSpecMode == MeasureSpec.AT_MOST && this.isUnsizedScrollableView(child)){
+                    Log.e(TAG, "Avoid using ListView or ScrollView with no explicit height set inside StackLayout. Doing so might results in poor user interface performance and a poor user experience.");
+                }
+
                 final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
                 final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
                 
@@ -212,5 +221,15 @@ public class StackLayout extends LayoutBase {
             CommonLayoutParams.layoutChild(child, childLeft, childTop, childLeft + childWidth, childBottom);
             childLeft += childWidth;
         }
+    }
+
+    private boolean isUnsizedScrollableView(View child) {
+        LayoutParams childLayoutParams = child.getLayoutParams();
+
+        if (childLayoutParams.height == -1 && (child instanceof android.widget.ListView || child instanceof org.nativescript.widgets.VerticalScrollView)) {
+            return true;
+        }
+
+        return false;
     }
 }
