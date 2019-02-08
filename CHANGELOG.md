@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 * call onNavigatingFrom event only if it exists ([#6773](https://github.com/NativeScript/NativeScript/issues/6773)) ([19dfd16](https://github.com/NativeScript/NativeScript/commit/19dfd16))
+* app launch with app.css hot module update  ([7ced019](https://github.com/NativeScript/NativeScript/commit/7ced019))
 * **android:** raise resume event on activity.onPostResume() ([#6766](https://github.com/NativeScript/NativeScript/issues/6766)) ([46c9de0](https://github.com/NativeScript/NativeScript/commit/46c9de0))
 * **android:** animator restore logic on simulated nav ([#6710](https://github.com/NativeScript/NativeScript/issues/6710)) ([c034d6e](https://github.com/NativeScript/NativeScript/commit/c034d6e))
 * **android:** failure saving state in mixed parent/nested frame nav ([#6719](https://github.com/NativeScript/NativeScript/issues/6719)) ([4dc35a5](https://github.com/NativeScript/NativeScript/commit/4dc35a5))
