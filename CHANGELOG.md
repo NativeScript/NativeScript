@@ -1,3 +1,38 @@
+<a name="5.2.0"></a>
+# [5.2.0](https://github.com/NativeScript/NativeScript/compare/5.1.2...5.2.0) (2019-02-08)
+
+
+### Bug Fixes
+
+* **android:** raise resume event on activity.onPostResume() ([#6766](https://github.com/NativeScript/NativeScript/issues/6766)) ([46c9de0](https://github.com/NativeScript/NativeScript/commit/46c9de0))
+* **android:** animator restore logic on simulated nav ([#6710](https://github.com/NativeScript/NativeScript/issues/6710)) ([c034d6e](https://github.com/NativeScript/NativeScript/commit/c034d6e))
+* **android:** failure saving state in mixed parent/nested frame nav ([#6719](https://github.com/NativeScript/NativeScript/issues/6719)) ([4dc35a5](https://github.com/NativeScript/NativeScript/commit/4dc35a5))
+* **android:** a crash on application restart after livesync changes ([#6756](https://github.com/NativeScript/NativeScript/issues/6756)) ([1f1d722](https://github.com/NativeScript/NativeScript/commit/1f1d722))
+* **android:** use passwordHint for password placeholder ([25f4b56](https://github.com/NativeScript/NativeScript/commit/25f4b56))
+* **android:** clear dialog fragment when closing modal view ([#6852](https://github.com/NativeScript/NativeScript/issues/6852)) ([8c80044](https://github.com/NativeScript/NativeScript/commit/8c80044))
+* **android:** app crashes on ListView item template change ([#6634](https://github.com/NativeScript/NativeScript/issues/6634)) ([2085d1e](https://github.com/NativeScript/NativeScript/commit/2085d1e))
+* **android:** fix a crash if modal is destroyed before dismissed ([#6723](https://github.com/NativeScript/NativeScript/issues/6723)) ([8a32102](https://github.com/NativeScript/NativeScript/commit/8a32102))
+* **ios:** native view frame optimizations in nested scenario ([#6809](https://github.com/NativeScript/NativeScript/issues/6809)) ([08acd84](https://github.com/NativeScript/NativeScript/commit/08acd84))
+* **ios:** textview content clipped on every other newline ([#6864](https://github.com/NativeScript/NativeScript/issues/6864)) ([23dc84d](https://github.com/NativeScript/NativeScript/commit/23dc84d))
+* **ios:** tearDownUI and reset UINavigationController ([#6817](https://github.com/NativeScript/NativeScript/issues/6817)) ([cea97c6](https://github.com/NativeScript/NativeScript/commit/cea97c6))
+* **action-bar:** flat mode breaks ios safe area ([#6862](https://github.com/NativeScript/NativeScript/issues/6862)) ([603c901](https://github.com/NativeScript/NativeScript/commit/603c901))
+* **tab-view:** remove onBackPressed override ([#6755](https://github.com/NativeScript/NativeScript/issues/6755)) ([984f162](https://github.com/NativeScript/NativeScript/commit/984f162))
+* call onNavigatingFrom event only if it exists ([#6773](https://github.com/NativeScript/NativeScript/issues/6773)) ([19dfd16](https://github.com/NativeScript/NativeScript/commit/19dfd16))
+* app launch with application style hot module updates  ([7ced019](https://github.com/NativeScript/NativeScript/commit/7ced019))
+
+
+### Features
+
+* provide API to release the native object wrapped by a JS one ([#6873](https://github.com/NativeScript/NativeScript/issues/6873)) ([8b4a9b3](https://github.com/NativeScript/NativeScript/commit/8b4a9b3))
+* **HMR:** apply changes in application styles at runtime ([42a1491](https://github.com/NativeScript/NativeScript/commit/42a1491))
+* **dialog:** add decimal input type for prompt dialog ([#6805](https://github.com/NativeScript/NativeScript/issues/6805)) ([408614d](https://github.com/NativeScript/NativeScript/commit/408614d))
+* **image-cache:** expose onError callback ([#6458](https://github.com/NativeScript/NativeScript/issues/6458)) ([3481e6f](https://github.com/NativeScript/NativeScript/commit/3481e6f))
+* **android:** option to make dialogs cancelable ([#6765](https://github.com/NativeScript/NativeScript/issues/6765)) ([3a8c3fc](https://github.com/NativeScript/NativeScript/commit/3a8c3fc))
+* add rebeccapurple to known css colors ([#6819](https://github.com/NativeScript/NativeScript/issues/6819)) ([672c821](https://github.com/NativeScript/NativeScript/commit/672c821))
+* add OnDiscardedError typings and event ([#6777](https://github.com/NativeScript/NativeScript/issues/6777)) ([28db2af](https://github.com/NativeScript/NativeScript/commit/28db2af))
+
+
+
 <a name="5.1.2"></a>
 ## [5.1.2](https://github.com/NativeScript/NativeScript/compare/5.1.1...5.1.2) (2019-01-13)
 
