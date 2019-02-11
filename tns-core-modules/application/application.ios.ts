@@ -227,7 +227,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
     public _onLivesync(): void {
         // If view can't handle livesync set window controller.
-        if (!this._rootView._onLivesync()) {
+        if (this._rootView && !this._rootView._onLivesync()) {
             this.setWindowContent();
         }
     }
