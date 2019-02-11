@@ -674,6 +674,19 @@ export function test_CSS_isAppliedOnPage_From_addCssFile() {
     });
 }
 
+export function test_CSS_isAppliedOnPage_From_changeCssFile() {
+    const testButton = new buttonModule.Button();
+    testButton.text = "Test";
+
+    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+        const page: pageModule.Page = <pageModule.Page>views[1];
+        page.css = "button { color: blue; }";
+        page.changeCssFile("~/ui/styling/test.css");
+        helper.assertViewBackgroundColor(page, "#FF0000");
+        TKUnit.assert(testButton.style.color === undefined, "Color should not have a value");
+    });
+}
+
 const invalidCSS = ".invalid { " +
     "color: invalidValue; " +
     "background-color: invalidValue; " +
