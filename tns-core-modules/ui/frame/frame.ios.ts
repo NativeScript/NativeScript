@@ -37,6 +37,8 @@ export class Frame extends FrameBase {
 
     public disposeNativeView() {
         this._removeFromFrameStack();
+        this.viewController = null;
+        this._ios.controller = null;
         super.disposeNativeView();
     }
 
@@ -389,9 +391,8 @@ class UINavigationControllerImpl extends UINavigationController {
         const owner = this._owner.get();
         if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
             owner.callUnloaded();
+            owner._tearDownUI(true);
 
-            owner.viewController = null;
-            owner.ios.controller = null;
         }
     }
 
