@@ -27,6 +27,21 @@
 		android:label="@string/app_name"
 		android:largeHeap="true"
 		android:theme="@style/AppTheme" >
+
+    <!--
+         FileProvider specified below is required to run test_OpenFile
+         see: https://developer.android.com/reference/android/support/v4/content/FileProvider
+    -->
+    <provider
+        android:name="android.support.v4.content.FileProvider"
+        android:authorities="org.nativescript.UnitTestApp.provider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+      <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/provider_paths"/>
+    </provider>
+
 		<activity
 			android:name="com.tns.NativeScriptActivity"
 			android:label="@string/title_activity_kimera"
