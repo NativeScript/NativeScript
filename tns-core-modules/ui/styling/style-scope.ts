@@ -481,7 +481,8 @@ export class CssState {
                 if (property in this.view.style) {
                     this.view.style[`css:${property}`] = value;
                 } else {
-                    this.view[property] = value;
+                    const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+                    this.view[camelCasedProperty] = value;
                 }
             } catch (e) {
                 traceWrite(`Failed to apply property [${property}] with value [${value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
