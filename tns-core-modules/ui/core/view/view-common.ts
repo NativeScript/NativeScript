@@ -106,7 +106,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public changeCssFile(cssFileName: string): void {
-        let scope = this._styleScope;
+        const scope = this._styleScope;
         if (scope && cssFileName) {
             scope.changeCssFile(cssFileName);
             this._onCssStateChange();

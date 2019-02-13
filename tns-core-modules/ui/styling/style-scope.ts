@@ -574,7 +574,7 @@ export class StyleScope {
             return;
         }
 
-        let cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
+        const cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
         this._css = cssSelectors.source;
         this._localCssSelectors = cssSelectors.selectors;
         this._localCssSelectorVersion++;

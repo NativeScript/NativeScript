@@ -572,6 +572,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         const currentEntry = this._currentEntry.entry;
         if (context && context.path) {
+            // Use topmost instead of this to cover nested frames scenario
             const topmostFrame = topmost();
             const moduleName = topmostFrame.currentEntry.moduleName;
             const reapplyStyles = context.path.includes(moduleName);
