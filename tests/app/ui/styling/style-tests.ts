@@ -681,6 +681,7 @@ export function test_CSS_isAppliedOnPage_From_changeCssFile() {
     const testCss = "button { color: blue; }";
 
     const testFunc = function (views: Array<viewModule.View>) {
+        helper.assertViewColor(testButton, "#0000FF");
         const page: pageModule.Page = <pageModule.Page>views[1];
         page.changeCssFile("~/ui/styling/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
