@@ -92,6 +92,9 @@ export var testSearchBarPropertiesWithCSS = function () {
     helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
         var searchBar = <searchBarModule.SearchBar>views[0];
 
+        searchBar.text = "";
+        searchBar.hint = "hint css test";
+
         const expectedHintColor = "#0000FF"; // blue
         const expectedTextFieldBackgroundColor = "#FF0000"; // red
         const expectedFontSize = 30;
@@ -105,8 +108,6 @@ export var testSearchBarPropertiesWithCSS = function () {
         TKUnit.assertAreClose(expectedFontSize, fontSizeActualValue, 0.2, "Font Size - Actual: " + fontSizeActualValue + "; Expected: " + expectedFontSize);
     }, { pageCss: `
         SearchBar {
-            text: test;
-            hint: test;
             text-field-hint-color: blue;
             text-field-background-color: red;
             font-size: 30;
