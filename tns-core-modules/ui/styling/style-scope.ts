@@ -569,6 +569,19 @@ export class StyleScope {
     }
 
     @profile
+    private changeCssFile(cssFileName: string): void {
+        if (!cssFileName) {
+            return;
+        }
+
+        const cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
+        this._css = cssSelectors.source;
+        this._localCssSelectors = cssSelectors.selectors;
+        this._localCssSelectorVersion++;
+        this.ensureSelectors();
+    }
+
+    @profile
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;
 
