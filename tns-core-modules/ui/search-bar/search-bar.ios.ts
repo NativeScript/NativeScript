@@ -71,7 +71,6 @@ export class SearchBar extends SearchBarBase {
     nativeViewProtected: UISearchBar;
     private _delegate;
     private __textField: UITextField;
-    private __placeholderLabel: UILabel;
 
     createNativeView() {
         return UISearchBarImpl.new();
@@ -111,16 +110,6 @@ export class SearchBar extends SearchBarBase {
         }
 
         return this.__textField;
-    }
-
-    get _placeholderLabel(): UILabel {
-        if (!this.__placeholderLabel) {
-            if (this._textField) {
-                this.__placeholderLabel = this._textField.valueForKey("placeholderLabel");
-            }
-        }
-
-        return this.__placeholderLabel;
     }
 
     [isEnabledProperty.setNative](value: boolean) {
@@ -189,8 +178,7 @@ export class SearchBar extends SearchBarBase {
         return "";
     }
     [hintProperty.setNative](value: string) {
-        const text = (value === null || value === undefined) ? "" : value.toString();
-        this.ios.placeholder = text;
+        this._updateAttributedPlaceholder();
     }
 
     [textFieldBackgroundColorProperty.getDefault](): UIColor {
@@ -210,18 +198,30 @@ export class SearchBar extends SearchBarBase {
     }
 
     [textFieldHintColorProperty.getDefault](): UIColor {
-        const placeholderLabel = this._placeholderLabel;
-        if (placeholderLabel) {
-            return placeholderLabel.textColor;
-        }
-
         return null;
     }
     [textFieldHintColorProperty.setNative](value: Color | UIColor) {
-        const color = value instanceof Color ? value.ios : value
-        const placeholderLabel = this._placeholderLabel;
-        if (placeholderLabel) {
-            placeholderLabel.textColor = color;
+        this._updateAttributedPlaceholder();
+    }
+
+    // Very similar to text-field.ios.ts implementation. Maybe unify APIs and base classes?
+    _updateAttributedPlaceholder(): void {
+        let stringValue = this.hint;
+        if (stringValue === null || stringValue === void 0) {
+            stringValue = "";
+        } else {
+            stringValue = stringValue + "";
         }
+        if (stringValue === "") {
+            // we do not use empty string since initWithStringAttributes does not return proper value and
+            // nativeView.attributedPlaceholder will be null
+            stringValue = " ";
+        }
+        const attributes: any = {};
+        if (this.textFieldHintColor) {
+            attributes[NSForegroundColorAttributeName] = this.textFieldHintColor.ios;
+        }
+        const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, attributes);
+        this._textField.attributedPlaceholder = attributedPlaceholder;
     }
 }
