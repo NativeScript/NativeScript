@@ -18,6 +18,10 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
         this.commands = {};
 
         attachCSSInspectorCommandCallbacks(this.commands);
+
+        // By default start enabled because we can miss the "enable" event when
+        // running with `--debug-brk` -- the frontend will send it before we've been created
+        this.enable();
     }
 
     get enabled(): boolean {
