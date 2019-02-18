@@ -350,6 +350,7 @@ export class View extends ViewCommon {
     public onUnloaded() {
         if (this.touchListenerIsSet) {
             this.nativeViewProtected.setOnTouchListener(null);
+            (this.touchListener as any).owner = null;
             this.touchListenerIsSet = false;
             this.nativeViewProtected.setClickable(this._isClickable);
         }
@@ -414,6 +415,7 @@ export class View extends ViewCommon {
         // false as we might need the ability for the event to pass through to a parent view
         initializeTouchListener();
         this.touchListener = this.touchListener || new TouchListener(this);
+        (this.touchListener as any).owner = this;
         this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
         this.touchListenerIsSet = true;
