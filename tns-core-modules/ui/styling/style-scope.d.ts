@@ -29,6 +29,7 @@ export class CssState {
 export class StyleScope {
     public css: string;
     public addCss(cssString: string, cssFileName: string): void;
+    public changeCssFile(cssFileName: string): void;
 
     public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): RuleSet[];
     public static createSelectorsFromImports(tree: SyntaxTree, keyframes: Object): RuleSet[];

@@ -82,19 +82,23 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
 export function livesync(rootView: View, context?: ModuleContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    let reapplyAppCss = false;
+    let reapplyAppStyles = false;
+    let reapplyLocalStyles = false;
 
-    if (context) {
-        const fullFileName = getCssFileName();
-        const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
+    if (context && context.path) {
         const extensions = ["css", "scss"];
-        reapplyAppCss = extensions.some(ext => context.path === fileName.concat(ext));
+        const appStylesFullFileName = getCssFileName();
+        const appStylesFileName = appStylesFullFileName.substring(0, appStylesFullFileName.lastIndexOf(".") + 1);
+        reapplyAppStyles = extensions.some(ext => context.path === appStylesFileName.concat(ext));
+        if (!reapplyAppStyles) {
+            reapplyLocalStyles = extensions.some(ext => context.path.endsWith(ext));
+        }
     }
 
-    if (reapplyAppCss && rootView) {
+    if (reapplyAppStyles && rootView) {
         rootView._onCssStateChange();
     } else if (liveSyncCore) {
-        liveSyncCore();
+        reapplyLocalStyles ? liveSyncCore(context) : liveSyncCore();
     }
 }
 
