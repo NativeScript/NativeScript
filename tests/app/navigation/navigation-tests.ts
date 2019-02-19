@@ -101,8 +101,11 @@ export function test_backAndForwardParentPage_nestedFrames() {
     helper.waitUntilNavigatedTo(parentPage1, () => frame.goBack());
     currentPageMustBe("ParentPage1");
 
-    helper.waitUntilNavigatedTo(parentPage2, () => topmost.navigate({ create: () => parentPage2 }));
-    currentPageMustBe("ParentPage2");
+    const innerPage3 = page("InnerPage3");
+    const parentPage3 = parentPage("ParentPage3", innerPage3);
+
+    helper.waitUntilNavigatedTo(parentPage3, () => topmost.navigate({ create: () => parentPage3 }));
+    currentPageMustBe("ParentPage3");
 
     back(2);
     TKUnit.waitUntilReady(() => topmostFrame().navigationQueueIsEmpty());
