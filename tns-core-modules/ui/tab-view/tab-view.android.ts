@@ -643,11 +643,13 @@ export class TabView extends TabViewBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
+        const smoothScroll = this.androidTabsPosition === "top";
+
         if (traceEnabled()) {
-            traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", true);", traceCategory);
+            traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         }
 
-        this._viewPager.setCurrentItem(value, true);
+        this._viewPager.setCurrentItem(value, smoothScroll);
     }
 
     [itemsProperty.getDefault](): TabViewItem[] {
