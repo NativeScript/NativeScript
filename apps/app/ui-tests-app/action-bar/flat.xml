@@ -1,6 +1,6 @@
 <Page navigatedTo="onNavigateTo" backgroundColor="yellow">
   
-  <ActionBar flat="true" backgroundColor="blue">
+  <ActionBar backgroundColor="blue">
       <Label text="flat action bar"></Label>
   </ActionBar>
 
