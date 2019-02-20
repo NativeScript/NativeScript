@@ -3,7 +3,6 @@
  * @module "ui/page"
  */ /** */
 
-///<reference path="../../tns-core-modules.d.ts" /> Include global typings
 import { ShownModallyData } from "../core/view";
 import { ContentView, EventData, Property, Color, CssProperty, Style } from "../content-view";
 import { Frame } from "../frame";
@@ -106,7 +105,7 @@ export class Page extends ContentView {
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
