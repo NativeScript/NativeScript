@@ -2,7 +2,8 @@
  * @module "ui/core/view"
  */ /** */
 
-///<reference path="../../../tns-core-modules.d.ts" /> Include global typings
+/// <reference path="../../../tns-core-modules.d.ts" />
+
 import { ViewBase, Property, InheritedProperty, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
