@@ -1,3 +1,4 @@
+/// <reference path="./nativescript-error.d.ts" />
 declare var global: NodeJS.Global;
 
 interface ModuleResolver {
@@ -52,7 +53,7 @@ declare namespace NodeJS {
         __inspector?: any;
         __extends: any;
         __onLiveSync: (context?: { type: string, path: string }) => void;
-        __onLiveSyncCore: () => void;
+        __onLiveSyncCore: (context?: { type: string, path: string }) => void;
         __onUncaughtError: (error: NativeScriptError) => void;
         __onDiscardedError: (error: NativeScriptError) => void;
         TNS_WEBPACK?: boolean;
@@ -84,16 +85,6 @@ interface ModuleContext {
      * The path of the module for replacement.
      */
     path: string;
-}
-
-/**
- * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
- */
-interface NativeScriptError extends Error {
-    /**
-     * Represents the native error object.
-     */
-    nativeError: any;
 }
 
 // Define a minimal subset of NodeRequire and NodeModule so user apps can compile without
