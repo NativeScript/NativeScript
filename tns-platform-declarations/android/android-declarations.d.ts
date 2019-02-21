@@ -3,10 +3,16 @@
 declare function float(num: number): any;
 declare function long(num: number): any;
 
+/**
+ * Triggers garbage collection in JavaScript
+ */
 declare var gc: () => void;
 
-declare function float(num: number): any;
-declare function long(num: number): any;
+/**
+ * Releases the reference to the wrapped native object
+ * @param object The Java object to release.
+ */
+declare function __releaseNativeCounterpart(object: java.lang.Object): void;
 
 interface ArrayConstructor {
     create(type: any, count: number): any;

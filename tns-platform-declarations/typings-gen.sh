@@ -42,11 +42,11 @@ mv ios-typings-prj/typings/x86_64/* ios/objc-x86_64/
 
 echo "Emitting (ios/ios.d.ts)..."
 pushd ios
-echo '/// <reference path="interop.d.ts" />' > ios.d.ts
+
+echo '/// <reference path="runtime.d.ts" />' > ios.d.ts
 
 for i in `ls objc-x86_64/*.d.ts`; do
 echo "/// <reference path=\"$i\" />" >> ios.d.ts
 done
 
-echo 'declare function __collect(): void;' >> ios.d.ts
 popd
