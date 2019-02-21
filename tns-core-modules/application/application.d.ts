@@ -2,7 +2,9 @@
  * Contains the application abstraction with all related methods.
  * @module "application"
  */ /** */
+
 /// <reference path="../nativescript-error.d.ts" />
+/// <reference path="../tns-core-modules.d.ts" />
 
 import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 
