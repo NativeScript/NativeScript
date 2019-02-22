@@ -87,19 +87,19 @@ export function _setAndroidFragmentTransitions(
     }
 
     let useLollipopTransition = !!(name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && sdkVersion() >= 21);
-    // [nested frames / fragments] force disable lollipop transitions in case nested fragments 
-    // are detected as applying dummy animator to the nested fragment with the same duration as 
-    // the exit animator of the removing parent fragment as a workaround for 
+    // [nested frames / fragments] force disable lollipop transitions in case nested fragments
+    // are detected as applying dummy animator to the nested fragment with the same duration as
+    // the exit animator of the removing parent fragment as a workaround for
     // https://code.google.com/p/android/issues/detail?id=55228 works only if custom animations are
     // used
     // NOTE: this effectively means you cannot use Explode transition in nested frames scenarios as
     // we have implementations only for slide, fade, and flip
-    if (currentFragment && 
+    if (currentFragment &&
         currentFragment.getChildFragmentManager() &&
         currentFragment.getChildFragmentManager().getFragments().toArray().length > 0) {
         useLollipopTransition = false;
     }
-    
+
     if (!animated) {
         name = "none";
     } else if (transition) {
@@ -114,8 +114,9 @@ export function _setAndroidFragmentTransitions(
     let currentFragmentNeedsDifferentAnimation = false;
     if (currentEntry) {
         _updateTransitions(currentEntry);
-        if (currentEntry.transitionName !== name
-            || currentEntry.transition !== transition) {
+        if (currentEntry.transitionName !== name ||
+            currentEntry.transition !== transition ||
+            !useLollipopTransition) {
             clearExitAndReenterTransitions(currentEntry, true);
             currentFragmentNeedsDifferentAnimation = true;
         }
