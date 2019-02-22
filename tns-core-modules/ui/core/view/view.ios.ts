@@ -946,6 +946,9 @@ export namespace ios {
                 return;
             }
 
+            // Unify translucent and opaque bars layout
+            this.extendedLayoutIncludesOpaqueBars = true;
+
             updateAutoAdjustScrollInsets(this, owner);
 
             if (!owner.parent) {

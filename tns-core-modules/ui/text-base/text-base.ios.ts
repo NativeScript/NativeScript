@@ -138,6 +138,10 @@ export class TextBase extends TextBaseCommon {
                 paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
             }
             attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
+        } else if (this.nativeTextViewProtected instanceof UITextView) {
+            const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+            paragraphStyle.alignment = (<UITextView>this.nativeTextViewProtected).textAlignment;
+            attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
         }
 
         if (this.nativeTextViewProtected instanceof UIButton) {
@@ -175,6 +179,7 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSKernAttributeName, style.letterSpacing * this.nativeTextViewProtected.font.pointSize);
         }
 
+        const isTextView = this.nativeTextViewProtected instanceof UITextView;
         if (style.lineHeight) {
             const paragraphStyle = NSMutableParagraphStyle.alloc().init();
             paragraphStyle.lineSpacing = style.lineHeight;
@@ -185,9 +190,12 @@ export class TextBase extends TextBaseCommon {
                 paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
             }
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
+        } else if (isTextView) {
+            const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+            paragraphStyle.alignment = (<UITextView>this.nativeTextViewProtected).textAlignment;
+            dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
-        const isTextView = this.nativeTextViewProtected instanceof UITextView;
         if (style.color && (dict.size > 0 || isTextView)) {
             dict.set(NSForegroundColorAttributeName, style.color.ios);
         }

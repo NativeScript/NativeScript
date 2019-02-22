@@ -1,13 +1,13 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" backgroundColor="yellow">
 
-    <ActionBar flat="true">
+    <ActionBar flat="true" backgroundColor="blue">
         <Label text="flat action bar"></Label>
     </ActionBar>
 
     <TabView selectedTabTextColor="green">
         <TabViewItem title="First">
-            <GridLayout backgroundColor="red">
-                <Button text="test" backgroundColor="yellow"></Button> 
+            <GridLayout backgroundColor="green">
+                <Button text="test" backgroundColor="red"></Button> 
             </GridLayout>
         </TabViewItem>
     </TabView>

@@ -1,7 +1,7 @@
 # Writing Unit Tests for NativeScript Core Modules
 
 Unit tests for NativeScript Modules are written and executed with a custom lightweight test-runner and assertion framework.
-The purpose of this document is to get you familiar with it, so that you can unit-test your contributions to the NativeScript framework.
+The purpose of this document is to get you familiar with it so that you can unit-test your contributions to the NativeScript framework.
 
 # Run Unit Tests Project
 
@@ -19,7 +19,7 @@ tns run ios
 # Test Modules
 
 All unit tests are organized into test modules(bundles).
-By default the test app will run all the tests from all registered test modules. This happens in [`runTests()`](/tests/app/app/mainPage.ts#L26-L28) method in the main page of the test-app. By modifying this method, you can configure the app to:
+By default, the test app will run all the tests from all registered test modules. This happens in [`runTests()`](/tests/app/app/mainPage.ts#L26-L28) method in the main page of the test-app. By modifying this method, you can configure the app to:
 
 * **Execute only the tests from a specific test module**:
 
@@ -50,8 +50,8 @@ The test modules are actually TypeScript modules which export unit tests and hoo
 
 * All exported functions with a `test` prefix are unit-tests.
 * The `setUpModule()` hook is called once - before all the tests in the module.
-* The `setUp()` hook is called before each tests.
-* The `tearDown()` hook called after each tests.
+* The `setUp()` hook is called before each test.
+* The `tearDown()` hook called after each test.
 * The `tearDownModule()` hook is called once - after all the tests in the module.
 
 # Asserting
@@ -85,4 +85,4 @@ export function test_getJSON(done) {
 
 # Misc
 
-When looking into the code of the existing tests, you might encounter strange comments looking like this `// >> animation-chaining`. These are markers for code snippets generated in the docs documetation. They are not related to testing so you don't need to add any of those in your tests.
+When looking into the code of the existing tests, you might encounter strange comments looking like this `// >> animation-chaining`. These are markers for code snippets generated in the docs documentation. They are not related to testing so you don't need to add any of those in your tests.

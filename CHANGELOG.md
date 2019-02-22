@@ -1,3 +1,16 @@
+<a name="5.2.1"></a>
+## [5.2.1](https://github.com/NativeScript/NativeScript/compare/5.2.0...5.2.1) (2019-02-19)
+
+
+### Bug Fixes
+
+* **css:** widget properties in css didn't work ([#6889](https://github.com/NativeScript/NativeScript/issues/6889)) ([8330ac0](https://github.com/NativeScript/NativeScript/commit/8330ac0))
+* **frame-ios:** tearDownUI  when UINavigationController disappear ([#6892](https://github.com/NativeScript/NativeScript/issues/6892)) ([57f07a3](https://github.com/NativeScript/NativeScript/commit/57f07a3))
+* **ios:** searcbar hint color before hint property ([#6902](https://github.com/NativeScript/NativeScript/issues/6902)) ([5dd01a3](https://github.com/NativeScript/NativeScript/commit/5dd01a3))
+* **ios-textview:** text alignment reset to default on blur ([#6903](https://github.com/NativeScript/NativeScript/issues/6903)) ([0416f7e](https://github.com/NativeScript/NativeScript/commit/0416f7e))
+
+
+
 <a name="5.2.0"></a>
 # [5.2.0](https://github.com/NativeScript/NativeScript/compare/5.1.2...5.2.0) (2019-02-08)
 
