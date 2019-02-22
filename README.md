@@ -1,4 +1,3 @@
-# NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
 ![NativeScript logo](https://i.imgur.com/YmNIMqS.png)
 
