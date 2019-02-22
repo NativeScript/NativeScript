@@ -41,20 +41,12 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
     };
 
     private webview_in_full_screen(webView: WebView, pageOptions?: helper.PageOptions) {
-        let expectedTop = 0;
-        if (pageOptions && pageOptions.actionBarFlat) {
-            const actionBarHeight = round(dipToDp(webView.page.actionBar.nativeViewProtected.frame.size.height));
-            const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
-            const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-            expectedTop = actionBarHeight + statusBarHeight;
-        }
-
         const l = left(webView);
         const t = top(webView);
         const r = right(webView);
         const b = bottom(webView);
         equal(l, 0, `${webView}.left - actual:${l}; expected: ${0}`);
-        equal(t, expectedTop, `${webView}.top - actual:${t}; expected: ${expectedTop}`);
+        equal(t, 0, `${webView}.top - actual:${t}; expected: ${0}`);
         equal(r, platform.screen.mainScreen.widthPixels, `${webView}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
         equal(b, platform.screen.mainScreen.heightPixels, `${webView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }

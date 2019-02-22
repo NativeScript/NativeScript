@@ -7,6 +7,6 @@
     <GridLayout rows="200, *" backgroundColor="blue">
         <GridLayout row="1">
             <Frame id="nestedFrame" defaultPage="ui-tests-app/nested-frames/nested-page" actionBarVisibility="never"></Frame>
-        </GridLayout>>
+        </GridLayout>
     </GridLayout>
 </Page>
