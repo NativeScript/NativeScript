@@ -2,6 +2,7 @@
 require("globals");
 
 import { Observable, EventData } from "../data/observable";
+import { View } from "../ui/core/view";
 import {
     trace as profilingTrace,
     time,
@@ -35,13 +36,13 @@ export { Observable };
 import {
     AndroidApplication,
     CssChangedEventData,
-    getRootView,
     iOSApplication,
     LoadAppCSSEventData,
-    UnhandledErrorEventData
+    UnhandledErrorEventData,
+    DiscardedErrorEventData,
 } from "./application";
 
-export { UnhandledErrorEventData, CssChangedEventData, LoadAppCSSEventData };
+export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -50,6 +51,7 @@ export const resumeEvent = "resume";
 export const exitEvent = "exit";
 export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
+export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
 
 let cssFile: string = "./app.css";
@@ -77,23 +79,26 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
     app = instance;
 }
 
-export function livesync(context?: HmrContext) {
+export function livesync(rootView: View, context?: ModuleContext) {
     events.notify(<EventData>{ eventName: "livesync", object: app });
     const liveSyncCore = global.__onLiveSyncCore;
-    let reapplyAppCss = false
+    let reapplyAppStyles = false;
+    let reapplyLocalStyles = false;
 
-    if (context) {
-        const fullFileName = getCssFileName();
-        const fileName = fullFileName.substring(0, fullFileName.lastIndexOf(".") + 1);
+    if (context && context.path) {
         const extensions = ["css", "scss"];
-        reapplyAppCss = extensions.some(ext => context.module === fileName.concat(ext));
+        const appStylesFullFileName = getCssFileName();
+        const appStylesFileName = appStylesFullFileName.substring(0, appStylesFullFileName.lastIndexOf(".") + 1);
+        reapplyAppStyles = extensions.some(ext => context.path === appStylesFileName.concat(ext));
+        if (!reapplyAppStyles) {
+            reapplyLocalStyles = extensions.some(ext => context.path.endsWith(ext));
+        }
     }
 
-    const rootView = getRootView();
-    if (reapplyAppCss && rootView) {
+    if (reapplyAppStyles && rootView) {
         rootView._onCssStateChange();
     } else if (liveSyncCore) {
-        liveSyncCore();
+        reapplyLocalStyles ? liveSyncCore(context) : liveSyncCore();
     }
 }
 
@@ -121,4 +126,8 @@ export function addCss(cssText: string): void {
 
 global.__onUncaughtError = function (error: NativeScriptError) {
     events.notify(<UnhandledErrorEventData>{ eventName: uncaughtErrorEvent, object: app, android: error, ios: error, error: error });
+}
+
+global.__onDiscardedError = function (error: NativeScriptError) {
+    events.notify(<DiscardedErrorEventData>{ eventName: discardedErrorEvent, object: app, error: error });
 }

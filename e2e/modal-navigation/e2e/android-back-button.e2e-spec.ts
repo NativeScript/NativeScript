@@ -1,5 +1,5 @@
 import { AppiumDriver, createDriver, SearchOptions } from "nativescript-dev-appium";
-import { Screen } from "./screen"
+import { Screen, driverDefaultWaitTime, elementDefaultWaitTimeInSeconds } from "./screen"
 import { assert } from "chai";
 
 const exampleAndroidBackBtnEvents = "Android Back Btn Events";
@@ -10,6 +10,7 @@ describe("android-navigate-back", () => {
 
     before(async () => {
         driver = await createDriver();
+        driver.defaultWaitTime = driverDefaultWaitTime;
         screen = new Screen(driver);
         const btnShowNestedModalFrame = await driver.findElementByText(exampleAndroidBackBtnEvents);
         await btnShowNestedModalFrame.click();
@@ -31,7 +32,7 @@ describe("android-navigate-back", () => {
         }
 
         await driver.navBack();
-        const textElement = await driver.findElementsByText("will cancel next back press: false", SearchOptions.contains, 10);
+        const textElement = await driver.findElementsByText("will cancel next back press: false", SearchOptions.contains, elementDefaultWaitTimeInSeconds);
         assert.isTrue(textElement !== null);
         await driver.navBack();
         await screen.loadedHome();

@@ -115,6 +115,7 @@ export var Pink;
 export var Plum;
 export var PowderBlue;
 export var Purple;
+export var RebeccaPurple;
 export var Red;
 export var RosyBrown;
 export var RoyalBlue;

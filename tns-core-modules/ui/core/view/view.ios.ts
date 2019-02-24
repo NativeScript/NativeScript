@@ -226,8 +226,6 @@ export class View extends ViewCommon {
         const { sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.updateBackground(sizeChanged);
         this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
-        // NOTE: if there is transformation this frame will be incorrect.
-        this._cachedFrame = this.nativeViewProtected.frame;
     }
 
     public focus(): boolean {
@@ -374,7 +372,7 @@ export class View extends ViewCommon {
         return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
-    protected _showNativeModalView(parent: View, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: View, options: ShowModalOptions) {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
@@ -972,6 +970,9 @@ export namespace ios {
             if (!owner) {
                 return;
             }
+
+            // Unify translucent and opaque bars layout
+            this.extendedLayoutIncludesOpaqueBars = true;
 
             updateAutoAdjustScrollInsets(this, owner);
 

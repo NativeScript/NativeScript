@@ -157,6 +157,10 @@ export function GC() {
     __collect();
 }
 
+export function releaseNativeObject(object: NSObject) {
+    __releaseNativeCounterpart(object);
+}
+
 export function openUrl(location: string): boolean {
     try {
         var url = NSURL.URLWithString(location.trim());

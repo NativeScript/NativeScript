@@ -7,6 +7,7 @@ import {
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
     whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
+import { isString } from "../../utils/types";
 
 export * from "./text-base-common";
 
@@ -323,6 +324,10 @@ function getCapitalizedString(str: string): string {
 }
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
+    if (!text || !isString(text)) {
+        return "";
+    }
+
     switch (textTransform) {
         case "uppercase":
             return text.toUpperCase();

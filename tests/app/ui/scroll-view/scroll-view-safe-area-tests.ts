@@ -51,20 +51,12 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
     };
 
     private scroll_view_in_full_screen(scrollView: view.View, pageOptions?: helper.PageOptions) {
-        let expectedTop = 0;
-        if (pageOptions && pageOptions.actionBarFlat) {
-            const actionBarHeight = round(dipToDp(scrollView.page.actionBar.nativeViewProtected.frame.size.height));
-            const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
-            const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-            expectedTop = actionBarHeight + statusBarHeight;
-        }
-
         const l = left(scrollView);
         const t = top(scrollView);
         const r = right(scrollView);
         const b = bottom(scrollView);
         equal(l, 0, `${scrollView}.left - actual:${l}; expected: ${0}`);
-        equal(t, expectedTop, `${scrollView}.top - actual:${t}; expected: ${expectedTop}`);
+        equal(t, 0, `${scrollView}.top - actual:${t}; expected: ${0}`);
         equal(r, platform.screen.mainScreen.widthPixels, `${scrollView}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
         equal(b, platform.screen.mainScreen.heightPixels, `${scrollView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }

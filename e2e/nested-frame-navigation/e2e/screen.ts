@@ -36,6 +36,7 @@ const tabTopBack = "tabTopBack";
 const tabBottomBack = "tabBottomBack";
 const resetApp = "reset app";
 
+export const driverDefaultWaitTime = 10000;
 export const home = "Home";
 export const somePage = "some page";
 export const otherPage = "other page";
@@ -213,7 +214,7 @@ export class Screen {
     };
 
     resetToHome = async () => {
-        const btnReset = await this._driver.findElementByAutomationText(resetApp);
+        const btnReset = await this._driver.waitForElement(resetApp);
         await btnReset.tap();
     };
 
@@ -246,18 +247,18 @@ export class Screen {
     }
 
     togglePlayersTab = async () => {
-        const lblPlayers = await this._driver.findElementByAutomationText(players);
+        const lblPlayers = await this._driver.waitForElement(players);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
-        const lblTeams = await this._driver.findElementByAutomationText(teams);
+        const lblTeams = await this._driver.waitForElement(teams);
         await lblTeams.tap();
     }
 
     loadedHome = async () => {
-        const lblHome = await this._driver.findElementByAutomationText(home);
-        assert.isTrue(await lblHome.isDisplayed());
+        const lblHome = await this._driver.waitForElement(home);
+        assert.isNotNull(lblHome);
         console.log(home + " loaded!");
     };
 
@@ -303,8 +304,8 @@ export class Screen {
     }
 
     loadedPlayersList = async () => {
-        const lblPlayerOne = await this._driver.findElementByAutomationText(playersData["playerOneDefault"].name);
-        assert.isTrue(await lblPlayerOne.isDisplayed());
+        const lblPlayerOne = await this._driver.waitForElement(playersData["playerOneDefault"].name);
+        assert.isNotNull(lblPlayerOne);
         console.log(players + " loaded!");
     }
 
@@ -313,8 +314,8 @@ export class Screen {
     }
 
     loadedTeamsList = async () => {
-        const lblTeamOne = await this._driver.findElementByAutomationText(teamsData["teamOneDefault"].name);
-        assert.isTrue(await lblTeamOne.isDisplayed());
+        const lblTeamOne = await this._driver.waitForElement(teamsData["teamOneDefault"].name);
+        assert.isNotNull(lblTeamOne);
         console.log(teams + " loaded!");
     }
 
@@ -323,33 +324,33 @@ export class Screen {
     }
 
     private navigateToPage = async (page: string) => {
-        const btnPage = await this._driver.findElementByAutomationText(page);
+        const btnPage = await this._driver.waitForElement(page);
         await btnPage.tap();
     };
 
     private loadedPage = async (page: string) => {
-        const lblPage = await this._driver.findElementByAutomationText(page);
-        assert.isTrue(await lblPage.isDisplayed());
+        const lblPage = await this._driver.waitForElement(page);
+        assert.isNotNull(lblPage);
         console.log(page + " loaded!");
     };
 
     private navigateToItem = async (item: Item) => {
-        const lblItem = await this._driver.findElementByAutomationText(item.name);
+        const lblItem = await this._driver.waitForElement(item.name);
         await lblItem.tap();
     }
 
     private loadedItem = async (item: Item) => {
-        const lblItemName = await this._driver.findElementByAutomationText(item.name);
-        assert.isTrue(await lblItemName.isDisplayed());
+        const lblItemName = await this._driver.waitForElement(item.name);
+        assert.isNotNull(lblItemName);
 
-        const lblItemDescription = await this._driver.findElementByAutomationText(item.description);
-        assert.isTrue(await lblItemDescription.isDisplayed()); 
+        const lblItemDescription = await this._driver.waitForElement(item.description);
+        assert.isNotNull(lblItemDescription);
 
         console.log(item.name + " loaded!");
     }
 
     private goBack = async (accessibilityId: string) => {
-        const btnBack = await this._driver.findElementByAccessibilityId(accessibilityId);
+        const btnBack = await this._driver.waitForElement(accessibilityId);
         await btnBack.tap();
     }
 }
