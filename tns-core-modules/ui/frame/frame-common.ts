@@ -76,7 +76,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
                     if (backstackIndex !== -1) {
                         backstack = backstackIndex;
                     } else {
-                        // NOTE: We don't search for entries in navigationQueue because there is no way for 
+                        // NOTE: We don't search for entries in navigationQueue because there is no way for
                         // developer to get reference to BackstackEntry unless transition is completed.
                         // At that point the entry is put in the backstack array.
                         // If we start to return Backstack entry from navigate method then
@@ -153,7 +153,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     //     }
 
     //     let currentPage = this._currentEntry.resolvedPage;
-    //     let currentNavigationEntry = this._currentEntry.entry; 
+    //     let currentNavigationEntry = this._currentEntry.entry;
     //     if (currentPage["isBiOrientational"] && currentNavigationEntry.moduleName) {
     //         if (this.canGoBack()){
     //             this.goBack();
@@ -162,7 +162,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     //             currentNavigationEntry.backstackVisible = false;
     //         }
     //         // Re-navigate to the same page so the other (.port or .land) xml is loaded.
-    //         this.navigate(currentNavigationEntry);                   
+    //         this.navigate(currentNavigationEntry);
     //     }
     // }
 
@@ -224,7 +224,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         newPage.onNavigatedTo(isBack);
 
         // Reset executing entry after NavigatedTo is raised;
-        // we do not want to execute two navigations in parallel in case 
+        // we do not want to execute two navigations in parallel in case
         // additional navigation is triggered from the NavigatedTo handler.
         this._executingEntry = null;
     }
@@ -259,7 +259,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
                 return true;
             }
         }
-    
+
         return false;
     }
 
@@ -563,7 +563,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return result;
     }
 
-    public _onLivesync(): boolean {
+    public _onLivesync(context?: ModuleContext): boolean {
         super._onLivesync();
 
         if (!this._currentEntry || !this._currentEntry.entry) {
@@ -571,6 +571,17 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         const currentEntry = this._currentEntry.entry;
+        if (context && context.path) {
+            // Use topmost instead of this to cover nested frames scenario
+            const topmostFrame = topmost();
+            const moduleName = topmostFrame.currentEntry.moduleName;
+            const reapplyStyles = context.path.includes(moduleName);
+            if (reapplyStyles && moduleName) {
+                topmostFrame.currentPage.changeCssFile(context.path);
+                return true;
+            }
+        }
+
         const newEntry: NavigationEntry = {
             animated: false,
             clearHistory: true,
