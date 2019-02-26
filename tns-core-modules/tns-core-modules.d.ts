@@ -22,12 +22,15 @@ declare var console: Console;
 declare var require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
+interface RequireContext {
+    keys(): string[];
+    (id: string): any;
+    <T>(id: string): T;
+    resolve(id: string): string;
+}
+
 interface NodeRequire {
-    context(root: string, recursive: boolean, filter: RegExp): {
-        (module: string): any;
-        id: number;
-        keys(): string[];
-    }
+    context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
 declare var __dirname: string;
