@@ -3,6 +3,8 @@
  * @module "ui/page"
  */ /** */
 
+/// <reference path="../../tns-core-modules.d.ts" />
+
 import { ShownModallyData } from "../core/view";
 import { ContentView, EventData, Property, Color, CssProperty, Style } from "../content-view";
 import { Frame } from "../frame";

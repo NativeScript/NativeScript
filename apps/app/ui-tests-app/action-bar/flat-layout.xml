@@ -4,7 +4,7 @@
         <Label text="flat action bar"></Label>
     </ActionBar>
 
-    <ScrollView backgroundColor="red">
+    <StackLayout backgroundColor="red">
         <Label text="lorem ipsum" backgroundColor="green"></Label>
-    </ScrollView>
+    </StackLayout>
 </Page>
