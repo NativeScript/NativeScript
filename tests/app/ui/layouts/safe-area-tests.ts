@@ -93,27 +93,13 @@ export class SafeAreaTests extends testModule.UITest<any> {
         equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`)
     }
 
-    private layout_insets_top_action_bar_flat_test(layout: view.View) {
-        const insets = layout.getSafeAreaInsets();
-        equal(insets.top, 0, `${layout}.topInset - actual:${insets.top}; expected: ${0}`)
-    }
-
     private layout_in_full_screen_test(layout: view.View, pageOptions?: helper.PageOptions) {
-        let expectedTop = 0;
-        if (pageOptions && (pageOptions.actionBarFlat)) {
-            const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
-            const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-            const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
-            
-            expectedTop = statusBarHeight + actionBarHeight;
-        }
-
         const l = left(layout);
         const t = top(layout);
         const r = right(layout);
         const b = bottom(layout);
         equal(l, 0, `${layout}.left - actual:${l}; expected: ${0}`);
-        equal(t, expectedTop, `${layout}.top - actual:${t}; expected: ${expectedTop}`);
+        equal(t, 0, `${layout}.top - actual:${t}; expected: ${0}`);
         equal(r, platform.screen.mainScreen.widthPixels, `${layout}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
         equal(b, platform.screen.mainScreen.heightPixels, `${layout}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }
@@ -193,7 +179,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_insets_top_action_bar_flat_test(root);
+                this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
         );
@@ -391,7 +377,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_insets_top_action_bar_flat_test(root);
+                this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
         );
@@ -609,7 +595,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_insets_top_action_bar_flat_test(root);
+                this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
         );
@@ -903,7 +889,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_insets_top_action_bar_flat_test(root);
+                this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
         );
@@ -1140,7 +1126,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_insets_top_action_bar_flat_test(root);
+                this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
         );
@@ -1354,7 +1340,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             this.getViews(snippet),
             this.noop,
             ({ root }) => { 
-                this.layout_insets_top_action_bar_flat_test(root);
+                this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
         );

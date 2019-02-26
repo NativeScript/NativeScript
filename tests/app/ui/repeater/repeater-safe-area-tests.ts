@@ -41,20 +41,12 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
     };
 
     private repeater_in_full_screen(repeater: Repeater, pageOptions?: helper.PageOptions) {
-        let expectedTop = 0;
-        if (pageOptions && pageOptions.actionBarFlat) {
-            const actionBarHeight = round(dipToDp(repeater.page.actionBar.nativeViewProtected.frame.size.height));
-            const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
-            const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-            expectedTop = actionBarHeight + statusBarHeight;
-        }
-
         const l = left(repeater);
         const t = top(repeater);
         const r = right(repeater);
         const b = bottom(repeater);
         equal(l, 0, `${repeater}.left - actual:${l}; expected: ${0}`);
-        equal(t, expectedTop, `${repeater}.top - actual:${t}; expected: ${expectedTop}`);
+        equal(t, 0, `${repeater}.top - actual:${t}; expected: ${0}`);
         equal(r, platform.screen.mainScreen.widthPixels, `${repeater}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
         equal(b, platform.screen.mainScreen.heightPixels, `${repeater}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }
