@@ -57,13 +57,19 @@ function initializeTouchListener(): void {
 
     @Interfaces([android.view.View.OnTouchListener])
     class TouchListenerImpl extends java.lang.Object implements android.view.View.OnTouchListener {
-        constructor(private owner: View) {
+        private owner: WeakRef<View>;
+        constructor(owner: View) {
             super();
+            this.owner = new WeakRef(owner);
+
             return global.__native(this);
         }
 
         onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
-            const owner = this.owner;
+            const owner = this.owner.get();
+            if (!owner) {
+                return;
+            }
             owner.handleGestureTouch(event);
 
             let nativeView = owner.nativeViewProtected;
@@ -211,7 +217,7 @@ function initializeDialogFragment() {
             const owner = this.owner;
 
             if (owner) {
-                // Android calls onDestroy before onDismiss. 
+                // Android calls onDestroy before onDismiss.
                 // Make sure we unload first and then call _tearDownUI.
                 if (owner.isLoaded) {
                     owner.callUnloaded();
@@ -298,7 +304,7 @@ export class View extends ViewCommon {
             let view: View = this;
             let frameOrTabViewItemFound = false;
             while (view) {
-                // when interacting with nested fragments instead of using getSupportFragmentManager 
+                // when interacting with nested fragments instead of using getSupportFragmentManager
                 // we must always use getChildFragmentManager instead;
                 // we have three sources of fragments -- Frame fragments, TabViewItem fragments, and
                 // modal dialog fragments
@@ -350,7 +356,6 @@ export class View extends ViewCommon {
     public onUnloaded() {
         if (this.touchListenerIsSet) {
             this.nativeViewProtected.setOnTouchListener(null);
-            (this.touchListener as any).owner = null;
             this.touchListenerIsSet = false;
             this.nativeViewProtected.setClickable(this._isClickable);
         }
@@ -415,7 +420,6 @@ export class View extends ViewCommon {
         // false as we might need the ability for the event to pass through to a parent view
         initializeTouchListener();
         this.touchListener = this.touchListener || new TouchListener(this);
-        (this.touchListener as any).owner = this;
         this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
         this.touchListenerIsSet = true;
