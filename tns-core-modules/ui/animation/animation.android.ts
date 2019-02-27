@@ -9,6 +9,7 @@ import {
 } from "../styling/style-properties";
 
 import { layout } from "../../utils/utils";
+import { device } from "../../platform";
 import lazy from "../../utils/lazy";
 
 export * from "./animation-common";
@@ -92,6 +93,7 @@ export class Animation extends AnimationBase {
     private _propertyResetCallbacks: Array<Function>;
     private _valueSource: "animation" | "keyframe";
     private _target: View;
+    private _resetOnFinish: boolean = true;
 
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
@@ -134,12 +136,18 @@ export class Animation extends AnimationBase {
         });
     }
 
-    public play(): AnimationPromise {
+    public play(resetOnFinish?: boolean): AnimationPromise {
+        if (resetOnFinish !== undefined) {
+            this._resetOnFinish = resetOnFinish;
+        }
+
         if (this.isPlaying) {
             return this._rejectAlreadyPlaying();
         }
 
-        let animationFinishedPromise = super.play();
+        if (this._animatorSet) {
+            return this._play();
+        }
 
         this._animators = new Array<android.animation.Animator>();
         this._propertyUpdateCallbacks = new Array<Function>();
@@ -156,21 +164,8 @@ export class Animation extends AnimationBase {
 
         this._animatorSet = new android.animation.AnimatorSet();
         this._animatorSet.addListener(this._animatorListener);
-        if (this._animators.length > 0) {
-            if (this._playSequentially) {
-                this._animatorSet.playSequentially(this._nativeAnimatorsArray);
-            }
-            else {
-                this._animatorSet.playTogether(this._nativeAnimatorsArray);
-            }
-        }
 
-        if (traceEnabled()) {
-            traceWrite("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), traceCategories.Animation);
-        }
-        this._animatorSet.setupStartValues();
-        this._animatorSet.start();
-        return animationFinishedPromise;
+        return this._play();
     }
 
     public cancel(): void {
@@ -188,6 +183,33 @@ export class Animation extends AnimationBase {
         return _resolveAnimationCurve(curve);
     }
 
+    private _play(): AnimationPromise {
+        const animationFinishedPromise = super.play();
+
+        if (device.sdkVersion <= "23") {
+            this._animatorSet = new android.animation.AnimatorSet();
+            this._animatorSet.addListener(this._animatorListener);
+        }
+
+        if (this._animators.length > 0) {
+            if (this._playSequentially) {
+                this._animatorSet.playSequentially(this._nativeAnimatorsArray);
+            }
+            else {
+                this._animatorSet.playTogether(this._nativeAnimatorsArray);
+            }
+        }
+
+        if (traceEnabled()) {
+            traceWrite("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), traceCategories.Animation);
+        }
+
+        this._animatorSet.setupStartValues();
+        this._animatorSet.start();
+
+        return animationFinishedPromise;
+    }
+
     private _onAndroidAnimationEnd() { // tslint:disable-line
         if (!this.isPlaying) {
             // It has been cancelled
@@ -197,7 +219,7 @@ export class Animation extends AnimationBase {
         this._propertyUpdateCallbacks.forEach(v => v());
         this._resolveAnimationFinishedPromise();
 
-        if (this._target) {
+        if (this._resetOnFinish && this._target) {
             this._target._removeAnimation(this);
         }
     }

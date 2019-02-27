@@ -3,7 +3,9 @@
  * @module "application"
  */ /** */
 
-///<reference path="../tns-core-modules.d.ts" /> Include global typings
+/// <reference path="../nativescript-error.d.ts" />
+/// <reference path="../tns-core-modules.d.ts" />
+
 import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 
 /**

@@ -205,7 +205,7 @@ let b = {"good": "code"
 
 ## Equality operator
 
-Use the [strict comparison operators][comparisonoperators]. The triple equality operator helps to maintain data type integrity throughout code.
+Use the [strict comparison operators][comparisonoperators]. The triple equality operator helps to maintain data type integrity throughout the code.
 
 *Right:*
 
@@ -341,8 +341,8 @@ the last row of a big room can comfortably read. So don't count on them having
 perfect vision and limit yourself to 1/2 of your screen height per function (no screen rotation :).
 
 ## Return statements
-There are few important considerations here:
-+ To avoid deep nesting of if-statements, always return a functions value as early
+There are a few important considerations here:
++ To avoid deep nesting of if-statements, always return a function's value as early
 as possible. In certain routines, once you know the answer, you want to return it to the calling routine immediately. If the routine is defined in such a way that it doesn't require any cleanup, not returning immediately means that you have to write more code.
 + Minimize the number of returns in each routine. It's harder to understand a routine if, reading it at the bottom, you're unaware of the possibility that it *return*ed somewhere above.
 
@@ -396,7 +396,7 @@ function getSomething(val) {
 
 ## Arrow Functions
 
-Use arrow functions over anonymous function expressions. Typescript will take care for `this`.
+Use arrow functions over anonymous function expressions. Typescript will take care of `this`.
 
 *Right:*
 
@@ -423,7 +423,7 @@ req.on("end", function () {
 
 Use the [JSDoc][JSDOC] convention for comments. When writing a comment always think how understandable will be for somebody who is new to this code. Even if it may look simple to you think how a guy that just joined will understand it. Always comment in the following cases:
 + When there is some non-trivial logic.
-+ Some "external" knowledge is needed which is missing in the context - workaround for driver, module bug, special 'hack' because of a bug and so on;
++ Some "external" knowledge is needed which is missing in the context - workaround for a driver, module bug, special 'hack' because of a bug and so on;
 + When you are creating a new class
 + Public methods - include all the arguments and if possible the types {String}, {Number}. Optional arguments should be marked too. Check the [@param tag][param]
 
@@ -432,7 +432,7 @@ Use the [JSDoc][JSDOC] convention for comments. When writing a comment always th
 
 ## File/module structure
 
-Typical module should have the following structure:
+A typical module should have the following structure:
 
 1. required dependencies
 2. module-private declarations - variables, functions, classes, etc.
@@ -442,7 +442,7 @@ Typical module should have the following structure:
 For more information see [this file](https://github.com/telerik/xPlatCore/blob/master/JS/BCL/CreateNewModule.md)
 
 ## File naming
-Use lower case for file names. Use dash to separate different words.
+Use lower case for file names. Use a dash to separate different words.
 
 *Right:*
 file-system
@@ -451,7 +451,7 @@ file-system
 FileSystem, fileSystem, file_system
 
 ## This, that, self
-When you **need** to keep reference to **this** use **that** as the name of the variable. Additionally, if you use the TypeScript lambda support, the compiler will take care of this automatically.
+When you **need** to keep a reference to **this** use **that** as the name of the variable. Additionally, if you use the TypeScript lambda support, the compiler will take care of this automatically.
 
 *Right:*
 ```TypeScript
@@ -470,7 +470,7 @@ doSomething(function(){
 ```
 
 ## Private (hidden) variables and methods
-Although there is the **private** keyword in TypeScript, it is only a syntax sugar. There is no such notation in JavaScript and everything is available to the users. Hence, always use underscore (**_**) to prefix private variables and methods. There are also methods which have the **public** visibility but they are meant to be used within our code ONLY. Such methods should also be prefixed with underscore.
+Although there is the **private** keyword in TypeScript, it is only a syntax sugar. There is no such notation in JavaScript and everything is available to the users. Hence, always use underscore (**_**) to prefix private variables and methods. There are also methods which have the **public** visibility but they are meant to be used within our code ONLY. Such methods should also be prefixed with an underscore.
 
 *Right:*
 ```TypeScript
