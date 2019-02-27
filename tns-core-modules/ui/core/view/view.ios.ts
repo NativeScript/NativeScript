@@ -789,36 +789,32 @@ export namespace ios {
     }
 
     export function expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
-        const locationInWindow = view.getLocationInWindow();
-        const inWindowLeft = layout.round(layout.toDevicePixels(locationInWindow.x));
-        const inWindowTop = layout.round(layout.toDevicePixels(locationInWindow.y));
-        const inWindowRight = inWindowLeft + layout.round(layout.toDevicePixels(frame.size.width));
-        const inWindowBottom = inWindowTop + layout.round(layout.toDevicePixels(frame.size.height));
-
-        const availableSpace = getAvailableSpaceFromParent(view);
+        const availableSpace = getAvailableSpaceFromParent(view, frame);
         const safeArea = availableSpace.safeArea;
         const fullscreen = availableSpace.fullscreen;
+        const inWindow = availableSpace.inWindow;
 
         const position = ios.getPositionFromFrame(frame);
         const safeAreaPosition = ios.getPositionFromFrame(safeArea);
         const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
+        const inWindowPosition = ios.getPositionFromFrame(inWindow);
 
         const adjustedPosition = position;
 
-        if (position.left && inWindowLeft <= safeAreaPosition.left) {
+        if (position.left && inWindowPosition.left <= safeAreaPosition.left) {
             adjustedPosition.left = fullscreenPosition.left;
         }
 
-        if (position.top && inWindowTop <= safeAreaPosition.top) {
+        if (position.top && inWindowPosition.top <= safeAreaPosition.top) {
             adjustedPosition.top = fullscreenPosition.top;
         }
 
-        if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right + fullscreenPosition.left) {
-            adjustedPosition.right += fullscreenPosition.right - inWindowRight;
+        if (inWindowPosition.right < fullscreenPosition.right && inWindowPosition.right >= safeAreaPosition.right + fullscreenPosition.left) {
+            adjustedPosition.right += fullscreenPosition.right - inWindowPosition.right;
         }
 
-        if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
-            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowBottom;
+        if (inWindowPosition.bottom < fullscreenPosition.bottom && inWindowPosition.bottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
+            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowPosition.bottom;
         }
 
         const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
@@ -849,18 +845,16 @@ export namespace ios {
         layoutParent(view.parent);
     }
 
-    function getAvailableSpaceFromParent(view: View): { safeArea: CGRect, fullscreen: CGRect } {
+    function getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect, fullscreen: CGRect, inWindow: CGRect } {
         if (!view) {
             return;
         }
 
-        let fullscreen = null;
-        let safeArea = null;
+        let scrollView = null;
+        let viewControllerView = null;
 
         if (view.viewController) {
-            const nativeView = view.viewController.view;
-            safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
-            fullscreen = nativeView.frame;
+            viewControllerView = view.viewController.view;
         } else {
             let parent = view.parent as View;
             while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
@@ -868,18 +862,37 @@ export namespace ios {
             }
 
             if (parent.nativeViewProtected instanceof UIScrollView) {
-                const nativeView = parent.nativeViewProtected;
-                const insets = nativeView.safeAreaInsets;
-                safeArea = CGRectMake(insets.left, insets.top, nativeView.contentSize.width - insets.left - insets.right, nativeView.contentSize.height - insets.top - insets.bottom);
-                fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
+                scrollView = parent.nativeViewProtected;
             } else if (parent.viewController) {
-                const nativeView = parent.viewController.view;
-                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
-                fullscreen = nativeView.frame;
+                viewControllerView = parent.viewController.view;
             }
         }
 
-        return { safeArea: safeArea, fullscreen: fullscreen }
+        let fullscreen = null;
+        let safeArea = null;
+
+        if (viewControllerView) {
+            safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
+            fullscreen = viewControllerView.frame;
+        }
+        else if (scrollView) {
+            const insets = scrollView.safeAreaInsets;
+            safeArea = CGRectMake(insets.left, insets.top, scrollView.contentSize.width - insets.left - insets.right, scrollView.contentSize.height - insets.top - insets.bottom);
+            fullscreen = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
+        }
+
+        const locationInWindow = view.getLocationInWindow();
+        let inWindowLeft = locationInWindow.x;
+        let inWindowTop = locationInWindow.y;
+
+        if (scrollView) {
+            inWindowLeft += scrollView.contentOffset.x;
+            inWindowTop += scrollView.contentOffset.y;
+        }
+
+        const inWindow = CGRectMake(inWindowLeft, inWindowTop, frame.size.width, frame.size.height);
+
+        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow }
     }
 
     export class UILayoutViewController extends UIViewController {
