@@ -292,17 +292,23 @@ Applications cannot access internal storage of other application on Android (see
                 traceCategories.Error,
                 traceMessageType.error,
             );
+
+            return false;
         }
 
         // Ensure external storage is available
         if (isExternalStorageReadOnly()) {
             traceWrite("External storage is read only", traceCategories.Error, traceMessageType.error);
+            return false;
         }
 
         // Determine file mimetype & start creating intent
         const mimeType = getMimeTypeNameFromExtension(filePath);
         const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
         const chooserIntent = android.content.Intent.createChooser(intent, "Open File...");
+
+        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+        chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // Android SDK <28 only requires starting the chooser Intent straight forwardly
         const sdkVersion = parseInt(device.sdkVersion, 10);
@@ -336,9 +342,7 @@ Applications cannot access internal storage of other application on Android (see
         );
 
         // Set flags & URI as data type on the view action
-        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
         chooserIntent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         // Finish intent setup
@@ -348,7 +352,7 @@ Applications cannot access internal storage of other application on Android (see
 
         return true;
     } catch (err) {
-        const msg = err.message ? `: ${err.message}` : "" ;
+        const msg = err.message ? `: ${err.message}` : "";
         traceWrite(`Error in openFile${msg}`, traceCategories.Error, traceMessageType.error);
 
         if (msg &&
@@ -367,6 +371,4 @@ Please ensure you have your manifest correctly configured with the FileProvider.
 
         return false;
     }
-
-    return false;
 }
