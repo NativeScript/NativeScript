@@ -58,7 +58,7 @@ describe("tab-root:", () => {
                             // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
                             console.log("skipping flip transition tests on api level 19");
                             this.skip();
-                        } 
+                        }
                     });
 
                     it("loaded home page", async () => {
@@ -118,16 +118,21 @@ describe("tab-root:", () => {
 
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (appSuspendResume) {
-                            await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name) // wait for player
+                        if (driver.isIOS) {
+                            if (appSuspendResume) {
+                                await driver.backgroundApp(suspendTime);
+                                await driver.waitForElement(playerTwo.name) // wait for player
+                            }
                         }
 
                         await screen.toggleTeamsTab();
 
-                        if (appSuspendResume) {
-                            await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamOne.name) // wait for teams list
+                        if (driver.isIOS) {
+                            // TODO: run in background from appium breaks the test. Investigate the issue, once with the app and with appium
+                            if (appSuspendResume) {
+                                await driver.backgroundApp(suspendTime);
+                                await driver.waitForElement(teamOne.name) // wait for teams list
+                            }
                         }
 
                         await screen.loadedTeamsList();
