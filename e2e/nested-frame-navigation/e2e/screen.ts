@@ -327,6 +327,12 @@ export class Screen {
         await this.loadedItem(team);
     }
 
+    loadedElement = async (element: string) => {
+        const el= await this._driver.waitForElement(element);
+        assert.isNotNull(el);
+        console.log(`${element} loaded!`);
+    };
+
     private navigateToPage = async (page: string) => {
         const btnPage = await this._driver.waitForElement(page);
         logInfo(`====== Navigate to "${page}"`);
