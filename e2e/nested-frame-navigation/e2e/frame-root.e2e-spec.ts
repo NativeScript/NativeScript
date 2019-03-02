@@ -33,7 +33,7 @@ describe("frame-root:", () => {
     });
 
     for (let index = 0; index < transitions.length; index++) {
-        const transition= transitions[index];
+        const transition = transitions[index];
 
         const playerOne: Item = playersData[`playerOne${transition}`];
         const playerTwo: Item = playersData[`playerTwo${transition}`];
