@@ -191,7 +191,7 @@ export module ios {
      */
     export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
 
-    // Common properties between UILabel, UITextView and UITextField 
+    // Common properties between UILabel, UITextView and UITextField
     export interface TextUIView {
         font: any;
         textAlignment: number;
@@ -262,6 +262,12 @@ export module ios {
 export function GC();
 
 /**
+ * Releases the reference to the wrapped native object
+ * @param object The Java/Objective-C object to release.
+ */
+export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
+
+/**
  * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */
@@ -281,13 +287,13 @@ export function openUrl(url: string): boolean
 
 /**
  * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
- * @param source The original value. 
+ * @param source The original value.
  */
 export function escapeRegexSymbols(source: string): string
 
 /**
  * Converts string value to number or boolean.
- * @param value The original value. 
+ * @param value The original value.
  */
 export function convertString(value: any): any
 

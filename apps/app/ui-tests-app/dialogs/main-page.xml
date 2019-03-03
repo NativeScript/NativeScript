@@ -1,0 +1,21 @@
+﻿<Page loaded="pageLoaded">
+  <GridLayout rows="auto, *">
+    <Label text="{{ name }}" id="label" style="text-align:center;" />
+    <WrapLayout row="1">
+      <Button class="even" text="action" tap="{{ actionName }}" />
+      <Button class="odd" text="alert" tap="{{ alertName }}" />
+      <Button class="even" text="confirm" tap="{{ confirmName }}" />
+      <Button class="odd" text="login" tap="{{ loginName }}" />
+      <Button class="even" text="promptText" tap="{{ promptText }}" />
+      <Button class="odd" text="promptPass" tap="{{ promptPass }}" />
+      <Button class="even" text="promptEmail" tap="{{ promptEmail }}" />
+      <Button class="odd" text="promptNumber" tap="{{ promptNumber }}" />
+      <Button class="even" text="promptDecimal" tap="{{ promptDecimal }}" />
+      <Button class="odd" text="promptPhone" tap="{{ promptPhone }}" />
+      <Button class="even" text="promptCapitalizationNone" tap="{{ promptCapitalizationNone }}" />
+      <Button class="odd" text="promptCapitalizationAll" tap="{{ promptCapitalizationAll }}" />
+      <Button class="even" text="promptCapitalizationSentences" tap="{{ promptCapitalizationSentences }}" />
+      <Button class="odd" text="promptCapitalizationWords" tap="{{ promptCapitalizationWords }}" />
+    </WrapLayout>
+  </GridLayout>
+</Page>

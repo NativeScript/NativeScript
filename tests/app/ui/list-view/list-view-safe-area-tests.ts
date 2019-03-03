@@ -47,20 +47,12 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
     };
 
     private list_view_in_full_screen(listView: ListView, pageOptions?: helper.PageOptions) {
-        let expectedTop = 0;
-        if (pageOptions && pageOptions.actionBarFlat) {
-            const actionBarHeight = round(dipToDp(listView.page.actionBar.nativeViewProtected.frame.size.height));
-            const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
-            const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-            expectedTop = actionBarHeight + statusBarHeight;
-        }
-
         const l = left(listView);
         const t = top(listView);
         const r = right(listView);
         const b = bottom(listView);
         equal(l, 0, `${listView}.left - actual:${l}; expected: ${0}`);
-        equal(t, expectedTop, `${listView}.top - actual:${t}; expected: ${expectedTop}`);
+        equal(t, 0, `${listView}.top - actual:${t}; expected: ${0}`);
         equal(r, platform.screen.mainScreen.widthPixels, `${listView}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
         equal(b, platform.screen.mainScreen.heightPixels, `${listView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
     }

@@ -1,3 +1,4 @@
+/// <reference path="./nativescript-error.d.ts" />
 declare var global: NodeJS.Global;
 
 interface ModuleResolver {
@@ -51,8 +52,8 @@ declare namespace NodeJS {
         __native?: any;
         __inspector?: any;
         __extends: any;
-        __onLiveSync: (context?: { type: string, module: string }) => void;
-        __onLiveSyncCore: () => void;
+        __onLiveSync: (context?: { type: string, path: string }) => void;
+        __onLiveSyncCore: (context?: { type: string, path: string }) => void;
         __onUncaughtError: (error: NativeScriptError) => void;
         __onDiscardedError: (error: NativeScriptError) => void;
         TNS_WEBPACK?: boolean;
@@ -65,35 +66,25 @@ declare function clearTimeout(timeoutId: number): void;
 declare function setInterval(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearInterval(intervalId: number): void;
 
-declare enum HmrType {
+declare enum ModuleType {
     markup = "markup",
     script = "script",
     style = "style"
 }
 
 /**
- * Define a context for Hot Module Replacement.
+ * Define a module context for Hot Module Replacement.
  */
-interface HmrContext {
+interface ModuleContext {
     /**
-     * The type of module for replacement.
+     * The type of the module for replacement.
      */
-    type: HmrType;
+    type: ModuleType;
 
     /**
-     * The module for replacement.
+     * The path of the module for replacement.
      */
-    module: string;
-}
-
-/**
- * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
- */
-interface NativeScriptError extends Error {
-    /**
-     * Represents the native error object.
-     */
-    nativeError: any;
+    path: string;
 }
 
 // Define a minimal subset of NodeRequire and NodeModule so user apps can compile without

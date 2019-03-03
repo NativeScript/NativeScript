@@ -100,6 +100,9 @@ class UIViewControllerImpl extends UIViewController {
             frame._updateActionBar(owner);
         }
 
+        // Unify translucent and opaque bars layout
+        this.extendedLayoutIncludesOpaqueBars = true;
+
         // Set autoAdjustScrollInsets in will appear - as early as possible
         iosView.updateAutoAdjustScrollInsets(this, owner);
 
@@ -361,12 +364,6 @@ export class Page extends PageBase {
         const childTop = 0 + insets.top;
         const childRight = right - insets.right;
         let childBottom = bottom - insets.bottom;
-
-        if (majorVersion >= 11 && this.actionBar.flat) {
-            // on iOS 11 the flat action bar changes the fullscreen size
-            // the top of the page is the new fullscreen
-            childBottom -= top;
-        }
 
         View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }

@@ -22,12 +22,15 @@ declare var console: Console;
 declare var require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
+interface RequireContext {
+    keys(): string[];
+    (id: string): any;
+    <T>(id: string): T;
+    resolve(id: string): string;
+}
+
 interface NodeRequire {
-    context(root: string, recursive: boolean, filter: RegExp): {
-        (module: string): any;
-        id: number;
-        keys(): string[];
-    }
+    context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
 declare var __dirname: string;
@@ -151,10 +154,6 @@ declare class WeakRef<T> {
     constructor(obj: T);
     get(): T;
     clear(): void;
-}
-
-interface Array<T> {
-    filter<U extends T>(pred: (a: T) => a is U): U[];
 }
 
 //Dialogs

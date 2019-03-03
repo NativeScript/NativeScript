@@ -3,8 +3,18 @@ import { Color } from "tns-core-modules/color";
 import { getColor } from "../helper";
 
 export function getNativeHintColor(searchBar: SearchBar): Color {
-    return (<any>searchBar)._placeholderLabel ? getColor((<any>searchBar)._placeholderLabel.textColor) : undefined; 
+    if ((<any>searchBar)._textField) {
+        const placeholder = (<any>searchBar)._textField.valueForKey("placeholderLabel");
+        return getColor(placeholder.textColor);
+    }
+
+    return undefined; 
 }
+
+export function getNativeTextFieldBackgroundColor(searchBar: SearchBar): Color {
+    return (<any>searchBar)._textField ? getColor((<any>searchBar)._textField.backgroundColor) : undefined; 
+}
+
 export function getNativeFontSize(searchBar: SearchBar): number {
     return (<any>searchBar)._textField ? (<any>searchBar)._textField.font.pointSize : undefined;
 }
