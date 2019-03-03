@@ -328,7 +328,7 @@ export class Screen {
     }
 
     loadedElement = async (element: string) => {
-        const el= await this._driver.waitForElement(element);
+        const el = await this._driver.waitForElement(element);
         assert.isNotNull(el);
         console.log(`${element} loaded!`);
     };
