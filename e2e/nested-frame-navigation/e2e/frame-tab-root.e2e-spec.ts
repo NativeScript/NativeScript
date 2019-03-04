@@ -1,6 +1,6 @@
-import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn } from "nativescript-dev-appium";
 
-import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime } from "./screen";
+import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
@@ -51,6 +51,17 @@ describe(rootType, () => {
 
                 describe(`${rootType}-${root}-transition-${transition}-scenarios:`, () => {
 
+                    before(async function () {
+                        logWarn(`========= ${root}-${transition} =========`);
+
+                        if (transition === "Flip" &&
+                            driver.isAndroid && parseInt(driver.platformVersion) === 19) {
+                            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                            console.log("skipping flip transition tests on api level 19");
+                            this.skip();
+                        }
+                    });
+
                     it("loaded home page", async () => {
                         await screen.loadedHome();
                     });
@@ -63,13 +74,13 @@ describe(rootType, () => {
                     it("loaded players list", async () => {
                         await screen.loadedPlayersList();
                     });
-                
+
                     it("loaded player details and go back twice", async () => {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name) // wait for player
+                            await screen.loadedElement(playerTwo.name) // wait for player
                         }
 
                         await shared.testPlayerNavigatedBack(screen, driver);
@@ -78,19 +89,19 @@ describe(rootType, () => {
                             await driver.backgroundApp(suspendTime);
                             await driver.waitForElement(playerOne.name) // wait for players list
                         }
-                
+
                         await shared.testPlayerNavigated(playerTwo, screen);
                         await shared.testPlayerNavigatedBack(screen, driver);
                     });
-                
+
                     it("navigate parent frame and go back", async () => {
                         await shared[`testSomePageNavigated${transition}`](screen);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(somePage) // wait for some page
+                            await screen.loadedElement(somePage) // wait for some page
                         }
-                        
+
                         if (driver.isAndroid) {
                             await driver.navBack();
                         } else {
@@ -99,22 +110,22 @@ describe(rootType, () => {
 
                         await screen.loadedPlayersList();
                     });
-                
+
                     it("loaded player details and navigate parent frame and go back", async () => {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name); // wait for player
+                            await screen.loadedElement(playerTwo.name); // wait for player
                         }
 
                         await shared[`testSomePageNavigated${transition}`](screen);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(somePage); // wait for some page
+                            await screen.loadedElement(somePage); // wait for some page
                         }
-                
+
                         if (driver.isAndroid) {
                             await driver.navBack();
                         } else {
@@ -122,7 +133,7 @@ describe(rootType, () => {
                         }
 
                         await screen.loadedPlayerDetails(playerTwo);
-                
+
                         await screen.goBackToPlayersList();
                         await screen.loadedPlayersList();
                     });
@@ -132,7 +143,7 @@ describe(rootType, () => {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamOne.name); // wait for team
+                            await screen.loadedElement(teamOne.name); // wait for team
                         }
                     });
 
@@ -145,7 +156,7 @@ describe(rootType, () => {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerOne.name); // wait for players list
+                            await screen.loadedElement(playerOne.name); // wait for players list
                         }
 
                         await screen.loadedPlayersList();
@@ -154,14 +165,16 @@ describe(rootType, () => {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name); // wait for player
+                            await screen.loadedElement(playerTwo.name); // wait for player
                         }
+
+                        await screen.loadedPlayerDetails(playerTwo);
 
                         await shared[`testSomePageNavigated${transition}`](screen);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(somePage); // wait for some page
+                            await screen.loadedElement(somePage); // wait for some page
                         }
 
                         if (driver.isAndroid) {
@@ -171,8 +184,10 @@ describe(rootType, () => {
                         }
 
                         if (appSuspendResume) {
+                            // This sleeps prevent test to fail
+                            await driver.sleep(1000);
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name); // wait for player
+                            await screen.loadedElement(playerTwo.name); // wait for player
                         }
 
                         await screen.loadedPlayerDetails(playerTwo);
@@ -181,7 +196,7 @@ describe(rootType, () => {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamOne.name); // wait for teams list
+                            await screen.loadedElement(teamOne.name); // wait for teams list
                         }
 
                         await screen.loadedTeamsList();
@@ -189,15 +204,18 @@ describe(rootType, () => {
                         await shared.testTeamNavigated(teamTwo, screen);
 
                         if (appSuspendResume) {
+                            await screen.loadedElement(teamTwo.name); // wait for team
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamTwo.name); // wait for team
+                            await screen.loadedElement(teamTwo.name); // wait for team
                         }
+
+                        await screen.loadedTeamDetails(teamTwo);
 
                         await shared[`testSomePageNavigated${transition}`](screen);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(somePage); // wait for some page
+                            await screen.loadedElement(somePage); // wait for some page
                         }
 
                         if (driver.isAndroid) {
@@ -207,8 +225,9 @@ describe(rootType, () => {
                         }
 
                         if (appSuspendResume) {
+                            await screen.loadedElement(teamTwo.name); // wait for team
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamTwo.name); // wait for team
+                            await screen.loadedElement(teamTwo.name); // wait for team
                         }
 
                         await screen.loadedTeamDetails(teamTwo);
@@ -217,7 +236,7 @@ describe(rootType, () => {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name); // wait for player
+                            await screen.loadedElement(playerTwo.name); // wait for player
                         }
 
                         await screen.loadedPlayerDetails(playerTwo);
@@ -228,7 +247,7 @@ describe(rootType, () => {
                         await screen.loadedTeamsList();
 
                         await screen.togglePlayersTab();
-                        
+
                         await screen.goBackToPlayersList();
                         await screen.loadedPlayersList();
                     });
@@ -238,7 +257,7 @@ describe(rootType, () => {
                         await screen.loadedHome();
                     });
                 });
-            });
+            };
         });
-    });
+    }
 });
