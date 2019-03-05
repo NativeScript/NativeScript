@@ -1,7 +1,22 @@
 ﻿Button{
     color: blue;
+    font-size: 10;
+    height: 35px;
+    margin: 0;
 }
 
 TextView{
     color: green;
+    font-size: 10;
+}
+
+Label{
+    margin: 0;
+    padding: 0;
+    font-size: 10;
+}
+
+ActionBar {
+    margin: 0;
+    padding: 0;
 }
