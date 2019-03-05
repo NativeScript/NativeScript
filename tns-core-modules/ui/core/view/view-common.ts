@@ -8,7 +8,8 @@ import {
     ViewBase, Property, booleanConverter, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
     InheritedProperty,
-    ShowModalOptions
+    ShowModalOptions,
+    eachDescendant
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -136,6 +137,36 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
+    public _onLivesync(context?: ModuleContext): boolean {
+        _rootModalViews.forEach(v => v.closeModal());
+        _rootModalViews.length = 0;
+
+        // Currently, we pass `context` only for style modules
+        if (context && context.path) {
+            return this.changeLocalStyles(context.path);
+        }
+
+        return false;
+    }
+
+    private changeLocalStyles(contextPath: string): boolean {
+        if (!this.changeStyles(this, contextPath)) {
+            eachDescendant(this, (child: ViewBase) => {
+                this.changeStyles(child, contextPath);
+                return true;
+            });
+        }
+        return true;
+    }
+
+    private changeStyles(view: ViewBase, contextPath: string): boolean {
+        if (view._rootOfModule && contextPath.includes(view._rootOfModule)) {
+            (<this>view).changeCssFile(contextPath);
+            return true;
+        }
+        return false;
+    }
+
     _setupAsRootView(context: any): void {
         super._setupAsRootView(context);
         if (!this._styleScope) {
@@ -208,12 +239,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         } else if (typeof arg === "number") {
             this._disconnectGestureObservers(<GestureTypes>arg);
         }
-    }
-
-    _onLivesync(): boolean {
-        _rootModalViews.forEach(v => v.closeModal());
-        _rootModalViews.length = 0;
-        return false;
     }
 
     public onBackPressed(): boolean {

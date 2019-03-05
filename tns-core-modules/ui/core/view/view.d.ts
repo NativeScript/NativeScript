@@ -720,6 +720,12 @@ export abstract class View extends ViewBase {
      * __Obsolete:__ There is a new property system that does not rely on _setValue.
      */
     _setValue(property: any, value: any): never;
+
+    /**
+     * @private
+     * Module name in case the view is a root. Otherwise, it is undefined.
+     */
+    _rootOfModule?: string;
 }
 
 /**

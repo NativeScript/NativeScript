@@ -108,6 +108,12 @@ export abstract class ViewBase extends Observable {
     flexWrapBefore: FlexWrapBefore;
     alignSelf: AlignSelf;
 
+    /**
+     * @private
+     * Module name when the view is a module root. Otherwise, it is undefined.
+     */
+    _rootOfModule?: string;
+
     //@private
     /**
      * @private
