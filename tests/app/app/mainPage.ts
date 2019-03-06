@@ -7,7 +7,7 @@ let executeTests = true;
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
-// When debugging
+// // When debugging
 // trace.setCategories(trace.categories.concat(
 //    trace.categories.Test,
 //    trace.categories.Navigation,
