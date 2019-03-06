@@ -286,6 +286,12 @@ export function isDataURI(uri: string): boolean
 export function openUrl(url: string): boolean
 
 /**
+ * Opens file.
+ * @param {string} filePath The file.
+ */
+export function openFile(filePath: string): boolean
+
+/**
  * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
  * @param source The original value.
  */
