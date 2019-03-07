@@ -31,238 +31,238 @@ export function isRunningOnEmulator(): boolean {
 
 export const allTests = {};
 
-// import * as domNodeTest from "./debugger/dom-node-tests";
-// allTests["DOM-NODE"] = domNodeTest;
+import * as domNodeTest from "./debugger/dom-node-tests";
+allTests["DOM-NODE"] = domNodeTest;
 
-// import * as profilingTests from "./profiling/profiling-tests";
-// allTests["PROFILING"] = profilingTests;
+import * as profilingTests from "./profiling/profiling-tests";
+allTests["PROFILING"] = profilingTests;
 
-// import * as platformTests from "./platform/platform-tests";
-// allTests["PLATFORM"] = platformTests;
+import * as platformTests from "./platform/platform-tests";
+allTests["PLATFORM"] = platformTests;
 
-// import * as fsTests from "./file-system/file-system-tests";
-// allTests["FILE-SYSTEM"] = fsTests;
+import * as fsTests from "./file-system/file-system-tests";
+allTests["FILE-SYSTEM"] = fsTests;
 
-// // import * as httpTests from "./http/http-tests";
-// // allTests["HTTP"] = httpTests;
+// import * as httpTests from "./http/http-tests";
+// allTests["HTTP"] = httpTests;
 
-// // import * as xhrTests from "./xhr/xhr-tests";
-// // allTests["XHR"] = xhrTests;
+// import * as xhrTests from "./xhr/xhr-tests";
+// allTests["XHR"] = xhrTests;
 
-// // import * as fetchTests from "./fetch/fetch-tests";
-// // allTests["FETCH"] = fetchTests;
+// import * as fetchTests from "./fetch/fetch-tests";
+// allTests["FETCH"] = fetchTests;
 
-// import * as appSettingsTests from "./application-settings/application-settings-tests";
-// allTests["APPLICATION-SETTINGS"] = appSettingsTests;
+import * as appSettingsTests from "./application-settings/application-settings-tests";
+allTests["APPLICATION-SETTINGS"] = appSettingsTests;
 
-// import * as applicationTests from "./application/application-tests";
-// allTests["APPLICATION"] = applicationTests;
+import * as applicationTests from "./application/application-tests";
+allTests["APPLICATION"] = applicationTests;
 
-// import * as imageSourceTests from "./image-source/image-source-tests";
-// allTests["IMAGE-SOURCE"] = imageSourceTests;
+import * as imageSourceTests from "./image-source/image-source-tests";
+allTests["IMAGE-SOURCE"] = imageSourceTests;
 
-// import * as observableArrayTests from "./data/observable-array-tests";
-// allTests["OBSERVABLE-ARRAY"] = observableArrayTests;
+import * as observableArrayTests from "./data/observable-array-tests";
+allTests["OBSERVABLE-ARRAY"] = observableArrayTests;
 
-// import * as virtualArrayTests from "./data/virtual-array-tests";
-// allTests["VIRTUAL-ARRAY"] = virtualArrayTests;
+import * as virtualArrayTests from "./data/virtual-array-tests";
+allTests["VIRTUAL-ARRAY"] = virtualArrayTests;
 
-// import * as observableTests from "./data/observable-tests";
-// allTests["OBSERVABLE"] = observableTests;
+import * as observableTests from "./data/observable-tests";
+allTests["OBSERVABLE"] = observableTests;
 
-// import * as timerTests from "./timer/timer-tests";
-// allTests["TIMER"] = timerTests;
+import * as timerTests from "./timer/timer-tests";
+allTests["TIMER"] = timerTests;
 
-// import * as colorTests from "./color/color-tests";
-// allTests["COLOR"] = colorTests;
+import * as colorTests from "./color/color-tests";
+allTests["COLOR"] = colorTests;
 
-// import * as bindableTests from "./ui/core/bindable/bindable-tests";
-// allTests["BINDABLE"] = bindableTests;
+import * as bindableTests from "./ui/core/bindable/bindable-tests";
+allTests["BINDABLE"] = bindableTests;
 
-// import * as bindintExpressionTests from "./ui/core/bindable/binding-expressions-tests";
-// allTests["BINDING-EXPRESSIONS"] = bindintExpressionTests;
+import * as bindintExpressionTests from "./ui/core/bindable/binding-expressions-tests";
+allTests["BINDING-EXPRESSIONS"] = bindintExpressionTests;
 
-// import * as xmlParserTests from "./xml-parser-tests/xml-parser-tests";
-// allTests["XML-PARSER"] = xmlParserTests;
+import * as xmlParserTests from "./xml-parser-tests/xml-parser-tests";
+allTests["XML-PARSER"] = xmlParserTests;
 
-// import * as formattedStringTests from "./text/formatted-string-tests";
-// allTests["FORMATTEDSTRING"] = formattedStringTests;
+import * as formattedStringTests from "./text/formatted-string-tests";
+allTests["FORMATTEDSTRING"] = formattedStringTests;
 
-// import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
-// allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
+import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
+allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
 
-// import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
-// allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
+import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
+allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
 
-// import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
-// allTests["WEAK-EVENTS"] = weakEventsTests;
+import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
+allTests["WEAK-EVENTS"] = weakEventsTests;
 
-// import * as traceErrorTests from "./trace/trace-error-tests";
-// allTests["TRACE-ERROR"] = traceErrorTests;
+import * as traceErrorTests from "./trace/trace-error-tests";
+allTests["TRACE-ERROR"] = traceErrorTests;
 
-// import * as connectivityTests from "./connectivity/connectivity-tests";
-// allTests["CONNECTIVITY"] = connectivityTests;
+import * as connectivityTests from "./connectivity/connectivity-tests";
+allTests["CONNECTIVITY"] = connectivityTests;
 
-// import * as proxyViewContainerTests from "./ui/proxy-view-container/proxy-view-container-tests";
-// allTests["PROXY-VIEW-CONTAINER"] = proxyViewContainerTests;
+import * as proxyViewContainerTests from "./ui/proxy-view-container/proxy-view-container-tests";
+allTests["PROXY-VIEW-CONTAINER"] = proxyViewContainerTests;
 
-// import * as scrollViewTests from "./ui/scroll-view/scroll-view-tests";
-// allTests["SCROLL-VIEW"] = scrollViewTests;
+import * as scrollViewTests from "./ui/scroll-view/scroll-view-tests";
+allTests["SCROLL-VIEW"] = scrollViewTests;
 
-// import * as actionBarTests from "./ui/action-bar/action-bar-tests";
-// allTests["ACTION-BAR"] = actionBarTests;
+import * as actionBarTests from "./ui/action-bar/action-bar-tests";
+allTests["ACTION-BAR"] = actionBarTests;
 
-// import * as xmlDeclarationTests from "./xml-declaration/xml-declaration-tests";
-// allTests["XML-DECLARATION"] = xmlDeclarationTests;
+import * as xmlDeclarationTests from "./xml-declaration/xml-declaration-tests";
+allTests["XML-DECLARATION"] = xmlDeclarationTests;
 
-// import * as dockLayoutTests from "./ui/layouts/dock-layout-tests";
-// allTests["DOCKLAYOUT"] = dockLayoutTests;
+import * as dockLayoutTests from "./ui/layouts/dock-layout-tests";
+allTests["DOCKLAYOUT"] = dockLayoutTests;
 
-// import * as wrapLayoutTests from "./ui/layouts/wrap-layout-tests";
-// allTests["WRAPLAYOUT"] = wrapLayoutTests;
+import * as wrapLayoutTests from "./ui/layouts/wrap-layout-tests";
+allTests["WRAPLAYOUT"] = wrapLayoutTests;
 
-// import * as absoluteLayoutTests from "./ui/layouts/absolute-layout-tests";
-// allTests["ABSOLUTELAYOUT"] = absoluteLayoutTests;
+import * as absoluteLayoutTests from "./ui/layouts/absolute-layout-tests";
+allTests["ABSOLUTELAYOUT"] = absoluteLayoutTests;
 
-// import * as gridLayoutTests from "./ui/layouts/grid-layout-tests";
-// allTests["GRIDLAYOUT"] = gridLayoutTests;
+import * as gridLayoutTests from "./ui/layouts/grid-layout-tests";
+allTests["GRIDLAYOUT"] = gridLayoutTests;
 
-// import * as stackLayoutTests from "./ui/layouts/stack-layout-tests";
-// allTests["STACKLAYOUT"] = stackLayoutTests;
+import * as stackLayoutTests from "./ui/layouts/stack-layout-tests";
+allTests["STACKLAYOUT"] = stackLayoutTests;
 
-// import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
-// allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
+import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
+allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 
-// import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
-// import * as safeAreaListViewtTests from "./ui/list-view/list-view-safe-area-tests";
-// import * as scrollViewSafeAreaTests from "./ui/scroll-view/scroll-view-safe-area-tests";
-// import * as repeaterSafeAreaTests from "./ui/repeater/repeater-safe-area-tests";
-// import * as webViewSafeAreaTests from "./ui/web-view/web-view-safe-area-tests";
+import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
+import * as safeAreaListViewtTests from "./ui/list-view/list-view-safe-area-tests";
+import * as scrollViewSafeAreaTests from "./ui/scroll-view/scroll-view-safe-area-tests";
+import * as repeaterSafeAreaTests from "./ui/repeater/repeater-safe-area-tests";
+import * as webViewSafeAreaTests from "./ui/web-view/web-view-safe-area-tests";
 
-// if (platform.isIOS && ios.MajorVersion > 10) {
-//     allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
-//     allTests["SAFEAREA-LISTVIEW"] = safeAreaListViewtTests;
-//     allTests["SAFEAREA-SCROLL-VIEW"] = scrollViewSafeAreaTests;
-//     allTests["SAFEAREA-REPEATER"] = repeaterSafeAreaTests;
-//     allTests["SAFEAREA-WEBVIEW"] = webViewSafeAreaTests;
-// }
+if (platform.isIOS && ios.MajorVersion > 10) {
+    allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
+    allTests["SAFEAREA-LISTVIEW"] = safeAreaListViewtTests;
+    allTests["SAFEAREA-SCROLL-VIEW"] = scrollViewSafeAreaTests;
+    allTests["SAFEAREA-REPEATER"] = repeaterSafeAreaTests;
+    allTests["SAFEAREA-WEBVIEW"] = webViewSafeAreaTests;
+}
 
-// import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
-// allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
+import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
+allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 
-// import * as frameTests from "./ui/frame/frame-tests";
-// allTests["FRAME"] = frameTests;
+import * as frameTests from "./ui/frame/frame-tests";
+allTests["FRAME"] = frameTests;
 
-// import * as viewTests from "./ui/view/view-tests";
-// allTests["VIEW"] = viewTests;
+import * as viewTests from "./ui/view/view-tests";
+allTests["VIEW"] = viewTests;
 
-// import * as viewLayoutChangedEventTests from "./ui/view/view-tests-layout-event";
-// allTests["VIEW-LAYOUT-EVENT"] = viewLayoutChangedEventTests;
+import * as viewLayoutChangedEventTests from "./ui/view/view-tests-layout-event";
+allTests["VIEW-LAYOUT-EVENT"] = viewLayoutChangedEventTests;
 
-// import * as styleTests from "./ui/styling/style-tests";
-// allTests["STYLE"] = styleTests;
+import * as styleTests from "./ui/styling/style-tests";
+allTests["STYLE"] = styleTests;
 
-// import * as visualStateTests from "./ui/styling/visual-state-tests";
-// allTests["VISUAL-STATE"] = visualStateTests;
+import * as visualStateTests from "./ui/styling/visual-state-tests";
+allTests["VISUAL-STATE"] = visualStateTests;
 
-// import * as valueSourceTests from "./ui/styling/value-source-tests";
-// allTests["VALUE-SOURCE"] = valueSourceTests;
+import * as valueSourceTests from "./ui/styling/value-source-tests";
+allTests["VALUE-SOURCE"] = valueSourceTests;
 
-// import * as buttonTests from "./ui/button/button-tests";
-// allTests["BUTTON"] = buttonTests;
+import * as buttonTests from "./ui/button/button-tests";
+allTests["BUTTON"] = buttonTests;
 
-// import * as borderTests from "./ui/border/border-tests";
-// allTests["BORDER"] = borderTests;
+import * as borderTests from "./ui/border/border-tests";
+allTests["BORDER"] = borderTests;
 
-// import * as labelTests from "./ui/label/label-tests";
-// allTests["LABEL"] = labelTests;
+import * as labelTests from "./ui/label/label-tests";
+allTests["LABEL"] = labelTests;
 
-// import * as tabViewTests from "./ui/tab-view/tab-view-tests";
-// allTests["TAB-VIEW"] = tabViewTests;
+import * as tabViewTests from "./ui/tab-view/tab-view-tests";
+allTests["TAB-VIEW"] = tabViewTests;
 
-// import * as tabViewNavigationTests from "./ui/tab-view/tab-view-navigation-tests";
-// allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
+import * as tabViewNavigationTests from "./ui/tab-view/tab-view-navigation-tests";
+allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
 
-// import * as imageTests from "./ui/image/image-tests";
-// allTests["IMAGE"] = imageTests;
+import * as imageTests from "./ui/image/image-tests";
+allTests["IMAGE"] = imageTests;
 
-// import * as sliderTests from "./ui/slider/slider-tests";
-// allTests["SLIDER"] = sliderTests;
+import * as sliderTests from "./ui/slider/slider-tests";
+allTests["SLIDER"] = sliderTests;
 
-// import * as switchTests from "./ui/switch/switch-tests";
-// allTests["SWITCH"] = switchTests;
+import * as switchTests from "./ui/switch/switch-tests";
+allTests["SWITCH"] = switchTests;
 
-// import * as progressTests from "./ui/progress/progress-tests";
-// allTests["PROGRESS"] = progressTests;
+import * as progressTests from "./ui/progress/progress-tests";
+allTests["PROGRESS"] = progressTests;
 
-// import * as placeholderTests from "./ui/placeholder/placeholder-tests";
-// allTests["PLACEHOLDER"] = placeholderTests;
+import * as placeholderTests from "./ui/placeholder/placeholder-tests";
+allTests["PLACEHOLDER"] = placeholderTests;
 
-// import * as pageTests from "./ui/page/page-tests";
-// allTests["PAGE"] = pageTests;
+import * as pageTests from "./ui/page/page-tests";
+allTests["PAGE"] = pageTests;
 
-// import * as listViewTests from "./ui/list-view/list-view-tests";
-// allTests["LISTVIEW"] = listViewTests;
+import * as listViewTests from "./ui/list-view/list-view-tests";
+allTests["LISTVIEW"] = listViewTests;
 
-// import * as activityIndicatorTests from "./ui/activity-indicator/activity-indicator-tests";
-// allTests["ACTIVITY-INDICATOR"] = activityIndicatorTests;
+import * as activityIndicatorTests from "./ui/activity-indicator/activity-indicator-tests";
+allTests["ACTIVITY-INDICATOR"] = activityIndicatorTests;
 
-// import * as textFieldTests from "./ui/text-field/text-field-tests";
-// allTests["TEXT-FIELD"] = textFieldTests;
+import * as textFieldTests from "./ui/text-field/text-field-tests";
+allTests["TEXT-FIELD"] = textFieldTests;
 
-// import * as textViewTests from "./ui/text-view/text-view-tests";
-// allTests["TEXT-VIEW"] = textViewTests;
+import * as textViewTests from "./ui/text-view/text-view-tests";
+allTests["TEXT-VIEW"] = textViewTests;
 
-// import * as listPickerTests from "./ui/list-picker/list-picker-tests";
-// allTests["LIST-PICKER"] = listPickerTests;
+import * as listPickerTests from "./ui/list-picker/list-picker-tests";
+allTests["LIST-PICKER"] = listPickerTests;
 
-// import * as datePickerTests from "./ui/date-picker/date-picker-tests";
-// allTests["DATE-PICKER"] = datePickerTests;
+import * as datePickerTests from "./ui/date-picker/date-picker-tests";
+allTests["DATE-PICKER"] = datePickerTests;
 
-// import * as timePickerTests from "./ui/time-picker/time-picker-tests";
-// allTests["TIME-PICKER"] = timePickerTests;
+import * as timePickerTests from "./ui/time-picker/time-picker-tests";
+allTests["TIME-PICKER"] = timePickerTests;
 
-// import * as webViewTests from "./ui/web-view/web-view-tests";
-// allTests["WEB-VIEW"] = webViewTests;
+import * as webViewTests from "./ui/web-view/web-view-tests";
+allTests["WEB-VIEW"] = webViewTests;
 
-// import * as htmlViewTests from "./ui/html-view/html-view-tests";
-// allTests["HTML-VIEW"] = htmlViewTests;
+import * as htmlViewTests from "./ui/html-view/html-view-tests";
+allTests["HTML-VIEW"] = htmlViewTests;
 
-// import * as repeaterTests from "./ui/repeater/repeater-tests";
-// allTests["REPEATER"] = repeaterTests;
+import * as repeaterTests from "./ui/repeater/repeater-tests";
+allTests["REPEATER"] = repeaterTests;
 
-// import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
-// allTests["SEGMENTED-BAR"] = segmentedBarTests;
+import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
+allTests["SEGMENTED-BAR"] = segmentedBarTests;
 
-// import * as animationTests from "./ui/animation/animation-tests";
-// allTests["ANIMATION"] = animationTests;
+import * as animationTests from "./ui/animation/animation-tests";
+allTests["ANIMATION"] = animationTests;
 
-// import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
-// allTests["LIFECYCLE"] = lifecycle;
+import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
+allTests["LIFECYCLE"] = lifecycle;
 
-// import * as cssAnimationTests from "./ui/animation/css-animation-tests";
-// allTests["CSS-ANIMATION"] = cssAnimationTests;
+import * as cssAnimationTests from "./ui/animation/css-animation-tests";
+allTests["CSS-ANIMATION"] = cssAnimationTests;
 
-// import * as transitionTests from "./navigation/transition-tests";
-// allTests["TRANSITIONS"] = transitionTests;
+import * as transitionTests from "./navigation/transition-tests";
+allTests["TRANSITIONS"] = transitionTests;
 
-// import * as searchBarTests from "./ui/search-bar/search-bar-tests";
-// allTests["SEARCH-BAR"] = searchBarTests;
+import * as searchBarTests from "./ui/search-bar/search-bar-tests";
+allTests["SEARCH-BAR"] = searchBarTests;
 
-// import * as navigationTests from "./navigation/navigation-tests";
-// allTests["NAVIGATION"] = navigationTests;
+import * as navigationTests from "./navigation/navigation-tests";
+allTests["NAVIGATION"] = navigationTests;
 
-// import * as livesyncTests from "./livesync/livesync-tests";
-// allTests["LIVESYNC"] = livesyncTests;
+import * as livesyncTests from "./livesync/livesync-tests";
+allTests["LIVESYNC"] = livesyncTests;
 
-// import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
-// allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
+import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
+allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 
-// import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
-// allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
+import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
+allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
-// import * as rootViewTests from "./ui/root-view/root-view-tests";
-// allTests["ROOT-VIEW"] = rootViewTests;
+import * as rootViewTests from "./ui/root-view/root-view-tests";
+allTests["ROOT-VIEW"] = rootViewTests;
 
 import * as utilsTests from "./utils/utils-tests";
 allTests["UTILS"] = utilsTests;
