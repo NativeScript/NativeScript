@@ -100,7 +100,7 @@ export class TabView extends View {
     ios: any /* UITabBarController */;
 
     /**
-     * Gets or set the UIImageRenderingMode of the tab icons in iOS. 
+     * Gets or set the UIImageRenderingMode of the tab icons in iOS.  Defaults to "automatic" 
      * Valid values are:
      *  - automatic
      *  - alwaysOriginal

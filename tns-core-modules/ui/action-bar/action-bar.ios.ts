@@ -120,6 +120,18 @@ export class ActionBar extends ActionBarBase {
         this.layout(0, 0, width, height, false);
     }
 
+    private _getIconRenderingMode(): UIImageRenderingMode {
+        switch (this.iosIconRenderingMode) {
+            case "alwaysOriginal":
+                return UIImageRenderingMode.AlwaysOriginal;
+            case "alwaysTemplate":
+                return UIImageRenderingMode.AlwaysTemplate;
+            case "automatic":
+            default:
+                return UIImageRenderingMode.Automatic;
+        }
+    }
+
     public update() {
         const page = this.page;
         // Page should be attached to frame to update the action bar.
@@ -241,7 +253,8 @@ export class ActionBar extends ActionBarBase {
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
         } else if (item.icon) {
             const img = loadActionIconFromFileOrResource(item.icon);
-            barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img, UIBarButtonItemStyle.Plain, tapHandler, "tap");
+            const image = img.imageWithRenderingMode(this._getIconRenderingMode());
+            barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
         } else {
             barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }

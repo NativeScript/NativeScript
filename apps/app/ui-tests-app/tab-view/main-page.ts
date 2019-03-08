@@ -19,6 +19,7 @@ export function loadExamples() {
     examples.set("tabmore", "tab-view/tab-view-more");
     examples.set("tabViewCss", "tab-view/tab-view-css");
     examples.set("tab-view-icons", "tab-view/tab-view-icon");
+    examples.set("tab-view-icons-local", "tab-view/tab-view-icon-local");
     examples.set("tab-view-icon-change", "tab-view/tab-view-icon-change");
     examples.set("text-transform", "tab-view/text-transform");
     examples.set("tab-view-bottom-position", "tab-view/tab-view-bottom-position");
