@@ -67,7 +67,7 @@ git checkout -b <my-fix-branch> master
 
 5. Before you submit your PR:
     - Rebase your changes to the latest master: `git pull --rebase upstream master`.
-    - Ensure all unit test are green for Android and iOS. Check [running unit   tests](DevelopmentWorkflow.md#running-unit-tests).
+    - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
     - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
 
 6. Push your fork. If you have rebased you might have to use force-push your branch:
@@ -223,32 +223,26 @@ Instructions how to release a new version for **NativeScript Core Team Members**
 ```
 git checkout release
 ```
-2. Create a PR to cut the release:
+#### If we prepare major or minor release, merge master in release branch else **skip this step**.
 ```
-export RELEASE_VERSION=version
-export BRANCH="release-${RELEASE_VERSION}"
-git checkout -b ${BRANCH}
-git push --set-upstream origin ${BRANCH}
+git merge --ff-only origin/master
 ```
-#### Merge master in release branch or cherry-pick commits. If the commits are in release branch **skip this step**.
-```
-git merge --ff-only origin/master or git cherry-pick commit-sha
-git push --set-upstream origin prep-release-version
-```
-3. Execute `npm i` to install dependencies:
+*** Note: If there are commits in release branch which are not merged in master branch '-ff-merge' command will fail. 
+In this case the commits should be merge firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
+
+2. Execute `npm i` to install dependencies:
 ```
 npm i
 ```
-4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
+3. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-platform-declarations`:
 ```
 cd tns-platform-declarations
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```
 
-5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
-tag the release and update the CHANGELOG.md.
-In case we need to publish release version we need simply to use npm version x.x.x-rc
+4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
+tag the release and update the CHANGELOG.md. Don't forget to check the auto-generated CHANGELOG.md 
 ```
 cd tns-core-modules
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
@@ -256,6 +250,11 @@ cd ..
 ```
 6. Set correct version of **tns-core-modules-widgets** in tns-core-modules/package.json.
 Usually tns-core-modules-widgets should already have been released and we need to set the official version.
+
+7. Create release-branch with change log
+```
+git checkout -b release-[release-version]
+```
 
 7. Add changes
 ```
@@ -268,13 +267,13 @@ git push
 git tag release-version
 git push --tags
 ```
-9. Create a pull request. Replace env variables ${RELEASE_VERSION} and ${BRANCH} with their values
+9. Create a pull request. Be careful to base your branch on the correct branch
 ```
-curl -d '{"title": "release: cut the ${RELEASE_VERSION} release","body": "docs: update changelog","head": "${BRANCH}","base": "release"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
+curl -d '{"title": "release: cut the [release-version] release","body": "docs: update changelog","head": "${BRANCH}","base": "release"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
 10. Merge PR into release branch.
 
-11. If all checks has passed publish package.
+11. If all checks has passed publish package. Usually the night builds will be triggered and the package will be ready to be released on the next day. 
 
 ## Merge changes from release into master
 
