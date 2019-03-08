@@ -2,7 +2,7 @@ import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { 
     ActionItemBase, ActionBarBase, isVisible, View, 
     colorProperty, backgroundColorProperty, 
-    backgroundInternalProperty, flatProperty, 
+    backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty, 
     layout, Color, traceMissingIcon } from "./action-bar-common";
 import { fromFileOrResource } from "../../image-source";
 import { ios as iosUtils } from "../../utils/utils";
@@ -128,7 +128,7 @@ export class ActionBar extends ActionBarBase {
                 return UIImageRenderingMode.AlwaysTemplate;
             case "automatic":
             default:
-                return UIImageRenderingMode.Automatic;
+                return UIImageRenderingMode.AlwaysOriginal;
         }
     }
 
@@ -404,5 +404,12 @@ export class ActionBar extends ActionBarBase {
         if (navBar) {
             this.updateFlatness(navBar);
         }
+    }
+
+    [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
+        return "alwaysOriginal";
+    }
+    [iosIconRenderingModeProperty.setNative](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
+        this.update();
     }
 }
