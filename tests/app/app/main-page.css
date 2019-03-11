@@ -1,7 +1,3 @@
-Button
-/*
-TODO: uncomment and investigate a livesync test failure
-, Label */
-    {
+Button {
     color: green;
 }
