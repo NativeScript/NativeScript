@@ -1,4 +1,4 @@
-import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn } from "nativescript-dev-appium";
 
 import { Screen, playersData, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
@@ -16,6 +16,7 @@ describe("tab-root:", () => {
     let screen: Screen;
 
     before(async () => {
+        logWarn("====== layout-root ========")
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
