@@ -4,7 +4,6 @@ import { Screen, playersData, home, somePage, otherPage, teamsData, driverDefaul
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
-
 const rootType = "layout-root";
 describe(rootType, () => {
     let driver: AppiumDriver;
@@ -37,7 +36,7 @@ describe(rootType, () => {
 
     for (let index = 0; index < transitions.length; index++) {
         const transition = transitions[index];
-        
+
         const playerOne = playersData[`playerOne${transition}`];
         const playerTwo = playersData[`playerTwo${transition}`];
         const teamOne = teamsData[`teamOne${transition}`];
