@@ -12,7 +12,7 @@ export function onTap(args: EventData) {
     setLabelTextAndLog(args, "on button tap");
 }
 
-export function clearResult(args: EventData){
+export function clearResult(args: EventData) {
     setLabelTextAndLog(args, "");
 }
 
