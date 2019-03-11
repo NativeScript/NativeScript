@@ -2,6 +2,8 @@
 declare class NSObject implements NSObjectProtocol {
 
 	static alloc(): NSObject;
+	
+	static extend(...args: any[]): any;
 
 	static automaticallyNotifiesObserversForKey(key: string): boolean;
 
