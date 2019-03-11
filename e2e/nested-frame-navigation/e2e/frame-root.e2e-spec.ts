@@ -41,7 +41,7 @@ describe(rootType, () => {
         const teamOne: Item = teamsData[`teamOne${transition}`];
         const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-        describe(`${rootType}-transition: ${transition} scenarios:`, () => {
+        describe(`${rootType}-transition-${transition}-scenarios:`, () => {
             before(async function () {
                 logWarn(`==== Transition ${transition}`);
 
