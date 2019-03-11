@@ -262,7 +262,7 @@ export class Screen {
 
     loadedHome = async () => {
         const lblHome = await this._driver.waitForElement(home);
-        assert.isNotNull(lblHome);
+        assert.isDefined(lblHome);
         console.log(home + " loaded!");
     };
 
@@ -309,7 +309,7 @@ export class Screen {
 
     loadedPlayersList = async () => {
         const lblPlayerOne = await this._driver.waitForElement(playersData["playerOneDefault"].name);
-        assert.isNotNull(lblPlayerOne);
+        assert.isDefined(lblPlayerOne);
         console.log(players + " loaded!");
     }
 
@@ -319,7 +319,7 @@ export class Screen {
 
     loadedTeamsList = async () => {
         const lblTeamOne = await this._driver.waitForElement(teamsData["teamOneDefault"].name);
-        assert.isNotNull(lblTeamOne);
+        assert.isDefined(lblTeamOne);
         console.log(teams + " loaded!");
     }
 
@@ -329,7 +329,7 @@ export class Screen {
 
     loadedElement = async (element: string) => {
         const el = await this._driver.waitForElement(element);
-        assert.isNotNull(el);
+        assert.isDefined(el);
         console.log(`${element} loaded!`);
     };
 
@@ -341,7 +341,7 @@ export class Screen {
 
     private loadedPage = async (page: string) => {
         const lblPage = await this._driver.waitForElement(page);
-        assert.isNotNull(lblPage);
+        assert.isDefined(lblPage);
         console.log(page + " loaded!");
     };
 
@@ -353,10 +353,10 @@ export class Screen {
 
     private loadedItem = async (item: Item) => {
         const lblItemName = await this._driver.waitForElement(item.name);
-        assert.isNotNull(lblItemName);
+        assert.isDefined(lblItemName);
 
         const lblItemDescription = await this._driver.waitForElement(item.description);
-        assert.isNotNull(lblItemDescription);
+        assert.isDefined(lblItemDescription);
 
         console.log(item.name + " loaded!");
     }

@@ -37,3 +37,8 @@ export function onNavigateToTabsTopRoot(args: EventData) {
 export function onNavigateToTabsBottomRoot(args: EventData) {
     application._resetRootView({ moduleName: "tab-root/tab-bottom-root" });
 }
+
+export function onNavigateToSomePage(args: EventData) {
+    const button = <Button>args.object;
+    button.page.frame.navigate("some-page/some-page");
+}
