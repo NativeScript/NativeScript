@@ -120,7 +120,7 @@ function _test_onLiveSync_ModuleContext_TypeStyle(context: { type, path }) {
     helper.navigateWithHistory(() => page);
 
     const pageBeforeLiveSync = helper.getCurrentPage();
-    pageBeforeLiveSync._rootOfModule = "main-page";
+    pageBeforeLiveSync._moduleName = "main-page";
     global.__onLiveSync({ type: context.type, path: context.path });
 
     const pageAfterLiveSync = helper.getCurrentPage();

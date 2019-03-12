@@ -244,7 +244,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _defaultPaddingLeft: number;
     public _isPaddingRelative: boolean;
 
-    public _rootOfModule: string;
+    public _moduleName: string;
 
     constructor() {
         super();

@@ -112,7 +112,7 @@ export abstract class ViewBase extends Observable {
      * @private
      * Module name when the view is a module root. Otherwise, it is undefined.
      */
-    _rootOfModule?: string;
+    _moduleName?: string;
 
     //@private
     /**

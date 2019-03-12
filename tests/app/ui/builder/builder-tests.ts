@@ -14,13 +14,13 @@ function getViewComponent() {
 
 export function test_view_is_module_root_component() {
     const view = getViewComponent();
-    const actualModule = view._rootOfModule;
+    const actualModule = view._moduleName;
     assertEqual(actualModule, COMPONENT_MODULE, `View<${view}> is NOT root component of module <${COMPONENT_MODULE}>.`);
 }
 
 export function test_view_is_NOT_module_root_component() {
     const view = getViewComponent();
     const nestedView = view.getViewById(`${LABEL}`);
-    const undefinedModule = nestedView._rootOfModule;
+    const undefinedModule = nestedView._moduleName;
     assertNull(undefinedModule, `View<${nestedView}> should NOT be a root component of a module.`);
 }

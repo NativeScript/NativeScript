@@ -5,11 +5,10 @@ import {
 } from ".";
 
 import {
-    ViewBase, Property, booleanConverter, EventData, layout,
+    ViewBase, Property, booleanConverter, eachDescendant, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
     InheritedProperty,
-    ShowModalOptions,
-    eachDescendant
+    ShowModalOptions
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -156,11 +155,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 return true;
             });
         }
+        // Do not execute frame navigation for a change in styles
         return true;
     }
 
     private changeStyles(view: ViewBase, contextPath: string): boolean {
-        if (view._rootOfModule && contextPath.includes(view._rootOfModule)) {
+        if (view._moduleName && contextPath.includes(view._moduleName)) {
             (<this>view).changeCssFile(contextPath);
             return true;
         }
