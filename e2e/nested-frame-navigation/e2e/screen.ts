@@ -1,4 +1,4 @@
-import { AppiumDriver } from "nativescript-dev-appium";
+import { AppiumDriver, logInfo } from "nativescript-dev-appium";
 import { assert } from "chai";
 
 const layoutWithFrame = "Layout w/ frame";
@@ -215,6 +215,8 @@ export class Screen {
 
     resetToHome = async () => {
         const btnReset = await this._driver.waitForElement(resetApp);
+
+        console.info(`====== Reset home "${resetApp}"`)
         await btnReset.tap();
     };
 
@@ -248,11 +250,13 @@ export class Screen {
 
     togglePlayersTab = async () => {
         const lblPlayers = await this._driver.waitForElement(players);
+        logInfo(`====== Navigate to "${players}"`);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
         const lblTeams = await this._driver.waitForElement(teams);
+        logInfo(`====== Navigate to "${teams}"`);
         await lblTeams.tap();
     }
 
@@ -293,7 +297,7 @@ export class Screen {
 
     loadedTabBottomRootWithFrames = async () => {
         await this.loadedPage(tabRootBottomHome);
-    } 
+    }
 
     loadedSomePage = async () => {
         await this.loadedPage(somePage);
@@ -323,8 +327,15 @@ export class Screen {
         await this.loadedItem(team);
     }
 
+    loadedElement = async (element: string) => {
+        const el = await this._driver.waitForElement(element);
+        assert.isNotNull(el);
+        console.log(`${element} loaded!`);
+    };
+
     private navigateToPage = async (page: string) => {
         const btnPage = await this._driver.waitForElement(page);
+        logInfo(`====== Navigate to "${page}"`);
         await btnPage.tap();
     };
 
@@ -336,6 +347,7 @@ export class Screen {
 
     private navigateToItem = async (item: Item) => {
         const lblItem = await this._driver.waitForElement(item.name);
+        logInfo(`====== Navigate to "${item.name}"`);
         await lblItem.tap();
     }
 
@@ -351,6 +363,7 @@ export class Screen {
 
     private goBack = async (accessibilityId: string) => {
         const btnBack = await this._driver.waitForElement(accessibilityId);
+        logInfo(`====== Go back with "${accessibilityId}"`);
         await btnBack.tap();
     }
 }

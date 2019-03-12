@@ -243,8 +243,10 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
                 this._nativeAnimations.push(animation);
             }
 
+            const isLastIteration = iterations - 1 <= 0;
+
             // Catch the animation cancel to prevent unhandled promise rejection warnings
-            animation.play().then(() => {
+            animation.play(isLastIteration).then(() => {
                 this.animate(view, index + 1, iterations);
             }, (error: any) => {
                 traceWrite(typeof error === "string" ? error : error.message, traceCategories.Animation, traceType.warn);

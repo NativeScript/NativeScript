@@ -126,7 +126,7 @@ export type AnimationPromise = Promise<void> & Cancelable;
  */
 export class Animation {
     constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean);
-    public play: () => AnimationPromise;
+    public play: (resetOnFinish?: boolean) => AnimationPromise;
     public cancel: () => void;
     public isPlaying: boolean;
     public _resolveAnimationCurve(curve: any): any;

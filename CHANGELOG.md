@@ -1,3 +1,16 @@
+<a name="5.2.2"></a>
+## [5.2.2](https://github.com/NativeScript/NativeScript/compare/5.2.1...5.2.2) (2019-03-01)
+
+
+### Bug Fixes
+
+* **android:** resource ID [#0](https://github.com/NativeScript/NativeScript/issues/0)xffffffec not found on nav ([#6955](https://github.com/NativeScript/NativeScript/issues/6955)) ([33d6d1f](https://github.com/NativeScript/NativeScript/commit/33d6d1f))
+* **android-animations:** reuse animatorSet to prevent high memory usage ([#6930](https://github.com/NativeScript/NativeScript/issues/6930)) ([7236d32](https://github.com/NativeScript/NativeScript/commit/7236d32))
+* **ios:** opaque bars break ui layout ([#6929](https://github.com/NativeScript/NativeScript/issues/6929)) ([09fa085](https://github.com/NativeScript/NativeScript/commit/09fa085))
+* **ios:** resize of scrollview content breaks layout ([#6965](https://github.com/NativeScript/NativeScript/issues/6965)) ([a9d2043](https://github.com/NativeScript/NativeScript/commit/a9d2043))
+
+
+
 <a name="5.2.1"></a>
 ## [5.2.1](https://github.com/NativeScript/NativeScript/compare/5.2.0...5.2.1) (2019-02-19)
 

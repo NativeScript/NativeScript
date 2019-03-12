@@ -3,13 +3,13 @@ var shelljs = require("shelljs");
 var path = require("path");
 var fs = require("fs");
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
     if (grunt.option('profile')) {
         grunt.log.writeln('Profiling all grunt tasks...');
         require('time-grunt')(grunt);
     }
 
-    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildOnlyTestsApp")>= 0 || grunt.cli.tasks.indexOf("runOnlyTestsApp")>= 0) {
+    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildOnlyTestsApp") >= 0 || grunt.cli.tasks.indexOf("runOnlyTestsApp") >= 0) {
         var tsTester = require("./build/run-testsapp.grunt.js");
         tsTester.run(grunt);
         return;
@@ -22,7 +22,7 @@ module.exports = function(grunt) {
     }
 
     // Custom Functions
-    var filterTypeScriptFiles = function(content, srcPath) {
+    var filterTypeScriptFiles = function (content, srcPath) {
         var leadingPrivate = /^.*@private/ig;
         if (leadingPrivate.test(content)) {
             return false;
@@ -38,16 +38,15 @@ module.exports = function(grunt) {
         return processed;
     };
 
-    var updatePackageDef = function(content, update)
-    {
+    var updatePackageDef = function (content, update) {
         var contentAsObject = JSON.parse(content);
         update(contentAsObject);
         return JSON.stringify(contentAsObject, null, "\t");
     };
 
-    var updateModulesPackageDef = function(content, srcPath) {
+    var updateModulesPackageDef = function (content, srcPath) {
         console.log("Patch: " + srcPath);
-        return updatePackageDef(content, function(contentAsObject) {
+        return updatePackageDef(content, function (contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
             if (localCfg.commitSHA) {
                 contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
@@ -55,27 +54,27 @@ module.exports = function(grunt) {
         });
     };
 
-    var updateAppPackageDef = function(content, srcPath) {
-        return updatePackageDef(content, function(contentAsObject) {
+    var updateAppPackageDef = function (content, srcPath) {
+        return updatePackageDef(content, function (contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
         });
     };
 
-    var getCommitSha = function() {
+    var getCommitSha = function () {
         if (process.env.GIT_COMMIT) {
             return process.env.GIT_COMMIT;
         }
         return "";
     };
 
-    var assignGitSHA = function(err, stdout, stderr, cb) {
+    var assignGitSHA = function (err, stdout, stderr, cb) {
         if (!localCfg.commitSHA) {
             localCfg.commitSHA = stdout.replace("\n", "");
         }
         cb();
     };
 
-    var getPackageVersion = function() {
+    var getPackageVersion = function () {
         var buildVersion = process.env.PACKAGE_VERSION;
         if (!buildVersion) {
             return localCfg.mainPackageContent.version;
@@ -124,7 +123,7 @@ module.exports = function(grunt) {
         "!.*/**/*.*",
         "!obj/**/*.*"
     ];
-    localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function(item) { return /^!/.test(item); });
+    localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function (item) { return /^!/.test(item); });
     localCfg.srcTsdFiles = [
         "tns-core-modules/**/*.d.ts",
         "!tns-core-modules/ios/**",
@@ -137,7 +136,7 @@ module.exports = function(grunt) {
 
     // Config
     grunt.initConfig({
-        localCfg : localCfg,
+        localCfg: localCfg,
         pkg: grunt.file.readJSON('package.json'),
         clean: {
             build: {
@@ -166,10 +165,10 @@ module.exports = function(grunt) {
                 },
             },
             articles: {
-                src: [ localCfg.outArticlesDir ]
+                src: [localCfg.outArticlesDir]
             },
             "apiref": {
-                src: [ localCfg.outApiRefDir ]
+                src: [localCfg.outApiRefDir]
             }
         },
         copy: {
@@ -186,7 +185,7 @@ module.exports = function(grunt) {
             },
             articleMDs: {
                 expand: true,
-                src: [ "**/*.md" ],
+                src: ["**/*.md"],
                 dest: localCfg.outArticlesDir,
                 cwd: localCfg.srcTestsDir
             },
@@ -258,7 +257,6 @@ module.exports = function(grunt) {
                 expand: true,
                 src: [
                     '**/*',
-                    '!*.md',
                     '!node_modules/**/*',
                     '!unit-tests/**/*',
                 ],
@@ -267,6 +265,10 @@ module.exports = function(grunt) {
             }
         },
         exec: {
+            copyReadme: {
+                cmd: `cp "README.md" ${localCfg.outTnsCoreModules}`,
+                cwd: process.cwd()
+            },
             packModules: {
                 cmd: "npm pack",
                 cwd: localCfg.outTnsCoreModules + "/"
@@ -342,31 +344,31 @@ module.exports = function(grunt) {
             'tns-core-modules/**/package.json',
             '!tns-core-modules/node_modules/**/*'
         ]);
-        var errors = packageDescriptors.map(function(packagePath) {
+        var errors = packageDescriptors.map(function (packagePath) {
             if (fileValidator(packagePath)) {
                 return errorFormatter(packagePath);
             } else {
                 return null;
             }
-        }).filter(function(errorMessage) { return !!errorMessage; });
+        }).filter(function (errorMessage) { return !!errorMessage; });
         if (errors.length > 0)
             grunt.fail.fatal("\n" + errors.join("\n"));
     }
 
-    grunt.registerTask("check-packagejson-boms", function() {
+    grunt.registerTask("check-packagejson-boms", function () {
         validatePackageJsons(function (filepath) {
             var buf = grunt.file.read(filepath, { encoding: null });
             return (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF);
-        }, function(filepath) {
-                return "File " + filepath + " contains a UTF-8 BOM.";
+        }, function (filepath) {
+            return "File " + filepath + " contains a UTF-8 BOM.";
         });
     });
 
-    grunt.registerTask("check-packagejson-mains", function() {
+    grunt.registerTask("check-packagejson-mains", function () {
         validatePackageJsons(function (filepath) {
             var packageData = grunt.file.readJSON(filepath);
             return /\.js/i.test(packageData.main || "");
-        }, function(filepath) {
+        }, function (filepath) {
             return "File " + filepath + " contains a broken main setting.";
         });
     });
@@ -376,6 +378,7 @@ module.exports = function(grunt) {
         "compile-modules",
         "run-unit-test",
         "copy:modulesPackageDef",
+        "exec:copyReadme",
         "exec:packModules"
     ]);
 
@@ -400,10 +403,10 @@ module.exports = function(grunt) {
         "typedoc:build"
     ]);
 
-    grunt.registerTask("herdArticles", function() {
-        var moveSinglesUp = function(dir) {
+    grunt.registerTask("herdArticles", function () {
+        var moveSinglesUp = function (dir) {
             var objs = fs.readdirSync(dir);
-            for (var i=0; i<objs.length; i++) {
+            for (var i = 0; i < objs.length; i++) {
                 var obj = objs[i];
                 var fullPath = path.join(dir, obj);
                 if (objs.length == 1) {
@@ -442,14 +445,14 @@ module.exports = function(grunt) {
         "copy:apps",
     ]);
 
-    grunt.registerTask("pack-apps", function(){
-        localCfg.srcAppDirs.forEach(function(srcAppDir){
+    grunt.registerTask("pack-apps", function () {
+        localCfg.srcAppDirs.forEach(function (srcAppDir) {
             var outAppDir = path.join(localCfg.outDir, srcAppDir);
             var packageJsonPath = path.join(outAppDir, "package.json");
             var content = fs.readFileSync(packageJsonPath, "utf8");
             var newContent = updateAppPackageDef(content);
             fs.writeFileSync(packageJsonPath, newContent);
-            shelljs.exec("npm pack", {cwd: outAppDir});
+            shelljs.exec("npm pack", { cwd: outAppDir });
         });
     });
 
