@@ -13,7 +13,7 @@ export class WrappedValue implements WrappedValueDefinition {
     }
 
     public static unwrap(value: any) {
-        return (value && "wrapped" in value) ? value.wrapped : value;
+        return (value instanceof WrappedValue) ? value.wrapped : value;
     }
 
     public static wrap(value: any) {
