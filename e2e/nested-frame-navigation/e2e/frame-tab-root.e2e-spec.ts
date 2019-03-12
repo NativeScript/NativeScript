@@ -7,16 +7,13 @@ import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "
 // NOTE: TabTop is Android only scenario (for iOS we will essentially execute 2x TabBottom)
 const roots = ["TabTop", "TabBottom"];
 
-function hyphenate(s: string) {
-    return s.replace(/([a-zA-Z])(?=[A-Z])/g, "$1-").toLowerCase();
-}
-
-describe("frame-tab-root:", () => {
+const rootType = "frame-tab-root";
+describe(rootType, () => {
     let driver: AppiumDriver;
     let screen: Screen;
 
     before(async () => {
-        logWarn("====== frame-tab-root ========")
+        logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
@@ -42,9 +39,8 @@ describe("frame-tab-root:", () => {
 
     for (let index = 0; index < roots.length; index++) {
         const root = roots[index];
-        const rootWithHyphen = hyphenate(root);
 
-        describe(`${rootWithHyphen} scenarios:`, () => {
+        describe(`${rootType}-${root} scenarios:`, () => {
             logWarn(`===== Root: ${root}`);
             for (let trIndex = 0; trIndex < transitions.length; trIndex++) {
                 const transition = transitions[trIndex];
@@ -53,7 +49,7 @@ describe("frame-tab-root:", () => {
                 const teamOne: Item = teamsData[`teamOne${transition}`];
                 const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-                describe(`transition: ${transition} scenarios:`, () => {
+                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, () => {
 
                     before(async function () {
                         logWarn(`========= ${root}-${transition} =========`);
@@ -70,7 +66,7 @@ describe("frame-tab-root:", () => {
                         await screen.loadedHome();
                     });
 
-                    it(`loaded frame ${rootWithHyphen} root with nested frames`, async () => {
+                    it(`loaded frame ${root} root with nested frames`, async () => {
                         await screen[`navigateToPage${root}WithFrames`]();
                         await screen[`loadedPage${root}WithFrames`]();
                     });
