@@ -1,16 +1,18 @@
-import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn } from "nativescript-dev-appium";
 
 import { Screen, playersData, home, somePage, otherPage, teamsData, driverDefaultWaitTime } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
-describe("layout-root:", () => {
+const rootType = "layout-root";
+describe(rootType, () => {
     let driver: AppiumDriver;
     let screen: Screen;
 
     before(async () => {
         driver = await createDriver();
         screen = new Screen(driver);
+        logWarn("====== layout-root ========")
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
@@ -32,12 +34,14 @@ describe("layout-root:", () => {
         }
     });
 
-    transitions.forEach(transition => {
+    for (let index = 0; index < transitions.length; index++) {
+        const transition = transitions[index];
+
         const playerOne = playersData[`playerOne${transition}`];
         const playerTwo = playersData[`playerTwo${transition}`];
         const teamOne = teamsData[`teamOne${transition}`];
 
-        describe(`transition: ${transition} scenarios:`, () => {
+        describe(`${rootType}-transition-${transition}-scenarios:`, () => {
 
             it("loaded home page", async () => {
                 await screen.loadedHome();
@@ -291,9 +295,9 @@ describe("layout-root:", () => {
                 await screen.loadedHome();
             });
         });
-    });
+    };
 
-    describe("players list slide transition with parent frame default transition:", () => {
+    describe(`${rootType}-players-list-slide-transition with parent frame default transition:`, () => {
         const playerOne = playersData["playerOneSlide"];
         const playerTwo = playersData["playerTwoSlide"];
 
@@ -352,7 +356,7 @@ describe("layout-root:", () => {
         });
     });
 
-    describe("players list slide transition with parent frame no transition:", () => {
+    describe(`${rootType}-players-list-slide-transition with parent frame no transition:`, () => {
         const playerOne = playersData["playerOneSlide"];
         const playerTwo = playersData["playerTwoSlide"];
 
@@ -411,7 +415,7 @@ describe("layout-root:", () => {
         });
     });
 
-    describe("players list flip transition with parent frame default transition:", () => {
+    describe(`${rootType}-players-list-flip-transition with parent frame default transition:`, () => {
         const playerOne = playersData["playerOneFlip"];
         const playerTwo = playersData["playerTwoFlip"];
 
@@ -470,7 +474,7 @@ describe("layout-root:", () => {
         });
     });
 
-    describe("players list flip transition with parent frame no transition:", () => {
+    describe(`${rootType}-players-list-flip-transition with parent frame no transition:`, () => {
         const playerOne = playersData["playerOneFlip"];
         const playerTwo = playersData["playerTwoFlip"];
 

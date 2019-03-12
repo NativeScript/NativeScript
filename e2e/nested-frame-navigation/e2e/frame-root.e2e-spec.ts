@@ -1,10 +1,11 @@
 import { AppiumDriver, createDriver } from "nativescript-dev-appium";
 
-import { Screen, playersData, home, somePage, teamsData, driverDefaultWaitTime } from "./screen";
-import * as shared from "./shared.e2e-spec";
+import { Screen, playersData, teamsData, driverDefaultWaitTime, Item } from "./screen";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
+import * as shared from "./shared.e2e-spec";
 
-describe("frame-root:", () => {
+const rootType = "frame-root";
+describe(rootType, () => {
     let driver: AppiumDriver;
     let screen: Screen;
 
@@ -38,7 +39,18 @@ describe("frame-root:", () => {
         const teamOne = teamsData[`teamOne${transition}`];
         const teamTwo = teamsData[`teamTwo${transition}`];
 
-        describe(`transition: ${transition} scenarios:`, () => {
+        describe(`${rootType}-transition-${transition}-scenarios:`, () => {
+            before(async function () {
+                logWarn(`==== Transition ${transition}`);
+
+                if (transition === "Flip" &&
+                    driver.isAndroid && parseInt(driver.platformVersion) === 19) {
+                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                    console.log("skipping flip transition tests on api level 19");
+                    this.skip();
+                }
+            });
+
             it("loaded home page", async () => {
                 await screen.loadedHome();
             });

@@ -7,15 +7,13 @@ import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "
 // NOTE: TabTop is Android only scenario (for iOS we will essentially execute 2x TabBottom)
 const roots = ["TabTop", "TabBottom"];
 
-function hyphenate(s: string) {
-    return s.replace(/([a-zA-Z])(?=[A-Z])/g, "$1-").toLowerCase();
-}
-
-describe("frame-tab-root:", () => {
+const rootType = "frame-tab-root";
+describe(rootType, () => {
     let driver: AppiumDriver;
     let screen: Screen;
 
     before(async () => {
+        logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
@@ -39,24 +37,25 @@ describe("frame-tab-root:", () => {
         }
     });
 
-    roots.forEach(root => {
-        const rootWithHyphen = hyphenate(root);
+    for (let index = 0; index < roots.length; index++) {
+        const root = roots[index];
 
-        describe(`${rootWithHyphen} scenarios:`, () => {
+        describe(`${rootType}-${root} scenarios:`, () => {
+            logWarn(`===== Root: ${root}`);
+            for (let trIndex = 0; trIndex < transitions.length; trIndex++) {
+                const transition = transitions[trIndex];
+                const playerOne: Item = playersData[`playerOne${transition}`];
+                const playerTwo: Item = playersData[`playerTwo${transition}`];
+                const teamOne: Item = teamsData[`teamOne${transition}`];
+                const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-            transitions.forEach(transition => {
-                const playerOne = playersData[`playerOne${transition}`];
-                const playerTwo = playersData[`playerTwo${transition}`];
-                const teamOne = teamsData[`teamOne${transition}`];
-                const teamTwo = teamsData[`teamTwo${transition}`];
-        
-                describe(`transition: ${transition} scenarios:`, () => {
+                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, () => {
 
                     it("loaded home page", async () => {
                         await screen.loadedHome();
                     });
 
-                    it(`loaded frame ${rootWithHyphen} root with nested frames`, async () => {
+                    it(`loaded frame ${root} root with nested frames`, async () => {
                         await screen[`navigateToPage${root}WithFrames`]();
                         await screen[`loadedPage${root}WithFrames`]();
                     });
