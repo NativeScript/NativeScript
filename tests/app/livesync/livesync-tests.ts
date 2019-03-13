@@ -15,6 +15,7 @@ const mainPageCssFileName = "./app/main-page.css";
 const mainPageHtmlFileName = "./app/main-page.html";
 const mainPageXmlFileName = "./app/main-page.xml";
 
+const black = new Color("black");
 const green = new Color("green");
 
 const mainPageTemplate = `
@@ -56,7 +57,7 @@ export function test_onLiveSync_ModuleContext_Script_AppTs() {
 }
 
 export function test_onLiveSync_ModuleContext_Style_MainPageCss() {
-    _test_onLiveSync_ModuleContext({ type: "style", path: mainPageCssFileName });
+    _test_onLiveSync_ModuleContext_TypeStyle({ type: "style", path: mainPageCssFileName });
 }
 
 export function test_onLiveSync_ModuleContext_Markup_MainPageHtml() {
@@ -110,4 +111,29 @@ function _test_onLiveSync_ModuleContext(context: { type, path }) {
     const topmostFrame = frame.topmost();
     TKUnit.waitUntilReady(() => topmostFrame.currentPage && topmostFrame.currentPage.isLoaded && !topmostFrame.canGoBack());
     TKUnit.assertTrue(topmostFrame.currentPage.getViewById("label").isLoaded);
+}
+
+function _test_onLiveSync_ModuleContext_TypeStyle(context: { type, path }) {
+    const pageBeforeNavigation = helper.getCurrentPage();
+
+    const page = <Page>parse(pageTemplate);
+    helper.navigateWithHistory(() => page);
+
+    const pageBeforeLiveSync = helper.getCurrentPage();
+    pageBeforeLiveSync._moduleName = "main-page";
+    global.__onLiveSync({ type: context.type, path: context.path });
+
+    const pageAfterLiveSync = helper.getCurrentPage();
+    TKUnit.waitUntilReady(() => pageAfterLiveSync.getViewById("button").style.color.toString() === green.toString());
+
+    TKUnit.assertTrue(pageAfterLiveSync.frame.canGoBack(), "Local styles NOT applied - livesync navigation executed!");
+    TKUnit.assertEqual(pageAfterLiveSync, pageBeforeLiveSync, "Pages are different - livesync navigation executed!");
+    TKUnit.assertTrue(pageAfterLiveSync._cssState.isSelectorsLatestVersionApplied(), "Latest selectors version NOT applied!");
+
+    helper.goBack();
+
+    const pageAfterNavigationBack = helper.getCurrentPage();
+    TKUnit.assertEqual(pageAfterNavigationBack.getViewById("label").style.color, black, "App styles applied on back navigation!");
+    TKUnit.assertEqual(pageBeforeNavigation, pageAfterNavigationBack, "Pages are different - livesync navigation executed!");
+    TKUnit.assertTrue(pageAfterNavigationBack._cssState.isSelectorsLatestVersionApplied(), "Latest selectors version is NOT applied!");
 }
