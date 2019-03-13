@@ -1,10 +1,11 @@
 import { AppiumDriver, createDriver, logWarn } from "nativescript-dev-appium";
 
-import { Screen, playersData, home, somePage, teamsData, driverDefaultWaitTime, Item } from "./screen";
-import * as shared from "./shared.e2e-spec";
+import { Screen, playersData, teamsData, driverDefaultWaitTime, Item } from "./screen";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
+import * as shared from "./shared.e2e-spec";
 
-describe("frame-root:", () => {
+const rootType = "frame-root";
+describe(rootType, () => {
     let driver: AppiumDriver;
     let screen: Screen;
 
@@ -40,7 +41,7 @@ describe("frame-root:", () => {
         const teamOne: Item = teamsData[`teamOne${transition}`];
         const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-        describe(`transition: ${transition} scenarios:`, () => {
+        describe(`${rootType}-transition-${transition}-scenarios:`, () => {
             before(async function () {
                 logWarn(`==== Transition ${transition}`);
 

@@ -2,7 +2,7 @@ import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { 
     ActionItemBase, ActionBarBase, isVisible, View, 
     colorProperty, backgroundColorProperty, 
-    backgroundInternalProperty, flatProperty, 
+    backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty, 
     layout, Color, traceMissingIcon } from "./action-bar-common";
 import { fromFileOrResource } from "../../image-source";
 import { ios as iosUtils } from "../../utils/utils";
@@ -118,6 +118,18 @@ export class ActionBar extends ActionBarBase {
 
         this.measure(widthSpec, heightSpec);
         this.layout(0, 0, width, height, false);
+    }
+
+    private _getIconRenderingMode(): UIImageRenderingMode {
+        switch (this.iosIconRenderingMode) {
+            case "alwaysOriginal":
+                return UIImageRenderingMode.AlwaysOriginal;
+            case "alwaysTemplate":
+                return UIImageRenderingMode.AlwaysTemplate;
+            case "automatic":
+            default:
+                return UIImageRenderingMode.AlwaysOriginal;
+        }
     }
 
     public update() {
@@ -241,7 +253,8 @@ export class ActionBar extends ActionBarBase {
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
         } else if (item.icon) {
             const img = loadActionIconFromFileOrResource(item.icon);
-            barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img, UIBarButtonItemStyle.Plain, tapHandler, "tap");
+            const image = img.imageWithRenderingMode(this._getIconRenderingMode());
+            barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
         } else {
             barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }
@@ -391,5 +404,12 @@ export class ActionBar extends ActionBarBase {
         if (navBar) {
             this.updateFlatness(navBar);
         }
+    }
+
+    [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
+        return "alwaysOriginal";
+    }
+    [iosIconRenderingModeProperty.setNative](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
+        this.update();
     }
 }

@@ -12,6 +12,7 @@ import { textTransformProperty, TextTransform, getTransformedText } from "../tex
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
 import { Frame } from "../frame";
+import * as application from "../../application";
 
 export * from "./tab-view-common";
 
@@ -242,7 +243,7 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
             const is = fromFileOrResource(item.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
+                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
             } else {
                 traceMissingIcon(item.iconSource);
             }
