@@ -13,7 +13,7 @@ export function onTap(args: EventData) {
 }
 
 export function clearResult(args: EventData) {
-    setLabelTextAndLog(args, "");
+    setLabelTextAndLog(args, "none");
 }
 
 export function onOuterWrapLayoutTap(args) {
