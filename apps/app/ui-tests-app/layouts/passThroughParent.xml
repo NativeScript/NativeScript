@@ -24,7 +24,5 @@
         <StackLayout>
             <Label id="resultLabel" textWrap="true" />
         </StackLayout>
-
     </WrapLayout>
-
 </Page>

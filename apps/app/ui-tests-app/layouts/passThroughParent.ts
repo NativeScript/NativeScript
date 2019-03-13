@@ -9,7 +9,7 @@ const setLabelTextAndLog = (args, text: string) => {
 }
 
 export function onTap(args: EventData) {
-    setLabelTextAndLog(args, "onButtonTap");
+    setLabelTextAndLog(args, "onButtonTapResult");
 }
 
 export function clearResult(args: EventData) {
@@ -17,7 +17,7 @@ export function clearResult(args: EventData) {
 }
 
 export function onOuterWrapLayoutTap(args) {
-    setLabelTextAndLog(args, "onOuterWrapLayoutTap");
+    setLabelTextAndLog(args, "onOuterWrapLayoutTapResult");
 }
 
 export function onStackLayoutThrowTap(args: EventData) {
