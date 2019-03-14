@@ -307,7 +307,7 @@ export interface AndroidActivityEventData {
     /**
      * The activity.
      */
-    activity: any /* android.support.v7.app.AppCompatActivity */;
+    activity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * The name of the event.
@@ -397,7 +397,7 @@ export class AndroidApplication extends Observable {
     /**
      * The currently active (loaded) [android Activity](http://developer.android.com/reference/android/app/Activity.html). This property is automatically updated upon Activity events.
      */
-    foregroundActivity: any /* android.support.v7.app.AppCompatActivity */;
+    foregroundActivity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * Deprecated. Please use startActivity, foregroundActivity or context property.
@@ -407,7 +407,7 @@ export class AndroidApplication extends Observable {
     /**
      * The main (start) Activity for the application.
      */
-    startActivity: any /* android.support.v7.app.AppCompatActivity */;
+    startActivity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * The name of the application package.

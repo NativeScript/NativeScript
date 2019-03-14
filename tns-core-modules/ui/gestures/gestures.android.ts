@@ -294,7 +294,7 @@ export class GesturesObserver extends GesturesObserverBase {
 
         if (type & GestureTypes.tap || type & GestureTypes.doubleTap || type & GestureTypes.longPress) {
             initializeTapAndDoubleTapGestureListener();
-            this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
+            this._simpleGestureDetector = new androidx.core.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
         }
 
         if (type & GestureTypes.pinch) {
@@ -304,7 +304,7 @@ export class GesturesObserver extends GesturesObserverBase {
 
         if (type & GestureTypes.swipe) {
             initializeSwipeGestureListener();
-            this._swipeGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
+            this._swipeGestureDetector = new androidx.core.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
         }
 
         if (type & GestureTypes.pan) {
