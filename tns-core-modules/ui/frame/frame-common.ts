@@ -564,44 +564,34 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        super._onLivesync();
-
-        if (!this._currentEntry || !this._currentEntry.entry) {
-            return false;
-        }
-
-        const currentEntry = this._currentEntry.entry;
-        if (context && context.path) {
-            // Use topmost instead of this to cover nested frames scenario
-            const topmostFrame = topmost();
-            const moduleName = topmostFrame.currentEntry.moduleName;
-            const reapplyStyles = context.path.includes(moduleName);
-            if (reapplyStyles && moduleName) {
-                topmostFrame.currentPage.changeCssFile(context.path);
-                return true;
-            }
-        }
-
-        const newEntry: NavigationEntry = {
-            animated: false,
-            clearHistory: true,
-            context: currentEntry.context,
-            create: currentEntry.create,
-            moduleName: currentEntry.moduleName,
-            backstackVisible: currentEntry.backstackVisible
-        }
-
-        // If create returns the same page instance we can't recreate it.
-        // Instead of navigation set activity content.
-        // This could happen if current page was set in XML as a Page instance.
-        if (newEntry.create) {
-            const page = newEntry.create();
-            if (page === this.currentPage) {
+        // Execute a navigation if not handled on `View` level
+        if (!super._onLivesync(context)) {
+            if (!this._currentEntry || !this._currentEntry.entry) {
                 return false;
             }
-        }
 
-        this.navigate(newEntry);
+            const currentEntry = this._currentEntry.entry;
+            const newEntry: NavigationEntry = {
+                animated: false,
+                clearHistory: true,
+                context: currentEntry.context,
+                create: currentEntry.create,
+                moduleName: currentEntry.moduleName,
+                backstackVisible: currentEntry.backstackVisible
+            }
+
+            // If create returns the same page instance we can't recreate it.
+            // Instead of navigation set activity content.
+            // This could happen if current page was set in XML as a Page instance.
+            if (newEntry.create) {
+                const page = newEntry.create();
+                if (page === this.currentPage) {
+                    return false;
+                }
+            }
+
+            this.navigate(newEntry);
+        }
         return true;
     }
 }
