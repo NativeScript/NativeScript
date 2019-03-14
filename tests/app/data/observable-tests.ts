@@ -521,7 +521,18 @@ export function test_CorrectPropertyValueAfterUsingWrappedValue() {
 
     testObservable.set("property1", wrappedArray);
 
-    TKUnit.assertEqual(testObservable.get("property1"), testArray, "WrappedValue is used only to execute property change logic and unwrapped value should be used as proeprty value.");
+    TKUnit.assertEqual(testObservable.get("property1"), testArray, "WrappedValue is used only to execute property change logic and unwrapped value should be used as property value.");
+}
+
+export function test_CorrectPropertyValueAfterUsingStringEmptyWrappedValue() {
+    const emptyString = "";
+    let testObservable = fromObject({ "property1": emptyString });
+
+    let wrappedEmptyString = WrappedValue.wrap(emptyString);
+
+    testObservable.set("property1", wrappedEmptyString);
+
+    TKUnit.assertEqual(testObservable.get("property1"), emptyString, "WrappedValue is used only to execute property change logic and unwrapped value should be used as property value.");
 }
 
 export function test_NestedObservablesWithObservableArrayShouldNotCrash() {

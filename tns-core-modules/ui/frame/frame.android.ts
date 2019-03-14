@@ -82,13 +82,13 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
     return attachStateChangeListener;
 }
 
-export function reloadPage(): void {
+export function reloadPage(context?: ModuleContext): void {
     const activity = application.android.foregroundActivity;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     if (callbacks) {
         const rootView: View = callbacks.getRootView();
 
-        if (!rootView || !rootView._onLivesync()) {
+        if (!rootView || !rootView._onLivesync(context)) {
             callbacks.resetActivityContent(activity);
         }
     } else {
@@ -153,7 +153,7 @@ export class Frame extends FrameBase {
         // In case activity was destroyed because of back button pressed (e.g. app exit)
         // and application is restored from recent apps, current fragment isn't recreated.
         // In this case call _navigateCore in order to recreate the current fragment.
-        // Don't call navigate because it will fire navigation events. 
+        // Don't call navigate because it will fire navigation events.
         // As JS instances are alive it is already done for the current page.
         if (!this.isLoaded || this._executingEntry || !this._attachedToWindow) {
             return;
@@ -183,13 +183,13 @@ export class Frame extends FrameBase {
         const entry = this._currentEntry;
         if (entry && manager && !manager.findFragmentByTag(entry.fragmentTag)) {
             // Simulate first navigation (e.g. no animations or transitions)
-            // we need to cache the original animation settings so we can restore them later; otherwise as the 
-            // simulated first navigation is not animated (it is actually a zero duration animator) the "popExit" animation 
+            // we need to cache the original animation settings so we can restore them later; otherwise as the
+            // simulated first navigation is not animated (it is actually a zero duration animator) the "popExit" animation
             // is broken when transaction.setCustomAnimations(...) is used in a scenario with:
             // 1) forward navigation
             // 2) suspend / resume app
-            // 3) back navigation -- the exiting fragment is erroneously animated with the exit animator from the 
-            // simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears; 
+            // 3) back navigation -- the exiting fragment is erroneously animated with the exit animator from the
+            // simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears;
             // the user only sees the animation of the entering fragment as per its specific enter animation settings.
             // NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
             this._cachedAnimatorState = getAnimatorState(this._currentEntry);
@@ -727,7 +727,7 @@ function ensureFragmentClass() {
         return;
     }
 
-    // this require will apply the FragmentClass implementation 
+    // this require will apply the FragmentClass implementation
     require("ui/frame/fragment");
 
     if (!fragmentClass) {
@@ -855,11 +855,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             entry.viewSavedState = null;
         }
 
-        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.	
+        // fixes 'java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first'.
         // on app resume in nested frame scenarios with support library version greater than 26.0.0
-        // HACK: this whole code block shouldn't be necessary as the native view is supposedly removed from its parent 
-        // right after onDestroyView(...) is called but for some reason the fragment view (page) still thinks it has a 
-        // parent while its supposed parent believes it properly removed its children; in order to "force" the child to 
+        // HACK: this whole code block shouldn't be necessary as the native view is supposedly removed from its parent
+        // right after onDestroyView(...) is called but for some reason the fragment view (page) still thinks it has a
+        // parent while its supposed parent believes it properly removed its children; in order to "force" the child to
         // lose its parent we temporarily add it to the parent, and then remove it (addViewInLayout doesn't trigger layout pass)
         const nativeView = page.nativeViewProtected;
         if (nativeView != null) {
@@ -908,8 +908,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
 
         // [nested frames / fragments] see https://github.com/NativeScript/NativeScript/issues/6629
-        // retaining reference to a destroyed fragment here somehow causes a cryptic 
-        // "IllegalStateException: Failure saving state: active fragment has cleared index: -1" 
+        // retaining reference to a destroyed fragment here somehow causes a cryptic
+        // "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
         // in a specific mixed parent / nested frame navigation scenario
         entry.fragment = null;
 
@@ -1019,15 +1019,15 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
 
         // NOTE: activity.onPostResume() is called when activity resume is complete and we can
-        // safely raise the application resume event; 
+        // safely raise the application resume event;
         // onActivityResumed(...) lifecycle callback registered in application is called too early
-        // and raising the application resume event there causes issues like 
+        // and raising the application resume event there causes issues like
         // https://github.com/NativeScript/NativeScript/issues/6708
         if ((<any>activity).isNativeScriptActivity) {
             const args = <application.ApplicationEventData>{
                 eventName: application.resumeEvent,
-                object: application.android, 
-                android: activity 
+                object: application.android,
+                android: activity
             };
             application.notify(args);
             application.android.paused = false;
@@ -1151,7 +1151,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
     // Paths that go trough this method:
     // 1. Application initial start - there is no rootView in callbacks.
-    // 2. Application revived after Activity is destroyed. this._rootView should have been restored by id in onCreate. 
+    // 2. Application revived after Activity is destroyed. this._rootView should have been restored by id in onCreate.
     // 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
     // 4. _resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
     private setActivityContent(

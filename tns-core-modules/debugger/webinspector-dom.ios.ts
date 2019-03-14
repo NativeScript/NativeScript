@@ -20,6 +20,10 @@ export class DOMDomainDebugger implements inspectorCommandTypes.DOMDomain.DOMDom
 
         attachDOMInspectorEventCallbacks(this.events);
         attachDOMInspectorCommandCallbacks(this.commands);
+
+        // By default start enabled because we can miss the "enable event when
+        // running with `--debug-brk` -- the frontend will send it before we've been created
+        this.enable();
     }
 
     get enabled(): boolean {

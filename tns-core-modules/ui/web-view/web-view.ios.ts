@@ -131,7 +131,8 @@ export class WebView extends WebViewBase {
 
     public _loadUrl(src: string) {
         if (src.startsWith("file:///")) {
-            this.ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(src));
+            var cachePath = src.substring(0, src.lastIndexOf("/"));
+            this.ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(cachePath));
         } else {
             this.ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
         }
