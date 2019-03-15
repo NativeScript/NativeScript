@@ -85,7 +85,7 @@ class WKNavigationDelegateImpl extends NSObject
                 src = webView.URL.absoluteString;
             }
             if (traceEnabled()) {
-                traceWrite("WKNavigationDelegateClass.webViewDidFailNavigationWithError(" + error.localizedDescription + ")", traceCategories.Debug);
+                traceWrite("WKNavigationDelegateClass.webViewDidFailProvisionalNavigationWithError(" + error.localizedDescription + ")", traceCategories.Debug);
             }
             owner._onLoadFinished(src, error.localizedDescription);
         }
