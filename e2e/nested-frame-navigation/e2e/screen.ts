@@ -4,6 +4,7 @@ import { assert } from "chai";
 const layoutWithFrame = "Layout w/ frame";
 const layoutWithMultiFrame = "Layout w/ multi frame";
 const pageWithFrame = "Page w/ frame";
+const pageWithFrameNonDefaultTransition = "Frame to NestedFrame (non-default transition)";
 const pageWithMultiFrame = "Page w/ multi frame";
 const pageTabTopWithFrames = "Page w/ tabs (top)";
 const pageTabBottomWithFrames = "Page w/ tabs (bottom)";
@@ -17,6 +18,7 @@ const tabTopHome = "tab top page";
 const tabBottomHome = "tab bottom page";
 const tabRootTopHome = "tab root top home";
 const tabRootBottomHome = "tab root bottom home";
+const navigateToStillOtherPageSlide = "navigate to still other page (slide transition)";
 const navigateToSomePageDefault = "navigate to some page (default transition)";
 const navigateToSomePageNone = "navigate to some page (no transition)";
 const navigateToSomePageSlide = "navigate to some page (slide transition)";
@@ -28,6 +30,7 @@ const navigateToOtherPageFlip = "navigate to other page (flip transition)";
 const players = "Players";
 const teams = "Teams";
 const playerBack = "playerBack";
+const stillOtherPageBack = "stillOtherPageBack";
 const somePageBack = "somePageBack";
 const otherPageBack = "otherPageBack";
 const teamBack = "teamBack";
@@ -38,6 +41,7 @@ const resetApp = "reset app";
 
 export const driverDefaultWaitTime = 10000;
 export const home = "Home";
+export const stillOtherPage = "still other page";
 export const somePage = "some page";
 export const otherPage = "other page";
 
@@ -153,6 +157,10 @@ export class Screen {
         await this.navigateToPage(pageWithFrame);
     }
 
+    navigateToPageWithFrameNonDefaultTransition = async () => {
+        await this.navigateToPage(pageWithFrameNonDefaultTransition);
+    }
+
     navigateToPageWithMultiFrame = async () => {
         await this.navigateToPage(pageWithMultiFrame);
     }
@@ -172,6 +180,10 @@ export class Screen {
     navigateToTabBottomRootWithFrames = async () => {
         await this.navigateToPage(tabBottomRootWithFrames);
     }
+
+    navigateToStillOtherPageSlide = async () => {
+        await this.navigateToPage(navigateToStillOtherPageSlide);
+    };
 
     navigateToSomePageDefault = async () => {
         await this.navigateToPage(navigateToSomePageDefault);
@@ -227,6 +239,10 @@ export class Screen {
     goBackToTeamsList = async () => {
         await this.goBack(teamBack);
     };
+
+    goBackFromStillOtherPage = async () => {
+        await this.goBack(stillOtherPageBack);
+    }
 
     goBackFromSomePage = async () => {
         await this.goBack(somePageBack);
@@ -297,6 +313,10 @@ export class Screen {
 
     loadedTabBottomRootWithFrames = async () => {
         await this.loadedPage(tabRootBottomHome);
+    }
+    
+    loadedStillOtherPage = async () => {
+        await this.loadedPage(stillOtherPage);
     }
 
     loadedSomePage = async () => {

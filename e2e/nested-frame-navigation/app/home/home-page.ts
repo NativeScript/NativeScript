@@ -37,3 +37,16 @@ export function onNavigateToTabsTopRoot(args: EventData) {
 export function onNavigateToTabsBottomRoot(args: EventData) {
     application._resetRootView({ moduleName: "tab-root/tab-bottom-root" });
 }
+
+export function onFrameToNestedFrame(args: EventData) {
+    const button = <Button>args.object;
+    button.page.frame.navigate({
+        moduleName: "frame-root/frame-home-page",
+        animated: true,
+        transition: {
+            name: "slide",
+            duration: 300,
+            curve: "easeIn"
+        }
+    });
+}
