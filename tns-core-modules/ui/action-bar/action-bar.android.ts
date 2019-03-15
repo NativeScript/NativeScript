@@ -437,7 +437,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
         let is = fromFileOrResource(icon);
         if (is) {
-            drawable = new android.graphics.drawable.BitmapDrawable(is.android);
+            drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
         }
 
         result = drawable;

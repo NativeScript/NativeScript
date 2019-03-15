@@ -42,6 +42,20 @@ export class ActionBar extends View {
     android: AndroidActionBarSettings;
 
     /**
+     * Gets the native iOS [UINavigationBar](https://developer.apple.com/documentation/uikit/uinavigationbar) that represents the user interface for this component. Valid only when running on iOS.
+     */
+    ios: any /* UITabBarController */;
+
+    /**
+     * Gets or set the UIImageRenderingMode of the action bar icons in iOS. Defaults to "alwaysOriginal" 
+     * Valid values are:
+     *  - automatic
+     *  - alwaysOriginal
+     *  - alwaysTemplate  
+     */
+    iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    /**
      * Updates the action bar.
      */
     update();
