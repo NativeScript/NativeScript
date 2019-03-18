@@ -42,3 +42,16 @@ export function onNavigateToSomePage(args: EventData) {
     const button = <Button>args.object;
     button.page.frame.navigate("some-page/some-page");
 }
+
+export function onFrameToNestedFrame(args: EventData) {
+    const button = <Button>args.object;
+    button.page.frame.navigate({
+        moduleName: "frame-root/frame-home-page",
+        animated: true,
+        transition: {
+            name: "slide",
+            duration: 300,
+            curve: "easeIn"
+        }
+    });
+}
