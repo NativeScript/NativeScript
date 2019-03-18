@@ -43,5 +43,6 @@ export function loadExamples() {
     examples.set("missing-background-image", "css/missing-background-image");
     examples.set("background-shorthand", "css/background-shorthand");
     examples.set("background-image-linear-gradient", "css/background-image-linear-gradient");
+    examples.set("background-image", "css/background-image");
     return examples;
 }
