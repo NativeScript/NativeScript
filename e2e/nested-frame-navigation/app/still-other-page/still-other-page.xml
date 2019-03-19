@@ -1,0 +1,12 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <ActionBar class="action-bar">
+        <NavigationButton text="stillOtherPageBack" tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
+        <Label class="action-bar-title" text="still other page" />
+    </ActionBar>
+
+    <GridLayout>
+
+    </GridLayout>
+
+</Page>

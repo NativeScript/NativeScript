@@ -46,6 +46,7 @@ interface ExpandedEntry extends BackstackEntry {
     transition: Transition;
     transitionName: string;
     frameId: number
+    useLollipopTransition: boolean;
 }
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
@@ -100,6 +101,8 @@ export function _setAndroidFragmentTransitions(
         useLollipopTransition = false;
     }
 
+    newEntry.useLollipopTransition = useLollipopTransition;
+
     if (!animated) {
         name = "none";
     } else if (transition) {
@@ -116,6 +119,7 @@ export function _setAndroidFragmentTransitions(
         _updateTransitions(currentEntry);
         if (currentEntry.transitionName !== name ||
             currentEntry.transition !== transition ||
+            !!currentEntry.useLollipopTransition !== useLollipopTransition ||
             !useLollipopTransition) {
             clearExitAndReenterTransitions(currentEntry, true);
             currentFragmentNeedsDifferentAnimation = true;
@@ -190,11 +194,11 @@ export function _onFragmentCreateAnimator(entry: ExpandedEntry, fragment: androi
     let animator: android.animation.Animator;
     switch (nextAnim) {
         case AnimationType.enterFakeResourceId:
-            animator = entry.enterAnimator;
+            animator = entry.enterAnimator || entry.defaultEnterAnimator /* HACK */;
             break;
 
         case AnimationType.exitFakeResourceId:
-            animator = entry.exitAnimator;
+            animator = entry.exitAnimator || entry.defaultExitAnimator /* HACK */;
             break;
 
         case AnimationType.popEnterFakeResourceId:
@@ -268,7 +272,6 @@ export function _reverseTransitions(previousEntry: ExpandedEntry, currentEntry: 
         } else {
             previousFragment.setEnterTransition(null);
         }
-
     }
 
     return transitionUsed;

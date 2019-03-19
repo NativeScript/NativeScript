@@ -168,11 +168,14 @@ allTests["VISUAL-STATE"] = visualStateTests;
 import * as valueSourceTests from "./ui/styling/value-source-tests";
 allTests["VALUE-SOURCE"] = valueSourceTests;
 
-import * as buttonTests from "./ui/button/button-tests";
-allTests["BUTTON"] = buttonTests;
-
 import * as borderTests from "./ui/border/border-tests";
 allTests["BORDER"] = borderTests;
+
+import * as builderTests from "./ui/builder/builder-tests";
+allTests["BUILDER"] = builderTests;
+
+import * as buttonTests from "./ui/button/button-tests";
+allTests["BUTTON"] = buttonTests;
 
 import * as labelTests from "./ui/label/label-tests";
 allTests["LABEL"] = labelTests;
