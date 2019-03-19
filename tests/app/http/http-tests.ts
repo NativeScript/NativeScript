@@ -528,7 +528,7 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCr
     var result;
 
     http.request({ url: "https://raw.githubusercontent.com/NativeScript/NativeScript/master/tests/app/logo.png", method: "GET" }).then(function (response) {
-        const filePath = fs.path.join(fs.knownFolders.temp().path, "test", "logo.png");
+        const filePath = fs.path.join(fs.knownFolders.temp().path, "test", "some", "path", "logo.png");
         result = response.content.toFile(filePath);
         try {
             TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
