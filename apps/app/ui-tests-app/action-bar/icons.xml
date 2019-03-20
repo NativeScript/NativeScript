@@ -8,7 +8,7 @@
     </ActionBar>
   </Page.actionBar>
   <StackLayout>
-    <Button text="go to cleared page" tap="navigate"/>
+    <Button text="go to cleared page" automationText="goToClearedPage" tap="navigate"/>
     <Button text="undefined" tap="onChangeRenderingMode"/>
   </StackLayout>
 </Page>
