@@ -36,7 +36,6 @@ export function pageLoaded(args: EventData) {
     examples.set("progress-bar", "progress-bar/main-page");
     examples.set("date-picker", "date-picker/date-picker");
     examples.set("nested-frames", "nested-frames/main-page");
-    examples.set("intent", "intent/main-page");
     page.bindingContext = new MainPageViewModel(wrapLayout, examples);
 
     const parent = page.getViewById("parentLayout");
