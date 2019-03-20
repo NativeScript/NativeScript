@@ -1,11 +1,6 @@
 import * as TKUnit from "../TKUnit";
 import * as types from "tns-core-modules/utils/types";
-
-// >> virtual-array-require
 import * as virtualArrayModule from "tns-core-modules/data/virtual-array";
-// << virtual-array-require
-
-require("globals");
 
 export var test_VirtualArray_shouldCreateArrayFromSpecifiedLength = function () {
     var array = new virtualArrayModule.VirtualArray<number>(100);
@@ -20,11 +15,9 @@ export var test_VirtualArray_setItemShouldSetCorrectItem = function () {
 };
 
 export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentItem = function () {
-    // >> virtual-array-itemsloading
     var array = new virtualArrayModule.VirtualArray<number>(100);
     array.loadSize = 15;
 
-    // >> (hide)
     var result: virtualArrayModule.ChangedData<number>;
     var index = 0;
 
@@ -43,7 +36,6 @@ export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentIte
 
     TKUnit.assert(result && result.eventName === "change" && result.action === virtualArrayModule.ChangeType.Update &&
         result.removed.length === 1 && result.index === index && result.addedCount === 1, "VirtualArray<T> setItem() should raise 'change' event with correct args!");
-    // << (hide)
 
     array.on(virtualArrayModule.VirtualArray.itemsLoadingEvent, (args: virtualArrayModule.ItemsLoading) => {
         // Argument (args) is ItemsLoading.
@@ -64,18 +56,14 @@ export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentIte
 
         array.load(args.index, itemsToLoad);
     });
-    // << virtual-array-itemsloading
 };
 
 export var test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = function () {
-    // >> virtual-array-change
     var array = new virtualArrayModule.VirtualArray<number>(100);
     array.loadSize = 15;
 
-    // >> (hide)
     var result: virtualArrayModule.ChangedData<number>;
     var index = 0;
-    // << (hide)
 
     array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
@@ -83,15 +71,12 @@ export var test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = functio
         // args.action is "update".
         // args.removed.length and result.addedCount are equal to number of loaded items with load() method.
 
-        // >> (hide)
         result = args;
-        // << (hide)
     });
 
     var itemsToLoad = [0, 1, 2];
 
     array.load(index, itemsToLoad);
-    // << virtual-array-change
 
     TKUnit.assert(result && result.eventName === "change" && result.action === virtualArrayModule.ChangeType.Update &&
         result.removed.length === itemsToLoad.length && result.index === index && result.addedCount === itemsToLoad.length,
@@ -99,14 +84,11 @@ export var test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = functio
 };
 
 export var test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs = function () {
-    // >> virtual-array-lenght
     var array = new virtualArrayModule.VirtualArray<number>(100);
     array.loadSize = 15;
 
-    // >> (hide)
     var result: virtualArrayModule.ChangedData<number>;
     var index = array.length;
-    // << (hide)
 
     array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
@@ -114,13 +96,10 @@ export var test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs
         // args.action is "add".
         // args.removed.length is 0, result.addedCount is equal to the delta between new and old "length" property values.
 
-        // >> (hide)
         result = args;
-        // << (hide)
     });
 
     array.length += array.loadSize;
-    // << virtual-array-lenght
 
     TKUnit.assert(result && result.eventName === "change" && result.action === virtualArrayModule.ChangeType.Add
         && result.index === index && result.addedCount === array.loadSize && result.removed.length === 0,
@@ -128,16 +107,11 @@ export var test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs
 };
 
 export var test_VirtualArray_lengthDecreaseShouldRaiseChangeEventWithCorrectArgs = function () {
-    // <snippet module="data/virtual-array" title="virtual-array">
-    // ### Handle "change" event when you increase "length" property.
-    // ``` JavaScript
     var array = new virtualArrayModule.VirtualArray<number>(100);
     array.loadSize = 15;
 
-    // <hide>
     var result: virtualArrayModule.ChangedData<number>;
     var index = array.length;
-    // </hide>
 
     array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
@@ -145,9 +119,7 @@ export var test_VirtualArray_lengthDecreaseShouldRaiseChangeEventWithCorrectArgs
         // args.action is "remove".
         // result.addedCount is 0, args.removed.length is equal to the delta between new and old "length" property values.
 
-        // <hide>
         result = args;
-        // </hide>
     });
 
     array.length -= array.loadSize;
