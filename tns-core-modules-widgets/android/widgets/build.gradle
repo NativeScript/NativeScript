@@ -1,0 +1,81 @@
+import groovy.json.JsonSlurper //used to parse package.json
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+
+def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
+
+apply plugin: 'com.android.library'
+
+def computeCompileSdkVersion () {
+    if(project.hasProperty("compileSdk")) {
+        return compileSdk
+    }
+    else {
+        return 28
+    }
+}
+
+def computeBuildToolsVersion() {
+    if(project.hasProperty("buildToolsVersion")) {
+        return buildToolsVersion
+    }
+    else {
+        return "28.0.2"
+    }
+}
+
+def computeSupportVersion() {
+    if(project.hasProperty("supportVersion")) {
+        return supportVersion
+    }
+    else {
+        return "28.0.0"
+    }
+}
+
+def computeTargetSdkVersion() {
+    if(project.hasProperty("targetSdk")) {
+        return targetSdk
+    }
+    else {
+        return 28
+    }
+}
+
+android {
+    compileSdkVersion computeCompileSdkVersion()
+    buildToolsVersion computeBuildToolsVersion()
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion computeTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:support-v4:' + computeSupportVersion()
+}
+
+task cleanBuildDir (type: Delete) {
+    delete "../build/"
+}
+
+task copyAar << {
+    copy {
+        from "build/outputs/aar/widgets-release.aar"
+        into "../build/"
+    }
+}
+
+assemble.dependsOn(cleanBuildDir)
+copyAar.dependsOn(assemble)
+build.dependsOn(copyAar)
