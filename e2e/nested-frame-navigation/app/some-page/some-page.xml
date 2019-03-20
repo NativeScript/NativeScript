@@ -6,7 +6,9 @@
     </ActionBar>
 
     <GridLayout>
-
+        <StackLayout>
+            <Button text="navigate to still other page (slide transition)" tap="onNavigateSlide" />
+        </StackLayout>
     </GridLayout>
 
 </Page>
