@@ -72,7 +72,7 @@ In addition to the code that makes up the NativeScript framework itself, we also
 
 ## Contributing
 
-We love PRs, and accept them for all of our repositories—even docs! Please follow our [contribution guide](CONTRIBUTING.md) if you want to become part of the project.
+We love PRs, and accept them for all of our repositories—even docs! Please follow our [contribution guide](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md) if you want to become part of the project.
 
 ## Angular
 
@@ -80,6 +80,6 @@ We [worked together with the Google Angular team](http://angularjs.blogspot.com/
 
 ## Get Help
 
-Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](CONTRIBUTING.md#bugs) or [requesting features](CONTRIBUTING.md#features). For general NativeScript questions and support, check out [Stack Overflow](https://stackoverflow.com/questions/tagged/nativescript) or ask our experts in [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation).
+Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#bugs) or [requesting features](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#features). For general NativeScript questions and support, check out [Stack Overflow](https://stackoverflow.com/questions/tagged/nativescript) or ask our experts in [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation).
 
 ![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
