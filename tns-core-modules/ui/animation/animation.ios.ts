@@ -7,11 +7,7 @@ import {
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
 } from "../styling/style-properties";
 
-import { ios } from "../../utils/utils";
-
 export * from "./animation-common";
-
-let getter = ios.getter;
 
 let _transform = "_transform";
 let _skip = "_skip";
@@ -283,7 +279,7 @@ export class Animation extends AnimationBase {
                 };
                 originalValue = nativeView.layer.backgroundColor;
                 if (nativeView instanceof UILabel) {
-                    nativeView.setValueForKey(getter(UIColor, UIColor.clearColor), "backgroundColor");
+                    nativeView.setValueForKey(UIColor.clearColor, "backgroundColor");
                 }
                 value = value.CGColor;
                 break;
