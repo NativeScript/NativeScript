@@ -7,7 +7,6 @@
 * **android:** resource ID not found on navigation between pages with nested and single frames ([#6955](https://github.com/NativeScript/NativeScript/issues/6955)) ([33d6d1f](https://github.com/NativeScript/NativeScript/commit/33d6d1f))
 * **android:** navigation between pages with single and nested frames ([#7011](https://github.com/NativeScript/NativeScript/issues/7011)) ([91d90cc](https://github.com/NativeScript/NativeScript/commit/91d90cc))
 * **http:** ensure httpcontent.toFile() creates intermediate directories ([#6451](https://github.com/NativeScript/NativeScript/issues/6451)) ([d7fb9b8](https://github.com/NativeScript/NativeScript/commit/d7fb9b8))
-* **view** expose missing backgroundSize, backgroundRepeat, and backgroundPosition properties on View class ([#7032](https://github.com/NativeScript/NativeScript/issues/7032)) ([88f2242](https://github.com/NativeScript/NativeScript/commit/88f2242))
 * WrappedValue.unwrap empty string behavior ([#6900](https://github.com/NativeScript/NativeScript/issues/6900)) ([0482460](https://github.com/NativeScript/NativeScript/commit/0482460))
 * **android-bottom-tabs:** use immediate transition on programmatic selectedIndex change ([#6942](https://github.com/NativeScript/NativeScript/issues/6942)) ([e9dfa20](https://github.com/NativeScript/NativeScript/commit/e9dfa20))
 * **ios:** disable default tab reselect behavior ([#6968](https://github.com/NativeScript/NativeScript/issues/6968)) ([043cbf3](https://github.com/NativeScript/NativeScript/commit/043cbf3))
@@ -20,8 +19,9 @@
 
 * local icon handling in actionbar and tabview ([#7009](https://github.com/NativeScript/NativeScript/issues/7009)) ([cd66300](https://github.com/NativeScript/NativeScript/commit/cd66300))
 * **android:** add openFile to utils ([#6895](https://github.com/NativeScript/NativeScript/issues/6895)) ([f8eee40](https://github.com/NativeScript/NativeScript/commit/f8eee40))
-* **HMR:** style views at runtime ([#7012](https://github.com/NativeScript/NativeScript/issues/7012)) ([3c2c1d9](https://github.com/NativeScript/NativeScript/commit/3c2c1d9))
-* **HMR:** apply changes in page styles at runtime when app root is a frame ([#6857](https://github.com/NativeScript/NativeScript/issues/6857)) ([44b8acd](https://github.com/NativeScript/NativeScript/commit/44b8acd))
+* **hmr:** style views at runtime ([#7012](https://github.com/NativeScript/NativeScript/issues/7012)) ([3c2c1d9](https://github.com/NativeScript/NativeScript/commit/3c2c1d9))
+* **hmr:** apply changes in page styles at runtime when app root is a frame ([#6857](https://github.com/NativeScript/NativeScript/issues/6857)) ([44b8acd](https://github.com/NativeScript/NativeScript/commit/44b8acd))
+* **view** expose missing backgroundSize, backgroundRepeat, and backgroundPosition properties on View class ([#7032](https://github.com/NativeScript/NativeScript/issues/7032)) ([88f2242](https://github.com/NativeScript/NativeScript/commit/88f2242))
 
 
 <a name="5.2.2"></a>
