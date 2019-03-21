@@ -1,3 +1,36 @@
+<a name="5.3.0"></a>
+# [5.3.0](https://github.com/NativeScript/NativeScript/compare/5.2.1...5.3.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **http:** ensure httpcontent.toFile() creates intermediate directories ([#6451](https://github.com/NativeScript/NativeScript/issues/6451)) ([d7fb9b8](https://github.com/NativeScript/NativeScript/commit/d7fb9b8))
+* expose missing css background* properties on View ([#7032](https://github.com/NativeScript/NativeScript/issues/7032)) ([88f2242](https://github.com/NativeScript/NativeScript/commit/88f2242))
+* navigation b/n single and nested frame pages ([#7011](https://github.com/NativeScript/NativeScript/issues/7011)) ([91d90cc](https://github.com/NativeScript/NativeScript/commit/91d90cc))
+* set/unset touchListener.owner onLoaded/onUnloaded ([#6922](https://github.com/NativeScript/NativeScript/issues/6922)) ([f056167](https://github.com/NativeScript/NativeScript/commit/f056167))
+* WrappedValue.unwrap empty string behavior ([#6900](https://github.com/NativeScript/NativeScript/issues/6900)) ([0482460](https://github.com/NativeScript/NativeScript/commit/0482460))
+* **android:** throw new Error if no activity callbacks ([#7044](https://github.com/NativeScript/NativeScript/issues/7044)) ([f9e008f](https://github.com/NativeScript/NativeScript/commit/f9e008f))
+* **android:** resource ID not found on nav ([#6955](https://github.com/NativeScript/NativeScript/issues/6955)) ([33d6d1f](https://github.com/NativeScript/NativeScript/commit/33d6d1f))
+* **android-animations:** reuse animatorSet to prevent high memory usage ([#6930](https://github.com/NativeScript/NativeScript/issues/6930)) ([7236d32](https://github.com/NativeScript/NativeScript/commit/7236d32))
+* **android-bottom-tabs:** transition type on programmatic selectedIndex change ([#6942](https://github.com/NativeScript/NativeScript/issues/6942)) ([e9dfa20](https://github.com/NativeScript/NativeScript/commit/e9dfa20))
+* **ios:** disable default tab reselect behavior ([#6968](https://github.com/NativeScript/NativeScript/issues/6968)) ([043cbf3](https://github.com/NativeScript/NativeScript/commit/043cbf3))
+* **ios:** opaque bars break ui layout ([#6929](https://github.com/NativeScript/NativeScript/issues/6929)) ([09fa085](https://github.com/NativeScript/NativeScript/commit/09fa085))
+* **ios:** resize of scrollview content breaks layout ([#6965](https://github.com/NativeScript/NativeScript/issues/6965)) ([a9d2043](https://github.com/NativeScript/NativeScript/commit/a9d2043))
+* **ios-webview:** report hostname lookup errors in loadFinished event ([#6988](https://github.com/NativeScript/NativeScript/issues/6988)) ([e6486f6](https://github.com/NativeScript/NativeScript/commit/e6486f6))
+* **ios-webview:** loading of local-file dependency ([#6947](https://github.com/NativeScript/NativeScript/issues/6947)) ([dcad754](https://github.com/NativeScript/NativeScript/commit/dcad754)), closes [/github.com/NativeScript/NativeScript/issues/6377#issuecomment-433322681](https://github.com//github.com/NativeScript/NativeScript/issues/6377/issues/issuecomment-433322681) [#6377](https://github.com/NativeScript/NativeScript/issues/6377)
+* **angular:** Re-add references to `tns-core-modules.d.ts` ([#6949](https://github.com/NativeScript/NativeScript/issues/6949)) ([f34068d](https://github.com/NativeScript/NativeScript/commit/f34068d)), closes [#6927](https://github.com/NativeScript/NativeScript/issues/6927)
+* **debugger:** Enable iOS inspector modules on creation ([1b5d307](https://github.com/NativeScript/NativeScript/commit/1b5d307))
+* **docs:** Move `NativeScriptError` declaration to a separate file ([#6927](https://github.com/NativeScript/NativeScript/issues/6927)) ([5449cfa](https://github.com/NativeScript/NativeScript/commit/5449cfa))
+
+
+### Features
+
+* local icon handling in actionbar and tabview ([#7009](https://github.com/NativeScript/NativeScript/issues/7009)) ([cd66300](https://github.com/NativeScript/NativeScript/commit/cd66300))
+* **android:** add openFile to utils ([#6895](https://github.com/NativeScript/NativeScript/issues/6895)) ([f8eee40](https://github.com/NativeScript/NativeScript/commit/f8eee40))
+* **HMR:** style views at runtime ([#7012](https://github.com/NativeScript/NativeScript/issues/7012)) ([3c2c1d9](https://github.com/NativeScript/NativeScript/commit/3c2c1d9))
+* **HMR:** apply changes in page styles at runtime when app root is a frame ([#6857](https://github.com/NativeScript/NativeScript/issues/6857)) ([44b8acd](https://github.com/NativeScript/NativeScript/commit/44b8acd))
+
+
 <a name="5.2.2"></a>
 ## [5.2.2](https://github.com/NativeScript/NativeScript/compare/5.2.1...5.2.2) (2019-03-01)
 
