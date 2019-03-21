@@ -1,0 +1,16 @@
+env:
+  global:
+    - DATE=$(date +%Y-%m-%d)
+    - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
+language: objective-c
+osx_image: xcode8.3
+install:
+  - brew update
+  - brew cask install android-sdk
+  # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
+  - yes | sdkmanager "platforms;android-23" >/dev/null
+  - yes | sdkmanager "build-tools;23.0.3" >/dev/null
+  - yes | sdkmanager "extras;android;m2repository" >/dev/null
+before_script:
+  - export ANDROID_HOME=/usr/local/share/android-sdk
+script: ./build.sh $PACKAGE_VERSION

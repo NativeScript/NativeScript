@@ -24,6 +24,7 @@ import {
 import { createViewFromEntry } from "../../builder";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
+import { BackgroundRepeat } from "../../styling/style-properties";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";
@@ -503,6 +504,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
     set backgroundImage(value: string | LinearGradient) {
         this.style.backgroundImage = value;
+    }
+
+    get backgroundSize(): string {
+        return this.style.backgroundSize;
+    }
+    set backgroundSize(value: string) {
+        this.style.backgroundSize = value;
+    }
+
+    get backgroundPosition(): string {
+        return this.style.backgroundPosition;
+    }
+    set backgroundPosition(value: string) {
+        this.style.backgroundPosition = value;
+    }
+
+    get backgroundRepeat(): BackgroundRepeat {
+        return this.style.backgroundRepeat;
+    }
+    set backgroundRepeat(value: BackgroundRepeat) {
+        this.style.backgroundRepeat = value;
     }
 
     get minWidth(): Length {

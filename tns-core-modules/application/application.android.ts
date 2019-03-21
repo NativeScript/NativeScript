@@ -163,6 +163,9 @@ export function _resetRootView(entry?: NavigationEntry | string) {
     createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+    if (!callbacks) {
+        throw new Error("Cannot find android activity callbacks.");
+    }
     callbacks.resetActivityContent(activity);
 }
 

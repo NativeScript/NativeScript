@@ -77,6 +77,20 @@ class WKNavigationDelegateImpl extends NSObject
         }
     }
 
+    public webViewDidFailProvisionalNavigationWithError(webView: WKWebView, navigation: WKNavigation, error: NSError): void {
+        const owner = this._owner.get();
+        if (owner) {
+            let src = owner.src;
+            if (webView.URL) {
+                src = webView.URL.absoluteString;
+            }
+            if (traceEnabled()) {
+                traceWrite("WKNavigationDelegateClass.webViewDidFailProvisionalNavigationWithError(" + error.localizedDescription + ")", traceCategories.Debug);
+            }
+            owner._onLoadFinished(src, error.localizedDescription);
+        }
+    }
+
 }
 
 export class WebView extends WebViewBase {

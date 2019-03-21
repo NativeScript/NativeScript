@@ -1,0 +1,5 @@
+<Page navigatingTo="navigatingTo">
+  <GridLayout id="root">
+    <Button text="Open File" automationText="openFile" tap="openFile" height="40"></Button>
+  </GridLayout>
+</Page>

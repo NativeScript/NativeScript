@@ -158,9 +158,9 @@ export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
 export var test_gzip_request_explicit = function(done) {
     var result;
 
-    http.request({ 
-        url: "https://postman-echo.com/gzip", 
-        method: "GET", 
+    http.request({
+        url: "https://postman-echo.com/gzip",
+        method: "GET",
         headers: {
             "Accept-Encoding": "gzip"
         }}).then(function (r) {
@@ -180,8 +180,8 @@ export var test_gzip_request_explicit = function(done) {
 export var test_gzip_request_implicit = function(done) {
     var result;
 
-    http.request({ 
-        url: "https://postman-echo.com/gzip", 
+    http.request({
+        url: "https://postman-echo.com/gzip",
         method: "GET"}).then(function (r) {
         result = r;
         try {
@@ -515,6 +515,24 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = fu
         result = response.content.toFile();
         try {
             TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
+        done(e);
+    });
+};
+export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCreateDirPathIfNecesary = function (done) {
+    var result;
+
+    http.request({ url: "https://raw.githubusercontent.com/NativeScript/NativeScript/master/tests/app/logo.png", method: "GET" }).then(function (response) {
+        const filePath = fs.path.join(fs.knownFolders.temp().path, "test", "some", "path", "logo.png");
+        result = response.content.toFile(filePath);
+        try {
+            TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
+            TKUnit.assert(result.size > 0, "result from to file should be greater than 0 in size");
             done(null);
         }
         catch (err) {

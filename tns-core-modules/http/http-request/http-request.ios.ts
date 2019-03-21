@@ -2,10 +2,10 @@
  * iOS specific http request implementation.
  */
 
-import * as http from "../../http";
+import { HttpRequestOptions, HttpResponse, Headers } from "../../http";
 import * as types from "../../utils/types";
-import * as imageSourceModule from "../../image-source";
-import * as fsModule from "../../file-system";
+import { fromNativeSource } from "../../image-source";
+import { File } from "../../file-system";
 
 import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
@@ -18,18 +18,18 @@ export enum HttpResponseEncoding {
     GBK
 }
 
-var currentDevice = utils.ios.getter(UIDevice, UIDevice.currentDevice);
-var device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
-var osVersion = currentDevice.systemVersion;
+const currentDevice = getter(UIDevice, UIDevice.currentDevice);
+const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
+const osVersion = currentDevice.systemVersion;
 
-var GET = "GET";
-var USER_AGENT_HEADER = "User-Agent";
-var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace(".", "_")} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-var sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
-var queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
+const GET = "GET";
+const USER_AGENT_HEADER = "User-Agent";
+const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace(".", "_")} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
+const sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
+const queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
 
 function parseJSON(source: string): any {
-    var src = source.trim();
+    const src = source.trim();
     if (src.lastIndexOf(")") === src.length - 1) {
         return JSON.parse(src.substring(src.indexOf("(") + 1, src.lastIndexOf(")")));
     }
@@ -43,31 +43,24 @@ class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskD
         completionHandler(null);
     }
 }
-var sessionTaskDelegateInstance: NSURLSessionTaskDelegateImpl = <NSURLSessionTaskDelegateImpl>NSURLSessionTaskDelegateImpl.new();
+const sessionTaskDelegateInstance: NSURLSessionTaskDelegateImpl = <NSURLSessionTaskDelegateImpl>NSURLSessionTaskDelegateImpl.new();
 
-var defaultSession;
+let defaultSession;
 function ensureDefaultSession() {
     if (!defaultSession) {
         defaultSession = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
     }
 }
 
-var sessionNotFollowingRedirects;
+let sessionNotFollowingRedirects;
 function ensureSessionNotFollowingRedirects() {
     if (!sessionNotFollowingRedirects) {
         sessionNotFollowingRedirects = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, sessionTaskDelegateInstance, queue);
     }
 }
 
-var imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-    if (!imageSource) {
-        imageSource = require("image-source");
-    }
-}
-
-export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
-    return new Promise<http.HttpResponse>((resolve, reject) => {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
+    return new Promise<HttpResponse>((resolve, reject) => {
 
         if (!options.url) {
           reject(new Error("Request url was empty."));
@@ -75,10 +68,10 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
         }
 
         try {
-            var network = domainDebugger.getNetwork();
-            var debugRequest = network && network.create();
+            const network = domainDebugger.getNetwork();
+            const debugRequest = network && network.create();
 
-            var urlRequest = NSMutableURLRequest.requestWithURL(
+            const urlRequest = NSMutableURLRequest.requestWithURL(
                 NSURL.URLWithString(options.url));
 
             urlRequest.HTTPMethod = types.isDefined(options.method) ? options.method : GET;
@@ -86,7 +79,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
             urlRequest.setValueForHTTPHeaderField(USER_AGENT, USER_AGENT_HEADER);
 
             if (options.headers) {
-                for (var header in options.headers) {
+                for (let header in options.headers) {
                     urlRequest.setValueForHTTPHeaderField(options.headers[header] + "", header);
                 }
             }
@@ -99,7 +92,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                 urlRequest.timeoutInterval = options.timeout / 1000;
             }
 
-            var session;
+            let session;
             if (types.isBoolean(options.dontFollowRedirects) && options.dontFollowRedirects) {
                 ensureSessionNotFollowingRedirects();
                 session = sessionNotFollowingRedirects;
@@ -108,14 +101,14 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                 session = defaultSession;
             }
 
-            var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
+            const dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
                 function (data: NSData, response: NSHTTPURLResponse, error: NSError) {
                     if (error) {
                         reject(new Error(error.localizedDescription));
                     } else {
-                        var headers: http.Headers = {};
+                        const headers: Headers = {};
                         if (response && response.allHeaderFields) {
-                            var headerFields = response.allHeaderFields;
+                            const headerFields = response.allHeaderFields;
 
                             headerFields.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
                                 addHeader(headers, key, value);
@@ -125,7 +118,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         if (debugRequest) {
                             debugRequest.mimeType = response.MIMEType;
                             debugRequest.data = data;
-                            var debugResponse = {
+                            const debugResponse = {
                                 url: options.url,
                                 status: response.statusCode,
                                 statusText: NSHTTPURLResponse.localizedStringForStatusCode(response.statusCode),
@@ -143,26 +136,27 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 toString: (encoding?: any) => NSDataToString(data, encoding),
                                 toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
                                 toImage: () => {
-                                    ensureImageSource();
                                     return new Promise((resolve, reject) => {
                                         (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
                                             if (image) {
-                                                resolve(imageSource.fromNativeSource(image))
+                                                resolve(fromNativeSource(image));
                                             } else {
                                                 reject(new Error("Response content may not be converted to an Image"));
                                             }
                                         });
                                     });
                                 },
-                                toFile: (destinationFilePath?: string) => {  
-                                    var fs: typeof fsModule = require("file-system");
-                                    
+                                toFile: (destinationFilePath?: string) => {
                                     if (!destinationFilePath) {
                                         destinationFilePath = getFilenameFromUrl(options.url);
                                     }
                                     if (data instanceof NSData) {
+                                        // ensure destination path exists by creating any missing parent directories
+                                        const file = File.fromPath(destinationFilePath);
+
                                         data.writeToFileAtomically(destinationFilePath, true);
-                                        return fs.File.fromPath(destinationFilePath);
+                                        
+                                        return file;
                                     } else {
                                         reject(new Error(`Cannot save file with path: ${destinationFilePath}.`));
                                     }
@@ -175,7 +169,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                 });
 
             if (options.url && debugRequest) {
-                var request = {
+                const request = {
                     url: options.url,
                     method: "GET",
                     headers: options.headers
@@ -198,13 +192,13 @@ function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
     return NSString.alloc().initWithDataEncoding(data, code).toString();
 }
 
-export function addHeader(headers: http.Headers, key: string, value: string): void {
+export function addHeader(headers: Headers, key: string, value: string): void {
     if (!headers[key]) {
         headers[key] = value;
     } else if (Array.isArray(headers[key])) {
         (<string[]>headers[key]).push(value);
     } else {
-        let values: string[] = [<string>headers[key]];
+        const values: string[] = [<string>headers[key]];
         values.push(value);
         headers[key] = values;
     }
