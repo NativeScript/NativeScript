@@ -183,7 +183,7 @@ export module ad {
             var result = 0;
             try {
                 if (!attr) {
-                    attr = java.lang.Class.forName("androidx.appcompat.appcompat.R$attr")
+                    attr = java.lang.Class.forName("androidx.appcompat.R$attr")
                 }
 
                 let colorID = 0;
