@@ -473,7 +473,8 @@ export abstract class View extends ViewBase {
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
     /**
-     * [Deprecated. Please use the on() instead.] Adds a gesture observer.
+     * @deprecated use on() instead
+     * 
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when gesture is received.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.

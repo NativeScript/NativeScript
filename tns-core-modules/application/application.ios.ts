@@ -301,6 +301,8 @@ export function getRootView() {
 const createRootFrame = { value: true };
 let started: boolean = false;
 export function start(entry?: string | NavigationEntry) {
+    console.log("application.start() is deprecated; use application.run() instead");
+
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
