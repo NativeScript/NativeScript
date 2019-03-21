@@ -1,9 +1,9 @@
 ﻿/**
  * Android specific http request implementation.
  */
-import * as imageSourceModule from "../../image-source";
-import * as platformModule from "../../platform";
-import * as fsModule from "../../file-system";
+import { fromNativeSource } from "../../image-source";
+import { screen } from "../../platform";
+import { File } from "../../file-system";
 import { getFilenameFromUrl } from "./http-request-common";
 
 // this is imported for definition purposes only
@@ -17,7 +17,7 @@ export enum HttpResponseEncoding {
 }
 
 function parseJSON(source: string): any {
-    var src = source.trim();
+    const src = source.trim();
     if (src.lastIndexOf(")") === src.length - 1) {
         return JSON.parse(src.substring(src.indexOf("(") + 1, src.lastIndexOf(")")));
     }
@@ -25,24 +25,10 @@ function parseJSON(source: string): any {
     return JSON.parse(src);
 }
 
-var requestIdCounter = 0;
-var pendingRequests = {};
+let requestIdCounter = 0;
+const pendingRequests = {};
 
-var imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-    if (!imageSource) {
-        imageSource = require("image-source");
-    }
-}
-
-var platform: typeof platformModule;
-function ensurePlatform() {
-    if (!platform) {
-        platform = require("platform");
-    }
-}
-
-var completeCallback: org.nativescript.widgets.Async.CompleteCallback;
+let completeCallback: org.nativescript.widgets.Async.CompleteCallback;
 function ensureCompleteCallback() {
     if (completeCallback) {
         return;
@@ -60,7 +46,7 @@ function ensureCompleteCallback() {
 }
 
 function onRequestComplete(requestId: number, result: org.nativescript.widgets.Async.Http.RequestResult) {
-    var callbacks = pendingRequests[requestId];
+    const callbacks = pendingRequests[requestId];
     delete pendingRequests[requestId];
 
     if (result.error) {
@@ -69,13 +55,12 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     }
 
     // read the headers
-    var headers: http.Headers = {};
+    const headers: http.Headers = {};
     if (result.headers) {
-        var jHeaders = result.headers;
-        var length = jHeaders.size();
-        var i;
-        var pair: org.nativescript.widgets.Async.Http.KeyValuePair;
-        for (i = 0; i < length; i++) {
+        const jHeaders = result.headers;
+        const length = jHeaders.size();
+        let pair: org.nativescript.widgets.Async.Http.KeyValuePair;
+        for (let i = 0; i < length; i++) {
             pair = jHeaders.get(i);
             addHeader(headers, pair.key, pair.value);
         }
@@ -112,11 +97,9 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 return parseJSON(str);
             },
             toImage: () => {
-                ensureImageSource();
-
                 return new Promise<any>((resolveImage, rejectImage) => {
                     if (result.responseAsImage != null) {
-                        resolveImage(imageSource.fromNativeSource(result.responseAsImage));
+                        resolveImage(fromNativeSource(result.responseAsImage));
                     }
                     else {
                         rejectImage(new Error("Response content may not be converted to an Image"));
@@ -124,17 +107,19 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 });
             },
             toFile: (destinationFilePath: string) => {
-               var fs: typeof fsModule = require("file-system");
-                                    
                 if (!destinationFilePath) {
                     destinationFilePath = getFilenameFromUrl(callbacks.url);
                 }
-                var stream: java.io.FileOutputStream;
+                let stream: java.io.FileOutputStream;
                 try {
-                    var javaFile = new java.io.File(destinationFilePath);
+                    // ensure destination path exists by creating any missing parent directories
+                    const file = File.fromPath(destinationFilePath);
+
+                    const javaFile = new java.io.File(destinationFilePath);
                     stream = new java.io.FileOutputStream(javaFile);
                     stream.write(result.raw.toByteArray());
-                    return fs.File.fromPath(destinationFilePath);
+
+                    return file;
                 }
                 catch (exception) {
                     throw new Error(`Cannot save file with path: ${destinationFilePath}.`);
@@ -152,7 +137,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 }
 
 function onRequestError(error: string, requestId: number) {
-    var callbacks = pendingRequests[requestId];
+    const callbacks = pendingRequests[requestId];
     delete pendingRequests[requestId];
     if (callbacks) {
         callbacks.rejectCallback(new Error(error));
@@ -164,7 +149,7 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
         throw new Error("Http request must provide a valid url.");
     }
 
-    var javaOptions = new org.nativescript.widgets.Async.Http.RequestOptions();
+    const javaOptions = new org.nativescript.widgets.Async.Http.RequestOptions();
 
     javaOptions.url = options.url;
 
@@ -182,22 +167,19 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
     }
 
     if (options.headers) {
-        var arrayList = new java.util.ArrayList<org.nativescript.widgets.Async.Http.KeyValuePair>();
-        var pair = org.nativescript.widgets.Async.Http.KeyValuePair;
+        const arrayList = new java.util.ArrayList<org.nativescript.widgets.Async.Http.KeyValuePair>();
+        const pair = org.nativescript.widgets.Async.Http.KeyValuePair;
 
-        for (var key in options.headers) {
+        for (let key in options.headers) {
             arrayList.add(new pair(key, options.headers[key] + ""));
         }
 
         javaOptions.headers = arrayList;
     }
 
-    ensurePlatform();
-
     // pass the maximum available image size to the request options in case we need a bitmap conversion
-    var screen = platform.screen.mainScreen;
-    javaOptions.screenWidth = screen.widthPixels;
-    javaOptions.screenHeight = screen.heightPixels;
+    javaOptions.screenWidth = screen.mainScreen.widthPixels;
+    javaOptions.screenHeight = screen.mainScreen.heightPixels;
 
     return javaOptions;
 }
@@ -211,7 +193,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     return new Promise<http.HttpResponse>((resolve, reject) => {
         try {
             // initialize the options
-            var javaOptions = buildJavaOptions(options);
+            const javaOptions = buildJavaOptions(options);
 
             // send request data to network debugger
             if (global.__inspector && global.__inspector.isConnected) {
@@ -219,7 +201,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
             }
 
             // remember the callbacks so that we can use them when the CompleteCallback is called
-            var callbacks = {
+            const callbacks = {
                 url: options.url,
                 resolveCallback: resolve,
                 rejectCallback: reject
@@ -252,7 +234,7 @@ export function addHeader(headers: http.Headers, key: string, value: string): vo
     } else if (Array.isArray(headers[key])) {
         (<string[]>headers[key]).push(value);
     } else {
-        let values: string[] = [<string>headers[key]];
+        const values: string[] = [<string>headers[key]];
         values.push(value);
         headers[key] = values;
     }

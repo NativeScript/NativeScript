@@ -159,7 +159,8 @@ export abstract class ViewBase extends Observable {
     //@endprivate
 
     /**
-     * @deprecated Use showModal with ShowModalOptions instead.
+     * @deprecated use showModal with ShowModalOptions instead
+     * 
      * Shows the View contained in moduleName as a modal view.
      * @param moduleName - The name of the module to load starting from the application root.
      * @param context - Any context you want to pass to the modally shown view.
@@ -173,7 +174,8 @@ export abstract class ViewBase extends Observable {
     showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
 
     /**
-     * @deprecated Use showModal with ShowModalOptions instead.
+     * @deprecated use showModal with ShowModalOptions instead
+     * 
      * Shows the view passed as parameter as a modal view.
      * @param view - View instance to be shown modally.
      * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
@@ -199,8 +201,7 @@ export abstract class ViewBase extends Observable {
     showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
 
     /**
-     * Deprecated. Showing view as modal is deprecated.
-     * Use showModal method with arguments.
+     * @deprecated use showModal method with arguments
      */
     showModal(): ViewBase;
 
@@ -365,9 +366,10 @@ export abstract class ViewBase extends Observable {
 
     public _goToVisualState(state: string): void;
     /**
+     * @deprecated
+     * 
      * This used to be the way to set attribute values in early {N} versions.
      * Now attributes are expected to be set as plain properties on the view instances.
-     * @deprecated
      */
     public _applyXmlAttribute(attribute, value): boolean;
     public setInlineStyle(style: string): void;

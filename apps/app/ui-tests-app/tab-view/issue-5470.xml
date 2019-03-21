@@ -7,7 +7,7 @@
 
     <TabView id="tabViewContainer">
         <TabView.items>
-            <TabViewItem title="Tab 1">
+            <TabViewItem title="Tab1" >
                 <TabViewItem.view>
                     <GridLayout rows="*, auto" columns="*">
                         <StackLayout row="0" backgroundColor="lightblue"></StackLayout>
@@ -15,7 +15,7 @@
                     </GridLayout>
                 </TabViewItem.view>
             </TabViewItem>
-            <TabViewItem title="Tab 2">
+            <TabViewItem title="Tab2" >
                 <TabViewItem.view>
                     <GridLayout rows="*, auto" columns="*">
                         <StackLayout row="0" backgroundColor="lightblue"></StackLayout>

@@ -186,7 +186,8 @@ export function on(event: "livesync", callback: (args: EventData) => void);
 export function off(eventNames: string, callback?: any, thisArg?: any);
 
 /**
- * Deprecated. Use application run.
+ * @deprecated use application.run() instead.
+ * 
  * Call this method to start the application. Important: All code after this method call will not be executed!
  */
 export function start(entry?: NavigationEntry | string);
@@ -400,7 +401,7 @@ export class AndroidApplication extends Observable {
     foregroundActivity: any /* android.support.v7.app.AppCompatActivity */;
 
     /**
-     * Deprecated. Please use startActivity, foregroundActivity or context property.
+     * @deprecated use startActivity, foregroundActivity or context instead
      */
     currentContext: any /* android.content.Context */;
 

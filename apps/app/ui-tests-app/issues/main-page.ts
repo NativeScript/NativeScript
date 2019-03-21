@@ -30,6 +30,7 @@ export function loadExamples() {
     examples.set("ng-repo-1599", "issues/issue-ng-repo-1599");
     examples.set("ng-repo-1626", "issues/issue-ng-repo-1626");
     examples.set("6439", "issues/issue-6439");
+    examples.set("open-file-6895", "issues/open-file-6895")
 
     return examples;
 }

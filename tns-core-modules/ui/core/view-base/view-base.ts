@@ -866,9 +866,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     /**
+     * @deprecated
+     * 
      * This used to be the way to set attribute values in early {N} versions.
      * Now attributes are expected to be set as plain properties on the view instances.
-     * @deprecated
      */
     public _applyXmlAttribute(attribute: string, value: string): boolean {
         if (attribute === "style" || attribute === "rows" || attribute === "columns" || attribute === "fontAttributes") {
