@@ -1,4 +1,3 @@
-require("globals");
 import * as http from "tns-core-modules/http";
 
 declare var postMessage: any;
