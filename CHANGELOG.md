@@ -4,20 +4,16 @@
 
 ### Bug Fixes
 
+* **android:** resource ID not found on navigation between pages with nested and single frames ([#6955](https://github.com/NativeScript/NativeScript/issues/6955)) ([33d6d1f](https://github.com/NativeScript/NativeScript/commit/33d6d1f))
+* **android:** navigation between pages with single and nested frames ([#7011](https://github.com/NativeScript/NativeScript/issues/7011)) ([91d90cc](https://github.com/NativeScript/NativeScript/commit/91d90cc))
 * **http:** ensure httpcontent.toFile() creates intermediate directories ([#6451](https://github.com/NativeScript/NativeScript/issues/6451)) ([d7fb9b8](https://github.com/NativeScript/NativeScript/commit/d7fb9b8))
-* expose missing css background* properties on View ([#7032](https://github.com/NativeScript/NativeScript/issues/7032)) ([88f2242](https://github.com/NativeScript/NativeScript/commit/88f2242))
-* navigation b/n single and nested frame pages ([#7011](https://github.com/NativeScript/NativeScript/issues/7011)) ([91d90cc](https://github.com/NativeScript/NativeScript/commit/91d90cc))
-* set/unset touchListener.owner onLoaded/onUnloaded ([#6922](https://github.com/NativeScript/NativeScript/issues/6922)) ([f056167](https://github.com/NativeScript/NativeScript/commit/f056167))
+* **view** expose missing backgroundSize, backgroundRepeat, and backgroundPosition properties on View class ([#7032](https://github.com/NativeScript/NativeScript/issues/7032)) ([88f2242](https://github.com/NativeScript/NativeScript/commit/88f2242))
 * WrappedValue.unwrap empty string behavior ([#6900](https://github.com/NativeScript/NativeScript/issues/6900)) ([0482460](https://github.com/NativeScript/NativeScript/commit/0482460))
-* **android:** throw new Error if no activity callbacks ([#7044](https://github.com/NativeScript/NativeScript/issues/7044)) ([f9e008f](https://github.com/NativeScript/NativeScript/commit/f9e008f))
-* **android:** resource ID not found on nav ([#6955](https://github.com/NativeScript/NativeScript/issues/6955)) ([33d6d1f](https://github.com/NativeScript/NativeScript/commit/33d6d1f))
-* **android-bottom-tabs:** transition type on programmatic selectedIndex change ([#6942](https://github.com/NativeScript/NativeScript/issues/6942)) ([e9dfa20](https://github.com/NativeScript/NativeScript/commit/e9dfa20))
+* **android-bottom-tabs:** use immediate transition on programmatic selectedIndex change ([#6942](https://github.com/NativeScript/NativeScript/issues/6942)) ([e9dfa20](https://github.com/NativeScript/NativeScript/commit/e9dfa20))
 * **ios:** disable default tab reselect behavior ([#6968](https://github.com/NativeScript/NativeScript/issues/6968)) ([043cbf3](https://github.com/NativeScript/NativeScript/commit/043cbf3))
 * **ios-webview:** report hostname lookup errors in loadFinished event ([#6988](https://github.com/NativeScript/NativeScript/issues/6988)) ([e6486f6](https://github.com/NativeScript/NativeScript/commit/e6486f6))
 * **ios-webview:** loading of local-file dependency ([#6947](https://github.com/NativeScript/NativeScript/issues/6947)) ([dcad754](https://github.com/NativeScript/NativeScript/commit/dcad754)), closes [/github.com/NativeScript/NativeScript/issues/6377#issuecomment-433322681](https://github.com//github.com/NativeScript/NativeScript/issues/6377/issues/issuecomment-433322681) [#6377](https://github.com/NativeScript/NativeScript/issues/6377)
-* **angular:** Re-add references to `tns-core-modules.d.ts` ([#6949](https://github.com/NativeScript/NativeScript/issues/6949)) ([f34068d](https://github.com/NativeScript/NativeScript/commit/f34068d)), closes [#6927](https://github.com/NativeScript/NativeScript/issues/6927)
-* **debugger:** Enable iOS inspector modules on creation ([1b5d307](https://github.com/NativeScript/NativeScript/commit/1b5d307))
-* **docs:** Move `NativeScriptError` declaration to a separate file ([#6927](https://github.com/NativeScript/NativeScript/issues/6927)) ([5449cfa](https://github.com/NativeScript/NativeScript/commit/5449cfa))
+* set/unset touchListener.owner onLoaded/onUnloaded ([#6922](https://github.com/NativeScript/NativeScript/issues/6922)) ([f056167](https://github.com/NativeScript/NativeScript/commit/f056167))
 
 
 ### Features
