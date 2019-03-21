@@ -1,0 +1,24 @@
+{
+  "name": "tns-core-modules-widgets",
+  "version": "5.3.0",
+  "description": "Native widgets used in the NativeScript framework.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NativeScript/android-widgets.git"
+  },
+  "author": "NativeScript team",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NativeScript/android-widgets/issues"
+  },
+  "homepage": "https://github.com/NativeScript/android-widgets#readme",
+  "nativescript": {
+    "platforms": {
+      "ios": "4.0.0",
+      "android": "4.0.0"
+    }
+  }
+}
