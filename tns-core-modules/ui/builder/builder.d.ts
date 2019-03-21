@@ -7,7 +7,8 @@ import { Page } from "../page";
 import { NavigationEntry } from "../frame";
 
 /**
- * Deprecated. Use createViewFromEntry instead.
+ * @deprecated use createViewFromEntry instead
+ * 
  * @param moduleNamePath 
  * @param fileName 
  * @param moduleExports 

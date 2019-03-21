@@ -49,6 +49,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
     private callbacks: any = {};
 
     public get currentContext(): android.content.Context {
+        console.log("application.currentContext is deprecated; use startActivity, foregroundActivity, or context instead");
         return this.foregroundActivity;
     }
 
@@ -131,6 +132,8 @@ let started = false;
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
 export function start(entry?: NavigationEntry | string) {
+    console.log("application.start() is deprecated; use application.run() instead");
+
     if (started) {
         throw new Error("Application is already started.");
     }
