@@ -22,8 +22,9 @@
         "bin",
         "build",
         "Deploy",
+        "hmr",
         "out",
-        "obj",       
+        "obj",
         "unit-tests/common-types.d.ts"
     ]
 }
