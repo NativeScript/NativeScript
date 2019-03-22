@@ -1,8 +1,8 @@
 ﻿import * as utils from "../utils/utils";
 
 //iOS specific timer functions implementation.
-var timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
-var timerId = 0;
+const timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
+let timerId = 0;
 
 interface KeyValuePair<K, V> {
     k: K;
@@ -80,4 +80,4 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
     return createTimerAndGetId(zonedCallback(invoke), milliseconds, true);
 }
 
-export var clearInterval = clearTimeout;
+export const clearInterval = clearTimeout;

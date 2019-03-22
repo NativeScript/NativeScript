@@ -5,24 +5,12 @@ import * as httpRequestModule from "../../http/http-request";
 import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
-var httpRequest: typeof httpRequestModule;
+let httpRequest: typeof httpRequestModule;
 function ensureHttpRequest() {
     if (!httpRequest) {
         httpRequest = require("http/http-request");
     }
 }
-
-//class NSCacheDelegateImpl extends NSObject implements NSCacheDelegate {
-//    public static ObjCProtocols = [NSCacheDelegate];
-
-//    static new(): NSCacheDelegateImpl {
-//        return <NSCacheDelegateImpl>super.new();
-//    }
-
-//    public cacheWillEvictObject(cache: NSCache, obj: any): void {
-//        traceWrite("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", traceCategories.Debug);
-//    }
-//}
 
 class MemmoryWarningHandler extends NSObject {
     static new(): MemmoryWarningHandler {
@@ -65,7 +53,7 @@ class MemmoryWarningHandler extends NSObject {
 
 export class Cache extends common.Cache {
     private _cache: NSCache<any, any>;
-    //private _delegate: NSCacheDelegate;
+
     //@ts-ignore
     private _memoryWarningHandler: MemmoryWarningHandler;
 
@@ -73,9 +61,6 @@ export class Cache extends common.Cache {
         super();
 
         this._cache = new NSCache<any, any>();
-
-        //this._delegate = NSCacheDelegateImpl.new();
-        //this._cache.delegate = this._delegate;
 
         this._memoryWarningHandler = MemmoryWarningHandler.new().initWithCache(this._cache);
     }
@@ -86,7 +71,7 @@ export class Cache extends common.Cache {
         httpRequest.request({ url: request.url, method: "GET" })
             .then((response) => {
                 try {
-                    var image = UIImage.alloc().initWithData(response.content.raw);
+                    const image = UIImage.alloc().initWithData(response.content.raw);
                     this._onDownloadCompleted(request.key, image);
                 } catch (err) {
                     this._onDownloadError(request.key, err);

@@ -87,7 +87,7 @@ export class Color implements definition.Color {
             hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         }
 
-        var intVal = parseInt(hex, 16);
+        let intVal = parseInt(hex, 16);
         if (hex.length === 6) {
             // add the alpha component since the provided string is RRGGBB
             intVal = (intVal & 0x00FFFFFF) + 0xFF000000;

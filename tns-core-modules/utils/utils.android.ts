@@ -131,9 +131,9 @@ export module ad {
 
     export module collections {
         export function stringArrayToStringSet(str: string[]): java.util.HashSet<string> {
-            var hashSet = new java.util.HashSet<string>();
+            const hashSet = new java.util.HashSet<string>();
             if (str !== undefined) {
-                for (var element in str) {
+                for (let element in str) {
                     hashSet.add("" + str[element]);
                 }
             }
@@ -141,11 +141,11 @@ export module ad {
         }
 
         export function stringSetToStringArray(stringSet: any): string[] {
-            var arr = [];
+            const arr = [];
             if (stringSet !== undefined) {
-                var it = stringSet.iterator();
+                const it = stringSet.iterator();
                 while (it.hasNext()) {
-                    var element = "" + it.next();
+                    const element = "" + it.next();
                     arr.push(element);
                 }
             }
@@ -155,8 +155,8 @@ export module ad {
     }
 
     export module resources {
-        var attr;
-        var attrCache = new Map<string, number>();
+        let attr;
+        const attrCache = new Map<string, number>();
 
         export function getDrawableId(name) {
             return getId(":drawable/" + name);
@@ -167,9 +167,9 @@ export module ad {
         }
 
         export function getId(name: string): number {
-            var resources = getResources();
-            var packageName = getPackageName();
-            var uri = packageName + name;
+            const resources = getResources();
+            const packageName = getPackageName();
+            const uri = packageName + name;
             return resources.getIdentifier(uri, null, null);
         }
         export function getPalleteColor(name: string, context: android.content.Context): number {
@@ -180,7 +180,7 @@ export module ad {
                 return attrCache.get(name);
             }
 
-            var result = 0;
+            let result = 0;
             try {
                 if (!attr) {
                     attr = java.lang.Class.forName("android.support.v7.appcompat.R$attr")
@@ -219,7 +219,7 @@ export function releaseNativeObject(object: java.lang.Object) {
 export function openUrl(location: string): boolean {
     const context = ad.getApplicationContext();
     try {
-        var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+        const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
         intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 
         context.startActivity(intent);
