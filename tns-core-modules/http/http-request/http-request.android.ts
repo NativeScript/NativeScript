@@ -1,14 +1,10 @@
-﻿/**
- * Android specific http request implementation.
- */
-import { fromNativeSource } from "../../image-source";
-import { screen } from "../../platform";
-import { File } from "../../file-system";
+﻿// imported for definition purposes only
+import * as httpModule from "../../http";
+import * as imageSourceModule from "../../image-source";
+import * as platformModule from "../../platform";
+import * as fsModule from "../../file-system";
+
 import { getFilenameFromUrl } from "./http-request-common";
-
-// this is imported for definition purposes only
-import * as http from "../../http";
-
 import { NetworkAgent } from "../../debugger/debugger";
 
 export enum HttpResponseEncoding {
@@ -27,6 +23,27 @@ function parseJSON(source: string): any {
 
 let requestIdCounter = 0;
 const pendingRequests = {};
+
+let imageSource: typeof imageSourceModule;
+function ensureImageSource() {	
+    if (!imageSource) {	
+        imageSource = require("image-source");	
+    }	
+}
+
+let platform: typeof platformModule;	
+function ensurePlatform() {	
+    if (!platform) {	
+        platform = require("platform");	
+    }	
+}
+
+let fs: typeof fsModule;
+function ensureFileSystem() {	
+    if (!fs) {	
+        fs = require("file-system");	
+    }	
+}
 
 let completeCallback: org.nativescript.widgets.Async.CompleteCallback;
 function ensureCompleteCallback() {
@@ -55,7 +72,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     }
 
     // read the headers
-    const headers: http.Headers = {};
+    const headers: httpModule.Headers = {};
     if (result.headers) {
         const jHeaders = result.headers;
         const length = jHeaders.size();
@@ -97,9 +114,11 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 return parseJSON(str);
             },
             toImage: () => {
+                ensureImageSource();
+
                 return new Promise<any>((resolveImage, rejectImage) => {
                     if (result.responseAsImage != null) {
-                        resolveImage(fromNativeSource(result.responseAsImage));
+                        resolveImage(imageSource.fromNativeSource(result.responseAsImage));
                     }
                     else {
                         rejectImage(new Error("Response content may not be converted to an Image"));
@@ -107,13 +126,15 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 });
             },
             toFile: (destinationFilePath: string) => {
+                ensureFileSystem();
+
                 if (!destinationFilePath) {
                     destinationFilePath = getFilenameFromUrl(callbacks.url);
                 }
                 let stream: java.io.FileOutputStream;
                 try {
                     // ensure destination path exists by creating any missing parent directories
-                    const file = File.fromPath(destinationFilePath);
+                    const file = fs.File.fromPath(destinationFilePath);
 
                     const javaFile = new java.io.File(destinationFilePath);
                     stream = new java.io.FileOutputStream(javaFile);
@@ -144,7 +165,7 @@ function onRequestError(error: string, requestId: number) {
     }
 }
 
-function buildJavaOptions(options: http.HttpRequestOptions) {
+function buildJavaOptions(options: httpModule.HttpRequestOptions) {
     if (typeof options.url !== "string") {
         throw new Error("Http request must provide a valid url.");
     }
@@ -177,20 +198,23 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
         javaOptions.headers = arrayList;
     }
 
+    ensurePlatform();
+
     // pass the maximum available image size to the request options in case we need a bitmap conversion
-    javaOptions.screenWidth = screen.mainScreen.widthPixels;
-    javaOptions.screenHeight = screen.mainScreen.heightPixels;
+    const screen = platform.screen.mainScreen;
+    javaOptions.screenWidth = screen.widthPixels;
+    javaOptions.screenHeight = screen.heightPixels;
 
     return javaOptions;
 }
 
-export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
+export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
     if (options === undefined || options === null) {
         // TODO: Shouldn't we throw an error here - defensive programming
         return;
     }
 
-    return new Promise<http.HttpResponse>((resolve, reject) => {
+    return new Promise<httpModule.HttpResponse>((resolve, reject) => {
         try {
             // initialize the options
             const javaOptions = buildJavaOptions(options);
@@ -228,7 +252,7 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
     return raw.toString(charsetName)
 }
 
-export function addHeader(headers: http.Headers, key: string, value: string): void {
+export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
     if (!headers[key]) {
         headers[key] = value;
     } else if (Array.isArray(headers[key])) {
