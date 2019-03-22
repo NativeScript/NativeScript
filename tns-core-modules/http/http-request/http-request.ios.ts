@@ -1,15 +1,9 @@
-﻿/**
- * iOS specific http request implementation.
- */
+﻿// imported for definition purposes only
+import * as httpModule from "../../http";
+import * as imageSourceModule from "../../image-source";
+import * as fsModule from "../../file-system";
 
-import { HttpRequestOptions, HttpResponse, Headers } from "../../http";
 import * as types from "../../utils/types";
-import { fromNativeSource } from "../../image-source";
-import { File } from "../../file-system";
-
-import * as utils from "../../utils/utils";
-import getter = utils.ios.getter;
-
 import * as domainDebugger from "../../debugger/debugger";
 import { getFilenameFromUrl } from "./http-request-common";
 
@@ -18,15 +12,15 @@ export enum HttpResponseEncoding {
     GBK
 }
 
-const currentDevice = getter(UIDevice, UIDevice.currentDevice);
+const currentDevice = UIDevice.currentDevice;
 const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
 const osVersion = currentDevice.systemVersion;
 
 const GET = "GET";
 const USER_AGENT_HEADER = "User-Agent";
 const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace(".", "_")} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-const sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
-const queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
+const sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration;
+const queue = NSOperationQueue.mainQueue;
 
 function parseJSON(source: string): any {
     const src = source.trim();
@@ -59,8 +53,22 @@ function ensureSessionNotFollowingRedirects() {
     }
 }
 
-export function request(options: HttpRequestOptions): Promise<HttpResponse> {
-    return new Promise<HttpResponse>((resolve, reject) => {
+let imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {	
+        imageSource = require("image-source");	
+    }	
+}
+
+let fs: typeof fsModule;
+function ensureFileSystem() {	
+    if (!fs) {	
+        fs = require("file-system");	
+    }	
+}
+
+export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
+    return new Promise<httpModule.HttpResponse>((resolve, reject) => {
 
         if (!options.url) {
           reject(new Error("Request url was empty."));
@@ -106,7 +114,7 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
                     if (error) {
                         reject(new Error(error.localizedDescription));
                     } else {
-                        const headers: Headers = {};
+                        const headers: httpModule.Headers = {};
                         if (response && response.allHeaderFields) {
                             const headerFields = response.allHeaderFields;
 
@@ -136,10 +144,12 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
                                 toString: (encoding?: any) => NSDataToString(data, encoding),
                                 toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
                                 toImage: () => {
+                                    ensureImageSource();
+
                                     return new Promise((resolve, reject) => {
                                         (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
                                             if (image) {
-                                                resolve(fromNativeSource(image));
+                                                resolve(imageSource.fromNativeSource(image));
                                             } else {
                                                 reject(new Error("Response content may not be converted to an Image"));
                                             }
@@ -147,12 +157,14 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
                                     });
                                 },
                                 toFile: (destinationFilePath?: string) => {
+                                    ensureFileSystem();
+
                                     if (!destinationFilePath) {
                                         destinationFilePath = getFilenameFromUrl(options.url);
                                     }
                                     if (data instanceof NSData) {
                                         // ensure destination path exists by creating any missing parent directories
-                                        const file = File.fromPath(destinationFilePath);
+                                        const file = fs.File.fromPath(destinationFilePath);
 
                                         data.writeToFileAtomically(destinationFilePath, true);
                                         
@@ -192,7 +204,7 @@ function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
     return NSString.alloc().initWithDataEncoding(data, code).toString();
 }
 
-export function addHeader(headers: Headers, key: string, value: string): void {
+export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
     if (!headers[key]) {
         headers[key] = value;
     } else if (Array.isArray(headers[key])) {

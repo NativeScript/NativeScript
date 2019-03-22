@@ -48,6 +48,7 @@ export module layout {
 
 export module ios {
     export function getter<T>(_this: any, property: T | { (): T }): T {
+        console.log("utils.ios.getter() is deprecated; use the respective native property instead");
         if (typeof property === "function") {
             return (<{ (): T }>property).call(_this);
         } else {
@@ -74,13 +75,13 @@ export module ios {
     }
 
     export function isLandscape(): boolean {
-        const device = getter(UIDevice, UIDevice.currentDevice);
-        const statusBarOrientation = getter(UIApplication, UIApplication.sharedApplication).statusBarOrientation;
+        const device = UIDevice.currentDevice;
+        const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
         const isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
         return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
     }
 
-    export var MajorVersion = NSString.stringWithString(getter(UIDevice, UIDevice.currentDevice).systemVersion).intValue;
+    export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
 
     export function openFile(filePath: string): boolean {
         try {
@@ -164,8 +165,8 @@ export function releaseNativeObject(object: NSObject) {
 export function openUrl(location: string): boolean {
     try {
         var url = NSURL.URLWithString(location.trim());
-        if (ios.getter(UIApplication, UIApplication.sharedApplication).canOpenURL(url)) {
-            return ios.getter(UIApplication, UIApplication.sharedApplication).openURL(url);
+        if (UIApplication.sharedApplication.canOpenURL(url)) {
+            return UIApplication.sharedApplication.openURL(url);
         }
     }
     catch (e) {
@@ -179,7 +180,7 @@ class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UI
     public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 
     public getViewController(): UIViewController {
-        const app = ios.getter(UIApplication, UIApplication.sharedApplication);
+        const app = UIApplication.sharedApplication;
         return app.keyWindow.rootViewController;
     }
 
@@ -196,4 +197,4 @@ class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UI
     }
 }
 
-mainScreenScale = ios.getter(UIScreen, UIScreen.mainScreen).scale;
+mainScreenScale = UIScreen.mainScreen.scale;
