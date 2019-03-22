@@ -1,12 +1,9 @@
-﻿/**
- * iOS specific http request implementation.
- */
+﻿// imported for definition purposes only
+import * as httpModule from "../../http";
+import * as imageSourceModule from "../../image-source";
+import * as fsModule from "../../file-system";
 
-import { HttpRequestOptions, HttpResponse, Headers } from "../../http";
 import * as types from "../../utils/types";
-import { fromNativeSource } from "../../image-source";
-import { File } from "../../file-system";
-
 import * as domainDebugger from "../../debugger/debugger";
 import { getFilenameFromUrl } from "./http-request-common";
 
@@ -56,8 +53,22 @@ function ensureSessionNotFollowingRedirects() {
     }
 }
 
-export function request(options: HttpRequestOptions): Promise<HttpResponse> {
-    return new Promise<HttpResponse>((resolve, reject) => {
+let imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {	
+        imageSource = require("image-source");	
+    }	
+}
+
+let fs: typeof fsModule;
+function ensureFileSystem() {	
+    if (!fs) {	
+        fs = require("file-system");	
+    }	
+}
+
+export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
+    return new Promise<httpModule.HttpResponse>((resolve, reject) => {
 
         if (!options.url) {
           reject(new Error("Request url was empty."));
@@ -103,7 +114,7 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
                     if (error) {
                         reject(new Error(error.localizedDescription));
                     } else {
-                        const headers: Headers = {};
+                        const headers: httpModule.Headers = {};
                         if (response && response.allHeaderFields) {
                             const headerFields = response.allHeaderFields;
 
@@ -133,10 +144,12 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
                                 toString: (encoding?: any) => NSDataToString(data, encoding),
                                 toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
                                 toImage: () => {
+                                    ensureImageSource();
+
                                     return new Promise((resolve, reject) => {
                                         (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
                                             if (image) {
-                                                resolve(fromNativeSource(image));
+                                                resolve(imageSource.fromNativeSource(image));
                                             } else {
                                                 reject(new Error("Response content may not be converted to an Image"));
                                             }
@@ -144,12 +157,14 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
                                     });
                                 },
                                 toFile: (destinationFilePath?: string) => {
+                                    ensureFileSystem();
+
                                     if (!destinationFilePath) {
                                         destinationFilePath = getFilenameFromUrl(options.url);
                                     }
                                     if (data instanceof NSData) {
                                         // ensure destination path exists by creating any missing parent directories
-                                        const file = File.fromPath(destinationFilePath);
+                                        const file = fs.File.fromPath(destinationFilePath);
 
                                         data.writeToFileAtomically(destinationFilePath, true);
                                         
@@ -189,7 +204,7 @@ function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
     return NSString.alloc().initWithDataEncoding(data, code).toString();
 }
 
-export function addHeader(headers: Headers, key: string, value: string): void {
+export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
     if (!headers[key]) {
         headers[key] = value;
     } else if (Array.isArray(headers[key])) {

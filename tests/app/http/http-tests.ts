@@ -621,7 +621,6 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
 };
 
 export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
-    // >> http-post-json
     var result;
 
     http.request({
