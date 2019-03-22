@@ -15,7 +15,8 @@ export * from "../page";
  */
 export class Frame extends View {
     /**
-     * Deprecated.
+     * @deprecated
+     * 
      * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
      */
     public static androidOptionSelectedEvent: string;
@@ -208,7 +209,8 @@ export function topmost(): Frame;
 export function goBack();
 
 /**
- * Deprecated. Use getFrameById() if you want to retrieve a frame different than the topmost one.
+ * @deprecated use getFrameById() if you want to retrieve a frame different than the topmost one
+ * 
  * Gets the frames stack.
  */
 export function stack(): Array<Frame>;
@@ -395,8 +397,9 @@ export interface AndroidFrame extends Observable {
     showActionBar: boolean;
 
     /**
+     * @deprecated this property is not used internally
+     * 
      * Gets or sets whether the page UI will be cached when navigating away from the page.
-     * Deprecated. This property is not used internally.
      */
     cachePagesOnNavigate: boolean;
 
