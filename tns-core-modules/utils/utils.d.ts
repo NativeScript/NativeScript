@@ -184,6 +184,8 @@ export module ad {
  */
 export module ios {
     /**
+     * @deprecated use the respective native property directly
+     * 
      * Checks if the property is a function and if it is, calls it on this.
      * Designed to support backward compatibility for methods that became properties.
      * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.

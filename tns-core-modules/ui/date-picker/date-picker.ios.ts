@@ -47,11 +47,11 @@ export class DatePicker extends DatePickerBase {
 
     [dateProperty.setNative](value: Date) {
         const picker = this.nativeViewProtected;
-        const comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
+        const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.year = value.getFullYear();
         comps.month = value.getMonth() + 1;
         comps.day = value.getDate();
-        picker.setDateAnimated(ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
+        picker.setDateAnimated(NSCalendar.currentCalendar.dateFromComponents(comps), false);
     }
 
     [maxDateProperty.getDefault](): Date {
@@ -91,7 +91,7 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
     }
 
     public valueChanged(sender: UIDatePicker) {
-        const comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, sender.date);
+        const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, sender.date);
 
         const owner = this._owner.get();
         if (!owner) {
