@@ -17,6 +17,11 @@ export async function testPlayerNavigatedBack(screen: Screen, driver: AppiumDriv
     await screen.loadedPlayersList();
 }
 
+export async function testStillOtherPageNavigatedSlide(screen: Screen) {
+    await screen.navigateToStillOtherPageSlide();
+    await screen.loadedStillOtherPage();
+}
+
 export async function testSomePageNavigatedDefault(screen: Screen) {
     await screen.navigateToSomePageDefault();
     await screen.loadedSomePage();

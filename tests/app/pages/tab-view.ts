@@ -1,5 +1,7 @@
-var observableModule = require("data/observable");
-var vm = new observableModule.Observable();
+import { Observable } from "tns-core-modules/data/observable";
+
+var vm = new Observable();
+
 export function onPageLoaded(args) {
     var page = args.object;
     vm.set("firstTitle", "fiiiirst");

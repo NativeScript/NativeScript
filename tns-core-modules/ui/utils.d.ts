@@ -11,7 +11,8 @@ export module ios {
     export function getActualHeight(uiView: any /* UIView */): number;
 
     /**
-     * Deprecated.
+     * @deprecated
+     * 
      * @param rootView 
      * @param parentBounds 
      */
