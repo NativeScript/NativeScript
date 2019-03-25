@@ -273,16 +273,15 @@ function createRootView(v?: View) {
     let rootView = v;
     if (!rootView) {
         // try to navigate to the mainEntry (if specified)
-        if (mainEntry) {
+        if (!mainEntry) {
+            throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
+        } else {
             if (createRootFrame.value) {
                 const frame = rootView = new Frame();
                 frame.navigate(mainEntry);
             } else {
                 rootView = createViewFromEntry(mainEntry);
             }
-        } else {
-            // TODO: Throw an exception?
-            throw new Error("A Frame must be used to navigate to a Page.");
         }
     }
 

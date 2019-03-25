@@ -1171,6 +1171,10 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         if (!rootView) {
             const mainEntry = application.getMainEntry();
+            if (!mainEntry) {
+                throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
+            }
+
             const intent = activity.getIntent();
 
             if (fireLaunchEvent) {
