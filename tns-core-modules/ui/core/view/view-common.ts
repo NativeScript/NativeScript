@@ -141,8 +141,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         _rootModalViews.forEach(v => v.closeModal());
         _rootModalViews.length = 0;
 
-        // Currently, we pass `context` only for style modules
-        if (context && context.path) {
+        // Handle local style
+        // TODO(vchimev): ModuleType
+        if (context && context.type === "style" && context.path) {
             return this.changeLocalStyles(context.path);
         }
 
