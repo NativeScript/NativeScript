@@ -55,7 +55,7 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
     let timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
 
     // https://github.com/NativeScript/NativeScript/issues/2116
-    utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).addTimerForMode(timer, NSRunLoopCommonModes);
+    NSRunLoop.currentRunLoop.addTimerForMode(timer, NSRunLoopCommonModes);
 
     let pair: KeyValuePair<NSTimer, TimerTargetImpl> = { k: timer, v: timerTarget };
     timeoutCallbacks.set(id, pair);
