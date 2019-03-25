@@ -365,7 +365,7 @@ export class ListView extends ListViewBase {
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         this.widthMeasureSpec = widthMeasureSpec;
-        var changed = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
+        const changed = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         super.measure(widthMeasureSpec, heightMeasureSpec);
         if (changed) {
             this.ios.reloadData();

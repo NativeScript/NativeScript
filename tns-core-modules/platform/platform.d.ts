@@ -8,19 +8,19 @@
 /**
  * Gets a value indicating if the app is running on the Android platform.
  */
-export var isAndroid: boolean;
+export const isAndroid: boolean;
 
 /**
  * Gets a value indicating if the app is running on the iOS platform.
  */
-export var isIOS: boolean;
+export const isIOS: boolean;
 
 /*
  * Enum holding platform names.
  */
 export module platformNames {
-    export var android: string;
-    export var ios: string;
+    export const android: string;
+    export const ios: string;
 }
 
 /*
@@ -119,10 +119,10 @@ export module screen {
     /**
      * Gets information about the main screen of the current device.
      */
-    export var mainScreen: ScreenMetrics;
+    export const mainScreen: ScreenMetrics;
 }
 
 /**
  * Gets the current device information.
  */
-export var device: Device;    
+export const device: Device;    

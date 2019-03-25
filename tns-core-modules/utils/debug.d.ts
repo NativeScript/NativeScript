@@ -5,7 +5,7 @@
 /**
  * A runtime option indicating whether the build has debugging enabled.
  */
-export var debug: boolean;
+export let debug: boolean;
 
 /**
  * A class encapsulating information for source code origin.

@@ -16,11 +16,11 @@ export { Color, traceEnabled, traceWrite, traceCategories, traceType };
 export { AnimationPromise } from ".";
 
 export module Properties {
-    export var opacity = "opacity";
-    export var backgroundColor = "backgroundColor";
-    export var translate = "translate";
-    export var rotate = "rotate";
-    export var scale = "scale";
+    export const opacity = "opacity";
+    export const backgroundColor = "backgroundColor";
+    export const translate = "translate";
+    export const rotate = "rotate";
+    export const scale = "scale";
 }
 
 export interface PropertyAnimation {
@@ -96,7 +96,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
     public play(): AnimationPromiseDefinition {
         // We have to actually create a "Promise" due to a bug in the v8 engine and decedent promises
         // We just cast it to a animationPromise so that all the rest of the code works fine
-        var animationFinishedPromise = <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
+        const animationFinishedPromise = <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
             this._resolve = resolve;
             this._reject = reject;
         });
@@ -109,19 +109,19 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     private fixupAnimationPromise(promise: AnimationPromiseDefinition): void {
         // Since we are using function() below because of arguments, TS won't automatically do a _this for those functions.
-        var _this = this;
+        const _this = this;
         promise.cancel = () => {
             _this.cancel();
         };
-        var _then = promise.then;
+        const _then = promise.then;
         promise.then = function () {
-            var r = _then.apply(promise, arguments);
+            const r = _then.apply(promise, arguments);
             _this.fixupAnimationPromise(r);
             return r;
         };
-        var _catch = promise.catch;
+        const _catch = promise.catch;
         promise.catch = function () {
-            var r = _catch.apply(promise, arguments);
+            const r = _catch.apply(promise, arguments);
             _this.fixupAnimationPromise(r);
             return r;
         };

@@ -7,7 +7,7 @@ export function getString(arg: any): Promise<string> {
         httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
             .then(r => {
                 try {
-                    var str = r.content.toString();
+                    const str = r.content.toString();
                     resolve(str);
                 } catch (e) {
                     reject(e);
@@ -21,7 +21,7 @@ export function getJSON<T>(arg: any): Promise<T> {
         httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
             .then(r => {
                 try {
-                    var json = r.content.toJSON();
+                    const json = r.content.toJSON();
                     resolve(json);
                 } catch (e) {
                     reject(e);
@@ -50,7 +50,7 @@ export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
         httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
             .then(r => {
                 try {
-                    var file = r.content.toFile(destinationFilePath);
+                    const file = r.content.toFile(destinationFilePath);
                     resolve(file);
                 } catch (e) {
                     reject(e);
