@@ -26,7 +26,7 @@ class Device implements DeviceDefinition {
 
     get osVersion(): string {
         if (!this._osVersion) {
-            this._osVersion = utils.ios.getter(UIDevice, UIDevice.currentDevice).systemVersion;
+            this._osVersion = UIDevice.currentDevice.systemVersion;
         }
 
         return this._osVersion;
@@ -34,7 +34,7 @@ class Device implements DeviceDefinition {
 
     get model(): string {
         if (!this._model) {
-            this._model = utils.ios.getter(UIDevice, UIDevice.currentDevice).model;
+            this._model = UIDevice.currentDevice.model;
         }
 
         return this._model;
@@ -42,7 +42,7 @@ class Device implements DeviceDefinition {
 
     get sdkVersion(): string {
         if (!this._sdkVersion) {
-            this._sdkVersion = utils.ios.getter(UIDevice, UIDevice.currentDevice).systemVersion;
+            this._sdkVersion = UIDevice.currentDevice.systemVersion;
         }
 
         return this._sdkVersion;
@@ -50,7 +50,7 @@ class Device implements DeviceDefinition {
 
     get deviceType(): "Phone" | "Tablet" {
         if (!this._deviceType) {
-            if (utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
+            if (UIDevice.currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
                 this._deviceType = "Phone";
             }
             else {
@@ -62,7 +62,7 @@ class Device implements DeviceDefinition {
     }
 
     get uuid(): string {
-        var userDefaults = utils.ios.getter(NSUserDefaults, NSUserDefaults.standardUserDefaults);
+        var userDefaults = NSUserDefaults.standardUserDefaults;
         var uuid_key = "TNSUUID";
         var app_uuid = userDefaults.stringForKey(uuid_key);
 
@@ -77,7 +77,7 @@ class Device implements DeviceDefinition {
 
     get language(): string {
         if (!this._language) {
-            var languages = utils.ios.getter(NSLocale, NSLocale.preferredLanguages);
+            var languages = NSLocale.preferredLanguages;
             this._language = languages[0];
         }
         
@@ -86,7 +86,7 @@ class Device implements DeviceDefinition {
 
     get region(): string {
         if (!this._region) {
-            this._region = utils.ios.getter(NSLocale, NSLocale.currentLocale).objectForKey(NSLocaleCountryCode);
+            this._region = NSLocale.currentLocale.objectForKey(NSLocaleCountryCode);
         }
 
         return this._region;
@@ -98,7 +98,7 @@ class MainScreen implements ScreenMetricsDefinition {
     
     private get screen(): UIScreen {
         if (!this._screen) {
-            this._screen = utils.ios.getter(UIScreen, UIScreen.mainScreen);
+            this._screen = UIScreen.mainScreen;
         }
 
         return this._screen;

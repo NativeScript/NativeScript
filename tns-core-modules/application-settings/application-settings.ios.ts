@@ -2,7 +2,7 @@
 
 import * as utils from "../utils/utils";
 
-var userDefaults = utils.ios.getter(NSUserDefaults, NSUserDefaults.standardUserDefaults);
+var userDefaults = NSUserDefaults.standardUserDefaults;
 
 export var hasKey = function (key: string): boolean {
     Common.checkKey(key);
@@ -59,7 +59,7 @@ export var remove = function (key: string): void {
 }
 
 export var clear = function (): void {
-    userDefaults.removePersistentDomainForName(utils.ios.getter(NSBundle, NSBundle.mainBundle).bundleIdentifier);
+    userDefaults.removePersistentDomainForName(NSBundle.mainBundle.bundleIdentifier);
 }
 
 export var flush = function (): boolean {
