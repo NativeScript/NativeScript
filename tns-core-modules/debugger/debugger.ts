@@ -36,7 +36,7 @@ export namespace domains {
     }
 }
 
-var network;
+let network;
 
 export function getNetwork(): domains.network.NetworkDomainDebugger {
     return network;
@@ -45,7 +45,7 @@ export function setNetwork(newNetwork: domains.network.NetworkDomainDebugger) {
     network = newNetwork;
 }
 
-var dom;
+let dom;
 
 export function getDOM(): any {
     return dom;
@@ -55,7 +55,7 @@ export function setDOM(newDOM) {
     dom = newDOM;
 }
 
-var css;
+let css;
 
 export function getCSS(): any {
     return css;
@@ -121,7 +121,7 @@ export namespace NetworkAgent {
         // Content-Type and content-type are both common in headers spelling
         const mimeType: string = <string>headers["Content-Type"] || <string>headers["content-type"] || "application/octet-stream";
         const contentLengthHeader: string = <string>headers["Content-Length"] || <string>headers["content-length"];
-        var contentLength = parseInt(contentLengthHeader, 10);
+        let contentLength = parseInt(contentLengthHeader, 10);
         if (isNaN(contentLength)) {
             contentLength = 0;
         }
@@ -203,7 +203,7 @@ export namespace NetworkAgent {
     }
 
     function getTimeStamp(): number {
-        var d = new Date();
+        const d = new Date();
         return Math.round(d.getTime() / 1000);
     }
 

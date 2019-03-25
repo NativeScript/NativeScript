@@ -1,6 +1,5 @@
 import * as inspectorCommandTypes from "./InspectorBackendCommands.ios";
-var inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
-// var inspectorCommandTypes: any = inspectorCommands;
+const inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
 
 import * as debuggerDomains from "./debugger";
 

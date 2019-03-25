@@ -26,7 +26,7 @@ const getVisibleViewController = ios.getVisibleViewController;
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
 // https://github.com/NativeScript/ios-runtime/issues/1012
-var Responder = (<any>UIResponder).extend({
+const Responder = (<any>UIResponder).extend({
     get window() {
         return iosApp ? iosApp.window : undefined;
     },
@@ -124,7 +124,7 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     public removeNotificationObserver(observer: any, notificationName: string) {
-        var index = this._observers.indexOf(observer);
+        const index = this._observers.indexOf(observer);
         if (index >= 0) {
             this._observers.splice(index, 1);
             NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);

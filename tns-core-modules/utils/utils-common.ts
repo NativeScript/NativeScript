@@ -9,15 +9,13 @@ export function escapeRegexSymbols(source: string): string {
 }
 
 export function convertString(value: any): any {
-    var result;
+    let result;
 
-    if (!types.isString(value)) {
-        result = value;
-    } else if (value.trim() === "") {
+    if (!types.isString(value) || value.trim() === "") {
         result = value;
     } else {
         // Try to convert value to number.
-        var valueAsNumber = +value;
+        const valueAsNumber = +value;
         if (!isNaN(valueAsNumber)) {
             result = valueAsNumber;
         } else if (value && (value.toLowerCase() === "true" || value.toLowerCase() === "false")) {

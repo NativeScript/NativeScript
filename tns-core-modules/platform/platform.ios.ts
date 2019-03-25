@@ -62,9 +62,9 @@ class Device implements DeviceDefinition {
     }
 
     get uuid(): string {
-        var userDefaults = NSUserDefaults.standardUserDefaults;
-        var uuid_key = "TNSUUID";
-        var app_uuid = userDefaults.stringForKey(uuid_key);
+        const userDefaults = NSUserDefaults.standardUserDefaults;
+        const uuid_key = "TNSUUID";
+        let app_uuid = userDefaults.stringForKey(uuid_key);
 
         if (!app_uuid) {
             app_uuid = NSUUID.UUID().UUIDString;
@@ -77,7 +77,7 @@ class Device implements DeviceDefinition {
 
     get language(): string {
         if (!this._language) {
-            var languages = NSLocale.preferredLanguages;
+            const languages = NSLocale.preferredLanguages;
             this._language = languages[0];
         }
         

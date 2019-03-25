@@ -12,8 +12,8 @@ function isOrientationLandscape(orientation: number) {
 }
 
 export module layout {
-    var MODE_SHIFT = 30;
-    var MODE_MASK = 0x3 << MODE_SHIFT;
+    const MODE_SHIFT = 30;
+    const MODE_MASK = 0x3 << MODE_SHIFT;
 
     export function makeMeasureSpec(size: number, mode: number): number {
         return (Math.round(Math.max(0, size)) & ~MODE_MASK) | (mode & MODE_MASK);
@@ -60,7 +60,7 @@ export module ios {
         }
 
         export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
-            var arr = [];
+            const arr = [];
             if (a !== undefined) {
                 let count = a.count;
                 for (let i = 0; i < count; i++) {
@@ -79,7 +79,7 @@ export module ios {
         return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
     }
 
-    export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
+    export const MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
 
     export function openFile(filePath: string): boolean {
         try {
@@ -147,7 +147,7 @@ export function releaseNativeObject(object: NSObject) {
 
 export function openUrl(location: string): boolean {
     try {
-        var url = NSURL.URLWithString(location.trim());
+        const url = NSURL.URLWithString(location.trim());
         if (UIApplication.sharedApplication.canOpenURL(url)) {
             return UIApplication.sharedApplication.openURL(url);
         }

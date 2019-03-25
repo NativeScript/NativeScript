@@ -5,7 +5,7 @@ import * as common from "./image-cache-common";
 import * as trace from "../../trace";
 import * as utils from "../../utils/utils";
 
-var httpRequest: typeof httpRequestModule;
+let httpRequest: typeof httpRequestModule;
 function ensureHttpRequest() {
     if (!httpRequest) {
         httpRequest = require("http/http-request");
@@ -53,6 +53,7 @@ class MemmoryWarningHandler extends NSObject {
 
 export class Cache extends common.Cache {
     private _cache: NSCache<any, any>;
+
     //@ts-ignore
     private _memoryWarningHandler: MemmoryWarningHandler;
 
@@ -70,7 +71,7 @@ export class Cache extends common.Cache {
         httpRequest.request({ url: request.url, method: "GET" })
             .then((response) => {
                 try {
-                    var image = UIImage.alloc().initWithData(response.content.raw);
+                    const image = UIImage.alloc().initWithData(response.content.raw);
                     this._onDownloadCompleted(request.key, image);
                 } catch (err) {
                     this._onDownloadError(request.key, err);

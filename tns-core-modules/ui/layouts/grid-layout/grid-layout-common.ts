@@ -195,7 +195,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
             throw new Error("Value is null.");
         }
 
-        var index = this._rows.indexOf(itemSpec);
+        const index = this._rows.indexOf(itemSpec);
         if (itemSpec.owner !== this || index < 0) {
             throw new Error("Row is not child of this GridLayout");
         }
@@ -211,7 +211,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
             throw new Error("Value is null.");
         }
 
-        var index = this._cols.indexOf(itemSpec);
+        const index = this._cols.indexOf(itemSpec);
         if (itemSpec.owner !== this || index < 0) {
             throw new Error("Column is not child of this GridLayout");
         }
@@ -223,7 +223,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     }
 
     public removeColumns() {
-        for (var i = this._cols.length - 1; i >= 0; i--) {
+        for (let i = this._cols.length - 1; i >= 0; i--) {
             const colSpec = this._cols[i];
             this._onColumnRemoved(colSpec, i);
             colSpec.index = -1;
@@ -233,7 +233,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     }
 
     public removeRows() {
-        for (var i = this._rows.length - 1; i >= 0; i--) {
+        for (let i = this._rows.length - 1; i >= 0; i--) {
             const rowSpec = this._rows[i];
             this._onRowRemoved(rowSpec, i);
             rowSpec.index = -1;

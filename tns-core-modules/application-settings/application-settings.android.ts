@@ -1,7 +1,7 @@
 ﻿import * as common from "./application-settings-common";
 import { getNativeApplication } from "../application";
 
-var sharedPreferences: android.content.SharedPreferences;
+let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
     if (!sharedPreferences) {
         sharedPreferences = (<android.app.Application>getNativeApplication()).getApplicationContext().getSharedPreferences("prefs.db", 0);
@@ -47,7 +47,7 @@ export function getNumber(key: string, defaultValue?: number): number {
 export function setBoolean(key: string, value: boolean): void {
     verify(key);
     common.ensureValidValue(value, "boolean");
-    var editor = sharedPreferences.edit();
+    const editor = sharedPreferences.edit();
     editor.putBoolean(key, value);
     editor.apply();
 }
@@ -55,7 +55,7 @@ export function setBoolean(key: string, value: boolean): void {
 export function setString(key: string, value: string): void {
     verify(key);
     common.ensureValidValue(value, "string");
-    var editor = sharedPreferences.edit();
+    const editor = sharedPreferences.edit();
     editor.putString(key, value);
     editor.apply();
 }
@@ -63,14 +63,14 @@ export function setString(key: string, value: string): void {
 export function setNumber(key: string, value: number): void {
     verify(key);
     common.ensureValidValue(value, "number");
-    var editor = sharedPreferences.edit();
+    const editor = sharedPreferences.edit();
     editor.putFloat(key, float(value));
     editor.apply();
 }
 
 export function remove(key: string): void {
     verify(key);
-    var editor = sharedPreferences.edit();
+    const editor = sharedPreferences.edit();
     editor.remove(key);
     editor.apply();
 }
@@ -80,14 +80,14 @@ export function clear(): void {
     sharedPreferences.edit().clear().apply();
 }
 
-export var flush = function (): boolean {
+export function flush(): boolean {
     return sharedPreferences.edit().commit();
 }
 
 export function getAllKeys(): Array<string> {
-    var mappedPreferences = sharedPreferences.getAll();
-    var iterator = mappedPreferences.keySet().iterator();
-    var result = [];
+    const mappedPreferences = sharedPreferences.getAll();
+    const iterator = mappedPreferences.keySet().iterator();
+    const result = [];
     while (iterator.hasNext()) {
         let key = iterator.next();
         result.push(key);
