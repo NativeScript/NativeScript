@@ -1,0 +1,5 @@
+<TabView>
+    <TabViewItem title="Home">
+        <Frame defaultPage="first-page"></Frame>
+    </TabViewItem>
+</TabView>
