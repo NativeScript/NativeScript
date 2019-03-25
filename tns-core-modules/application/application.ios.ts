@@ -299,9 +299,7 @@ export function getRootView() {
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
 let started: boolean = false;
-export function start(entry?: string | NavigationEntry) {
-    console.log("application.start() is deprecated; use application.run() instead");
-
+function _start(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
@@ -333,9 +331,14 @@ export function start(entry?: string | NavigationEntry) {
     }
 }
 
+export function start(entry?: string | NavigationEntry) {
+    console.log("application.start() is deprecated; use application.run() instead");
+    _start(entry);
+}
+
 export function run(entry?: string | NavigationEntry) {
     createRootFrame.value = false;
-    start(entry);
+    _start(entry);
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {

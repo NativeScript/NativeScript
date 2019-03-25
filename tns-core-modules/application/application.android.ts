@@ -131,9 +131,8 @@ let mainEntry: NavigationEntry;
 let started = false;
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
-export function start(entry?: NavigationEntry | string) {
-    console.log("application.start() is deprecated; use application.run() instead");
 
+function _start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
@@ -146,13 +145,18 @@ export function start(entry?: NavigationEntry | string) {
     }
 }
 
+export function start(entry?: NavigationEntry | string) {
+    console.log("application.start() is deprecated; use application.run() instead");
+    _start(entry);
+}
+
 export function shouldCreateRootFrame(): boolean {
     return createRootFrame.value;
 }
 
 export function run(entry?: NavigationEntry | string) {
     createRootFrame.value = false;
-    start(entry);
+    _start(entry);
 }
 
 const CALLBACKS = "_callbacks";
