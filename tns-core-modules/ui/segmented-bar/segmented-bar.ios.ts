@@ -4,8 +4,6 @@ import {
     colorProperty, fontInternalProperty, Color
 } from "./segmented-bar-common";
 
-import { ios } from "../../utils/utils";
-
 export * from "./segmented-bar-common";
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
@@ -93,7 +91,7 @@ export class SegmentedBar extends SegmentedBarBase {
         return null
     }
     [fontInternalProperty.setNative](value: Font) {
-        let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(ios.getter(UIFont, UIFont.labelFontSize))) : null;
+        let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize)) : null;
         let bar = this.ios;
         let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();

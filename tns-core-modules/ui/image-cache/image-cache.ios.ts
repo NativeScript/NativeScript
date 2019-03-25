@@ -1,9 +1,9 @@
-﻿import * as common from "./image-cache-common";
-import * as trace from "../../trace";
+﻿// imported for definition purposes only
 import * as httpRequestModule from "../../http/http-request";
 
+import * as common from "./image-cache-common";
+import * as trace from "../../trace";
 import * as utils from "../../utils/utils";
-import getter = utils.ios.getter;
 
 var httpRequest: typeof httpRequestModule;
 function ensureHttpRequest() {
@@ -11,18 +11,6 @@ function ensureHttpRequest() {
         httpRequest = require("http/http-request");
     }
 }
-
-//class NSCacheDelegateImpl extends NSObject implements NSCacheDelegate {
-//    public static ObjCProtocols = [NSCacheDelegate];
-
-//    static new(): NSCacheDelegateImpl {
-//        return <NSCacheDelegateImpl>super.new();
-//    }
-
-//    public cacheWillEvictObject(cache: NSCache, obj: any): void {
-//        traceWrite("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", traceCategories.Debug);
-//    }
-//}
 
 class MemmoryWarningHandler extends NSObject {
     static new(): MemmoryWarningHandler {
@@ -34,7 +22,7 @@ class MemmoryWarningHandler extends NSObject {
     public initWithCache(cache: NSCache<any, any>): MemmoryWarningHandler {
         this._cache = cache;
 
-        getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
+        NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
         if (trace.isEnabled()) {
             trace.write("[MemmoryWarningHandler] Added low memory observer.", trace.categories.Debug);
         }
@@ -43,7 +31,7 @@ class MemmoryWarningHandler extends NSObject {
     }
 
     public dealloc(): void {
-        getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
+        NSNotificationCenter.defaultCenter.removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
         if (trace.isEnabled()) {
             trace.write("[MemmoryWarningHandler] Removed low memory observer.", trace.categories.Debug);
         }
@@ -65,7 +53,6 @@ class MemmoryWarningHandler extends NSObject {
 
 export class Cache extends common.Cache {
     private _cache: NSCache<any, any>;
-    //private _delegate: NSCacheDelegate;
     //@ts-ignore
     private _memoryWarningHandler: MemmoryWarningHandler;
 
@@ -73,9 +60,6 @@ export class Cache extends common.Cache {
         super();
 
         this._cache = new NSCache<any, any>();
-
-        //this._delegate = NSCacheDelegateImpl.new();
-        //this._cache.delegate = this._delegate;
 
         this._memoryWarningHandler = MemmoryWarningHandler.new().initWithCache(this._cache);
     }
