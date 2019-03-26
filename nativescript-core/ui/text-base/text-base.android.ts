@@ -51,6 +51,41 @@ function initializeTextTransformation(): void {
     TextTransformation = TextTransformationImpl;
 }
 
+interface ClickableSpan {
+    new (owner: Span): android.text.style.ClickableSpan;
+}
+
+let ClickableSpan: ClickableSpan;
+
+function initializeClickableSpan(): void {
+    if (ClickableSpan) {
+        return;
+    }
+
+    class ClickableSpanImpl extends android.text.style.ClickableSpan {
+        owner: WeakRef<Span>;
+
+        constructor(owner: Span) {
+            super();
+            this.owner = new WeakRef(owner);
+            return global.__native(this);
+        }
+        onClick(view: android.view.View): void {
+            const owner = this.owner.get();
+            if (owner) {
+                owner.notify({ eventName: Span.linkClickEvent, object: owner });
+            }
+            view.clearFocus();
+            view.invalidate();
+        }
+        updateDrawState(tp: android.text.TextPaint): void {
+            // don't style as link
+        }
+    }
+
+    ClickableSpan = ClickableSpanImpl;
+}
+
 export class TextBase extends TextBaseCommon {
     nativeViewProtected: android.widget.TextView;
     nativeTextViewProtected: android.widget.TextView;
@@ -60,12 +95,15 @@ export class TextBase extends TextBaseCommon {
     private _maxHeight: number;
     private _minLines: number;
     private _maxLines: number;
+    private _clickable: boolean = false;
+    private _defaultMovementMethod: android.text.method.MovementMethod;
 
     public initNativeView(): void {
         super.initNativeView();
         initializeTextTransformation();
         const nativeView = this.nativeTextViewProtected;
         this._defaultTransformationMethod = nativeView.getTransformationMethod();
+        this._defaultMovementMethod = this.nativeView.getMovementMethod();
         this._minHeight = nativeView.getMinHeight();
         this._maxHeight = nativeView.getMaxHeight();
         this._minLines = nativeView.getMinLines();
@@ -112,6 +150,8 @@ export class TextBase extends TextBaseCommon {
             return;
         }
 
+        this._setClickableState(false);
+
         this._setNativeText(reset);
     }
 
@@ -131,6 +171,7 @@ export class TextBase extends TextBaseCommon {
 
         const spannableStringBuilder = createSpannableStringBuilder(value);
         nativeView.setText(<any>spannableStringBuilder);
+        this._setClickableState(isStringClickable(value));
 
         textProperty.nativeValueChange(this, (value === null || value === undefined) ? "" : value.toString());
 
@@ -315,6 +356,19 @@ export class TextBase extends TextBaseCommon {
 
         this.nativeTextViewProtected.setText(<any>transformedText);
     }
+
+    _setClickableState(clickable: boolean) {
+        if (this._clickable !== clickable) {
+            this._clickable = clickable;
+            if (this._clickable) {
+                this.nativeViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+                this.nativeViewProtected.setHighlightColor(null);
+            }
+            else {
+                this.nativeViewProtected.setMovementMethod(this._defaultMovementMethod);
+            }
+        }
+    }
 }
 
 function getCapitalizedString(str: string): string {
@@ -344,6 +398,19 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
         default:
             return text;
     }
+}
+
+function isStringClickable(formattedString: FormattedString) {
+    if (!formattedString) {
+        return false;
+    }
+    for (let i = 0, length = formattedString.spans.length; i < length; i++) {
+        const span = formattedString.spans.getItem(i);
+        if (span.clickable) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function createSpannableStringBuilder(formattedString: FormattedString): android.text.SpannableStringBuilder {
@@ -442,6 +509,12 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
         if (strikethrough) {
             ssb.setSpan(new android.text.style.StrikethroughSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
+    }
+
+    const clickable = span.clickable;
+    if (clickable) {
+        initializeClickableSpan();
+        ssb.setSpan(new ClickableSpan(span), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     // TODO: Implement letterSpacing for Span here.
