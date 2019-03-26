@@ -1174,39 +1174,47 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             const intent = activity.getIntent();
 
             if (fireLaunchEvent) {
+                // entry point for Angular and Vue frameworks
                 rootView = notifyLaunch(intent, savedInstanceState);
             }
 
-            if (shouldCreateRootFrame) {
-                const extras = intent.getExtras();
-                let frameId = -1;
-
-                // We have extras when we call - new Frame().navigate();
-                // savedInstanceState is used when activity is recreated.
-                // NOTE: On API 23+ we get extras on first run.
-                // Check changed - first try to get frameId from Extras if not from saveInstanceState.
-                if (extras) {
-                    frameId = extras.getInt(INTENT_EXTRA, -1);
+            if (!rootView) {
+                // entry point for NS Core
+                if (!mainEntry) {
+                    // Also handles scenarios with Angular and Vue where the notifyLaunch didn't return a root view.
+                    throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
                 }
 
-                if (savedInstanceState && frameId < 0) {
-                    frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
-                }
-
-                if (!rootView) {
-                    // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
-                    // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
-                    rootView = getFrameByNumberId(frameId) || new Frame();
-                }
-
-                if (rootView instanceof Frame) {
-                    rootView.navigate(mainEntry);
+                if (shouldCreateRootFrame) {
+                    const extras = intent.getExtras();
+                    let frameId = -1;
+    
+                    // We have extras when we call - new Frame().navigate();
+                    // savedInstanceState is used when activity is recreated.
+                    // NOTE: On API 23+ we get extras on first run.
+                    // Check changed - first try to get frameId from Extras if not from saveInstanceState.
+                    if (extras) {
+                        frameId = extras.getInt(INTENT_EXTRA, -1);
+                    }
+    
+                    if (savedInstanceState && frameId < 0) {
+                        frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
+                    }
+    
+                    if (!rootView) {
+                        // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
+                        // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
+                        rootView = getFrameByNumberId(frameId) || new Frame();
+                    }
+    
+                    if (rootView instanceof Frame) {
+                        rootView.navigate(mainEntry);
+                    } else {
+                        throw new Error("A Frame must be used to navigate to a Page.");
+                    }
                 } else {
-                    throw new Error("A Frame must be used to navigate to a Page.");
+                    rootView = createViewFromEntry(mainEntry);
                 }
-            } else {
-                // Create the root view if the notifyLaunch didn't return it
-                rootView = rootView || createViewFromEntry(mainEntry);
             }
 
             this._rootView = rootView;

@@ -275,16 +275,15 @@ function createRootView(v?: View) {
     let rootView = v;
     if (!rootView) {
         // try to navigate to the mainEntry (if specified)
-        if (mainEntry) {
+        if (!mainEntry) {
+            throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
+        } else {
             if (createRootFrame.value) {
                 const frame = rootView = new Frame();
                 frame.navigate(mainEntry);
             } else {
                 rootView = createViewFromEntry(mainEntry);
             }
-        } else {
-            // TODO: Throw an exception?
-            throw new Error("A Frame must be used to navigate to a Page.");
         }
     }
 
@@ -302,9 +301,7 @@ export function getRootView() {
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
 let started: boolean = false;
-export function start(entry?: string | NavigationEntry) {
-    console.log("application.start() is deprecated; use application.run() instead");
-
+function _start(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
@@ -336,9 +333,14 @@ export function start(entry?: string | NavigationEntry) {
     }
 }
 
+export function start(entry?: string | NavigationEntry) {
+    console.log("application.start() is deprecated; use application.run() instead");
+    _start(entry);
+}
+
 export function run(entry?: string | NavigationEntry) {
     createRootFrame.value = false;
-    start(entry);
+    _start(entry);
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {
