@@ -351,21 +351,7 @@ export class Page extends PageBase {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
-
-        const insets = this.getSafeAreaInsets();
-
-        if (majorVersion <= 10) {
-            // iOS 10 and below don't have safe area insets API,
-            // there we need only the top inset on the Page
-            insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
-        }
-
-        const childLeft = 0 + insets.left;
-        const childTop = 0 + insets.top;
-        const childRight = right - insets.right;
-        let childBottom = bottom - insets.bottom;
-
-        View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
+        View.layoutChild(this, this.layoutView, 0, 0, right, bottom);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
