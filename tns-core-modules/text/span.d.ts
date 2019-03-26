@@ -50,6 +50,16 @@ export class Span extends ViewBase {
      * Gets or sets the text for the span.
      */
     public text: string;
+
+    /**
+     * String value used when hooking to linkClicked event.
+     */
+    public static linkClickedEvent: string;
+
+    /**
+     * Gets if the span is clickable or not.
+     */
+    public readonly clickable: boolean;
     
     //@private
     /**
