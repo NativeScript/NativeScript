@@ -10,32 +10,32 @@ export module inputType {
     /**
      * Plain text input type.
      */
-    export var text: string;
+    export const text: string;
 
     /**
      * Password input type.
      */
-    export var password: string;
+    export const password: string;
 
     /**
      * Email input type.
      */
-    export var email: string;
+    export const email: string;
 
     /**
      * Number input type.
      */
-    export var number: string;
+    export const number: string;
 
     /**
      * Decimal input type.
      */
-    export var decimal: string;
+    export const decimal: string;
 
     /**
      * Phone input type.
      */
-    export var phone: string;
+    export const phone: string;
 }
 
 /**
@@ -45,22 +45,22 @@ export module capitalizationType {
     /**
      * No automatic capitalization.
      */
-    export var none: string;
+    export const none: string;
 
     /**
      * Capitalizes every character.
      */
-    export var all: string;
+    export const all: string;
 
     /**
      * Capitalize the first word of each sentence.
      */
-    export var sentences: string;
+    export const sentences: string;
 
     /**
      * Capitalize the first letter of every word.
      */
-    export var words: string;
+    export const words: string;
 }
 
 /**

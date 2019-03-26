@@ -1,7 +1,7 @@
 ﻿import * as common from "./image-cache-common";
 import * as trace from "../../trace";
 
-var LruBitmapCacheClass;
+let LruBitmapCacheClass;
 function ensureLruBitmapCacheClass() {
     if (LruBitmapCacheClass) {
         return;
@@ -16,14 +16,10 @@ function ensureLruBitmapCacheClass() {
         public sizeOf(key: string, bitmap: android.graphics.Bitmap): number {
             // The cache size will be measured in kilobytes rather than
             // number of items.
-            var result = Math.round(bitmap.getByteCount() / 1024);
-            //console.log("sizeOf key: " + result);
+            const result = Math.round(bitmap.getByteCount() / 1024);
+
             return result;
         }
-
-        //protected entryRemoved(evicted: boolean, key: string, oldValue: android.graphics.Bitmap, newValue: android.graphics.Bitmap): void {
-        //    console.log("entryRemoved("+evicted+", "+key+", "+oldValue+", "+newValue+")");
-        //}
     };
 
     LruBitmapCacheClass = LruBitmapCache;
@@ -37,14 +33,14 @@ export class Cache extends common.Cache {
         super();
 
         ensureLruBitmapCacheClass();
-        var maxMemory = java.lang.Runtime.getRuntime().maxMemory() / 1024;
-        var cacheSize = maxMemory / 8;
+        const maxMemory = java.lang.Runtime.getRuntime().maxMemory() / 1024;
+        const cacheSize = maxMemory / 8;
         this._cache = new LruBitmapCacheClass(cacheSize);
 
-        var that = new WeakRef(this);
+        const that = new WeakRef(this);
         this._callback = new org.nativescript.widgets.Async.CompleteCallback({
             onComplete: function (result: any, context: any) {
-                var instance = that.get();
+                const instance = that.get();
                 if (instance) {
                     if (result) {
                         instance._onDownloadCompleted(context, result);
@@ -54,7 +50,7 @@ export class Cache extends common.Cache {
                 }
             },
             onError: function (err: string, context: any) {
-                var instance = that.get();
+                const instance = that.get();
                 if (instance) {
                     instance._onDownloadError(context, new Error(err));
                 }
@@ -67,7 +63,7 @@ export class Cache extends common.Cache {
     }
 
     public get(key: string): any {
-        var result = this._cache.get(key);
+        const result = this._cache.get(key);
         return result;
     }
 

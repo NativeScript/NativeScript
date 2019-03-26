@@ -1,12 +1,14 @@
-﻿import * as file_access_module from "./file-system-access";
+﻿// imported for definition purposes only
 import * as platformModule from "../platform";
+
+import { FileSystemAccess } from "./file-system-access";
 import { profile } from "../profiling";
 
 // The FileSystemAccess implementation, used through all the APIs.
-var fileAccess;
-var getFileAccess = function (): file_access_module.FileSystemAccess {
+let fileAccess: FileSystemAccess;
+function getFileAccess(): FileSystemAccess {
     if (!fileAccess) {
-        fileAccess = new file_access_module.FileSystemAccess();
+        fileAccess = new FileSystemAccess();
     }
 
     return fileAccess;
@@ -19,8 +21,8 @@ function ensurePlatform() {
     }
 }
 
-var createFile = function (info: { path: string; name: string; extension: string }) {
-    var file = new File();
+function createFile(info: { path: string; name: string; extension: string }) {
+    const file = new File();
     file._path = info.path;
     file._name = info.name;
     file._extension = info.extension;
@@ -28,18 +30,18 @@ var createFile = function (info: { path: string; name: string; extension: string
     return file;
 };
 
-var createFolder = function (info: { path: string; name: string; }) {
-    var documents = knownFolders.documents();
+function createFolder(info: { path: string; name: string; }) {
+    const documents = knownFolders.documents();
     if (info.path === documents.path) {
         return documents;
     }
 
-    var temp = knownFolders.temp();
+    const temp = knownFolders.temp();
     if (info.path === temp.path) {
         return temp;
     }
 
-    var folder = new Folder();
+    const folder = new Folder();
 
     folder._path = info.path;
     folder._name = info.name;
@@ -56,11 +58,11 @@ export class FileSystemEntity {
     _isKnown: boolean;
 
     get parent(): Folder {
-        var onError = function (error) {
+        const onError = function (error) {
             throw error;
         }
 
-        var folderInfo = getFileAccess().getParent(this.path, onError);
+        const folderInfo = getFileAccess().getParent(this.path, onError);
         if (!folderInfo) {
             return undefined;
         }
@@ -70,8 +72,8 @@ export class FileSystemEntity {
 
     public remove(): Promise<any> {
         return new Promise((resolve, reject) => {
-            var hasError = false;
-            var localError = function (error: any) {
+            let hasError = false;
+            const localError = function (error: any) {
                 hasError = true;
                 reject(error);
             };
@@ -92,7 +94,7 @@ export class FileSystemEntity {
             return;
         }
 
-        var fileAccess = getFileAccess();
+        const fileAccess = getFileAccess();
 
         if (this instanceof File) {
             fileAccess.deleteFile(this.path, onError);
@@ -103,8 +105,8 @@ export class FileSystemEntity {
 
     public rename(newName: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            var hasError = false;
-            var localError = function (error) {
+            let hasError = false;
+            const localError = function (error) {
                 hasError = true;
                 reject(error);
             }
@@ -125,22 +127,24 @@ export class FileSystemEntity {
             return;
         }
 
-        var parentFolder = this.parent;
+        const parentFolder = this.parent;
         if (!parentFolder) {
             if (onError) {
                 onError(new Error("No parent folder."));
             }
+
             return;
         }
 
-        var fileAccess = getFileAccess();
-        var path = parentFolder.path;
-        var newPath = fileAccess.joinPath(path, newName);
+        const fileAccess = getFileAccess();
+        const path = parentFolder.path;
+        const newPath = fileAccess.joinPath(path, newName);
 
-        var localError = function (error) {
+        const localError = function (error) {
             if (onError) {
                 onError(error);
             }
+
             return null;
         }
 
@@ -162,7 +166,7 @@ export class FileSystemEntity {
     }
 
     get lastModified(): Date {
-        var value = this._lastModified;
+        let value = this._lastModified;
         if (!this._lastModified) {
             value = this._lastModified = getFileAccess().getLastModified(this.path);
         }
@@ -173,11 +177,11 @@ export class FileSystemEntity {
 
 export class File extends FileSystemEntity {
     public static fromPath(path: string) {
-        var onError = function (error) {
+        const onError = function (error) {
             throw error;
         }
 
-        var fileInfo = getFileAccess().getFile(path, onError);
+        const fileInfo = getFileAccess().getFile(path, onError);
         if (!fileInfo) {
             return undefined;
         }
@@ -207,15 +211,15 @@ export class File extends FileSystemEntity {
 
         this._locked = true;
 
-        var that = this;
-        var localError = (error) => {
+        const that = this;
+        const localError = (error) => {
             that._locked = false;
             if (onError) {
                 onError(error);
             }
         };
 
-        var content = getFileAccess().read(this.path, localError);
+        const content = getFileAccess().read(this.path, localError);
 
         this._locked = false;
 
@@ -229,8 +233,8 @@ export class File extends FileSystemEntity {
         try {
             this._locked = true;
 
-            var that = this;
-            var localError = function (error) {
+            const that = this;
+            const localError = function (error) {
                 that._locked = false;
                 if (onError) {
                     onError(error);
@@ -245,13 +249,13 @@ export class File extends FileSystemEntity {
 
     public readText(encoding?: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            var hasError = false;
-            var localError = (error) => {
+            let hasError = false;
+            const localError = (error) => {
                 hasError = true;
                 reject(error);
             };
 
-            var content = this.readTextSync(localError, encoding);
+            const content = this.readTextSync(localError, encoding);
             if (!hasError) {
                 resolve(content);
             }
@@ -264,15 +268,15 @@ export class File extends FileSystemEntity {
 
         this._locked = true;
 
-        var that = this;
-        var localError = (error) => {
+        const that = this;
+        const localError = (error) => {
             that._locked = false;
             if (onError) {
                 onError(error);
             }
         };
 
-        var content = getFileAccess().readText(this.path, localError, encoding);
+        const content = getFileAccess().readText(this.path, localError, encoding);
         this._locked = false;
 
         return content;
@@ -280,8 +284,8 @@ export class File extends FileSystemEntity {
 
     public writeText(content: string, encoding?: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            var hasError = false;
-            var localError = function (error) {
+            let hasError = false;
+            const localError = function (error) {
                 hasError = true;
                 reject(error);
             };
@@ -299,8 +303,8 @@ export class File extends FileSystemEntity {
         try {
             this._locked = true;
 
-            var that = this;
-            var localError = function (error) {
+            const that = this;
+            const localError = function (error) {
                 that._locked = false;
                 if (onError) {
                     onError(error);
@@ -323,11 +327,11 @@ export class File extends FileSystemEntity {
 
 export class Folder extends FileSystemEntity {
     public static fromPath(path: string): Folder {
-        var onError = function (error) {
+        const onError = function (error) {
             throw error;
         }
 
-        var folderInfo = getFileAccess().getFolder(path, onError);
+        const folderInfo = getFileAccess().getFolder(path, onError);
         if (!folderInfo) {
             return undefined;
         }
@@ -340,8 +344,8 @@ export class Folder extends FileSystemEntity {
     }
 
     public contains(name: string): boolean {
-        var fileAccess = getFileAccess();
-        var path = fileAccess.joinPath(this.path, name);
+        const fileAccess = getFileAccess();
+        const path = fileAccess.joinPath(this.path, name);
 
         if (fileAccess.fileExists(path)) {
             return true;
@@ -352,8 +356,8 @@ export class Folder extends FileSystemEntity {
 
     public clear(): Promise<any> {
         return new Promise((resolve, reject) => {
-            var hasError = false;
-            var onError = function (error) {
+            let hasError = false;
+            const onError = function (error) {
                 hasError = true;
                 reject(error);
             };
@@ -374,14 +378,14 @@ export class Folder extends FileSystemEntity {
     }
 
     public getFile(name: string): File {
-        var fileAccess = getFileAccess();
-        var path = fileAccess.joinPath(this.path, name);
+        const fileAccess = getFileAccess();
+        const path = fileAccess.joinPath(this.path, name);
 
-        var onError = function (error) {
+        const onError = function (error) {
             throw error;
         }
 
-        var fileInfo = fileAccess.getFile(path, onError);
+        const fileInfo = fileAccess.getFile(path, onError);
         if (!fileInfo) {
             return undefined;
         }
@@ -390,14 +394,14 @@ export class Folder extends FileSystemEntity {
     }
 
     public getFolder(name: string): Folder {
-        var fileAccess = getFileAccess();
-        var path = fileAccess.joinPath(this.path, name);
+        const fileAccess = getFileAccess();
+        const path = fileAccess.joinPath(this.path, name);
 
-        var onError = function (error) {
+        const onError = function (error) {
             throw error;
         }
 
-        var folderInfo = fileAccess.getFolder(path, onError);
+        const folderInfo = fileAccess.getFolder(path, onError);
         if (!folderInfo) {
             return undefined;
         }
@@ -407,13 +411,13 @@ export class Folder extends FileSystemEntity {
 
     public getEntities(): Promise<Array<FileSystemEntity>> {
         return new Promise((resolve, reject) => {
-            var hasError = false;
-            var localError = function (error) {
+            let hasError = false;
+            const localError = function (error) {
                 hasError = true;
                 reject(error);
             };
 
-            var entities = this.getEntitiesSync(localError);
+            const entities = this.getEntitiesSync(localError);
             if (!hasError) {
                 resolve(entities);
             }
@@ -421,15 +425,13 @@ export class Folder extends FileSystemEntity {
     }
 
     public getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity> {
-        var fileInfos = getFileAccess().getEntities(this.path, onError);
+        const fileInfos = getFileAccess().getEntities(this.path, onError);
         if (!fileInfos) {
             return null;
         }
 
-        var entities = new Array<FileSystemEntity>();
-
-        var i;
-        for (i = 0; i < fileInfos.length; i++) {
+        const entities = new Array<FileSystemEntity>();
+        for (let i = 0; i < fileInfos.length; i++) {
             if (fileInfos[i].extension) {
                 entities.push(createFile(fileInfos[i]));
             } else {
@@ -445,8 +447,8 @@ export class Folder extends FileSystemEntity {
             return;
         }
 
-        var onSuccess = function (fileInfo: { path: string; name: string; extension: string }): boolean {
-            var entity;
+        const onSuccess = function (fileInfo: { path: string; name: string; extension: string }): boolean {
+            let entity;
             if (fileInfo.extension) {
                 entity = createFile(fileInfo);
             } else {
@@ -456,7 +458,7 @@ export class Folder extends FileSystemEntity {
             return onEntity(entity);
         }
 
-        var onError = function (error) {
+        const onError = function (error) {
             throw error;
         }
 
@@ -465,13 +467,13 @@ export class Folder extends FileSystemEntity {
 }
 
 export module knownFolders {
-    var _documents: Folder;
-    var _temp: Folder;
-    var _app: Folder;
+    let _documents: Folder;
+    let _temp: Folder;
+    let _app: Folder;
 
-    export var documents = function (): Folder {
+    export function documents(): Folder {
         if (!_documents) {
-            var path = getFileAccess().getDocumentsFolderPath();
+            const path = getFileAccess().getDocumentsFolderPath();
             _documents = new Folder();
             _documents._path = path;
             _documents._isKnown = true;
@@ -480,9 +482,9 @@ export module knownFolders {
         return _documents;
     };
 
-    export var temp = function (): Folder {
+    export function temp(): Folder {
         if (!_temp) {
-            var path = getFileAccess().getTempFolderPath();
+            const path = getFileAccess().getTempFolderPath();
             _temp = new Folder();
             _temp._path = path;
             _temp._isKnown = true;
@@ -491,9 +493,9 @@ export module knownFolders {
         return _temp;
     };
 
-    export var currentApp = function (): Folder {
+    export function currentApp(): Folder {
         if (!_app) {
-            var path = getFileAccess().getCurrentAppPath();
+            const path = getFileAccess().getCurrentAppPath();
             _app = new Folder();
             _app._path = path;
             _app._isKnown = true;
@@ -511,7 +513,7 @@ export module knownFolders {
         }
 
         let _library: Folder;
-        export var library = function(): Folder {
+        export function library(): Folder {
             _checkPlatform("library");
             if (!_library) {
                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.LibraryDirectory);
@@ -527,7 +529,7 @@ export module knownFolders {
         };
 
         let _developer: Folder;
-        export var developer = function(): Folder {
+        export function developer(): Folder {
             _checkPlatform("developer");
             if (!_developer) {
                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DeveloperDirectory);
@@ -543,7 +545,7 @@ export module knownFolders {
         };
 
         let _desktop: Folder;
-        export var desktop = function(): Folder {
+        export function desktop(): Folder {
             _checkPlatform("desktop");
             if (!_desktop) {
                  let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
@@ -559,7 +561,7 @@ export module knownFolders {
         };
 
         let _downloads: Folder;
-        export var downloads = function(): Folder {
+        export function downloads(): Folder {
             _checkPlatform("downloads");
             if (!_downloads) {
                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DownloadsDirectory);
@@ -575,7 +577,7 @@ export module knownFolders {
         };
 
         let _movies: Folder;
-        export var movies = function(): Folder {
+        export function movies(): Folder {
             _checkPlatform("movies");
             if (!_movies) {
                  let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
@@ -591,7 +593,7 @@ export module knownFolders {
         };
 
         let _music: Folder;
-        export var music = function(): Folder {
+        export function music(): Folder {
             _checkPlatform("music");
             if (!_music) {
                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MusicDirectory);
@@ -607,7 +609,7 @@ export module knownFolders {
         };
 
         let _pictures: Folder;
-        export var pictures = function(): Folder {
+        export function pictures(): Folder {
             _checkPlatform("pictures");
             if (!_pictures) {
                   let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
@@ -623,7 +625,7 @@ export module knownFolders {
         };
 
         let _sharedPublic: Folder;
-        export var sharedPublic = function(): Folder {
+        export function sharedPublic(): Folder {
             _checkPlatform("sharedPublic");
             if (!_sharedPublic) {
                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.SharedPublicDirectory);
@@ -639,9 +641,9 @@ export module knownFolders {
         };
 
         function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): { folder: Folder; path: string } {
-            var fileAccess = (<any>getFileAccess());
-            var folderPath = fileAccess.getKnownPath(pathDirectory);
-            var folderInfo = fileAccess.getExistingFolder(folderPath);
+            const fileAccess = (<any>getFileAccess());
+            const folderPath = fileAccess.getKnownPath(pathDirectory);
+            const folderInfo = fileAccess.getExistingFolder(folderPath);
 
             if (folderInfo) {
                 return {
@@ -661,9 +663,9 @@ export module path {
     }
 
     export function join(...paths: string[]): string {
-        var fileAccess = getFileAccess();
+        const fileAccess = getFileAccess();
         return fileAccess.joinPaths(paths);
     }
 
-    export var separator = getFileAccess().getPathSeparator();
+    export const separator = getFileAccess().getPathSeparator();
 }

@@ -6,7 +6,6 @@ import { Label } from "tns-core-modules/ui/label";
 import { FontStyle, FontWeight } from "tns-core-modules/ui/enums";
 import * as typeUtils from "tns-core-modules/utils/types";
 import { Color } from "tns-core-modules/color";
-import * as utils from "tns-core-modules/utils/utils";
 import { isIOS } from "tns-core-modules/platform";
 
 const genericFontFamilies = [
@@ -48,7 +47,7 @@ let compareIgnoreCase = function (a, b) {
 };
 
 if (isIOS) {
-    const nsFontFamilies = utils.ios.getter(UIFont, UIFont.familyNames);
+    const nsFontFamilies = UIFont.familyNames;
     for (let i = 0; i < nsFontFamilies.count; i++) {
         const family = nsFontFamilies.objectAtIndex(i);
         fontFamilies.push(family)
