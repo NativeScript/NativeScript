@@ -75,7 +75,6 @@ export class Span extends ViewBase implements SpanDefinition {
     }
 
     addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any) {
-        console.log(arg);
         super.addEventListener(arg, callback, thisArg);
         this._setClickable(this.hasListeners(Span.linkClickEvent));
     }
