@@ -46,6 +46,7 @@ export function loadExamples() {
     examples.set("background-image-linear-gradient", "css/background-image-linear-gradient-page");
     examples.set("background-image", "css/background-image-page");
     examples.set("styles", "css/styles-page");
+    examples.set("clickable-span", "css/clickable-span-page");
 
     return examples;
 }
