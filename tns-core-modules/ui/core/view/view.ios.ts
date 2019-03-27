@@ -904,6 +904,14 @@ export namespace ios {
             return controller;
         }
 
+        public viewDidLoad(): void {
+            super.viewDidLoad();
+    
+            // Unify translucent and opaque bars layout
+            // this.edgesForExtendedLayout = UIRectEdgeBottom;
+            this.extendedLayoutIncludesOpaqueBars = true;
+        }
+
         public viewWillLayoutSubviews(): void {
             super.viewWillLayoutSubviews();
             const owner = this.owner.get();
@@ -958,9 +966,6 @@ export namespace ios {
             if (!owner) {
                 return;
             }
-
-            // Unify translucent and opaque bars layout
-            this.extendedLayoutIncludesOpaqueBars = true;
 
             updateAutoAdjustScrollInsets(this, owner);
 

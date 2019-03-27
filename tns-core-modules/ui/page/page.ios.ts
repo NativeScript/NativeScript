@@ -68,6 +68,14 @@ class UIViewControllerImpl extends UIViewController {
         return controller;
     }
 
+    public viewDidLoad(): void {
+        super.viewDidLoad();
+
+        // Unify translucent and opaque bars layout
+        // this.edgesForExtendedLayout = UIRectEdgeBottom;
+        this.extendedLayoutIncludesOpaqueBars = true;
+    }
+
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
@@ -99,9 +107,6 @@ class UIViewControllerImpl extends UIViewController {
 
             frame._updateActionBar(owner);
         }
-
-        // Unify translucent and opaque bars layout
-        this.extendedLayoutIncludesOpaqueBars = true;
 
         // Set autoAdjustScrollInsets in will appear - as early as possible
         iosView.updateAutoAdjustScrollInsets(this, owner);
@@ -351,7 +356,21 @@ export class Page extends PageBase {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
         View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
-        View.layoutChild(this, this.layoutView, 0, 0, right, bottom);
+
+        const insets = this.getSafeAreaInsets();
+
+        if (majorVersion <= 10) {
+            // iOS 10 and below don't have safe area insets API,
+            // there we need only the top inset on the Page
+            insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
+        }
+
+        const childLeft = 0 + insets.left;
+        const childTop = 0 + insets.top;
+        const childRight = right - insets.right;
+        let childBottom = bottom - insets.bottom;
+
+        View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
