@@ -3,6 +3,7 @@ import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, bool
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
+import { getImage } from "../../http";
 export * from "../core/view";
 export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
@@ -77,7 +78,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
                 }
             } else {
                 this.imageSource = null;
-                fromUrl(value).then((r) => {
+                getImage(value).then((r) => {
                     if (this["_url"] === value) {
                         this.imageSource = r;
                         this.isLoading = false;

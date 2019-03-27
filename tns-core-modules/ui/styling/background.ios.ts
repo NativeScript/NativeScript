@@ -7,6 +7,7 @@ import { Color } from "../../color";
 import { ios as utilsIos, isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
 import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
 import { CSSValue, parse as cssParse } from "../../css-value";
+import { getImage } from "../../http";
 
 export * from "./background-common";
 
@@ -179,7 +180,7 @@ function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor:
         bitmap = imageSource && imageSource.ios;
     } else if (imageUri.indexOf("http") !== -1) {
         style[symbolUrl] = imageUri;
-        fromUrl(imageUri).then((r) => {
+        getImage(imageUri).then((r) => {
             if (style && style[symbolUrl] === imageUri) {
                 uiColorFromImage(r.ios, view, callback, flip);
             }
