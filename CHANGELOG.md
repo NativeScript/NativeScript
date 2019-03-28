@@ -1,3 +1,11 @@
+## [5.3.1](https://github.com/NativeScript/NativeScript/compare/5.3.0...5.3.1) (2019-03-28)
+
+
+### Bug Fixes
+
+* revert fromUrl deprecate warning ([#7082](https://github.com/NativeScript/NativeScript/issues/7082)) ([0a45540](https://github.com/NativeScript/NativeScript/commit/0a45540))
+
+
 <a name="5.3.0"></a>
 # [5.3.0](https://github.com/NativeScript/NativeScript/compare/5.2.1...5.3.0) (2019-03-21)
 
