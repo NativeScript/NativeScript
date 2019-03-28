@@ -9,8 +9,7 @@ import { getClassInfo, isString } from "../../../utils/types";
 import { unsetValue } from "../properties";
 
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
-var propertyFromKey = {};
-// var propertyIdCounter = 0;
+const propertyFromKey = {};
 
 function generatePropertyKey(name: string, ownerType: string, validate?: boolean) {
     if (validate) {
@@ -30,9 +29,9 @@ function validateRegisterParameters(name: string, ownerType: string) {
 }
 
 function getPropertyByNameAndType(name: string, owner: any): Property {
-    var result;
-    var key;
-    var classInfo = getClassInfo(owner);
+    let result;
+    let key;
+    let classInfo = getClassInfo(owner);
     while (classInfo) {
         key = generatePropertyKey(name, classInfo.name);
         result = propertyFromKey[key];
@@ -45,18 +44,18 @@ function getPropertyByNameAndType(name: string, owner: any): Property {
 }
 
 export module PropertyMetadataSettings {
-    export var None = 0;
-    export var AffectsLayout = 1;
-    export var AffectsStyle = 1 << 1;
-    export var Inheritable = 1 << 2;
+    export const None = 0;
+    export const AffectsLayout = 1;
+    export const AffectsStyle = 1 << 1;
+    export const Inheritable = 1 << 2;
 }
 
 export module ValueSource {
-    export var Default = 0;
-    export var Inherited = 1;
-    export var Css = 2;
-    export var Local = 3;
-    export var VisualState = 4;
+    export const Default = 0;
+    export const Inherited = 1;
+    export const Css = 2;
+    export const Local = 3;
+    export const VisualState = 4;
 }
 
 export class PropertyMetadata implements PropertyMetadataDefinition {
@@ -127,7 +126,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
         throw new Error("* @deprecated use 'ui/core/view-base or ui/core/view' as base class.");
     }
     public set(name: string, value: any) {
-        var property = getPropertyByNameAndType(name, this);
+        const property = getPropertyByNameAndType(name, this);
         if (property) {
             this._setValueInternal(property, value, ValueSource.Local);
         } else {
@@ -136,7 +135,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
     }
 
     public get(name: string): any {
-        var property = getPropertyByNameAndType(name, this);
+        const property = getPropertyByNameAndType(name, this);
         if (property) {
             return this._getValue(property);
         } else {
@@ -149,7 +148,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
     }
 
     public _getValueSource(property: Property): number {
-        var entry: PropertyEntry = this._propertyEntries[property.id];
+        const entry: PropertyEntry = this._propertyEntries[property.id];
         if (entry) {
             return entry.valueSource;
         }
@@ -158,7 +157,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
     }
 
     public _getValue(property: Property): any {
-        var entry: PropertyEntry = this._propertyEntries[property.id];
+        const entry: PropertyEntry = this._propertyEntries[property.id];
         if (entry) {
             return entry.effectiveValue;
         }

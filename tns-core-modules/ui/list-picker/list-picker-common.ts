@@ -29,7 +29,7 @@ export class ListPickerBase extends View implements ListPickerDefinition {
     }
 
     public updateSelectedValue(index) {
-        var newVal = null;
+        let newVal = null;
         if (index >= 0) {
             const item = this.items[index];
 

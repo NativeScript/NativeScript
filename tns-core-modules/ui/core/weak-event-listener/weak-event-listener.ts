@@ -14,27 +14,28 @@ class TargetHandlerPair {
 }
 
 function getHandlerForEventName(eventName: string): (eventData: EventData) => void {
-    var handler = handlersForEventName.get(eventName);
+    let handler = handlersForEventName.get(eventName);
     if (!handler) {
         handler = function (eventData: EventData) {
-            var source = eventData.object;
-            var sourceEventMap = sourcesMap.get(source);
+            const source = eventData.object;
+            const sourceEventMap = sourcesMap.get(source);
             if (!sourceEventMap) {
                 // There is no event map for this source - it is safe to detach the listener;
                 source.removeEventListener(eventName, handlersForEventName.get(eventName));
                 return;
             }
 
-            var targetHandlerPairList = sourceEventMap.get(eventName);
+            const targetHandlerPairList = sourceEventMap.get(eventName);
             if (!targetHandlerPairList) {
                 return;
             }
 
-            var deadPairsIndexes = [];
-            for (var i = 0; i < targetHandlerPairList.length; i++) {
-                var pair = targetHandlerPairList[i];
-
-                var target = pair.tagetRef.get();
+            const deadPairsIndexes = [];
+            let pair;
+            let target;
+            for (let i = 0; i < targetHandlerPairList.length; i++) {
+                pair = targetHandlerPairList[i];
+                target = pair.tagetRef.get();
                 if (target) {
                     pair.handler.call(target, eventData);
                 }
@@ -49,7 +50,7 @@ function getHandlerForEventName(eventName: string): (eventData: EventData) => vo
                 sourceEventMap.delete(eventName);
             }
             else {
-                for (var j = deadPairsIndexes.length - 1; j >= 0; j--) {
+                for (let j = deadPairsIndexes.length - 1; j >= 0; j--) {
                     targetHandlerPairList.splice(deadPairsIndexes[j], 1);
                 }
             }
@@ -81,16 +82,16 @@ function validateArgs(source: Observable, eventName: string, handler: (eventData
 export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
     validateArgs(source, eventName, handler, target);
 
-    var shouldAttach: boolean = false;
+    let shouldAttach: boolean = false;
 
-    var sourceEventMap = sourcesMap.get(source);
+    let sourceEventMap = sourcesMap.get(source);
     if (!sourceEventMap) {
         sourceEventMap = new Map<string, Array<TargetHandlerPair>>();
         sourcesMap.set(source, sourceEventMap);
         shouldAttach = true;
     }
 
-    var pairList = sourceEventMap.get(eventName);
+    let pairList = sourceEventMap.get(eventName);
     if (!pairList) {
         pairList = new Array<TargetHandlerPair>();
         sourceEventMap.set(eventName, pairList);
@@ -107,28 +108,30 @@ export function addWeakEventListener(source: Observable, eventName: string, hand
 export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
     validateArgs(source, eventName, handler, target);
 
-    var handlerForEventWithName = handlersForEventName.get(eventName);
+    const handlerForEventWithName = handlersForEventName.get(eventName);
     if (!handlerForEventWithName) {
         // We have never created handler for event with this name;
         return;
     }
 
-    var sourceEventMap = sourcesMap.get(source);
+    const sourceEventMap = sourcesMap.get(source);
     if (!sourceEventMap) {
         return;
     }
 
-    var targetHandlerPairList = sourceEventMap.get(eventName);
+    const targetHandlerPairList = sourceEventMap.get(eventName);
     if (!targetHandlerPairList) {
         return;
     }
 
     // Remove all pairs that match given target and handler or have a dead target
-    var targetHandlerPairsToRemove = [];
-    for (var i = 0; i < targetHandlerPairList.length; i++) {
-        var pair = targetHandlerPairList[i];
+    const targetHandlerPairsToRemove = [];
+    let pair;
+    let registeredTarget;
+    for (let i = 0; i < targetHandlerPairList.length; i++) {
+        pair = targetHandlerPairList[i];
 
-        var registeredTarget = pair.tagetRef.get();
+        registeredTarget = pair.tagetRef.get();
         if (!registeredTarget || (registeredTarget === target && handler === pair.handler)) {
             targetHandlerPairsToRemove.push(i);
         }
@@ -140,7 +143,7 @@ export function removeWeakEventListener(source: Observable, eventName: string, h
         sourceEventMap.delete(eventName);
     }
     else {
-        for (var j = targetHandlerPairsToRemove.length - 1; j >= 0; j--) {
+        for (let j = targetHandlerPairsToRemove.length - 1; j >= 0; j--) {
             targetHandlerPairList.splice(targetHandlerPairsToRemove[j], 1);
         }
     }
