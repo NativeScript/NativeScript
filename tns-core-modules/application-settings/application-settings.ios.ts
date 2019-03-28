@@ -2,67 +2,71 @@
 
 import * as utils from "../utils/utils";
 
-var userDefaults = NSUserDefaults.standardUserDefaults;
+const userDefaults = NSUserDefaults.standardUserDefaults;
 
-export var hasKey = function (key: string): boolean {
+export function hasKey(key: string): boolean {
     Common.checkKey(key);
+
     return userDefaults.objectForKey(key) !== null;
 }
 
 // utils.ios.getters
-export var getBoolean = function (key: string, defaultValue?: boolean): boolean {
+export function getBoolean(key: string, defaultValue?: boolean): boolean {
     Common.checkKey(key);
     if (hasKey(key)) {
         return userDefaults.boolForKey(key);
     }
+
     return defaultValue;
 }
 
-export var getString = function (key: string, defaultValue?: string): string {
+export function getString(key: string, defaultValue?: string): string {
     Common.checkKey(key);
     if (hasKey(key)) {
         return userDefaults.stringForKey(key);
     }
+
     return defaultValue;
 }
 
-export var getNumber = function (key: string, defaultValue?: number): number {
+export function getNumber(key: string, defaultValue?: number): number {
     Common.checkKey(key);
     if (hasKey(key)) {
         return userDefaults.doubleForKey(key);
     }
+
     return defaultValue;
 }
 
 // setters
-export var setBoolean = function (key: string, value: boolean): void {
+export function setBoolean(key: string, value: boolean): void {
     Common.checkKey(key);
     Common.ensureValidValue(value, "boolean");
     userDefaults.setBoolForKey(value, key);
 }
 
-export var setString = function (key: string, value: string): void {
+export function setString(key: string, value: string): void {
     Common.checkKey(key);
     Common.ensureValidValue(value, "string");
     userDefaults.setObjectForKey(value, key);
 }
 
-export var setNumber = function (key: string, value: number): void {
+export function setNumber(key: string, value: number): void {
     Common.checkKey(key);
     Common.ensureValidValue(value, "number");
     userDefaults.setDoubleForKey(value, key);
 }
 
-export var remove = function (key: string): void {
+export function remove(key: string): void {
     Common.checkKey(key);
     userDefaults.removeObjectForKey(key);
 }
 
-export var clear = function (): void {
+export function clear(): void {
     userDefaults.removePersistentDomainForName(NSBundle.mainBundle.bundleIdentifier);
 }
 
-export var flush = function (): boolean {
+export function flush(): boolean {
     return userDefaults.synchronize();
 }
 

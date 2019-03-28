@@ -1,5 +1,5 @@
 import * as inspectorCommandTypes from "./InspectorBackendCommands.ios";
-var inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
+const inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
 
 import * as debuggerDomains from "./debugger";
 
@@ -10,9 +10,9 @@ declare var __inspectorTimestamp;
 const frameId = "NativeScriptMainFrameIdentifier";
 const loaderId = "Loader Identifier";
 
-var resources_datas = [];
+const resources_datas = [];
 
-var documentTypeByMimeType = {
+const documentTypeByMimeType = {
     "text/xml": "Document",
     "text/plain": "Document",
     "text/html": "Document",
@@ -54,7 +54,7 @@ export class Request {
 
             this._mimeType = value;
 
-            var resourceType = "Other";
+            let resourceType = "Other";
 
             if (this._mimeType in documentTypeByMimeType) {
                 resourceType = documentTypeByMimeType[this._mimeType];
@@ -169,8 +169,8 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Returns content served for the given request.
      */
     getResponseBody(params: inspectorCommandTypes.NetworkDomain.GetResponseBodyMethodArguments): { body: string, base64Encoded: boolean } {
-        var resource_data = resources_datas[params.requestId];
-        var body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() :
+        const resource_data = resources_datas[params.requestId];
+        const body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() :
                     resource_data.data.base64EncodedStringWithOptions(0);
 
         if (resource_data) {

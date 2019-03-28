@@ -28,7 +28,7 @@ export class Cache extends observable.Observable implements definition.Cache {
 
         // schedule all pending downloads
         this._enabled = true;
-        var request: DownloadRequest;
+        let request: DownloadRequest;
 
         while (this._queue.length > 0 && this._currentDownloads < this.maxRequests) {
             request = this._queue.pop();
@@ -56,13 +56,13 @@ export class Cache extends observable.Observable implements definition.Cache {
 
     private _addRequest(request: DownloadRequest, onTop: boolean): void {
         if (request.key in this._pendingDownloads) {
-            var existingRequest = <DownloadRequest>this._pendingDownloads[request.key];
+            const existingRequest = <DownloadRequest>this._pendingDownloads[request.key];
             this._mergeRequests(existingRequest, request);
         }
         else {
             // TODO: Potential performance bottleneck - traversing the whole queue on each download request.
-            var queueRequest: DownloadRequest;
-            for (var i = 0; i < this._queue.length; i++) {
+            let queueRequest: DownloadRequest;
+            for (let i = 0; i < this._queue.length; i++) {
                 if (this._queue[i].key === request.key) {
                     queueRequest = this._queue[i];
                     break;
@@ -83,8 +83,8 @@ export class Cache extends observable.Observable implements definition.Cache {
     private _mergeRequests(existingRequest: DownloadRequest, newRequest: DownloadRequest) {
         if (existingRequest.completed) {
             if (newRequest.completed) {
-                var existingCompleted = existingRequest.completed;
-                var stackCompleted = function (result: imageSource.ImageSource, key: string) {
+                const existingCompleted = existingRequest.completed;
+                const stackCompleted = function (result: imageSource.ImageSource, key: string) {
                     existingCompleted(result, key);
                     newRequest.completed(result, key);
                 }
@@ -97,8 +97,8 @@ export class Cache extends observable.Observable implements definition.Cache {
         }
         if (existingRequest.error) {
             if (newRequest.error) {
-                var existingError = existingRequest.error;
-                var stackError = function (key: string) {
+                const existingError = existingRequest.error;
+                const stackError = function (key: string) {
                     existingError(key);
                     newRequest.error(key);
                 }
@@ -139,7 +139,7 @@ export class Cache extends observable.Observable implements definition.Cache {
     /* tslint:enable:no-unused-variable */
 
     public _onDownloadCompleted(key: string, image: any) {
-        var request = <DownloadRequest>this._pendingDownloads[key];
+        const request = <DownloadRequest>this._pendingDownloads[key];
 
         this.set(request.key, image);
         this._currentDownloads--;
@@ -163,7 +163,7 @@ export class Cache extends observable.Observable implements definition.Cache {
     }
 
     public _onDownloadError(key: string, err: Error) {
-        var request = <DownloadRequest>this._pendingDownloads[key];
+        const request = <DownloadRequest>this._pendingDownloads[key];
         this._currentDownloads--;
 
         if (request.error) {
@@ -215,7 +215,7 @@ export class Cache extends observable.Observable implements definition.Cache {
             return;
         }
 
-        var request = this._queue.pop();
+        const request = this._queue.pop();
         this._download(request);
     }
 }

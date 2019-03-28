@@ -1,7 +1,7 @@
 // Required by V8 snapshot generator
 if (!global.__extends) {
   global.__extends = function (d, b) {
-      for (var p in b) {
+      for (let p in b) {
           if (b.hasOwnProperty(p)) {
               d[p] = b[p];
           }
