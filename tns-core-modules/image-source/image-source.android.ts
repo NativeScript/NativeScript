@@ -246,8 +246,6 @@ export function fromNativeSource(source: any): ImageSource {
 }
 
 export function fromUrl(url: string): Promise<ImageSourceDefinition> {
-    console.log("imageSource.fromUrl(url) is deprecated; use http.getImage(url) instead");
-
     ensureHttp();
     return http.getImage(url);
 }
