@@ -73,7 +73,7 @@ function initializeClickableSpan(): void {
         onClick(view: android.view.View): void {
             const owner = this.owner.get();
             if (owner) {
-                owner.notify({ eventName: Span.linkClickEvent, object: owner });
+                owner._emit(Span.linkClickEvent);
             }
             view.clearFocus();
             view.invalidate();
