@@ -49,30 +49,30 @@ export module KeyboardType {
      * Android: [TYPE_CLASS_DATETIME](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_DATETIME) | [TYPE_DATETIME_VARIATION_NORMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_DATETIME_VARIATION_NORMAL)
      * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var datetime: BaseKeyboardType
+    export const datetime: BaseKeyboardType
     /**
      * Android: [TYPE_CLASS_PHONE](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_PHONE)
      * iOS:  [UIKeyboardTypePhonePad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var phone: BaseKeyboardType
+    export const phone: BaseKeyboardType
 
     /**
      * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | [TYPE_NUMBER_VARIATION_NORMAL](http://developer.android.com/intl/es/reference/android/text/InputType.html#TYPE_NUMBER_VARIATION_NORMAL) | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
      * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var number: BaseKeyboardType
+    export const number: BaseKeyboardType
 
     /**
      * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_URI](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_URI)
      * iOS:  [UIKeyboardTypeURL](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var url: BaseKeyboardType
+    export const url: BaseKeyboardType
 
     /**
      * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_EMAIL_ADDRESS](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
      * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
-    export var email: BaseKeyboardType
+    export const email: BaseKeyboardType
 }
 
 /**
@@ -83,31 +83,31 @@ export module ReturnKeyType {
      * Android: [IME_ACTION_DONE](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_DONE)
      * iOS: [UIReturnKeyDone](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var done: BaseReturnKeyType;
+    export const done: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_NEXT](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_NEXT)
      * iOS: [UIReturnKeyNext](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var next: BaseReturnKeyType;
+    export const next: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_GO](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_GO)
      * iOS: [UIReturnKeyGo](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var go: BaseReturnKeyType;
+    export const go: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_SEARCH](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEARCH)
      * iOS: [UIReturnKeySearch](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var search: BaseReturnKeyType;
+    export const search: BaseReturnKeyType;
 
     /**
      * Android: [IME_ACTION_SEND](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEND)
      * iOS: [UIReturnKeySend](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
      */
-    export var send: string;
+    export const send: string;
 }
 
 /**
@@ -117,17 +117,17 @@ export module TextAlignment {
     /**
      * Represents left text-align.
      */
-    export var left: BaseTextAlignment;
+    export const left: BaseTextAlignment;
 
     /**
      * Represents center text-align.
      */
-    export var center: BaseTextAlignment;
+    export const center: BaseTextAlignment;
 
     /**
      * Represents right text-align.
      */
-    export var right: BaseTextAlignment;
+    export const right: BaseTextAlignment;
 }
 
 /**
@@ -137,11 +137,11 @@ export module Orientation {
     /**
      * Layout should be horizontally oriented.
      */
-    export var horizontal: BaseOrientation;
+    export const horizontal: BaseOrientation;
     /**
      * Layout should be vertically oriented.
      */
-    export var vertical: BaseOrientation;
+    export const vertical: BaseOrientation;
 }
 
 /**
@@ -151,15 +151,15 @@ export module DeviceOrientation {
     /**
      * Portrait orientation.
      */
-    export var portrait: string;
+    export const portrait: string;
     /**
      * Landscape orientation.
      */
-    export var landscape: string;
+    export const landscape: string;
     /**
      * Orientation cannot be determined.
      */
-    export var unknown: string;
+    export const unknown: string;
 }
 
 /**
@@ -169,22 +169,22 @@ export module HorizontalAlignment {
     /**
      * An element should be left aligned.
      */
-    export var left: BaseHorizontalAlignment;
+    export const left: BaseHorizontalAlignment;
 
     /**
      * An element should be center aligned.
      */
-    export var center: BaseHorizontalAlignment;
+    export const center: BaseHorizontalAlignment;
 
     /**
      * An element should be right aligned.
      */
-    export var right: BaseHorizontalAlignment;
+    export const right: BaseHorizontalAlignment;
 
     /**
      * An element should be stretched to fill all the available size.
      */
-    export var stretch: BaseHorizontalAlignment;
+    export const stretch: BaseHorizontalAlignment;
 }
 
 /**
@@ -194,27 +194,27 @@ export module VerticalAlignment {
     /**
      * An element should be top aligned.
      */
-    export var top: BaseVerticalAlignment;
+    export const top: BaseVerticalAlignment;
 
     /**
      * An element should be center aligned.
      */
-    export var center: BaseVerticalAlignment;
+    export const center: BaseVerticalAlignment;
 
     /**
      * Same as center. An element should be aligned in the middle.
      */
-    export var middle: BaseVerticalAlignment;
+    export const middle: BaseVerticalAlignment;
 
     /**
      * An element should be bottom aligned.
      */
-    export var bottom: BaseVerticalAlignment;
+    export const bottom: BaseVerticalAlignment;
 
     /**
      * An element should be stretched to fill all the available size.
      */
-    export var stretch: BaseVerticalAlignment;
+    export const stretch: BaseVerticalAlignment;
 }
 
 /**
@@ -224,25 +224,25 @@ export module Stretch {
     /**
      * The image preserves its original size.
      */
-    export var none: BaseStretch;
+    export const none: BaseStretch;
 
     /**
      * The image is resized to fill in the destination dimensions while it preserves its native aspect ratio.
      * If the aspect ratio of the destination rectangle differs from the image, the image is clipped to fill
      * in the destination.
      */
-    export var aspectFill: BaseStretch;
+    export const aspectFill: BaseStretch;
 
     /**
      * The image is resized to fit the destination dimensions while it preserves
      * its native aspect ratio.
      */
-    export var aspectFit: BaseStretch;
+    export const aspectFit: BaseStretch;
 
     /**
      * The image is resized to fill the destination dimensions. The aspect ratio is not preserved.
      */
-    export var fill: BaseStretch;
+    export const fill: BaseStretch;
 }
 
 /**
@@ -252,17 +252,17 @@ export module Visibility {
     /**
      * The view is visible.
      */
-    export var visible: BaseVisibility;
+    export const visible: BaseVisibility;
 
     /**
      * The view is not visible and won't take place in the layout.
      */
-    export var collapse: BaseVisibility;
+    export const collapse: BaseVisibility;
 
     /**
      * The view is not visible but will take place in the layout.
      */
-    export var hidden: BaseVisibility;
+    export const hidden: BaseVisibility;
 }
 
 /**
@@ -272,17 +272,17 @@ export module FontAttributes {
     /**
      * Denotes that text should be drawn in a normal style.
      */
-    export var Normal: number;
+    export const Normal: number;
 
     /**
      * Denotes that text should be drawn in a bold weight.
      */
-    export var Bold: number;
+    export const Bold: number;
 
     /**
      * Denotes that text should be drawn in a italic style.
      */
-    export var Italic: number;
+    export const Italic: number;
 }
 
 /**
@@ -292,12 +292,12 @@ export module DeviceType {
     /**
      * Indicates a smart-phone device.
      */
-    export var Phone: string;
+    export const Phone: string;
 
     /**
      * Indicates a tablet device.
      */
-    export var Tablet: string;
+    export const Tablet: string;
 }
 
 /**
@@ -307,12 +307,12 @@ export module UpdateTextTrigger {
     /**
      * The text property will be udpaded when the widget loses focus.
      */
-    export var focusLost: BaseUpdateTrigger;
+    export const focusLost: BaseUpdateTrigger;
 
     /**
      * The text property will be udpaded on every single character typed by the user.
      */
-    export var textChanged: BaseUpdateTrigger;
+    export const textChanged: BaseUpdateTrigger;
 }
 
 /**
@@ -322,12 +322,12 @@ export module Accuracy {
     /**
      * The default accuracy. About 300 meters.
      */
-    export var any: number;
+    export const any: number;
 
     /**
      * High accuracy. About 3 meters.
      */
-    export var high: number;
+    export const high: number;
 }
 
 /**
@@ -337,22 +337,22 @@ export module Dock {
     /**
      * A child element that is positioned on the left side of the DockLayout.
      */
-    export var left: BaseDock;
+    export const left: BaseDock;
 
     /**
      * A child element that is positioned on the top side of the DockLayout.
      */
-    export var top: BaseDock;
+    export const top: BaseDock;
 
     /**
      * A child element that is positioned on the right side of the DockLayout.
      */
-    export var right: BaseDock;
+    export const right: BaseDock;
 
     /**
      * A child element that is positioned on the bottom side of the DockLayout.
      */
-    export var bottom: BaseDock;
+    export const bottom: BaseDock;
 }
 
 /**
@@ -362,22 +362,22 @@ export module AutocapitalizationType {
     /**
      * Do not capitalize any text automatically.
      */
-    export var none: BaseAutocapitalizationType;
+    export const none: BaseAutocapitalizationType;
 
     /**
      * Capitalize the first letter of each word automatically.
      */
-    export var words: BaseAutocapitalizationType;
+    export const words: BaseAutocapitalizationType;
 
     /**
      * Capitalize the first letter of each sentence automatically.
      */
-    export var sentences: BaseAutocapitalizationType;
+    export const sentences: BaseAutocapitalizationType;
 
     /**
      * Capitalize all characters automatically.
      */
-    export var allCharacters: BaseAutocapitalizationType;
+    export const allCharacters: BaseAutocapitalizationType;
 }
 
 /**
@@ -387,17 +387,17 @@ export module ImageFormat {
     /**
      * The W3C Portable Network Graphics (PNG) image format.
      */
-    export var png: string;
+    export const png: string;
 
     /**
      * The Joint Photographic Experts Group (JPEG) image format.
      */
-    export var jpeg: string;
+    export const jpeg: string;
 
     /**
      * The Joint Photographic Experts Group (JPEG) image format.
      */
-    export var jpg: string;
+    export const jpg: string;
 }
 
 /**
@@ -407,26 +407,26 @@ export module NavigationBarVisibility {
     /**
      * NavigationBar will be visible if there if frame backstack canGoBack is true or if the page Action Bar is not empty.
      */
-    export var auto: string;
+    export const auto: string;
 
     /**
      * NavigationBar will be hidden.
      */
-    export var never: string;
+    export const never: string;
 
     /**
      * NavigationBar will be visible.
      */
-    export var always: string;
+    export const always: string;
 }
 
 /**
  * Specifies the visibility of the application bar icon
  */
 export module AndroidActionBarIconVisibility {
-    export var auto: string;
-    export var never: string;
-    export var always: string;
+    export const auto: string;
+    export const never: string;
+    export const always: string;
 }
 
 /**
@@ -436,17 +436,17 @@ export module AndroidActionItemPosition {
     /**
      * Always show this item as a button in an Action Bar.
      */
-    export var actionBar: string;
+    export const actionBar: string;
 
     /**
      * Show this item as a button in an Action Bar if the system decides there is room for it.
      */
-    export var actionBarIfRoom: string;
+    export const actionBarIfRoom: string;
 
     /**
      * Never show this item as a button in an Action Bar.
      */
-    export var popup: string;
+    export const popup: string;
 }
 
 /**
@@ -456,12 +456,12 @@ export module FontStyle {
     /**
      * Normal font style.
      */
-    export var normal: BaseFontStyle;
+    export const normal: BaseFontStyle;
 
     /**
      * Italic font style.
      */
-    export var italic: BaseFontStyle;
+    export const italic: BaseFontStyle;
 }
 
 /**
@@ -471,17 +471,17 @@ export module TextDecoration {
     /**
      * No decoration.
      */
-    export var none: BaseTextDecoration;
+    export const none: BaseTextDecoration;
 
     /**
      * Text decoration underline.
      */
-    export var underline: BaseTextDecoration;
+    export const underline: BaseTextDecoration;
 
     /**
      * Text decoration line-through.
      */
-    export var lineThrough: BaseTextDecoration;
+    export const lineThrough: BaseTextDecoration;
 }
 
 /**
@@ -491,22 +491,22 @@ export module TextTransform {
     /**
      * No transform.
      */
-    export var none: BaseTextTransform;
+    export const none: BaseTextTransform;
 
     /**
      * Text transform capitalize.
      */
-    export var capitalize: BaseTextTransform;
+    export const capitalize: BaseTextTransform;
 
     /**
      * Text transform uppercase.
      */
-    export var uppercase: BaseTextTransform;
+    export const uppercase: BaseTextTransform;
 
     /**
      * Text transform lowercase.
      */
-    export var lowercase: BaseTextTransform;
+    export const lowercase: BaseTextTransform;
 }
 
 /**
@@ -516,12 +516,12 @@ export module WhiteSpace {
     /**
      * Normal wrap.
      */
-    export var normal: BaseWhiteSpace;
+    export const normal: BaseWhiteSpace;
 
     /**
      * No wrap.
      */
-    export var nowrap: BaseWhiteSpace;
+    export const nowrap: BaseWhiteSpace;
 }
 
 /**
@@ -531,57 +531,57 @@ export module FontWeight {
     /**
      * Thin font weight. CSS font-weight 100.
      */
-    export var thin: BaseFontWeight;
+    export const thin: BaseFontWeight;
     
     /**
      * Extra-light / Ultra-light font weight. CSS font-weight 200.
      */
-    export var extraLight: BaseFontWeight;
+    export const extraLight: BaseFontWeight;
     
     /**
      * Light font weight. CSS font-weight 300.
      */
-    export var light: BaseFontWeight;
+    export const light: BaseFontWeight;
 
     /**
      * Normal font weight. CSS font-weight 400.
      */
-    export var normal: BaseFontWeight;
+    export const normal: BaseFontWeight;
 
     /**
      * Medium font weight. CSS font-weight 500.
      */
-    export var medium: BaseFontWeight;
+    export const medium: BaseFontWeight;
 
     /**
      * Semi-bold / Demi-bold font weight. CSS font-weight 600.
      */
-    export var semiBold: BaseFontWeight;
+    export const semiBold: BaseFontWeight;
     
     /**
      * Bold font weight. CSS font-weight 700.
      */
-    export var bold: BaseFontWeight;
+    export const bold: BaseFontWeight;
 
     /**
      * Extra-bold / Ultra-bold font weight. CSS font-weight 800.
      */
-    export var extraBold: BaseFontWeight;
+    export const extraBold: BaseFontWeight;
 
     /**
      * Black font weight. CSS font-weight 900.
      */
-    export var black: BaseFontWeight;
+    export const black: BaseFontWeight;
 }
 
 /**
  * Specifies background repeat.
  */
 export module BackgroundRepeat {
-    export var repeat: BaseBackgroundRepeat;
-    export var repeatX: BaseBackgroundRepeat;
-    export var repeatY: BaseBackgroundRepeat;
-    export var noRepeat: BaseBackgroundRepeat;
+    export const repeat: BaseBackgroundRepeat;
+    export const repeatX: BaseBackgroundRepeat;
+    export const repeatY: BaseBackgroundRepeat;
+    export const noRepeat: BaseBackgroundRepeat;
 }
 
 /**
@@ -591,12 +591,12 @@ export module IOSActionItemPosition {
     /**
      * Show this item at the left of the navigation bar.
      */
-    export var left: string;
+    export const left: string;
 
     /**
      * Show this item at the right of the action bar.
      */
-    export var right: string;
+    export const right: string;
 }
 
 /**
@@ -607,32 +607,32 @@ export module AnimationCurve {
     /**
      * Default value. Specifies a transition effect with a slow start, then fast, then end slowly (equivalent to cubic-bezier(0.25,0.1,0.25,1))
      */
-    export var ease: string;
+    export const ease: string;
     
     /**
      * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.
      */
-    export var easeIn: string;
+    export const easeIn: string;
 
     /**
      * An ease-out curve causes the animation to begin quickly, and then slow down as it completes.
      */
-    export var easeOut: string;
+    export const easeOut: string;
 
     /**
      * An ease-in ease-out curve causes the animation to begin slowly, accelerate through the middle of its duration, and then slow again before completing.
      */
-    export var easeInOut: string;
+    export const easeInOut: string;
 
     /**
      * A linear animation curve causes an animation to occur evenly over its duration.
      */
-    export var linear: string;
+    export const linear: string;
 
     /**
      * A spring animation curve causes an animation to produce a spring (bounce) effect.
      */
-    export var spring: string;
+    export const spring: string;
 
    /**
     * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
@@ -647,10 +647,10 @@ export module StatusBarStyle {
    /**
     * The light style of the status bar - light background with dark letters.
     */
-   export var light: string;
+   export const light: string;
 
    /**
     * The dark style of the status bar - dark background with light letters.
     */
-   export var dark: string;
+   export const dark: string;
 }
