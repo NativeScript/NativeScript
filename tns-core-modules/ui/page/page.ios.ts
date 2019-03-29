@@ -68,6 +68,14 @@ class UIViewControllerImpl extends UIViewController {
         return controller;
     }
 
+    public viewDidLoad(): void {
+        super.viewDidLoad();
+
+        // Unify translucent and opaque bars layout
+        // this.edgesForExtendedLayout = UIRectEdgeBottom;
+        this.extendedLayoutIncludesOpaqueBars = true;
+    }
+
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
@@ -99,9 +107,6 @@ class UIViewControllerImpl extends UIViewController {
 
             frame._updateActionBar(owner);
         }
-
-        // Unify translucent and opaque bars layout
-        this.extendedLayoutIncludesOpaqueBars = true;
 
         // Set autoAdjustScrollInsets in will appear - as early as possible
         iosView.updateAutoAdjustScrollInsets(this, owner);
