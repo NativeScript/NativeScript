@@ -414,6 +414,10 @@ export interface AndroidActivityCallbacks {
     getRootView(): View;
     resetActivityContent(activity: any): void;
 
+    /**
+     * @deprecated use onCreate(activity, savedInstanceState, intent, superFunc) instead.
+     */
+    onCreate(activity: any, savedInstanceState: any, superFunc: Function): void;
     onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function): void;
     onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
     onStart(activity: any, superFunc: Function): void;

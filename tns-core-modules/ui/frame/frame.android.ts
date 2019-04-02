@@ -944,9 +944,15 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     @profile
-    public onCreate(activity: android.support.v7.app.AppCompatActivity, savedInstanceState: android.os.Bundle, intent: android.content.Intent, superFunc: Function): void {
+    public onCreate(activity: android.support.v7.app.AppCompatActivity, savedInstanceState: android.os.Bundle, intentOrSuperFunc: android.content.Intent | Function, superFunc?: Function): void {
         if (traceEnabled()) {
             traceWrite(`Activity.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
+        }
+
+        const intent: android.content.Intent = superFunc ? <android.content.Intent>intentOrSuperFunc : undefined;
+
+        if (!superFunc) {
+            superFunc = <Function>intentOrSuperFunc;
         }
 
         // If there is savedInstanceState this call will recreate all fragments that were previously in the navigation.
