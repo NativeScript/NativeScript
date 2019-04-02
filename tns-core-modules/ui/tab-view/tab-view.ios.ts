@@ -28,6 +28,14 @@ class UITabBarControllerImpl extends UITabBarController {
         return handler;
     }
 
+    public viewDidLoad(): void {
+        super.viewDidLoad();
+
+        // Unify translucent and opaque bars layout
+        // this.edgesForExtendedLayout = UIRectEdgeBottom;
+        this.extendedLayoutIncludesOpaqueBars = true;
+    }
+
     @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
@@ -35,9 +43,6 @@ class UITabBarControllerImpl extends UITabBarController {
         if (!owner) {
             return;
         }
-
-        // Unify translucent and opaque bars layout
-        this.extendedLayoutIncludesOpaqueBars = true;
 
         iosView.updateAutoAdjustScrollInsets(this, owner);
 
