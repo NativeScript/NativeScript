@@ -1,9 +1,9 @@
 import { knownFolders } from "../file-system"
 import { isAndroid } from "../platform"
 
-export var debug = true;
+export let debug = true;
 
-var applicationRootPath: string;
+let applicationRootPath: string;
 function ensureAppRootPath() {
     if (!applicationRootPath) {
         applicationRootPath = knownFolders.currentApp().path;

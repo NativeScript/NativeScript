@@ -4,8 +4,6 @@ import { View, EventData } from "../core/view";
 
 // Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
-import { ios } from "../../utils/utils";
-import getter = ios.getter;
 
 export * from "./gestures-common";
 
@@ -438,7 +436,7 @@ class TouchGestureEventData implements TouchGestureEventData {
     }
 
     getPointerCount(): number {
-        return getter(this.ios.event, this.ios.event.allTouches).count;
+        return this.ios.event.allTouches.count;
     }
 
     private getMainPointer(): UITouch {
@@ -464,7 +462,7 @@ class TouchGestureEventData implements TouchGestureEventData {
         if (!this._allPointers) {
             this._allPointers = [];
 
-            let nsArr = getter(this.ios.event, this.ios.event.allTouches).allObjects;
+            let nsArr = this.ios.event.allTouches.allObjects;
             for (let i = 0; i < nsArr.count; i++) {
                 this._allPointers.push(new Pointer(nsArr.objectAtIndex(i), this.view));
             }

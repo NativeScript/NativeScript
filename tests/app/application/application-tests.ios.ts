@@ -1,10 +1,6 @@
 ﻿/* tslint:disable:no-unused-variable */
 import * as app from "tns-core-modules/application";
-import * as TKUnit from "../TKUnit";
 import * as commonTests from "./application-tests-common";
-
-import * as utils from "tns-core-modules/utils/utils";
-import getter = utils.ios.getter;
 
 global.moduleMerge(commonTests, exports);
 
@@ -13,7 +9,7 @@ global.moduleMerge(commonTests, exports);
 if (app.ios) {
     var observer = app.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification,
         function onReceiveCallback(notification: NSNotification) {
-            var percent = getter(UIDevice, UIDevice.currentDevice).batteryLevel * 100;
+            var percent = UIDevice.currentDevice.batteryLevel * 100;
             var message = "Battery: " + percent + "%";
             ////console.log(message);
         });

@@ -11,47 +11,47 @@ import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 /**
  * String value used when hooking to launch event.
  */
-export var launchEvent: string;
+export const launchEvent: string;
 
 /**
  * String value used when hooking to displayed event.
  */
-export var displayedEvent: string;
+export const displayedEvent: string;
 
 /**
  * String value used when hooking to uncaughtError event.
  */
-export var uncaughtErrorEvent: string;
+export const uncaughtErrorEvent: string;
 
 /**
  * String value used when hooking to discardedError event.
  */
-export var discardedErrorEvent: string;
+export const discardedErrorEvent: string;
 
 /**
  * String value used when hooking to suspend event.
  */
-export var suspendEvent: string;
+export const suspendEvent: string;
 
 /**
  * String value used when hooking to resume event.
  */
-export var resumeEvent: string;
+export const resumeEvent: string;
 
 /**
  * String value used when hooking to exit event.
  */
-export var exitEvent: string;
+export const exitEvent: string;
 
 /**
  * String value used when hooking to lowMemory event.
  */
-export var lowMemoryEvent: string;
+export const lowMemoryEvent: string;
 
 /**
  * String value used when hooking to orientationChanged event.
  */
-export var orientationChangedEvent: string;
+export const orientationChangedEvent: string;
 
 /**
  * Event data containing information for the application events.

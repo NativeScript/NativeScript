@@ -279,5 +279,5 @@ export module path {
     /**
      * Gets the string used to separate file paths.
      */
-    export var separator: string;
+    export const separator: string;
 }

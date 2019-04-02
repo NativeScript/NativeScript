@@ -1,54 +1,55 @@
 ﻿// regex that contains all symbols applicable for expression used to AI detect an expression.
-var expressionSymbolsRegex = /[\+\-\*\/%\?:<>=!\|&\(\)^~]/;
+const expressionSymbolsRegex = /[\+\-\*\/%\?:<>=!\|&\(\)^~]/;
 
 export module bindingConstants {
-    export var sourceProperty = "sourceProperty";
-    export var targetProperty = "targetProperty";
-    export var expression = "expression";
-    export var twoWay = "twoWay";
-    export var source = "source";
-    export var bindingValueKey = "$value";
-    export var parentValueKey = "$parent";
-    export var parentsValueKey = "$parents";
-    export var newPropertyValueKey = "$newPropertyValue";
+    export const sourceProperty = "sourceProperty";
+    export const targetProperty = "targetProperty";
+    export const expression = "expression";
+    export const twoWay = "twoWay";
+    export const source = "source";
+    export const bindingValueKey = "$value";
+    export const parentValueKey = "$parent";
+    export const parentsValueKey = "$parents";
+    export const newPropertyValueKey = "$newPropertyValue";
 };
 
-var hasEqualSignRegex = /=+/;
-var equalSignComparisionOperatorsRegex = /(==|===|>=|<=|!=|!==)/;
+const hasEqualSignRegex = /=+/;
+const equalSignComparisionOperatorsRegex = /(==|===|>=|<=|!=|!==)/;
 
 // this regex is used to search for all instaces of '$parents[]' within an expression
-export var parentsRegex = /\$parents\s*\[\s*(['"]*)\w*\1\s*\]/g;
+export const parentsRegex = /\$parents\s*\[\s*(['"]*)\w*\1\s*\]/g;
 
 function isNamedParam(value) {
-    var equalSignIndex = value.search(hasEqualSignRegex);
+    const equalSignIndex = value.search(hasEqualSignRegex);
     if (equalSignIndex > -1) {
-        var equalSignSurround = value.substr(equalSignIndex > 0 ? equalSignIndex - 1 : 0, 3);
+        const equalSignSurround = value.substr(equalSignIndex > 0 ? equalSignIndex - 1 : 0, 3);
         if (equalSignSurround.search(equalSignComparisionOperatorsRegex) === -1) {
             return true;
         }
     }
+
     return false;
 }
 
 function areNamedParams(params: Array<any>) {
-    var i;
-    for (i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
         if (isNamedParam(params[i])) {
             return true;
         }
     }
+
     return false;
 }
 
-var namedParamConstants = {
+const namedParamConstants = {
     propName: "propName",
     propValue: "propValue"
 }
 
 function getPropertyNameValuePair(param, knownOptions, callback) {
-    var nameValuePair = {};
-    var propertyName = param.substr(0, param.indexOf("=")).trim();
-    var propertyValue = param.substr(param.indexOf("=") + 1).trim();
+    let nameValuePair = {};
+    let propertyName = param.substr(0, param.indexOf("=")).trim();
+    const propertyValue = param.substr(param.indexOf("=") + 1).trim();
     if (knownOptions) {
         if (!propertyName) {
             propertyName = knownOptions.defaultProperty;
@@ -73,25 +74,26 @@ function getPropertyNameValuePair(param, knownOptions, callback) {
 }
 
 function parseNamedProperties(parameterList, knownOptions, callback) {
-    var result = {};
-    var i;
-    for (i = 0; i < parameterList.length; i++) {
-        var nameValuePair = getPropertyNameValuePair(parameterList[i], knownOptions, callback);
+    const result = {};
+    let nameValuePair;
+    for (let i = 0; i < parameterList.length; i++) {
+        nameValuePair = getPropertyNameValuePair(parameterList[i], knownOptions, callback);
         if (nameValuePair) {
             result[nameValuePair[namedParamConstants.propName]] = nameValuePair[namedParamConstants.propValue];
         }
     }
+
     return result;
 }
 
 function getParamsArray(value: string) {
-    var result = [];
-    var i;
-    var skipComma = 0;
-    var indexReached = 0;
-    var singleQuoteBlock, doubleQuoteBlock = false;
+    const result = [];
+    let skipComma = 0;
+    let indexReached = 0;
+    let singleQuoteBlock = false;
+    let doubleQuoteBlock = false;
 
-    for (i = 0; i < value.length; i++) {
+    for (let i = 0; i < value.length; i++) {
         if (value[i] === "\"") {
             doubleQuoteBlock = !doubleQuoteBlock;
         }
@@ -121,26 +123,28 @@ function getParamsArray(value: string) {
 
 function isExpression(expression: string): boolean {
     if (expression.search(expressionSymbolsRegex) > -1) {
-        var parentsMatches = expression.match(parentsRegex);
+        const parentsMatches = expression.match(parentsRegex);
         if (parentsMatches) {
-            var restOfExpression = expression.substr(expression.indexOf(parentsMatches[0]) + parentsMatches[0].length);
+            const restOfExpression = expression.substr(expression.indexOf(parentsMatches[0]) + parentsMatches[0].length);
             // no more expression regognition symbols so it is safe for sourceProperty
             if (!(restOfExpression.search(expressionSymbolsRegex) > -1)) {
                 return false;
             }
         }
+
         return true;
     }
+
     return false;
 }
 
 export function getBindingOptions(name: string, value: string): any {
-    var namedParams = [];
-    var params = getParamsArray(value);
+    let namedParams = [];
+    const params = getParamsArray(value);
     if (!areNamedParams(params)) {
         if (params.length === 1) {
-            var trimmedValue = params[0].trim();
-            var sourceProp;
+            const trimmedValue = params[0].trim();
+            let sourceProp;
             if (isExpression(trimmedValue)) {
                 sourceProp = bindingConstants.bindingValueKey;
                 namedParams.push(bindingConstants.expression + " = " + trimmedValue);
@@ -155,7 +159,7 @@ export function getBindingOptions(name: string, value: string): any {
         else {
             namedParams.push(bindingConstants.sourceProperty + " = " + params[0].trim());
             namedParams.push(bindingConstants.expression + " = " + params[1].trim());
-            var twoWay = params[2] ? params[2].toLowerCase().trim() === "true" : true;
+            const twoWay = params[2] ? params[2].toLowerCase().trim() === "true" : true;
             namedParams.push(bindingConstants.twoWay + " = " + twoWay);
         }
     }
@@ -163,8 +167,8 @@ export function getBindingOptions(name: string, value: string): any {
         namedParams = params;
     }
 
-    var bindingPropertyHandler = function (prop, value) {
-        var result = {};
+    const bindingPropertyHandler = function (prop, value) {
+        const result = {};
         result[namedParamConstants.propName] = prop;
         if (prop === bindingConstants.twoWay) {
             // create a real boolean value
@@ -182,12 +186,12 @@ export function getBindingOptions(name: string, value: string): any {
         return result;
     };
 
-    var bindingOptionsParameters = parseNamedProperties(namedParams, xmlBindingProperties, bindingPropertyHandler);
-    var bindOptions = {
+    const bindingOptionsParameters = parseNamedProperties(namedParams, xmlBindingProperties, bindingPropertyHandler);
+    const bindOptions = {
         targetProperty: name
     };
 
-    for (var prop in bindingOptionsParameters) {
+    for (let prop in bindingOptionsParameters) {
         if (bindingOptionsParameters.hasOwnProperty(prop)) {
             bindOptions[prop] = bindingOptionsParameters[prop];
         }
@@ -200,7 +204,7 @@ export function getBindingOptions(name: string, value: string): any {
     return bindOptions;
 }
 
-var xmlBindingProperties = {
+const xmlBindingProperties = {
     sourceProperty: true,
     expression: true,
     twoWay: true,
