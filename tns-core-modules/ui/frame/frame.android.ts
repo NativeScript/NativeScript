@@ -952,6 +952,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         const intent: android.content.Intent = superFunc ? <android.content.Intent>intentOrSuperFunc : undefined;
 
         if (!superFunc) {
+            console.log("AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, superFunc: Function) " +
+                "is deprecated. Use AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function) instead.");
             superFunc = <Function>intentOrSuperFunc;
         }
 
