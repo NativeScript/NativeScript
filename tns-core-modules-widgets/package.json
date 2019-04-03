@@ -7,18 +7,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NativeScript/android-widgets.git"
+    "url": "https://github.com/NativeScript/NativeScript"
   },
   "author": "NativeScript team",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/NativeScript/android-widgets/issues"
+    "url": "https://github.com/NativeScript/NativeScript/issues"
   },
-  "homepage": "https://github.com/NativeScript/android-widgets#readme",
+  "homepage": "https://github.com/NativeScript/NativeScript/blob/master/tns-core-modules-widgets#readme",
   "nativescript": {
     "platforms": {
-      "ios": "4.0.0",
-      "android": "4.0.0"
+      "ios": "5.0.0",
+      "android": "5.0.0"
     }
   }
 }
