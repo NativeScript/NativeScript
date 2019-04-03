@@ -4,8 +4,6 @@ import * as buttons from "tns-core-modules/ui/button";
 import * as app from "tns-core-modules/application";
 import * as platform from "tns-core-modules/platform";
 
-import * as utils from "tns-core-modules/utils/utils";
-
 function printDeviceInfoAndroid() {
     console.log("android.os.Build.DEVICE = " + android.os.Build.DEVICE);                     //android.os.Build.DEVICE = hammerhead
     console.log("android.os.Build.VERSION.SDK = " + android.os.Build.VERSION.SDK);         //android.os.Build.VERSION.SDK = 19
@@ -29,7 +27,7 @@ function printDeviceInfoAndroid() {
 }
 
 function printDeviceInfoIOS() {
-    var device = utils.ios.getter(UIDevice, UIDevice.currentDevice);
+    var device = UIDevice.currentDevice;
     console.log("device.name = " + device.name);                             //device.name = iPhone Simulator
     console.log("device.systemName = " + device.systemName);                 //device.systemName = iPhone OS
     console.log("device.systemVersion = " + device.systemVersion);           //device.systemVersion = 8.1
@@ -37,7 +35,7 @@ function printDeviceInfoIOS() {
     console.log("device.localizedModel = " + device.localizedModel);         //device.localizedModel = iPhone Simulator
     console.log("device.userInterfaceIdiom = " + device.userInterfaceIdiom); //device.userInterfaceIdiom = 0
     console.log("device.batteryLevel = " + device.batteryLevel);             //device.batteryLevel = -1
-    var screen = utils.ios.getter(UIScreen, UIScreen.mainScreen);
+    var screen = UIScreen.mainScreen;
     console.log("screen = " + screen);
     console.log("screen.nativeBounds = " + screen.nativeBounds.size.width + ", " + screen.nativeBounds.size.height); //screen.nativeBounds = 640, 1136
     console.log("screen.scale = " + screen.scale);                                                                   //screen.scale = 2

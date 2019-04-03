@@ -944,9 +944,17 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     @profile
-    public onCreate(activity: android.support.v7.app.AppCompatActivity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
+    public onCreate(activity: android.support.v7.app.AppCompatActivity, savedInstanceState: android.os.Bundle, intentOrSuperFunc: android.content.Intent | Function, superFunc?: Function): void {
         if (traceEnabled()) {
             traceWrite(`Activity.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
+        }
+
+        const intent: android.content.Intent = superFunc ? <android.content.Intent>intentOrSuperFunc : undefined;
+
+        if (!superFunc) {
+            console.log("AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, superFunc: Function) " +
+                "is deprecated. Use AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function) instead.");
+            superFunc = <Function>intentOrSuperFunc;
         }
 
         // If there is savedInstanceState this call will recreate all fragments that were previously in the navigation.
@@ -966,6 +974,15 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             }
         }
 
+        if (intent && intent.getAction()) {
+            application.android.notify(<application.AndroidActivityNewIntentEventData>{
+                eventName: application.AndroidApplication.activityNewIntentEvent,
+                object: application.android,
+                activity,
+                intent
+            });
+        }
+
         this.setActivityContent(activity, savedInstanceState, true);
         moduleLoaded = true;
     }
@@ -980,6 +997,19 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
 
         outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+    }
+
+    @profile
+    public onNewIntent(activity: android.support.v7.app.AppCompatActivity, intent: android.content.Intent, superSetIntentFunc: Function, superFunc: Function): void {
+        superFunc.call(activity, intent);
+        superSetIntentFunc.call(activity, intent);
+
+        application.android.notify(<application.AndroidActivityNewIntentEventData>{
+            eventName: application.AndroidApplication.activityNewIntentEvent,
+            object: application.android,
+            activity,
+            intent
+        });
     }
 
     @profile
@@ -1188,7 +1218,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
                 if (shouldCreateRootFrame) {
                     const extras = intent.getExtras();
                     let frameId = -1;
-    
+
                     // We have extras when we call - new Frame().navigate();
                     // savedInstanceState is used when activity is recreated.
                     // NOTE: On API 23+ we get extras on first run.
@@ -1196,17 +1226,17 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
                     if (extras) {
                         frameId = extras.getInt(INTENT_EXTRA, -1);
                     }
-    
+
                     if (savedInstanceState && frameId < 0) {
                         frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
                     }
-    
+
                     if (!rootView) {
                         // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
                         // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
                         rootView = getFrameByNumberId(frameId) || new Frame();
                     }
-    
+
                     if (rootView instanceof Frame) {
                         rootView.navigate(mainEntry);
                     } else {

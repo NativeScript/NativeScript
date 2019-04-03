@@ -12,7 +12,7 @@ export module knownTemplates {
     /**
      * The ListView item template.
      */
-    export var itemTemplate: string;
+    export const itemTemplate: string;
 }
 
 /**

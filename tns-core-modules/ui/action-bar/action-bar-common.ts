@@ -18,7 +18,7 @@ import {
 } from "../core/view";
 
 export module knownCollections {
-    export var actionItems = "actionItems";
+    export const actionItems = "actionItems";
 }
 
 @CSSType("ActionBar")
@@ -235,7 +235,7 @@ export class ActionItems implements ActionItemsDefinition {
         }
 
         // Add new items
-        for (var i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
             this.addItem(items[i]);
         }
 
