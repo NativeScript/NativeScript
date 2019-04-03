@@ -3,6 +3,7 @@ env:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
 language: objective-c
+jdk: oraclejdk8
 osx_image: xcode10.2
 install:
   - brew update
