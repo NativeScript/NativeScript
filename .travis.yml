@@ -3,12 +3,9 @@ env:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
 language: objective-c
-jdk: oraclejdk8
-osx_image: xcode10.2
+osx_image: xcode8.3
 install:
   - brew update
-  - brew install node@10
-  - brew tap caskroom/cask
   - brew cask install android-sdk
   # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
   - yes | sdkmanager "platforms;android-23" >/dev/null
