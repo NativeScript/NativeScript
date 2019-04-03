@@ -1,9 +1,22 @@
-language: node_js
-node_js:
-- '6'
+env:
+  global:
+    - DATE=$(date +%Y-%m-%d)
+    - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
+language: objective-c
+osx_image: xcode9.3
+install:
+  - brew update
+  - brew cask install android-sdk
+  # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
+  - yes | sdkmanager "platforms;android-28" >/dev/null
+  - yes | sdkmanager "build-tools;28.0.3" >/dev/null
+  - yes | sdkmanager "extras;android;m2repository" >/dev/null
 before_script:
-- npm install -g grunt-cli
-- npm install
+  - export ANDROID_HOME=/usr/local/share/android-sdk
+  - npm install -g grunt-cli
+  - npm install
 script:
-- grunt default
-- (cd tns-platform-declarations && npm pack)
+- npm run setup-widgets
+- npm run setup
+- npm run tsc
+- npm run tslint

@@ -46,6 +46,7 @@
     "typescript": "^3.1.6"
   },
   "scripts": {
+    "setup-widgets": "( cd tns-core-modules-widgets && sh build.sh ) && npm run dev-link-tns-core-modules-widgets",
     "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps && npm run dev-link-e2e-modal",
     "tsc": "node  --max_old_space_size=4096 ./node_modules/typescript/bin/tsc",
     "ci": "tsc && npm run tslint && npm run ci-apps && npm run ci-e2e && npm run ci-tests",
@@ -67,6 +68,7 @@
     "dev-tsc-all": "npm run dev-tsc-tns-platform-declarations && npm run tsc && npm run dev-tsc-tests && npm run dev-tsc-apps && && npm run dev-tsc-e2e",
     "dev-link-tns-platform-declarations": "cd tns-platform-declarations && npm link",
     "dev-link-tns-core-modules": "cd tns-core-modules && npm link",
+    "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd tns-core-modules && npm link tns-core-modules-widgets)",
     "dev-link-tests": "cd tests && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-apps": "cd apps && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-e2e-modal": "cd e2e && cd modal-navigation && npm link tns-platform-declarations && npm link tns-core-modules",
@@ -77,7 +79,7 @@
     "test-ios": "tns run ios --path tests --justlaunch --no-watch",
     "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
     "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
-    "prepublish": "echo \"Development reminder: npm run setup\n\"",
+    "prepublish": "echo \"Development reminder for setup\n  - tns-core-modules: npm run setup\n  - tns-core-modules-widgets: npm run setup-widgets\n\"",
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
     "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && http-server",
     "test-tsc-es2016": "npm run tsc -- -p tsconfig.public.es2016.json",
