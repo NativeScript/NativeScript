@@ -1,7 +1,7 @@
 # NativeScript Core Modules Widgets
-[![Build Status](https://travis-ci.org/NativeScript/tns-core-modules-widgets.svg?branch=master)](https://travis-ci.org/NativeScript/tns-core-modules-widgets)
+[![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
-This repository contains the source code of the `tns-core-modules-widgets` library. This library represents native code (Java and Objective-C) used by the NativeScript [`core modules`](https://github.com/NativeScript/NativeScript/tree/master/tns-core-modules).
+This library represents native code (Java and Objective-C) used by the NativeScript [`core modules`](https://github.com/NativeScript/NativeScript/tree/master/tns-core-modules-widgets).
 
 [NativeScript](https://www.nativescript.org/) is a framework which enables developers to write truly native mobile applications for Android and iOS using JavaScript and CSS.
 
