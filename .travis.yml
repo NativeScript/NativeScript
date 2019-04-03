@@ -2,17 +2,15 @@ env:
   global:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
-language: node_js
-node_js:
-- '10'
 language: objective-c
 osx_image: xcode10.2
 install:
   - brew update
+  - brew install node@10
   - brew cask install android-sdk
   # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
-  - yes | sdkmanager "platforms;android-23" >/dev/null
-  - yes | sdkmanager "build-tools;23.0.3" >/dev/null
+  - yes | sdkmanager "platforms;android-28" >/dev/null
+  - yes | sdkmanager "build-tools;28.0.3" >/dev/null
   - yes | sdkmanager "extras;android;m2repository" >/dev/null
 before_script:
   - export ANDROID_HOME=/usr/local/share/android-sdk
