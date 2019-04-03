@@ -5,6 +5,7 @@ env:
 language: node_js
 node_js:
 - '10'
+language: objective-c
 osx_image: xcode10.2
 install:
   - brew update

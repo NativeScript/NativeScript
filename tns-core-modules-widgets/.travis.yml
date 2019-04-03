@@ -2,10 +2,8 @@ env:
   global:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
-language: node_js
-node_js:
-- '10'
-osx_image: xcode10.2
+language: objective-c
+osx_image: xcode8.3
 install:
   - brew update
   - brew cask install android-sdk
@@ -15,9 +13,4 @@ install:
   - yes | sdkmanager "extras;android;m2repository" >/dev/null
 before_script:
   - export ANDROID_HOME=/usr/local/share/android-sdk
-  - npm install -g grunt-cli
-  - npm install
-script:
-- npm run setup-widgets
-- npm run setup
-- (cd tns-platform-declarations && npm pack)
+script: ./build.sh $PACKAGE_VERSION
