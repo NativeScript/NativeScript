@@ -1,6 +1,6 @@
 ﻿// Definitions.
 import {
-    AndroidFrame as AndroidFrameDefinition, BackstackEntry,
+    AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationEntry,
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
 } from ".";
 import { Page } from "../page";
@@ -104,7 +104,9 @@ export class Frame extends FrameBase {
     private _containerViewId: number = -1;
     private _tearDownPending = false;
     private _attachedToWindow = false;
+    // TODO(vchimev): unite in a single property
     public _isBack: boolean = true;
+    public _isReplace: boolean = true;
     private _cachedAnimatorState: AnimatorState;
 
     constructor() {
@@ -263,11 +265,11 @@ export class Frame extends FrameBase {
         return newFragment;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+    public setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack);
+            this._updateBackstack(entry, isBack, isReplace);
 
             // If activity was destroyed we need to destroy fragment and UI
             // of current and new entries.
@@ -296,7 +298,7 @@ export class Frame extends FrameBase {
                 }
             }
 
-            super.setCurrent(entry, isBack);
+            super.setCurrent(entry, isBack, isReplace);
 
             // If we had real navigation process queue.
             this._processNavigationQueue(entry.resolvedPage);
@@ -330,10 +332,81 @@ export class Frame extends FrameBase {
         return false;
     }
 
+    public _onLivesync(context?: ModuleContext): boolean {
+        // TODO(vchimev)
+        console.log("---> Frame._onLivesync", context);
+        if (!this._currentEntry || !this._currentEntry.entry) {
+            return false;
+        }
+
+        const currentBackstackEntry = this._currentEntry;
+        const currentNavigationEntry = currentBackstackEntry.entry;
+
+        if (context && context.type && context.path) {
+            this._isReplace = true;
+            // TODO(vchimev): moduleName
+            const newPage = <Page>createViewFromEntry({ moduleName: context.path.substr(2, context.path.length - 6) });
+
+            fragmentId++;
+            const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
+            const newBackstackEntry: BackstackEntry = {
+                entry: currentNavigationEntry,
+                resolvedPage: newPage,
+                navDepth: currentBackstackEntry.navDepth,
+                fragmentTag: newFragmentTag,
+                frameId: currentBackstackEntry.frameId
+            }
+
+            this._cachedAnimatorState = getAnimatorState(currentBackstackEntry);
+
+            const newFragment = this.createFragment(newBackstackEntry, newFragmentTag);
+            const fragmentManager = this._getFragmentManager();
+            const newTransaction = fragmentManager.beginTransaction();
+
+            // TODO(vchimev): why does `second` disappears on navigation to `first` after a change?
+            _setAndroidFragmentTransitions(
+                false,
+                this._getNavigationTransition(currentNavigationEntry),
+                currentBackstackEntry,
+                newBackstackEntry,
+                newTransaction,
+                this._android.frameId
+            );
+
+            newTransaction.replace(this.containerViewId, newFragment, newFragmentTag);
+            newTransaction.commitAllowingStateLoss();
+        } else {
+            // Fallback
+            const navigationEntry: NavigationEntry = {
+                animated: false,
+                clearHistory: true,
+                context: currentNavigationEntry.context,
+                create: currentNavigationEntry.create,
+                moduleName: currentNavigationEntry.moduleName,
+                backstackVisible: currentNavigationEntry.backstackVisible
+            }
+
+            // If create returns the same page instance we can't recreate it.
+            // Instead of navigation set activity content.
+            // This could happen if current page was set in XML as a Page instance.
+            if (navigationEntry.create) {
+                const page = navigationEntry.create();
+                if (page === this.currentPage) {
+                    return false;
+                }
+            }
+
+            this.navigate(navigationEntry);
+        }
+
+        return true;
+    }
+
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
         this._isBack = false;
+        this._isReplace = false;
 
         // set frameId here so that we could use it in fragment.transitions
         newEntry.frameId = this._android.frameId;
@@ -384,6 +457,7 @@ export class Frame extends FrameBase {
 
     public _goBackCore(backstackEntry: BackstackEntry) {
         this._isBack = true;
+        this._isReplace = false;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry.navDepth;
 

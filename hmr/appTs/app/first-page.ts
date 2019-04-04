@@ -12,5 +12,13 @@ export function onTap(args) {
     const page: Page = button.page;
     const frame = page.frame;
 
-    frame.navigate("second-page");
+    frame.navigate({
+        moduleName: "second-page",
+        animated: true,
+        transition: {
+            name: "slide",
+            duration: 300,
+            curve: "easeIn"
+        }
+    });
 }

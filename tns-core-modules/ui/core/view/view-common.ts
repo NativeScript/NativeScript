@@ -138,12 +138,16 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
+        // TODO(vchimev): handle all cases
+        console.log("---> ViewCommon._onLivesync", context);
         _rootModalViews.forEach(v => v.closeModal());
         _rootModalViews.length = 0;
 
         // Handle local style
         // TODO(vchimev): ModuleType
-        if (context && context.type === "style" && context.path) {
+        // if (context && context.type === "style" && context.path) {
+        // TODO(vchimev): handle all context types
+        if (context) {
             return this.changeLocalStyles(context.path);
         }
 
@@ -151,12 +155,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     private changeLocalStyles(contextPath: string): boolean {
-        if (!this.changeStyles(this, contextPath)) {
-            eachDescendant(this, (child: ViewBase) => {
-                this.changeStyles(child, contextPath);
-                return true;
-            });
-        }
+        // if (!this.changeStyles(this, contextPath)) {
+        eachDescendant(this, (child: ViewBase) => {
+            // Log
+            console.log("---> child", child);
+            console.log("---> child._moduleName", child._moduleName);
+
+            // typeof child === Frame
+            if (child._moduleName && contextPath.includes(child._moduleName) && child.page) {
+                // Mock
+                child.page._onLivesync({ type: "markup", path: contextPath });
+            }
+
+            return true;
+        });
+        // }
+
         // Do not execute frame navigation for a change in styles
         return true;
     }

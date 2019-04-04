@@ -113,12 +113,14 @@ export class Frame extends View {
      * @param entry to check
      */
     isCurrent(entry: BackstackEntry): boolean;
+
     /**
      * @private
      * @param entry to set as current
      * @param isBack true when we set current because of back navigation.
+     * @param isReplace true when we set current because of HMR (hot module replacement).
      */
-    setCurrent(entry: BackstackEntry, isBack: boolean): void;
+    setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void;
     /**
      * @private
      */
@@ -154,7 +156,7 @@ export class Frame extends View {
     /**
      * @private
      */
-    _updateBackstack(entry: BackstackEntry, isBack: boolean): void;
+    _updateBackstack(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void;
     /**
      * @private
      */
@@ -171,6 +173,10 @@ export class Frame extends View {
      * @private
      */
     _isBack?: boolean;
+    /**
+     * @private
+     */
+    _isReplace?: boolean;
     //@endprivate
 
     /**

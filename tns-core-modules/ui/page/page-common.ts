@@ -99,6 +99,11 @@ export class PageBase extends ContentView implements PageDefinition {
         };
     }
 
+    public _onLivesync(context?: ModuleContext): boolean {
+        this.frame._onLivesync(context);
+        return true;
+    }
+
     @profile
     public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any) {
         this._navigationContext = context;

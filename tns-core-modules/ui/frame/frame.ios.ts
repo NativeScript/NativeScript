@@ -50,9 +50,9 @@ export class Frame extends FrameBase {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack);
+            this._updateBackstack(entry, isBack, null);
 
-            super.setCurrent(entry, isBack);
+            super.setCurrent(entry, isBack, null);
         }
     }
 
