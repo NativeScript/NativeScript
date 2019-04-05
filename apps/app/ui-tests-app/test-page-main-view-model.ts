@@ -37,7 +37,6 @@ export class TestPageMainViewModel extends Observable {
         } catch (error) {
             console.log("EXAMPLE LOAD FAILED:" + error);
             alert("Cannot find example: " + exampleFullPath);
-
         }
     }
 
