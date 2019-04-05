@@ -8,26 +8,11 @@ import { TextTransform } from "../text-base";
 /**
  * Represents a tab view entry.
  */
-export class TabViewItem extends ViewBase {
-    /**
-     * Gets or sets the title of the TabViewItem.
-     */
-    public title: string;
-
+export class TabContentItem extends ViewBase {
     /**
      * Gets or sets the view of the TabViewItem.
      */
     public view: View;
-
-    /**
-     * Gets or sets the icon source of the TabViewItem. This could either be a a file name or resource id.
-     */
-    public iconSource: string;
-
-    /**
-     * Gets or sets the text transform of the tab titles. 
-     */
-    textTransform: TextTransform;
 
     /**
      * @private
@@ -57,7 +42,7 @@ export class BottomNavigation extends View {
     /**
      * Gets or sets the items of the TabView.
      */
-    items: Array<TabViewItem>;
+    items: Array<TabContentItem>;
 
     /**
      * Gets or sets the selectedIndex of the TabView.
@@ -146,7 +131,7 @@ export class BottomNavigation extends View {
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
 }
 
-export const itemsProperty: Property<BottomNavigation, TabViewItem[]>;
+export const itemsProperty: Property<BottomNavigation, TabContentItem[]>;
 export const selectedIndexProperty: Property<BottomNavigation, number>;
 
 export const tabTextFontSizeProperty: CssProperty<Style, number>;

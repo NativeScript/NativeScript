@@ -16,6 +16,9 @@ import * as filesystem from "../../../file-system";
 const UI_PATH = "ui/";
 const MODULES = {
     "TabViewItem": "ui/tab-view",
+    "TabStrip": "ui/bottom-navigation",
+    "TabStripItem": "ui/bottom-navigation",
+    "TabContentItem": "ui/bottom-navigation",
     "FormattedString": "text/formatted-string",
     "Span": "text/span",
     "ActionItem": "ui/action-bar",

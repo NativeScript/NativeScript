@@ -1,19 +1,18 @@
-﻿import { TabViewItem as TabViewItemDefinition } from ".";
+﻿import { TabContentItem as TabContentItemDefinition } from ".";
 import { Font } from "../styling/font";
 
 import { ios as iosView, ViewBase } from "../core/view";
 import {
-    TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
-    tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
-} from "./tab-view-common"
+    TabViewBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon, TabStripItem
+} from "./bottom-navigation-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
 import { ios as iosUtils } from "../../utils/utils"
 import { device } from "../../platform";
-export * from "./tab-view-common";
+export * from "./bottom-navigation-common";
 
 const majorVersion = iosUtils.MajorVersion;
 const isPhone = device.deviceType === "Phone";
@@ -151,7 +150,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 }
 
-function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarItem, controller: UIViewController) {
+function updateTitleAndIconPositions(tabItem: TabContentItem, tabBarItem: UITabBarItem, controller: UIViewController) {
     if (!tabItem || !tabBarItem) {
         return;
     }
@@ -162,24 +161,24 @@ function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarI
     const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
     const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
 
-    if (!tabItem.iconSource) {
-        if (isIconAboveTitle) {
-            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
-        } else {
-            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
-        }
-    }
+    // if (!tabItem.iconSource) {
+    //     if (isIconAboveTitle) {
+    //         tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+    //     } else {
+    //         tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
+    //     }
+    // }
 
-    if (!tabItem.title) {
-        if (isIconAboveTitle) {
-            tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
-        } else {
-            tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
-        }
-    }
+    // if (!tabItem.title) {
+    //     if (isIconAboveTitle) {
+    //         tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
+    //     } else {
+    //         tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
+    //     }
+    // }
 }
 
-export class TabViewItem extends TabViewItemBase {
+export class TabContentItem extends TabContentItemBase {
     private __controller: UIViewController;
 
     public setViewController(controller: UIViewController, nativeView: UIView) {
@@ -204,22 +203,22 @@ export class TabViewItem extends TabViewItemBase {
     }
 
     public _update() {
-        const parent = <BottomNavigation>this.parent;
-        const controller = this.__controller;
-        if (parent && controller) {
-            const icon = parent._getIcon(this.iconSource);
-            const index = parent.items.indexOf(this);
-            const title = getTransformedText(this.title, this.style.textTransform);
+        // const parent = <BottomNavigation>this.parent;
+        // const controller = this.__controller;
+        // if (parent && controller) {
+        //     const icon = parent._getIcon(this.iconSource);
+        //     const index = parent.items.indexOf(this);
+        //     const title = getTransformedText(this.title, this.style.textTransform);
 
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
-            updateTitleAndIconPositions(this, tabBarItem, controller);
+        //     const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
+        //     updateTitleAndIconPositions(this, tabBarItem, controller);
 
-            // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
-            // Delete the repeating code.
-            const states = getTitleAttributesForStates(parent);
-            applyStatesToItem(tabBarItem, states);
-            controller.tabBarItem = tabBarItem;
-        }
+        //     // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
+        //     // Delete the repeating code.
+        //     const states = getTitleAttributesForStates(parent);
+        //     applyStatesToItem(tabBarItem, states);
+        //     controller.tabBarItem = tabBarItem;
+        // }
     }
 
     public _updateTitleAndIconPositions() {
@@ -236,7 +235,7 @@ export class TabViewItem extends TabViewItemBase {
 
 export class BottomNavigation extends TabViewBase {
     public viewController: UITabBarControllerImpl;
-    public items: TabViewItem[];
+    public items: TabContentItem[];
     public _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
@@ -270,6 +269,9 @@ export class BottomNavigation extends TabViewBase {
         if (selectedView instanceof Frame) {
             selectedView._pushInFrameStackRecursive();
         }
+
+        const label = this.tabStrip.items[0].label;
+        const image = this.tabStrip.items[0].image;
 
         this._ios.delegate = this._delegate;
     }
@@ -380,7 +382,7 @@ export class BottomNavigation extends TabViewBase {
         }
     }
 
-    private getViewController(item: TabViewItem): UIViewController {
+    private getViewController(item: TabContentItem): UIViewController {
         let newController: UIViewController = item.view ? item.view.viewController : null;
 
         if (newController) {
@@ -404,7 +406,7 @@ export class BottomNavigation extends TabViewBase {
         return newController;
     }
 
-    private setViewControllers(items: TabViewItem[]) {
+    private setViewControllers(items: TabContentItem[]) {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._ios.viewControllers = null;
@@ -416,15 +418,19 @@ export class BottomNavigation extends TabViewBase {
 
         items.forEach((item, i) => {
             const controller = this.getViewController(item);
-            const icon = this._getIcon(item.iconSource);
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
+            const tabStripItem = <TabStripItem>this.tabStrip.items[i];
+            const tabStripItemImage = tabStripItem.image;
+            const tabStripItemLabel = tabStripItem.label;
+            const icon = this._getIcon(tabStripItem.iconSource); // this.tabStrip.items[i].image; // this._getIcon(item.iconSource);
+            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((tabStripItem.title || ""), icon, i);
+            // const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag("test", null, i);
             updateTitleAndIconPositions(item, tabBarItem, controller);
 
             applyStatesToItem(tabBarItem, states);
 
             controller.tabBarItem = tabBarItem;
             controllers.addObject(controller);
-            (<TabViewItemDefinition>item).canBeLoaded = true;
+            (<TabContentItemDefinition>item).canBeLoaded = true;
         });
 
         this._ios.viewControllers = controllers;
@@ -435,15 +441,17 @@ export class BottomNavigation extends TabViewBase {
     }
 
     private _getIconRenderingMode(): UIImageRenderingMode {
-        switch (this.iosIconRenderingMode) {
-            case "alwaysOriginal":
-                return UIImageRenderingMode.AlwaysOriginal;
-            case "alwaysTemplate":
-                return UIImageRenderingMode.AlwaysTemplate;
-            case "automatic":
-            default:
-                return UIImageRenderingMode.Automatic;
-        }
+        // switch (this.iosIconRenderingMode) {
+        //     case "alwaysOriginal":
+        //         return UIImageRenderingMode.AlwaysOriginal;
+        //     case "alwaysTemplate":
+        //         return UIImageRenderingMode.AlwaysTemplate;
+        //     case "automatic":
+        //     default:
+        //         return UIImageRenderingMode.Automatic;
+        // }
+
+        return UIImageRenderingMode.AlwaysOriginal;
     }
 
     public _getIcon(iconSource: string): UIImage {
@@ -489,42 +497,42 @@ export class BottomNavigation extends TabViewBase {
         }
     }
 
-    [itemsProperty.getDefault](): TabViewItem[] {
+    [itemsProperty.getDefault](): TabContentItem[] {
         return null;
     }
-    [itemsProperty.setNative](value: TabViewItem[]) {
+    [itemsProperty.setNative](value: TabContentItem[]) {
         this.setViewControllers(value);
         selectedIndexProperty.coerce(this);
     }
 
-    [tabTextFontSizeProperty.getDefault](): number {
-        return null;
-    }
-    [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
-        this._updateIOSTabBarColorsAndFonts();
-    }
+    // [tabTextFontSizeProperty.getDefault](): number {
+    //     return null;
+    // }
+    // [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
+    //     this._updateIOSTabBarColorsAndFonts();
+    // }
 
-    [tabTextColorProperty.getDefault](): UIColor {
-        return null;
-    }
-    [tabTextColorProperty.setNative](value: UIColor | Color) {
-        this._updateIOSTabBarColorsAndFonts();
-    }
+    // [tabTextColorProperty.getDefault](): UIColor {
+    //     return null;
+    // }
+    // [tabTextColorProperty.setNative](value: UIColor | Color) {
+    //     this._updateIOSTabBarColorsAndFonts();
+    // }
 
-    [tabBackgroundColorProperty.getDefault](): UIColor {
-        return this._ios.tabBar.barTintColor;
-    }
-    [tabBackgroundColorProperty.setNative](value: UIColor | Color) {
-        this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
-    }
+    // [tabBackgroundColorProperty.getDefault](): UIColor {
+    //     return this._ios.tabBar.barTintColor;
+    // }
+    // [tabBackgroundColorProperty.setNative](value: UIColor | Color) {
+    //     this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    // }
 
-    [selectedTabTextColorProperty.getDefault](): UIColor {
-        return this._ios.tabBar.tintColor;
-    }
-    [selectedTabTextColorProperty.setNative](value: UIColor) {
-        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
-        this._updateIOSTabBarColorsAndFonts();
-    }
+    // [selectedTabTextColorProperty.getDefault](): UIColor {
+    //     return this._ios.tabBar.tintColor;
+    // }
+    // [selectedTabTextColorProperty.setNative](value: UIColor) {
+    //     this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
+    //     this._updateIOSTabBarColorsAndFonts();
+    // }
 
     // TODO: Move this to TabViewItem
     [fontInternalProperty.getDefault](): Font {
@@ -535,21 +543,21 @@ export class BottomNavigation extends TabViewBase {
     }
 
     // TODO: Move this to TabViewItem
-    [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
-        return "automatic";
-    }
-    [iosIconRenderingModeProperty.setNative](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
-        this._iconsCache = {};
-        let items = this.items;
-        if (items && items.length) {
-            for (let i = 0, length = items.length; i < length; i++) {
-                const item = items[i];
-                if (item.iconSource) {
-                    (<TabViewItem>item)._update();
-                }
-            }
-        }
-    }
+    // [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
+    //     return "automatic";
+    // }
+    // [iosIconRenderingModeProperty.setNative](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
+    //     this._iconsCache = {};
+    //     let items = this.items;
+    //     if (items && items.length) {
+    //         for (let i = 0, length = items.length; i < length; i++) {
+    //             const item = items[i];
+    //             if (item.iconSource) {
+    //                 (<BottomNavigationItem>item)._update();
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 interface TabStates {
