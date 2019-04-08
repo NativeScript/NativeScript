@@ -16,7 +16,7 @@ export * from "../page";
 export class Frame extends View {
     /**
      * @deprecated
-     * 
+     *
      * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
      */
     public static androidOptionSelectedEvent: string;
@@ -33,7 +33,7 @@ export class Frame extends View {
     canGoBack(): boolean;
 
     /**
-     * Navigates to a Page instance as described by the module name. 
+     * Navigates to a Page instance as described by the module name.
      * This method will require the module and will check for a Page property in the exports of the module.
      * @param pageModuleName The name of the module to require starting from the application root.
      * For example if you want to navigate to page called "myPage.js" in a folder called "subFolder" and your root folder is "app" you can call navigate method like this:
@@ -175,7 +175,7 @@ export class Frame extends View {
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
@@ -210,7 +210,7 @@ export function goBack();
 
 /**
  * @deprecated use getFrameById() if you want to retrieve a frame different than the topmost one
- * 
+ *
  * Gets the frames stack.
  */
 export function stack(): Array<Frame>;
@@ -264,7 +264,7 @@ export interface NavigationEntry extends ViewEntry {
     transitionAndroid?: NavigationTransition;
 
     /**
-     * True to record the navigation in the backstack, false otherwise. 
+     * True to record the navigation in the backstack, false otherwise.
      * If the parameter is set to false then the Page will be displayed but once navigated from it will not be able to be navigated back to.
      */
     backstackVisible?: boolean;
@@ -350,7 +350,7 @@ export interface BackstackEntry {
 }
 
 /**
- * Represents the data passed to the androidOptionSelected event. 
+ * Represents the data passed to the androidOptionSelected event.
  * This event is raised by the Android OS when an option in the Activity's action bar has been selected.
  */
 export interface AndroidOptionEventData extends EventData {
@@ -398,7 +398,7 @@ export interface AndroidFrame extends Observable {
 
     /**
      * @deprecated this property is not used internally
-     * 
+     *
      * Gets or sets whether the page UI will be cached when navigating away from the page.
      */
     cachePagesOnNavigate: boolean;
@@ -413,8 +413,12 @@ export interface AndroidFrame extends Observable {
 export interface AndroidActivityCallbacks {
     getRootView(): View;
     resetActivityContent(activity: any): void;
-    
+
+    /**
+     * @deprecated use onCreate(activity, savedInstanceState, intent, superFunc) instead.
+     */
     onCreate(activity: any, savedInstanceState: any, superFunc: Function): void;
+    onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function): void;
     onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
     onStart(activity: any, superFunc: Function): void;
     onStop(activity: any, superFunc: Function): void;
@@ -423,6 +427,7 @@ export interface AndroidActivityCallbacks {
     onBackPressed(activity: any, superFunc: Function): void;
     onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void;
     onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
+    onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
 }
 
 export interface AndroidFragmentCallbacks {

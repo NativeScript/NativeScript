@@ -135,6 +135,10 @@ if (application.android) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
         // Set args.cancel = true to cancel back navigation and do something custom.
     });
+
+    application.android.on(application.AndroidApplication.activityNewIntentEvent, function (args: application.AndroidActivityNewIntentEventData) {
+        console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Intent: " + args.intent);
+    });
 }
 
 var time;

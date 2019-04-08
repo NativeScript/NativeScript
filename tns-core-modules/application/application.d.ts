@@ -187,7 +187,7 @@ export function off(eventNames: string, callback?: any, thisArg?: any);
 
 /**
  * @deprecated use application.run() instead.
- * 
+ *
  * Call this method to start the application. Important: All code after this method call will not be executed!
  */
 export function start(entry?: NavigationEntry | string);
@@ -372,6 +372,16 @@ export interface AndroidActivityResultEventData extends AndroidActivityEventData
 }
 
 /**
+ * Data for the Android activity newIntent event.
+ */
+export interface AndroidActivityNewIntentEventData extends AndroidActivityEventData {
+    /**
+     * The intent.
+     */
+    intent: any /* android.content.Intent */;
+}
+
+/**
  * Data for the Android activity back pressed event.
  */
 export interface AndroidActivityBackPressedEventData extends AndroidActivityEventData {
@@ -481,6 +491,11 @@ export class AndroidApplication extends Observable {
     on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
 
     /**
+     * This event is raised when the Android app was launched by an Intent with data.
+     */
+    on(event: "activityNewIntent", callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
+
+    /**
      * This event is raised when the Android activity requests permissions.
      */
     on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
@@ -529,6 +544,11 @@ export class AndroidApplication extends Observable {
      * String value used when hooking to activityBackPressed event.
      */
     public static activityBackPressedEvent: string;
+
+    /**
+     * String value used when hooking to activityNewIntent event.
+     */
+    public static activityNewIntentEvent: string;
 
     /**
      * String value used when hooking to requestPermissions event.
