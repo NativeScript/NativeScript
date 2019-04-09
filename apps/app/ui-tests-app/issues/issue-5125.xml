@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="main-page" navigatingTo="onNavigatingTo">
+  <StackLayout>
+    <Label text="string value:" />
+    <Label text="{{ stringValue }}" />
+    <Label text="string value with uppercase:" />
+    <Label textTransform="uppercase" text="{{ stringValue }}" />
+    <Label text="string numeric value:" />
+    <Label text="{{ stringNumericValue }}" />
+    <Label text="string numeric value with uppercase:" />
+    <Label textTransform="uppercase" text="{{ stringNumericValue }}" />
+    <Label text="numeric value:" />
+    <Label text="{{ numericValue }}" />
+    <Label text="numeric value with uppercase:" />
+    <Label textTransform="uppercase" text="{{ numericValue }}" />
+  </StackLayout>
+</Page>
