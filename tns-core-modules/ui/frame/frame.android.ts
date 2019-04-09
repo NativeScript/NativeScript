@@ -344,10 +344,13 @@ export class Frame extends FrameBase {
 
         if (context && context.type && context.path) {
             this._isReplace = true;
-            // TODO(vchimev): moduleName
-            const newPage = <Page>createViewFromEntry({ moduleName: context.path.substr(2, context.path.length - 6) });
 
+            let contextModuleName = context.path.replace("./", "");
+            contextModuleName = contextModuleName.substring(0, contextModuleName.lastIndexOf("."));
+
+            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
             fragmentId++;
+
             const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
             const newBackstackEntry: BackstackEntry = {
                 entry: currentNavigationEntry,

@@ -17,7 +17,7 @@ export function onTap(args) {
         animated: true,
         transition: {
             name: "slide",
-            duration: 300,
+            duration: 800,
             curve: "easeIn"
         }
     });
