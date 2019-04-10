@@ -2,7 +2,6 @@
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
 import { device } from "../../platform"
 import * as fs from "../../file-system";
-import * as utils from "../../utils/utils";
 export * from "./font-common";
 
 const EMULATE_OBLIQUE = true;
@@ -103,7 +102,7 @@ function getNativeFontWeight(fontWeight: FontWeight): number {
 function getSystemFont(size: number, nativeWeight: number, italic: boolean, symbolicTraits: number): UIFont {
     let result = UIFont.systemFontOfSizeWeight(size, nativeWeight);
     if (italic) {
-        let descriptor = utils.ios.getter(result, result.fontDescriptor).fontDescriptorWithSymbolicTraits(symbolicTraits);
+        let descriptor = result.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
         result = UIFont.fontWithDescriptorSize(descriptor, size);
     }
 
@@ -149,7 +148,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
             let descriptor = UIFontDescriptor.fontDescriptorWithFontAttributes(<any>fontAttributes);
             result = UIFont.fontWithDescriptorSize(descriptor, size);
 
-            let actualItalic = utils.ios.getter(result, result.fontDescriptor).symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
+            let actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
             if (font.isItalic && !actualItalic && EMULATE_OBLIQUE) {
                 // The font we got is not actually italic so emulate that with a matrix
                 descriptor = descriptor.fontDescriptorWithMatrix(OBLIQUE_TRANSFORM);
@@ -180,7 +179,7 @@ export module ios {
         if (!fs.File.exists(filePath)) {
             filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
         }
-        const fontData = utils.ios.getter(NSFileManager, NSFileManager.defaultManager).contentsAtPath(filePath);
+        const fontData = NSFileManager.defaultManager.contentsAtPath(filePath);
         if (!fontData) {
             throw new Error("Could not load font from: " + fontFile);
         }

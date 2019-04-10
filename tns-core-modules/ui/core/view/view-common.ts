@@ -259,7 +259,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             if (args.length === 2) {
                 options = <ShowModalOptions>args[1];
             } else {
-                // TODO: Add deprecation warning
+                if (args[0] instanceof ViewCommon) {
+                    console.log("showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) " +
+                        "is deprecated. Use showModal(view: ViewBase, modalOptions: ShowModalOptions) instead.");
+                } else {
+                    console.log("showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) " +
+                        "is deprecated. Use showModal(moduleName: string, modalOptions: ShowModalOptions) instead.");
+                }
+
                 options = {
                     context: args[1],
                     closeCallback: args[2],

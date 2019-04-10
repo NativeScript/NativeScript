@@ -7,7 +7,7 @@ import {
 export * from "../core/view";
 
 export module knownCollections {
-    export var items = "items";
+    export const items = "items";
 }
 
 @CSSType("SegmentedBarItem")
