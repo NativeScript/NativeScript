@@ -1,5 +1,7 @@
-﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
+﻿import { ListPickerBase, selectedIndexProperty, itemsProperty } from "./list-picker-common";
 import { ItemsSource } from ".";
+import { colorProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./list-picker-common";
 

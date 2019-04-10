@@ -1,6 +1,6 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import { Button } from "tns-core-modules/ui/button";
-import { Page, isIOS } from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import { UITest } from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
 import * as frame from "tns-core-modules/ui/frame";
@@ -8,6 +8,7 @@ import * as helper from "../helper";
 
 // >> article-require-scrollview-module
 import { ScrollView, ScrollEventData } from "tns-core-modules/ui/scroll-view";
+import { isIOS } from "tns-core-modules/platform";
 // << article-require-scrollview-module
 
 class ScrollLayoutTest extends UITest<ScrollView> {

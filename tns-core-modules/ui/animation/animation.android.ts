@@ -2,7 +2,7 @@
 import { AnimationDefinition } from ".";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
@@ -11,6 +11,7 @@ import {
 import { layout } from "../../utils/utils";
 import { device } from "../../platform";
 import lazy from "../../utils/lazy";
+import { Color } from "../../color";
 
 export * from "./animation-common";
 

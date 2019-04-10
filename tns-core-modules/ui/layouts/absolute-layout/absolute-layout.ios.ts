@@ -1,4 +1,7 @@
-﻿import { AbsoluteLayoutBase, View, layout, Length } from "./absolute-layout-common";
+﻿import { AbsoluteLayoutBase } from "./absolute-layout-common";
+import { View } from "../..//core/view";
+import { layout } from "../../../utils/utils";
+import { Length } from "../../styling/style-properties";
 
 export * from "./absolute-layout-common";
 

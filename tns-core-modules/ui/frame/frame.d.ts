@@ -3,10 +3,12 @@
  * @module "ui/frame"
  */ /** */
 
-import { Page, View, Observable, EventData } from "../page";
+import { Page } from "../page";
 import { Transition } from "../transition";
+import { View } from "../core/view/view";
+import { EventData, Observable } from '../../data/observable';
 
-export * from "../page";
+// export * from "../page";
 
 /**
  * Represents the logical View unit that is responsible for navigation withing an application.

@@ -1,9 +1,17 @@
 ﻿import { Image as ImageDefinition, Stretch } from ".";
-import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter, CSSType, traceEnabled, traceWrite, traceCategories } from "../core/view";
+import { View, CSSType,  } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
-export * from "../core/view";
+import { Length } from "../styling/style-properties";
+import { Color } from '../../color';
+import { traceEnabled, traceWrite, traceCategories } from "../core/bindable";
+import { InheritedCssProperty } from "../core/properties";
+import { Property } from "../core/properties";
+import { Style } from "../styling/style";
+import { isIOS } from '../../platform';
+import { booleanConverter } from "../core/view-base";
+// export * from "../core/view";
 export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
 @CSSType("Image")

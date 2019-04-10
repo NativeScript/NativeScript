@@ -1,10 +1,11 @@
 ﻿import {
-    ButtonBase, PseudoClassHandler,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Length, zIndexProperty, textAlignmentProperty, TextAlignment
+    ButtonBase
 } from "./button-common";
 import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
+import { PseudoClassHandler } from "../core/view/view";
+import { paddingTopProperty, Length, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, zIndexProperty } from "../styling/style-properties";
+import { textAlignmentProperty, TextAlignment } from "../text-base";
 
 export * from "./button-common";
 

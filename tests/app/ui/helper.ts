@@ -1,5 +1,5 @@
 ﻿import * as frame from "tns-core-modules/ui/frame";
-import { ViewBase, View, unsetValue, isIOS } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
@@ -11,10 +11,11 @@ import { Color } from "tns-core-modules/color";
 
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 import { FormattedString, Span } from "tns-core-modules/text/formatted-string";
-import { _getProperties, _getStyleProperties } from "tns-core-modules/ui/core/properties";
-import { device } from "tns-core-modules/platform";
+import { _getProperties, _getStyleProperties, unsetValue } from "tns-core-modules/ui/core/properties";
+import { device, isIOS } from "tns-core-modules/platform";
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "tns-core-modules/ui/builder";
+import { ViewBase } from "tns-core-modules/ui/core/view-base";
 
 const DELTA = 0.1;
 const sdkVersion = parseInt(device.sdkVersion);

@@ -1,7 +1,9 @@
 ﻿import { Switch as SwitchDefinition } from ".";
-import { View, Property, booleanConverter, CSSType } from "../core/view";
+import { View, CSSType } from "../core/view";
+import { Property } from "../core/properties";
+import { booleanConverter } from "../core/view-base";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 @CSSType("Switch")
 export class SwitchBase extends View implements SwitchDefinition {

@@ -1,5 +1,5 @@
 import { Page } from "tns-core-modules/ui/page";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { TextField } from "tns-core-modules/ui/text-field";
 

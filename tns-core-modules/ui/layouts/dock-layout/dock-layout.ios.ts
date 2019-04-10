@@ -1,4 +1,6 @@
-﻿import { DockLayoutBase, View, layout } from "./dock-layout-common";
+﻿import { DockLayoutBase } from "./dock-layout-common";
+import { View } from "../../core/view";
+import { layout } from "../../../utils/utils";
 
 export * from "./dock-layout-common";
 

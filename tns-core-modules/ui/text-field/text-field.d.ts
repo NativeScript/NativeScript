@@ -3,7 +3,8 @@
  * @module "ui/text-field"
  */ /** */
 
-import { EditableTextBase, Property } from "../editable-text-base";
+import { EditableTextBase } from "../editable-text-base";
+import { Property } from "../core/properties";
 
 export const secureProperty: Property<TextField, boolean>;
 

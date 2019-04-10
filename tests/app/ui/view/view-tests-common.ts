@@ -1,5 +1,5 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
@@ -14,6 +14,9 @@ import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { eachDescendant, getViewById } from "tns-core-modules/ui/core/view-base/view-base";
+import { CssProperty, CssAnimationProperty, Property, ShorthandProperty, InheritedProperty } from "tns-core-modules/ui/core/properties/properties";
+import { Style } from "tns-core-modules/ui/styling/style/style";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {

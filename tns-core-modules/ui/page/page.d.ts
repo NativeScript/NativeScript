@@ -5,17 +5,18 @@
 
 /// <reference path="../../tns-core-modules.d.ts" />
 
-import { ShownModallyData } from "../core/view";
-import { ContentView, EventData, Property, Color, CssProperty, Style } from "../content-view";
-import { Frame } from "../frame";
+import { Color } from '../../color';
+import { EventData } from '../../data/observable';
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
+import { ContentView } from "../content-view";
+import { CssProperty, Property } from "../core/properties";
+import { Frame } from "../frame";
+import { Style } from "../styling/style";
 
-//@private
-import * as styleScope from "../styling/style-scope";
 //@endprivate
 
-export * from "../content-view";
+// export * from "../content-view";
 
 /**
  * Defines the data for the page navigation events.

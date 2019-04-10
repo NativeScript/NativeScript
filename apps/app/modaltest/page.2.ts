@@ -1,4 +1,5 @@
-import { View, EventData, ShownModallyData } from "tns-core-modules/ui/core/view";
+import { View, ShownModallyData } from "tns-core-modules/ui/core/view";
+import { EventData } from "tns-core-modules/data/observable";
 
 var x = 0;
 

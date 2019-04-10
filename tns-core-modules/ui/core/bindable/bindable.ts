@@ -2,7 +2,7 @@
 import { ViewBase } from "../view-base";
 
 import { unsetValue } from "../properties";
-import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
+import { Observable, PropertyChangeData } from "../../../data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "../weak-event-listener";
 import { bindingConstants, parentsRegex } from "../../builder/binding-builder";
 import { escapeRegexSymbols } from "../../../utils/utils";
@@ -21,7 +21,6 @@ import * as applicationCommon from "../../../application/application-common";
 import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
 export {
-    Observable, WrappedValue, PropertyChangeData, EventData,
     traceEnabled, traceWrite, traceError, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet
 };
 

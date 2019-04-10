@@ -3,7 +3,10 @@
  * @module "ui/search-bar"
  */ /** */
 
-import { View, Property, EventData, Color } from "../core/view";
+import { View } from "../core/view";
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
+import { Property } from "../core/properties";
 
 /**
  * Represents a search bar component.

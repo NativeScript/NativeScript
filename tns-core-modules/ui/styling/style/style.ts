@@ -2,8 +2,7 @@ import { Style as StyleDefinition } from ".";
 import { Color } from "../../../color";
 import { Font, FontStyle, FontWeight } from "../font";
 import { Background } from "../background";
-import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility,
-    HorizontalAlignment, VerticalAlignment, dip, LinearGradient } from "../../core/view";
+import { dip } from "../../core/view";
 import { Observable } from "../../../data/observable";
 
 import {
@@ -12,6 +11,9 @@ import {
 } from "../../layouts/flexbox-layout";
 
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
+import { ViewBase } from "tns-core-modules/ui/core/view-base/view-base";
+import { Visibility, PercentLength, HorizontalAlignment, VerticalAlignment, Length, BackgroundRepeat } from "../style-properties";
+import { LinearGradient } from "../linear-gradient";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {

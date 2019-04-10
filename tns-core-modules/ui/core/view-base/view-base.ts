@@ -4,28 +4,30 @@ import { Page } from "../../page";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 
 // Types.
-import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
 import { Source } from "../../../utils/debug";
-import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
-import { isIOS, isAndroid } from "../../../platform";
-import { layout } from "../../../utils/utils";
+import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
+import { Binding, BindingOptions, traceEnabled, traceWrite, traceCategories } from "../bindable";
+import { isAndroid } from "../../../platform";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
+import { Style } from '../../styling/style';
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";
 
-import { Color } from "../../../color";
+// import { Color } from "../../../color";
 
 import { profile } from "../../../profiling";
 
-export { isIOS, isAndroid, layout, Color };
-export * from "../bindable";
-export * from "../properties";
+// export { isIOS, isAndroid, layout, Color };
+// export * from "../bindable";
+// export * from "../properties";
 
 import * as ssm from "../../styling/style-scope";
 
 // import { DOMNode } from "../../../debugger/dom-node";
 import * as dnm from "../../../debugger/dom-node";
+
 let domNodeModule: typeof dnm;
 
 function ensuredomNodeModule(): void {

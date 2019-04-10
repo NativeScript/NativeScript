@@ -3,7 +3,9 @@
  * @module "ui/repeater"
  */ /** */
 
-import { LayoutBase, CustomLayoutView, Template, Property } from "../layouts/layout-base";
+import { LayoutBase } from "../layouts/layout-base";
+import { CustomLayoutView, Template } from "../core/view";
+import { Property } from "../core/properties";
 
 /**
  * Represents a UI Repeater component.

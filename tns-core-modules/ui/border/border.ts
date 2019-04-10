@@ -1,5 +1,7 @@
 import { Border as BorderDefinition } from ".";
-import { ContentView, View, layout, CSSType } from "../content-view";
+import { ContentView } from "../content-view";
+import { CSSType, View } from "../core/view";
+import { layout } from "../../utils/utils";
 
 @Deprecated
 @CSSType("Border")

@@ -1,10 +1,12 @@
 ﻿import {
-    ImageSource, ImageAsset, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
-    isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, Length
+    ImageSource, ImageAsset, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty,
+    isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
 import { knownFolders } from "../../file-system";
 
 import * as platform from "../../platform";
+import { Length } from "../styling/style-properties";
+import { Color } from "../../color";
 export * from "./image-common";
 
 const FILE_PREFIX = "file:///";

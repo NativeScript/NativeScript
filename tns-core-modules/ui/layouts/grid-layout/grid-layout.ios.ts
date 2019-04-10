@@ -1,6 +1,8 @@
 ﻿import {
-    GridLayoutBase, ItemSpec, View, layout
+    GridLayoutBase, ItemSpec
 } from "./grid-layout-common";
+import { View } from '../../core/view';
+import { layout } from "../../../utils/utils";
 
 export * from "./grid-layout-common";
 

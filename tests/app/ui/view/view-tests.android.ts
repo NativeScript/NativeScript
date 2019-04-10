@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as commonTests from "./view-tests-common";
 import * as helper from "../../ui/helper";
-import { View, isIOS, unsetValue } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import * as types from "tns-core-modules/utils/types";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
@@ -9,6 +9,8 @@ import { Label } from "tns-core-modules/ui/label";
 import * as frame from "tns-core-modules/ui/frame";
 import * as trace from "tns-core-modules/trace";
 import { Color } from "tns-core-modules/color";
+import { isIOS } from "tns-core-modules/platform/platform";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
 // enable the trace, it is disabled by default
 trace.enable();
 

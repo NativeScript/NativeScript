@@ -1,5 +1,5 @@
 // Types
-import { unsetValue, Style,
+import { unsetValue,
     CssProperty, CssAnimationProperty,
     ShorthandProperty, InheritedCssProperty,
     makeValidator, makeParser } from "../core/properties";
@@ -28,6 +28,7 @@ import {
 
 import * as parser from "../../css/parser";
 import { LinearGradient } from "./linear-gradient";
+import { Style } from "./style";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };

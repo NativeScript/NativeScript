@@ -1,5 +1,6 @@
 import * as button from "tns-core-modules/ui/button";
 import * as view from "tns-core-modules/ui/core/view";
+import { colorProperty, backgroundInternalProperty, fontInternalProperty } from "tns-core-modules/ui/styling/style-properties";
 
 export class Button extends button.Button {
     nativeBackgroundRedraws = 0;
@@ -13,21 +14,21 @@ export class Button extends button.Button {
         this.style.on("colorChange", () => this.colorPropertyChangeCount++);
     }
 
-    [view.backgroundInternalProperty.setNative](value) {
+    [backgroundInternalProperty.setNative](value) {
         this.backgroundInternalSetNativeCount++;
-        return super[view.backgroundInternalProperty.setNative](value);
+        return super[backgroundInternalProperty.setNative](value);
     }
-    [view.fontInternalProperty.setNative](value) {
+    [fontInternalProperty.setNative](value) {
         this.fontInternalSetNativeCount++;
-        return super[view.fontInternalProperty.setNative](value);
+        return super[fontInternalProperty.setNative](value);
     }
     _redrawNativeBackground(value: any): void {
         this.nativeBackgroundRedraws++;
         super._redrawNativeBackground(value);
     }
-    [view.colorProperty.setNative](value) {
+    [colorProperty.setNative](value) {
         this.colorSetNativeCount++;
-        return super[view.colorProperty.setNative](value);
+        return super[colorProperty.setNative](value);
     }
 }
 Button.prototype.recycleNativeView = "never";

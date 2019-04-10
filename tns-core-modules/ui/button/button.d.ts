@@ -3,7 +3,8 @@
  * @module "ui/button"
  */ /** */
 
-import { TextBase, EventData } from "../text-base";
+import { TextBase } from "../text-base";
+import { EventData } from "../../data/observable";
 
 /**
  * Represents a standard Button widget.

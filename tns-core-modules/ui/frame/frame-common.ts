@@ -3,13 +3,16 @@ import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTr
 import { Page } from "../page";
 
 // Types.
-import { getAncestor } from "../core/view/view-common";
-import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, Property, CSSType } from "../core/view";
+import { View, CustomLayoutView, CSSType } from "../core/view";
 import { createViewFromEntry } from "../builder";
 import { profile } from "../../profiling";
 
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
-export * from "../core/view";
+import { traceWrite, traceEnabled, traceCategories } from "../core/bindable";
+import { getAncestor } from "../core/view-base";
+import { isAndroid, isIOS } from '../../platform';
+import { Property } from "../core/properties";
+// export * from "../core/view";
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;

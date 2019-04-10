@@ -5,7 +5,7 @@
 
 import { View, AddChildFromBuilder } from "../core/view";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 /**
  * Represents a View that has a single child - content.

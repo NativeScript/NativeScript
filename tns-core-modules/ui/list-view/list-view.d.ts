@@ -3,7 +3,12 @@
  * @module "ui/list-view"
  */ /** */
 
-import { EventData, View, Template, KeyedTemplate, Length, Property, CssProperty, Color, Style } from "../core/view";
+import { Color } from '../../color';
+import { EventData } from '../../data/observable';
+import { CssProperty, Property } from "../core/properties";
+import { KeyedTemplate, Template, View } from "../core/view";
+import { Style } from "../styling/style";
+import { Length } from "../styling/style-properties";
 
 /**
  * Known template names.

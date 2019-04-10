@@ -1,5 +1,6 @@
-import { View, PercentLength } from "tns-core-modules/ui/layouts/layout-base";
 import { ViewModelBase } from "../layouts/myview-base";
+import { PercentLength } from "tns-core-modules/ui/styling/style-properties";
+import { View } from "tns-core-modules/ui/core/view";
 
 export class ViewModelWithPercentage extends ViewModelBase {
 

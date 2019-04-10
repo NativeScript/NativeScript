@@ -3,7 +3,9 @@
  * @module "ui/scroll-view"
  */ /** */
 
-import { ContentView, EventData, Property } from "../content-view";
+import { ContentView } from "../content-view";
+import { EventData } from "../../data/observable";
+import { Property } from "../core/properties";
 
 /**
  * Represents a scrollable area that can have content that is larger than its bounds.

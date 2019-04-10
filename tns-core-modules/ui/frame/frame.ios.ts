@@ -4,10 +4,12 @@ import { Page } from "../page";
 import { profile } from "../../profiling";
 
 //Types.
-import { FrameBase, View, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
+import { FrameBase } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
 import * as utils from "../../utils/utils";
+import { traceEnabled, traceWrite, traceCategories, isCategorySet } from "../core/bindable";
+import { View } from "../core/view";
 
 export * from "./frame-common";
 
@@ -255,11 +257,11 @@ export class Frame extends FrameBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const width = layout.getMeasureSpecSize(widthMeasureSpec);
-        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
-        const height = layout.getMeasureSpecSize(heightMeasureSpec);
-        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         const widthAndState = View.resolveSizeAndState(width, width, widthMode, 0);
         const heightAndState = View.resolveSizeAndState(height, height, heightMode, 0);

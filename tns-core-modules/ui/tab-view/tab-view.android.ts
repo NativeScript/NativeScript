@@ -5,14 +5,16 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, Color, traceMissingIcon
+    traceCategory, traceMissingIcon
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
-import { RESOURCE_PREFIX, ad } from "../../utils/utils";
+import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import { Frame } from "../frame";
 import * as application from "../../application";
+import { traceEnabled, traceWrite } from "../core/bindable";
+import { fontSizeProperty, fontInternalProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./tab-view-common";
 

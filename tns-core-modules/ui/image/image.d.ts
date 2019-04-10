@@ -3,8 +3,12 @@
  * @module "ui/image"
  */ /** */
 
-import { View, Property, InheritedCssProperty, Color, Style, Length } from "../core/view";
+import { View } from "../core/view";
 import { ImageSource } from "../../image-source";
+import { Color } from "../../color";
+import { Property, InheritedCssProperty } from "../core/properties";
+import { Style } from "../styling/style";
+import { Length } from "../styling/style-properties";
 
 /**
  * Represents a class that provides functionality for loading and streching image(s).

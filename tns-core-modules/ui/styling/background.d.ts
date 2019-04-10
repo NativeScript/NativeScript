@@ -3,7 +3,9 @@
  */ /** */
 
 import { Color } from "../../color";
-import { View, BackgroundRepeat, LinearGradient } from "../core/view";
+import { View } from "../core/view";
+import { LinearGradient } from "./linear-gradient";
+import { BackgroundRepeat } from "./style-properties";
 
 export class Background {
     public static default: Background;

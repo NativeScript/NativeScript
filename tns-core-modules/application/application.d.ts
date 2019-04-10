@@ -6,7 +6,9 @@
 /// <reference path="../nativescript-error.d.ts" />
 /// <reference path="../tns-core-modules.d.ts" />
 
-import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
+import { NavigationEntry } from "../ui/frame";
+import { EventData, Observable } from '../data/observable';
+import { View } from '../ui/core/view';
 
 /**
  * String value used when hooking to launch event.

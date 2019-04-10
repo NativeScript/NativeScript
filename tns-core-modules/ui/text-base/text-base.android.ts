@@ -1,13 +1,16 @@
 ﻿import { TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base";
 import { Font } from "../styling/font";
-import { backgroundColorProperty } from "../styling/style-properties";
+import { backgroundColorProperty, colorProperty, fontSizeProperty, fontInternalProperty, paddingTopProperty, Length, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../styling/style-properties";
 import {
-    TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
-    textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold, resetSymbol
+    TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
+    textProperty, textTransformProperty, letterSpacingProperty,
+    whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol
 } from "./text-base-common";
 import { isString } from "../../utils/types";
+import { Color } from '../../color';
+import { layout } from "../../utils/utils";
+import { FormattedString } from "../../text/formatted-string";
+import { Span } from "../../text/span";
 
 export * from "./text-base-common";
 

@@ -1,7 +1,8 @@
-﻿import { ListPicker as ListPickerDefinition, ItemsSource } from ".";
-import { View, Property, CoercibleProperty, CSSType } from "../core/view";
+﻿import { ItemsSource, ListPicker as ListPickerDefinition } from ".";
+import { CoercibleProperty, Property } from "../core/properties";
+import { CSSType, View } from "../core/view";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 @CSSType("ListPicker")
 export class ListPickerBase extends View implements ListPickerDefinition {

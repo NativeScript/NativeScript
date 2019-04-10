@@ -1,5 +1,5 @@
 // >> article-require-page-module
-import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page";
+import { Page, NavigatedData } from "tns-core-modules/ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
 import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
 // << article-require-page-module
@@ -17,13 +17,17 @@ exports.pageLoaded = pageLoaded;
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
+import { View, ShownModallyData } from "tns-core-modules/ui/core/view";
 import { Frame, stack } from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { Color } from "tns-core-modules/color";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
 import { _resetRootView } from "tns-core-modules/application";
 import { Button } from "tns-core-modules/ui/button/button";
+import { EventData } from "tns-core-modules/data/observable";
+import { isIOS } from "tns-core-modules/platform/platform";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
+import { PercentLength } from "tns-core-modules/ui/styling/style-properties";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();

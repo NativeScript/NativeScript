@@ -1,9 +1,9 @@
 // Deifinitions.
 import { Background as BackgroundDefinition } from "./background";
-import { BackgroundRepeat } from "../core/view";
 import { LinearGradient } from "./linear-gradient";
 // Types.
 import { Color } from "../../color";
+import { BackgroundRepeat } from "./style-properties";
 
 export class Background implements BackgroundDefinition {
     public static default = new Background();

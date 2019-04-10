@@ -1,4 +1,6 @@
-﻿import { WrapLayoutBase, View, layout } from "./wrap-layout-common";
+﻿import { WrapLayoutBase } from "./wrap-layout-common";
+import { layout } from "../../../utils/utils";
+import { View } from "../../core/view";
 
 export * from "./wrap-layout-common";
 

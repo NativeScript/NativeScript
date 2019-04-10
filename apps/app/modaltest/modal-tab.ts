@@ -1,4 +1,5 @@
-import { View, EventData } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
+import { EventData } from "tns-core-modules/data/observable";
 
 const colors = ["red", "orange", "magenta"];
 let x = 0;

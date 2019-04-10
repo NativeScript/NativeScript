@@ -1,5 +1,5 @@
 import * as stack from "tns-core-modules/ui/layouts/stack-layout";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
 
 export function buttonTap(args) {
     var stackLayout = <stack.StackLayout>args.object.parent;

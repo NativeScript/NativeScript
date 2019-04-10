@@ -1,14 +1,13 @@
 // Definitions.
 import { Point, View as ViewDefinition, dip } from ".";
-import { ViewBase } from "../view-base";
+import { ViewBase, ShowModalOptions } from "../view-base";
 
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, ShowModalOptions
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
-import { ios as iosUtils } from "../../../utils/utils";
+import { ios as iosUtils, layout } from "../../../utils/utils";
 import {
     Visibility,
     visibilityProperty, opacityProperty,
@@ -17,6 +16,7 @@ import {
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
 import { profile } from "../../../profiling";
+import { traceEnabled, traceWrite, traceCategories, traceMessageType, traceError } from "../bindable";
 
 export * from "./view-common";
 

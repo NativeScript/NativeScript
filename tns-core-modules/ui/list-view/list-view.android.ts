@@ -1,12 +1,17 @@
 ﻿import { ItemEventData, ItemsSource } from ".";
 import {
-    ListViewBase, View, KeyedTemplate, Length, unsetValue, Observable, Color,
+    ListViewBase,
     separatorColorProperty, itemTemplatesProperty
 } from "./list-view-common";
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { LayoutBase } from "../layouts/layout-base";
 import { profile } from "../../profiling";
+import { Observable } from "../../data/observable";
+import { Color } from "../../color";
+import { unsetValue } from "../core/properties";
+import { Length } from "../styling/style-properties";
+import { View, KeyedTemplate } from "../core/view";
 
 export * from "./list-view-common";
 

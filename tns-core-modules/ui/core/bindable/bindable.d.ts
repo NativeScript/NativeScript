@@ -14,7 +14,6 @@ import {
     isCategorySet } from "../../../trace";
 
 export {
-    Observable, WrappedValue, PropertyChangeData, EventData,
     traceEnabled, traceWrite, traceError, traceCategories, traceNotifyEvent,
     traceMessageType, isCategorySet
 };

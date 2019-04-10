@@ -1,6 +1,8 @@
 ﻿import {
-    SwitchBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty
+    SwitchBase, checkedProperty
 } from "./switch-common";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./switch-common";
 

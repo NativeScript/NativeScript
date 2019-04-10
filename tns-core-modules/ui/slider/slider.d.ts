@@ -3,7 +3,8 @@
  * @module "ui/slider"
  */ /** */
 
-import { View, Property, CoercibleProperty } from "../core/view";
+import { View } from "../core/view";
+import { CoercibleProperty, Property } from "../core/properties";
 
 /**
  * Represents a slider component.

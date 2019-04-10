@@ -1,6 +1,7 @@
 ﻿import { topmost } from "tns-core-modules/ui/frame";
 import * as TKUnit from "../../TKUnit";
-import { Page, ShownModallyData } from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
+import { ShownModallyData } from "tns-core-modules/ui/core/view/view";
 
 export var modalPage: Page;
 export function onShowingModally(args) {

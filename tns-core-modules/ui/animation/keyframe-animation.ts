@@ -8,7 +8,7 @@ import {
     KeyframeAnimation as KeyframeAnimationDefinition,
 } from "./keyframe-animation";
 
-import { View, Color } from "../core/view";
+import { View } from "../core/view";
 
 import { AnimationCurve } from "../enums";
 
@@ -23,6 +23,7 @@ import {
     translateXProperty, translateYProperty,
     rotateProperty, opacityProperty
 } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export class Keyframes implements KeyframesDefinition {
     name: string;

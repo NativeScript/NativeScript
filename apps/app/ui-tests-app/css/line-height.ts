@@ -1,4 +1,5 @@
-﻿import { EventData, TextBase } from "tns-core-modules/ui/text-base";
+﻿import { TextBase } from "tns-core-modules/ui/text-base";
+import { EventData } from "tns-core-modules/data/observable";
 
 const values = [3, 7, 13];
 

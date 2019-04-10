@@ -3,10 +3,7 @@ import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 // Types.
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Color, EventData, ShowModalOptions
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty
 } from "./view-common";
 
 import {
@@ -15,13 +12,18 @@ import {
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
-    zIndexProperty, backgroundInternalProperty
+    zIndexProperty, backgroundInternalProperty, paddingBottomProperty, paddingRightProperty, paddingTopProperty, paddingLeftProperty
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
+import { EventData } from '../../../data/observable';
+import { ShowModalOptions } from "../view-base";
+import { layout } from "../../../utils/utils";
+import { Color } from '../../../color';
+import { traceWrite, traceEnabled, traceCategories, traceNotifyEvent } from "../bindable";
 
 export * from "./view-common";
 

@@ -1,8 +1,10 @@
-﻿import {
-    TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty,
-    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
-} from "./text-field-common";
+﻿import { Color } from "../../color";
 import { profile } from "../../profiling";
+import { layout } from '../../utils/utils';
+import { hintProperty, _updateCharactersInRangeReplacementString, placeholderColorProperty } from "../editable-text-base";
+import { colorProperty, Length, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from "../styling/style-properties";
+import { textProperty } from "../text-base";
+import { secureProperty, TextFieldBase } from "./text-field-common";
 
 export * from "./text-field-common";
 

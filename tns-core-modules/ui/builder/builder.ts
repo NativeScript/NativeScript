@@ -1,6 +1,6 @@
 ﻿// Definitions.
 import { LoadOptions } from ".";
-import { View, ViewBase, Template, KeyedTemplate } from "../core/view";
+import { View, Template, KeyedTemplate } from "../core/view";
 import { ViewEntry } from "../frame";
 import * as traceModule from "../../trace";
 
@@ -13,6 +13,7 @@ import { ComponentModule, setPropertyValue, getComponentModule } from "./compone
 import { platformNames, device } from "../../platform";
 import { resolveFileName } from "../../file-system/file-name-resolver";
 import { profile } from "../../profiling";
+import { ViewBase } from "../core/view-base";
 
 const ios = platformNames.ios.toLowerCase();
 const android = platformNames.android.toLowerCase();

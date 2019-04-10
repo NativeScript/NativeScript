@@ -51,7 +51,7 @@ export namespace AlignSelf {
     export const STRETCH: "stretch" = "stretch";
 }
 
-import { View, unsetValue, Length, PercentLength } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import { Label } from "tns-core-modules/ui/label";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
@@ -63,6 +63,8 @@ import { dipToDp, left, top, right, bottom, height, width,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftOf, isRightOf, isBelow, isAbove,
     isLeftWith, isAboveWith, isRightWith, isBelowWith } from "./layout-tests-helper";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
+import { Length, PercentLength } from "tns-core-modules/ui/styling/style-properties";
 
 function waitUntilTestElementLayoutIsValid(view: View, timeoutSec?: number): void {
     TKUnit.waitUntilReady(() => {

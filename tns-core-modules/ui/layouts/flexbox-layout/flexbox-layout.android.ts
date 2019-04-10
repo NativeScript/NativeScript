@@ -1,7 +1,6 @@
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
-    FlexboxLayoutBase, View,
-    Length,
+    FlexboxLayoutBase, 
     orderProperty, Order,
     flexGrowProperty, FlexGrow,
     flexShrinkProperty, FlexShrink,
@@ -9,6 +8,8 @@ import {
     alignSelfProperty, AlignSelf,
     flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty
 } from "./flexbox-layout-common";
+import { View } from '../../core/view';
+import { Length } from "../../styling/style-properties";
 
 export * from "./flexbox-layout-common";
 

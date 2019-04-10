@@ -21,11 +21,12 @@ import * as myCustomControlWithoutXml from "./mymodule/MyControl";
 import * as listViewModule from "tns-core-modules/ui/list-view";
 import * as helper from "../ui/helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
+import * as viewBaseModule from "tns-core-modules/ui/core/view-base";
 import * as platform from "tns-core-modules/platform";
 import * as gesturesModule from "tns-core-modules/ui/gestures";
 import * as segmentedBar from "tns-core-modules/ui/segmented-bar";
 import { Source } from "tns-core-modules/utils/debug";
-import { PercentLength, Length } from "tns-core-modules/ui/core/view";
+import { Length, PercentLength } from "tns-core-modules/ui/styling/style-properties";
 
 export function test_load_IsDefined() {
     TKUnit.assertTrue(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -78,10 +79,10 @@ export function test_loadInheritedPageAndResolveFromChild() {
         let discoveredPage = contentLabel.page;
         TKUnit.assertEqual(page, discoveredPage);
 
-        let discoveredAncestorByBaseType = viewModule.getAncestor(contentLabel, Page);
+        let discoveredAncestorByBaseType = viewBaseModule.getAncestor(contentLabel, Page);
         TKUnit.assertEqual(page, discoveredAncestorByBaseType);
 
-        let discoveredAncestorByInheritedTypeName = viewModule.getAncestor(contentLabel, "InheritedPage");
+        let discoveredAncestorByInheritedTypeName = viewBaseModule.getAncestor(contentLabel, 'InheritedPage');
         TKUnit.assertEqual(page, discoveredAncestorByInheritedTypeName);
     });
 }
@@ -678,7 +679,7 @@ export function test_parse_NestedRepeaters() {
     function testAction(views: Array<viewModule.View>) {
         p.bindingContext = [["0", "1"], ["2", "3"]];
         let lbls = new Array<Label>();
-        view.eachDescendant(p, (v) => {
+        viewBaseModule.eachDescendant(p, (v) => {
             if (v instanceof Label) {
                 lbls.push(v);
             }

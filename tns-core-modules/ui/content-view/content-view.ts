@@ -1,7 +1,9 @@
 ﻿import { ContentView as ContentViewDefinition } from ".";
-import { View, CustomLayoutView, AddChildFromBuilder, layout, isIOS } from "../core/view";
+import { View, CustomLayoutView, AddChildFromBuilder } from "../core/view";
+import { isIOS } from '../../platform';
+import { layout } from '../../utils/utils';
 
-export * from "../core/view";
+// export * from "../core/view";
 
 export class ContentView extends CustomLayoutView implements ContentViewDefinition, AddChildFromBuilder {
     private _content: View;

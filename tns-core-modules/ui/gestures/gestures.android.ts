@@ -1,6 +1,6 @@
 ﻿// Definitions.
 import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from ".";
-import { View, EventData } from "../core/view";
+import { View } from "../core/view";
 
 // Types.
 import {
@@ -9,6 +9,7 @@ import {
 
 // Import layout from utils directly to avoid circular references
 import { layout } from "../../utils/utils";
+import { EventData } from "../../data/observable";
 
 export * from "./gestures-common";
 

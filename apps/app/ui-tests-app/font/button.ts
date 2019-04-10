@@ -1,10 +1,11 @@
 import * as stack from "tns-core-modules/ui/layouts/stack-layout";
 import * as view from "tns-core-modules/ui/core/view";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
+import { eachDescendant } from "tns-core-modules/ui/core/view-base";
 
 export function resetStyles(args) {
     var stackLayout = <stack.StackLayout>args.object.parent.parent;
-    view.eachDescendant(stackLayout, function (v: view.View) {
+    eachDescendant(stackLayout, function (v: view.View) {
         v.style.fontFamily = unsetValue;
         v.style.fontSize = unsetValue;
         v.style.fontStyle = unsetValue;

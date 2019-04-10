@@ -3,7 +3,7 @@ import { GridLayout, ItemSpec } from "tns-core-modules/ui/layouts/grid-layout";
 import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../../TKUnit";
 import * as view from "tns-core-modules/ui/core/view";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
 import * as builder from "tns-core-modules/ui/builder";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";

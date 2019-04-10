@@ -1,6 +1,8 @@
 ﻿import {
-    HtmlViewBase, View, layout, htmlProperty
+    HtmlViewBase, htmlProperty
 } from "./html-view-common";
+import { layout } from "../../utils/utils";
+import { View } from "../core/view";
 
 export * from "./html-view-common";
 

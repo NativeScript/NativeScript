@@ -1,4 +1,5 @@
-﻿import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty, Length } from "./wrap-layout-common";
+﻿import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty } from "./wrap-layout-common";
+import { Length } from "../../styling/style-properties";
 
 export * from "./wrap-layout-common";
 

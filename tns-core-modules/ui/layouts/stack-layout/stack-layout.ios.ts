@@ -1,5 +1,8 @@
-﻿import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
+﻿import { StackLayoutBase } from "./stack-layout-common";
 import * as trace from "../../../trace";
+import { layout } from "../../../utils/utils";
+import { VerticalAlignment, HorizontalAlignment } from "../../styling/style-properties";
+import { View } from '../../core/view';
 
 export * from "./stack-layout-common";
 

@@ -5,8 +5,9 @@
 } from ".";
 import { Observable, WrappedValue } from "../../../data/observable";
 import { getClassInfo, isString } from "../../../utils/types";
-
 import { unsetValue } from "../properties";
+
+// import { unsetValue } from "../properties";
 
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
 const propertyFromKey = {};

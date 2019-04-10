@@ -1,4 +1,4 @@
-import { ShownModallyData } from "tns-core-modules/ui/page";
+import { ShownModallyData } from "tns-core-modules/ui/core/view";
 
 let closeCallback: Function;
 

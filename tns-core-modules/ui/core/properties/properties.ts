@@ -1,5 +1,4 @@
 // Definitions.
-import * as definitions from "../view-base";
 import { ViewBase } from "../view-base";
 
 // Types.
@@ -7,8 +6,9 @@ import { WrappedValue, PropertyChangeData } from "../../../data/observable";
 import { Style } from "../../styling/style";
 
 import { profile } from "../../../profiling";
+import { PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, CssAnimationPropertyOptions, ShorthandPropertyOptions } from ".";
 
-export { Style };
+// export { Style };
 
 export const unsetValue: any = new Object();
 
@@ -56,7 +56,7 @@ function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>
     return props;
 }
 
-export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, definitions.Property<T, U> {
+export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, Property<T, U> {
     private registered: boolean;
 
     public readonly name: string;
@@ -76,7 +76,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
     public enumerable: boolean = true;
     public configurable: boolean = true;
 
-    constructor(options: definitions.PropertyOptions<T, U>) {
+    constructor(options: PropertyOptions<T, U>) {
         const propertyName = options.name;
         this.name = propertyName;
 
@@ -226,10 +226,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 }
 Property.prototype.isStyleProperty = false;
 
-export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements definitions.CoercibleProperty<T, U> {
+export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements CoercibleProperty<T, U> {
     public readonly coerce: (target: T) => void;
 
-    constructor(options: definitions.CoerciblePropertyOptions<T, U>) {
+    constructor(options: CoerciblePropertyOptions<T, U>) {
         super(options);
 
         const propertyName = options.name;
@@ -339,11 +339,11 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
     }
 }
 
-export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> implements definitions.InheritedProperty<T, U> {
+export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> implements InheritedProperty<T, U> {
     public readonly sourceKey: symbol;
     public readonly setInheritedValue: (value: U) => void;
 
-    constructor(options: definitions.PropertyOptions<T, U>) {
+    constructor(options: PropertyOptions<T, U>) {
         super(options);
         const name = options.name;
         const key = this.key;
@@ -411,7 +411,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
     }
 }
 
-export class CssProperty<T extends Style, U> implements definitions.CssProperty<T, U> {
+export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
     private registered: boolean;
 
     public readonly name: string;
@@ -430,7 +430,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
     public readonly defaultValueKey: symbol;
     public readonly defaultValue: U;
 
-    constructor(options: definitions.CssPropertyOptions<T, U>) {
+    constructor(options: CssPropertyOptions<T, U>) {
         const propertyName = options.name;
         this.name = propertyName;
 
@@ -647,7 +647,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 }
 CssProperty.prototype.isStyleProperty = true;
 
-export class CssAnimationProperty<T extends Style, U> implements definitions.CssAnimationProperty<T, U> {
+export class CssAnimationProperty<T extends Style, U> implements CssAnimationProperty<T, U> {
     public readonly name: string;
     public readonly cssName: string;
     public readonly cssLocalName: string;
@@ -670,7 +670,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
 
     public _valueConverter?: (value: string) => any;
 
-    constructor(options: definitions.CssAnimationPropertyOptions<T, U>) {
+    constructor(options: CssAnimationPropertyOptions<T, U>) {
         const { valueConverter, equalityComparer, valueChanged, defaultValue } = options;
         const propertyName = options.name;
         this.name = propertyName;
@@ -839,10 +839,10 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
 }
 CssAnimationProperty.prototype.isStyleProperty = true;
 
-export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements definitions.InheritedCssProperty<T, U> {
+export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements InheritedCssProperty<T, U> {
     public setInheritedValue: (value: U) => void;
 
-    constructor(options: definitions.CssPropertyOptions<T, U>) {
+    constructor(options: CssPropertyOptions<T, U>) {
         super(options);
         const propertyName = options.name;
 
@@ -971,7 +971,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
     }
 }
 
-export class ShorthandProperty<T extends Style, P> implements definitions.ShorthandProperty<T, P> {
+export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<T, P> {
     private registered: boolean;
 
     public readonly key: symbol;
@@ -985,7 +985,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
 
     public readonly sourceKey: symbol;
 
-    constructor(options: definitions.ShorthandPropertyOptions<P>) {
+    constructor(options: ShorthandPropertyOptions<P>) {
         this.name = options.name;
 
         const key = Symbol(this.name + ":propertyKey");

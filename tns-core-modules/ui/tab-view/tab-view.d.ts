@@ -3,7 +3,12 @@
  * @module "ui/tab-view"
  */ /** */
 
-import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
+import { Color } from "../../color";
+import { EventData } from '../../data/observable';
+import { CssProperty, Property } from "../core/properties";
+import { View } from "../core/view";
+import { ViewBase } from "../core/view-base";
+import { Style } from "../styling/style";
 import { TextTransform } from "../text-base";
 /**
  * Represents a tab view entry.

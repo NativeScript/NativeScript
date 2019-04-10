@@ -5,7 +5,7 @@
 
 import { Span } from "./span";
 import { ObservableArray } from "../data/observable-array";
-import { ViewBase } from "../ui/core/view";
+import { ViewBase } from "../ui/core/view-base";
 import { Color } from "../color";
 import { FontStyle, FontWeight } from "../ui/styling/font";
 import { TextDecoration } from "../ui/text-base";

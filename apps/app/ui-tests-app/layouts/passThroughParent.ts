@@ -1,5 +1,6 @@
-import { EventData, Page } from "tns-core-modules/ui/page/page";
+import { Page } from "tns-core-modules/ui/page/page";
 import { Label } from "tns-core-modules/ui/label/label";
+import { EventData } from "tns-core-modules/data/observable";
 
 const setLabelTextAndLog = (args, text: string) => {
     const page = <Page>args.object.page;

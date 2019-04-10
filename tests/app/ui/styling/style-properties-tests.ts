@@ -8,8 +8,8 @@ import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Color } from "tns-core-modules/color";
 import { isAndroid, isIOS } from "tns-core-modules/platform";
 import { View } from "tns-core-modules/ui/core/view";
-import { Length, PercentLength } from "tns-core-modules/ui/core/view";
 import * as fontModule from "tns-core-modules/ui/styling/font";
+import { Length, PercentLength } from "tns-core-modules/ui/styling/style-properties";
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("textDecoration", "text-decoration", "underline");

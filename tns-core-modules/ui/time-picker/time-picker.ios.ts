@@ -1,8 +1,10 @@
 ﻿import {
     TimePickerBase, timeProperty, minuteIntervalProperty,
     minuteProperty, minMinuteProperty, maxMinuteProperty,
-    hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
+    hourProperty, minHourProperty, maxHourProperty
 } from "./time-picker-common";
+import { Color } from "../../color";
+import { colorProperty } from "../styling/style-properties";
 
 export * from "./time-picker-common";
 

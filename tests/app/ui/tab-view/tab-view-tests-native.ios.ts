@@ -1,4 +1,4 @@
-import tabViewModule = require("tns-core-modules/ui/tab-view");
+import * as tabViewModule from "tns-core-modules/ui/tab-view";
 import * as utils from "tns-core-modules/utils/utils";
 import getter = utils.ios.getter;
 

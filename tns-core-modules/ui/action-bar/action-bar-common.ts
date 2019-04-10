@@ -7,15 +7,15 @@
 
 import { profile } from "../../profiling";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 import {
-    View, ViewBase, Property,
-    unsetValue, booleanConverter,
-    horizontalAlignmentProperty,
-    verticalAlignmentProperty, CSSType,
-    traceWrite, traceCategories, traceMessageType
+    View, CSSType
 } from "../core/view";
+import { unsetValue, Property } from "../core/properties";
+import { traceCategories, traceMessageType, traceWrite } from "../core/bindable";
+import { booleanConverter, ViewBase } from "../core/view-base";
+import { verticalAlignmentProperty, horizontalAlignmentProperty } from "../styling/style-properties";
 
 export module knownCollections {
     export const actionItems = "actionItems";

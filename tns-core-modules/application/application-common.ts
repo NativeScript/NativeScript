@@ -40,7 +40,7 @@ import {
     LoadAppCSSEventData,
     UnhandledErrorEventData,
     DiscardedErrorEventData,
-} from "./application";
+} from ".";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 

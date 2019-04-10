@@ -1,11 +1,12 @@
 import * as TKUnit from "../../TKUnit";
-import { Page, View } from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import { Frame, NavigationEntry, stack } from "tns-core-modules/ui/frame";
 import { _resetRootView, getRootView } from "tns-core-modules/application";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as myCustomControlWithoutXml from "./mymodule/MyControl";
 import * as helper from "../helper";
+import { View } from "tns-core-modules/ui/core/view/view";
 
 function createTestFrameRootEntry() {
     const page = new Page();

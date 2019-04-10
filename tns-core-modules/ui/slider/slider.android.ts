@@ -1,8 +1,9 @@
 ﻿import { Background } from "../styling/background";
 import {
-    SliderBase, valueProperty, minValueProperty, maxValueProperty,
-    colorProperty, backgroundColorProperty, backgroundInternalProperty, Color
+    SliderBase, valueProperty, minValueProperty, maxValueProperty
 } from "./slider-common";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./slider-common";
 

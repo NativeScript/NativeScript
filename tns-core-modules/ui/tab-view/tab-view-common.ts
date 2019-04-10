@@ -1,12 +1,15 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
-import {
-    View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
-    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
-    traceWrite, traceCategories, traceMessageType, booleanConverter
-} from "../core/view";
-
-export * from "../core/view";
+﻿import { SelectedIndexChangedEventData, TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from ".";
+import { Color } from '../../color';
+import { EventData } from '../../data/observable';
+import { isIOS } from '../../platform';
+import { traceCategories, traceMessageType, traceWrite } from "../core/bindable";
+import { CoercibleProperty, CssProperty, Property } from "../core/properties";
+import { AddArrayFromBuilder, AddChildFromBuilder, CSSType, View } from "../core/view";
+import { ViewBase, booleanConverter } from "../core/view-base";
+import { Style } from "../styling/style";
+// export * from "../core/view";
 import { TextTransform } from "../text-base";
+
 
 export const traceCategory = "TabView";
 

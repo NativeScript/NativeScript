@@ -1,14 +1,19 @@
 // Definitions.
-import { TextBase as TextBaseDefinition, TextAlignment, TextDecoration, TextTransform, WhiteSpace } from ".";
-import { FontStyle, FontWeight } from "../styling/font";
-import { PropertyChangeData } from "../../data/observable";
-
+import { TextAlignment, TextBase as TextBaseDefinition, TextDecoration, TextTransform, WhiteSpace } from ".";
+import { Observable, PropertyChangeData } from "../../data/observable";
+import { isAndroid, isIOS } from '../../platform';
+import { FormattedString } from "../../text/formatted-string";
+import { CssProperty, InheritedCssProperty, makeParser, makeValidator, Property } from "../core/properties";
 // Types.
-import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isAndroid, isIOS, Observable, makeValidator, makeParser, Length } from "../core/view";
-import { FormattedString, Span } from "../../text/formatted-string";
+import { View } from "../core/view";
+import { ViewBase } from "../core/view-base";
+import { FontStyle, FontWeight } from "../styling/font";
+import { Style } from "../styling/style";
+import { Length } from "../styling/style-properties";
 
-export { FormattedString, Span };
-export * from "../core/view";
+
+// export { FormattedString, Span };
+// export * from "../core/view";
 
 const CHILD_SPAN = "Span";
 const CHILD_FORMATTED_TEXT = "formattedText";

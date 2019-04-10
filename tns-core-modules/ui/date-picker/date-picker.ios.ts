@@ -1,9 +1,11 @@
 ﻿import {
     DatePickerBase, yearProperty, monthProperty, dayProperty,
-    dateProperty, maxDateProperty, minDateProperty, colorProperty, Color
+    dateProperty, maxDateProperty, minDateProperty
 } from "./date-picker-common";
 
 import { ios } from "../../utils/utils";
+import { colorProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./date-picker-common";
 

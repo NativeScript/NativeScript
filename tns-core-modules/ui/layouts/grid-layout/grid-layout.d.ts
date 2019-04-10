@@ -2,7 +2,9 @@
  * @module "ui/layouts/grid-layout"
  */ /** */
 
-import { LayoutBase, Property, View } from "../layout-base";
+import { LayoutBase } from "../layout-base";
+import { Property } from '../../core/properties';
+import { View } from '../../core/view';
 
 /**
  * Defines row/column specific properties that apply to GridLayout elements.

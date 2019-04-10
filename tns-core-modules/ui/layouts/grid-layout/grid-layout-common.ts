@@ -1,7 +1,10 @@
 ﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from ".";
-import { LayoutBase, View, Observable, Property, makeParser, makeValidator, CSSType } from "../layout-base";
+import { LayoutBase } from "../layout-base";
+import { Observable } from "../../../data/observable";
+import { Property, makeValidator, makeParser } from "../../core/properties/properties";
+import { View, CSSType } from '../../core/view';
 
-export * from "../layout-base";
+// export * from "../layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {

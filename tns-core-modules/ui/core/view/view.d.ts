@@ -4,15 +4,18 @@
 
 /// <reference path="../../../tns-core-modules.d.ts" />
 
-import { ViewBase, Property, InheritedProperty, EventData, Color } from "../view-base";
+import { ViewBase } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
 import { LinearGradient } from "../../styling/gradient";
+import { EventData } from '../../../data/observable';
+import { InheritedProperty, Property } from '../properties';
+import { Color } from '../../../color';
 
-export * from "../view-base";
-export * from "../../styling/style-properties";
-export { LinearGradient };
+// export * from "../view-base";
+// export * from "../../styling/style-properties";
+// export { LinearGradient };
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
@@ -85,7 +88,7 @@ export interface Size {
 /**
  * Defines the data for the shownModally event.
  */
-export interface ShownModallyData extends EventData {
+export interface ShownModallyData extends GestureEventData {
     /**
      * The context (optional, may be undefined) passed to the view when shown modally.
      */

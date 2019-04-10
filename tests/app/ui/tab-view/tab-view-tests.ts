@@ -1,7 +1,6 @@
 import { UITest } from "../../ui-test";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
 import * as tabViewTestsNative from "./tab-view-tests-native";
@@ -9,6 +8,7 @@ import * as tabViewTestsNative from "./tab-view-tests-native";
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
 import * as tabViewModule from "tns-core-modules/ui/tab-view";
+import { unsetValue } from "tns-core-modules/ui/core/properties";
 // << article-require-tabview-module
 
 export class TabViewTest extends UITest<tabViewModule.TabView> {

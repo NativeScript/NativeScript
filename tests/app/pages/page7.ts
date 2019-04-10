@@ -1,6 +1,6 @@
 ﻿import * as pages from "tns-core-modules/ui/page";
 import * as buttons from "tns-core-modules/ui/button";
-import { VerticalAlignment } from "tns-core-modules/ui/core/view";
+import { VerticalAlignment } from "tns-core-modules/ui/styling/style-properties";
 
 export function createPage() {
     var page = new pages.Page();

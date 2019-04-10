@@ -1,6 +1,6 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import { View, isIOS } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Color } from "tns-core-modules/color";
@@ -20,6 +20,7 @@ import { TextField } from "tns-core-modules/ui/text-field";
 import { BindingOptions } from "tns-core-modules/ui/core/bindable";
 
 import { Observable } from "tns-core-modules/data/observable";
+import { isIOS } from "tns-core-modules/platform/platform";
 // << require-observable-binding-options-textfield
 
 // ### Binding two TextFields text property to observable view-model property.

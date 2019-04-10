@@ -1,10 +1,12 @@
-﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
-import {
-    ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, InheritedCssProperty, Color, Style, EventData, CSSType
-} from "../core/view";
+﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
+import { Color } from '../../color';
+import { EventData } from '../../data/observable';
+import { CoercibleProperty, InheritedCssProperty, Property } from "../core/properties";
+import { AddArrayFromBuilder, AddChildFromBuilder, CSSType, View } from "../core/view";
+import { ViewBase } from "../core/view-base";
+import { Style } from "../styling/style";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 export module knownCollections {
     export const items = "items";
@@ -82,7 +84,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
     }
 
     // TODO: Make _addView to keep its children so this method is not needed!
-    public eachChild(callback: (child: ViewBase) => boolean): void {
+    public eachChild(callback: (child: SegmentedBarItem) => boolean): void {
         const items = this.items;
         if (items) {
             items.forEach((item, i) => {

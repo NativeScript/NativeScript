@@ -2,7 +2,11 @@
  * @module "ui/editor-text-base"
  */ /** */
 
-import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
+import { Color } from '../../color';
+import { FormattedString } from '../../text/formatted-string';
+import { CssProperty, Property } from "../core/properties";
+import { Style } from '../styling/style';
+import { TextBase } from "../text-base";
 
 /**
  * Represents the base class for all editable text views.
@@ -86,4 +90,4 @@ export const maxLengthProperty: Property<EditableTextBase, number>;
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
 //@endprivate
 
-export * from "../text-base";
+// export * from "../text-base";

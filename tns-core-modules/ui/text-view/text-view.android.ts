@@ -1,7 +1,8 @@
 ﻿import { TextView as TextViewDefinition } from ".";
-import { EditableTextBase, CSSType } from "../editable-text-base";
+import { EditableTextBase } from "../editable-text-base";
+import { CSSType } from "../core/view";
 
-export * from "../text-base";
+// export * from "../text-base";
 
 @CSSType("TextView")
 export class TextView extends EditableTextBase implements TextViewDefinition {

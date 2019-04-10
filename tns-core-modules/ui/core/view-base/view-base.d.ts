@@ -1,8 +1,8 @@
 /**
  * @module "ui/core/view-base"
  */ /** */
-import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style } from "../properties";
-import { BindingOptions, Observable } from "../bindable";
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty } from "../properties";
+import { BindingOptions } from "../bindable";
 
 import { SelectorCore } from "../../styling/css-selector";
 import { isIOS, isAndroid } from "../../../platform";
@@ -15,11 +15,13 @@ import { Color } from "../../../color";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
 import { DOMNode } from "../../../debugger/dom-node";
+import { Observable } from "../../../data/observable";
+import { Style } from "../../styling/style";
 
-export { isIOS, isAndroid, layout, Color };
+// export { isIOS, isAndroid, layout, Color };
 
-export * from "../properties";
-export * from "../bindable";
+// export * from "../properties";
+// export * from "../bindable";
 
 /**
  * Iterates through all child views (via visual tree) and executes a function.

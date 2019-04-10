@@ -1,6 +1,6 @@
 ﻿import { Color } from "../color";
 import { Span as SpanDefinition } from "./span";
-import { ViewBase } from "../ui/core/view";
+import { ViewBase } from "../ui/core/view-base";
 import { FontStyle, FontWeight, } from "../ui/styling/font";
 import { TextDecoration } from "../ui/text-base";
 

@@ -1,14 +1,18 @@
-﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
-import {
-    ContentView, View, Property, CssProperty, Color, isIOS,
-    booleanConverter, Style, EventData, CSSType
-} from "../content-view";
-import { Frame } from "../frame";
+﻿import { NavigatedData, Page as PageDefinition } from ".";
+import { Color } from '../../color';
+import { EventData } from '../../data/observable';
+import { isIOS } from '../../platform';
+import { profile } from "../../profiling";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
-import { profile } from "../../profiling";
+import { ContentView } from "../content-view";
+import { CssProperty, Property } from "../core/properties";
+import { CSSType, ShownModallyData, View } from "../core/view";
+import { booleanConverter } from "../core/view-base";
+import { Frame } from "../frame";
+import { Style } from "../styling/style";
 
-export * from "../content-view";
+// export * from "../content-view";
 
 @CSSType("Page")
 export class PageBase extends ContentView implements PageDefinition {

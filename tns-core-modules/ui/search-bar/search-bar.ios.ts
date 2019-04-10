@@ -1,9 +1,12 @@
 ﻿import { Font } from "../styling/font";
 import {
-    SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
-    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, isEnabledProperty
+    SearchBarBase,
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty
 } from "./search-bar-common";
 import { ios as iosUtils } from "../../utils/utils";
+import { isEnabledProperty } from "../core/view";
+import { backgroundColorProperty, colorProperty, fontInternalProperty, backgroundInternalProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./search-bar-common";
 

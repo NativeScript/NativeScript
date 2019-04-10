@@ -1,8 +1,10 @@
 ﻿import { Label as LabelDefinition } from ".";
-import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter, CSSType } from "../text-base";
+import { TextBase, WhiteSpace, whiteSpaceProperty } from "../text-base";
 import { profile } from "../../profiling";
+import { CSSType } from "../core/view";
+import { booleanConverter } from "../core/view-base";
 
-export * from "../text-base";
+// export * from "../text-base";
 
 let TextView: typeof android.widget.TextView;
 

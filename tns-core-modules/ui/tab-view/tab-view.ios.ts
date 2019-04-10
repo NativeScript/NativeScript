@@ -1,18 +1,21 @@
 ﻿import { TabViewItem as TabViewItemDefinition } from ".";
 import { Font } from "../styling/font";
 
-import { ios as iosView, ViewBase } from "../core/view";
+import { ios as iosView, View } from "../core/view";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
-    tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
+    tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
-import { ios as iosUtils } from "../../utils/utils"
+import { ios as iosUtils, layout } from "../../utils/utils"
 import { device } from "../../platform";
+import { traceEnabled, traceWrite, traceCategories } from "../core/bindable";
+import { ViewBase } from "../core/view-base";
+import { Color } from "../../color";
+import { fontInternalProperty } from "../styling/style-properties";
 export * from "./tab-view-common";
 
 const majorVersion = iosUtils.MajorVersion;

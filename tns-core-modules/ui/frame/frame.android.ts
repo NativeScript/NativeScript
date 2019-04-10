@@ -8,8 +8,7 @@ import { Page } from "../page";
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories, traceError
+    FrameBase, stack, goBack
 } from "./frame-common";
 
 import {
@@ -21,6 +20,9 @@ import { profile } from "../../profiling";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
+import { View } from "../core/view";
+import { traceError, traceEnabled, traceWrite, traceCategories } from "../core/bindable";
+import { Observable } from "../../data/observable";
 
 export * from "./frame-common";
 

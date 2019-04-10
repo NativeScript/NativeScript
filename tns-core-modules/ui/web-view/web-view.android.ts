@@ -1,4 +1,5 @@
-import { WebViewBase, knownFolders, traceEnabled, traceWrite, traceCategories } from "./web-view-common";
+import { WebViewBase, knownFolders } from "./web-view-common";
+import { traceWrite, traceEnabled, traceCategories } from '../core/bindable';
 
 export * from "./web-view-common";
 

@@ -1,10 +1,11 @@
 ﻿import { ControlStateChangeListener } from "../core/control-state-change";
 import {
-    ButtonBase, PseudoClassHandler, Length, layout,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
-    whiteSpaceProperty, WhiteSpace, textAlignmentProperty, TextAlignment, View
+    ButtonBase
 } from "./button-common";
+import { PseudoClassHandler, View } from "../core/view";
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from "../styling/style-properties";
+import { layout } from "../../utils/utils";
+import { textAlignmentProperty, TextAlignment, whiteSpaceProperty, WhiteSpace } from "../text-base";
 
 export * from "./button-common";
 

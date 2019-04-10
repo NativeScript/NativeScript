@@ -1,12 +1,14 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from ".";
 import {
     ActionItemBase, ActionBarBase, isVisible,
-    View, layout, colorProperty, flatProperty,
-    Color, traceMissingIcon
+    flatProperty, traceMissingIcon
 } from "./action-bar-common";
-import { RESOURCE_PREFIX } from "../../utils/utils";
+import { RESOURCE_PREFIX, layout } from "../../utils/utils";
 import { fromFileOrResource } from "../../image-source";
 import * as application from "../../application";
+import { View } from "../core/view";
+import { colorProperty } from "../styling/style-properties";
+import { Color } from "../../color";
 
 export * from "./action-bar-common";
 

@@ -14,7 +14,8 @@ import { profile } from "../profiling";
 export * from "./application-common";
 
 // types
-import { NavigationEntry, View, AndroidActivityCallbacks } from "../ui/frame";
+import { NavigationEntry, AndroidActivityCallbacks } from "../ui/frame";
+import { View } from "../ui/core/view";
 
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";

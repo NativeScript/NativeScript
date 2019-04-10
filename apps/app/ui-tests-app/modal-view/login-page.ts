@@ -1,5 +1,6 @@
-﻿import { Page, ShownModallyData } from "tns-core-modules/ui/page";
+﻿import { Page } from "tns-core-modules/ui/page";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { ShownModallyData } from "tns-core-modules/ui/core/view/view";
 
 export function onShowingModally(args: ShownModallyData) {
     console.log("login-page.onShowingModally, context: " + args.context);

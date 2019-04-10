@@ -3,7 +3,8 @@
  * @module "ui/gestures"
  */ /** */
 
-import { View, EventData } from "../core/view";
+import { View } from "../core/view";
+import { EventData } from '../../data/observable';
 
 /**
  * Defines an enum with supported gesture types.
@@ -119,19 +120,19 @@ export interface GestureEventData extends EventData {
     /**
      * Gets the type of the gesture.
      */
-    type: GestureTypes;
+    type?: GestureTypes;
     /**
      * Gets the view which originates the gesture.
      */
-    view: View;
+    view?: View;
     /**
      * Gets the underlying native iOS specific [UIGestureRecognizer](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIGestureRecognizer_Class/).
      */
-    ios: any /* UIGestureRecognizer */;
+    ios?: any /* UIGestureRecognizer */;
     /**
      * Gets the underlying native android specific [gesture detector](http://developer.android.com/reference/android/view/GestureDetector.html).
      */
-    android: any
+    android?: any
 }
 
 /**

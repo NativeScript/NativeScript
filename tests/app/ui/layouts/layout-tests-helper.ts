@@ -1,8 +1,9 @@
-import { View, Length } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import * as TKUnit from "../../TKUnit";
 import { layout } from "tns-core-modules/utils/utils";
 
 import round = layout.round;
+import { Length } from "tns-core-modules/ui/styling/style-properties";
 export const dipToDp = layout.toDevicePixels;
 
 const EPS = 1;

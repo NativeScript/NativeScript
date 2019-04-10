@@ -3,7 +3,8 @@
  * @module "ui/switch"
  */ /** */
 
-import { View, Property } from "../core/view";
+import { View } from "../core/view";
+import { Property } from "../core/properties";
 
 /**
  * Represents a switch component.

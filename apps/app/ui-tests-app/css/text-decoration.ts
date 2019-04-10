@@ -1,4 +1,5 @@
-﻿import { EventData, TextBase, TextDecoration } from "tns-core-modules/ui/text-base";
+﻿import { TextBase, TextDecoration } from "tns-core-modules/ui/text-base";
+import { EventData } from "tns-core-modules/data/observable";
 
 const possibleValues = [
     "none",

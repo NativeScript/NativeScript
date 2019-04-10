@@ -2,14 +2,15 @@
 import { Frame } from "../frame";
 
 // Types.
-import { ios as iosView } from "../core/view";
+import { ios as iosView, View } from "../core/view";
 import {
-    PageBase, View, layout,
-    actionBarHiddenProperty, statusBarStyleProperty, Color
+    PageBase,
+    actionBarHiddenProperty, statusBarStyleProperty
 } from "./page-common";
 
 import { profile } from "../../profiling";
-import { ios as iosUtils } from "../../utils/utils";
+import { ios as iosUtils, layout } from "../../utils/utils";
+import { Color } from "../../color";
 
 export * from "./page-common";
 

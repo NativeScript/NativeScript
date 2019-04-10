@@ -1,7 +1,7 @@
 ﻿import {
-    LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
+    LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty
 } from "./layout-base-common";
+import { paddingTopProperty, Length, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../styling/style-properties";
 
 export * from "./layout-base-common";
 

@@ -3,7 +3,8 @@
  * @module "ui/placeholder"
  */ /** */
 
-import { View, EventData } from "../core/view";
+import { View } from "../core/view";
+import { EventData } from "../../data/observable";
 
 /**
  * Represents a Placeholder, which is used to add a native view to the visual tree.

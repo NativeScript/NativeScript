@@ -1,4 +1,5 @@
-﻿import { DockLayoutBase, View, dockProperty, stretchLastChildProperty } from "./dock-layout-common";
+﻿import { DockLayoutBase, dockProperty, stretchLastChildProperty } from "./dock-layout-common";
+import { View } from "../../core/view";
 
 export * from "./dock-layout-common";
 

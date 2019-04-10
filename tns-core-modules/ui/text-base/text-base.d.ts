@@ -2,11 +2,14 @@
  * @module "ui/text-base"
  */ /** */
 
-import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
+import { View, AddChildFromBuilder } from "../core/view";
 import { FormattedString } from "../../text/formatted-string";
+import { Length } from "../styling/style-properties";
+import { Property, InheritedCssProperty, CssProperty } from "../core/properties";
+import { Style } from "../styling/style";
 
-export * from "../core/view";
-export { FormattedString } from "../../text/formatted-string";
+// export * from "../core/view";
+// export { FormattedString } from "../../text/formatted-string";
 
 export class TextBase extends View implements AddChildFromBuilder {
 

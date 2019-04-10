@@ -2,7 +2,7 @@
  * @module "ui/styling/style"
  */ /** */
 
-import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
+import { dip } from "../../core/view";
 import { Color } from "../../../color";
 import { Background } from "../background";
 import { Font, FontStyle, FontWeight } from "../font";
@@ -12,6 +12,10 @@ import {
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "../../layouts/flexbox-layout";
 import { LinearGradient } from "../gradient";
+import { Observable } from '../../../data/observable';
+import { VerticalAlignment, HorizontalAlignment, PercentLength, Visibility, Length } from "../style-properties";
+import { BackgroundRepeat } from "../../../css/parser";
+import { ViewBase } from "../../core/view-base";
 
 export interface Thickness {
     left: number;

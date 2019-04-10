@@ -1,7 +1,7 @@
 ﻿import * as frame from "tns-core-modules/ui/frame";
-import { EventData } from "tns-core-modules/ui/frame";
 import { Button } from "tns-core-modules/ui/button";
 import { ActionBar } from "tns-core-modules/ui/action-bar";
+import { EventData } from "tns-core-modules/data/observable";
 
 const iconModes = ["automatic", "alwaysOriginal", "alwaysTemplate", undefined];
 

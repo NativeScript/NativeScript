@@ -1,7 +1,9 @@
 import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, layout, Color,
-    traceEnabled, traceWrite, traceCategories
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty
 } from "./image-common";
+import { Color } from "../../color";
+import { layout } from "../../utils/utils";
+import { traceEnabled, traceWrite, traceCategories } from "../core/bindable";
 
 export * from "./image-common";
 

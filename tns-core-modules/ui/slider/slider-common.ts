@@ -1,7 +1,9 @@
 ﻿import { Slider as SliderDefinition } from ".";
-import { View, Property, CoercibleProperty, isIOS, CSSType } from "../core/view";
+import { isIOS } from "../../platform";
+import { CoercibleProperty, Property } from "../core/properties";
+import { CSSType, View } from "../core/view";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 // TODO: Extract base Range class for slider and progress
 @CSSType("Slider")

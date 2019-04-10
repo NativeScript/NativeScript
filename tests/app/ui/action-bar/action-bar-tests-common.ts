@@ -4,12 +4,13 @@ import * as builder from "tns-core-modules/ui/builder";
 import { Label } from "tns-core-modules/ui/label";
 import { Button } from "tns-core-modules/ui/button";
 import { Page } from "tns-core-modules/ui/page";
-import { View, isIOS } from "tns-core-modules/ui/core/view";
+import { View } from "tns-core-modules/ui/core/view";
 import { fromObject } from "tns-core-modules/data/observable";
 import { topmost } from "tns-core-modules/ui/frame";
 
 // >> actionbar-common-require
 import * as actionBarModule from "tns-core-modules/ui/action-bar";
+import { isIOS } from "tns-core-modules/platform/platform";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {

@@ -1,7 +1,9 @@
 ﻿import {
-    GridLayoutBase, ItemSpec as ItemSpecBase, View, layout,
+    GridLayoutBase, ItemSpec as ItemSpecBase,
     rowProperty, columnProperty, rowSpanProperty, columnSpanProperty, GridUnitType
 } from "./grid-layout-common";
+import { View } from "../../core/view";
+import { layout } from "../../../utils/utils";
 
 export * from "./grid-layout-common";
 

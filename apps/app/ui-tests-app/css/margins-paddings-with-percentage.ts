@@ -2,6 +2,7 @@ import * as view from "tns-core-modules/ui/core/view";
 import * as pages from "tns-core-modules/ui/page";
 import { EventData } from "tns-core-modules/data/observable";
 import * as button from "tns-core-modules/ui/button";
+import { getViewById } from "tns-core-modules/ui/core/view-base";
 
 const cssPercentage = `
     Page { background-color: orange; font-size: 8; } 
@@ -47,7 +48,7 @@ export function applyTap(args: EventData) {
 function getBtnText(args: EventData) {
     var parent = (<view.View>args.object).parent;
     if (parent) {
-        var btn = <button.Button>view.getViewById(parent, "button");
+        var btn = <button.Button>getViewById(parent, "button");
         if (btn) {
             if (isSCCWithPercentage) {
                 btn.text = "css with %";

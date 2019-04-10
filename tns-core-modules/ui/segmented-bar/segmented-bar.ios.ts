@@ -1,8 +1,9 @@
 ﻿import { Font } from "../styling/font";
 import {
-    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, Color
+    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty
 } from "./segmented-bar-common";
+import { Color } from "../../color";
+import { colorProperty, fontInternalProperty } from "../styling/style-properties";
 
 export * from "./segmented-bar-common";
 

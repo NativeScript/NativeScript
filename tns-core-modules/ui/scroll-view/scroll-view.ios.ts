@@ -1,8 +1,9 @@
 ﻿import { ScrollEventData } from ".";
 import {
-    View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty
+    ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty
 } from "./scroll-view-common";
-import { ios as iosUtils } from "../../utils/utils";
+import { ios as iosUtils, layout } from "../../utils/utils";
+import { View } from "../core/view";
 
 export * from "./scroll-view-common";
 

@@ -10,7 +10,7 @@ import * as helper from "../../ui/helper";
 import * as types from "tns-core-modules/utils/types";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
 import * as color from "tns-core-modules/color";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {

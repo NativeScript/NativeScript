@@ -1,4 +1,6 @@
-﻿import { LayoutBase, View, Observable } from "tns-core-modules/ui/layouts/layout-base";
+﻿import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { Observable } from "tns-core-modules/data/observable";
+import { View } from "tns-core-modules/ui/core/view";
 
 export class ViewModelBase extends Observable {
 

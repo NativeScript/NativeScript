@@ -1,14 +1,13 @@
-﻿import { ScrollEventData } from "../scroll-view";
-import { TextView as TextViewDefinition } from ".";
-import {
-    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
-    Length, _updateCharactersInRangeReplacementString, Color, layout,
-    CSSType
-} from "../editable-text-base";
-
+﻿import { TextView as TextViewDefinition } from ".";
+import { Color } from '../../color';
 import { profile } from "../../profiling";
+import { layout } from "../../utils/utils";
+import { CSSType } from "../core/view";
+import { editableProperty, EditableTextBase, hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from "../editable-text-base";
+import { ScrollEventData } from "../scroll-view";
+import { borderBottomWidthProperty, borderLeftWidthProperty, borderRightWidthProperty, borderTopWidthProperty, colorProperty, Length, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from "../styling/style-properties";
+import { textProperty } from "../text-base";
+
 
 export * from "../editable-text-base";
 

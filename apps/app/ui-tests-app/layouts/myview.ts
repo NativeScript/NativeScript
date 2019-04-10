@@ -1,5 +1,5 @@
-﻿import { View } from "tns-core-modules/ui/layouts/layout-base";
-import { ViewModelBase } from "./myview-base";
+﻿import { ViewModelBase } from "./myview-base";
+import { View } from "tns-core-modules/ui/core/view";
 
 export class ViewModel extends ViewModelBase {
 

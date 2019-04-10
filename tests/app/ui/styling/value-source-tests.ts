@@ -3,7 +3,7 @@ import * as button from "tns-core-modules/ui/button";
 import * as stack from "tns-core-modules/ui/layouts/stack-layout";
 import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties/properties";
 
 export var test_value_Inherited_after_unset = function () {
     let page = helper.getCurrentPage();

@@ -1,12 +1,17 @@
 import { ItemEventData } from ".";
 import {
-    ListViewBase, View, KeyedTemplate, Length, Observable, Color,
-    separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, layout, EventData
+    ListViewBase,
+    separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty
 } from "./list-view-common";
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { profile } from "../../profiling";
 import * as trace from "../../trace";
+import { layout } from "tns-core-modules/utils/utils";
+import { View, KeyedTemplate } from "../core/view";
+import { EventData, Observable } from "../../data/observable";
+import { Color } from "../../color";
+import { Length } from "../styling/style-properties";
 
 export * from "./list-view-common";
 

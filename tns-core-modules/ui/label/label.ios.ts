@@ -1,15 +1,17 @@
 ﻿import { Label as LabelDefinition } from ".";
 import { Background } from "../styling/background";
 import {
-    TextBase, View, layout,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
-    Length, WhiteSpace, booleanConverter, CSSType
+    TextBase, whiteSpaceProperty,
+    WhiteSpace
 } from "../text-base";
 
 import { ios } from "../styling/background";
+import { CSSType, View } from "../core/view";
+import { layout } from "../../utils/utils";
+import { Length, borderRightWidthProperty, borderTopWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../styling/style-properties";
+import { booleanConverter } from "../core/view-base";
 
-export * from "../text-base";
+// export * from "../text-base";
 
 enum FixedSize {
     NONE = 0,

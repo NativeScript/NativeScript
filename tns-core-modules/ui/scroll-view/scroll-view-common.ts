@@ -1,8 +1,12 @@
 ﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
-import { ContentView, Property, makeParser, makeValidator, EventData, booleanConverter, CSSType } from "../content-view";
+import { ContentView } from "../content-view";
 import { profile } from "../../profiling";
+import { CSSType } from "../core/view/view";
+import { EventData } from "../../data/observable";
+import { makeParser, makeValidator, Property } from "../core/properties";
+import { booleanConverter } from "../core/view-base";
 
-export * from "../content-view";
+// export * from "../content-view";
 
 @CSSType("ScrollView")
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {

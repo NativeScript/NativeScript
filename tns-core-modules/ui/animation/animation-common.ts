@@ -12,7 +12,7 @@ import { View } from "../core/view";
 import { Color } from "../../color";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
 
-export { Color, traceEnabled, traceWrite, traceCategories, traceType };
+export { traceEnabled, traceWrite, traceCategories, traceType };
 export { AnimationPromise } from ".";
 
 export module Properties {

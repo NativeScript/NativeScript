@@ -1,7 +1,8 @@
 ﻿import { Progress as ProgressDefinition } from ".";
-import { View, Property, CoercibleProperty, CSSType } from "../core/view";
+import { CoercibleProperty, Property } from "../core/properties";
+import { CSSType, View } from "../core/view";
 
-export * from "../core/view";
+// export * from "../core/view";
 
 @CSSType("Progress")
 export class ProgressBase extends View implements ProgressDefinition {

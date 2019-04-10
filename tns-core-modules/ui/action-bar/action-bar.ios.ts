@@ -1,11 +1,11 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { 
-    ActionItemBase, ActionBarBase, isVisible, View, 
-    colorProperty, backgroundColorProperty, 
-    backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty, 
-    layout, Color, traceMissingIcon } from "./action-bar-common";
+    ActionItemBase, ActionBarBase, isVisible, flatProperty, iosIconRenderingModeProperty, traceMissingIcon } from "./action-bar-common";
 import { fromFileOrResource } from "../../image-source";
-import { ios as iosUtils } from "../../utils/utils";
+import { ios as iosUtils, layout } from "../../utils/utils";
+import { View } from "../core/view";
+import { Color } from "../../color";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "../styling/style-properties";
 
 export * from "./action-bar-common";
 

@@ -3,7 +3,9 @@
  * @module "ui/action-bar"
  */ /** */
 
-import { EventData, ViewBase, View } from "../core/view";
+import { View } from "../core/view";
+import { ViewBase } from "../core/view-base";
+import { EventData } from '../../data/observable';
 
 /**
  * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).

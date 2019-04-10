@@ -3,7 +3,8 @@
  * @module "ui/html-view"
  */ /** */
 
-import { View, Property } from "../core/view";
+import { View } from "../core/view";
+import { Property } from "../core/properties";
 
 /**
  * Represents a view with html content. Use this component instead WebView when you want to show just static HTML content.

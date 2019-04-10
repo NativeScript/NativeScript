@@ -3,7 +3,8 @@
  * @module "ui/date-picker"
  */ /** */
 
-import { View, Property } from "../core/view";
+import { View } from "../core/view";
+import { Property } from "../core/properties";
 
 export const yearProperty: Property<DatePicker, number>;
 export const monthProperty: Property<DatePicker, number>;

@@ -5,7 +5,7 @@
 import { ViewBase } from "../view-base";
 import { Style } from "../../styling/style";
 
-export { Style };
+// export { Style };
 
 /**
  * Value specifing that Property should be set to its initial value.

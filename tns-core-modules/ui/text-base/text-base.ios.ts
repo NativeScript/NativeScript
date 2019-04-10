@@ -2,10 +2,14 @@
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
-    FormattedString, Span, Color, isBold, resetSymbol
+    textTransformProperty, letterSpacingProperty, lineHeightProperty,
+    isBold, resetSymbol
 } from "./text-base-common";
 import { isString } from "../../utils/types";
+import { colorProperty, fontInternalProperty } from "../styling/style-properties";
+import { Color } from "../../color";
+import { FormattedString } from '../../text/formatted-string';
+import { Span } from '../../text/span';
 
 export * from "./text-base-common";
 
