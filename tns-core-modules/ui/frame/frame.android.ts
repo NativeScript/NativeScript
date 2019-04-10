@@ -344,10 +344,9 @@ export class Frame extends FrameBase {
             this._isReplace = true;
             const currentBackstackEntry = this._currentEntry;
             const currentNavigationEntry = currentBackstackEntry.entry;
-
             const contextModuleName = getContextModuleName(context);
-            fragmentId++;
 
+            fragmentId++;
             const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
             const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
             const newBackstackEntry: BackstackEntry = {

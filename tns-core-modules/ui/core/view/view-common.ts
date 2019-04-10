@@ -145,31 +145,25 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
         // Handle local style
         // TODO(vchimev): ModuleType
-        // if (context && context.type === "style" && context.path) {
-        // TODO(vchimev): handle all context types
-        if (context) {
-            return this.changeLocalStyles(context.path);
+        if (context && context.type && context.path) {
+            if (context.type === "style") {
+                return this.changeLocalStyles(context.path);
+            } else {
+                // context.type === "markup" || context.type === "script"
+                return this.changeModule(context);
+            }
         }
 
         return false;
     }
 
     private changeLocalStyles(contextPath: string): boolean {
-        // if (!this.changeStyles(this, contextPath)) {
-        eachDescendant(this, (child: ViewBase) => {
-            // Log
-            console.log("---> child", child);
-            console.log("---> child._moduleName", child._moduleName);
-
-            // typeof child === Frame
-            if (child._moduleName && contextPath.includes(child._moduleName) && child.page) {
-                // Mock
-                child.page._onLivesync({ type: "markup", path: contextPath });
-            }
-
-            return true;
-        });
-        // }
+        if (!this.changeStyles(this, contextPath)) {
+            eachDescendant(this, (child: ViewBase) => {
+                this.changeStyles(child, contextPath);
+                return true;
+            });
+        }
 
         // Do not execute frame navigation for a change in styles
         return true;
@@ -181,6 +175,24 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             return true;
         }
         return false;
+    }
+
+    private changeModule(context: ModuleContext): boolean {
+        eachDescendant(this, (child: ViewBase) => {
+            // TODO(vchimev)
+            console.log("---> child", child);
+            console.log("---> child._moduleName", child._moduleName);
+
+            // TODO(vchimev): Frame
+            if (child._moduleName && context.path.includes(child._moduleName) && child.page) {
+                child.page._onLivesync(context);
+            }
+
+            return true;
+        });
+
+        // Do not execute frame navigation for a change in modules
+        return true;
     }
 
     _setupAsRootView(context: any): void {

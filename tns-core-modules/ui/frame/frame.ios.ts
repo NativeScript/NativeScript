@@ -53,13 +53,13 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+    public setCurrent(entry: BackstackEntry, isBack: boolean, isReaplce: boolean): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack, null);
+            this._updateBackstack(entry, isBack, isReaplce);
 
-            super.setCurrent(entry, isBack, null);
+            super.setCurrent(entry, isBack, isReaplce);
         }
     }
 
@@ -83,6 +83,8 @@ export class Frame extends FrameBase {
                 navDepth: currentBackstackEntry.navDepth,
                 fragmentTag: undefined
             }
+
+            this.setCurrent(newBackstackEntry, false, true);
 
             let viewController = newBackstackEntry.resolvedPage.ios;
             if (!viewController) {
@@ -135,6 +137,7 @@ export class Frame extends FrameBase {
             newViewControllers.addObject(viewController);
 
             this._ios.controller.setViewControllersAnimated(newViewControllers, false);
+            this.currentPage.actionBar.update();
             return true;
         } else {
             // Fallback
