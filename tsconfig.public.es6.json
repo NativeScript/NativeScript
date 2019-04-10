@@ -3,7 +3,7 @@
         "noEmitOnError": true,
         "noEmitHelpers": true,
         "target": "es5",
-        "module": "commonjs",
+        "module": "es2015",
         "declaration": false,
         "noImplicitAny": false,
         "noImplicitUseStrict": true,
