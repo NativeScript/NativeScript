@@ -565,10 +565,42 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return result;
     }
 
-    public _onLivesync(context?: ModuleContext): boolean {
-        console.log("---> FrameBase.onLivesync", context);
+    public _onLivesync(): boolean {
+        // Execute navigation if not handled on `View`
+        // TODO(vchimev):
+        console.log("---> FrameBase.onLivesync");
+        if (!this._currentEntry || !this._currentEntry.entry) {
+            return false;
+        }
+
+        const currentEntry = this._currentEntry.entry;
+        const newEntry: NavigationEntry = {
+            animated: false,
+            clearHistory: true,
+            context: currentEntry.context,
+            create: currentEntry.create,
+            moduleName: currentEntry.moduleName,
+            backstackVisible: currentEntry.backstackVisible
+        }
+
+        // If create returns the same page instance we can't recreate it.
+        // Instead of navigation set activity content.
+        // This could happen if current page was set in XML as a Page instance.
+        if (newEntry.create) {
+            const page = newEntry.create();
+            if (page === this.currentPage) {
+                return false;
+            }
+        }
+
+        this.navigate(newEntry);
         return true;
     }
+}
+
+export function getContextModuleName(context: ModuleContext) {
+    let contextModuleName = context.path.replace("./", "");
+    return contextModuleName.substring(0, contextModuleName.lastIndexOf("."));
 }
 
 export function getFrameById(id: string): FrameBase {

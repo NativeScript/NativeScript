@@ -1,15 +1,15 @@
 ﻿// Definitions.
 import {
-    AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationEntry,
-    NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
+    AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
+    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
 import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories, traceError
+    FrameBase, goBack, getContextModuleName, stack, View, Observable,
+    traceCategories, traceEnabled, traceError, traceWrite,
 } from "./frame-common";
 
 import {
@@ -333,25 +333,23 @@ export class Frame extends FrameBase {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
+        // Inspired by _navigateCore()
         // TODO(vchimev)
         console.log("---> Frame._onLivesync", context);
         if (!this._currentEntry || !this._currentEntry.entry) {
             return false;
         }
 
-        const currentBackstackEntry = this._currentEntry;
-        const currentNavigationEntry = currentBackstackEntry.entry;
-
         if (context && context.type && context.path) {
             this._isReplace = true;
+            const currentBackstackEntry = this._currentEntry;
+            const currentNavigationEntry = currentBackstackEntry.entry;
 
-            let contextModuleName = context.path.replace("./", "");
-            contextModuleName = contextModuleName.substring(0, contextModuleName.lastIndexOf("."));
-
-            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
+            const contextModuleName = getContextModuleName(context);
             fragmentId++;
 
             const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
+            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
             const newBackstackEntry: BackstackEntry = {
                 entry: currentNavigationEntry,
                 resolvedPage: newPage,
@@ -380,26 +378,7 @@ export class Frame extends FrameBase {
             newTransaction.commitAllowingStateLoss();
         } else {
             // Fallback
-            const navigationEntry: NavigationEntry = {
-                animated: false,
-                clearHistory: true,
-                context: currentNavigationEntry.context,
-                create: currentNavigationEntry.create,
-                moduleName: currentNavigationEntry.moduleName,
-                backstackVisible: currentNavigationEntry.backstackVisible
-            }
-
-            // If create returns the same page instance we can't recreate it.
-            // Instead of navigation set activity content.
-            // This could happen if current page was set in XML as a Page instance.
-            if (navigationEntry.create) {
-                const page = navigationEntry.create();
-                if (page === this.currentPage) {
-                    return false;
-                }
-            }
-
-            this.navigate(navigationEntry);
+            super._onLivesync();
         }
 
         return true;

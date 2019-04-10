@@ -1,12 +1,18 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import {
+    iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
+} from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
 //Types.
-import { FrameBase, View, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
+import {
+    FrameBase, View, getContextModuleName, isCategorySet, layout,
+    traceCategories, traceEnabled, traceWrite,
+} from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
+import { createViewFromEntry } from "../builder";
 import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
@@ -14,9 +20,10 @@ export * from "./frame-common";
 const majorVersion = utils.ios.MajorVersion;
 
 const ENTRY = "_entry";
+const DELEGATE = "_delegate";
 const NAV_DEPTH = "_navDepth";
 const TRANSITION = "_transition";
-const DELEGATE = "_delegate";
+const NON_ANIMATED_TRANSITION = "non-animated";
 
 let navDepth = -1;
 
@@ -56,6 +63,87 @@ export class Frame extends FrameBase {
         }
     }
 
+    public _onLivesync(context?: ModuleContext): boolean {
+        // Inspired by _navigateCore()
+        // TODO(vchimev)
+        console.log("---> Frame._onLivesync", context);
+        if (!this._currentEntry || !this._currentEntry.entry) {
+            return false;
+        }
+
+        if (context && context.type && context.path) {
+            const currentBackstackEntry = this._currentEntry;
+            const currentNavigationEntry = currentBackstackEntry.entry;
+
+            const contextModuleName = getContextModuleName(context);
+            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
+            const newBackstackEntry: BackstackEntry = {
+                entry: currentNavigationEntry,
+                resolvedPage: newPage,
+                navDepth: currentBackstackEntry.navDepth,
+                fragmentTag: undefined
+            }
+
+            let viewController = newBackstackEntry.resolvedPage.ios;
+            if (!viewController) {
+                throw new Error("Required page does not have a viewController created.");
+            }
+
+            let navigationTransition: NavigationTransition;
+            let animated = this.currentPage ? this._getIsAnimatedNavigation(newBackstackEntry.entry) : false;
+            if (animated) {
+                navigationTransition = this._getNavigationTransition(newBackstackEntry.entry);
+                if (navigationTransition) {
+                    viewController[TRANSITION] = navigationTransition;
+                }
+            } else {
+                // https://github.com/NativeScript/NativeScript/issues/1787
+                viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
+            }
+
+            let nativeTransition = _getNativeTransition(navigationTransition, true);
+            if (!nativeTransition && navigationTransition) {
+                this._ios.controller.delegate = this._animatedDelegate;
+                viewController[DELEGATE] = this._animatedDelegate;
+            } else {
+                viewController[DELEGATE] = null;
+                this._ios.controller.delegate = null;
+            }
+
+            viewController[NAV_DEPTH] = newBackstackEntry.navDepth;
+            viewController[ENTRY] = newBackstackEntry;
+
+            if (majorVersion > 10) {
+                // Reset back button title before pushing view controller to prevent
+                // displaying default 'back' title (when NavigaitonButton custom title is set).
+                let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction("", UIBarButtonItemStyle.Plain, null, null);
+                viewController.navigationItem.backBarButtonItem = barButtonItem;
+            }
+
+            const viewControllers = this._ios.controller.viewControllers;
+            let newViewControllers = NSMutableArray.alloc().initWithArray(viewControllers);
+            if (newViewControllers.count === 0) {
+                throw new Error("Wrong controllers count.");
+            }
+
+            // the code below fixes a phantom animation that appears on the Back button in this case
+            viewController.navigationItem.hidesBackButton = this.backStack.length === 0;
+
+            const skippedNavController = newViewControllers.lastObject;
+            (<any>skippedNavController).isBackstackSkipped = true;
+            newViewControllers.removeLastObject();
+            newViewControllers.addObject(viewController);
+
+            this._ios.controller.setViewControllersAnimated(newViewControllers, false);
+            return true;
+        } else {
+            // Fallback
+            super._onLivesync();
+        }
+
+        return true;
+    }
+
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
         super._navigateCore(backstackEntry);
@@ -81,7 +169,7 @@ export class Frame extends FrameBase {
         }
         else {
             //https://github.com/NativeScript/NativeScript/issues/1787
-            viewController[TRANSITION] = { name: "non-animated" };
+            viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
         }
 
         let nativeTransition = _getNativeTransition(navigationTransition, true);
@@ -469,7 +557,7 @@ class UINavigationControllerImpl extends UINavigationController {
             traceWrite(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
-        if (navigationTransition && navigationTransition.name === "non-animated") {
+        if (navigationTransition && navigationTransition.name === NON_ANIMATED_TRANSITION) {
             //https://github.com/NativeScript/NativeScript/issues/1787
             return super.popViewControllerAnimated(false);
         }
@@ -493,7 +581,7 @@ class UINavigationControllerImpl extends UINavigationController {
             traceWrite(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
-        if (navigationTransition && navigationTransition.name === "non-animated") {
+        if (navigationTransition && navigationTransition.name === NON_ANIMATED_TRANSITION) {
             //https://github.com/NativeScript/NativeScript/issues/1787
             return super.popToViewControllerAnimated(viewController, false);
         }
