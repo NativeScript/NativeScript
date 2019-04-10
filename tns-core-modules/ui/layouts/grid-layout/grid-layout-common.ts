@@ -2,9 +2,7 @@
 import { LayoutBase } from "../layout-base";
 import { Observable } from "../../../data/observable";
 import { Property, makeValidator, makeParser } from "../../core/properties/properties";
-import { View, CSSType } from '../../core/view';
-
-// export * from "../layout-base";
+import { View, CSSType } from "../../core/view";
 
 function validateArgs(element: View): View {
     if (!element) {

@@ -89,5 +89,3 @@ export const maxLengthProperty: Property<EditableTextBase, number>;
  */
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
 //@endprivate
-
-// export * from "../text-base";

@@ -23,16 +23,14 @@ import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
 
-// export * from "../../styling/style-properties";
-// export * from "../view-base";
 export { LinearGradient };
 
 import * as am from "../../animation";
-import { EventData } from '../../../data/observable';
+import { EventData } from "../../../data/observable";
 import { traceEnabled, traceWrite, traceCategories, getEventOrGestureName } from "../bindable";
 import { InheritedProperty, Property } from "../properties";
-import { Color } from '../../../color';
-import { layout } from '../../../utils/utils';
+import { Color } from "../../../color";
+import { layout } from "../../../utils/utils";
 
 let animationModule: typeof am;
 function ensureAnimationModule() {

@@ -1,11 +1,9 @@
 ﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from ".";
 import { TextBase } from "../text-base";
 import { Color } from "../../color";
-import { Property, CssProperty, makeParser, makeValidator } from '../core/properties';
+import { Property, CssProperty, makeParser, makeValidator } from "../core/properties";
 import { booleanConverter } from "../core/view-base";
 import { Style } from "../styling/style";
-
-// export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
     public static blurEvent = "blur";

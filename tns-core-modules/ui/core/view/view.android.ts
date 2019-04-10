@@ -19,10 +19,10 @@ import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
-import { EventData } from '../../../data/observable';
+import { EventData } from "../../../data/observable";
 import { ShowModalOptions } from "../view-base";
 import { layout } from "../../../utils/utils";
-import { Color } from '../../../color';
+import { Color } from "../../../color";
 import { traceWrite, traceEnabled, traceCategories, traceNotifyEvent } from "../bindable";
 
 export * from "./view-common";

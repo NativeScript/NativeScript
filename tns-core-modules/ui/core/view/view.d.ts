@@ -13,10 +13,6 @@ import { EventData } from '../../../data/observable';
 import { InheritedProperty, Property } from '../properties';
 import { Color } from '../../../color';
 
-// export * from "../view-base";
-// export * from "../../styling/style-properties";
-// export { LinearGradient };
-
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
 /**

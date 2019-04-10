@@ -16,8 +16,6 @@ import { Style } from "../styling/style";
 
 //@endprivate
 
-// export * from "../content-view";
-
 /**
  * Defines the data for the page navigation events.
  */

@@ -7,8 +7,6 @@
 
 import { profile } from "../../profiling";
 
-// export * from "../core/view";
-
 import {
     View, CSSType
 } from "../core/view";

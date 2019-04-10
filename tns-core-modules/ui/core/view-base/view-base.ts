@@ -6,22 +6,16 @@ import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../la
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
 import { Source } from "../../../utils/debug";
-import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
+import { Observable, PropertyChangeData, WrappedValue } from "../../../data/observable";
 import { Binding, BindingOptions, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isAndroid } from "../../../platform";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
-import { Style } from '../../styling/style';
+import { Style } from "../../styling/style";
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";
 
-// import { Color } from "../../../color";
-
 import { profile } from "../../../profiling";
-
-// export { isIOS, isAndroid, layout, Color };
-// export * from "../bindable";
-// export * from "../properties";
 
 import * as ssm from "../../styling/style-scope";
 

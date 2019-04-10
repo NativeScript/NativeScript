@@ -1,10 +1,8 @@
 import { LayoutBase } from "../layout-base";
-import { View, CSSType } from '../../core/view';
+import { View, CSSType } from "../../core/view";
 import { makeValidator, makeParser, CssProperty, ShorthandProperty, unsetValue } from "../../core/properties/properties";
 import { Style } from "../../styling/style/style";
 import { isIOS } from "../../../platform";
-
-// export * from "../layout-base";
 
 export type Basis = "auto" | number;
 

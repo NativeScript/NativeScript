@@ -1,10 +1,9 @@
 ﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from ".";
 import { LayoutBase } from "../layout-base";
-import { View, CSSType } from '../../core/view';
+import { View, CSSType } from "../../core/view";
 
-import { Property } from '../../core/properties';
-import { Length, zeroLength } from '../../styling/style-properties';
-// export * from "../layout-base";
+import { Property } from "../../core/properties";
+import { Length, zeroLength } from "../../styling/style-properties";
 
 View.prototype.effectiveLeft = 0;
 View.prototype.effectiveTop = 0;

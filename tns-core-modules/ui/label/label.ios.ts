@@ -11,8 +11,6 @@ import { layout } from "../../utils/utils";
 import { Length, borderRightWidthProperty, borderTopWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../styling/style-properties";
 import { booleanConverter } from "../core/view-base";
 
-// export * from "../text-base";
-
 enum FixedSize {
     NONE = 0,
     WIDTH = 1,

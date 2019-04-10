@@ -2,8 +2,6 @@
 import { View, CSSType } from "../core/view";
 import { Property } from "../core/properties";
 
-// export * from "../core/view";
-
 interface Time {
     hour: number;
     minute: number;

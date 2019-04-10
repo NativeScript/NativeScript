@@ -1,12 +1,10 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
-import { Color } from '../../color';
-import { EventData } from '../../data/observable';
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
 import { CoercibleProperty, InheritedCssProperty, Property } from "../core/properties";
 import { AddArrayFromBuilder, AddChildFromBuilder, CSSType, View } from "../core/view";
 import { ViewBase } from "../core/view-base";
 import { Style } from "../styling/style";
-
-// export * from "../core/view";
 
 export module knownCollections {
     export const items = "items";

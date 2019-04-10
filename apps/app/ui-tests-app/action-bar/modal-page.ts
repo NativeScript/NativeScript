@@ -1,4 +1,4 @@
-import { ShownModallyData } from 'tns-core-modules/ui/core/view';
+import { ShownModallyData } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import { Label } from "tns-core-modules/ui/label"
 import { Page } from "tns-core-modules/ui/page"

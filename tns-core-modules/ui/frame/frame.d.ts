@@ -8,8 +8,6 @@ import { Transition } from "../transition";
 import { View } from "../core/view/view";
 import { EventData, Observable } from '../../data/observable';
 
-// export * from "../page";
-
 /**
  * Represents the logical View unit that is responsible for navigation withing an application.
  * Typically an application will have a Frame object at a root level.

@@ -10,9 +10,8 @@ import { profile } from "../../profiling";
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
 import { traceWrite, traceEnabled, traceCategories } from "../core/bindable";
 import { getAncestor } from "../core/view-base";
-import { isAndroid, isIOS } from '../../platform';
+import { isAndroid, isIOS } from "../../platform";
 import { Property } from "../core/properties";
-// export * from "../core/view";
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;

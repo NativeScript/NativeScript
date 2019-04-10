@@ -2,8 +2,6 @@
 import { View, CSSType } from "../core/view";
 import { Property } from "../core/properties";
 
-// export * from "../core/view";
-
 const defaultDate = new Date();
 const dateComparer = (x: Date, y: Date): boolean => (x <= y && x >= y);
 

@@ -5,8 +5,6 @@ import { isIOS } from "../../../platform";
 import { Length } from "../..//styling/style-properties";
 import { CSSType } from "../../core/view/view";
 
-// export * from "../layout-base";
-
 @CSSType("WrapLayout")
 export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
     public orientation: Orientation;

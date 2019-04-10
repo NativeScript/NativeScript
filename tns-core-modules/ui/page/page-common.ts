@@ -1,7 +1,7 @@
 ﻿import { NavigatedData, Page as PageDefinition } from ".";
-import { Color } from '../../color';
-import { EventData } from '../../data/observable';
-import { isIOS } from '../../platform';
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
+import { isIOS } from "../../platform";
 import { profile } from "../../profiling";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
@@ -11,8 +11,6 @@ import { CSSType, ShownModallyData, View } from "../core/view";
 import { booleanConverter } from "../core/view-base";
 import { Frame } from "../frame";
 import { Style } from "../styling/style";
-
-// export * from "../content-view";
 
 @CSSType("Page")
 export class PageBase extends ContentView implements PageDefinition {

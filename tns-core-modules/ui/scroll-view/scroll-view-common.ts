@@ -6,8 +6,6 @@ import { EventData } from "../../data/observable";
 import { makeParser, makeValidator, Property } from "../core/properties";
 import { booleanConverter } from "../core/view-base";
 
-// export * from "../content-view";
-
 @CSSType("ScrollView")
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
     private _scrollChangeCount: number = 0;

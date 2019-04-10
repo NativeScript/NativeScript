@@ -2,10 +2,9 @@ import { WebView as WebViewDefinition, LoadEventData, NavigationType } from ".";
 import { ContainerView, CSSType } from "../core/view";
 import { File, knownFolders, path } from "../../file-system";
 import { Property } from "../core/properties/properties";
-import { EventData } from '../../data/observable';
+import { EventData } from "../../data/observable";
 
 export { File, knownFolders, path, NavigationType };
-// export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
 

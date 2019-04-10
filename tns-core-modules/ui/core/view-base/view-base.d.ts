@@ -18,11 +18,6 @@ import { DOMNode } from "../../../debugger/dom-node";
 import { Observable } from "../../../data/observable";
 import { Style } from "../../styling/style";
 
-// export { isIOS, isAndroid, layout, Color };
-
-// export * from "../properties";
-// export * from "../bindable";
-
 /**
  * Iterates through all child views (via visual tree) and executes a function.
  * @param view - Starting view (parent container).

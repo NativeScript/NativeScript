@@ -1,8 +1,7 @@
 ﻿import { ActivityIndicator as ActivityIndicatorDefinition } from ".";
 import { View, CSSType } from "../core/view";
-import { Property } from '../core/properties';
+import { Property } from "../core/properties";
 import { booleanConverter } from "../core/view-base";
-// export * from "../core/view";
 
 @CSSType("ActivityIndicator")
 export class ActivityIndicatorBase extends View implements ActivityIndicatorDefinition {

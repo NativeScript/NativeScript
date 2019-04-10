@@ -4,7 +4,7 @@ import { GridLayout } from "../layouts/grid-layout";
 import { device } from "../../platform";
 import { profile } from "../../profiling";
 import { View } from "../core/view";
-import { Color } from '../../color';
+import { Color } from "../../color";
 
 export * from "./page-common";
 

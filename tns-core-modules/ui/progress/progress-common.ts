@@ -2,8 +2,6 @@
 import { CoercibleProperty, Property } from "../core/properties";
 import { CSSType, View } from "../core/view";
 
-// export * from "../core/view";
-
 @CSSType("Progress")
 export class ProgressBase extends View implements ProgressDefinition {
     public value: number;

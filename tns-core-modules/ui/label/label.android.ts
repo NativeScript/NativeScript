@@ -4,8 +4,6 @@ import { profile } from "../../profiling";
 import { CSSType } from "../core/view";
 import { booleanConverter } from "../core/view-base";
 
-// export * from "../text-base";
-
 let TextView: typeof android.widget.TextView;
 
 @CSSType("Label")

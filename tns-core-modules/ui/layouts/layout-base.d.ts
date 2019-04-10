@@ -6,8 +6,6 @@ import { View, CustomLayoutView } from "../core/view";
 import { Property, CssProperty } from '../core/properties';
 import { Length } from "../styling/style-properties";
 
-// export * from "../core/view";
-
 /**
  * Base class for all views that supports children positioning.
  */

@@ -2,9 +2,7 @@
 import { LayoutBase } from "../layout-base";
 import { makeParser, makeValidator, Property } from "../../core/properties";
 import { isIOS } from "../../../platform";
-import { CSSType } from '../../core/view/view';
-
-// export * from "../layout-base";
+import { CSSType } from "../../core/view";
 
 @CSSType("StackLayout")
 export class StackLayoutBase extends LayoutBase implements StackLayoutDefinition {

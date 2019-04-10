@@ -4,8 +4,6 @@ import { getViewById, booleanConverter } from "../core/view-base";
 import { Property } from "../core/properties";
 import { Length } from "../styling/style-properties";
 
-// export * from "../core/view";
-
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 
     private _subViews = new Array<View>();

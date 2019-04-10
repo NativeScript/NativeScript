@@ -6,11 +6,9 @@ import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
 import { parse } from "../builder";
 import { profile } from "../../profiling";
-import { layout } from '../../utils/utils';
+import { layout } from "../../utils/utils";
 import { Property } from "../core/properties";
 import { CSSType, CustomLayoutView, Template, View } from "../core/view";
-
-// export * from "../layouts/layout-base";
 
 export module knownTemplates {
     export const itemTemplate = "itemTemplate";
