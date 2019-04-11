@@ -1,7 +1,0 @@
-<Page loaded="onLoaded">
-    <!-- <Page.actionBar>
-        <ActionBar title="Title">
-        </ActionBar>
-    </Page.actionBar> -->
-    <Button tap="onTap" text="Second"></Button>
-</Page>
