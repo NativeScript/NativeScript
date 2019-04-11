@@ -29,6 +29,10 @@ Label, Button {
     elevation: 10;
 }
 
+.pressed-z-10 {
+    android-pressed-z: 10;
+}
+
 .round {
     color: #fff;
     background-color: #ff1744;

@@ -724,26 +724,43 @@ export class View extends ViewCommon {
                 this._originalElevation = nativeView.getElevation();
             }
             nativeView.setElevation(value);
-            if (this._originalStateListAnimator === undefined) {
-                this._originalStateListAnimator = nativeView.getStateListAnimator();
-            }
-            if (nativeView.getStateListAnimator()) {
-                this.refreshStateListAnimator();
-            }
         } else {
             // reset to original value
             if (this._originalElevation !== undefined) {
                 nativeView.setElevation(this._originalElevation);
             }
-            if (this._originalStateListAnimator !== undefined) {
-                nativeView.setStateListAnimator(this._originalStateListAnimator);
-            }
         }
+        this.refreshStateListAnimator();
+    }
+
+    [androidPressedZProperty.getDefault](): number {
+        console.log("androidPressedZProperty.getDefault");
+        return undefined;
+    }
+
+    [androidPressedZProperty.setNative](value: number) {
+        console.log("androidPressedZProperty.setNative, value: " + value);
+        this.refreshStateListAnimator();
 
     }
 
     refreshStateListAnimator() {
         const nativeView: any = this.nativeViewProtected;
+        // we have elevation or pressedZ
+        if (this._originalStateListAnimator === undefined) {
+            this._originalStateListAnimator = nativeView.getStateListAnimator();
+        }
+        const style = this.style;
+        console.log("refreshing sla", this.elevation, this.androidPressedZ, this._originalStateListAnimator, elevationProperty.isSet(style), androidPressedZProperty.isSet(style));
+        if ((!elevationProperty.isSet(style) && !androidPressedZProperty.isSet(style)) || // nothing to override
+            (!androidPressedZProperty.isSet(style) && this._originalStateListAnimator === null)) { // we don't need pressedZ and there's no default
+            // we have no reason to override anything, reset to default
+            if (this._originalStateListAnimator !== nativeView.getStateListAnimator()) {
+                nativeView.setStateListAnimator(this._originalStateListAnimator);
+            }
+            this._originalStateListAnimator = undefined;
+            return;
+        }
         const sla = new (android.animation as any).StateListAnimator();
 
         const ObjectAnimator = android.animation.ObjectAnimator;
@@ -752,9 +769,9 @@ export class View extends ViewCommon {
 
         const buttonDuration =
             nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
-        const pressedElevation = layout.toDevicePixels(this.elevation);
-        const pressedZ = layout.toDevicePixels(0);
-        const elevation = layout.toDevicePixels(this.elevation);
+        const pressedElevation = layout.toDevicePixels(this.elevation || 0);
+        const pressedZ = layout.toDevicePixels(this.androidPressedZ || 0);
+        const elevation = layout.toDevicePixels(this.elevation || 0);
         const z = layout.toDevicePixels(0);
 
         const pressedSet = new AnimatorSet();

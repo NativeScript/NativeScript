@@ -219,6 +219,11 @@ export abstract class View extends ViewBase {
     elevation: number;
 
     /**
+     * Gets or sets the pressedZ of the view.
+     */
+    androidPressedZ: number;
+
+    /**
      * Gets or sets the background style property.
      */
     background: string;

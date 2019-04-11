@@ -501,6 +501,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.elevation = value;
     }
 
+    get androidPressedZ(): number {
+        console.log("get androidPressedZ");
+        return this.style.androidPressedZ;
+    }
+    set androidPressedZ(value: number) {
+        console.log("set androidPressedZ, value: " + value);
+        this.style.androidPressedZ = value;
+    }
+
     get background(): string {
         return this.style.background;
     }
