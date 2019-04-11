@@ -6,7 +6,7 @@
 import { Page } from "../page";
 import { Transition } from "../transition";
 import { View } from "../core/view/view";
-import { EventData, Observable } from '../../data/observable';
+import { EventData, Observable } from "../../data/observable";
 
 /**
  * Represents the logical View unit that is responsible for navigation withing an application.

@@ -4,8 +4,8 @@
  * Contains the SegmentedBar class, which represents a SegmentedBar component.
  */ /** */
 
-import { Color } from '../../color';
-import { EventData } from '../../data/observable';
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
 import { CoercibleProperty, CssProperty, Property } from "../core/properties";
 import { AddArrayFromBuilder, AddChildFromBuilder, View } from "../core/view";
 import { ViewBase } from "../core/view-base";

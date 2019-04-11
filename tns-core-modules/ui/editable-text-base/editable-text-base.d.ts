@@ -2,10 +2,10 @@
  * @module "ui/editor-text-base"
  */ /** */
 
-import { Color } from '../../color';
-import { FormattedString } from '../../text/formatted-string';
+import { Color } from "../../color";
+import { FormattedString } from "../../text/formatted-string";
 import { CssProperty, Property } from "../core/properties";
-import { Style } from '../styling/style';
+import { Style } from "../styling/style";
 import { TextBase } from "../text-base";
 
 /**

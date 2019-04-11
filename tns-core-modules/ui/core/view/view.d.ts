@@ -9,9 +9,9 @@ import { Animation, AnimationDefinition, AnimationPromise } from "../../animatio
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
 import { LinearGradient } from "../../styling/gradient";
-import { EventData } from '../../../data/observable';
-import { InheritedProperty, Property } from '../properties';
-import { Color } from '../../../color';
+import { EventData } from "../../../data/observable";
+import { InheritedProperty, Property } from "../properties";
+import { Color } from "../../../color";
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 

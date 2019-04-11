@@ -2,7 +2,7 @@
 import * as trace from "../../../trace";
 import { layout } from "../../../utils/utils";
 import { VerticalAlignment, HorizontalAlignment } from "../../styling/style-properties";
-import { View } from '../../core/view';
+import { View } from "../../core/view";
 
 export * from "./stack-layout-common";
 

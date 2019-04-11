@@ -3,8 +3,8 @@
  */ /** */
 
 import { LayoutBase } from "../layout-base";
-import { Property } from '../../core/properties';
-import { View } from '../../core/view';
+import { Property } from "../../core/properties";
+import { View } from "../../core/view";
 
 /**
  * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space. 

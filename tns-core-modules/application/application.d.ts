@@ -7,8 +7,8 @@
 /// <reference path="../tns-core-modules.d.ts" />
 
 import { NavigationEntry } from "../ui/frame";
-import { EventData, Observable } from '../data/observable';
-import { View } from '../ui/core/view';
+import { EventData, Observable } from "../data/observable";
+import { View } from "../ui/core/view";
 
 /**
  * String value used when hooking to launch event.

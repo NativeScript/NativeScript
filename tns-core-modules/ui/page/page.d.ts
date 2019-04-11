@@ -5,8 +5,8 @@
 
 /// <reference path="../../tns-core-modules.d.ts" />
 
-import { Color } from '../../color';
-import { EventData } from '../../data/observable';
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 import { ContentView } from "../content-view";

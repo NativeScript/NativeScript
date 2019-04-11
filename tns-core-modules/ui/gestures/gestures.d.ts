@@ -4,7 +4,7 @@
  */ /** */
 
 import { View } from "../core/view";
-import { EventData } from '../../data/observable';
+import { EventData } from "../../data/observable";
 
 /**
  * Defines an enum with supported gesture types.

@@ -3,8 +3,8 @@
  * @module "ui/list-view"
  */ /** */
 
-import { Color } from '../../color';
-import { EventData } from '../../data/observable';
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
 import { CssProperty, Property } from "../core/properties";
 import { KeyedTemplate, Template, View } from "../core/view";
 import { Style } from "../styling/style";

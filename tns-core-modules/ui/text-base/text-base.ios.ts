@@ -8,8 +8,8 @@ import {
 import { isString } from "../../utils/types";
 import { colorProperty, fontInternalProperty } from "../styling/style-properties";
 import { Color } from "../../color";
-import { FormattedString } from '../../text/formatted-string';
-import { Span } from '../../text/span';
+import { FormattedString } from "../../text/formatted-string";
+import { Span } from "../../text/span";
 
 export * from "./text-base-common";
 

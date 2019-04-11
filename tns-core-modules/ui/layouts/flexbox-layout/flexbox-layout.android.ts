@@ -8,7 +8,7 @@ import {
     alignSelfProperty, AlignSelf,
     flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty
 } from "./flexbox-layout-common";
-import { View } from '../../core/view';
+import { View } from "../../core/view";
 import { Length } from "../../styling/style-properties";
 
 export * from "./flexbox-layout-common";

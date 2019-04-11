@@ -38,7 +38,7 @@ import makeMeasureSpec = layout.makeMeasureSpec;
 import getMeasureSpecMode = layout.getMeasureSpecMode;
 import getMeasureSpecSize = layout.getMeasureSpecSize;
 import { layout } from "tns-core-modules/utils/utils";
-import { View } from '../../core/view';
+import { View } from "../../core/view";
 
 // `eachLayoutChild` iterates over children, and we need more - indexed access.
 // This class tries to accomodate that by collecting all children in an

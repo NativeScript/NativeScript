@@ -4,7 +4,7 @@
  */ /** */
 
 import { Color } from "../../color";
-import { EventData } from '../../data/observable';
+import { EventData } from "../../data/observable";
 import { CssProperty, Property } from "../core/properties";
 import { View } from "../core/view";
 import { ViewBase } from "../core/view-base";

@@ -3,8 +3,8 @@
  */ /** */
 
 import { LayoutBase } from "../layout-base";
-import { Property } from '../../core/properties';
-import { View } from '../../core/view';
+import { Property } from "../../core/properties";
+import { View } from "../../core/view";
 
 /**
  * Defines row/column specific properties that apply to GridLayout elements.

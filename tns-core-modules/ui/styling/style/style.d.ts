@@ -12,7 +12,7 @@ import {
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "../../layouts/flexbox-layout";
 import { LinearGradient } from "../gradient";
-import { Observable } from '../../../data/observable';
+import { Observable } from "../../../data/observable";
 import { VerticalAlignment, HorizontalAlignment, PercentLength, Visibility, Length } from "../style-properties";
 import { BackgroundRepeat } from "../../../css/parser";
 import { ViewBase } from "../../core/view-base";

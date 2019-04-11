@@ -3,7 +3,7 @@
     returnKeyTypeProperty,
     autocapitalizationTypeProperty, autocorrectProperty
 } from "./editable-text-base-common";
-import { FormattedString } from '../../text/formatted-string';
+import { FormattedString } from "../../text/formatted-string";
 
 export * from "./editable-text-base-common";
 

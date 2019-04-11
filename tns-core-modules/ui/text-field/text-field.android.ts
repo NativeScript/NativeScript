@@ -1,5 +1,5 @@
 ﻿import { TextFieldBase, secureProperty } from "./text-field-common";
-import { keyboardTypeProperty } from '../editable-text-base';
+import { keyboardTypeProperty } from "../editable-text-base";
 import { whiteSpaceProperty, WhiteSpace } from "../text-base";
 
 export * from "./text-field-common";

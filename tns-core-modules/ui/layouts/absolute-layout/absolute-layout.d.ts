@@ -3,9 +3,9 @@
  */ /** */
 
 import { LayoutBase } from "../layout-base";
-import { Property } from '../../core/properties';
+import { Property } from "../../core/properties";
 import { Length } from "../../styling/style-properties";
-import { View } from '../../core/view';
+import { View } from "../../core/view";
 
 /**
  *  A layout that lets you specify exact locations (left/top coordinates) of its children.

@@ -82,7 +82,7 @@ export function test_loadInheritedPageAndResolveFromChild() {
         let discoveredAncestorByBaseType = viewBaseModule.getAncestor(contentLabel, Page);
         TKUnit.assertEqual(page, discoveredAncestorByBaseType);
 
-        let discoveredAncestorByInheritedTypeName = viewBaseModule.getAncestor(contentLabel, 'InheritedPage');
+        let discoveredAncestorByInheritedTypeName = viewBaseModule.getAncestor(contentLabel, "InheritedPage");
         TKUnit.assertEqual(page, discoveredAncestorByInheritedTypeName);
     });
 }

@@ -7,7 +7,7 @@ import {
     whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol
 } from "./text-base-common";
 import { isString } from "../../utils/types";
-import { Color } from '../../color';
+import { Color } from "../../color";
 import { layout } from "../../utils/utils";
 import { FormattedString } from "../../text/formatted-string";
 import { Span } from "../../text/span";

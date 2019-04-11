@@ -3,7 +3,7 @@
  */ /** */
 
 import { View, CustomLayoutView } from "../core/view";
-import { Property, CssProperty } from '../core/properties';
+import { Property, CssProperty } from "../core/properties";
 import { Length } from "../styling/style-properties";
 
 /**

@@ -1,5 +1,5 @@
 ﻿import { TextView as TextViewDefinition } from ".";
-import { Color } from '../../color';
+import { Color } from "../../color";
 import { profile } from "../../profiling";
 import { layout } from "../../utils/utils";
 import { CSSType } from "../core/view";
@@ -7,7 +7,6 @@ import { editableProperty, EditableTextBase, hintProperty, placeholderColorPrope
 import { ScrollEventData } from "../scroll-view";
 import { borderBottomWidthProperty, borderLeftWidthProperty, borderRightWidthProperty, borderTopWidthProperty, colorProperty, Length, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from "../styling/style-properties";
 import { textProperty } from "../text-base";
-
 
 export * from "../editable-text-base";
 

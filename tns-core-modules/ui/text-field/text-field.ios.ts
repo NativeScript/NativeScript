@@ -1,6 +1,6 @@
 ﻿import { Color } from "../../color";
 import { profile } from "../../profiling";
-import { layout } from '../../utils/utils';
+import { layout } from "../../utils/utils";
 import { hintProperty, _updateCharactersInRangeReplacementString, placeholderColorProperty } from "../editable-text-base";
 import { colorProperty, Length, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from "../styling/style-properties";
 import { textProperty } from "../text-base";
