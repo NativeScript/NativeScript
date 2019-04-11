@@ -31,6 +31,7 @@ export class Frame extends FrameBase {
     public viewController: UINavigationControllerImpl;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
     public _ios: iOSFrame;
+    public _isReplace = true;
 
     constructor() {
         super();
@@ -53,13 +54,13 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean, isReaplce: boolean): void {
+    public setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack, isReaplce);
+            this._updateBackstack(entry, isBack, isReplace);
 
-            super.setCurrent(entry, isBack, isReaplce);
+            super.setCurrent(entry, isBack, isReplace);
         }
     }
 
@@ -72,6 +73,7 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
+            this._isReplace = true;
             const currentBackstackEntry = this._currentEntry;
             const currentNavigationEntry = currentBackstackEntry.entry;
 
@@ -84,7 +86,8 @@ export class Frame extends FrameBase {
                 fragmentTag: undefined
             }
 
-            this.setCurrent(newBackstackEntry, false, true);
+            this._executingEntry = newBackstackEntry;
+            this._onNavigatingTo(newBackstackEntry, false);
 
             let viewController = newBackstackEntry.resolvedPage.ios;
             if (!viewController) {
@@ -149,6 +152,7 @@ export class Frame extends FrameBase {
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
+        this._isReplace = false;
         super._navigateCore(backstackEntry);
 
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -259,6 +263,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
+        this._isReplace = false;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry[NAV_DEPTH];
 

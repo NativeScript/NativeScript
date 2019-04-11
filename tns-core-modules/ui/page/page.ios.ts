@@ -24,7 +24,9 @@ function isBackNavigationTo(page: Page, entry): boolean {
         return false;
     }
 
-    if (frame.navigationQueueIsEmpty()) {
+    if (frame._isReplace) {
+        return false;
+    } else if (frame.navigationQueueIsEmpty()) {
         return true;
     } else {
         const navigationQueue = (<any>frame)._navigationQueue;
@@ -133,6 +135,7 @@ class UIViewControllerImpl extends UIViewController {
             const newEntry = this[ENTRY];
 
             let isBack: boolean;
+            let isReplace = frame._isReplace;
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
                 isBack = false;
@@ -140,8 +143,8 @@ class UIViewControllerImpl extends UIViewController {
                 isBack = isBackNavigationTo(owner, newEntry);
             }
 
-            frame.setCurrent(newEntry, isBack);
-
+            frame.setCurrent(newEntry, isBack, isReplace);
+            frame._isReplace = false;
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
 
@@ -182,7 +185,7 @@ class UIViewControllerImpl extends UIViewController {
 
         const frame = owner.frame;
         // Skip navigation events if we are hiding because we are about to show a modal page,
-        // or because we are closing a modal page, 
+        // or because we are closing a modal page,
         // or because we are in tab and another controller is selected.
         const tab = this.tabBarController;
         if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {

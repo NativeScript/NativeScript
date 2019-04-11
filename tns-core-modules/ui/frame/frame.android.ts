@@ -357,6 +357,9 @@ export class Frame extends FrameBase {
                 frameId: currentBackstackEntry.frameId
             }
 
+            this._executingEntry = newBackstackEntry;
+            this._onNavigatingTo(newBackstackEntry, false);
+
             this._cachedAnimatorState = getAnimatorState(currentBackstackEntry);
 
             const newFragment = this.createFragment(newBackstackEntry, newFragmentTag);
