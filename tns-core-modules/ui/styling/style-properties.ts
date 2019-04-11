@@ -1004,6 +1004,12 @@ function opacityConverter(value: any): number {
 export const opacityProperty = new CssAnimationProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
 opacityProperty.register(Style);
 
+export const elevationProperty = new CssAnimationProperty<Style, number>({ name: "elevation", cssName: "elevation", defaultValue: 0, valueConverter: parseInt });
+elevationProperty.register(Style);
+
+export const androidPressedZProperty = new CssAnimationProperty<Style, number>({ name: "androidPressedZ", cssName: "android-pressed-z", defaultValue: 0, valueConverter: parseInt });
+androidPressedZProperty.register(Style);
+
 export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 colorProperty.register(Style);
 

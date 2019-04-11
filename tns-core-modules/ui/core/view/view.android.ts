@@ -15,7 +15,7 @@ import {
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
-    zIndexProperty, backgroundInternalProperty
+    zIndexProperty, backgroundInternalProperty, elevationProperty, androidPressedZProperty
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
@@ -255,6 +255,8 @@ export class View extends ViewCommon {
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: android.support.v4.app.FragmentManager;
     private _rootManager: android.support.v4.app.FragmentManager;
+    private _originalElevation: number;
+    private _originalStateListAnimator: any; /* android.animation.StateListAnimator; */
 
     nativeViewProtected: android.view.View;
 
@@ -709,6 +711,82 @@ export class View extends ViewCommon {
         this.nativeViewProtected.setAlpha(float(value));
     }
 
+    [elevationProperty.getDefault](): number {
+        console.log("elevationProperty.getDefault");
+        return undefined;
+    }
+
+    [elevationProperty.setNative](value: number) {
+        console.log("elevationProperty.setNative, value: " + value);
+        const nativeView: any = this.nativeViewProtected;
+        if (value !== undefined) {
+            if (this._originalElevation === undefined) {
+                this._originalElevation = nativeView.getElevation();
+            }
+            nativeView.setElevation(value);
+            if (this._originalStateListAnimator === undefined) {
+                this._originalStateListAnimator = nativeView.getStateListAnimator();
+            }
+            if (nativeView.getStateListAnimator()) {
+                this.refreshStateListAnimator();
+            }
+        } else {
+            // reset to original value
+            if (this._originalElevation !== undefined) {
+                nativeView.setElevation(this._originalElevation);
+            }
+            if (this._originalStateListAnimator !== undefined) {
+                nativeView.setStateListAnimator(this._originalStateListAnimator);
+            }
+        }
+
+    }
+
+    refreshStateListAnimator() {
+        const nativeView: any = this.nativeViewProtected;
+        const sla = new (android.animation as any).StateListAnimator();
+
+        const ObjectAnimator = android.animation.ObjectAnimator;
+        const AnimatorSet = android.animation.AnimatorSet;
+        const shortAnimTime = android.R.integer.config_shortAnimTime;
+
+        const buttonDuration =
+            nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
+        const pressedElevation = layout.toDevicePixels(this.elevation);
+        const pressedZ = layout.toDevicePixels(0);
+        const elevation = layout.toDevicePixels(this.elevation);
+        const z = layout.toDevicePixels(0);
+
+        const pressedSet = new AnimatorSet();
+        const notPressedSet = new AnimatorSet();
+        const defaultSet = new AnimatorSet();
+
+        pressedSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [pressedZ])
+                .setDuration(buttonDuration),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [pressedElevation])
+                .setDuration(0),
+        ]));
+        notPressedSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [z])
+                .setDuration(buttonDuration),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [elevation])
+                .setDuration(0),
+        ]));
+        defaultSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [0]).setDuration(0),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [0]).setDuration(0),
+        ]));
+
+        sla.addState(
+            [android.R.attr.state_pressed, android.R.attr.state_enabled],
+            pressedSet,
+        );
+        sla.addState([android.R.attr.state_enabled], notPressedSet);
+        sla.addState([], defaultSet);
+        nativeView.setStateListAnimator(sla);
+    }
+
     [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
         return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
     }
@@ -946,7 +1024,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
     const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
     if (getter) {
-        View.prototype[getter] = function (this: View): PercentLength {
+        View.prototype[getter] = function(this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -962,7 +1040,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
         }
     }
     if (setter) {
-        View.prototype[setter] = function (this: View, length: PercentLength) {
+        View.prototype[setter] = function(this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
