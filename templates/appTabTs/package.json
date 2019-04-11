@@ -1,0 +1,29 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.appTabTs",
+    "tns-android": {
+      "version": "5.3.1"
+    },
+    "tns-ios": {
+      "version": "5.3.1"
+    }
+  },
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "scripts": {
+    "lint": "tslint \"app/**/*.ts\""
+  },
+  "dependencies": {
+    "nativescript-theme-core": "~1.0.4",
+    "tns-core-modules": "file:../../bin/dist/tns-core-modules-5.4.0.tgz"
+  },
+  "devDependencies": {
+    "nativescript-dev-sass": "~1.7.0",
+    "nativescript-dev-typescript": "~0.9.0",
+    "nativescript-dev-webpack": "~0.21.0",
+    "tslint": "~5.11.0"
+  },
+  "gitHead": "803cec054c44c99eaa59cdc267993e6346f6cb3a",
+  "readme": "NativeScript Application"
+}
