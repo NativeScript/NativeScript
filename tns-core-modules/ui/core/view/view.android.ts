@@ -735,7 +735,7 @@ export class View extends ViewCommon {
                 nativeView.setElevation(this._originalElevation);
             }
         }
-        this.refreshStateListAnimator();
+        this._refreshStateListAnimator();
     }
 
     [androidPressedZProperty.getDefault](): number {
@@ -746,11 +746,11 @@ export class View extends ViewCommon {
     [androidPressedZProperty.setNative](value: number) {
         if (sdkVersion() < 21) { return; }
         console.log("androidPressedZProperty.setNative, value: " + value);
-        this.refreshStateListAnimator();
+        this._refreshStateListAnimator();
 
     }
 
-    refreshStateListAnimator() {
+    _refreshStateListAnimator() {
         const nativeView: any = this.nativeViewProtected;
         // we have elevation or pressedZ
         if (this._originalStateListAnimator === undefined) {
