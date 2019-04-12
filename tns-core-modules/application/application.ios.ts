@@ -19,7 +19,7 @@ import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import * as utils from "../utils/utils";
-import { profile, level as profilingLevel, Level } from "../profiling";
+import { profile } from "../profiling";
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
@@ -131,7 +131,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
     @profile
     private didFinishLaunchingWithOptions(notification: NSNotification) {
-        if (!displayedOnce && profilingLevel() >= Level.lifecycle) {
+        if (!displayedOnce) {
             displayedLinkTarget = CADisplayLinkTarget.new();
             displayedLink = CADisplayLink.displayLinkWithTargetSelector(displayedLinkTarget, "onDisplayed");
             displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
