@@ -22,11 +22,15 @@ import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
+import { device } from "../../../platform";
+import lazy from "../../../utils/lazy";
 
 export * from "./view-common";
 
 const DOMID = "_domId";
 const androidBackPressedEvent = "androidBackPressed";
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -717,6 +721,7 @@ export class View extends ViewCommon {
     }
 
     [elevationProperty.setNative](value: number) {
+        if (sdkVersion() < 21) { return; }
         console.log("elevationProperty.setNative, value: " + value);
         const nativeView: any = this.nativeViewProtected;
         if (value !== undefined) {
@@ -739,6 +744,7 @@ export class View extends ViewCommon {
     }
 
     [androidPressedZProperty.setNative](value: number) {
+        if (sdkVersion() < 21) { return; }
         console.log("androidPressedZProperty.setNative, value: " + value);
         this.refreshStateListAnimator();
 
