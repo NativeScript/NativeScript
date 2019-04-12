@@ -177,7 +177,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
     if (descriptor === undefined) {
         descriptor = Object.getOwnPropertyDescriptor(target, key);
     }
-    var originalMethod = descriptor.value;
+    const originalMethod = descriptor.value;
 
     let className = "";
     if (target && target.constructor && target.constructor.name) {
@@ -199,7 +199,7 @@ const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
     if (descriptor === undefined) {
         descriptor = Object.getOwnPropertyDescriptor(ctor, key);
     }
-    var originalMethod = descriptor.value;
+    const originalMethod = descriptor.value;
 
     let className = "";
     if (ctor && ctor.name) {
@@ -222,7 +222,7 @@ function profileMethodNamed(name: string): MethodDecorator {
         if (descriptor === undefined) {
             descriptor = Object.getOwnPropertyDescriptor(target, key);
         }
-        var originalMethod = descriptor.value;
+        const originalMethod = descriptor.value;
 
         //editing the descriptor/value parameter
         descriptor.value = profileFunctionFactory(originalMethod, name);

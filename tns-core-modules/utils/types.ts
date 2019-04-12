@@ -42,16 +42,16 @@ export function verifyCallback(value: any) {
     }
 }
 
-var classInfosMap = new Map<Function, ClassInfo>();
-var funcNameRegex = /function ([_a-zA-Z0-9]{1,})\(/;
+const classInfosMap = new Map<Function, ClassInfo>();
+const funcNameRegex = /function ([_a-zA-Z0-9]{1,})\(/;
 export function getClass(object: Object): string {
     return getClassInfo(object).name;
 }
 
 export function getClassInfo(object: Object): ClassInfo {
-    var constructor = object.constructor;
+    const constructor = object.constructor;
 
-    var result = classInfosMap.get(constructor);
+    let result = classInfosMap.get(constructor);
     if (!result) {
         result = new ClassInfo(constructor);
         classInfosMap.set(constructor, result);
@@ -61,8 +61,8 @@ export function getClassInfo(object: Object): ClassInfo {
 }
 
 export function getBaseClasses(object): Array<string> {
-    var result = [];
-    var info = getClassInfo(object);
+    const result = [];
+    let info = getClassInfo(object);
     while (info) {
         result.push(info.name);
         info = info.baseClassInfo;
@@ -81,7 +81,7 @@ export class ClassInfo {
 
     get name(): string {
         if (!this._name) {
-            var results = (funcNameRegex).exec(this._typeCosntructor.toString());
+            const results = (funcNameRegex).exec(this._typeCosntructor.toString());
             this._name = (results && results.length > 1) ? results[1] : "";
         }
 
@@ -102,8 +102,8 @@ export class ClassInfo {
     }
 
     private static _getBase(info: ClassInfo): ClassInfo {
-        var result = null;
-        var constructorProto = info._typeCosntructor.prototype;
+        let result = null;
+        const constructorProto = info._typeCosntructor.prototype;
         if (constructorProto.__proto__) {
             result = getClassInfo(constructorProto.__proto__);
         }

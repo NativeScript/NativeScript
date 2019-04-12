@@ -1,9 +1,9 @@
 ﻿/**
  * Android specific timer functions implementation.
  */
-var timeoutHandler;
-var timeoutCallbacks = {};
-var timerId = 0;
+let timeoutHandler;
+const timeoutCallbacks = {};
+let timerId = 0;
 
 function createHandlerAndGetId(): number {
     if (!timeoutHandler) {
@@ -19,7 +19,7 @@ export function setTimeout(callback: Function, milliseconds = 0, ...args): numbe
     const invoke = () => callback(...args);
     const zoneBound = zonedCallback(invoke);
 
-    var runnable = new java.lang.Runnable({
+    const runnable = new java.lang.Runnable({
         run: () => {
             zoneBound();
 
@@ -52,7 +52,7 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
     const invoke = () => callback(...args);
     const zoneBound = zonedCallback(invoke);
 
-    var runnable = new java.lang.Runnable({
+    const runnable = new java.lang.Runnable({
         run: () => {
             zoneBound();
             if (timeoutCallbacks[id]) {
@@ -70,4 +70,4 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
     return id;
 }
 
-export var clearInterval = clearTimeout;
+export const clearInterval = clearTimeout;

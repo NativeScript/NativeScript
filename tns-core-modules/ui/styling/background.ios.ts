@@ -4,7 +4,7 @@ import { Background as BackgroundDefinition } from "./background";
 import { View, Point } from "../core/view";
 import { LinearGradient } from "./linear-gradient";
 import { Color } from "../../color";
-import { ios as utilsIos, isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
+import { isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
 import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
 import { CSSValue, parse as cssParse } from "../../css-value";
 
@@ -33,7 +33,7 @@ interface Rect {
     bottom: number;
 }
 
-const clearCGColor = utilsIos.getter(UIColor, UIColor.clearColor).CGColor;
+const clearCGColor = UIColor.clearColor.CGColor;
 const symbolUrl = Symbol("backgroundImageUrl");
 
 export module ios {

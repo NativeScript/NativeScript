@@ -1,6 +1,6 @@
 ﻿import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
-    AndroidApplication as AndroidApplicationDefinition,
+    AndroidApplication as AndroidApplicationDefinition, AndroidActivityNewIntentEventData,
     AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
 } from ".";
 
@@ -25,6 +25,7 @@ const ActivityStopped = "activityStopped";
 const SaveActivityState = "saveActivityState";
 const ActivityResult = "activityResult";
 const ActivityBackPressed = "activityBackPressed";
+const ActivityNewIntent = "activityNewIntent";
 const ActivityRequestPermissions = "activityRequestPermissions";
 
 export class AndroidApplication extends Observable implements AndroidApplicationDefinition {
@@ -37,6 +38,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public static saveActivityStateEvent = SaveActivityState;
     public static activityResultEvent = ActivityResult;
     public static activityBackPressedEvent = ActivityBackPressed;
+    public static activityNewIntentEvent = ActivityNewIntent;
     public static activityRequestPermissionsEvent = ActivityRequestPermissions;
 
     public paused: boolean;
@@ -119,6 +121,7 @@ export interface AndroidApplication {
     on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
     on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
     on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+    on(event: "activityNewIntent", callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
     on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
 }
 

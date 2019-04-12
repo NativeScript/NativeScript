@@ -42,10 +42,10 @@ export class WrapLayout extends WrapLayoutBase {
         let remainingHeight = availableHeight;
 
         this._lengths.length = 0;
-        var rowOrColumn = 0;
-        var maxLength = 0;
+        let rowOrColumn = 0;
+        let maxLength = 0;
 
-        var isVertical = this.orientation === "vertical";
+        const isVertical = this.orientation === "vertical";
 
         let useItemWidth: boolean = this.effectiveItemWidth > 0;
         let useItemHeight: boolean = this.effectiveItemHeight > 0;

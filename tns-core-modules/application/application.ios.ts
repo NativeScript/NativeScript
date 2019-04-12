@@ -18,13 +18,15 @@ export * from "./application-common";
 import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
-import * as utils from "../utils/utils";
+import { ios } from "../utils/utils";
 import { profile, level as profilingLevel, Level } from "../profiling";
+
+const getVisibleViewController = ios.getVisibleViewController;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
 // https://github.com/NativeScript/ios-runtime/issues/1012
-var Responder = (<any>UIResponder).extend({
+const Responder = (<any>UIResponder).extend({
     get window() {
         return iosApp ? iosApp.window : undefined;
     },
@@ -60,7 +62,7 @@ let displayedLink;
 class CADisplayLinkTarget extends NSObject {
     onDisplayed(link: CADisplayLink) {
         link.invalidate();
-        const ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
+        const ios = UIApplication.sharedApplication;
         const object = iosApp;
         displayedOnce = true;
         notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
@@ -74,7 +76,7 @@ class CADisplayLinkTarget extends NSObject {
 
 class IOSApplication implements IOSApplicationDefinition {
     private _delegate: typeof UIApplicationDelegate;
-    private _currentOrientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
+    private _currentOrientation = UIDevice.currentDevice.orientation;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
     private _rootView: View;
@@ -94,7 +96,7 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     get nativeApp(): UIApplication {
-        return utils.ios.getter(UIApplication, UIApplication.sharedApplication);
+        return UIApplication.sharedApplication;
     }
 
     get window(): UIWindow {
@@ -116,16 +118,16 @@ class IOSApplication implements IOSApplicationDefinition {
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         const observer = NotificationObserver.initWithCallback(onReceiveCallback);
-        utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
+        NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
         this._observers.push(observer);
         return observer;
     }
 
     public removeNotificationObserver(observer: any, notificationName: string) {
-        var index = this._observers.indexOf(observer);
+        const index = this._observers.indexOf(observer);
         if (index >= 0) {
             this._observers.splice(index, 1);
-            utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).removeObserverNameObject(observer, notificationName, null);
+            NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
         }
     }
 
@@ -138,9 +140,9 @@ class IOSApplication implements IOSApplicationDefinition {
             displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
         }
 
-        this._window = UIWindow.alloc().initWithFrame(utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+        this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
         // TODO: Expose Window module so that it can we styled from XML & CSS
-        this._window.backgroundColor = utils.ios.getter(UIColor, UIColor.whiteColor);
+        this._window.backgroundColor = UIColor.whiteColor;
 
         this.notifyAppStarted(notification);
 
@@ -166,7 +168,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
     @profile
     private didBecomeActive(notification: NSNotification) {
-        const ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
+        const ios = UIApplication.sharedApplication;
         const object = this;
         notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
         const rootView = this._rootView;
@@ -176,7 +178,7 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     private didEnterBackground(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: suspendEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: suspendEvent, object: this, ios: UIApplication.sharedApplication });
         const rootView = this._rootView;
         if (rootView && rootView.isLoaded) {
             rootView.callUnloaded();
@@ -184,7 +186,7 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     private willTerminate(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: exitEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: exitEvent, object: this, ios: UIApplication.sharedApplication });
         const rootView = this._rootView;
         if (rootView && rootView.isLoaded) {
             rootView.callUnloaded();
@@ -192,11 +194,11 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     private didReceiveMemoryWarning(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
     }
 
     private orientationDidChange(notification: NSNotification) {
-        const orientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
+        const orientation = UIDevice.currentDevice.orientation;
 
         if (this._currentOrientation !== orientation) {
             this._currentOrientation = orientation;
@@ -321,7 +323,7 @@ function _start(entry?: string | NavigationEntry) {
                     if (embedderDelegate) {
                         embedderDelegate.presentNativeScriptApp(controller);
                     } else {
-                        let visibleVC = utils.ios.getVisibleViewController(rootController);
+                        let visibleVC = getVisibleViewController(rootController);
                         visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
                     }
                     iosApp.notifyAppStarted();

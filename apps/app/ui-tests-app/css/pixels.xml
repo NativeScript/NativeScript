@@ -4,7 +4,7 @@
     <Label text="pixels" />
     <StackLayout borderWidth="1px" borderColor="black" horizontalAlignment="left" verticalAlignment="top" orientation="horizontal" padding="1px">
       <Label     text="Label"      borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
-      <Button    text="Button"     borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
+      <Button    text="Button"     borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" backgroundColor="orange" />
       <TextView  text="Text View"  borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
       <TextField text="Text Field" borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
       <Image src="~/ui-tests-app/resources/images/gravatar.png" borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
@@ -12,7 +12,7 @@
 
      <StackLayout borderWidth="2px" borderColor="green" orientation="horizontal" padding="2px">
       <Label     text="Label"      borderWidth="5px" borderRadius="10px" borderColor="black" padding="5px" margin="5px" />
-      <Button    text="Button"     borderWidth="4px" borderRadius="10px" borderColor="black" padding="4px" margin="4px" />
+      <Button    text="Button"     borderWidth="4px" borderRadius="10px" borderColor="black" padding="4px" margin="4px" backgroundColor="orange" />
       <TextView  text="Text View"  borderWidth="3px" borderRadius="10px" borderColor="black" padding="3px" margin="3px" />
       <TextField text="Text Field" borderWidth="2px" borderRadius="10px" borderColor="black" padding="2px" margin="2px" />
     </StackLayout>
@@ -32,7 +32,7 @@
     <Label text="device independent pixels" />
     <StackLayout borderWidth="1" borderColor="black" horizontalAlignment="left" verticalAlignment="top" orientation="horizontal" padding="1">
       <Label     text="Label"      borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
-      <Button    text="Button"     borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
+      <Button    text="Button"     borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" backgroundColor="orange" />
       <TextView  text="Text View"  borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
       <TextField text="Text Field" borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
       <Image src="~/ui-tests-app/resources/images/gravatar.png" borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
@@ -40,7 +40,7 @@
 
      <StackLayout borderWidth="2" borderColor="green" orientation="horizontal" padding="2">
       <Label     text="Label"      borderWidth="5" borderRadius="10" borderColor="black" padding="5" margin="5" />
-      <Button    text="Button"     borderWidth="4" borderRadius="10" borderColor="black" padding="4" margin="4" />
+      <Button    text="Button"     borderWidth="4" borderRadius="10" borderColor="black" padding="4" margin="4" backgroundColor="orange" />
       <TextView  text="Text View"  borderWidth="3" borderRadius="10" borderColor="black" padding="3" margin="3" />
       <TextField text="Text Field" borderWidth="2" borderRadius="10" borderColor="black" padding="2" margin="2" />
     </StackLayout>
