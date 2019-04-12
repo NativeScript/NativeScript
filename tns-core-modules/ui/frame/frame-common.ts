@@ -11,6 +11,12 @@ import { profile } from "../../profiling";
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
 export * from "../core/view";
 
+export enum NavigationType {
+    Back, // 0
+    Forward, // 1
+    Replace // 2
+}
+
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;
     if (typeof arg === "string") {
@@ -48,6 +54,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
     public static defaultTransition: NavigationTransition;
+    public navigationType: NavigationType;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
@@ -206,7 +213,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return this._currentEntry === entry;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const newPage = entry.resolvedPage;
         // In case we navigated forward to a page that was in the backstack
         // with clearHistory: true
@@ -217,6 +224,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         this._currentEntry = entry;
 
+        const isBack = navigationType === NavigationType.Back ? true : false;
         if (isBack) {
             this._pushInFrameStack();
         }
@@ -229,7 +237,9 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._executingEntry = null;
     }
 
-    public _updateBackstack(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void {
+    public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
+        const isBack = navigationType === NavigationType.Back ? true : false;
+        const isReplace = navigationType === NavigationType.Replace ? true : false;
         this.raiseCurrentPageNavigatedEvents(isBack);
         const current = this._currentEntry;
 

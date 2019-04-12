@@ -8,7 +8,7 @@ import { profile } from "../../profiling";
 //Types.
 import {
     FrameBase, View, getContextModuleName, isCategorySet, layout,
-    traceCategories, traceEnabled, traceWrite,
+    NavigationType, traceCategories, traceEnabled, traceWrite
 } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
@@ -31,7 +31,6 @@ export class Frame extends FrameBase {
     public viewController: UINavigationControllerImpl;
     public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
     public _ios: iOSFrame;
-    public _isReplace = true;
 
     constructor() {
         super();
@@ -54,13 +53,13 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack, isReplace);
+            this._updateBackstack(entry, navigationType);
 
-            super.setCurrent(entry, isBack, isReplace);
+            super.setCurrent(entry, navigationType);
         }
     }
 
@@ -73,7 +72,7 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
-            this._isReplace = true;
+            this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
             const currentNavigationEntry = currentBackstackEntry.entry;
 
@@ -152,7 +151,7 @@ export class Frame extends FrameBase {
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
-        this._isReplace = false;
+        this.navigationType = NavigationType.Forward;
         super._navigateCore(backstackEntry);
 
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -263,7 +262,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this._isReplace = false;
+        this.navigationType = NavigationType.Back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry[NAV_DEPTH];
 

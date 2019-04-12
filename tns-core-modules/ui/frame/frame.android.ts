@@ -8,8 +8,8 @@ import { Page } from "../page";
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, getContextModuleName, stack, View, Observable,
-    traceCategories, traceEnabled, traceError, traceWrite,
+    FrameBase, goBack, getContextModuleName, stack, NavigationType,
+    View, Observable, traceCategories, traceEnabled, traceError, traceWrite,
 } from "./frame-common";
 
 import {
@@ -104,9 +104,6 @@ export class Frame extends FrameBase {
     private _containerViewId: number = -1;
     private _tearDownPending = false;
     private _attachedToWindow = false;
-    // TODO(vchimev): unite in a single property
-    public _isBack: boolean = true;
-    public _isReplace: boolean = true;
     private _cachedAnimatorState: AnimatorState;
 
     constructor() {
@@ -265,11 +262,11 @@ export class Frame extends FrameBase {
         return newFragment;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack, isReplace);
+            this._updateBackstack(entry, navigationType);
 
             // If activity was destroyed we need to destroy fragment and UI
             // of current and new entries.
@@ -298,7 +295,7 @@ export class Frame extends FrameBase {
                 }
             }
 
-            super.setCurrent(entry, isBack, isReplace);
+            super.setCurrent(entry, navigationType);
 
             // If we had real navigation process queue.
             this._processNavigationQueue(entry.resolvedPage);
@@ -341,7 +338,7 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
-            this._isReplace = true;
+            this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
             const currentNavigationEntry = currentBackstackEntry.entry;
             const contextModuleName = getContextModuleName(context);
@@ -389,8 +386,7 @@ export class Frame extends FrameBase {
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
-        this._isBack = false;
-        this._isReplace = false;
+        this.navigationType = NavigationType.Forward;
 
         // set frameId here so that we could use it in fragment.transitions
         newEntry.frameId = this._android.frameId;
@@ -440,8 +436,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this._isBack = true;
-        this._isReplace = false;
+        this.navigationType = NavigationType.Back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry.navDepth;
 

@@ -3,14 +3,14 @@
  * @module "ui/frame"
  */ /** */
 
+import { NavigationType } from "./frame-common";
 import { Page, View, Observable, EventData } from "../page";
 import { Transition } from "../transition";
 
 export * from "../page";
 
 /**
- * Represents the logical View unit that is responsible for navigation withing an application.
- * Typically an application will have a Frame object at a root level.
+ * Represents the logical View unit that is responsible for navigation within an application.
  * Nested frames are supported, enabling hierarchical navigation scenarios.
  */
 export class Frame extends View {
@@ -117,10 +117,9 @@ export class Frame extends View {
     /**
      * @private
      * @param entry to set as current
-     * @param isBack true when we set current because of back navigation.
-     * @param isReplace true when we set current because of HMR (hot module replacement).
+     * @param navigationType
      */
-    setCurrent(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void;
+    setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
     /**
      * @private
      */
@@ -156,7 +155,7 @@ export class Frame extends View {
     /**
      * @private
      */
-    _updateBackstack(entry: BackstackEntry, isBack: boolean, isReplace: boolean): void;
+    _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void;
     /**
      * @private
      */
@@ -169,14 +168,12 @@ export class Frame extends View {
      * @private
      */
     _removeFromFrameStack();
+
     /**
      * @private
+     * Represents the type of navigation.
      */
-    _isBack?: boolean;
-    /**
-     * @private
-     */
-    _isReplace?: boolean;
+    navigationType: NavigationType;
     //@endprivate
 
     /**
