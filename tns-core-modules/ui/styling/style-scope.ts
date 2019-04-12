@@ -168,7 +168,8 @@ class CSSSource {
                 if (!this._source && this._file) {
                     this.load();
                 }
-                if (this._source) {
+                // [object Object] check guards against empty app.css file
+                if (this._source && this.source !== "[object Object]") {
                     this.parseCSSAst();
                 }
             }
