@@ -10,14 +10,11 @@
         "removeComments": true,
         "experimentalDecorators": true,
         "diagnostics": true,
-        "sourceMap": false,
-        "inlineSourceMap": true,
-        "inlineSources": true,
+        "sourceMap": true,
         "jsx": "react",
         "reactNamespace": "UIBuilder",
         "lib": [
-            "es6",
-            "dom"
+            "es6", "dom"
         ],
         "types": [
             "node",
@@ -26,9 +23,7 @@
         ],
         "baseUrl": ".",
         "paths": {
-            "tns-core-modules/*": [
-                "tns-core-modules/*"
-            ]
+            "tns-core-modules/*": ["tns-core-modules/*"]
         }
     }
 }
