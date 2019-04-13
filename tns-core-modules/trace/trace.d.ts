@@ -100,10 +100,11 @@ export module categories {
     export const Error: string;
     export const Animation: string;
     export const Transition: string;
-
-    export const All: string;
+    export const Livesync: string;
 
     export const separator: string;
+    export const All: string;
+
     export function concat(...categories: string[]): string;
 }
 
@@ -125,7 +126,7 @@ export interface TraceWriter {
 }
 
 /**
- * An interface used to trace information about specific event.  
+ * An interface used to trace information about specific event.
  */
 export interface EventListener {
     filter: string;
@@ -133,7 +134,7 @@ export interface EventListener {
 }
 
 /**
- * An interface used to for handling trace error  
+ * An interface used to for handling trace error
  */
 export interface ErrorHandler {
     handlerError(error: Error);

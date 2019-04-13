@@ -1,16 +1,15 @@
 ﻿// Definitions.
 import { Frame } from "../frame";
+import { NavigationType } from "../frame/frame-common";
 
 // Types.
 import { ios as iosView } from "../core/view";
 import {
-    PageBase, View, layout,
-    actionBarHiddenProperty, statusBarStyleProperty, Color
+    PageBase, View, layout, actionBarHiddenProperty, statusBarStyleProperty, Color
 } from "./page-common";
 
 import { profile } from "../../profiling";
 import { ios as iosUtils } from "../../utils/utils";
-import { NavigationType } from "../frame/frame-common";
 
 export * from "./page-common";
 
@@ -21,14 +20,11 @@ const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
-    if (!frame) {
+    if (!frame || frame.navigationType === NavigationType.Replace) {
         return false;
     }
 
-    if (frame.navigationType === NavigationType.Replace) {
-        console.log("---> frame.navigationType", frame.navigationType);
-        return false;
-    } else if (frame.navigationQueueIsEmpty()) {
+    if (frame.navigationQueueIsEmpty()) {
         return true;
     } else {
         const navigationQueue = (<any>frame)._navigationQueue;
@@ -137,11 +133,7 @@ class UIViewControllerImpl extends UIViewController {
             const newEntry = this[ENTRY];
 
             let isBack: boolean;
-            // let isReplace = frame.;
-
             let navType = frame.navigationType;
-            console.log("---> viewDidAppear", navType);
-
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (navType !== NavigationType.Replace && frame.currentPage === owner && frame._navigationQueue.length === 0) {
                 isBack = false;
@@ -153,11 +145,7 @@ class UIViewControllerImpl extends UIViewController {
                 }
             }
 
-            console.log("---> viewDidAppear.navType", navType);
-            console.log("---> viewDidAppear.isBack", isBack);
-
             frame.setCurrent(newEntry, navType);
-            frame._isReplace = false;
             frame.navigationType = isBack ? NavigationType.Back : NavigationType.Forward;
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.

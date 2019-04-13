@@ -160,16 +160,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
         return items ? items.length : 0;
     }
 
-    public _onLivesync(context?: ModuleContext): boolean {
-        super._onLivesync(context);
-
-        const selectedIndex = this.selectedIndex;
-        const items = this.items;
-        const selectedTabViewItem = items[selectedIndex];
-        console.log("---> selectedTabViewItem", selectedIndex);
-        return true;
-    }
-
     public eachChild(callback: (child: ViewBase) => boolean) {
         const items = this.items;
         if (items) {

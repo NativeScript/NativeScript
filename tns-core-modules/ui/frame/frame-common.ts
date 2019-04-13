@@ -12,9 +12,9 @@ import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFr
 export * from "../core/view";
 
 export enum NavigationType {
-    Back, // 0
-    Forward, // 1
-    Replace // 2
+    Back,
+    Forward,
+    Replace
 }
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
@@ -248,7 +248,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             this._backStack.splice(index + 1).forEach(e => this._removeEntry(e));
             this._backStack.pop();
         } else if (isReplace) {
-            // Do nothing
+            // Do nothing for Hot Module Replacement
         } else {
             if (entry.entry.clearHistory) {
                 this._backStack.forEach(e => this._removeEntry(e));
@@ -576,9 +576,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _onLivesync(): boolean {
-        // Execute navigation if not handled on `View`
-        // TODO(vchimev):
-        console.log("---> FrameBase.onLivesync");
+        // Reset activity/window content when:
+        // + Changes are not handled on View
+        // + There is no ModuleContext
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync()`, traceCategories.Livesync);
+        }
+
         if (!this._currentEntry || !this._currentEntry.entry) {
             return false;
         }

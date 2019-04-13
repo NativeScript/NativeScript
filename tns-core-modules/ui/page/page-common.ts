@@ -100,8 +100,7 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        this.frame._onLivesync(context);
-        return true;
+        return this.frame._onLivesync(context);
     }
 
     @profile

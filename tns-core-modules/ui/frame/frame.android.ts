@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 import {
     FrameBase, goBack, getContextModuleName, stack, NavigationType,
-    View, Observable, traceCategories, traceEnabled, traceError, traceWrite,
+    Observable, View, traceCategories, traceEnabled, traceError, traceWrite,
 } from "./frame-common";
 
 import {
@@ -336,8 +336,10 @@ export class Frame extends FrameBase {
 
     public _onLivesync(context?: ModuleContext): boolean {
         // Inspired by _navigateCore()
-        // TODO(vchimev)
-        console.log("---> Frame._onLivesync", context);
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${context})`, traceCategories.Livesync);
+        }
+
         if (!this._currentEntry || !this._currentEntry.entry) {
             return false;
         }
@@ -368,7 +370,7 @@ export class Frame extends FrameBase {
             const fragmentManager = this._getFragmentManager();
             const newTransaction = fragmentManager.beginTransaction();
 
-            // TODO(vchimev): why does `second` disappears on navigation to `first` after a change?
+            // TODO(vchimev): why does 'second' page disappear when navigating to`first` page after a change?
             _setAndroidFragmentTransitions(
                 false,
                 this._getNavigationTransition(currentNavigationEntry),
@@ -380,12 +382,12 @@ export class Frame extends FrameBase {
 
             newTransaction.replace(this.containerViewId, newFragment, newFragmentTag);
             newTransaction.commitAllowingStateLoss();
+
+            return true;
         } else {
             // Fallback
-            super._onLivesync();
+            return super._onLivesync();
         }
-
-        return true;
     }
 
     @profile

@@ -65,8 +65,10 @@ export class Frame extends FrameBase {
 
     public _onLivesync(context?: ModuleContext): boolean {
         // Inspired by _navigateCore()
-        // TODO(vchimev)
-        console.log("---> Frame._onLivesync", context);
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${context})`, traceCategories.Livesync);
+        }
+
         if (!this._currentEntry || !this._currentEntry.entry) {
             return false;
         }
@@ -74,12 +76,11 @@ export class Frame extends FrameBase {
         if (context && context.type && context.path) {
             this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
-            const currentNavigationEntry = currentBackstackEntry.entry;
 
             const contextModuleName = getContextModuleName(context);
             const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
             const newBackstackEntry: BackstackEntry = {
-                entry: currentNavigationEntry,
+                entry: currentBackstackEntry.entry,
                 resolvedPage: newPage,
                 navDepth: currentBackstackEntry.navDepth,
                 fragmentTag: undefined
@@ -140,13 +141,12 @@ export class Frame extends FrameBase {
 
             this._ios.controller.setViewControllersAnimated(newViewControllers, false);
             this.currentPage.actionBar.update();
+
             return true;
         } else {
             // Fallback
-            super._onLivesync();
+            return super._onLivesync();
         }
-
-        return true;
     }
 
     @profile

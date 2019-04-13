@@ -7,8 +7,7 @@ import {
 import {
     ViewBase, Property, booleanConverter, eachDescendant, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty,
-    ShowModalOptions
+    InheritedProperty, ShowModalOptions
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -138,18 +137,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        // TODO(vchimev): handle all cases
-        console.log("---> ViewCommon._onLivesync", context);
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${context})`, traceCategories.Livesync);
+        }
+
         _rootModalViews.forEach(v => v.closeModal());
         _rootModalViews.length = 0;
 
-        // Handle local style
-        // TODO(vchimev): ModuleType
         if (context && context.type && context.path) {
-            if (context.type === "style") {
+            // Handle local styles
+            if (context.type === ModuleType.style) {
                 return this.changeLocalStyles(context.path);
-            } else {
-                // context.type === "markup" || context.type === "script"
+            }
+            // Handle module markup and script changes
+            else {
                 return this.changeModule(context);
             }
         }
@@ -165,7 +166,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             });
         }
 
-        // Do not execute frame navigation for a change in styles
+        // Do not reset activity/window content for local styles changes
         return true;
     }
 
@@ -179,19 +180,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     private changeModule(context: ModuleContext): boolean {
         eachDescendant(this, (child: ViewBase) => {
-            // TODO(vchimev)
-            console.log("---> child", child);
-            console.log("---> child._moduleName", child._moduleName);
+            if (traceEnabled()) {
+                traceWrite(`${child}.${child._moduleName}`, traceCategories.Livesync);
+            }
 
-            // TODO(vchimev): Frame
+            // Handle changes in module's Page
             if (child._moduleName && context.path.includes(child._moduleName) && child.page) {
                 child.page._onLivesync(context);
             }
-
             return true;
         });
 
-        // Do not execute frame navigation for a change in modules
+        // Do not reset activity/window content for module changes
         return true;
     }
 
