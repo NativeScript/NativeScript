@@ -106,6 +106,7 @@ class IOSApplication implements IOSApplicationDefinition {
     get delegate(): typeof UIApplicationDelegate {
         return this._delegate;
     }
+
     set delegate(value: typeof UIApplicationDelegate) {
         if (this._delegate !== value) {
             this._delegate = value;
@@ -228,8 +229,11 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): void {
+        const isRootModuleChanged = context && context.path.includes(getMainEntry().moduleName) && context.type !== "style";
+
+        // Set window controller on a change in app root module
         // If view can't handle livesync set window controller.
-        if (this._rootView && !this._rootView._onLivesync(context)) {
+        if (isRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
             this.setWindowContent();
         }
     }

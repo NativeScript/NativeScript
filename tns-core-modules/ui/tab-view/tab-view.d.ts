@@ -25,7 +25,7 @@ export class TabViewItem extends ViewBase {
     public iconSource: string;
 
     /**
-     * Gets or sets the text transform of the tab titles. 
+     * Gets or sets the text transform of the tab titles.
      */
     textTransform: TextTransform;
 
@@ -73,17 +73,17 @@ export class TabView extends View {
      * Gets or sets the text color of the tabs titles.
      */
     tabTextColor: Color;
-    
+
     /**
      * Gets or sets the background color of the tabs.
      */
     tabBackgroundColor: Color;
-    
+
     /**
      * Gets or sets the text color of the selected tab title.
      */
     selectedTabTextColor: Color;
-    
+
     /**
      * Gets or sets the color of the horizontal line drawn below the currently selected tab on Android.
      */
@@ -100,17 +100,17 @@ export class TabView extends View {
     ios: any /* UITabBarController */;
 
     /**
-     * Gets or set the UIImageRenderingMode of the tab icons in iOS.  Defaults to "automatic" 
+     * Gets or set the UIImageRenderingMode of the tab icons in iOS.  Defaults to "automatic"
      * Valid values are:
      *  - automatic
      *  - alwaysOriginal
-     *  - alwaysTemplate  
+     *  - alwaysTemplate
      */
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     /**
-     * Gets or sets the number of tabs that should be retained to either side of the current tab in the view hierarchy in an idle state. 
-     * Tabs beyond this limit will be recreated from the TabView when needed.  
+     * Gets or sets the number of tabs that should be retained to either side of the current tab in the view hierarchy in an idle state.
+     * Tabs beyond this limit will be recreated from the TabView when needed.
      */
     androidOffscreenTabLimit: number;
 
@@ -134,7 +134,7 @@ export class TabView extends View {
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */

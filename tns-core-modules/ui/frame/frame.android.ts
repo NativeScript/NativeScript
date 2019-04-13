@@ -87,8 +87,10 @@ export function reloadPage(context?: ModuleContext): void {
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     if (callbacks) {
         const rootView: View = callbacks.getRootView();
+        const isAppRootModuleChanged = context && context.path.includes(application.getMainEntry().moduleName) && context.type !== "style";
 
-        if (!rootView || !rootView._onLivesync(context)) {
+        // Reset activity content on a change in app root module
+        if (isAppRootModuleChanged || !rootView || !rootView._onLivesync(context)) {
             callbacks.resetActivityContent(activity);
         }
     } else {
