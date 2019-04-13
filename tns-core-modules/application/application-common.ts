@@ -84,8 +84,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
     const liveSyncCore = global.__onLiveSyncCore;
     let reapplyAppStyles = false;
 
-    // TODO(vchimev): get `moduleName` from `context.path
-    // Handle app style
+    // ModuleContext is available only for Hot Module Replacement
     if (context && context.path) {
         const styleExtensions = ["css", "scss"];
         const appStylesFullFileName = getCssFileName();
@@ -93,10 +92,10 @@ export function livesync(rootView: View, context?: ModuleContext) {
         reapplyAppStyles = styleExtensions.some(ext => context.path === appStylesFileName.concat(ext));
     }
 
+    // Handle application styles
     if (reapplyAppStyles && rootView) {
         rootView._onCssStateChange();
     } else if (liveSyncCore) {
-        // TODO(vchimev): Handle context
         liveSyncCore(context);
     }
 }

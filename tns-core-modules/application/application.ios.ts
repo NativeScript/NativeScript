@@ -229,11 +229,13 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): void {
-        const isRootModuleChanged = context && context.path.includes(getMainEntry().moduleName) && context.type !== "style";
+        // Handle application root module
+        const isAppRootModuleChanged = context && context.path.includes(getMainEntry().moduleName) && context.type !== ModuleType.style;
 
-        // Set window controller on a change in app root module
-        // If view can't handle livesync set window controller.
-        if (isRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
+        // Set window content when:
+        // + Application root module is changed
+        // + View did not handle the change
+        if (isAppRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
             this.setWindowContent();
         }
     }
@@ -262,7 +264,6 @@ class IOSApplication implements IOSApplicationDefinition {
             this._window.makeKeyAndVisible();
         }
     }
-
 }
 
 const iosApp = new IOSApplication();
