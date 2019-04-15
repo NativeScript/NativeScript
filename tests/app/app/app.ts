@@ -8,24 +8,6 @@ else {
 
 import * as application from "tns-core-modules/application";
 
-// Specify custom UIApplicationDelegate.
-/*
-class MyDelegate extends UIResponder implements UIApplicationDelegate {
-    public static ObjCProtocols = [UIApplicationDelegate];
-
-    applicationDidFinishLaunchingWithOptions(application: UIApplication, launchOptions: NSDictionary): boolean {
-        console.log("applicationWillFinishLaunchingWithOptions: " + launchOptions)
-        return true;
-    }
-
-    applicationDidBecomeActive(application: UIApplication): void {
-        console.log("applicationDidBecomeActive: " + application)
-    }
-}
-
-application.ios.delegate = MyDelegate;
-*/
-
 if (application.ios) {
     // Observe application notifications.
     application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
@@ -34,6 +16,18 @@ if (application.ios) {
 }
 
 // Common events for both Android and iOS.
+application.on(application.displayedEvent, function (args: application.ApplicationEventData) {
+    (<any>global).isDisplayedEventFired = true;
+
+    if (args.android) {
+        // For Android applications, args.android is an android activity class.
+        console.log("Activity: " + args.android);
+    } else if (args.ios) {
+        // For iOS applications, args.ios is UIApplication.
+        console.log("UIApplication: " + args.ios);
+    }
+});
+
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.

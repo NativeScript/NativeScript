@@ -13,11 +13,16 @@ if (app.android) {
 
 import * as TKUnit from "../TKUnit";
 
-export var testInitialized = function () {
+export function testInitialized() {
     if (platform.device.os === platform.platformNames.android) {
         // we have the android defined
         TKUnit.assert(app.android, "Application module not properly intialized");
     } else if (platform.device.os === platform.platformNames.ios) {
         TKUnit.assert(app.ios, "Application module not properly intialized");
     }
-} 
+}
+
+export function testDisplayedEvent() {
+    // global.isDisplayedEventFired flag is set in app.ts application.displayedEvent handler
+    TKUnit.assert((<any>global).isDisplayedEventFired, "application.displayedEvent not fired");
+}
