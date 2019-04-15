@@ -66,7 +66,7 @@ export class Frame extends FrameBase {
     public _onLivesync(context?: ModuleContext): boolean {
         // Inspired by _navigateCore()
         if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync(${context})`, traceCategories.Livesync);
+            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
         }
 
         if (!this._currentEntry || !this._currentEntry.entry) {
