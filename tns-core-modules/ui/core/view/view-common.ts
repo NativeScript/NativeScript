@@ -146,7 +146,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
         if (context && context.type && context.path) {
             // Handle local styles
-            if (context.type === ModuleType.style) {
+            if (context.type === "style") {
                 return this.changeLocalStyles(context.path);
             }
             // Handle module markup and script changes
