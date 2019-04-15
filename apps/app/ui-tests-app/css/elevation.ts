@@ -1,0 +1,19 @@
+import { Button } from "tns-core-modules/ui/button/button";
+import { EventData } from "tns-core-modules/ui/page/page";
+
+const states = [
+    { class: "", text: "no elevation (default)" },
+    { class: "elevation-10", text: "elevetion 10" },
+    { class: "elevation-10 pressed-z-10", text: "elevetion 10 pressed-z 10" },
+]
+let currentState = 0;
+
+export function buttonTap(args: EventData) {
+    let btn: Button = args.object as Button;
+    currentState++;
+    if (currentState >= states.length) {
+        currentState = 0;
+    }
+    btn.className = states[currentState].class;
+    btn.text = states[currentState].text;
+}

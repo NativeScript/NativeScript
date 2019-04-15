@@ -92,6 +92,8 @@ export class Style extends Observable {
     public fontWeight: FontWeight;
     public font: string;
 
+    public elevation: number;
+    public androidPressedZ: number;
     public zIndex: number;
     public opacity: number;
     public visibility: Visibility;

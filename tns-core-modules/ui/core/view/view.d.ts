@@ -214,6 +214,16 @@ export abstract class View extends ViewBase {
     color: Color;
 
     /**
+     * Gets or sets the elevation of the view.
+     */
+    elevation: number;
+
+    /**
+     * Gets or sets the pressedZ of the view.
+     */
+    androidPressedZ: number;
+
+    /**
      * Gets or sets the background style property.
      */
     background: string;
