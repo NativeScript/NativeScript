@@ -26,6 +26,7 @@
     "nativescript-dev-appium": "next",
     "nativescript-dev-typescript": "next",
     "nativescript-dev-webpack": "next",
+    "tns-platform-declarations": "next",
     "rimraf": "^2.6.2",
     "typescript": "^3.1.6"
   },

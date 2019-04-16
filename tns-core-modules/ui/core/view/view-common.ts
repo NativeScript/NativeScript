@@ -324,7 +324,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     }
                 }
 
-                that._hideNativeModalView(parent, whenClosedCallback);
+                if (parent.viewController.presentedViewController) {
+                    that._hideNativeModalView(parent, whenClosedCallback);
+                } else {
+                    whenClosedCallback();
+                }
             }
         };
     }
