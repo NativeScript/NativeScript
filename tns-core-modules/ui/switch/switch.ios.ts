@@ -1,5 +1,5 @@
 ﻿import {
-    SwitchBase, layout, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty
+    SwitchBase, layout, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty, offBackgroundColorProperty
 } from "./switch-common";
 
 export * from "./switch-common";
@@ -94,5 +94,16 @@ export class Switch extends SwitchBase {
     }
     [backgroundInternalProperty.setNative](value: any) {
         //
+    }
+
+    [offBackgroundColorProperty.getDefault](): UIColor {
+        return this.nativeViewProtected.backgroundColor;
+    }
+    [offBackgroundColorProperty.setNative](value: Color | UIColor) {
+        const nativeValue = value instanceof Color ? value.ios : value;
+
+        this.nativeViewProtected.tintColor = nativeValue;
+        this.nativeViewProtected.backgroundColor = nativeValue;
+        this.nativeViewProtected.layer.cornerRadius = this.nativeViewProtected.frame.size.height / 2;
     }
 }
