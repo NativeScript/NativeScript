@@ -770,7 +770,9 @@ export class View extends ViewCommon {
 
         const ObjectAnimator = android.animation.ObjectAnimator;
         const AnimatorSet = android.animation.AnimatorSet;
-        const shortAnimTime = android.R.integer.config_shortAnimTime;
+        const shortAnimTime = 17694720; // android.R.integer.config_shortAnimTime
+        const statePressed = 16842919; // android.R.attr.state_pressed
+        const stateEnabled = 16842910; // android.R.attr.state_enabled
 
         const buttonDuration =
             nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
@@ -801,10 +803,10 @@ export class View extends ViewCommon {
         ]));
 
         sla.addState(
-            [android.R.attr.state_pressed, android.R.attr.state_enabled],
+            [statePressed, stateEnabled],
             pressedSet,
         );
-        sla.addState([android.R.attr.state_enabled], notPressedSet);
+        sla.addState([stateEnabled], notPressedSet);
         sla.addState([], defaultSet);
         nativeView.setStateListAnimator(sla);
     }
