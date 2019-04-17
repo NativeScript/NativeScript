@@ -15,9 +15,6 @@ import * as timer from "tns-core-modules/timer";
 import * as trace from "tns-core-modules/trace";
 import * as types from "tns-core-modules/utils/types";
 import * as platform from "tns-core-modules/platform";
-import { topmost } from "tns-core-modules/ui/frame";
-
-import * as utils from "tns-core-modules/utils/utils";
 
 const sdkVersion = parseInt(platform.device.sdkVersion);
 
@@ -371,7 +368,7 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, s
         let totalWaitTime = 0;
         while (true) {
             const begin = time();
-            const currentRunLoop = utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop);
+            const currentRunLoop = NSRunLoop.currentRunLoop;
             currentRunLoop.limitDateForMode(currentRunLoop.currentMode);
             if (isReady()) {
                 break;

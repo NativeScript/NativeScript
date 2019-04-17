@@ -102,41 +102,40 @@ export function addEventListener(listener: EventListener) {
 }
 
 export function removeEventListener(listener: EventListener) {
-    var index = _eventListeners.indexOf(listener);
+    const index = _eventListeners.indexOf(listener);
     if (index >= 0) {
         _eventListeners.splice(index, 1);
     }
 }
 
 export module messageType {
-    export var log = 0;
-    export var info = 1;
-    export var warn = 2;
-    export var error = 3;
+    export const log = 0;
+    export const info = 1;
+    export const warn = 2;
+    export const error = 3;
 }
 
 export module categories {
-    export var VisualTreeEvents = "VisualTreeEvents";
-    export var Layout = "Layout";
-    export var Style = "Style";
-    export var ViewHierarchy = "ViewHierarchy";
-    export var NativeLifecycle = "NativeLifecycle";
-    export var Debug = "Debug";
-    export var Navigation = "Navigation";
-    export var Test = "Test";
-    export var Binding = "Binding";
-    export var BindingError = "BindingError";
-    export var Error = "Error";
-    export var Animation = "Animation";
-    export var Transition = "Transition";
-    export var All = VisualTreeEvents + "," + Layout + "," + Style + "," + ViewHierarchy + "," + NativeLifecycle + "," + Debug + "," + Navigation + "," + Test + "," + Binding + "," + Error + "," + Animation + "," + Transition;
+    export const VisualTreeEvents = "VisualTreeEvents";
+    export const Layout = "Layout";
+    export const Style = "Style";
+    export const ViewHierarchy = "ViewHierarchy";
+    export const NativeLifecycle = "NativeLifecycle";
+    export const Debug = "Debug";
+    export const Navigation = "Navigation";
+    export const Test = "Test";
+    export const Binding = "Binding";
+    export const BindingError = "BindingError";
+    export const Error = "Error";
+    export const Animation = "Animation";
+    export const Transition = "Transition";
+    export const All = VisualTreeEvents + "," + Layout + "," + Style + "," + ViewHierarchy + "," + NativeLifecycle + "," + Debug + "," + Navigation + "," + Test + "," + Binding + "," + Error + "," + Animation + "," + Transition;
 
-    export var separator = ",";
+    export const separator = ",";
 
     export function concat(): string {
-        var i;
-        var result: string;
-        for (i = 0; i < arguments.length; i++) {
+        let result: string;
+        for (let i = 0; i < arguments.length; i++) {
             if (!result) {
                 result = arguments[i];
                 continue;
@@ -155,7 +154,7 @@ class ConsoleWriter implements TraceWriter {
             return;
         }
 
-        var msgType;
+        let msgType;
         if (type === undefined) {
             msgType = messageType.log;
         } else {

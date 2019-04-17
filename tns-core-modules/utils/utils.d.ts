@@ -24,13 +24,13 @@ export module layout {
     /**
      * Bits that provide the actual measured size.
      */
-    export var MEASURED_HEIGHT_STATE_SHIFT: number;
-    export var MEASURED_SIZE_MASK: number;
-    export var MEASURED_STATE_MASK: number;
-    export var MEASURED_STATE_TOO_SMALL: number;
-    export var UNSPECIFIED: number;
-    export var EXACTLY: number;
-    export var AT_MOST: number;
+    export const MEASURED_HEIGHT_STATE_SHIFT: number;
+    export const MEASURED_SIZE_MASK: number;
+    export const MEASURED_STATE_MASK: number;
+    export const MEASURED_STATE_TOO_SMALL: number;
+    export const UNSPECIFIED: number;
+    export const EXACTLY: number;
+    export const AT_MOST: number;
 
     /**
      * Gets layout mode from a given specification as string.
@@ -184,6 +184,8 @@ export module ad {
  */
 export module ios {
     /**
+     * @deprecated use the respective native property directly
+     * 
      * Checks if the property is a function and if it is, calls it on this.
      * Designed to support backward compatibility for methods that became properties.
      * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
@@ -227,7 +229,7 @@ export module ios {
     /**
      * Gets the iOS device major version (for 8.1 will return 8).
      */
-    export var MajorVersion: number;
+    export const MajorVersion: number;
 
     /**
      * Opens file with associated application.

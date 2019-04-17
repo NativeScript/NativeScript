@@ -22,6 +22,7 @@
 .control Button {
     border-width: 1 1 0 0;
     border-color: gray;
+    background-color: white;
     font-size: 9;
     padding: 0;
     height: 0;

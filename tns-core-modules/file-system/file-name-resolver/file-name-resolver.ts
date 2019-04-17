@@ -190,9 +190,10 @@ export function _findFileMatch(path: string, ext: string, candidates: Array<stri
 
 function checkQualifiers(qualifiers: Array<string>, context: PlatformContext): number {
     let result = 0;
-    for (var i = 0; i < qualifiers.length; i++) {
+    let value: number;
+    for (let i = 0; i < qualifiers.length; i++) {
         if (qualifiers[i]) {
-            var value = checkQualifier(qualifiers[i], context);
+            value = checkQualifier(qualifiers[i], context);
             if (value < 0) {
                 // Non of the supported qualifiers matched this or the match was not satisified
                 return -1;
@@ -206,9 +207,10 @@ function checkQualifiers(qualifiers: Array<string>, context: PlatformContext): n
 }
 
 function checkQualifier(value: string, context: PlatformContext) {
-for (var i = 0; i < supportedQualifiers.length; i++) {
+    let result: number;
+    for (let i = 0; i < supportedQualifiers.length; i++) {
         if (supportedQualifiers[i].isMatch(value)) {
-            var result = supportedQualifiers[i].getMatchValue(value, context);
+            result = supportedQualifiers[i].getMatchValue(value, context);
             if (result > 0) {
                 result += (supportedQualifiers.length - i) * PRIORITY_STEP;
             }
