@@ -731,7 +731,7 @@ export class View extends ViewCommon {
             nativeView.setElevation(layout.toDevicePixels(value));
         } else {
             // reset to original value
-            if (this._originalElevation != null) {
+            if (this._originalElevation !== undefined) {
                 nativeView.setElevation(this._originalElevation);
             }
         }
