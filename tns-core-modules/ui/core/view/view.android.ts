@@ -717,7 +717,7 @@ export class View extends ViewCommon {
 
     [elevationProperty.getDefault](): number {
         console.log("elevationProperty.getDefault");
-        return undefined;
+        return null;
     }
 
     [elevationProperty.setNative](value: number) {
@@ -740,7 +740,7 @@ export class View extends ViewCommon {
 
     [dynamicElevationOffsetProperty.getDefault](): number {
         console.log("dynamicElevationOffsetProperty.getDefault");
-        return undefined;
+        return null;
     }
 
     [dynamicElevationOffsetProperty.setNative](value: number) {

@@ -1118,8 +1118,8 @@ iosOverflowSafeAreaProperty.register(ViewCommon);
 export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewCommon, boolean>({ name: "iosOverflowSafeAreaEnabled", defaultValue: true, valueConverter: booleanConverter });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
 
-export const elevationProperty = new Property<ViewCommon, number>({ name: "elevation", defaultValue: undefined, valueConverter: parseFloat });
+export const elevationProperty = new Property<ViewCommon, number>({ name: "elevation", defaultValue: null, valueConverter: parseFloat });
 elevationProperty.register(ViewCommon);
 
-export const dynamicElevationOffsetProperty = new Property<ViewCommon, number>({ name: "dynamicElevationOffset", defaultValue: undefined, valueConverter: parseFloat });
+export const dynamicElevationOffsetProperty = new Property<ViewCommon, number>({ name: "dynamicElevationOffset", defaultValue: null, valueConverter: parseFloat });
 dynamicElevationOffsetProperty.register(ViewCommon);
