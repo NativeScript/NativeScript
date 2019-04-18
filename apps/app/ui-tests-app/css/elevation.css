@@ -30,7 +30,7 @@ Label, Button {
 }
 
 .pressed-z-10 {
-    android-pressed-z: 10;
+    dynamic-elevation-offset: 10;
 }
 
 .round {

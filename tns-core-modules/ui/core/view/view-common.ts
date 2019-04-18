@@ -492,24 +492,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.color = value;
     }
 
-    get elevation(): number {
-        console.log("get elevation");
-        return this.style.elevation;
-    }
-    set elevation(value: number) {
-        console.log("set elevation, value: " + value);
-        this.style.elevation = value;
-    }
-
-    get androidPressedZ(): number {
-        console.log("get androidPressedZ");
-        return this.style.androidPressedZ;
-    }
-    set androidPressedZ(value: number) {
-        console.log("set androidPressedZ, value: " + value);
-        this.style.androidPressedZ = value;
-    }
-
     get background(): string {
         return this.style.background;
     }
@@ -687,6 +669,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public isUserInteractionEnabled: boolean;
     public iosOverflowSafeArea: boolean;
     public iosOverflowSafeAreaEnabled: boolean;
+    public elevation: number;
+    public dynamicElevationOffset: number;
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -1133,3 +1117,9 @@ iosOverflowSafeAreaProperty.register(ViewCommon);
 
 export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewCommon, boolean>({ name: "iosOverflowSafeAreaEnabled", defaultValue: true, valueConverter: booleanConverter });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
+
+export const elevationProperty = new Property<ViewCommon, number>({ name: "elevation", defaultValue: null, valueConverter: parseFloat });
+elevationProperty.register(ViewCommon);
+
+export const dynamicElevationOffsetProperty = new Property<ViewCommon, number>({ name: "dynamicElevationOffset", defaultValue: null, valueConverter: parseFloat });
+dynamicElevationOffsetProperty.register(ViewCommon);
