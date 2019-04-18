@@ -8,8 +8,8 @@ import { Page } from "../page";
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, getContextModuleName, stack, NavigationType,
-    Observable, View, traceCategories, traceEnabled, traceError, traceWrite,
+    FrameBase, goBack, stack, NavigationType, Observable, View,
+    traceCategories, traceEnabled, traceError, traceWrite,
 } from "./frame-common";
 
 import {
@@ -21,6 +21,7 @@ import { profile } from "../../profiling";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
+import { getModuleName } from "../../utils/utils";
 
 export * from "./frame-common";
 
@@ -348,7 +349,7 @@ export class Frame extends FrameBase {
             this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
             const currentNavigationEntry = currentBackstackEntry.entry;
-            const contextModuleName = getContextModuleName(context);
+            const contextModuleName = getModuleName(context.path);
 
             fragmentId++;
             const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;

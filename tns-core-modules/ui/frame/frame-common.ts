@@ -612,11 +612,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 }
 
-export function getContextModuleName(context: ModuleContext) {
-    let contextModuleName = context.path.replace("./", "");
-    return contextModuleName.substring(0, contextModuleName.lastIndexOf("."));
-}
-
 export function getFrameById(id: string): FrameBase {
     return frameStack.find((frame) => frame.id && frame.id === id);
 }

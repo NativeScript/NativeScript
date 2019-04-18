@@ -7,8 +7,8 @@ import { profile } from "../../profiling";
 
 //Types.
 import {
-    FrameBase, View, getContextModuleName, isCategorySet, layout,
-    NavigationType, traceCategories, traceEnabled, traceWrite
+    FrameBase, View, isCategorySet, layout, NavigationType,
+    traceCategories, traceEnabled, traceWrite
 } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
@@ -77,7 +77,7 @@ export class Frame extends FrameBase {
             this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
 
-            const contextModuleName = getContextModuleName(context);
+            const contextModuleName = utils.getModuleName(context.path);
             const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
             const newBackstackEntry: BackstackEntry = {
                 entry: currentBackstackEntry.entry,
