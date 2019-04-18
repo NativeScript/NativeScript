@@ -171,6 +171,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     private changeStyles(view: ViewBase, contextPath: string): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${view}.${view._moduleName}`, traceCategories.Livesync);
+        }
+
         if (view._moduleName && contextPath.includes(view._moduleName)) {
             (<this>view).changeCssFile(contextPath);
             return true;
