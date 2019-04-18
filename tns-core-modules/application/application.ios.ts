@@ -10,6 +10,7 @@ import {
     notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
     orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
 } from "./application-common";
+import { ModuleType } from "../ui/core/view/view-common";
 
 // First reexport so that app module is initialized.
 export * from "./application-common";
@@ -230,11 +231,14 @@ class IOSApplication implements IOSApplicationDefinition {
 
     public _onLivesync(context?: ModuleContext): void {
         // Handle application root module
-        const isAppRootModuleChanged = context && context.path && context.path.includes(getMainEntry().moduleName) && context.type !== "style";
+        const isAppRootModuleChanged = context && context.path && context.path.includes(getMainEntry().moduleName) && context.type !== ModuleType.style;
 
         // Set window content when:
         // + Application root module is changed
         // + View did not handle the change
+        // Note:
+        // The case when neither app root module is changed, neighter livesync is handled on View,
+        // then changes will not apply until navigate forward to the module.
         if (isAppRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
             this.setWindowContent();
         }

@@ -3,6 +3,7 @@ import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
     AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
+import { ModuleType } from "../../ui/core/view/view-common";
 import { Page } from "../page";
 
 // Types.
@@ -89,11 +90,14 @@ export function reloadPage(context?: ModuleContext): void {
     if (callbacks) {
         const rootView: View = callbacks.getRootView();
         // Handle application root module
-        const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== "style";
+        const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== ModuleType.style;
 
         // Reset activity content when:
         // + Application root module is changed
         // + View did not handle the change
+        // Note:
+        // The case when neither app root module is changed, neighter livesync is handled on View,
+        // then changes will not apply until navigate forward to the module.
         if (isAppRootModuleChanged || !rootView || !rootView._onLivesync(context)) {
             callbacks.resetActivityContent(activity);
         }

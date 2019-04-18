@@ -37,6 +37,12 @@ function ensureAnimationModule() {
     }
 }
 
+export enum ModuleType {
+    markup = "markup",
+    script = "script",
+    style = "style"
+}
+
 export function CSSType(type: string): ClassDecorator {
     return (cls) => {
         cls.prototype.cssType = type;
@@ -146,7 +152,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
         if (context && context.type && context.path) {
             // Handle local styles
-            if (context.type === "style") {
+            if (context.type === ModuleType.style) {
                 return this.changeLocalStyles(context.path);
             }
             // Handle module markup and script changes
