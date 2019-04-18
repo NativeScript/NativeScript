@@ -224,7 +224,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         this._currentEntry = entry;
 
-        const isBack = navigationType === NavigationType.Back ? true : false;
+        const isBack = navigationType === NavigationType.Back;
         if (isBack) {
             this._pushInFrameStack();
         }
@@ -238,18 +238,17 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
-        const isBack = navigationType === NavigationType.Back ? true : false;
-        const isReplace = navigationType === NavigationType.Replace ? true : false;
+        const isBack = navigationType === NavigationType.Back;
+        const isForward = navigationType === NavigationType.Forward;
         this.raiseCurrentPageNavigatedEvents(isBack);
         const current = this._currentEntry;
 
+        // Do nothing for Hot Module Replacement
         if (isBack) {
             const index = this._backStack.indexOf(entry);
             this._backStack.splice(index + 1).forEach(e => this._removeEntry(e));
             this._backStack.pop();
-        } else if (isReplace) {
-            // Do nothing for Hot Module Replacement
-        } else {
+        } else if (isForward) {
             if (entry.entry.clearHistory) {
                 this._backStack.forEach(e => this._removeEntry(e));
                 this._backStack.length = 0;
