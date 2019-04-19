@@ -125,7 +125,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 if (affectsLayout) {
                     this.requestLayout();
                 }
-                
+
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -467,6 +467,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
         function setLocalValue(this: T, newValue: U | string): void {
             const reset = newValue === unsetValue || newValue === "";
+
             let value: U;
             if (reset) {
                 value = defaultValue;
@@ -542,10 +543,25 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             }
 
             const reset = newValue === unsetValue || newValue === "";
+            const inherit = newValue === "inherit";
+            const view = this.view;
             let value: U;
+            let unsetNativeValue = false;
             if (reset) {
                 value = defaultValue;
                 delete this[sourceKey];
+            } else if (inherit && view.parent) {
+                const style = view.parent ? view.parent.style : null;
+                if (style && style[sourceKey] > 0) {
+                    value = style[propertyName];
+                    this[sourceKey] = 1;
+                    this[key] = value;
+                } else {
+                    value = defaultValue;
+                    delete this[sourceKey];
+                    delete this[key];
+                    unsetNativeValue = true;
+                }
             } else {
                 value = valueConverter && typeof newValue === "string" ?
                     valueConverter(newValue) :
@@ -557,8 +573,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
-                if (reset) {
+                if (reset || inherit) {
                     delete this[key];
                     if (valueChanged) {
                         valueChanged(this, oldValue, value);
@@ -569,6 +584,11 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                             if (view._suspendedUpdates) {
                                 view._suspendedUpdates[propertyName] = property;
                             }
+                        } else if (inherit && !unsetNativeValue) {
+                            if (!(defaultValueKey in this)) {
+                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                            }
+                            view[setNative](value);
                         } else {
                             if (defaultValueKey in this) {
                                 view[setNative](this[defaultValueKey]);
@@ -723,7 +743,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
                     const reset = boxedValue === unsetValue || boxedValue === "";
-        
+
                     if (reset) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
@@ -862,7 +882,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const property = this;
 
         const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
-            const reset = boxedValue === unsetValue || boxedValue === "";
+            const reset = boxedValue === unsetValue || boxedValue === "" || boxedValue === "inherit";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
             if (reset) {
                 // If we want to reset cssValue and we have localValue - return;
