@@ -1,13 +1,15 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
-import { 
-    ActionItemBase, ActionBarBase, isVisible, View, 
-    colorProperty, backgroundColorProperty, 
-    backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty, 
+import {
+    ActionItemBase, ActionBarBase, isVisible, View,
+    colorProperty, backgroundColorProperty, flatProperty, iosIconRenderingModeProperty,
     layout, Color, traceMissingIcon } from "./action-bar-common";
 import { fromFileOrResource } from "../../image-source";
 import { ios as iosUtils } from "../../utils/utils";
+import { NativeView } from "../styling/background.ios";
 
 export * from "./action-bar-common";
+
+interface UINavigationBarView extends NativeView, UINavigationBar {}
 
 const majorVersion = iosUtils.MajorVersion;
 const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
@@ -147,7 +149,7 @@ export class ActionBar extends ActionBarBase {
             return;
         }
 
-        const navigationBar = navController.navigationBar;
+        const navigationBar = navController.navigationBar as UINavigationBarView;
         let previousController: UIViewController;
 
         // Set Title
@@ -302,8 +304,10 @@ export class ActionBar extends ActionBarBase {
         navigationItem.title = this.title;
     }
 
-    private updateFlatness(navBar: UINavigationBar) {
-        if (this.flat) {
+    private updateFlatness(navBar: UINavigationBarView) {
+        if (navBar.gradientLayer && navBar.gradientLayer instanceof UIImage) {
+            navBar.setBackgroundImageForBarMetrics(navBar.gradientLayer, UIBarMetrics.Default);
+        } else if (this.flat) {
             navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
             navBar.shadowImage = UIImage.new();
             navBar.translucent = false;
@@ -393,14 +397,8 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    [backgroundInternalProperty.getDefault](): UIColor {
-        return null;
-    }
-    [backgroundInternalProperty.setNative](value: UIColor) { // tslint:disable-line
-    }
-
     [flatProperty.setNative](value: boolean) { // tslint:disable-line
-        const navBar = this.navBar;
+        const navBar = this.navBar as UINavigationBarView;
         if (navBar) {
             this.updateFlatness(navBar);
         }

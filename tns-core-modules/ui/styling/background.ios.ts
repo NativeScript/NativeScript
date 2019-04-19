@@ -10,7 +10,7 @@ import { CSSValue, parse as cssParse } from "../../css-value";
 
 export * from "./background-common";
 
-interface NativeView extends UIView {
+export interface NativeView extends UIView {
     hasNonUniformBorder: boolean;
 
     borderLayer: CALayer;
@@ -23,7 +23,7 @@ interface NativeView extends UIView {
     bottomBorderLayer: CALayer;
     leftBorderLayer: CALayer;
 
-    gradientLayer: CAGradientLayer;
+    gradientLayer: CAGradientLayer | UIImage;
 }
 
 interface Rect {
@@ -219,7 +219,7 @@ function parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
     }
 
     return null;
-};
+}
 
 function getDrawParams(this: void, image: UIImage, background: BackgroundDefinition, width: number, height: number): BackgroundDrawParams {
     if (!image) {
@@ -231,7 +231,7 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
         repeatY: true,
         posX: 0,
         posY: 0,
-    }
+    };
 
     // repeat
     if (background.repeat) {
@@ -395,7 +395,7 @@ function _flipImage(originalImage: UIImage): UIImage {
     CGContextSaveGState(context);
     CGContextTranslateCTM(context, 0.0, originalImage.size.height);
     CGContextScaleCTM(context, 1.0, -1.0);
-    originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height))
+    originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height));
     CGContextRestoreGState(context);
     const flippedImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -438,7 +438,7 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
     const borderVWidth = borderTopWidth + borderBottomWidth;
     const borderHWidth = borderLeftWidth + borderRightWidth;
 
-    const cappedBorderTopWidth = borderTopWidth && borderTopWidth * min(1, height / borderVWidth)
+    const cappedBorderTopWidth = borderTopWidth && borderTopWidth * min(1, height / borderVWidth);
     const cappedBorderRightWidth = borderRightWidth && borderRightWidth * min(1, width / borderHWidth);
     const cappedBorderBottomWidth = borderBottomWidth && borderBottomWidth * min(1, height / borderVWidth);
     const cappedBorderLeftWidth = borderLeftWidth && borderLeftWidth * min(1, width / borderHWidth);
@@ -671,6 +671,20 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
     nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
+function _layerToImage(layer) {
+    UIGraphicsBeginImageContextWithOptions(layer.bounds.size, layer.opaque, 0.0);
+
+    layer.renderInContext(UIGraphicsGetCurrentContext());
+
+    let img = UIGraphicsGetImageFromCurrentImageContext();
+
+    UIGraphicsEndImageContext();
+
+    img = img.resizableImageWithCapInsetsResizingMode(UIEdgeInsetsZero, UIImageResizingMode.Stretch);
+
+    return img;
+}
+
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
 
     const gradientLayer = CAGradientLayer.layer();
@@ -715,13 +729,17 @@ function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
     gradientLayer.startPoint = {x: startX, y: startY};
     gradientLayer.endPoint = {x: endX, y: endY};
 
-    nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
+    if (nativeView instanceof UINavigationBar) {
+        nativeView.gradientLayer = _layerToImage(gradientLayer);
+        return nativeView.setBackgroundImageForBarMetrics(nativeView.gradientLayer, UIBarMetrics.Default);
+    }
 
+    nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
 }
 
 function clearGradient(nativeView: NativeView): void {
     if (nativeView.gradientLayer) {
-        nativeView.gradientLayer.removeFromSuperlayer();
+        (<CAGradientLayer>nativeView.gradientLayer).removeFromSuperlayer();
     }
 }
 
