@@ -350,6 +350,8 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
+            // Set NavigationType.Replace for HMR.
+            // Reset to default NavigationType.Forward in Frame.setCurrent().
             this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
             const contextModuleName = getModuleName(context.path);
@@ -375,6 +377,8 @@ export class Frame extends FrameBase {
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
+        // NavigationType.Replace for HMR.
+        // Otherwise, default to NavigationType.Forward.
         const isReplace = this.navigationType === NavigationType.Replace;
         if (!isReplace) {
             this.navigationType = NavigationType.Forward;

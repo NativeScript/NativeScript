@@ -74,6 +74,8 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
+            // Set NavigationType.Replace for HMR.
+            // Reset to default NavigationType.Forward in Frame.setCurrent().
             this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
 
@@ -97,6 +99,8 @@ export class Frame extends FrameBase {
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
+        // NavigationType.Replace for HMR.
+        // Otherwise, default to NavigationType.Forward.
         const isReplace = this.navigationType === NavigationType.Replace;
         if (!isReplace) {
             this.navigationType = NavigationType.Forward;
@@ -181,6 +185,7 @@ export class Frame extends FrameBase {
         }
 
         // We should hide the current entry from the back stack.
+        // This is the case for HMR when NavigationType.Replace.
         if (!Frame._isEntryBackstackVisible(this._currentEntry) || isReplace) {
             let newControllers = NSMutableArray.alloc<UIViewController>().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
