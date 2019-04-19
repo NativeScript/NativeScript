@@ -2,7 +2,7 @@ import { TabContentItem as TabContentItemDefinition } from ".";
 import { Font } from "../styling/font";
 
 import {
-    TabViewBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
+    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
     // tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
     // androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
     fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
@@ -15,17 +15,13 @@ import { Frame } from "../frame";
 
 export * from "./bottom-navigation-common";
 
-const ACCENT_COLOR = "colorAccent";
 const PRIMARY_COLOR = "colorPrimary";
-const DEFAULT_ELEVATION = 4;
-
-interface PagerAdapter {
-    new(owner: BottomNavigation): android.support.v4.view.PagerAdapter;
-}
+const DEFAULT_ELEVATION = 8;
 
 const TABID = "_tabId";
 const INDEX = "_index";
-let PagerAdapter: PagerAdapter;
+let TabFragment: any;
+let BottomNavigationBar: any;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:viewpager:" + viewId + ":" + id;
@@ -41,7 +37,7 @@ function getTabById(id: number): BottomNavigation {
 }
 
 function initializeNativeClasses() {
-    if (PagerAdapter) {
+    if (BottomNavigationBar) {
         return;
     }
 
@@ -80,152 +76,21 @@ function initializeNativeClasses() {
         }
     }
 
-    const POSITION_UNCHANGED = -1;
-    const POSITION_NONE = -2;
+    class BottomNavigationBarImplementation extends org.nativescript.widgets.BottomNavigationBar {
 
-    class FragmentPagerAdapter extends android.support.v4.view.PagerAdapter {
-        public items: Array<TabContentItemDefinition>;
-        private mCurTransaction: android.support.v4.app.FragmentTransaction;
-        private mCurrentPrimaryItem: android.support.v4.app.Fragment;
-
-        constructor(public owner: BottomNavigation) {
-            super();
+        constructor(context: android.content.Context, public owner: BottomNavigation) {
+            super(context);
             return global.__native(this);
         }
 
-        getCount() {
-            const items = this.items;
-            return items ? items.length : 0;
+        public onSelectedPositionChange(position: number): void {
+            this.owner.changeTab(position);
+            this.owner.selectedIndex = position;
         }
+    }    
 
-        getPageTitle(index: number) {
-            const items = this.items;
-            if (index < 0 || index >= items.length) {
-                return "";
-            }
-
-            return ""; //items[index].title;
-        }
-
-        startUpdate(container: android.view.ViewGroup): void {
-            if (container.getId() === android.view.View.NO_ID) {
-                throw new Error(`ViewPager with adapter ${this} requires a view containerId`);
-            }
-        }
-
-        instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
-            const fragmentManager = this.owner._getFragmentManager();
-            if (!this.mCurTransaction) {
-                this.mCurTransaction = fragmentManager.beginTransaction();
-            }
-
-            const itemId = this.getItemId(position);
-            const name = makeFragmentName(container.getId(), itemId);
-
-            let fragment: android.support.v4.app.Fragment = fragmentManager.findFragmentByTag(name);
-            if (fragment != null) {
-                this.mCurTransaction.attach(fragment);
-            } else {
-                fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
-                this.mCurTransaction.add(container.getId(), fragment, name);
-            }
-
-            if (fragment !== this.mCurrentPrimaryItem) {
-                fragment.setMenuVisibility(false);
-                fragment.setUserVisibleHint(false);
-            }
-
-            const tabItems = this.owner.items;
-            const tabItem = tabItems ? tabItems[position] : null;
-            if (tabItem) {
-                tabItem.canBeLoaded = true;
-            }
-
-            return fragment;
-        }
-
-        getItemPosition(object: java.lang.Object): number {
-            return this.items ? POSITION_UNCHANGED : POSITION_NONE;
-        }
-
-        destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-            if (!this.mCurTransaction) {
-                const fragmentManager = this.owner._getFragmentManager();
-                this.mCurTransaction = fragmentManager.beginTransaction();
-            }
-
-            const fragment: android.support.v4.app.Fragment = <android.support.v4.app.Fragment>object;
-            this.mCurTransaction.detach(fragment);
-
-            if (this.mCurrentPrimaryItem === fragment) {
-                this.mCurrentPrimaryItem = null;
-            }
-
-            const tabItems = this.owner.items;
-            const tabItem = tabItems ? tabItems[position] : null;
-            if (tabItem) {
-                tabItem.canBeLoaded = false;
-            }
-        }
-
-        setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-            const fragment = <android.support.v4.app.Fragment>object;
-            if (fragment !== this.mCurrentPrimaryItem) {
-                if (this.mCurrentPrimaryItem != null) {
-                    this.mCurrentPrimaryItem.setMenuVisibility(false);
-                    this.mCurrentPrimaryItem.setUserVisibleHint(false);
-                }
-
-                if (fragment != null) {
-                    fragment.setMenuVisibility(true);
-                    fragment.setUserVisibleHint(true);
-                }
-
-                this.mCurrentPrimaryItem = fragment;
-                this.owner.selectedIndex = position;
-
-                const tab = this.owner;
-                const tabItems = tab.items;
-                const newTabItem = tabItems ? tabItems[position] : null;
-
-                if (newTabItem) {
-                    tab._loadUnloadTabItems(tab.selectedIndex);
-                }
-            }
-        }
-
-        finishUpdate(container: android.view.ViewGroup): void {
-            this._commitCurrentTransaction();
-        }
-
-        isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
-            return (<android.support.v4.app.Fragment>object).getView() === view;
-        }
-
-        saveState(): android.os.Parcelable {
-            // Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
-            // Related to: https://github.com/NativeScript/NativeScript/issues/6466
-            this._commitCurrentTransaction();
-            return null;
-        }
-
-        restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader): void {
-            //
-        }
-
-        getItemId(position: number): number {
-            return position;
-        }
-
-        private _commitCurrentTransaction() {
-            if (this.mCurTransaction != null) {
-                this.mCurTransaction.commitNowAllowingStateLoss();
-                this.mCurTransaction = null;
-            }
-        }
-    }
-    
-    PagerAdapter = FragmentPagerAdapter;
+    TabFragment = TabFragmentImplementation;
+    BottomNavigationBar = BottomNavigationBarImplementation;
 }
 
 function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
@@ -252,15 +117,6 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
     // result.iconDrawable = null; // tabStripItem.image.android;
 
     return result;
-}
-
-let defaultAccentColor: number = undefined;
-function getDefaultAccentColor(context: android.content.Context): number {
-    if (defaultAccentColor === undefined) {
-        //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-        defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
-    }
-    return defaultAccentColor;
 }
 
 export class TabContentItem extends TabContentItemBase {
@@ -332,47 +188,14 @@ export class TabContentItem extends TabContentItemBase {
 
         return tabFragment.getChildFragmentManager();
     }
-
-    [fontSizeProperty.getDefault](): { nativeSize: number } {
-        return { nativeSize: this.nativeViewProtected.getTextSize() };
-    }
-    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-        if (typeof value === "number") {
-            this.nativeViewProtected.setTextSize(value);
-        } else {
-            this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-        }
-    }
-
-    [fontInternalProperty.getDefault](): android.graphics.Typeface {
-        return this.nativeViewProtected.getTypeface();
-    }
-    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
-        this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
-    }
-
-    // [textTransformProperty.getDefault](): "default" {
-    //     return "default";
-    // }
-    // [textTransformProperty.setNative](value: TextTransform | "default") {
-    //     const tv = this.nativeViewProtected;
-    //     if (value === "default") {
-    //         tv.setTransformationMethod(this._defaultTransformationMethod);
-    //         tv.setText(this.title);
-    //     } else {
-    //         const result = getTransformedText(this.title, value);
-    //         tv.setText(result);
-    //         tv.setTransformationMethod(null);
-    //     }
-    // }
 }
 
-function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.nativescript.widgets.TabLayout) {
+function setElevation(grid: org.nativescript.widgets.GridLayout, bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
     const compat = <any>android.support.v4.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
         compat.setElevation(grid, val);
-        compat.setElevation(tabLayout, val);
+        compat.setElevation(bottomNavigationBar, val);
     }
 }
 
@@ -386,11 +209,11 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
     }
 }
 
-export class BottomNavigation extends TabViewBase {
-    private _tabLayout: org.nativescript.widgets.TabLayout;
-    private _viewPager: android.support.v4.view.ViewPager;
-    private _pagerAdapter: android.support.v4.view.PagerAdapter;
-    private _androidViewId: number = -1;
+export class BottomNavigation extends TabNavigationBase {
+    private _contentView: org.nativescript.widgets.ContentLayout;
+    private _contentViewId: number = -1;
+    private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
+    private _currentFragment: android.support.v4.app.Fragment;
 
     constructor() {
         super();
@@ -421,51 +244,31 @@ export class BottomNavigation extends TabViewBase {
 
         const context: android.content.Context = this._context;
         const nativeView = new org.nativescript.widgets.GridLayout(context);
-        const viewPager = new org.nativescript.widgets.TabViewPager(context);
-        const tabLayout = new org.nativescript.widgets.TabLayout(context);
-        const lp = new org.nativescript.widgets.CommonLayoutParams();
+
+        nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+
+        // CONTENT VIEW
+        const contentView = new org.nativescript.widgets.ContentLayout(this._context);
+        const contentViewLP = new org.nativescript.widgets.CommonLayoutParams();
+        contentViewLP.row = 0;
+        contentView.setLayoutParams(contentViewLP);
+        nativeView.addView(contentView);
+        (<any>nativeView).contentView = contentView;
+
+        // TABSTRIP
+        const bottomNavigationBar = new BottomNavigationBar(context, this);
+        const bottomNavigationBarLP = new org.nativescript.widgets.CommonLayoutParams();
+        bottomNavigationBarLP.row = 1;
+        bottomNavigationBar.setLayoutParams(bottomNavigationBarLP);
+        nativeView.addView(bottomNavigationBar);
+        (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
+
+        setElevation(nativeView, bottomNavigationBar);
+        
         const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
-        let accentColor = getDefaultAccentColor(context);
-
-        lp.row = 1;
-
-        // if (this.androidTabsPosition === "top") {
-        //     nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        //     nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-
-        //     viewPager.setLayoutParams(lp);
-
-        //     if (!this.androidSwipeEnabled) {
-        //         viewPager.setSwipePageEnabled(false);
-        //     }
-        // } else {
-            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-
-            tabLayout.setLayoutParams(lp);
-            viewPager.setSwipePageEnabled(false);
-            // set completely transparent accent color for tab selected indicator.
-            accentColor = 0x00FFFFFF;
-        // }
-
-        nativeView.addView(viewPager);
-        (<any>nativeView).viewPager = viewPager;
-
-        const adapter = new PagerAdapter(this);
-        viewPager.setAdapter(adapter);
-        (<any>viewPager).adapter = adapter;
-
-        nativeView.addView(tabLayout);
-        (<any>nativeView).tabLayout = tabLayout;
-
-        setElevation(nativeView, tabLayout);
-
-        if (accentColor) {
-            tabLayout.setSelectedIndicatorColors([accentColor]);
-        }
-
         if (primaryColor) {
-            tabLayout.setBackgroundColor(primaryColor);
+            bottomNavigationBar.setBackgroundColor(primaryColor);
         }
 
         return nativeView;
@@ -473,24 +276,21 @@ export class BottomNavigation extends TabViewBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        if (this._androidViewId < 0) {
-            this._androidViewId = android.view.View.generateViewId();
+        if (this._contentViewId < 0) {
+            this._contentViewId = android.view.View.generateViewId();
         }
 
         const nativeView: any = this.nativeViewProtected;
-        this._tabLayout = (<any>nativeView).tabLayout;
-
-        const viewPager = (<any>nativeView).viewPager;
-        viewPager.setId(this._androidViewId);
-        this._viewPager = viewPager;
-        this._pagerAdapter = (<any>viewPager).adapter;
-        (<any>this._pagerAdapter).owner = this;
+        this._contentView = (<any>nativeView).contentView;
+        this._contentView.setId(this._contentViewId);
+        this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
+        (<any>this._bottomNavigationBar).owner = this;
     }
 
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
         const lastIndex = this.items.length - 1;
-        const offsideItems = 1; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
+        const offsideItems = 0; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
 
         let toUnload = [];
         let toLoad = [];
@@ -538,18 +338,19 @@ export class BottomNavigation extends TabViewBase {
     }
 
     public disposeNativeView() {
-        this._tabLayout.setItems(null, null);
-        (<any>this._pagerAdapter).owner = null;
-        this._pagerAdapter = null;
+        this._bottomNavigationBar.setItems(null);
+        // this._tabLayout.setItems(null, null);
+        // (<any>this._pagerAdapter).owner = null;
+        // this._pagerAdapter = null;
 
-        this._tabLayout = null;
-        this._viewPager = null;
+        // this._tabLayout = null;
+        // this._viewPager = null;
         super.disposeNativeView();
     }
 
     public _onRootViewReset(): void {
         super._onRootViewReset();
-        
+
         // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
         // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
         // cleanup the tab fragments to avoid
@@ -566,51 +367,101 @@ export class BottomNavigation extends TabViewBase {
         transaction.commitNowAllowingStateLoss();
     }
 
+    public changeTab(index: number) {
+        const containerView = this._contentView;
+        const fragmentManager = this._getFragmentManager();
+        const transaction = fragmentManager.beginTransaction();
+
+        if (this._currentFragment) {
+            const fragment = this._currentFragment;
+            transaction.detach(fragment);
+
+            if (this._currentFragment === fragment) {
+                this._currentFragment = null;
+            }
+
+            // const tabItems = this.owner.items;
+            // const tabItem = tabItems ? tabItems[position] : null;
+            // if (tabItem) {
+            //     tabItem.canBeLoaded = false;
+            // }
+        }
+
+        const name = makeFragmentName(containerView.getId(), index);
+
+        let fragment: android.support.v4.app.Fragment = fragmentManager.findFragmentByTag(name);
+        if (fragment != null) {
+            transaction.attach(fragment);
+        } else {
+            fragment = TabFragment.newInstance(this._domId, index);
+            transaction.add(containerView.getId(), fragment, name);
+        }
+
+        this._currentFragment = fragment;
+
+        // if (fragment !== this.mCurrentPrimaryItem) {
+        //     fragment.setMenuVisibility(false);
+        //     fragment.setUserVisibleHint(false);
+        // }
+
+        const tabItems = this.items;
+        const tabItem = tabItems ? tabItems[index] : null;
+        if (tabItem) {
+            tabItem.canBeLoaded = true;
+            this._loadUnloadTabItems(index);
+        }
+
+        transaction.commitNowAllowingStateLoss();
+    }
+
     private shouldUpdateAdapter(items: Array<TabContentItemDefinition>) {
-        if (!this._pagerAdapter) {
-            return false;
-        }
+        return true;
 
-        const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
+        // if (!this._pagerAdapter) {
+        //     return false;
+        // }
 
-        // if both values are null, should not update
-        if (!items && !currentPagerAdapterItems) {
-            return false;
-        }
+        // const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
 
-        // if one value is null, should update
-        if (!items || !currentPagerAdapterItems) {
-            return true;
-        }
+        // // if both values are null, should not update
+        // if (!items && !currentPagerAdapterItems) {
+        //     return false;
+        // }
 
-        // if both are Arrays but length doesn't match, should update
-        if (items.length !== currentPagerAdapterItems.length) {
-            return true;
-        }
+        // // if one value is null, should update
+        // if (!items || !currentPagerAdapterItems) {
+        //     return true;
+        // }
 
-        const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
-            return !!items.filter((item) => {
-                return item._domId === currentItem._domId
-            })[0];
-        });
+        // // if both are Arrays but length doesn't match, should update
+        // if (items.length !== currentPagerAdapterItems.length) {
+        //     return true;
+        // }
 
-        // if both are Arrays and length matches, but not all items are the same, should update
-        if (matchingItems.length !== items.length) {
-            return true;
-        }
+        // const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
+        //     return !!items.filter((item) => {
+        //         return item._domId === currentItem._domId
+        //     })[0];
+        // });
 
-        // if both are Arrays and length matches and all items are the same, should not update
-        return false;
+        // // if both are Arrays and length matches, but not all items are the same, should update
+        // if (matchingItems.length !== items.length) {
+        //     return true;
+        // }
+
+        // // if both are Arrays and length matches and all items are the same, should not update
+        // return false;
     }
 
     private setAdapterItems(items: Array<TabContentItemDefinition>) {
         if (this.shouldUpdateAdapter(items)) {
-            (<any>this._pagerAdapter).items = items;
+            // (<any>this._pagerAdapter).items = items;
 
             const length = items ? items.length : 0;
             if (length === 0) {
-                this._tabLayout.setItems(null, null);
-                this._pagerAdapter.notifyDataSetChanged();
+                this._bottomNavigationBar.setItems(null);
+                // this._tabLayout.setItems(null, null);
+                // this._pagerAdapter.notifyDataSetChanged();
                 return;
             }
 
@@ -622,27 +473,21 @@ export class BottomNavigation extends TabViewBase {
                 tabItems.push(tabItemSpec);
             });
 
-            const tabLayout = this._tabLayout;
-            tabLayout.setItems(tabItems, this._viewPager);
-            items.forEach((item, i, arr) => {
-                const tv = tabLayout.getTextViewForItemAt(i);
-                item.setNativeView(tv);
-            });
+            // const tabLayout = this._tabLayout;
+            // tabLayout.setItems(tabItems, this._viewPager);
+            this._bottomNavigationBar.setItems(tabItems);
+            // items.forEach((item, i, arr) => {
+            //     const tv = tabLayout.getTextViewForItemAt(i);
+            //     item.setNativeView(tv);
+            // });
 
-            this._pagerAdapter.notifyDataSetChanged();
+            // this._pagerAdapter.notifyDataSetChanged();
         }
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
-        this._tabLayout.updateItemAt(index, spec);
+        this._bottomNavigationBar.updateItemAt(index, spec);
     }
-
-    // [androidOffscreenTabLimitProperty.getDefault](): number {
-    //     return this._viewPager.getOffscreenPageLimit();
-    // }
-    // [androidOffscreenTabLimitProperty.setNative](value: number) {
-    //     this._viewPager.setOffscreenPageLimit(value);
-    // }
 
     [selectedIndexProperty.setNative](value: number) {
         const smoothScroll = false; // this.androidTabsPosition === "top";
@@ -651,7 +496,7 @@ export class BottomNavigation extends TabViewBase {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         }
 
-        this._viewPager.setCurrentItem(value, smoothScroll);
+        this._bottomNavigationBar.setSelectedPosition(value);
     }
 
     [itemsProperty.getDefault](): TabContentItem[] {
@@ -661,53 +506,6 @@ export class BottomNavigation extends TabViewBase {
         this.setAdapterItems(value);
         selectedIndexProperty.coerce(this);
     }
-
-    // [tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
-    //     return this._tabLayout.getBackground();
-    // }
-    // [tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable | Color) {
-    //     if (value instanceof Color) {
-    //         this._tabLayout.setBackgroundColor(value.android);
-    //     } else {
-    //         this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
-    //     }
-    // }
-
-    // [tabTextFontSizeProperty.getDefault](): number {
-    //     return this._tabLayout.getTabTextFontSize();
-    // }
-    // [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
-    //     if (typeof value === "number") {
-    //         this._tabLayout.setTabTextFontSize(value);
-    //     } else {
-    //         this._tabLayout.setTabTextFontSize(value.nativeSize);
-    //     }
-    // }
-
-    // [tabTextColorProperty.getDefault](): number {
-    //     return this._tabLayout.getTabTextColor();
-    // }
-    // [tabTextColorProperty.setNative](value: number | Color) {
-    //     const color = value instanceof Color ? value.android : value;
-    //     this._tabLayout.setTabTextColor(color);
-    // }
-
-    // [selectedTabTextColorProperty.getDefault](): number {
-    //     return this._tabLayout.getSelectedTabTextColor();
-    // }
-    // [selectedTabTextColorProperty.setNative](value: number | Color) {
-    //     const color = value instanceof Color ? value.android : value;
-    //     this._tabLayout.setSelectedTabTextColor(color);
-    // }
-
-    // [androidSelectedTabHighlightColorProperty.getDefault](): number {
-    //     return getDefaultAccentColor(this._context);
-    // }
-    // [androidSelectedTabHighlightColorProperty.setNative](value: number | Color) {
-    //     let tabLayout = this._tabLayout;
-    //     const color = value instanceof Color ? value.android : value;
-    //     tabLayout.setSelectedIndicatorColors([color]);
-    // }
 }
 
 function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {

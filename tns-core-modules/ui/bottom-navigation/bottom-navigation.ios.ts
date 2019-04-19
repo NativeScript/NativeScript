@@ -3,7 +3,7 @@ import { Font } from "../styling/font";
 
 import { ios as iosView, ViewBase } from "../core/view";
 import {
-    TabViewBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
+    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon, TabStripItem
 } from "./bottom-navigation-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -192,7 +192,7 @@ export class TabContentItem extends TabContentItemBase {
     }
 
     public loadView(view: ViewBase): void {
-        const tabView = this.parent as TabViewBase;
+        const tabView = this.parent as TabNavigationBase;
         if (tabView && tabView.items) {
             const index = tabView.items.indexOf(this);
 
@@ -233,7 +233,7 @@ export class TabContentItem extends TabContentItemBase {
     }
 }
 
-export class BottomNavigation extends TabViewBase {
+export class BottomNavigation extends TabNavigationBase {
     public viewController: UITabBarControllerImpl;
     public items: TabContentItem[];
     public _ios: UITabBarControllerImpl;
@@ -270,8 +270,8 @@ export class BottomNavigation extends TabViewBase {
             selectedView._pushInFrameStackRecursive();
         }
 
-        const label = this.tabStrip.items[0].label;
-        const image = this.tabStrip.items[0].image;
+        // const label = this.tabStrip.items[0].label;
+        // const image = this.tabStrip.items[0].image;
 
         this._ios.delegate = this._delegate;
     }
@@ -419,8 +419,8 @@ export class BottomNavigation extends TabViewBase {
         items.forEach((item, i) => {
             const controller = this.getViewController(item);
             const tabStripItem = <TabStripItem>this.tabStrip.items[i];
-            const tabStripItemImage = tabStripItem.image;
-            const tabStripItemLabel = tabStripItem.label;
+            // const tabStripItemImage = tabStripItem.image;
+            // const tabStripItemLabel = tabStripItem.label;
             const icon = this._getIcon(tabStripItem.iconSource); // this.tabStrip.items[i].image; // this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((tabStripItem.title || ""), icon, i);
             // const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag("test", null, i);
@@ -504,60 +504,6 @@ export class BottomNavigation extends TabViewBase {
         this.setViewControllers(value);
         selectedIndexProperty.coerce(this);
     }
-
-    // [tabTextFontSizeProperty.getDefault](): number {
-    //     return null;
-    // }
-    // [tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
-    //     this._updateIOSTabBarColorsAndFonts();
-    // }
-
-    // [tabTextColorProperty.getDefault](): UIColor {
-    //     return null;
-    // }
-    // [tabTextColorProperty.setNative](value: UIColor | Color) {
-    //     this._updateIOSTabBarColorsAndFonts();
-    // }
-
-    // [tabBackgroundColorProperty.getDefault](): UIColor {
-    //     return this._ios.tabBar.barTintColor;
-    // }
-    // [tabBackgroundColorProperty.setNative](value: UIColor | Color) {
-    //     this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
-    // }
-
-    // [selectedTabTextColorProperty.getDefault](): UIColor {
-    //     return this._ios.tabBar.tintColor;
-    // }
-    // [selectedTabTextColorProperty.setNative](value: UIColor) {
-    //     this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
-    //     this._updateIOSTabBarColorsAndFonts();
-    // }
-
-    // TODO: Move this to TabViewItem
-    [fontInternalProperty.getDefault](): Font {
-        return null;
-    }
-    [fontInternalProperty.setNative](value: Font) {
-        this._updateIOSTabBarColorsAndFonts();
-    }
-
-    // TODO: Move this to TabViewItem
-    // [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
-    //     return "automatic";
-    // }
-    // [iosIconRenderingModeProperty.setNative](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
-    //     this._iconsCache = {};
-    //     let items = this.items;
-    //     if (items && items.length) {
-    //         for (let i = 0, length = items.length; i < length; i++) {
-    //             const item = items[i];
-    //             if (item.iconSource) {
-    //                 (<BottomNavigationItem>item)._update();
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 interface TabStates {
