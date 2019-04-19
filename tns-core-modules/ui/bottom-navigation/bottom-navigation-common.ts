@@ -14,32 +14,13 @@ export const traceCategory = "TabView";
 
 @CSSType("TabContentItem")
 export abstract class TabContentItemBase extends ViewBase implements TabContentItemDefinition, AddChildFromBuilder {
-    // private _title: string = "";
     private _view: View;
-    // private _iconSource: string;
-
-    // get textTransform(): TextTransform {
-    //     return this.style.textTransform;
-    // }
-    // set textTransform(value: TextTransform) {
-    //     this.style.textTransform = value;
-    // }
 
     public _addChildFromBuilder(name: string, value: any): void {
         if (value instanceof View) {
             this.view = value;
         }
     }
-
-    // get title(): string {
-    //     return this._title;
-    // }
-    // set title(value: string) {
-    //     if (this._title !== value) {
-    //         this._title = value;
-    //         this._update();
-    //     }
-    // }
 
     get view(): View {
         return this._view;
@@ -55,16 +36,6 @@ export abstract class TabContentItemBase extends ViewBase implements TabContentI
         }
     }
 
-    // get iconSource(): string {
-    //     return this._iconSource;
-    // }
-    // set iconSource(value: string) {
-    //     if (this._iconSource !== value) {
-    //         this._iconSource = value;
-    //         this._update();
-    //     }
-    // }
-
     public eachChild(callback: (child: ViewBase) => boolean) {
         const view = this._view;
         if (view) {
@@ -73,7 +44,7 @@ export abstract class TabContentItemBase extends ViewBase implements TabContentI
     }
 
     public loadView(view: ViewBase): void {
-        const tabView = this.parent as TabViewBase;
+        const tabView = this.parent as TabNavigationBase;
         if (tabView && tabView.items) {
             // Don't load items until their fragments are instantiated.
             if ((<TabContentItemDefinition>this).canBeLoaded) {
@@ -82,7 +53,7 @@ export abstract class TabContentItemBase extends ViewBase implements TabContentI
         }
     }
 
-    public abstract _update();
+    // public abstract _update();
 }
 
 export class TabStripItem extends ViewBase implements AddChildFromBuilder {
@@ -110,6 +81,7 @@ export class TabStripItem extends ViewBase implements AddChildFromBuilder {
 
 export class TabStrip extends ViewBase implements AddChildFromBuilder, AddArrayFromBuilder {
     public items: TabStripItem[];
+    public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -134,51 +106,12 @@ export module knownCollections {
 }
 
 @CSSType("TabView")
-export class TabViewBase extends View implements AddChildFromBuilder, AddArrayFromBuilder {
+export class TabNavigationBase extends View implements AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public items: TabContentItemDefinition[];
     public tabStrip: TabStrip;
     public selectedIndex: number;
-    // public androidOffscreenTabLimit: number;
-    // public androidTabsPosition: "top" | "bottom";
-    // public androidSwipeEnabled: boolean;
-    // public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
-
-    // get androidSelectedTabHighlightColor(): Color {
-    //     return this.style.androidSelectedTabHighlightColor;
-    // }
-    // set androidSelectedTabHighlightColor(value: Color) {
-    //     this.style.androidSelectedTabHighlightColor = value;
-    // }
-
-    // get tabTextFontSize(): number {
-    //     return this.style.tabTextFontSize;
-    // }
-    // set tabTextFontSize(value: number) {
-    //     this.style.tabTextFontSize = value;
-    // }
-
-    // get tabTextColor(): Color {
-    //     return this.style.tabTextColor;
-    // }
-    // set tabTextColor(value: Color) {
-    //     this.style.tabTextColor = value;
-    // }
-
-    // get tabBackgroundColor(): Color {
-    //     return this.style.tabBackgroundColor;
-    // }
-    // set tabBackgroundColor(value: Color) {
-    //     this.style.tabBackgroundColor = value;
-    // }
-
-    // get selectedTabTextColor(): Color {
-    //     return this.style.selectedTabTextColor;
-    // }
-    // set selectedTabTextColor(value: Color) {
-    //     this.style.selectedTabTextColor = value;
-    // }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -245,7 +178,7 @@ export class TabViewBase extends View implements AddChildFromBuilder, AddArrayFr
 
     public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
         // to be overridden in platform specific files
-        this.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
+        this.notify(<SelectedIndexChangedEventData>{ eventName: TabNavigationBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
     }
 }
 
@@ -258,7 +191,7 @@ export function traceMissingIcon(icon: string) {
     traceWrite("Could not load tab bar icon: " + icon, traceCategories.Error, traceMessageType.error);
 }
 
-export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
+export const selectedIndexProperty = new CoercibleProperty<TabNavigationBase, number>({
     name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
     valueChanged: (target, oldValue, newValue) => {
         target.onSelectedIndexChanged(oldValue, newValue);
@@ -281,41 +214,14 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
     },
     valueConverter: (v) => parseInt(v)
 });
-selectedIndexProperty.register(TabViewBase);
+selectedIndexProperty.register(TabNavigationBase);
 
-export const itemsProperty = new Property<TabViewBase, TabContentItemDefinition[]>({
+export const itemsProperty = new Property<TabNavigationBase, TabContentItemDefinition[]>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         target.onItemsChanged(oldValue, newValue);
     }
 });
-itemsProperty.register(TabViewBase);
+itemsProperty.register(TabNavigationBase);
 
-// export const iosIconRenderingModeProperty = new Property<TabViewBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
-// iosIconRenderingModeProperty.register(TabViewBase);
-
-// export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
-//     name: "androidOffscreenTabLimit", defaultValue: 1, affectsLayout: isIOS,
-//     valueConverter: (v) => parseInt(v)
-// });
-// androidOffscreenTabLimitProperty.register(TabViewBase);
-
-// export const androidTabsPositionProperty = new Property<TabViewBase, "top" | "bottom">({ name: "androidTabsPosition", defaultValue: "top" });
-// androidTabsPositionProperty.register(TabViewBase);
-
-// export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({ name: "androidSwipeEnabled", defaultValue: true, valueConverter: booleanConverter });
-// androidSwipeEnabledProperty.register(TabViewBase);
-
-// export const tabTextFontSizeProperty = new CssProperty<Style, number>({ name: "tabTextFontSize", cssName: "tab-text-font-size", valueConverter: (v) => parseFloat(v) });
-// tabTextFontSizeProperty.register(Style);
-
-// export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-// tabTextColorProperty.register(Style);
-
-// export const tabBackgroundColorProperty = new CssProperty<Style, Color>({ name: "tabBackgroundColor", cssName: "tab-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-// tabBackgroundColorProperty.register(Style);
-
-// export const selectedTabTextColorProperty = new CssProperty<Style, Color>({ name: "selectedTabTextColor", cssName: "selected-tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-// selectedTabTextColorProperty.register(Style);
-
-// export const androidSelectedTabHighlightColorProperty = new CssProperty<Style, Color>({ name: "androidSelectedTabHighlightColor", cssName: "android-selected-tab-highlight-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-// androidSelectedTabHighlightColorProperty.register(Style);
+export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
+iosIconRenderingModeProperty.register(TabStrip);
