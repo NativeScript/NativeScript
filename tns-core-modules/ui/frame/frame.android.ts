@@ -9,8 +9,8 @@ import { Page } from "../page";
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, stack, NavigationType, Observable, View,
-    traceCategories, traceEnabled, traceError, traceWrite,
+    FrameBase, goBack, stack, NavigationContext, NavigationType,
+    Observable, View, traceCategories, traceEnabled, traceError, traceWrite
 } from "./frame-common";
 
 import {
@@ -352,42 +352,19 @@ export class Frame extends FrameBase {
         if (context && context.type && context.path) {
             this.navigationType = NavigationType.Replace;
             const currentBackstackEntry = this._currentEntry;
-            const currentNavigationEntry = currentBackstackEntry.entry;
             const contextModuleName = getModuleName(context.path);
 
-            fragmentId++;
-            const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
             const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
             const newBackstackEntry: BackstackEntry = {
-                entry: currentNavigationEntry,
+                entry: currentBackstackEntry.entry,
                 resolvedPage: newPage,
                 navDepth: currentBackstackEntry.navDepth,
-                fragmentTag: newFragmentTag,
+                fragmentTag: currentBackstackEntry.fragmentTag,
                 frameId: currentBackstackEntry.frameId
-            }
+            };
 
-            this._executingEntry = newBackstackEntry;
-            this._onNavigatingTo(newBackstackEntry, false);
-
-            this._cachedAnimatorState = getAnimatorState(currentBackstackEntry);
-
-            const newFragment = this.createFragment(newBackstackEntry, newFragmentTag);
-            const fragmentManager = this._getFragmentManager();
-            const newTransaction = fragmentManager.beginTransaction();
-
-            // TODO(vchimev): why does 'second' page disappear when navigating to`first` page after a change?
-            _setAndroidFragmentTransitions(
-                false,
-                this._getNavigationTransition(currentNavigationEntry),
-                currentBackstackEntry,
-                newBackstackEntry,
-                newTransaction,
-                this._android.frameId
-            );
-
-            newTransaction.replace(this.containerViewId, newFragment, newFragmentTag);
-            newTransaction.commitAllowingStateLoss();
-
+            const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
+            this._performNavigation(navContext);
             return true;
         } else {
             // Fallback
@@ -398,7 +375,10 @@ export class Frame extends FrameBase {
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
-        this.navigationType = NavigationType.Forward;
+        const isReplace = this.navigationType === NavigationType.Replace;
+        if (!isReplace) {
+            this.navigationType = NavigationType.Forward;
+        }
 
         // set frameId here so that we could use it in fragment.transitions
         newEntry.frameId = this._android.frameId;
@@ -425,7 +405,10 @@ export class Frame extends FrameBase {
             navDepth = -1;
         }
 
-        navDepth++;
+        if (!isReplace) {
+            navDepth++;
+        }
+
         fragmentId++;
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);

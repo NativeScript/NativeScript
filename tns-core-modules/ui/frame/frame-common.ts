@@ -239,7 +239,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
         const isBack = navigationType === NavigationType.Back;
-        const isForward = navigationType === NavigationType.Forward;
+        const isReplace = navigationType === NavigationType.Replace;
         this.raiseCurrentPageNavigatedEvents(isBack);
         const current = this._currentEntry;
 
@@ -248,7 +248,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             const index = this._backStack.indexOf(entry);
             this._backStack.splice(index + 1).forEach(e => this._removeEntry(e));
             this._backStack.pop();
-        } else if (isForward) {
+        } else if (!isReplace) {
             if (entry.entry.clearHistory) {
                 this._backStack.forEach(e => this._removeEntry(e));
                 this._backStack.length = 0;
@@ -350,13 +350,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             if (navigationContext.isBackNavigation) {
                 this.performGoBack(navigationContext);
             } else {
-                this.performNavigation(navigationContext);
+                this._performNavigation(navigationContext);
             }
         }
     }
 
     @profile
-    private performNavigation(navigationContext: NavigationContext) {
+    public _performNavigation(navigationContext: NavigationContext) {
         const navContext = navigationContext.entry;
         this._executingEntry = navContext;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);

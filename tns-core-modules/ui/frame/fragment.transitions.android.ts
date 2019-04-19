@@ -232,22 +232,22 @@ export function _getAnimatedEntries(frameId: number): Set<BackstackEntry> {
 export function _updateTransitions(entry: ExpandedEntry): void {
     const fragment = entry.fragment;
     const enterTransitionListener = entry.enterTransitionListener;
-    if (enterTransitionListener) {
+    if (enterTransitionListener && fragment) {
         fragment.setEnterTransition(enterTransitionListener.transition);
     }
 
     const exitTransitionListener = entry.exitTransitionListener;
-    if (exitTransitionListener) {
+    if (exitTransitionListener && fragment) {
         fragment.setExitTransition(exitTransitionListener.transition);
     }
 
     const reenterTransitionListener = entry.reenterTransitionListener;
-    if (reenterTransitionListener) {
+    if (reenterTransitionListener && fragment) {
         fragment.setReenterTransition(reenterTransitionListener.transition);
     }
 
     const returnTransitionListener = entry.returnTransitionListener;
-    if (returnTransitionListener) {
+    if (returnTransitionListener && fragment) {
         fragment.setReturnTransition(returnTransitionListener.transition);
     }
 }
