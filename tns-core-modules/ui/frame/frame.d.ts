@@ -146,6 +146,11 @@ export class Frame extends View {
     _updateActionBar(page?: Page, disableNavBarAnimation?: boolean);
     /**
      * @private
+     * @param navigationContext
+     */
+    public performNavigation(navigationContext: NavigationContext): void;
+    /**
+     * @private
      */
     _getNavBarVisible(page: Page): boolean;
     /**
@@ -276,6 +281,14 @@ export interface NavigationEntry extends ViewEntry {
      * True to clear the navigation history, false otherwise. Very useful when navigating away from login pages.
      */
     clearHistory?: boolean;
+}
+
+/**
+ * Represents a context passed to navigation methods.
+ */
+export interface NavigationContext {
+    entry: BackstackEntry;
+    isBackNavigation: boolean;
 }
 
 /**

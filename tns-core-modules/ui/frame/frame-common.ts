@@ -12,9 +12,9 @@ import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFr
 export * from "../core/view";
 
 export enum NavigationType {
-    Back,
-    Forward,
-    Replace
+    back,
+    forward,
+    replace
 }
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
@@ -224,7 +224,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         this._currentEntry = entry;
 
-        const isBack = navigationType === NavigationType.Back;
+        const isBack = navigationType === NavigationType.back;
         if (isBack) {
             this._pushInFrameStack();
         }
@@ -238,8 +238,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
-        const isBack = navigationType === NavigationType.Back;
-        const isReplace = navigationType === NavigationType.Replace;
+        const isBack = navigationType === NavigationType.back;
+        const isReplace = navigationType === NavigationType.replace;
         this.raiseCurrentPageNavigatedEvents(isBack);
         const current = this._currentEntry;
 
@@ -350,13 +350,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             if (navigationContext.isBackNavigation) {
                 this.performGoBack(navigationContext);
             } else {
-                this._performNavigation(navigationContext);
+                this.performNavigation(navigationContext);
             }
         }
     }
 
     @profile
-    public _performNavigation(navigationContext: NavigationContext) {
+    public performNavigation(navigationContext: NavigationContext) {
         const navContext = navigationContext.entry;
         this._executingEntry = navContext;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);

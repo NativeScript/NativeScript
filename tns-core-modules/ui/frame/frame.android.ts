@@ -340,7 +340,6 @@ export class Frame extends FrameBase {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        // Inspired by _navigateCore()
         if (traceEnabled()) {
             traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
         }
@@ -350,9 +349,8 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
-            // Set NavigationType.Replace for HMR.
-            // Reset to default NavigationType.Forward in Frame.setCurrent().
-            this.navigationType = NavigationType.Replace;
+            // Set NavigationType.replace for HMR.
+            this.navigationType = NavigationType.replace;
             const currentBackstackEntry = this._currentEntry;
             const contextModuleName = getModuleName(context.path);
 
@@ -366,7 +364,7 @@ export class Frame extends FrameBase {
             };
 
             const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
-            this._performNavigation(navContext);
+            this.performNavigation(navContext);
             return true;
         } else {
             // Fallback
@@ -377,11 +375,11 @@ export class Frame extends FrameBase {
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
-        // NavigationType.Replace for HMR.
-        // Otherwise, default to NavigationType.Forward.
-        const isReplace = this.navigationType === NavigationType.Replace;
+        // NavigationType.replace for HMR.
+        // Otherwise, default to NavigationType.forward.
+        const isReplace = this.navigationType === NavigationType.replace;
         if (!isReplace) {
-            this.navigationType = NavigationType.Forward;
+            this.navigationType = NavigationType.forward;
         }
 
         // set frameId here so that we could use it in fragment.transitions
@@ -435,7 +433,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this.navigationType = NavigationType.Back;
+        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry.navDepth;
 

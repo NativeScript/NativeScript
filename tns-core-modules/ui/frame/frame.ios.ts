@@ -64,7 +64,6 @@ export class Frame extends FrameBase {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        // Inspired by _navigateCore()
         if (traceEnabled()) {
             traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
         }
@@ -74,9 +73,9 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
-            // Set NavigationType.Replace for HMR.
-            // Reset to default NavigationType.Forward in Frame.setCurrent().
-            this.navigationType = NavigationType.Replace;
+            // Set NavigationType.replace for HMR.
+            // When `viewDidAppear()` set to NavigationType.forward.
+            this.navigationType = NavigationType.replace;
             const currentBackstackEntry = this._currentEntry;
 
             const contextModuleName = utils.getModuleName(context.path);
@@ -89,7 +88,7 @@ export class Frame extends FrameBase {
             }
 
             const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
-            this._performNavigation(navContext);
+            this.performNavigation(navContext);
             return true;
         } else {
             // Fallback
@@ -99,11 +98,11 @@ export class Frame extends FrameBase {
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
-        // NavigationType.Replace for HMR.
-        // Otherwise, default to NavigationType.Forward.
-        const isReplace = this.navigationType === NavigationType.Replace;
+        // NavigationType.replace for HMR.
+        // Otherwise, default to NavigationType.forward.
+        const isReplace = this.navigationType === NavigationType.replace;
         if (!isReplace) {
-            this.navigationType = NavigationType.Forward;
+            this.navigationType = NavigationType.forward;
         }
         super._navigateCore(backstackEntry);
 
@@ -185,7 +184,7 @@ export class Frame extends FrameBase {
         }
 
         // We should hide the current entry from the back stack.
-        // This is the case for HMR when NavigationType.Replace.
+        // This is the case for HMR when NavigationType.replace.
         if (!Frame._isEntryBackstackVisible(this._currentEntry) || isReplace) {
             let newControllers = NSMutableArray.alloc<UIViewController>().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
@@ -218,7 +217,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this.navigationType = NavigationType.Back;
+        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry[NAV_DEPTH];
 

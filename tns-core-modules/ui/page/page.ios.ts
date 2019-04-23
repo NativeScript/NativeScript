@@ -20,7 +20,7 @@ const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
-    if (!frame || frame.navigationType === NavigationType.Replace) {
+    if (!frame || frame.navigationType === NavigationType.replace) {
         return false;
     }
 
@@ -135,18 +135,18 @@ class UIViewControllerImpl extends UIViewController {
             let isBack: boolean;
             let navType = frame.navigationType;
             // We are on the current page which happens when navigation is canceled so isBack should be false.
-            if (navType !== NavigationType.Replace && frame.currentPage === owner && frame._navigationQueue.length === 0) {
+            if (navType !== NavigationType.replace && frame.currentPage === owner && frame._navigationQueue.length === 0) {
                 isBack = false;
-                navType = NavigationType.Forward;
+                navType = NavigationType.forward;
             } else {
                 isBack = isBackNavigationTo(owner, newEntry);
                 if (isBack) {
-                    navType = NavigationType.Back;
+                    navType = NavigationType.back;
                 }
             }
 
             frame.setCurrent(newEntry, navType);
-            frame.navigationType = isBack ? NavigationType.Back : NavigationType.Forward;
+            frame.navigationType = isBack ? NavigationType.back : NavigationType.forward;
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];

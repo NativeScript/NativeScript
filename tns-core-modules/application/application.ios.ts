@@ -237,7 +237,7 @@ class IOSApplication implements IOSApplicationDefinition {
         // + Application root module is changed
         // + View did not handle the change
         // Note:
-        // The case when neither app root module is changed, neighter livesync is handled on View,
+        // The case when neither app root module is changed, nor livesync is handled on View,
         // then changes will not apply until navigate forward to the module.
         if (isAppRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
             this.setWindowContent();
