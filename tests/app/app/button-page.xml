@@ -1,0 +1,5 @@
+<Page loaded="onLoaded">
+    <StackLayout>
+        <Button id="button" text="button"></Button>
+    </StackLayout>
+</Page>

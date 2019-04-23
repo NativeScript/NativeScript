@@ -28,6 +28,11 @@ export function convertString(value: any): any {
     return result;
 }
 
+export function getModuleName(path: string): string {
+    let moduleName = path.replace("./", "");
+    return moduleName.substring(0, moduleName.lastIndexOf("."));
+}
+
 export module layout {
     const MODE_SHIFT = 30;
     const MODE_MASK = 0x3 << MODE_SHIFT;

@@ -160,7 +160,7 @@ export abstract class ViewBase extends Observable {
 
     /**
      * @deprecated use showModal with ShowModalOptions instead
-     * 
+     *
      * Shows the View contained in moduleName as a modal view.
      * @param moduleName - The name of the module to load starting from the application root.
      * @param context - Any context you want to pass to the modally shown view.
@@ -175,7 +175,7 @@ export abstract class ViewBase extends Observable {
 
     /**
      * @deprecated use showModal with ShowModalOptions instead
-     * 
+     *
      * Shows the view passed as parameter as a modal view.
      * @param view - View instance to be shown modally.
      * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
@@ -367,7 +367,7 @@ export abstract class ViewBase extends Observable {
     public _goToVisualState(state: string): void;
     /**
      * @deprecated
-     * 
+     *
      * This used to be the way to set attribute values in early {N} versions.
      * Now attributes are expected to be set as plain properties on the view instances.
      */
