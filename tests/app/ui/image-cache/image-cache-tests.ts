@@ -3,7 +3,7 @@ import * as imageCacheModule from "tns-core-modules/ui/image-cache";
 import * as imageSource from "tns-core-modules/image-source";
 // << image-cache-require
 
-export let test_DummyTestForSnippetOnly = function() {
+export const test_DummyTestForSnippetOnly = function() {
     // >> image-cache-request-images
     const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
@@ -37,7 +37,7 @@ export let test_DummyTestForSnippetOnly = function() {
     // << image-cache-request-images
 }
 
-export let test_ImageCache_NothingAtProvidedUrl = function() {
+export const test_ImageCache_NothingAtProvidedUrl = function() {
     const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
 
