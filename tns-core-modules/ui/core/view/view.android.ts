@@ -6,7 +6,7 @@ import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Color, EventData, ShowModalOptions, elevationProperty, dynamicElevationOffsetProperty
+    Color, EventData, ShowModalOptions
 } from "./view-common";
 
 import {
@@ -15,7 +15,7 @@ import {
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
-    zIndexProperty, backgroundInternalProperty
+    zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
@@ -29,6 +29,10 @@ export * from "./view-common";
 
 const DOMID = "_domId";
 const androidBackPressedEvent = "androidBackPressed";
+
+const shortAnimTime = 17694720; // android.R.integer.config_shortAnimTime
+const statePressed = 16842919; // android.R.attr.state_pressed
+const stateEnabled = 16842910; // android.R.attr.state_enabled
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
@@ -715,100 +719,72 @@ export class View extends ViewCommon {
         this.nativeViewProtected.setAlpha(float(value));
     }
 
-    [elevationProperty.getDefault](): number {
-        console.log("elevationProperty.getDefault");
-        return null;
-    }
-
-    [elevationProperty.setNative](value: number) {
-        if (sdkVersion() < 21) { return; }
-        console.log("elevationProperty.setNative, value: " + value);
-        const nativeView: any = this.nativeViewProtected;
-        if (value != null) {
-            if (this._originalElevation === undefined) {
-                this._originalElevation = nativeView.getElevation();
-            }
-            nativeView.setElevation(layout.toDevicePixels(value));
-        } else {
-            // reset to original value
-            if (this._originalElevation !== undefined) {
-                nativeView.setElevation(this._originalElevation);
-            }
+    [androidElevationProperty.getDefault](): number {
+        if (sdkVersion() < 21) {
+            return 0;
         }
-        this._refreshStateListAnimator();
+
+        // NOTE: overriden in Button implementation as for widgets with StateListAnimator (Button)
+        // nativeView.getElevation() returns 0 at the time of the getDefault() query
+        return layout.toDeviceIndependentPixels((<any>this.nativeViewProtected).getElevation());
     }
-
-    [dynamicElevationOffsetProperty.getDefault](): number {
-        console.log("dynamicElevationOffsetProperty.getDefault");
-        return null;
-    }
-
-    [dynamicElevationOffsetProperty.setNative](value: number) {
-        if (sdkVersion() < 21) { return; }
-        console.log("dynamicElevationOffsetProperty.setNative, value: " + value);
-        this._refreshStateListAnimator();
-
-    }
-
-    _refreshStateListAnimator() {
-        const nativeView: any = this.nativeViewProtected;
-        if (this._originalStateListAnimator === undefined) {
-            this._originalStateListAnimator = nativeView.getStateListAnimator();
-        }
-        console.log("refreshing sla", this.elevation, this.dynamicElevationOffset, this._originalStateListAnimator);
-        if ((this.elevation == null && this.dynamicElevationOffset == null) || // nothing to override
-            (this.dynamicElevationOffset == null && this._originalStateListAnimator === null)) { // we don't need pressedZ and there's no default
-            // we have no reason to override anything, reset to default
-            if (this._originalStateListAnimator !== nativeView.getStateListAnimator()) {
-                nativeView.setStateListAnimator(this._originalStateListAnimator);
-            }
-            this._originalStateListAnimator = undefined;
+    [androidElevationProperty.setNative](value: number) {
+        if (sdkVersion() < 21) {
             return;
         }
-        // we have elevation or offset
-        const sla = new (android.animation as any).StateListAnimator();
+
+        this.refreshStateListAnimator();
+    }
+
+    [androidDynamicElevationOffsetProperty.getDefault](): number {
+        return 0;
+    }
+    [androidDynamicElevationOffsetProperty.setNative](value: number) {
+        if (sdkVersion() < 21) {
+            return;
+        }
+
+        this.refreshStateListAnimator();
+    }
+
+    private refreshStateListAnimator() {
+        const nativeView: any = this.nativeViewProtected;
 
         const ObjectAnimator = android.animation.ObjectAnimator;
         const AnimatorSet = android.animation.AnimatorSet;
-        const shortAnimTime = 17694720; // android.R.integer.config_shortAnimTime
-        const statePressed = 16842919; // android.R.attr.state_pressed
-        const stateEnabled = 16842910; // android.R.attr.state_enabled
 
-        const buttonDuration =
-            nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
-        const pressedElevation = layout.toDevicePixels(this.elevation || 0);
-        const pressedZ = layout.toDevicePixels(this.dynamicElevationOffset || 0);
-        const elevation = layout.toDevicePixels(this.elevation || 0);
+        const duration = nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
+        const elevation = layout.toDevicePixels(this.androidElevation || 0);
         const z = layout.toDevicePixels(0);
+        const pressedZ = layout.toDevicePixels(this.androidDynamicElevationOffset || 0);
 
         const pressedSet = new AnimatorSet();
-        const notPressedSet = new AnimatorSet();
-        const defaultSet = new AnimatorSet();
-
         pressedSet.playTogether(java.util.Arrays.asList([
             ObjectAnimator.ofFloat(nativeView, "translationZ", [pressedZ])
-                .setDuration(buttonDuration),
-            ObjectAnimator.ofFloat(nativeView, "elevation", [pressedElevation])
-                .setDuration(0),
-        ]));
-        notPressedSet.playTogether(java.util.Arrays.asList([
-            ObjectAnimator.ofFloat(nativeView, "translationZ", [z])
-                .setDuration(buttonDuration),
+                .setDuration(duration),
             ObjectAnimator.ofFloat(nativeView, "elevation", [elevation])
                 .setDuration(0),
         ]));
+
+        const notPressedSet = new AnimatorSet();
+        notPressedSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [z])
+                .setDuration(duration),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [elevation])
+                .setDuration(0),
+        ]));
+
+        const defaultSet = new AnimatorSet();
         defaultSet.playTogether(java.util.Arrays.asList([
             ObjectAnimator.ofFloat(nativeView, "translationZ", [0]).setDuration(0),
             ObjectAnimator.ofFloat(nativeView, "elevation", [0]).setDuration(0),
         ]));
 
-        sla.addState(
-            [statePressed, stateEnabled],
-            pressedSet,
-        );
-        sla.addState([stateEnabled], notPressedSet);
-        sla.addState([], defaultSet);
-        nativeView.setStateListAnimator(sla);
+        const stateListAnimator = new (<any>android.animation).StateListAnimator();
+        stateListAnimator.addState([statePressed, stateEnabled], pressedSet);
+        stateListAnimator.addState([stateEnabled], notPressedSet);
+        stateListAnimator.addState([], defaultSet);
+        nativeView.setStateListAnimator(stateListAnimator);
     }
 
     [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {

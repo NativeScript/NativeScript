@@ -660,6 +660,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.scaleY = value;
     }
 
+    get androidElevation(): number {
+        return this.style.androidElevation;
+    }
+    set androidElevation(value: number) {
+        this.style.androidElevation = value;
+    }
+
+    get androidDynamicElevationOffset(): number {
+        return this.style.androidDynamicElevationOffset;
+    }
+    set androidDynamicElevationOffset(value: number) {
+        this.style.androidDynamicElevationOffset = value;
+    }
+
     //END Style property shortcuts
 
     public automationText: string;
@@ -669,8 +683,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public isUserInteractionEnabled: boolean;
     public iosOverflowSafeArea: boolean;
     public iosOverflowSafeAreaEnabled: boolean;
-    public elevation: number;
-    public dynamicElevationOffset: number;
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -1117,9 +1129,3 @@ iosOverflowSafeAreaProperty.register(ViewCommon);
 
 export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewCommon, boolean>({ name: "iosOverflowSafeAreaEnabled", defaultValue: true, valueConverter: booleanConverter });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
-
-export const elevationProperty = new Property<ViewCommon, number>({ name: "elevation", defaultValue: null, valueConverter: parseFloat });
-elevationProperty.register(ViewCommon);
-
-export const dynamicElevationOffsetProperty = new Property<ViewCommon, number>({ name: "dynamicElevationOffset", defaultValue: null, valueConverter: parseFloat });
-dynamicElevationOffsetProperty.register(ViewCommon);

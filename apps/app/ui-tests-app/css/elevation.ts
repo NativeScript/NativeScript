@@ -2,9 +2,10 @@ import { Button } from "tns-core-modules/ui/button/button";
 import { EventData } from "tns-core-modules/ui/page/page";
 
 const states = [
-    { class: "", text: "no elevation (default)" },
+    { class: "", text: "default elevation" },
     { class: "elevation-10", text: "elevetion 10" },
     { class: "elevation-10 pressed-z-10", text: "elevetion 10 pressed-z 10" },
+    { class: "elevation-0", text: "elevetion 0" },
 ]
 let currentState = 0;
 
