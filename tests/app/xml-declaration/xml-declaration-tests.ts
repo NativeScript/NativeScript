@@ -35,9 +35,10 @@ export function test_parse_IsDefined() {
     TKUnit.assertTrue(types.isFunction(builder.parse), "ui/builder should have parse method!");
 };
 
-export function test_load_ShouldNotCrashWithInvalidFileName() {
-    var v = builder.load(fs.path.join(__dirname, "mainPage1.xml"));
-    TKUnit.assertTrue(types.isUndefined(v), "Expected result: undefined; Actual result: " + v + ";");
+export function test_load_ShouldThrowWithInvalidFileName() {
+    let fileName = fs.path.join(__dirname, "invalid-page.xml");
+    TKUnit.assertThrows(() => builder.load(fileName),
+        "Loading component from a missing module SHOULD throw an error.");
 };
 
 export function test_load_ShouldNotCrashWithoutExports() {
@@ -300,7 +301,7 @@ export function test_parse_ShouldSetCanvasAttachedProperties() {
     var child = absLayout.getChildAt(0);
 
     var left = absoluteLayoutModule.AbsoluteLayout.getLeft(child);
-    
+
     TKUnit.assert(Length.equals(left, Length.parse("1")), `Expected result for canvas left: 1; Actual result: ${(<any>left).value};`)
 
     var top = absoluteLayoutModule.AbsoluteLayout.getTop(child);
