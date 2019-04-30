@@ -576,7 +576,7 @@ function getTitleAttributesForStates(tabView: TabView): TabStates {
     }
 
     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
-    const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
+    const selectedTextColor = tabSelectedItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
     result.selectedState = { [NSFontAttributeName]: font }
     if (selectedTextColor) {
         result.selectedState[UITextAttributeTextColor] = selectedTextColor
