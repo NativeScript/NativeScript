@@ -1,15 +1,13 @@
-﻿// >> image-cache-require
-import * as imageCacheModule from "tns-core-modules/ui/image-cache";
+﻿import * as imageCacheModule from "tns-core-modules/ui/image-cache";
 import * as imageSource from "tns-core-modules/image-source";
-// << image-cache-require
+import * as types from "tns-core-modules/utils/types";
+import * as TKUnit from "../../TKUnit";
 
-export const test_DummyTestForSnippetOnly = function() {
-    // >> image-cache-request-images
+export const test_ImageCache_ValidUrl = function() {
     const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
 
-    // Enable download while not scrolling
-    cache.enableDownload();
+    let validKey;
 
     let imgSource: imageSource.ImageSource;
     const url = "https://github.com/NativeScript.png";
@@ -27,22 +25,23 @@ export const test_DummyTestForSnippetOnly = function() {
             completed: (image: any, key: string) => {
                 if (url === key) {
                     imgSource = imageSource.fromNativeSource(image);
+                    validKey = key;
+                    console.log("Valid url: ", key);
                 }
             }
         });
     }
 
-    // Disable download while scrolling
-    cache.disableDownload();
-    // << image-cache-request-images
+    TKUnit.waitUntilReady(() => types.isDefined(validKey), 8);
+    TKUnit.assertEqual(validKey, url, "Key should equal the provided url");
 }
 
 export const test_ImageCache_NothingAtProvidedUrl = function() {
     const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
 
-    // Enable download while not scrolling
-    cache.enableDownload();
+    let errorCaught = false;
+    let errorMessage = null;
 
     let imgSource: imageSource.ImageSource;
     const url = "https://github.com/NativeScript-NoImage.png";
@@ -64,10 +63,12 @@ export const test_ImageCache_NothingAtProvidedUrl = function() {
             },
             error: (key: string) => {
                 console.log("No image for key: ", key);
+                errorMessage = `No image for key: ${key}`;
+                errorCaught = true;
             }
         });
     }
 
-    // Disable download while scrolling
-    cache.disableDownload();
+    TKUnit.waitUntilReady(() => errorCaught);
+    TKUnit.assertEqual(`No image for key: ${url}`, errorMessage);
 }
