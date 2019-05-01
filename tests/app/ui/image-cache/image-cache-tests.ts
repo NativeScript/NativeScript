@@ -7,7 +7,7 @@ export const test_ImageCache_ValidUrl = function() {
     const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
 
-    let validKey;
+    let validKey: string;
 
     let imgSource: imageSource.ImageSource;
     const url = "https://github.com/NativeScript.png";
@@ -41,7 +41,7 @@ export const test_ImageCache_NothingAtProvidedUrl = function() {
     cache.maxRequests = 5;
 
     let errorCaught = false;
-    let errorMessage = null;
+    let errorMessage: string;
 
     let imgSource: imageSource.ImageSource;
     const url = "https://github.com/NativeScript-NoImage.png";
