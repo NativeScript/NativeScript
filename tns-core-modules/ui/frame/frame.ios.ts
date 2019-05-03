@@ -3,7 +3,6 @@ import {
     iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
 } from ".";
 import { Page } from "../page";
-import { ModuleType } from "../../ui/core/view/view-common";
 import { profile } from "../../profiling";
 
 //Types.
@@ -61,44 +60,6 @@ export class Frame extends FrameBase {
             this._updateBackstack(entry, navigationType);
 
             super.setCurrent(entry, navigationType);
-        }
-    }
-
-    public _onLivesync(context?: ModuleContext): boolean {
-        if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
-        }
-
-        if (!this._currentEntry || !this._currentEntry.entry) {
-            return false;
-        }
-
-        if (context && context.type && context.path) {
-            // Handle local styls changes when app root is Frame
-            if (context.type === ModuleType.style) {
-                return this._changeLocalStyles(context.path);
-            }
-
-            // Set NavigationType.replace for HMR.
-            // When `viewDidAppear()` set to NavigationType.forward.
-            this.navigationType = NavigationType.replace;
-            const currentBackstackEntry = this._currentEntry;
-
-            const contextModuleName = utils.getModuleName(context.path);
-            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
-            const newBackstackEntry: BackstackEntry = {
-                entry: currentBackstackEntry.entry,
-                resolvedPage: newPage,
-                navDepth: currentBackstackEntry.navDepth,
-                fragmentTag: undefined
-            }
-
-            const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
-            this.performNavigation(navContext);
-            return true;
-        } else {
-            // Fallback
-            return super._onLivesync();
         }
     }
 

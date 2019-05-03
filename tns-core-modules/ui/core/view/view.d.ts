@@ -33,6 +33,17 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 export function CSSType(type: string): ClassDecorator;
 
 /**
+ * 
+ * @param view The view
+ * @param context The ModuleType
+ * @param type Type of the ModuleType to be matched
+ */
+export function viewMatchesModuleContext(
+    view: View,
+    context: ModuleContext,
+    type: ModuleType[]): boolean;
+
+/**
  * Denotes a length number that is in device independent pixel units.
  */
 export type dip = number;
@@ -686,7 +697,7 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _changeLocalStyles(contextPath: string): boolean;
+    _handleLivesync(context?: { type: string, path: string }): boolean;
     /**
      * @private
      */
