@@ -3,6 +3,7 @@ import {
     iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
 } from ".";
 import { Page } from "../page";
+import { ModuleType } from "../../ui/core/view/view-common";
 import { profile } from "../../profiling";
 
 //Types.
@@ -73,6 +74,11 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
+            // Handle local styls changes when app root is Frame
+            if (context.type === ModuleType.style) {
+                return this._changeLocalStyles(context.path);
+            }
+
             // Set NavigationType.replace for HMR.
             // When `viewDidAppear()` set to NavigationType.forward.
             this.navigationType = NavigationType.replace;

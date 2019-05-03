@@ -349,6 +349,11 @@ export class Frame extends FrameBase {
         }
 
         if (context && context.type && context.path) {
+            // Handle local styls changes when app root is Frame
+            if (context.type === ModuleType.style) {
+                return this._changeLocalStyles(context.path);
+            }
+
             // Set NavigationType.replace for HMR.
             this.navigationType = NavigationType.replace;
             const currentBackstackEntry = this._currentEntry;

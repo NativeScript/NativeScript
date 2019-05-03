@@ -153,7 +153,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         if (context && context.type && context.path) {
             // Handle local styles
             if (context.type === ModuleType.style) {
-                return this.changeLocalStyles(context.path);
+                return this._changeLocalStyles(context.path);
             }
             // Handle module markup and script changes
             else {
@@ -164,7 +164,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return false;
     }
 
-    private changeLocalStyles(contextPath: string): boolean {
+    public _changeLocalStyles(contextPath: string): boolean {
         if (!this.changeStyles(this, contextPath)) {
             eachDescendant(this, (child: ViewBase) => {
                 this.changeStyles(child, contextPath);

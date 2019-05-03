@@ -474,7 +474,7 @@ export abstract class View extends ViewBase {
 
     /**
      * @deprecated use on() instead
-     * 
+     *
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when gesture is received.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
@@ -683,6 +683,10 @@ export abstract class View extends ViewBase {
      * @private
      */
     _onLivesync(context?: { type: string, path: string }): boolean;
+    /**
+     * @private
+     */
+    _changeLocalStyles(contextPath: string): boolean;
     /**
      * @private
      */
