@@ -1,31 +1,18 @@
 import * as inspectorCommandTypes from "./InspectorBackendCommands.ios";
-var inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
+const inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
 
 import * as debuggerDomains from "./debugger";
 
 declare var __inspectorSendEvent;
-/**
- * Checks if the property is a function and if it is, calls it on this.
- * Designed to support backward compatibility for methods that became properties.
- * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
- * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
- */
-function getter<T>(_this: any, property: T | {(): T}): T {
-    if (typeof property === "function") {
-        return (<{(): T}>property).call(_this);
-    } else {
-        return <T>property;
-    }
-}
 
 declare var __inspectorTimestamp;
 
 const frameId = "NativeScriptMainFrameIdentifier";
 const loaderId = "Loader Identifier";
 
-var resources_datas = [];
+const resources_datas = [];
 
-var documentTypeByMimeType = {
+const documentTypeByMimeType = {
     "text/xml": "Document",
     "text/plain": "Document",
     "text/html": "Document",
@@ -67,7 +54,7 @@ export class Request {
 
             this._mimeType = value;
 
-            var resourceType = "Other";
+            let resourceType = "Other";
 
             if (this._mimeType in documentTypeByMimeType) {
                 resourceType = documentTypeByMimeType[this._mimeType];
@@ -182,8 +169,8 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Returns content served for the given request.
      */
     getResponseBody(params: inspectorCommandTypes.NetworkDomain.GetResponseBodyMethodArguments): { body: string, base64Encoded: boolean } {
-        var resource_data = resources_datas[params.requestId];
-        var body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() :
+        const resource_data = resources_datas[params.requestId];
+        const body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() :
                     resource_data.data.base64EncodedStringWithOptions(0);
 
         if (resource_data) {
@@ -237,9 +224,9 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Loads a resource in the context of a frame on the inspected page without cross origin checks.
      */
     loadResource(params: inspectorCommandTypes.NetworkDomain.LoadResourceMethodArguments): { content: string, mimeType: string, status: number } {
-        let appPath = getter(NSBundle, NSBundle.mainBundle).bundlePath;
+        let appPath = NSBundle.mainBundle.bundlePath;
         let pathUrl = params.url.replace("file://", appPath);
-        let fileManager = getter(NSFileManager, NSFileManager.defaultManager);
+        let fileManager = NSFileManager.defaultManager;
         let data = fileManager.fileExistsAtPath(pathUrl) ? fileManager.contentsAtPath(pathUrl) : undefined;
         let content = data ? NSString.alloc().initWithDataEncoding(data, NSUTF8StringEncoding) : "";
 

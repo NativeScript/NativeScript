@@ -4,26 +4,23 @@ import * as imageSourceModule from "../../image-source";
 import * as fsModule from "../../file-system";
 
 import * as types from "../../utils/types";
-import * as utils from "../../utils/utils";
 import * as domainDebugger from "../../debugger/debugger";
 import { getFilenameFromUrl } from "./http-request-common";
-
-const getter = utils.ios.getter;
 
 export enum HttpResponseEncoding {
     UTF8,
     GBK
 }
 
-const currentDevice = getter(UIDevice, UIDevice.currentDevice);
+const currentDevice = UIDevice.currentDevice;
 const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
 const osVersion = currentDevice.systemVersion;
 
 const GET = "GET";
 const USER_AGENT_HEADER = "User-Agent";
 const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace(".", "_")} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-const sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
-const queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
+const sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration;
+const queue = NSOperationQueue.mainQueue;
 
 function parseJSON(source: string): any {
     const src = source.trim();

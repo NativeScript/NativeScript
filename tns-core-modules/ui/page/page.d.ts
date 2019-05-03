@@ -33,7 +33,7 @@ export interface NavigatedData extends EventData {
 }
 
 export module knownCollections {
-    export var actionItems: string;
+    export const actionItems: string;
 }
 
 /**

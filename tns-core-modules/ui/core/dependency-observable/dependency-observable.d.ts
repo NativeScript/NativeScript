@@ -251,19 +251,19 @@ export module PropertyMetadataSettings {
     /**
      * No options are specified. This is the default value.
      */
-    export var None: number;
+    export const None: number;
     /**
      * A change in the Property associated with the metadata will invalidate the layout.
      */
-    export var AffectsLayout;
+    export const AffectsLayout;
     /**
      * The Property associated with the metadata is inheritable and its value should be propagated down in the visual tree.
      */
-    export var Inheritable: number;
+    export const Inheritable: number;
     /**
      * A change in the Property associated with the metadata will cause all CSS styles to be re-evaluated for for owning element.
      */
-    export var AffectsStyle: number;
+    export const AffectsStyle: number;
 }
 
 /**
@@ -273,21 +273,21 @@ export module ValueSource {
     /**
      * Default value, coming from the PropertyMetadata.defaultValue.
      */
-    export var Default: number;
+    export const Default: number;
     /**
      * Inherited value, coming from the logical parent of the current DependencyObservable instance.
      */
-    export var Inherited: number;
+    export const Inherited: number;
     /**
      * Css value, coming a css selector and rule that matches the current DependencyObservable instance.
      */
-    export var Css: number;
+    export const Css: number;
     /**
      * Local value, set directly to the current DependencyObservable instance.
      */
-    export var Local: number;
+    export const Local: number;
     /**
      * VisualState value, coming from a visual-state css selector. E.g. { button:pressed }.
      */
-    export var VisualState: number;
+    export const VisualState: number;
 }

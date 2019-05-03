@@ -3,7 +3,6 @@ import * as TKUnit from "../../TKUnit";
 import * as view from "tns-core-modules/ui/core/view";
 import * as testModule from "../../ui-test";
 import * as platform from "tns-core-modules/platform";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import * as helper from "../helper";
 import { parse } from "tns-core-modules/ui/builder";
 import { Page } from "tns-core-modules/ui/page";
@@ -75,7 +74,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     };
 
     private layout_insets_top_action_bar_test(layout: view.View) {
-        const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
+        const app = UIApplication.sharedApplication;
         const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
         const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
         const topInset = statusBarHeight + actionBarHeight;
@@ -85,7 +84,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     private layout_insets_top_action_bar_hidden_test(layout: view.View) {
-        const app = iosUtils.getter(UIApplication, UIApplication.sharedApplication);
+        const app = UIApplication.sharedApplication;
         const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
         const topInset = statusBarHeight;
 

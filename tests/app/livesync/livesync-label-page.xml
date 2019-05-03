@@ -1,0 +1,5 @@
+<Page loaded="onLoaded">
+    <StackLayout>
+        <Label id="label" text="label"></Label>
+    </StackLayout>
+</Page>

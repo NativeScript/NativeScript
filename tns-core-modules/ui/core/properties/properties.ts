@@ -1100,7 +1100,7 @@ export const initNativeView = profile("\"properties\".initNativeView", function 
 export function applyPendingNativeSetters(view: ViewBase): void {
     // TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
     const suspendedUpdates = view._suspendedUpdates;
-    for (var propertyName in suspendedUpdates) {
+    for (let propertyName in suspendedUpdates) {
         const property = <PropertyInterface>suspendedUpdates[propertyName];
         const setNative = property.setNative;
         if (view[setNative]) {
@@ -1305,7 +1305,7 @@ export function getSetProperties(view: ViewBase): [string, any][] {
 export function getComputedCssValues(view: ViewBase): [string, any][] {
     const result = [];
     const style = view.style;
-    for (var prop of cssPropertyNames) {
+    for (let prop of cssPropertyNames) {
         result.push([prop, style[prop]]);
     }
 

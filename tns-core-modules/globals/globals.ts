@@ -4,7 +4,7 @@ require("./ts-helpers");
 // This method iterates all the keys in the source exports object and copies them to the destination exports one.
 // Note: the method will not check for naming collisions and will override any already existing entries in the destination exports.
 global.moduleMerge = function (sourceExports: any, destExports: any) {
-    for (var key in sourceExports) {
+    for (let key in sourceExports) {
         destExports[key] = sourceExports[key];
     }
 }
@@ -135,10 +135,10 @@ export function install() {
     if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
         if (!snapshotGlobals) {
             // require in snapshot mode is cheap
-            var timer: typeof timerModule = require("timer");
-            var dialogs: typeof dialogsModule = require("ui/dialogs");
-            var xhr = require("xhr");
-            var fetch = require("fetch");
+            const timer: typeof timerModule = require("timer");
+            const dialogs: typeof dialogsModule = require("ui/dialogs");
+            const xhr = require("xhr");
+            const fetch = require("fetch");
 
             snapshotGlobals = snapshotGlobals || {
                 setTimeout: timer.setTimeout,
@@ -161,7 +161,7 @@ export function install() {
                 Response: fetch.Response,
             }
         }
-        var consoleModule = require("console").Console;
+        const consoleModule = require("console").Console;
         // Object.assign call will fire an error when trying to write to a read-only property of an object, such as 'console'
         global.console = global.console || new consoleModule();
         Object.assign(global, snapshotGlobals);
@@ -190,7 +190,7 @@ install();
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
-        var originalMethod = descriptor.value;
+        const originalMethod = descriptor.value;
 
         descriptor.value = function (...args: any[]) {
             console.log(`${key.toString()} is deprecated`);
@@ -209,7 +209,7 @@ global.Deprecated = Deprecated;
 
 export function Experimental(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
-        var originalMethod = descriptor.value;
+        const originalMethod = descriptor.value;
 
         descriptor.value = function (...args: any[]) {
             console.log(`${key.toString()} is experimental`);

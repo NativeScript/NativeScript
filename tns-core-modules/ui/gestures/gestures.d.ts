@@ -94,22 +94,22 @@ export module TouchAction {
     /**
      * Down action.
      */
-    export var down: string;
+    export const down: string;
 
     /**
      * Up action.
      */
-    export var up: string;
+    export const up: string;
     
     /**
      * Move action.
      */
-    export var move: string;
+    export const move: string;
     
     /**
      * Cancel action.
      */
-    export var cancel: string;
+    export const cancel: string;
 }
 
 /**
