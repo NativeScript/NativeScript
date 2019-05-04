@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css?family=Titillium+Web:400,700');
+
+body {
+  font-family: "Titillium Web", Helvetica, Arial, sans-serif;
+  color: #FFFFFF;
+  background-color: #243442;
+  margin: 0;
+}
+
+h1 {
+  margin-top: 6em;
+  text-align: center;
+  font-weight: 400;
+}
+
+a {
+  color: #00B7FF;
+}
+
+footer {
+  position: fixed;
+  min-height: 102px;
+  bottom: 0;
+  background-image: url("/images/image-bg-footer.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+}
+
+.logos {
+  margin: 4em auto 0;
+  width: 340px;
+  display: flex;
+}
+
+.logos img {
+  padding: 0 16px;
+}
+
+.habicat-jumping {
+  position: absolute;
+  left: 10%;
+  bottom: 6em;
+}
+
+.habicat-set {
+  position: absolute;
+  right: 20%;
+  bottom: 3px;
+}

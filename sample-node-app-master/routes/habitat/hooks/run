@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Habitat uses "hooks" to manage the application lifecycle. The run hook
+# is used for starting (and restarting) a service. Here, we launch the Node
+# app in the usual way, passing the path to the Habitat-managed config file
+# as a command-line argument.
+#
+# To learn more about the run hook, its conventions and other available lifecycle
+# hooks, see the docs at https://www.habitat.sh/docs/reference/#available-hooks.
+
+exec node \
+  {{ pkg.path }}/app/index.js \
+  {{ pkg.svc_config_path }}/config.json \
+  2>&1

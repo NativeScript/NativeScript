@@ -1,0 +1,7 @@
+# When Habitat starts this service, it'll use the values we define here
+# to render the templates we define in our plan's `config` directory.
+#
+# To learn more about Habitat's configuration features, see the docs at
+# https://www.habitat.sh/docs/developing-packages/#add-configuration.
+
+title = "Habitat - The fastest path from code to cloud native."
