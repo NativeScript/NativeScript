@@ -1,12 +1,13 @@
-import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { Screen } from "./screen";
 import { suspendTime, dontKeepActivities } from "./config";
 
-describe("issues", () => {
+describe("issues", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
 
-    before(async () => {
+    before(async function () {
+        nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
@@ -14,7 +15,7 @@ describe("issues", () => {
         }
     });
 
-    after(async () => {
+    after(async function () {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(false);
         }
@@ -29,9 +30,9 @@ describe("issues", () => {
         }
     });
 
-    it("issue-6488", async () => {
+    it("issue-6488", async function () {
         await screen.loadedHome();
-        const showSomePage = async () => {
+        const showSomePage = async function () {
             const somePageBtn = await driver.waitForElement("somePageOnRoot");
             await somePageBtn.tap();
             await screen.loadedSomePage();
