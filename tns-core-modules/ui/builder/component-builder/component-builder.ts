@@ -28,10 +28,10 @@ const CSSFILE = "cssFile";
 const IMPORT = "import";
 
 const createComponentInstance = profile("createComponentInstance", (elementName: string, namespace: string): { instance: View, instanceModule: Object } => {
-    var instance: View;
-    var instanceModule: Object;
+    let instance: View;
+    let instanceModule: Object;
     // Get module id.
-    var moduleId = MODULES[elementName] || UI_PATH +
+    let moduleId = MODULES[elementName] || UI_PATH +
         (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
         elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
 
@@ -141,10 +141,10 @@ const applyComponentAttributes = profile("applyComponentAttributes", (instance: 
     if (instance && instanceModule) {
         for (let attr in attributes) {
 
-            var attrValue = <string>attributes[attr];
+            const attrValue = <string>attributes[attr];
 
             if (attr.indexOf(":") !== -1) {
-                var platformName = attr.split(":")[0].trim();
+                const platformName = attr.split(":")[0].trim();
 
                 if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
                     attr = attr.split(":")[1].trim();
@@ -186,7 +186,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
     applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
 
-    var componentModule;
+    let componentModule;
     if (instance && instanceModule) {
         componentModule = { component: instance, exports: instanceModule };
     }
@@ -196,7 +196,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
 export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
     if (isBinding(propertyValue) && instance.bind) {
-        var bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
+        const bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
         instance.bind({
             sourceProperty: bindOptions[bindingConstants.sourceProperty],
             targetProperty: bindOptions[bindingConstants.targetProperty],
@@ -206,7 +206,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
     }
     else if (isEventOrGesture(propertyName, instance)) {
         // Get the event handler from page module exports.
-        var handler = exports && exports[propertyValue];
+        const handler = exports && exports[propertyValue];
 
         // Check if the handler is function and add it to the instance for specified event name.
         if (typeof handler === "function") {
@@ -226,10 +226,10 @@ function getBindingExpressionFromAttribute(value: string): string {
 }
 
 function isBinding(value: any): boolean {
-    var isBinding;
+    let isBinding;
 
     if (typeof value === "string") {
-        var str = value.trim();
+        const str = value.trim();
         isBinding = str.indexOf("{{") === 0 && str.lastIndexOf("}}") === str.length - 2;
     }
 

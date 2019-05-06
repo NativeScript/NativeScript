@@ -9,15 +9,13 @@ export function escapeRegexSymbols(source: string): string {
 }
 
 export function convertString(value: any): any {
-    var result;
+    let result;
 
-    if (!types.isString(value)) {
-        result = value;
-    } else if (value.trim() === "") {
+    if (!types.isString(value) || value.trim() === "") {
         result = value;
     } else {
         // Try to convert value to number.
-        var valueAsNumber = +value;
+        const valueAsNumber = +value;
         if (!isNaN(valueAsNumber)) {
             result = valueAsNumber;
         } else if (value && (value.toLowerCase() === "true" || value.toLowerCase() === "false")) {
@@ -28,6 +26,11 @@ export function convertString(value: any): any {
     }
 
     return result;
+}
+
+export function getModuleName(path: string): string {
+    let moduleName = path.replace("./", "");
+    return moduleName.substring(0, moduleName.lastIndexOf("."));
 }
 
 export module layout {

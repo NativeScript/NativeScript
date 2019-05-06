@@ -106,7 +106,7 @@ export class ImageSource implements ImageSourceDefinition {
     public fromBase64(source: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             try {
-                var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
+                const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
                 UIImage.imageWithData["async"](UIImage, [data]).then(image => {
                     this.ios = image;
                     resolve(true);
@@ -191,7 +191,7 @@ function getFileName(path: string): string {
 }
 
 function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 0.9): NSData {
-    var data = null;
+    let data = null;
     switch (format) {
         case "png":
             data = UIImagePNGRepresentation(instance);
@@ -201,6 +201,7 @@ function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality
             data = UIImageJPEGRepresentation(instance, quality);
             break;
     }
+
     return data;
 }
 

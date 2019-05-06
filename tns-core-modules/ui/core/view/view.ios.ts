@@ -431,7 +431,7 @@ export class View extends ViewCommon {
         const animated = options.animated === undefined ? true : !!options.animated;
         (<any>controller).animated = animated;
         parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
-        const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
+        const transitionCoordinator = parentController.transitionCoordinator;
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
                 .call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
@@ -643,7 +643,7 @@ export class CustomLayoutView extends ContainerView {
     nativeViewProtected: UIView;
 
     createNativeView() {
-        return UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
+        return UIView.alloc().initWithFrame(UIScreen.mainScreen.bounds);
     }
 
     get ios(): UIView {

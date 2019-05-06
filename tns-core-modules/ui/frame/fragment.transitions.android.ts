@@ -232,22 +232,22 @@ export function _getAnimatedEntries(frameId: number): Set<BackstackEntry> {
 export function _updateTransitions(entry: ExpandedEntry): void {
     const fragment = entry.fragment;
     const enterTransitionListener = entry.enterTransitionListener;
-    if (enterTransitionListener) {
+    if (enterTransitionListener && fragment) {
         fragment.setEnterTransition(enterTransitionListener.transition);
     }
 
     const exitTransitionListener = entry.exitTransitionListener;
-    if (exitTransitionListener) {
+    if (exitTransitionListener && fragment) {
         fragment.setExitTransition(exitTransitionListener.transition);
     }
 
     const reenterTransitionListener = entry.reenterTransitionListener;
-    if (reenterTransitionListener) {
+    if (reenterTransitionListener && fragment) {
         fragment.setReenterTransition(reenterTransitionListener.transition);
     }
 
     const returnTransitionListener = entry.returnTransitionListener;
-    if (returnTransitionListener) {
+    if (returnTransitionListener && fragment) {
         fragment.setReturnTransition(returnTransitionListener.transition);
     }
 }
@@ -374,7 +374,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 
     return AnimationListener;
 }
- 
+
 function addToWaitingQueue(entry: ExpandedEntry): void {
     const frameId = entry.frameId;
     let entries = waitingQueue.get(frameId);
@@ -659,7 +659,7 @@ function setupAllAnimation(entry: ExpandedEntry, transition: Transition): void {
     setupExitAndPopEnterAnimation(entry, transition);
     const listener = getAnimationListener();
 
-    // setupAllAnimation is called only for new fragments so we don't 
+    // setupAllAnimation is called only for new fragments so we don't
     // need to clearAnimationListener for enter & popExit animators.
     const enterAnimator = <ExpandedAnimator>transition.createAndroidAnimator(AndroidTransitionType.enter);
     enterAnimator.transitionType = AndroidTransitionType.enter;
@@ -720,7 +720,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
     if (entries.size === 0) {
         const frame = entry.resolvedPage.frame;
         // We have 0 or 1 entry per frameId in completedEntries
-        // So there is no need to make it to Set like waitingQueue 
+        // So there is no need to make it to Set like waitingQueue
         const previousCompletedAnimationEntry = completedEntries.get(frameId);
         completedEntries.delete(frameId);
         waitingQueue.delete(frameId);
@@ -730,8 +730,8 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
         // Will be null if Frame is shown modally...
         // transitionOrAnimationCompleted fires again (probably bug in android).
         if (current) {
-            const isBack = frame._isBack;
-            setTimeout(() => frame.setCurrent(current, isBack));
+            const navType = frame.navigationType;
+            setTimeout(() => frame.setCurrent(current, navType));
         }
     } else {
         completedEntries.set(frameId, entry);
