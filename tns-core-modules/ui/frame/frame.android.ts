@@ -1,15 +1,16 @@
 ﻿// Definitions.
 import {
-    AndroidFrame as AndroidFrameDefinition, BackstackEntry,
-    NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
+    AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
+    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
+import { ModuleType } from "../../ui/core/view/view-common";
 import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, stack, goBack, View, Observable,
-    traceEnabled, traceWrite, traceCategories, traceError
+    FrameBase, goBack, stack, NavigationContext, NavigationType,
+    Observable, View, traceCategories, traceEnabled, traceError, traceWrite
 } from "./frame-common";
 
 import {
@@ -21,6 +22,7 @@ import { profile } from "../../profiling";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
+import { getModuleName } from "../../utils/utils";
 
 export * from "./frame-common";
 
@@ -87,8 +89,16 @@ export function reloadPage(context?: ModuleContext): void {
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     if (callbacks) {
         const rootView: View = callbacks.getRootView();
+        // Handle application root module
+        const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== ModuleType.style;
 
-        if (!rootView || !rootView._onLivesync(context)) {
+        // Reset activity content when:
+        // + Application root module is changed
+        // + View did not handle the change
+        // Note:
+        // The case when neither app root module is changed, neighter livesync is handled on View,
+        // then changes will not apply until navigate forward to the module.
+        if (isAppRootModuleChanged || !rootView || !rootView._onLivesync(context)) {
             callbacks.resetActivityContent(activity);
         }
     } else {
@@ -104,7 +114,6 @@ export class Frame extends FrameBase {
     private _containerViewId: number = -1;
     private _tearDownPending = false;
     private _attachedToWindow = false;
-    public _isBack: boolean = true;
     private _cachedAnimatorState: AnimatorState;
 
     constructor() {
@@ -263,11 +272,11 @@ export class Frame extends FrameBase {
         return newFragment;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack);
+            this._updateBackstack(entry, navigationType);
 
             // If activity was destroyed we need to destroy fragment and UI
             // of current and new entries.
@@ -296,7 +305,7 @@ export class Frame extends FrameBase {
                 }
             }
 
-            super.setCurrent(entry, isBack);
+            super.setCurrent(entry, navigationType);
 
             // If we had real navigation process queue.
             this._processNavigationQueue(entry.resolvedPage);
@@ -330,10 +339,48 @@ export class Frame extends FrameBase {
         return false;
     }
 
+    public _onLivesync(context?: ModuleContext): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
+        if (!this._currentEntry || !this._currentEntry.entry) {
+            return false;
+        }
+
+        if (context && context.type && context.path) {
+            // Set NavigationType.replace for HMR.
+            this.navigationType = NavigationType.replace;
+            const currentBackstackEntry = this._currentEntry;
+            const contextModuleName = getModuleName(context.path);
+
+            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
+            const newBackstackEntry: BackstackEntry = {
+                entry: currentBackstackEntry.entry,
+                resolvedPage: newPage,
+                navDepth: currentBackstackEntry.navDepth,
+                fragmentTag: currentBackstackEntry.fragmentTag,
+                frameId: currentBackstackEntry.frameId
+            };
+
+            const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
+            this.performNavigation(navContext);
+            return true;
+        } else {
+            // Fallback
+            return super._onLivesync();
+        }
+    }
+
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
-        this._isBack = false;
+        // NavigationType.replace for HMR.
+        // Otherwise, default to NavigationType.forward.
+        const isReplace = this.navigationType === NavigationType.replace;
+        if (!isReplace) {
+            this.navigationType = NavigationType.forward;
+        }
 
         // set frameId here so that we could use it in fragment.transitions
         newEntry.frameId = this._android.frameId;
@@ -360,7 +407,10 @@ export class Frame extends FrameBase {
             navDepth = -1;
         }
 
-        navDepth++;
+        if (!isReplace) {
+            navDepth++;
+        }
+
         fragmentId++;
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);
@@ -383,7 +433,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this._isBack = true;
+        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry.navDepth;
 

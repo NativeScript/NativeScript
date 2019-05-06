@@ -5,11 +5,11 @@
   "repository": "<fill-your-repository-here>",
   "nativescript": {
     "id": "org.nativescript.UnitTestApp",
-    "tns-ios": {
-      "version": "5.2.0"
-    },
     "tns-android": {
-      "version": "5.2.1"
+      "version": "5.3.1"
+    },
+    "tns-ios": {
+      "version": "5.3.1"
     }
   },
   "dependencies": {
