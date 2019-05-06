@@ -5,9 +5,9 @@ import { FontStyle, FontWeight, } from "../styling/font";
 import { TextDecoration, EventData } from "../text-base";
 
 export class Span extends ViewBase implements SpanDefinition {
-    static linkClickEvent = "linkClick";
+    static linkTapEvent = "linkTap";
     private _text: string;
-    private _clickable: boolean = false;
+    private _tappable: boolean = false;
 
     get fontFamily(): string {
         return this.style.fontFamily;
@@ -70,28 +70,28 @@ export class Span extends ViewBase implements SpanDefinition {
         }
     }
 
-    get clickable(): boolean {
-        return this._clickable;
+    get tappable(): boolean {
+        return this._tappable;
     }
 
     addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
-        this._setClickable(this.hasListeners(Span.linkClickEvent));
+        this._setTappable(this.hasListeners(Span.linkTapEvent));
     }
 
     removeEventListener(arg: string, callback?: any, thisArg?: any) {
         super.removeEventListener(arg, callback, thisArg);
-        this._setClickable(this.hasListeners(Span.linkClickEvent));
+        this._setTappable(this.hasListeners(Span.linkTapEvent));
     }
 
     _setTextInternal(value: string): void {
         this._text = value;
     }
 
-    private _setClickable(value: boolean): void {
-        if (this._clickable !== value) {
-            this._clickable = value;
-            this.notifyPropertyChange("clickable", value);
+    private _setTappable(value: boolean): void {
+        if (this._tappable !== value) {
+            this._tappable = value;
+            this.notifyPropertyChange("tappable", value);
         }
     }
 }
