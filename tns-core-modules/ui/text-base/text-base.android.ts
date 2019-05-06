@@ -72,7 +72,7 @@ function initializeClickableSpan(): void {
         onClick(view: android.view.View): void {
             const owner = this.owner.get();
             if (owner) {
-                owner._emit(Span.linkClickEvent);
+                owner._emit(Span.linkTapEvent);
             }
             view.clearFocus();
             view.invalidate();
@@ -94,7 +94,7 @@ export class TextBase extends TextBaseCommon {
     private _maxHeight: number;
     private _minLines: number;
     private _maxLines: number;
-    private _clickable: boolean = false;
+    private _tappable: boolean = false;
     private _defaultMovementMethod: android.text.method.MovementMethod;
 
     public initNativeView(): void {
@@ -148,7 +148,7 @@ export class TextBase extends TextBaseCommon {
         if (!reset && this.formattedText) {
             return;
         }
-        this._setClickableState(false);
+        this._setTappableState(false);
 
         this._setNativeText(reset);
     }
@@ -169,7 +169,7 @@ export class TextBase extends TextBaseCommon {
 
         const spannableStringBuilder = createSpannableStringBuilder(value);
         nativeView.setText(<any>spannableStringBuilder);
-        this._setClickableState(isStringClickable(value));
+        this._setTappableState(isStringTappable(value));
 
         textProperty.nativeValueChange(this, (value === null || value === undefined) ? "" : value.toString());
 
@@ -353,10 +353,10 @@ export class TextBase extends TextBaseCommon {
         this.nativeTextViewProtected.setText(<any>transformedText);
     }
 
-    _setClickableState(clickable: boolean) {
-        if (this._clickable !== clickable) {
-            this._clickable = clickable;
-            if (this._clickable) {
+    _setTappableState(tappable: boolean) {
+        if (this._tappable !== tappable) {
+            this._tappable = tappable;
+            if (this._tappable) {
                 this.nativeViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
                 this.nativeViewProtected.setHighlightColor(null);
             }
@@ -396,13 +396,13 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
     }
 }
 
-function isStringClickable(formattedString: FormattedString) {
+function isStringTappable(formattedString: FormattedString) {
     if (!formattedString) {
         return false;
     }
     for (let i = 0, length = formattedString.spans.length; i < length; i++) {
         const span = formattedString.spans.getItem(i);
-        if (span.clickable) {
+        if (span.tappable) {
             return true;
         }
     }
@@ -507,8 +507,8 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
         }
     }
 
-    const clickable = span.clickable;
-    if (clickable) {
+    const tappable = span.tappable;
+    if (tappable) {
         initializeClickableSpan();
         ssb.setSpan(new ClickableSpan(span), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }

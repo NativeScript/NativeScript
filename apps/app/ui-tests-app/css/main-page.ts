@@ -44,6 +44,6 @@ export function loadExamples() {
     examples.set("background-shorthand", "css/background-shorthand");
     examples.set("background-image-linear-gradient", "css/background-image-linear-gradient");
     examples.set("background-image", "css/background-image");
-    examples.set("clickable-span", "css/clickable-span");
+    examples.set("tappable-span", "css/tappable-span");
     return examples;
 }
