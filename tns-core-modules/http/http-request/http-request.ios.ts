@@ -197,11 +197,21 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 }
 
 function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
-    let code = 4; //UTF8
+    let code = NSUTF8StringEncoding; // long:4
+
     if (encoding === HttpResponseEncoding.GBK) {
-        code = 1586;
+        code = CFStringEncodings.kCFStringEncodingGB_18030_2000; // long:1586
     }
-    return NSString.alloc().initWithDataEncoding(data, code).toString();
+
+    let encodedString = NSString.alloc().initWithDataEncoding(data, code);
+
+    // If UTF8 string encoding fails try with ISO-8859-1
+    if (!encodedString) {
+        code = NSISOLatin1StringEncoding; // long:5
+        encodedString = NSString.alloc().initWithDataEncoding(data, code);
+    }
+
+    return encodedString.toString();
 }
 
 export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
