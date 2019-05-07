@@ -1,25 +1,21 @@
-﻿// >> image-cache-require
-import * as imageCacheModule from "tns-core-modules/ui/image-cache";
+﻿import * as imageCacheModule from "tns-core-modules/ui/image-cache";
 import * as imageSource from "tns-core-modules/image-source";
-import * as fs from "tns-core-modules/file-system";
-// << image-cache-require
+import * as types from "tns-core-modules/utils/types";
+import * as TKUnit from "../../TKUnit";
 
-export function test_DummyTestForSnippetOnly() {
-    // >> image-cache-request-images
-    var cache = new imageCacheModule.Cache();
-    cache.placeholder = imageSource.fromFile(fs.path.join(__dirname, "res/no-image.png"));
+export const test_ImageCache_ValidUrl = function() {
+    const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
-    
-    // Enable download while not scrolling
-    cache.enableDownload();
-    
-    var imgSouce: imageSource.ImageSource;
-    var url = "https://github.com/NativeScript.png";
+
+    let validKey: string;
+
+    let imgSource: imageSource.ImageSource;
+    const url = "https://github.com/NativeScript.png";
     // Try to read the image from the cache
-    var image = cache.get(url);
+    const image = cache.get(url);
     if (image) {
         // If present -- use it.
-        imgSouce = imageSource.fromNativeSource(image);
+        imgSource = imageSource.fromNativeSource(image);
     }
     else {
         // If not present -- request its download.
@@ -28,13 +24,51 @@ export function test_DummyTestForSnippetOnly() {
             url: url,
             completed: (image: any, key: string) => {
                 if (url === key) {
-                    imgSouce = imageSource.fromNativeSource(image);
+                    imgSource = imageSource.fromNativeSource(image);
+                    validKey = key;
+                    console.log("Valid url: ", key);
                 }
             }
         });
     }
 
-    // Disable download while scrolling
-    cache.disableDownload();
-    // << image-cache-request-images
+    TKUnit.waitUntilReady(() => types.isDefined(validKey), 8);
+    TKUnit.assertEqual(validKey, url, "Key should equal the provided url");
+}
+
+export const test_ImageCache_NothingAtProvidedUrl = function() {
+    const cache = new imageCacheModule.Cache();
+    cache.maxRequests = 5;
+
+    let errorCaught = false;
+    let errorMessage: string;
+
+    let imgSource: imageSource.ImageSource;
+    const url = "https://github.com/NativeScript-NoImage.png";
+    // Try to read the image from the cache
+    const image = cache.get(url);
+    if (image) {
+        // If present -- use it.
+        imgSource = imageSource.fromNativeSource(image);
+    }
+    else {
+        // If not present -- request its download.
+        cache.push({
+            key: url,
+            url: url,
+            completed: (image: any, key: string) => {
+                if (url === key) {
+                    imgSource = imageSource.fromNativeSource(image);
+                }
+            },
+            error: (key: string) => {
+                console.log("No image for key: ", key);
+                errorMessage = `No image for key: ${key}`;
+                errorCaught = true;
+            }
+        });
+    }
+
+    TKUnit.waitUntilReady(() => errorCaught);
+    TKUnit.assertEqual(`No image for key: ${url}`, errorMessage);
 }
