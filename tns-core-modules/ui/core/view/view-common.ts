@@ -324,7 +324,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     }
                 }
 
-                if (parent.viewController.presentedViewController) {
+                if (parent.viewController && parent.viewController.presentedViewController) {
                     that._hideNativeModalView(parent, whenClosedCallback);
                 } else {
                     whenClosedCallback();
