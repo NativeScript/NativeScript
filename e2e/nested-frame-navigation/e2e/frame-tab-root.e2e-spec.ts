@@ -1,4 +1,4 @@
-import { AppiumDriver, createDriver, logWarn } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
 import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "./screen";
 import * as shared from "./shared.e2e-spec";
@@ -8,11 +8,12 @@ import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "
 const roots = ["TabTop", "TabBottom"];
 
 const rootType = "frame-tab-root";
-describe(rootType, () => {
+describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;
 
     before(async () => {
+        nsCapabilities.testReporter.context = this;
         logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
         screen = new Screen(driver);
@@ -40,7 +41,7 @@ describe(rootType, () => {
     for (let index = 0; index < roots.length; index++) {
         const root = roots[index];
 
-        describe(`${rootType}-${root} scenarios:`, () => {
+        describe(`${rootType}-${root} scenarios:`, async function () {
             logWarn(`===== Root: ${root}`);
             for (let trIndex = 0; trIndex < transitions.length; trIndex++) {
                 const transition = transitions[trIndex];
@@ -49,9 +50,10 @@ describe(rootType, () => {
                 const teamOne: Item = teamsData[`teamOne${transition}`];
                 const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, () => {
+                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, async function () {
 
                     before(async function () {
+                        nsCapabilities.testReporter.context = this;
                         logWarn(`========= ${root}-${transition} =========`);
 
                         if (transition === "Flip" &&
