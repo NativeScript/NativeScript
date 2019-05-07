@@ -9,7 +9,7 @@ import { AnimationPromise } from "tns-core-modules/ui/animation";
 
 // >> animation-require
 import * as animation from "tns-core-modules/ui/animation";
-import {PercentLength} from "tns-core-modules/ui/styling/style-properties";
+import { PercentLength } from "tns-core-modules/ui/styling/style-properties";
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -20,10 +20,10 @@ function prepareTest(parentHeight?: number, parentWidth?: number): Label {
     let stackLayout = new StackLayout();
     // optionally size the parent extent to make assertions about percentage values
     if (parentHeight !== undefined) {
-        stackLayout.height = PercentLength.parse(parentHeight + '');
+        stackLayout.height = PercentLength.parse(parentHeight + "");
     }
     if (parentWidth !== undefined) {
-        stackLayout.width = PercentLength.parse(parentWidth + '');
+        stackLayout.width = PercentLength.parse(parentWidth + "");
     }
     stackLayout.addChild(label);
     mainPage.content = stackLayout;
@@ -403,13 +403,13 @@ export function test_AnimateRotate(done) {
         });
 }
 
-function animateExtentAndAssertExpected(along: 'height' | 'width', value: PercentLength, pixelExpected: PercentLength): Promise<void> {
+function animateExtentAndAssertExpected(along: "height" | "width", value: PercentLength, pixelExpected: PercentLength): Promise<void> {
     function pretty(val) {
         return JSON.stringify(val, null, 2);
     }
     const parentExtent = 200;
-    const height = along === 'height' ? parentExtent : undefined;
-    const width = along === 'height' ? undefined : parentExtent;
+    const height = along === "height" ? parentExtent : undefined;
+    const width = along === "height" ? undefined : parentExtent;
     const label = prepareTest(height, width);
     const props = {
         duration: 5,
@@ -421,15 +421,15 @@ function animateExtentAndAssertExpected(along: 'height' | 'width', value: Percen
         TKUnit.assertEqual(
             observedString,
             inputString,
-            `PercentLength.convertToString(${pretty(value)}) should be '${inputString}' but is '${observedString}'`
+            `PercentLength.convertToString(${pretty(value)}) should be "${inputString}" but is "${observedString}"`
         );
-        // assert that the animated view's calculated pixel extent matches the expected pixel value
+        // assert that the animated view"s calculated pixel extent matches the expected pixel value
         const observedNumber: number = PercentLength.toDevicePixels(label[along], parentExtent, parentExtent);
         const expectedNumber: number = PercentLength.toDevicePixels(pixelExpected, parentExtent, parentExtent);
         TKUnit.assertEqual(
             observedNumber,
             expectedNumber,
-            `PercentLength.toDevicePixels(${inputString}) should be '${expectedNumber}' but is '${observedNumber}'`
+            `PercentLength.toDevicePixels(${inputString}) should be "${expectedNumber}" but is "${observedNumber}"`
         );
         assertIOSNativeTransformIsCorrect(label);
     });
@@ -438,21 +438,21 @@ function animateExtentAndAssertExpected(along: 'height' | 'width', value: Percen
 export function test_AnimateExtent_Should_ResolvePercentageStrings(done) {
     let promise: Promise<any> = Promise.resolve();
     const pairs: [string, string][] = [
-        ['100%', '200px'],
-        ['50%', '100px'],
-        ['25%', '50px'],
-        ['-25%', '-50px'],
-        ['-50%', '-100px'],
-        ['-100%', '-200px'],
+        ["100%", "200px"],
+        ["50%", "100px"],
+        ["25%", "50px"],
+        ["-25%", "-50px"],
+        ["-50%", "-100px"],
+        ["-100%", "-200px"],
     ];
     pairs.forEach((pair) => {
         const input = PercentLength.parse(pair[0]);
         const expected = PercentLength.parse(pair[1]);
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('height', input, expected);
+            return animateExtentAndAssertExpected("height", input, expected);
         });
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('width', input, expected);
+            return animateExtentAndAssertExpected("width", input, expected);
         });
     });
     promise.then(() => done()).catch(done);
@@ -461,20 +461,20 @@ export function test_AnimateExtent_Should_ResolvePercentageStrings(done) {
 export function test_AnimateExtent_Should_AcceptStringPixelValues(done) {
     let promise: Promise<any> = Promise.resolve();
     const pairs: [string, number][] = [
-        ['100px', 100],
-        ['50px', 50]
+        ["100px", 100],
+        ["50px", 50]
     ];
     pairs.forEach((pair) => {
         const input = PercentLength.parse(pair[0]);
         const expected = {
-            unit: 'px',
+            unit: "px",
             value: pair[1]
         } as PercentLength;
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('height', input, expected);
+            return animateExtentAndAssertExpected("height", input, expected);
         });
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('width', input, expected);
+            return animateExtentAndAssertExpected("width", input, expected);
         });
     });
     promise.then(() => done()).catch(done);
@@ -486,10 +486,10 @@ export function test_AnimateExtent_Should_AcceptNumberValuesAsDip(done) {
     inputs.forEach((value) => {
         const parsed = PercentLength.parse(value);
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('height', parsed, parsed);
+            return animateExtentAndAssertExpected("height", parsed, parsed);
         });
         promise = promise.then(() => {
-            return animateExtentAndAssertExpected('width', parsed, parsed);
+            return animateExtentAndAssertExpected("width", parsed, parsed);
         });
     });
     promise.then(() => done()).catch(done);
@@ -499,10 +499,10 @@ export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
     const label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
-            label.animate({width: '-frog%'});
+            label.animate({width: "-frog%"});
         }, "Invalid percent string should throw");
         TKUnit.assertThrows(() => {
-            label.animate({height: '-frog%'});
+            label.animate({height: "-frog%"});
         }, "Invalid percent string should throw");
     });
 }

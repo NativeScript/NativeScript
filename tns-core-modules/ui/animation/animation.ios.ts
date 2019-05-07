@@ -362,7 +362,7 @@ export class Animation extends AnimationBase {
             case Properties.width:
             case Properties.height:
                 const direction: string = animation.property;
-                const isHeight: boolean = direction === 'height';
+                const isHeight: boolean = direction === "height";
                 propertyNameToAnimate = "bounds";
                 if (!parent) {
                     throw new Error(`cannot animate ${direction} on root view`);

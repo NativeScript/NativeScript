@@ -12,7 +12,7 @@ import {
 import { layout } from "../../utils/utils";
 import { device } from "../../platform";
 import lazy from "../../utils/lazy";
-import * as platform from '../../platform';
+import * as platform from "../../platform";
 export * from "./animation-common";
 
 interface AnimationDefinitionInternal extends AnimationDefinition {
@@ -456,7 +456,7 @@ export class Animation extends AnimationBase {
             case Properties.width:
             case Properties.height: {
 
-                const isVertical: boolean = propertyAnimation.property === 'height';
+                const isVertical: boolean = propertyAnimation.property === "height";
                 const extentProperty = isVertical ? heightProperty : widthProperty;
 
                 extentProperty._initDefaultNativeValue(style);

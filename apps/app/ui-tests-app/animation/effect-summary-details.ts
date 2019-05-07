@@ -1,9 +1,9 @@
-import * as view from 'tns-core-modules/ui/core/view';
-import * as pages from 'tns-core-modules/ui/page';
-import * as platform from 'tns-core-modules/platform';
-import {Animation} from 'tns-core-modules/ui/animation';
-import {TextView} from 'tns-core-modules/ui/text-view';
-import {isIOS} from 'tns-core-modules/platform';
+import * as view from "tns-core-modules/ui/core/view";
+import * as pages from "tns-core-modules/ui/page";
+import * as platform from "tns-core-modules/platform";
+import { Animation } from "tns-core-modules/ui/animation";
+import { TextView } from "tns-core-modules/ui/text-view";
+import { isIOS } from "tns-core-modules/platform";
 
 let toggle = false;
 
@@ -15,7 +15,7 @@ export function pageLoaded(args) {
         screenHeight,
         screenYCenter,
         detailsHeight: 96,
-        summary: 'Space! 🌌',
+        summary: "Space! 🌌",
         ipsum: `Houston, Tranquillity Base here. The Eagle has landed.
 
 For those who have seen the Earth from space, and for the hundreds and perhaps thousands more who will, the experience most certainly changes your perspective. The things that we share in our world are far more valuable than those which divide us.
@@ -30,7 +30,7 @@ NASA is not about the ‘Adventure of Human Space Exploration’…We won’t be
 
 Science has not yet mastered prophecy. We predict too much for the next year and yet far too little for the next 10.
 
-Science cuts two ways, of course; its products can be used for both good and evil. But there's no turning back from science. The early warnings about technological dangers also come from science.
+Science cuts two ways, of course; its products can be used for both good and evil. But there"s no turning back from science. The early warnings about technological dangers also come from science.
 
 Here men from the planet Earth first set foot upon the Moon. July 1969 AD. We came in peace for all mankind.
 
@@ -43,13 +43,13 @@ http://spaceipsum.com`
 export function theFinalFrontier(args) {
     const clicked = args.object as view.View;
     const page: pages.Page = clicked.page;
-    const details = view.getViewById(page, 'details') as TextView;
+    const details = view.getViewById(page, "details") as TextView;
     const ctx = page.bindingContext;
     const detailHeaderHeight: number = ctx.detailsHeight;
 
     let statusBar = 0;
-    if(isIOS) {
-        const {ios} = require('tns-core-modules/ui/utils');
+    if (isIOS) {
+        const {ios} = require("tns-core-modules/ui/utils");
         statusBar = ios.getStatusBarHeight();
     }
 
@@ -57,9 +57,9 @@ export function theFinalFrontier(args) {
     const transitions = [
         {
             target: clicked,
-            height: toggle ? '100%' : detailHeaderHeight,
+            height: toggle ? "100%" : detailHeaderHeight,
             duration: 200,
-            curve: 'ease'
+            curve: "ease"
         },
         {
             target: details,
@@ -70,7 +70,7 @@ export function theFinalFrontier(args) {
                 y: toggle ? 50 : 0,
             },
             duration: 200,
-            curve: 'easeIn'
+            curve: "easeIn"
         }
     ];
     const animationSet = new Animation(transitions, false);

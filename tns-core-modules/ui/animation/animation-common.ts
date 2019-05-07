@@ -270,7 +270,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         }
 
         if (propertyAnimations.length === 0) {
-            throw new Error('No known animation properties specified');
+            throw new Error("No known animation properties specified");
         }
 
         return propertyAnimations;

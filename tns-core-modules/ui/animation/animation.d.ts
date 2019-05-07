@@ -3,7 +3,7 @@
  */ /** */
 
 import { View, Color } from "../core/view";
-import {PercentLength} from '../styling/style-properties';
+import { PercentLength } from "../styling/style-properties";
 
 /**
  * Defines animation options for the View.animate method.

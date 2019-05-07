@@ -878,26 +878,26 @@ function assertPercentLengthParseInputOutputPairs(pairs: [string, any][]) {
 
 export function test_PercentLength_parses_pixel_values_from_string_input() {
     assertPercentLengthParseInputOutputPairs([
-        ['4px', {unit: 'px', value: 4}],
-        ['-4px', {unit: 'px', value: -4}],
+        ["4px", {unit: "px", value: 4}],
+        ["-4px", {unit: "px", value: -4}],
     ]);
 }
 
 export function test_PercentLength_parses_percentage_values_from_string_input() {
     assertPercentLengthParseInputOutputPairs([
-        ['4%', {unit: '%', value: 0.04}],
-        ['17%', {unit: '%', value: 0.17}],
-        ['-27%', {unit: '%', value: -0.27}],
+        ["4%", {unit: "%", value: 0.04}],
+        ["17%", {unit: "%", value: 0.17}],
+        ["-27%", {unit: "%", value: -0.27}],
     ]);
 }
 
 export function test_PercentLength_parse_throws_given_string_input_it_cannot_parse() {
     const inputs: any[] = [
-        '-l??%',
-        'qre%',
-        'undefinedpx',
-        'undefined',
-        '-frog%'
+        "-l??%",
+        "qre%",
+        "undefinedpx",
+        "undefined",
+        "-frog%"
     ];
     inputs.forEach((input) => {
         TKUnit.assertThrows(() => {
