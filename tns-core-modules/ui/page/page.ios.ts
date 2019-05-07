@@ -1,11 +1,11 @@
 ﻿// Definitions.
 import { Frame } from "../frame";
+import { NavigationType } from "../frame/frame-common";
 
 // Types.
 import { ios as iosView } from "../core/view";
 import {
-    PageBase, View, layout,
-    actionBarHiddenProperty, statusBarStyleProperty, Color
+    PageBase, View, layout, actionBarHiddenProperty, statusBarStyleProperty, Color
 } from "./page-common";
 
 import { profile } from "../../profiling";
@@ -20,7 +20,7 @@ const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
-    if (!frame) {
+    if (!frame || frame.navigationType === NavigationType.replace) {
         return false;
     }
 
@@ -133,14 +133,20 @@ class UIViewControllerImpl extends UIViewController {
             const newEntry = this[ENTRY];
 
             let isBack: boolean;
+            let navType = frame.navigationType;
             // We are on the current page which happens when navigation is canceled so isBack should be false.
-            if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
+            if (navType !== NavigationType.replace && frame.currentPage === owner && frame._navigationQueue.length === 0) {
                 isBack = false;
+                navType = NavigationType.forward;
             } else {
                 isBack = isBackNavigationTo(owner, newEntry);
+                if (isBack) {
+                    navType = NavigationType.back;
+                }
             }
 
-            frame.setCurrent(newEntry, isBack);
+            frame.setCurrent(newEntry, navType);
+            frame.navigationType = isBack ? NavigationType.back : NavigationType.forward;
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
@@ -182,7 +188,7 @@ class UIViewControllerImpl extends UIViewController {
 
         const frame = owner.frame;
         // Skip navigation events if we are hiding because we are about to show a modal page,
-        // or because we are closing a modal page, 
+        // or because we are closing a modal page,
         // or because we are in tab and another controller is selected.
         const tab = this.tabBarController;
         if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {

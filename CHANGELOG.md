@@ -1,3 +1,15 @@
+## [5.3.2](https://github.com/NativeScript/NativeScript/compare/5.3.1...5.3.2) (2019-05-03)
+
+
+### Bug Fixes
+
+* no trace message on empty app.css ([#7135](https://github.com/NativeScript/NativeScript/issues/7135)) ([170d2a8](https://github.com/NativeScript/NativeScript/commit/170d2a8))
+* **ios:** application.displayedEvent does not depend on trace to fire ([#7141](https://github.com/NativeScript/NativeScript/issues/7141)) ([f6f7b51](https://github.com/NativeScript/NativeScript/commit/f6f7b51))
+* **ios:** flat action bar incorrect layout after navigation ([#7077](https://github.com/NativeScript/NativeScript/issues/7077)) ([1dc3952](https://github.com/NativeScript/NativeScript/commit/1dc3952))
+* **ios-http-get:** http failure during parsing xml ([#7175](https://github.com/NativeScript/NativeScript/issues/7175)) ([c227c50](https://github.com/NativeScript/NativeScript/commit/c227c50))
+
+
+
 ## [5.3.1](https://github.com/NativeScript/NativeScript/compare/5.3.0...5.3.1) (2019-03-28)
 
 
