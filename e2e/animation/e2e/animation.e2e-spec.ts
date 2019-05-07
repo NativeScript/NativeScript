@@ -1,20 +1,21 @@
-import { AppiumDriver, createDriver, SearchOptions } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
 import { Screen } from "./screen";
 import { assert } from "chai";
 
-describe("animation:", () => {
+describe("animation:", async function () {
 
     let driver: AppiumDriver;
     let screen: Screen;
 
-    before(async () => {
+    before(async function () {
+        nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         screen = new Screen(driver);
 
         await driver.resetApp();
     });
 
-    after(async () => {
+    after(async function () {
         await driver.quit();
         console.log("Quit driver!");
     });
@@ -26,12 +27,12 @@ describe("animation:", () => {
         }
     });
 
-    it("should navigate to chaining with animation set example", async () => {
+    it("should navigate to chaining with animation set example", async function () {
         await screen.loadedHome();
         await screen.loadedChainingWithAnimationSet();
     });
 
-    it("should play animation sequentially", async () => {    
+    it("should play animation sequentially", async function () {
         const buttonAnimate = await driver.findElementByText("Animate Sequentially", SearchOptions.exact);
         await buttonAnimate.click();
 
@@ -39,7 +40,7 @@ describe("animation:", () => {
         assert.isTrue(await label.isDisplayed());
     });
 
-    it ("should reset example", async() => {
+    it("should reset example", async () => {
         const buttonReset = await driver.findElementByText("Reset", SearchOptions.exact);
         await buttonReset.click();
 
@@ -47,7 +48,7 @@ describe("animation:", () => {
         assert.isTrue(await label.isDisplayed());
     });
 
-    it("should play animation simultaneously", async () => {
+    it("should play animation simultaneously", async function () {
         const button = await driver.findElementByText("Animate Simultaneously", SearchOptions.exact);
         await button.click();
 
