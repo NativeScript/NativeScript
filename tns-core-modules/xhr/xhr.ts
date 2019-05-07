@@ -2,9 +2,9 @@ import * as http from "../http";
 import * as types from "../utils/types";
 
 module XMLHttpRequestResponseType {
-    export var empty = "";
-    export var text = "text";
-    export var json = "json";
+    export const empty = "";
+    export const text = "text";
+    export const json = "json";
 }
 
 export class XMLHttpRequest {

@@ -38,11 +38,11 @@ namespace Match {
     /**
      * Depends on attributes or pseudoclasses state;
      */
-    export var Dynamic = true;
+    export const Dynamic = true;
     /**
      * Depends only on the tree structure.
      */
-    export var Static = false;
+    export const Static = false;
 }
 
 function getNodeDirectSibling(node): null | Node {
@@ -436,14 +436,17 @@ function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSel
         return createSimpleSelectorSequenceFromAst(ast[0][0]);
     } else {
         let simpleSelectorSequences = [];
-        for (var i = 0; i < ast.length; i ++) {
-            const simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i][0]);
-            const combinator = <parser.Combinator>ast[i][1];
+        let simpleSelectorSequence: SimpleSelectorSequence | SimpleSelector;
+        let combinator: parser.Combinator;
+        for (let i = 0; i < ast.length; i ++) {
+            simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i][0]);
+            combinator = <parser.Combinator>ast[i][1];
             if (combinator) {
                 simpleSelectorSequence.combinator = combinator;
             }
             simpleSelectorSequences.push(simpleSelectorSequence);
         }
+
         return new Selector(simpleSelectorSequences);
     }
 }

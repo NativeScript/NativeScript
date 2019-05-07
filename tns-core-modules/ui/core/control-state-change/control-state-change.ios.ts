@@ -59,7 +59,7 @@ export class ControlStateChangeListener implements ControlStateChangeListenerDef
     }
 
     private _updateState() {
-        var state = "normal";
+        let state = "normal";
         if (this._control.highlighted) {
             state = "highlighted";
         }

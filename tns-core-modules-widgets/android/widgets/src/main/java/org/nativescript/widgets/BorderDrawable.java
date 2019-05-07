@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
+import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -16,6 +17,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Shader;
+import android.support.annotation.NonNull;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
@@ -802,6 +804,23 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
     @Override
     public Drawable getDrawable() {
         return drawable;
+    }
+
+    @Override
+    public void getOutline(@NonNull Outline outline) {
+        if (android.os.Build.VERSION.SDK_INT >= 21) {
+            Path backgroundPath = new Path();
+            float[] backgroundRadii = {
+                Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
+                Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
+                Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
+                Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
+            };
+            backgroundPath.addRoundRect(new RectF(getBounds()), backgroundRadii, Path.Direction.CW);
+            outline.setConvexPath(backgroundPath);
+        } else {
+            throw new IllegalStateException("Method supported on API 21 or higher");
+        }
     }
 
     private class BackgroundDrawParams {

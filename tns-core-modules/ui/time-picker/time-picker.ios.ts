@@ -4,20 +4,17 @@
     hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
 } from "./time-picker-common";
 
-import { ios } from "../../utils/utils";
-import getter = ios.getter;
-
 export * from "./time-picker-common";
 
 function getDate(hour: number, minute: number): Date {
     let components = NSDateComponents.alloc().init();
     components.hour = hour;
     components.minute = minute;
-    return getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>components);
+    return NSCalendar.currentCalendar.dateFromComponents(<any>components);
 }
 
 function getComponents(date: Date | NSDate): NSDateComponents {
-    return getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
+    return NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
 export class TimePicker extends TimePickerBase {
