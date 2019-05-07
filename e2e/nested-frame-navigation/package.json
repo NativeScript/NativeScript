@@ -17,12 +17,11 @@
     "tns-core-modules": "next"
   },
   "devDependencies": {
-    "@types/chai": "~4.1.3",
-    "@types/mocha": "~5.2.1",
+    "@types/chai": "~4.1.7",
+    "@types/mocha": "~5.2.5",
     "@types/node": "^7.0.5",
-    "mocha": "^5.2.0",
-    "mocha-junit-reporter": "^1.18.0",
-    "mocha-multi": "^1.0.1",
+    "mocha": "~5.2.0",
+    "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
     "nativescript-dev-typescript": "next",
     "nativescript-dev-webpack": "next",
