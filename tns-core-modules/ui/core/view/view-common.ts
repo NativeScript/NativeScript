@@ -7,8 +7,7 @@ import {
 import {
     ViewBase, Property, booleanConverter, eachDescendant, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty,
-    ShowModalOptions
+    InheritedProperty, ShowModalOptions
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -36,6 +35,12 @@ function ensureAnimationModule() {
     if (!animationModule) {
         animationModule = require("ui/animation");
     }
+}
+
+export enum ModuleType {
+    markup = "markup",
+    script = "script",
+    style = "style"
 }
 
 export function CSSType(type: string): ClassDecorator {
@@ -138,12 +143,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
         _rootModalViews.forEach(v => v.closeModal());
         _rootModalViews.length = 0;
 
-        // Currently, we pass `context` only for style modules
-        if (context && context.path) {
-            return this.changeLocalStyles(context.path);
+        if (context && context.type && context.path) {
+            // Handle local styles
+            if (context.type === ModuleType.style) {
+                return this.changeLocalStyles(context.path);
+            }
+            // Handle module markup and script changes
+            else {
+                return this.changeModule(context);
+            }
         }
 
         return false;
@@ -156,16 +171,38 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 return true;
             });
         }
-        // Do not execute frame navigation for a change in styles
+
+        // Do not reset activity/window content for local styles changes
         return true;
     }
 
     private changeStyles(view: ViewBase, contextPath: string): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${view}.${view._moduleName}`, traceCategories.Livesync);
+        }
+
         if (view._moduleName && contextPath.includes(view._moduleName)) {
             (<this>view).changeCssFile(contextPath);
             return true;
         }
         return false;
+    }
+
+    private changeModule(context: ModuleContext): boolean {
+        eachDescendant(this, (child: ViewBase) => {
+            if (traceEnabled()) {
+                traceWrite(`${child}.${child._moduleName}`, traceCategories.Livesync);
+            }
+
+            // Handle changes in module's Page
+            if (child._moduleName && context.path.includes(child._moduleName) && child.page) {
+                child.page._onLivesync(context);
+            }
+            return true;
+        });
+
+        // Do not reset activity/window content for module changes
+        return true;
     }
 
     _setupAsRootView(context: any): void {

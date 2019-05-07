@@ -185,13 +185,13 @@ export module ad {
 export module ios {
     /**
      * @deprecated use the respective native property directly
-     * 
+     *
      * Checks if the property is a function and if it is, calls it on this.
      * Designed to support backward compatibility for methods that became properties.
      * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
      * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
      */
-    export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
+    export function getter<T>(_this: any, propertyValue: T | { (): T }): T;
 
     // Common properties between UILabel, UITextView and UITextField
     export interface TextUIView {
@@ -255,7 +255,7 @@ export module ios {
      * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
      * Returns the visible UIViewController.
      */
-    export function getVisibleViewController(rootViewController: any/* UIViewController*/ ): any/* UIViewController*/;
+    export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
 }
 
 /**
@@ -304,6 +304,12 @@ export function escapeRegexSymbols(source: string): string
  * @param value The original value.
  */
 export function convertString(value: any): any
+
+/**
+ * Gets module name from path.
+ * @param path The module path.
+ */
+export function getModuleName(path: string): string
 
 /**
  * Sorts an array by using merge sort algorithm (which ensures stable sort since the built-in Array.sort() does not promise a stable sort).
