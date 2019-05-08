@@ -1,7 +1,7 @@
 import * as application from "tns-core-modules/application";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { NavigatedData, Page } from "tns-core-modules/ui/page";
-import { View, EventData } from "tns-core-modules/ui/core/view";
+import { View, EventData, ShowModalOptions } from "tns-core-modules/ui/core/view";
 import { Frame } from "tns-core-modules/ui/frame";
 
 export function onNavigatingTo(args: NavigatedData) {
@@ -27,6 +27,20 @@ export function onModalNoPage(args: EventData) {
         "context",
         () => console.log("home-page modal frame closed"),
         false);
+}
+
+export function onPopoverModal(args: EventData) {
+    const view = args.object as View;
+    let options: ShowModalOptions = {
+        context: "context",
+        closeCallback: () => console.log("home-page modal popover frame closed"),
+        animated: false,
+        ios: {
+            presentationStyle: UIModalPresentationStyle.Popover
+        }
+    }
+
+    view.showModal("modal-no-page/modal-no-page", options);
 }
 
 export function onModalFrame(args: EventData) {
