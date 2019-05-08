@@ -4,6 +4,8 @@
 
 import { dip, px } from "../ui/core/view";
 
+export * from "./mainthread-helper"
+
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
 
@@ -270,12 +272,6 @@ export function GC();
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
 
 /**
- * Dispatches the passed function for execution on the main thread
- * @param func The function to execute on the main thread.
- */
-export function dispatchToMainThread(func: Function);
-
-/**
  * Checks if the current thread is the main thread. Directly calls the passed function
  * if it is, or dispatches it to the main thread otherwise.
  * @param func The function to execute on the main thread.
@@ -290,11 +286,6 @@ export function executeOnMainThread(func: Function);
  * @returns The wrapper function which schedules execution to the main thread
  */
 export function mainThreadify(func: Function): (...args: any[]) => void
-
-/**
- * @returns Boolean value indicating whether the current thread is the main thread
- */
-export function isMainThread(): boolean
 
 /**
  * Returns true if the specified path points to a resource or local file.

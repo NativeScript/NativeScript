@@ -1,5 +1,7 @@
 ﻿import * as types from "./types";
-import { dispatchToMainThread, isMainThread } from "./utils"
+import { dispatchToMainThread, isMainThread } from "./mainthread-helper"
+
+export * from "./mainthread-helper"
 
 export const RESOURCE_PREFIX = "res://";
 export const FILE_PREFIX = "file:///";
