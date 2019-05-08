@@ -18,9 +18,19 @@ export function test_releaseNativeObject_canBeCalledWithNativeObject() {
     }
 };
 
-
 export function test_executeOnMainThread_Works(done: Function) {
     utils.executeOnMainThread(() => {
+        try {
+            TKUnit.assertTrue(utils.isMainThread());
+            done();
+        } catch (e) {
+            done(e);
+        }
+    });
+}
+
+export function test_dispatchToMainThread_Works(done: Function) {
+    utils.dispatchToMainThread(() => {
         try {
             TKUnit.assertTrue(utils.isMainThread());
             done();
@@ -48,7 +58,6 @@ export function test_mainThreadify_PassesArgs(done: Function) {
 
     f(expectedN, expectedB, expectedS);
 }
-
 
 function test_releaseNativeObject_canBeCalledWithNativeObject_iOS() {
     let deallocated = false;

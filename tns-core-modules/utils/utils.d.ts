@@ -273,6 +273,13 @@ export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/)
  * Dispatches the passed function for execution on the main thread
  * @param func The function to execute on the main thread.
  */
+export function dispatchToMainThread(func: Function);
+
+/**
+ * Checks if the current thread is the main thread. Directly calls the passed function
+ * if it is, or dispatches it to the main thread otherwise.
+ * @param func The function to execute on the main thread.
+ */
 export function executeOnMainThread(func: Function);
 
 /**

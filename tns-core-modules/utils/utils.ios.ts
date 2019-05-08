@@ -159,7 +159,7 @@ export function openUrl(location: string): boolean {
     return false;
 }
 
-export function executeOnMainThread(func: () => void) {
+export function dispatchToMainThread(func: () => void) {
     NSOperationQueue.mainQueue.addOperationWithBlock(func);
 }
 

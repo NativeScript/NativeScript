@@ -373,7 +373,7 @@ Please ensure you have your manifest correctly configured with the FileProvider.
     }
 }
 
-export function executeOnMainThread(func: () => void) {
+export function dispatchToMainThread(func: () => void) {
     new android.os.Handler(android.os.Looper.getMainLooper())
         .post(new java.lang.Runnable({
             run: func
