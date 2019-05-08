@@ -21,6 +21,7 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
+import { isAndroid } from "../../../platform";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
@@ -368,7 +369,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     }
                 }
 
-                that._hideNativeModalView(parent, whenClosedCallback);
+                if (isAndroid || (parent.viewController && parent.viewController.presentedViewController)) {
+                    that._hideNativeModalView(parent, whenClosedCallback);
+                } else {
+                    whenClosedCallback();
+                }
             }
         };
     }

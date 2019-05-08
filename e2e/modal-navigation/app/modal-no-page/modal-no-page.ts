@@ -3,7 +3,7 @@ import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { View, EventData } from "tns-core-modules/ui/core/view";
 import { Frame, ShownModallyData } from "tns-core-modules/ui/frame";
 import { fromObject } from "tns-core-modules/data/observable";
-import { confirm } from "ui/dialogs";
+import { confirm } from "tns-core-modules/ui/dialogs";
 
 export function onLoaded(args) {
     console.log("modal-no-page loaded");

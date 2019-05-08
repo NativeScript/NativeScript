@@ -20,6 +20,7 @@
             <Button text="Show Modal Without Page" tap="onModalNoPage" textAlignment="left" />
             <Button text="Show Modal Page With Frame" tap="onModalFrame" textAlignment="left" />
             <Button text="Show Modal Page" tap="onModalPage" textAlignment="left" />
+            <Button text="Show 'popover' modal" tap="onPopoverModal" textAlignment="left" />
             <Button text="Show Modal Layout" tap="onModalLayout" textAlignment="left" />
             <Button text="Show Modal TabView" tap="onModalTabView" textAlignment="left" />
             <Button text="Android Back Btn Events" tap="onAndroidBackEvents" textAlignment="left" />
