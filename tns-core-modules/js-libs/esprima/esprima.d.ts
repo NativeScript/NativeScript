@@ -9,7 +9,7 @@
 // Definitions by: teppeis <https://github.com/teppeis/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-export var version: string;
+export const version: string;
 export function parse(code: string, options?: Options): Syntax.Program;
 export function tokenize(code: string, options?: Options): Array<Token>;
 

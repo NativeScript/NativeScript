@@ -91,6 +91,7 @@ export class Button extends ButtonBase {
             this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
                 switch (args.action) {
                     case TouchAction.up:
+                    case TouchAction.cancel:
                         this._goToVisualState("normal");
                         break;
                     case TouchAction.down:

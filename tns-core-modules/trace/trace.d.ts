@@ -88,22 +88,23 @@ export function setErrorHandler(handler: ErrorHandler);
  * An enum that defines all predefined categories.
  */
 export module categories {
-    export var VisualTreeEvents: string;
-    export var Layout: string;
-    export var Style: string;
-    export var ViewHierarchy: string;
-    export var NativeLifecycle: string;
-    export var Debug: string;
-    export var Navigation: string;
-    export var Test: string;
-    export var Binding: string;
-    export var Error: string;
-    export var Animation: string;
-    export var Transition: string;
+    export const VisualTreeEvents: string;
+    export const Layout: string;
+    export const Style: string;
+    export const ViewHierarchy: string;
+    export const NativeLifecycle: string;
+    export const Debug: string;
+    export const Navigation: string;
+    export const Test: string;
+    export const Binding: string;
+    export const Error: string;
+    export const Animation: string;
+    export const Transition: string;
+    export const Livesync: string;
 
-    export var All: string;
+    export const separator: string;
+    export const All: string;
 
-    export var separator: string;
     export function concat(...categories: string[]): string;
 }
 
@@ -111,10 +112,10 @@ export module categories {
  * An enum that defines all predefined message types.
  */
 export module messageType {
-    export var log: number;
-    export var info: number;
-    export var warn: number;
-    export var error: number;
+    export const log: number;
+    export const info: number;
+    export const warn: number;
+    export const error: number;
 }
 
 /**
@@ -125,7 +126,7 @@ export interface TraceWriter {
 }
 
 /**
- * An interface used to trace information about specific event.  
+ * An interface used to trace information about specific event.
  */
 export interface EventListener {
     filter: string;
@@ -133,7 +134,7 @@ export interface EventListener {
 }
 
 /**
- * An interface used to for handling trace error  
+ * An interface used to for handling trace error
  */
 export interface ErrorHandler {
     handlerError(error: Error);
