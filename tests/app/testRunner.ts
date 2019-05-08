@@ -189,6 +189,9 @@ allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
 import * as imageTests from "./ui/image/image-tests";
 allTests["IMAGE"] = imageTests;
 
+import * as imageCacheTests from "./ui/image-cache/image-cache-tests";
+allTests["IMAGE-CACHE"] = imageCacheTests;
+
 import * as sliderTests from "./ui/slider/slider-tests";
 allTests["SLIDER"] = sliderTests;
 

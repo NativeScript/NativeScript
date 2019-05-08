@@ -26,7 +26,6 @@
     "grunt-simple-mocha": "0.4.1",
     "grunt-ts": "6.0.0-beta.11",
     "grunt-typedoc": "0.2.4",
-    "http-server": "^0.9.0",
     "madge": "^2.2.0",
     "markdown-snippet-injector": "0.2.2",
     "mocha": "^3.5.0",
