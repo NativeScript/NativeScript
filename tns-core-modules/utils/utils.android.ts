@@ -372,3 +372,14 @@ Please ensure you have your manifest correctly configured with the FileProvider.
         return false;
     }
 }
+
+export function executeOnMainThread(func: () => void) {
+    new android.os.Handler(android.os.Looper.getMainLooper())
+        .post(new java.lang.Runnable({
+            run: func
+        }));
+}
+
+export function isMainThread(): Boolean {
+    return android.os.Looper.myLooper() === android.os.Looper.getMainLooper();
+}

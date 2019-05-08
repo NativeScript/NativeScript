@@ -159,6 +159,14 @@ export function openUrl(location: string): boolean {
     return false;
 }
 
+export function executeOnMainThread(func: () => void) {
+    NSOperationQueue.mainQueue.addOperationWithBlock(func);
+}
+
+export function isMainThread(): Boolean {
+    return NSThread.isMainThread;
+}
+
 class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
     public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 

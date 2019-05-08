@@ -270,6 +270,26 @@ export function GC();
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
 
 /**
+ * Dispatches the passed function for execution on the main thread
+ * @param func The function to execute on the main thread.
+ */
+export function executeOnMainThread(func: Function);
+
+/**
+ * Returns a function wrapper which executes the supplied function on the main thread.
+ * The wrapper behaves like the original function and passes all of its arguments BUT
+ * discards its return value.
+ * @param func The function to execute on the main thread
+ * @returns The wrapper function which schedules execution to the main thread
+ */
+export function mainThreadify(func: Function): (...args: any[]) => void
+
+/**
+ * @returns Boolean value indicating whether the current thread is the main thread
+ */
+export function isMainThread(): boolean
+
+/**
  * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */
