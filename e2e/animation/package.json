@@ -19,7 +19,6 @@
   "devDependencies": {
     "@types/chai": "~4.1.7",
     "@types/mocha": "~5.2.5",
-    "@types/node": "~10.12.18",
     "babel-traverse": "6.26.0",
     "babel-types": "6.26.0",
     "babylon": "6.18.0",
