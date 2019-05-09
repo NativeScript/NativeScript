@@ -4,6 +4,8 @@
 
 import { dip, px } from "../ui/core/view";
 
+export * from "./mainthread-helper"
+
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
 
@@ -268,6 +270,22 @@ export function GC();
  * @param object The Java/Objective-C object to release.
  */
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
+
+/**
+ * Checks if the current thread is the main thread. Directly calls the passed function
+ * if it is, or dispatches it to the main thread otherwise.
+ * @param func The function to execute on the main thread.
+ */
+export function executeOnMainThread(func: Function);
+
+/**
+ * Returns a function wrapper which executes the supplied function on the main thread.
+ * The wrapper behaves like the original function and passes all of its arguments BUT
+ * discards its return value.
+ * @param func The function to execute on the main thread
+ * @returns The wrapper function which schedules execution to the main thread
+ */
+export function mainThreadify(func: Function): (...args: any[]) => void
 
 /**
  * Returns true if the specified path points to a resource or local file.
