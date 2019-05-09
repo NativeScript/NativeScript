@@ -10,9 +10,8 @@ import {
 } from "../styling/style-properties";
 
 import { layout } from "../../utils/utils";
-import { device } from "../../platform";
+import { device, screen } from "../../platform";
 import lazy from "../../utils/lazy";
-import * as platform from "../../platform";
 export * from "./animation-common";
 
 interface AnimationDefinitionInternal extends AnimationDefinition {
@@ -467,10 +466,10 @@ export class Animation extends AnimationBase {
                     throw new Error(`cannot animate ${propertyAnimation.property} on root view`);
                 }
                 const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
-                toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / platform.screen.mainScreen.scale;
+                toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / screen.mainScreen.scale;
                 const nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
                 const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
-                originalValue1 = nativeHeight / platform.screen.mainScreen.scale;
+                originalValue1 = nativeHeight / screen.mainScreen.scale;
                 nativeArray[0] = originalValue1;
                 nativeArray[1] = toValue;
                 let extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);

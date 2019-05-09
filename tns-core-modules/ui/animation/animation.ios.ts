@@ -8,8 +8,7 @@ import {
     heightProperty, widthProperty, PercentLength
 } from "../styling/style-properties";
 
-import { ios } from "../../utils/utils";
-import * as platform from "../../platform";
+import { screen } from "../../platform";
 
 export * from "./animation-common";
 
@@ -276,7 +275,7 @@ export class Animation extends AnimationBase {
         let toValue = animation.value;
         let fromValue;
         const parent = animation.target.parent as View;
-        const screenScale: number = platform.screen.mainScreen.scale;
+        const screenScale: number = screen.mainScreen.scale;
 
         let tempRotate = (animation.target.rotate || 0) * Math.PI / 180;
         let abs;

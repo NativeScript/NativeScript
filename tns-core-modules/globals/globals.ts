@@ -184,15 +184,6 @@ export function install() {
         registerOnGlobalContext("Headers", "fetch");
         registerOnGlobalContext("Request", "fetch");
         registerOnGlobalContext("Response", "fetch");
-
-        // check whether the 'android' namespace is exposed
-        // if positive - the current device is an Android
-        // so a custom implementation of the global 'console' object is attached.
-        // otherwise do nothing on iOS - the NS runtime provides a native 'console' functionality.
-        if ((<any>global).android) {
-            const consoleModule = require("console");
-            (<any>global).console = new consoleModule.Console();
-        }
     }
 }
 install();
