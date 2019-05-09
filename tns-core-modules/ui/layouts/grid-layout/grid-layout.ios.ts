@@ -136,6 +136,11 @@ export class GridLayout extends GridLayoutBase {
 
         this.eachLayoutChild((child, last) => {
             let measureSpecs = this.map.get(child);
+            if (!measureSpecs) {
+                this._registerLayoutChild(child);
+                measureSpecs = this.map.get(child);
+            }
+
             this.updateMeasureSpecs(child, measureSpecs);
             this.helper.addMeasureSpec(measureSpecs);
         });
