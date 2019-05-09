@@ -3,12 +3,13 @@ import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTr
 import { Page } from "../page";
 
 // Types.
-import { getAncestor } from "../core/view/view-common";
+import { getAncestor, viewMatchesModuleContext } from "../core/view/view-common";
 import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, Property, CSSType } from "../core/view";
 import { createViewFromEntry } from "../builder";
 import { profile } from "../../profiling";
 
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
+import { getModuleName } from "../../utils/utils";
 export * from "../core/view";
 
 export enum NavigationType {
@@ -574,7 +575,38 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return result;
     }
 
-    public _onLivesync(): boolean {
+    public _onLivesync(context?: ModuleContext): boolean {
+        if (super._onLivesync(context)) {
+            return true;
+        }
+
+        // Fallback
+        if (!context) {
+            return this.legacyLivesync();
+        }
+
+        return false;
+    }
+
+    public _handleLivesync(context?: ModuleContext): boolean {
+        if (super._handleLivesync(context)) {
+            return true;
+        }
+
+        // Handle markup/script changes in currentPage
+        if (this.currentPage &&
+            viewMatchesModuleContext(this.currentPage, context, ["markup", "script"])) {
+
+            traceWrite(`Change Handled: Replacing page ${context.path}`, traceCategories.Livesync);
+
+            this.replacePage(context);
+            return true;
+        }
+
+        return false;
+    }
+
+    private legacyLivesync(): boolean {
         // Reset activity/window content when:
         // + Changes are not handled on View
         // + There is no ModuleContext
@@ -609,6 +641,27 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this.navigate(newEntry);
         return true;
     }
+
+    protected replacePage(context: ModuleContext): void {
+        // Set NavigationType.replace for HMR.
+        // In IOS on `viewDidAppear()` this will be set to NavigationType.forward.
+        this.navigationType = NavigationType.replace;
+        const currentBackstackEntry = this._currentEntry;
+        const contextModuleName = getModuleName(context.path);
+
+        const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
+        const newBackstackEntry: BackstackEntry = {
+            entry: currentBackstackEntry.entry,
+            resolvedPage: newPage,
+            navDepth: currentBackstackEntry.navDepth,
+            fragmentTag: currentBackstackEntry.fragmentTag,
+            frameId: currentBackstackEntry.frameId
+        };
+
+        const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
+        this.performNavigation(navContext);
+    }
+
 }
 
 export function getFrameById(id: string): FrameBase {
