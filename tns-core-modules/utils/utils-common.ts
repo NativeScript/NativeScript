@@ -1,4 +1,7 @@
 ﻿import * as types from "./types";
+import { dispatchToMainThread, isMainThread } from "./mainthread-helper"
+
+export * from "./mainthread-helper"
 
 export const RESOURCE_PREFIX = "res://";
 export const FILE_PREFIX = "file:///";
@@ -153,4 +156,19 @@ export function hasDuplicates(arr: Array<any>): boolean {
 
 export function eliminateDuplicates(arr: Array<any>): Array<any> {
     return Array.from(new Set(arr));
+}
+
+export function executeOnMainThread(func: Function) {
+    if (isMainThread()) {
+        return func();
+    } else {
+        dispatchToMainThread(func);
+    }
+}
+
+export function mainThreadify(func: Function): (...args: any[]) => void {
+    return function () {
+        const argsToPass = arguments;
+        executeOnMainThread(() => func.apply(this, argsToPass));
+    }
 }
