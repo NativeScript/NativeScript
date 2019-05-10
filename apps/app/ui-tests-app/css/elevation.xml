@@ -1,0 +1,25 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded">
+    <ScrollView>
+        <StackLayout backgroundColor="aliceblue" androidElevation="2" padding="10" margin="20">
+            <Button text="default elevation" tap="buttonTap"/>
+
+            <Button class="elevation-0" text="elevation 0"/>
+
+            <Label class="elevation-2" text="Label with elevation 2"/>
+
+            <StackLayout androidElevation="4" backgroundColor="#ff1744" horizontalAlignment="center" margin="20">
+                <Button class="elevation-2" text="elevation 2"/>
+                <Button class="elevation-4" text="elevation 4"/>
+            </StackLayout>
+
+            <StackLayout orientation="horizontal" horizontalAlignment="center">
+                <Button class="round" androidElevation="4" text="el. 4"/>
+                <Button class="elevation-8 round" text="el. 8"/>
+            </StackLayout>
+
+            <Label class="elevation-8" text="elevation 8"/>
+            <Button class="elevation-8" text="elevation 8, with radius" borderRadius="4"/>
+            <Button class="elevation-10" text="elevation 10"/>
+        </StackLayout>
+    </ScrollView>
+</Page>

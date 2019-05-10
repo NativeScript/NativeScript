@@ -38,6 +38,7 @@ export function loadExamples() {
     examples.set("margins-paddings-with-percentage", "css/margins-paddings-with-percentage");
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("combinators", "css/combinators");
+    examples.set("elevation", "css/elevation");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
     examples.set("non-uniform-radius", "css/non-uniform-radius");
     examples.set("missing-background-image", "css/missing-background-image");

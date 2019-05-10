@@ -15,18 +15,26 @@ import {
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
-    zIndexProperty, backgroundInternalProperty
+    zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
+import { device } from "../../../platform";
+import lazy from "../../../utils/lazy";
 
 export * from "./view-common";
 
 const DOMID = "_domId";
 const androidBackPressedEvent = "androidBackPressed";
+
+const shortAnimTime = 17694720; // android.R.integer.config_shortAnimTime
+const statePressed = 16842919; // android.R.attr.state_pressed
+const stateEnabled = 16842910; // android.R.attr.state_enabled
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -255,6 +263,8 @@ export class View extends ViewCommon {
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: android.support.v4.app.FragmentManager;
     private _rootManager: android.support.v4.app.FragmentManager;
+    private _originalElevation: number;
+    private _originalStateListAnimator: any; /* android.animation.StateListAnimator; */
 
     nativeViewProtected: android.view.View;
 
@@ -709,6 +719,74 @@ export class View extends ViewCommon {
         this.nativeViewProtected.setAlpha(float(value));
     }
 
+    [androidElevationProperty.getDefault](): number {
+        if (sdkVersion() < 21) {
+            return 0;
+        }
+
+        // NOTE: overriden in Button implementation as for widgets with StateListAnimator (Button)
+        // nativeView.getElevation() returns 0 at the time of the getDefault() query
+        return layout.toDeviceIndependentPixels((<any>this.nativeViewProtected).getElevation());
+    }
+    [androidElevationProperty.setNative](value: number) {
+        if (sdkVersion() < 21) {
+            return;
+        }
+
+        this.refreshStateListAnimator();
+    }
+
+    [androidDynamicElevationOffsetProperty.getDefault](): number {
+        return 0;
+    }
+    [androidDynamicElevationOffsetProperty.setNative](value: number) {
+        if (sdkVersion() < 21) {
+            return;
+        }
+
+        this.refreshStateListAnimator();
+    }
+
+    private refreshStateListAnimator() {
+        const nativeView: any = this.nativeViewProtected;
+
+        const ObjectAnimator = android.animation.ObjectAnimator;
+        const AnimatorSet = android.animation.AnimatorSet;
+
+        const duration = nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
+        const elevation = layout.toDevicePixels(this.androidElevation || 0);
+        const z = layout.toDevicePixels(0);
+        const pressedZ = layout.toDevicePixels(this.androidDynamicElevationOffset || 0);
+
+        const pressedSet = new AnimatorSet();
+        pressedSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [pressedZ])
+                .setDuration(duration),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [elevation])
+                .setDuration(0),
+        ]));
+
+        const notPressedSet = new AnimatorSet();
+        notPressedSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [z])
+                .setDuration(duration),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [elevation])
+                .setDuration(0),
+        ]));
+
+        const defaultSet = new AnimatorSet();
+        defaultSet.playTogether(java.util.Arrays.asList([
+            ObjectAnimator.ofFloat(nativeView, "translationZ", [0]).setDuration(0),
+            ObjectAnimator.ofFloat(nativeView, "elevation", [0]).setDuration(0),
+        ]));
+
+        const stateListAnimator = new (<any>android.animation).StateListAnimator();
+        stateListAnimator.addState([statePressed, stateEnabled], pressedSet);
+        stateListAnimator.addState([stateEnabled], notPressedSet);
+        stateListAnimator.addState([], defaultSet);
+        nativeView.setStateListAnimator(stateListAnimator);
+    }
+
     [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
         return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
     }
@@ -946,7 +1024,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
     const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
     if (getter) {
-        View.prototype[getter] = function (this: View): PercentLength {
+        View.prototype[getter] = function(this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -962,7 +1040,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
         }
     }
     if (setter) {
-        View.prototype[setter] = function (this: View, length: PercentLength) {
+        View.prototype[setter] = function(this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
