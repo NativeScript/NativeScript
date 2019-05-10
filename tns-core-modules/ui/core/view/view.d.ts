@@ -225,6 +225,16 @@ export abstract class View extends ViewBase {
     color: Color;
 
     /**
+     * Gets or sets the elevation of the android view.
+     */
+    androidElevation: number;
+
+    /**
+     * Gets or sets the dynamic elevation offset of the android view.
+     */
+    androidDynamicElevationOffset: number;
+
+    /**
      * Gets or sets the background style property.
      */
     background: string;

@@ -683,6 +683,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.scaleY = value;
     }
 
+    get androidElevation(): number {
+        return this.style.androidElevation;
+    }
+    set androidElevation(value: number) {
+        this.style.androidElevation = value;
+    }
+
+    get androidDynamicElevationOffset(): number {
+        return this.style.androidDynamicElevationOffset;
+    }
+    set androidDynamicElevationOffset(value: number) {
+        this.style.androidDynamicElevationOffset = value;
+    }
+
     //END Style property shortcuts
 
     public automationText: string;
