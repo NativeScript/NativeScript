@@ -1,5 +1,5 @@
 <a name="5.4.0"></a>
-# [5.4.0](https://github.com/NativeScript/NativeScript/compare/5.3.2...5.4.0) (2019-05-11)
+# [5.4.0](https://github.com/NativeScript/NativeScript/compare/5.3.2...5.4.0) (2019-05-14)
 
 
 ### Bug Fixes
@@ -9,9 +9,10 @@
 * **devtools-ios:** Ensure UI modifications run on main thread ([c60f74d](https://github.com/NativeScript/NativeScript/commit/c60f74d)), closes [#7219](https://github.com/NativeScript/NativeScript/issues/7219)
 * **ios:** add null check to TouchGestureRecognizer ([#7182](https://github.com/NativeScript/NativeScript/issues/7182)) ([7d3f0d9](https://github.com/NativeScript/NativeScript/commit/7d3f0d9))
 * **ios:** application.displayedEvent does not depend on trace to fire ([#7141](https://github.com/NativeScript/NativeScript/issues/7141)) ([#7156](https://github.com/NativeScript/NativeScript/issues/7156)) ([4e56c89](https://github.com/NativeScript/NativeScript/commit/4e56c89))
-* **iOS:** Image cache module not longer sets null in NSCache ([#7171](https://github.com/NativeScript/NativeScript/issues/7171)) ([4f79d2e](https://github.com/NativeScript/NativeScript/commit/4f79d2e))
+* **ios:** image cache module not longer sets null in NSCache ([#7171](https://github.com/NativeScript/NativeScript/issues/7171)) ([4f79d2e](https://github.com/NativeScript/NativeScript/commit/4f79d2e))
 * **ios-modal:** closeCallback not being called with popover presentation style ([#7189](https://github.com/NativeScript/NativeScript/issues/7189)) ([aa44eb9](https://github.com/NativeScript/NativeScript/commit/aa44eb9))
 * **ios-tabview:** crash when setting tab text color ([#7188](https://github.com/NativeScript/NativeScript/issues/7188)) ([77c45da](https://github.com/NativeScript/NativeScript/commit/77c45da))
+* **text:** crash when removing FormattedText ([#7237](https://github.com/NativeScript/NativeScript/issues/7237)) ([37b53c6](https://github.com/NativeScript/NativeScript/commit/37b53c6))
 
 
 ### Features
