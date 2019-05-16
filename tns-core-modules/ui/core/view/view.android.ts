@@ -720,13 +720,7 @@ export class View extends ViewCommon {
     }
 
     [androidElevationProperty.getDefault](): number {
-        if (sdkVersion() < 21) {
-            return 0;
-        }
-
-        // NOTE: overriden in Button implementation as for widgets with StateListAnimator (Button)
-        // nativeView.getElevation() returns 0 at the time of the getDefault() query
-        return layout.toDeviceIndependentPixels((<any>this.nativeViewProtected).getElevation());
+        return this.getDefaultElevation();
     }
     [androidElevationProperty.setNative](value: number) {
         if (sdkVersion() < 21) {
@@ -737,7 +731,7 @@ export class View extends ViewCommon {
     }
 
     [androidDynamicElevationOffsetProperty.getDefault](): number {
-        return 0;
+        return this.getDefaultDynamicElevationOffset();
     }
     [androidDynamicElevationOffsetProperty.setNative](value: number) {
         if (sdkVersion() < 21) {
@@ -747,6 +741,21 @@ export class View extends ViewCommon {
         this.refreshStateListAnimator();
     }
 
+    protected getDefaultElevation(): number {
+        if (sdkVersion() < 21) {
+            return 0;
+        }
+
+        // NOTE: overriden in Button implementation as for widgets with StateListAnimator (Button)
+        // nativeView.getElevation() returns 0 at the time of the getDefault() query
+        return layout.toDeviceIndependentPixels((<any>this.nativeViewProtected).getElevation());
+    }
+
+    protected getDefaultDynamicElevationOffset() {
+        // NOTE: overriden in Button implementation
+        return 0;
+    }
+
     private refreshStateListAnimator() {
         const nativeView: any = this.nativeViewProtected;
 
@@ -754,9 +763,20 @@ export class View extends ViewCommon {
         const AnimatorSet = android.animation.AnimatorSet;
 
         const duration = nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
-        const elevation = layout.toDevicePixels(this.androidElevation || 0);
+        
+        let elevation = this.androidElevation;
+        if (typeof elevation === "undefined" || elevation === null) {
+            elevation = this.getDefaultElevation();
+        }
+        elevation = layout.toDevicePixels(elevation);
+
         const z = layout.toDevicePixels(0);
-        const pressedZ = layout.toDevicePixels(this.androidDynamicElevationOffset || 0);
+
+        let pressedZ = this.androidDynamicElevationOffset;
+        if (typeof pressedZ === "undefined" || pressedZ === null) {
+            pressedZ = this.getDefaultDynamicElevationOffset();
+        }
+        pressedZ = layout.toDevicePixels(pressedZ);
 
         const pressedSet = new AnimatorSet();
         pressedSet.playTogether(java.util.Arrays.asList([
