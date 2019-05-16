@@ -5,7 +5,7 @@ import {
 } from ".";
 
 import {
-    ViewBase, Property, booleanConverter, eachDescendant, EventData, layout,
+    ViewBase, Property, booleanConverter, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
     InheritedProperty, ShowModalOptions
 } from "../view-base";

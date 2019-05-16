@@ -15,6 +15,7 @@ export * from "./page-common";
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
+const TRANSITION = "_transition";
 
 const majorVersion = iosUtils.MajorVersion;
 
@@ -146,6 +147,14 @@ class UIViewControllerImpl extends UIViewController {
             }
 
             frame.setCurrent(newEntry, navType);
+            
+            if (frame.navigationType === NavigationType.replace) {
+                let controller = newEntry.resolvedPage.ios;
+                if (controller) {
+                    controller[TRANSITION] = frame._getNavigationTransition(newEntry.entry);
+                }
+            }
+
             frame.navigationType = isBack ? NavigationType.back : NavigationType.forward;
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
