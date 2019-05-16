@@ -2,7 +2,7 @@ import { TabContentItem as TabContentItemDefinition } from ".";
 import { Font } from "../styling/font";
 
 import {
-    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
+    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty, tabStripProperty, TabStrip,
     // tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
     // androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
     fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
@@ -339,6 +339,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public disposeNativeView() {
         this._bottomNavigationBar.setItems(null);
+        this._bottomNavigationBar = null;
         // this._tabLayout.setItems(null, null);
         // (<any>this._pagerAdapter).owner = null;
         // this._pagerAdapter = null;
@@ -368,6 +369,11 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public changeTab(index: number) {
+        // this is the case when there are no items
+        if (index === -1) {
+            return;
+        }
+
         const containerView = this._contentView;
         const fragmentManager = this._getFragmentManager();
         const transaction = fragmentManager.beginTransaction();
@@ -457,31 +463,35 @@ export class BottomNavigation extends TabNavigationBase {
         if (this.shouldUpdateAdapter(items)) {
             // (<any>this._pagerAdapter).items = items;
 
-            const length = items ? items.length : 0;
-            if (length === 0) {
-                this._bottomNavigationBar.setItems(null);
-                // this._tabLayout.setItems(null, null);
+            // const length = items ? items.length : 0;
+            // if (length === 0) {
+            //     this._bottomNavigationBar.setItems(null);
+            //     // this._tabLayout.setItems(null, null);
+            //     // this._pagerAdapter.notifyDataSetChanged();
+            //     return;
+            // }
+
+            if (this.tabStrip && this.tabStrip.items) {
+                const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
+                this.tabStrip.items.forEach((item, i, arr) => {
+                    if (this.tabStrip.items[i]) {
+                        const tabItemSpec = createTabItemSpec(null, this.tabStrip.items[i]);
+                        // item.index = i;
+                        // item.tabItemSpec = tabItemSpec;
+                        tabItems.push(tabItemSpec);
+                    }
+                });
+
+                // const tabLayout = this._tabLayout;
+                // tabLayout.setItems(tabItems, this._viewPager);
+                this._bottomNavigationBar.setItems(tabItems);
+                // items.forEach((item, i, arr) => {
+                //     const tv = tabLayout.getTextViewForItemAt(i);
+                //     item.setNativeView(tv);
+                // });
+
                 // this._pagerAdapter.notifyDataSetChanged();
-                return;
             }
-
-            const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-            items.forEach((item: TabContentItem, i, arr) => {
-                const tabItemSpec = createTabItemSpec(item, this.tabStrip.items[i]);
-                item.index = i;
-                item.tabItemSpec = tabItemSpec;
-                tabItems.push(tabItemSpec);
-            });
-
-            // const tabLayout = this._tabLayout;
-            // tabLayout.setItems(tabItems, this._viewPager);
-            this._bottomNavigationBar.setItems(tabItems);
-            // items.forEach((item, i, arr) => {
-            //     const tv = tabLayout.getTextViewForItemAt(i);
-            //     item.setNativeView(tv);
-            // });
-
-            // this._pagerAdapter.notifyDataSetChanged();
         }
     }
 
@@ -503,8 +513,16 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
-        this.setAdapterItems(value);
+        // this.setAdapterItems(value);
         selectedIndexProperty.coerce(this);
+    }
+
+    [tabStripProperty.getDefault](): TabStrip {
+        return null;
+    }
+    [tabStripProperty.setNative](value: TabStrip) {
+        this.setAdapterItems([]);
+        // selectedIndexProperty.coerce(this);
     }
 }
 

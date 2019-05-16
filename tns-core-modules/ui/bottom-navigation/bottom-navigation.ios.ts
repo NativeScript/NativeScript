@@ -418,11 +418,19 @@ export class BottomNavigation extends TabNavigationBase {
 
         items.forEach((item, i) => {
             const controller = this.getViewController(item);
-            const tabStripItem = <TabStripItem>this.tabStrip.items[i];
-            // const tabStripItemImage = tabStripItem.image;
-            // const tabStripItemLabel = tabStripItem.label;
-            const icon = this._getIcon(tabStripItem.iconSource); // this.tabStrip.items[i].image; // this._getIcon(item.iconSource);
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((tabStripItem.title || ""), icon, i);
+
+            let icon = null;
+            let title = "";
+
+            if (this.tabStrip && this.tabStrip.items && this.tabStrip.items[i]) {
+                const tabStripItem = <TabStripItem>this.tabStrip.items[i];
+                // const tabStripItemImage = tabStripItem.image;
+                // const tabStripItemLabel = tabStripItem.label;
+                icon = this._getIcon(tabStripItem.iconSource); // this.tabStrip.items[i].image; // this._getIcon(item.iconSource);
+                title = tabStripItem.title;
+            }
+
+            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((title || ""), icon, i);
             // const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag("test", null, i);
             updateTitleAndIconPositions(item, tabBarItem, controller);
 
@@ -475,7 +483,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     private _updateIOSTabBarColorsAndFonts(): void {
-        if (!this.items) {
+        if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
             return;
         }
 
@@ -484,6 +492,14 @@ export class BottomNavigation extends TabNavigationBase {
         for (let i = 0; i < tabBar.items.count; i++) {
             applyStatesToItem(tabBar.items[i], states);
         }
+    }
+
+    // TODO: Move this to TabStripItem
+    [fontInternalProperty.getDefault](): Font {
+        return null;
+    }
+    [fontInternalProperty.setNative](value: Font) {
+        this._updateIOSTabBarColorsAndFonts();
     }
 
     [selectedIndexProperty.setNative](value: number) {

@@ -180,6 +180,9 @@ allTests["BUTTON"] = buttonTests;
 import * as labelTests from "./ui/label/label-tests";
 allTests["LABEL"] = labelTests;
 
+import * as bottomNavigationTests from "./ui/bottom-navigation/bottom-navigation-tests";
+allTests["BOTTOM-NAVIGATION"] = bottomNavigationTests;
+
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
 
