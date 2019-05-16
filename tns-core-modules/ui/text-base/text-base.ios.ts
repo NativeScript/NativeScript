@@ -231,7 +231,7 @@ export class TextBase extends TextBaseCommon {
 
     createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
         let mas = NSMutableAttributedString.alloc().init();
-        if (formattedString) {
+        if (formattedString && formattedString.parent) {
             for (let i = 0, spanStart = 0, length = formattedString.spans.length; i < length; i++) {
                 const span = formattedString.spans.getItem(i);
                 const text = span.text;

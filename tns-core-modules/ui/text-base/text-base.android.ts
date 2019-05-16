@@ -12,7 +12,7 @@ import { isString } from "../../utils/types";
 export * from "./text-base-common";
 
 interface TextTransformation {
-    new (owner: TextBase): android.text.method.TransformationMethod;
+    new(owner: TextBase): android.text.method.TransformationMethod;
 }
 
 let TextTransformation: TextTransformation;
@@ -344,7 +344,7 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
 }
 
 function createSpannableStringBuilder(formattedString: FormattedString): android.text.SpannableStringBuilder {
-    if (!formattedString) {
+    if (!formattedString || !formattedString.parent) {
         return null;
     }
 
