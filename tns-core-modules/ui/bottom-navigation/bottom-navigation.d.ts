@@ -5,6 +5,37 @@
 
 import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
 import { TextTransform } from "../text-base";
+
+/**
+ * Represents a tab strip entry.
+ */
+export class TabStripItem extends ViewBase {
+    /**
+     * Gets or sets the title of the tab strip entry.
+     */
+    title: string;
+
+    /**
+     * Gets or sets the icon source of the tab strip entry.
+     */
+    iconSource: string;
+}
+
+/**
+ * Represents a tab strip.
+ */
+export class TabStrip extends ViewBase {
+    /**
+     * Gets or sets the items of the tab strip.
+     */
+    items: Array<TabStripItem>;
+
+    /**
+     * Gets or sets the icon rendering mode on iOS
+     */
+    iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+}
+
 /**
  * Represents a tab view entry.
  */

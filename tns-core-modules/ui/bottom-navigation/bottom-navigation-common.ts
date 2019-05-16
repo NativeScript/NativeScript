@@ -176,6 +176,18 @@ export class TabNavigationBase extends View implements AddChildFromBuilder, AddA
         }
     }
 
+    public onTabStripChanged(oldTabStrip: TabStrip, newTabStrip: TabStrip) {
+        if (oldTabStrip && oldTabStrip.items && oldTabStrip.items.length) {
+            oldTabStrip.items.forEach(item => this._removeView(item));
+        }
+
+        if (newTabStrip && newTabStrip.items && newTabStrip.items.length) {
+            newTabStrip.items.forEach(item => {
+                this._addView(item);
+            });
+        }
+    }
+
     public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
         // to be overridden in platform specific files
         this.notify(<SelectedIndexChangedEventData>{ eventName: TabNavigationBase.selectedIndexChangedEvent, object: this, oldIndex, newIndex });
@@ -222,6 +234,13 @@ export const itemsProperty = new Property<TabNavigationBase, TabContentItemDefin
     }
 });
 itemsProperty.register(TabNavigationBase);
+
+export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
+    name: "tabStrip", valueChanged: (target, oldValue, newValue) => {
+        target.onTabStripChanged(oldValue, newValue);
+    }
+});
+tabStripProperty.register(TabNavigationBase);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);
