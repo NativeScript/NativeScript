@@ -76,6 +76,11 @@ export class BottomNavigation extends View {
     items: Array<TabContentItem>;
 
     /**
+     * Gets or sets the tab strip of the TabView.
+     */
+    tabStrip: TabStrip;
+
+    /**
      * Gets or sets the selectedIndex of the TabView.
      */
     selectedIndex: number;
