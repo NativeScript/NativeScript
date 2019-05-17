@@ -89,6 +89,7 @@ export class Frame extends FrameBase {
         let navigationTransition: NavigationTransition;
         let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
         if (isReplace) {
+            animated = true;
             navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 }
             viewController[TRANSITION] = navigationTransition;
         } else if (animated) {
@@ -96,8 +97,7 @@ export class Frame extends FrameBase {
             if (navigationTransition) {
                 viewController[TRANSITION] = navigationTransition;
             }
-        }
-        else {
+        } else {
             //https://github.com/NativeScript/NativeScript/issues/1787
             viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
         }
