@@ -3,7 +3,6 @@
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     Length, zIndexProperty, textAlignmentProperty, TextAlignment
 } from "./button-common";
-import { androidElevationProperty, androidDynamicElevationOffsetProperty } from "../styling/style-properties";
 import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
 import { device } from "../../platform";
@@ -151,7 +150,13 @@ export class Button extends ButtonBase {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
     }
 
-    [androidElevationProperty.getDefault](): number {
+    [textAlignmentProperty.setNative](value: TextAlignment) {
+        // Button initial value is center.
+        const newValue = value === "initial" ? "center" : value;
+        super[textAlignmentProperty.setNative](newValue);
+    }
+
+    protected getDefaultElevation(): number {
         if (sdkVersion() < 21) {
             return 0;
         }
@@ -162,17 +167,11 @@ export class Button extends ButtonBase {
         return 2;
     }
 
-    [androidDynamicElevationOffsetProperty.getDefault](): number {
+    protected getDefaultDynamicElevationOffset(): number {
         if (sdkVersion() < 21) {
             return 0;
         }
 
         return 4; // 4dp @dimen/button_pressed_z_material
-    }
-
-    [textAlignmentProperty.setNative](value: TextAlignment) {
-        // Button initial value is center.
-        const newValue = value === "initial" ? "center" : value;
-        super[textAlignmentProperty.setNative](newValue);
     }
 }
