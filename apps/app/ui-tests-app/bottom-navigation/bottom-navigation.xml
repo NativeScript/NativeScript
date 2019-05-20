@@ -1,5 +1,8 @@
 <Page>
 
+  <ActionBar title="BottomNavigation" icon="" class="action-bar">
+  </ActionBar>
+
   <!-- w/o TabStrip -->
   <!-- <BottomNavigation>
       <TabContentItem>

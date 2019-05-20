@@ -12,6 +12,11 @@ export function pageLoaded(args: EventData) {
 export function loadExamples() {
     const examples = new Map<string, string>();    
     examples.set("bottom-navigation", "bottom-navigation/bottom-navigation");
+    examples.set("issue-5470", "bottom-navigation/issue-5470");
+    examples.set("background-color", "bottom-navigation/background-color");
+    examples.set("color", "bottom-navigation/color");
+    examples.set("icon-title-placement", "bottom-navigation/icon-title-placement");
+    examples.set("icon-change", "bottom-navigation/icon-change");
     
     return examples;
 }

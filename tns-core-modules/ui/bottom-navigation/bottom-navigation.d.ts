@@ -37,7 +37,7 @@ export class TabStrip extends ViewBase {
 }
 
 /**
- * Represents a tab view entry.
+ * Represents a tabbed view content entry.
  */
 export class TabContentItem extends ViewBase {
     /**
@@ -67,7 +67,7 @@ export interface SelectedIndexChangedEventData extends EventData {
 }
 
 /**
- * Represents a tab view.
+ * Represents a bottom navigation view.
  */
 export class BottomNavigation extends View {
     /**
@@ -86,31 +86,6 @@ export class BottomNavigation extends View {
     selectedIndex: number;
 
     /**
-     * Gets or sets the font size of the tabs titles.
-     */
-    tabTextFontSize: number;
-
-    /**
-     * Gets or sets the text color of the tabs titles.
-     */
-    tabTextColor: Color;
-    
-    /**
-     * Gets or sets the background color of the tabs.
-     */
-    tabBackgroundColor: Color;
-    
-    /**
-     * Gets or sets the text color of the selected tab title.
-     */
-    selectedTabTextColor: Color;
-    
-    /**
-     * Gets or sets the color of the horizontal line drawn below the currently selected tab on Android.
-     */
-    androidSelectedTabHighlightColor: Color;
-
-    /**
      * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
      */
     android: any /* android.view.View */; //android.support.v4.view.ViewPager;
@@ -119,34 +94,6 @@ export class BottomNavigation extends View {
      * Gets the native iOS [UITabBarController](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITabBarController_Class/) that represents the user interface for this component. Valid only when running on iOS.
      */
     ios: any /* UITabBarController */;
-
-    /**
-     * Gets or set the UIImageRenderingMode of the tab icons in iOS. 
-     * Valid values are:
-     *  - automatic
-     *  - alwaysOriginal
-     *  - alwaysTemplate  
-     */
-    iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
-
-    /**
-     * Gets or sets the number of tabs that should be retained to either side of the current tab in the view hierarchy in an idle state. 
-     * Tabs beyond this limit will be recreated from the TabView when needed.  
-     */
-    androidOffscreenTabLimit: number;
-
-    /**
-     * Gets or set the tabs vertical position.
-     * Valid values are:
-     *  - top
-     *  - bottom
-     */
-    androidTabsPosition: "top" | "bottom";
-
-    /**
-     * Gets or sets a value indicating whether swipe gesture is enabled for Android.
-     */
-    androidSwipeEnabled: boolean;
 
     /**
      * String value used when hooking to the selectedIndexChanged event.
@@ -168,12 +115,7 @@ export class BottomNavigation extends View {
 }
 
 export const itemsProperty: Property<BottomNavigation, TabContentItem[]>;
+export const tabStripProperty: Property<BottomNavigation, TabStrip>
 export const selectedIndexProperty: Property<BottomNavigation, number>;
 
-export const tabTextFontSizeProperty: CssProperty<Style, number>;
-export const tabTextColorProperty: CssProperty<Style, Color>;
-export const tabBackgroundColorProperty: CssProperty<Style, Color>;
-export const selectedTabTextColorProperty: CssProperty<Style, Color>;
-export const androidSelectedTabHighlightColorProperty: CssProperty<Style, Color>;
-export const androidOffscreenTabLimitProperty: Property<BottomNavigation, number>;
-export const iosIconRenderingModeProperty: Property<BottomNavigation, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
+export const iosIconRenderingModeProperty: Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
