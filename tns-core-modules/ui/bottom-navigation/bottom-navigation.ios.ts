@@ -6,7 +6,7 @@ import {
     TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon, TabStripItem
 } from "./bottom-navigation-common"
-import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
+import { textTransformProperty, TextTransform } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
@@ -60,7 +60,7 @@ class UITabBarControllerImpl extends UITabBarController {
             .call(coordinator, null, () => {
                 const owner = this._owner.get();
                 if (owner && owner.items) {
-                    owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
+                    // owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions()); TODO:
                 }
             });
     }
@@ -150,8 +150,8 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 }
 
-function updateTitleAndIconPositions(tabItem: TabContentItem, tabBarItem: UITabBarItem, controller: UIViewController) {
-    if (!tabItem || !tabBarItem) {
+function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
+    if (!tabStripItem || !tabBarItem) {
         return;
     }
 
@@ -161,21 +161,21 @@ function updateTitleAndIconPositions(tabItem: TabContentItem, tabBarItem: UITabB
     const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
     const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
 
-    // if (!tabItem.iconSource) {
-    //     if (isIconAboveTitle) {
-    //         tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
-    //     } else {
-    //         tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
-    //     }
-    // }
+    if (!tabStripItem.iconSource) {
+        if (isIconAboveTitle) {
+            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+        } else {
+            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
+        }
+    }
 
-    // if (!tabItem.title) {
-    //     if (isIconAboveTitle) {
-    //         tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
-    //     } else {
-    //         tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
-    //     }
-    // }
+    if (!tabStripItem.title) {
+        if (isIconAboveTitle) {
+            tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
+        } else {
+            tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
+        }
+    }
 }
 
 export class TabContentItem extends TabContentItemBase {
@@ -201,38 +201,9 @@ export class TabContentItem extends TabContentItemBase {
             }
         }
     }
-
-    public _update() {
-        // const parent = <BottomNavigation>this.parent;
-        // const controller = this.__controller;
-        // if (parent && controller) {
-        //     const icon = parent._getIcon(this.iconSource);
-        //     const index = parent.items.indexOf(this);
-        //     const title = getTransformedText(this.title, this.style.textTransform);
-
-        //     const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
-        //     updateTitleAndIconPositions(this, tabBarItem, controller);
-
-        //     // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
-        //     // Delete the repeating code.
-        //     const states = getTitleAttributesForStates(parent);
-        //     applyStatesToItem(tabBarItem, states);
-        //     controller.tabBarItem = tabBarItem;
-        // }
-    }
-
-    public _updateTitleAndIconPositions() {
-        if (!this.__controller || !this.__controller.tabBarItem) {
-            return;
-        }
-        updateTitleAndIconPositions(this, this.__controller.tabBarItem, this.__controller);
-    }
-
-    [textTransformProperty.setNative](value: TextTransform) {
-        this._update();
-    }
 }
 
+@CSSType("BottomNavigation")
 export class BottomNavigation extends TabNavigationBase {
     public viewController: UITabBarControllerImpl;
     public items: TabContentItem[];
@@ -269,9 +240,6 @@ export class BottomNavigation extends TabNavigationBase {
         if (selectedView instanceof Frame) {
             selectedView._pushInFrameStackRecursive();
         }
-
-        // const label = this.tabStrip.items[0].label;
-        // const image = this.tabStrip.items[0].image;
 
         this._ios.delegate = this._delegate;
     }
@@ -424,19 +392,17 @@ export class BottomNavigation extends TabNavigationBase {
 
             if (this.tabStrip && this.tabStrip.items && this.tabStrip.items[i]) {
                 const tabStripItem = <TabStripItem>this.tabStrip.items[i];
-                // const tabStripItemImage = tabStripItem.image;
-                // const tabStripItemLabel = tabStripItem.label;
-                icon = this._getIcon(tabStripItem.iconSource); // this.tabStrip.items[i].image; // this._getIcon(item.iconSource);
+                icon = this._getIcon(tabStripItem.iconSource);
                 title = tabStripItem.title;
+
+                const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((title || ""), icon, i);
+                updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
+
+                applyStatesToItem(tabBarItem, states);
+
+                controller.tabBarItem = tabBarItem;
             }
 
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((title || ""), icon, i);
-            // const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag("test", null, i);
-            updateTitleAndIconPositions(item, tabBarItem, controller);
-
-            applyStatesToItem(tabBarItem, states);
-
-            controller.tabBarItem = tabBarItem;
             controllers.addObject(controller);
             (<TabContentItemDefinition>item).canBeLoaded = true;
         });
@@ -449,16 +415,6 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     private _getIconRenderingMode(): UIImageRenderingMode {
-        // switch (this.iosIconRenderingMode) {
-        //     case "alwaysOriginal":
-        //         return UIImageRenderingMode.AlwaysOriginal;
-        //     case "alwaysTemplate":
-        //         return UIImageRenderingMode.AlwaysTemplate;
-        //     case "automatic":
-        //     default:
-        //         return UIImageRenderingMode.Automatic;
-        // }
-
         return UIImageRenderingMode.AlwaysOriginal;
     }
 

@@ -1,14 +1,9 @@
 import { TabContentItem as TabContentItemDefinition } from ".";
-import { Font } from "../styling/font";
 
 import {
-    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty, tabStripProperty, TabStrip,
-    // tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
-    // androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, Color, traceMissingIcon, TabStripItem
-} from "./bottom-navigation-common"
-import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
+    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty, tabStripProperty, TabStrip, layout, traceCategory, traceEnabled,
+    traceWrite, traceMissingIcon, TabStripItem
+} from "./bottom-navigation-common";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
 import { Frame } from "../frame";
@@ -24,7 +19,7 @@ let TabFragment: any;
 let BottomNavigationBar: any;
 
 function makeFragmentName(viewId: number, id: number): string {
-    return "android:viewpager:" + viewId + ":" + id;
+    return "android:bottomnavigation:" + viewId + ":" + id;
 }
 
 function getTabById(id: number): BottomNavigation {
@@ -65,7 +60,7 @@ function initializeNativeClasses() {
             this.tab = getTabById(args.getInt(TABID));
             this.index = args.getInt(INDEX)
             if (!this.tab) {
-                throw new Error(`Cannot find TabView`);
+                throw new Error(`Cannot find BottomNavigation`);
             }
         }
 
@@ -95,7 +90,7 @@ function initializeNativeClasses() {
 
 function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
     const result = new org.nativescript.widgets.TabItemSpec();
-    result.title = tabStripItem.title; // "test"; // tabStripItem.label.text;
+    result.title = tabStripItem.title;
 
     if (tabStripItem.iconSource) {
         if (tabStripItem.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
@@ -113,8 +108,6 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
             }
         }
     }
-
-    // result.iconDrawable = null; // tabStripItem.image.android;
 
     return result;
 }
@@ -155,15 +148,6 @@ export class TabContentItem extends TabContentItemBase {
 
     public createNativeView() {
         return this.nativeViewProtected;
-    }
-
-    public _update(): void {
-        // const tv = this.nativeViewProtected;
-        // const tabView = this.parent as BottomNavigation;
-        // if (tv && tabView) {
-        //     this.tabItemSpec = createTabItemSpec(this);
-        //     tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
-        // }
     }
 
     public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
@@ -209,6 +193,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
     }
 }
 
+@CSSType("BottomNavigation")
 export class BottomNavigation extends TabNavigationBase {
     private _contentView: org.nativescript.widgets.ContentLayout;
     private _contentViewId: number = -1;
@@ -239,7 +224,7 @@ export class BottomNavigation extends TabNavigationBase {
     public createNativeView() {
         initializeNativeClasses();
         if (traceEnabled()) {
-            traceWrite("TabView._createUI(" + this + ");", traceCategory);
+            traceWrite("BottomNavigation._createUI(" + this + ");", traceCategory);
         }
 
         const context: android.content.Context = this._context;
@@ -290,7 +275,7 @@ export class BottomNavigation extends TabNavigationBase {
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
         const lastIndex = this.items.length - 1;
-        const offsideItems = 0; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
+        const offsideItems = 0;
 
         let toUnload = [];
         let toLoad = [];
@@ -340,12 +325,7 @@ export class BottomNavigation extends TabNavigationBase {
     public disposeNativeView() {
         this._bottomNavigationBar.setItems(null);
         this._bottomNavigationBar = null;
-        // this._tabLayout.setItems(null, null);
-        // (<any>this._pagerAdapter).owner = null;
-        // this._pagerAdapter = null;
 
-        // this._tabLayout = null;
-        // this._viewPager = null;
         super.disposeNativeView();
     }
 
@@ -385,12 +365,6 @@ export class BottomNavigation extends TabNavigationBase {
             if (this._currentFragment === fragment) {
                 this._currentFragment = null;
             }
-
-            // const tabItems = this.owner.items;
-            // const tabItem = tabItems ? tabItems[position] : null;
-            // if (tabItem) {
-            //     tabItem.canBeLoaded = false;
-            // }
         }
 
         const name = makeFragmentName(containerView.getId(), index);
@@ -405,11 +379,6 @@ export class BottomNavigation extends TabNavigationBase {
 
         this._currentFragment = fragment;
 
-        // if (fragment !== this.mCurrentPrimaryItem) {
-        //     fragment.setMenuVisibility(false);
-        //     fragment.setUserVisibleHint(false);
-        // }
-
         const tabItems = this.items;
         const tabItem = tabItems ? tabItems[index] : null;
         if (tabItem) {
@@ -420,78 +389,17 @@ export class BottomNavigation extends TabNavigationBase {
         transaction.commitNowAllowingStateLoss();
     }
 
-    private shouldUpdateAdapter(items: Array<TabContentItemDefinition>) {
-        return true;
-
-        // if (!this._pagerAdapter) {
-        //     return false;
-        // }
-
-        // const currentPagerAdapterItems = (<any>this._pagerAdapter).items;
-
-        // // if both values are null, should not update
-        // if (!items && !currentPagerAdapterItems) {
-        //     return false;
-        // }
-
-        // // if one value is null, should update
-        // if (!items || !currentPagerAdapterItems) {
-        //     return true;
-        // }
-
-        // // if both are Arrays but length doesn't match, should update
-        // if (items.length !== currentPagerAdapterItems.length) {
-        //     return true;
-        // }
-
-        // const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
-        //     return !!items.filter((item) => {
-        //         return item._domId === currentItem._domId
-        //     })[0];
-        // });
-
-        // // if both are Arrays and length matches, but not all items are the same, should update
-        // if (matchingItems.length !== items.length) {
-        //     return true;
-        // }
-
-        // // if both are Arrays and length matches and all items are the same, should not update
-        // return false;
-    }
-
     private setAdapterItems(items: Array<TabContentItemDefinition>) {
-        if (this.shouldUpdateAdapter(items)) {
-            // (<any>this._pagerAdapter).items = items;
+        if (this.tabStrip && this.tabStrip.items) {
+            const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
+            this.tabStrip.items.forEach((item, i, arr) => {
+                if (this.tabStrip.items[i]) {
+                    const tabItemSpec = createTabItemSpec(null, this.tabStrip.items[i]);
+                    tabItems.push(tabItemSpec);
+                }
+            });
 
-            // const length = items ? items.length : 0;
-            // if (length === 0) {
-            //     this._bottomNavigationBar.setItems(null);
-            //     // this._tabLayout.setItems(null, null);
-            //     // this._pagerAdapter.notifyDataSetChanged();
-            //     return;
-            // }
-
-            if (this.tabStrip && this.tabStrip.items) {
-                const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-                this.tabStrip.items.forEach((item, i, arr) => {
-                    if (this.tabStrip.items[i]) {
-                        const tabItemSpec = createTabItemSpec(null, this.tabStrip.items[i]);
-                        // item.index = i;
-                        // item.tabItemSpec = tabItemSpec;
-                        tabItems.push(tabItemSpec);
-                    }
-                });
-
-                // const tabLayout = this._tabLayout;
-                // tabLayout.setItems(tabItems, this._viewPager);
-                this._bottomNavigationBar.setItems(tabItems);
-                // items.forEach((item, i, arr) => {
-                //     const tv = tabLayout.getTextViewForItemAt(i);
-                //     item.setNativeView(tv);
-                // });
-
-                // this._pagerAdapter.notifyDataSetChanged();
-            }
+            this._bottomNavigationBar.setItems(tabItems);
         }
     }
 
@@ -500,7 +408,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = false; // this.androidTabsPosition === "top";
+        const smoothScroll = false;
 
         if (traceEnabled()) {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
@@ -513,7 +421,6 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
-        // this.setAdapterItems(value);
         selectedIndexProperty.coerce(this);
     }
 
@@ -522,17 +429,5 @@ export class BottomNavigation extends TabNavigationBase {
     }
     [tabStripProperty.setNative](value: TabStrip) {
         this.setAdapterItems([]);
-        // selectedIndexProperty.coerce(this);
     }
-}
-
-function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
-    if (value) {
-        const constantState = value.getConstantState();
-        if (constantState) {
-            return constantState.newDrawable(resources);
-        }
-    }
-
-    return value;
 }

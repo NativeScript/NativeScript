@@ -1,12 +1,10 @@
-﻿import { BottomNavigation as TabViewDefinition, TabContentItem as TabContentItemDefinition, SelectedIndexChangedEventData } from ".";
+﻿import { TabContentItem as TabContentItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
-    View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
-    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
-    traceWrite, traceCategories, traceMessageType, booleanConverter
+    View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
+    traceWrite, traceCategories, traceMessageType
 } from "../core/view";
 
 export * from "../core/view";
-import { TextTransform } from "../text-base";
 import { Image } from "../image/image";
 import { Label } from "../label/label";
 
@@ -52,10 +50,9 @@ export abstract class TabContentItemBase extends ViewBase implements TabContentI
             }
         }
     }
-
-    // public abstract _update();
 }
 
+@CSSType("TabStripItem")
 export class TabStripItem extends ViewBase implements AddChildFromBuilder {
     public title: string;
     public iconSource: string;
@@ -79,6 +76,7 @@ export class TabStripItem extends ViewBase implements AddChildFromBuilder {
     }
 }
 
+@CSSType("TabStrip")
 export class TabStrip extends ViewBase implements AddChildFromBuilder, AddArrayFromBuilder {
     public items: TabStripItem[];
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
@@ -105,7 +103,6 @@ export module knownCollections {
     export const items = "items";
 }
 
-@CSSType("TabView")
 export class TabNavigationBase extends View implements AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
