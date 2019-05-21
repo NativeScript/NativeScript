@@ -1,15 +1,16 @@
-import { AppiumDriver, createDriver, logWarn } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
 import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item, stillOtherPage } from "./screen";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 import * as shared from "./shared.e2e-spec";
 
 const rootType = "frame-root";
-describe(rootType, () => {
+describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;
 
-    before(async () => {
+    before(async function () {
+        nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
@@ -19,7 +20,7 @@ describe(rootType, () => {
         driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
-    after(async () => {
+    after(async function () {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(false);
         }
@@ -41,8 +42,9 @@ describe(rootType, () => {
         const teamOne: Item = teamsData[`teamOne${transition}`];
         const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-        describe(`${rootType}-transition-${transition}-scenarios:`, () => {
+        describe(`${rootType}-transition-${transition}-scenarios:`, async function () {
             before(async function () {
+                nsCapabilities.testReporter.context = this;
                 logWarn(`==== Transition ${transition}`);
 
                 if (transition === "Flip" &&
@@ -53,20 +55,20 @@ describe(rootType, () => {
                 }
             });
 
-            it("loaded home page", async () => {
+            it("loaded home page", async function () {
                 await screen.loadedHome();
             });
 
-            it("loaded frame root with nested frame", async () => {
+            it("loaded frame root with nested frame", async function () {
                 await screen.navigateToPageWithFrame();
                 await screen.loadedPageWithFrame();
             });
 
-            it("loaded players list", async () => {
+            it("loaded players list", async function () {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded player details and go back twice", async () => {
+            it("loaded player details and go back twice", async function () {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
@@ -85,7 +87,7 @@ describe(rootType, () => {
                 await shared.testPlayerNavigatedBack(screen, driver);
             });
 
-            it("navigate parent frame and go back", async () => {
+            it("navigate parent frame and go back", async function () {
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
@@ -102,7 +104,7 @@ describe(rootType, () => {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded player details and navigate parent frame and go back", async () => {
+            it("loaded player details and navigate parent frame and go back", async function () {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
@@ -129,7 +131,7 @@ describe(rootType, () => {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded home page again", async () => {
+            it("loaded home page again", async function () {
                 await screen.goBackFromFrameHome();
                 await screen.loadedHome();
 
@@ -139,20 +141,20 @@ describe(rootType, () => {
                 }
             });
 
-            it("loaded frame root with multi nested frames", async () => {
+            it("loaded frame root with multi nested frames", async function () {
                 await screen.navigateToPageWithMultiFrame();
                 await screen.loadedPageWithMultiFrame();
             });
 
-            it("loaded players list", async () => {
+            it("loaded players list", async function () {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded teams list", async () => {
+            it("loaded teams list", async function () {
                 await screen.loadedTeamsList();
             });
 
-            it("loaded player details and go back twice", async () => {
+            it("loaded player details and go back twice", async function () {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
@@ -171,7 +173,7 @@ describe(rootType, () => {
                 await shared.testPlayerNavigatedBack(screen, driver);
             });
 
-            it("navigate players parent frame and go back", async () => {
+            it("navigate players parent frame and go back", async function () {
                 await shared[`testSomePageNavigated${transition}`](screen);
 
                 if (appSuspendResume) {
@@ -188,7 +190,7 @@ describe(rootType, () => {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded players details and navigate parent frame and go back", async () => {
+            it("loaded players details and navigate parent frame and go back", async function () {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
@@ -216,19 +218,19 @@ describe(rootType, () => {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded frame root with multi nested frames again", async () => {
+            it("loaded frame root with multi nested frames again", async function () {
                 await screen.loadedPageWithMultiFrame();
             });
 
-            it("loaded players list", async () => {
+            it("loaded players list", async function () {
                 await screen.loadedPlayersList();
             });
 
-            it("loaded teams list", async () => {
+            it("loaded teams list", async function () {
                 await screen.loadedTeamsList();
             });
 
-            it("mix player and team list actions and go back", async () => {
+            it("mix player and team list actions and go back", async function () {
                 await shared.testPlayerNavigated(playerTwo, screen);
 
                 if (appSuspendResume) {
@@ -292,26 +294,30 @@ describe(rootType, () => {
                 await screen.loadedTeamsList();
             });
 
-            it("loaded home page again", async () => {
+            it("loaded home page again", async function () {
                 await screen.goBackFromFrameHome();
                 await screen.loadedHome();
             });
         });
     }
 
-    describe("frame to nested frame with non-default transition", () => {
+    describe("frame to nested frame with non-default transition", async function () {
         const playerOne = playersData["playerOneSlide"];
 
-        it("loaded home page", async () => {
+        before(async function () {
+            nsCapabilities.testReporter.context = this;
+        });
+
+        it("loaded home page", async function () {
             await screen.loadedHome();
         });
 
-        it("loaded frame root with nested frame non-default transition", async () => {
+        it("loaded frame root with nested frame non-default transition", async function () {
             await screen.navigateToPageWithFrameNonDefaultTransition();
             await screen.loadedPageWithFrame();
         });
 
-        it ("go back to home page again", async () => {
+        it("go back to home page again", async function () {
             if (appSuspendResume) {
                 await driver.backgroundApp(suspendTime);
                 await driver.waitForElement(playerOne.name); // wait for players list
@@ -322,17 +328,22 @@ describe(rootType, () => {
         });
     });
 
-    describe("nested frame to frame with non-default transition", () => {
-        it("loaded home page", async () => {
+    describe("nested frame to frame with non-default transition", async function () {
+
+        before(async function () {
+            nsCapabilities.testReporter.context = this;
+        });
+
+        it("loaded home page", async function () {
             await screen.loadedHome();
         });
 
-        it("loaded frame root with nested frame", async () => {
+        it("loaded frame root with nested frame", async function () {
             await screen.navigateToPageWithFrame();
             await screen.loadedPageWithFrame();
         });
-    
-        it("navigate to some page with slide transition", async () => {
+
+        it("navigate to some page with slide transition", async function () {
             shared.testSomePageNavigatedSlide(screen);
 
             if (appSuspendResume) {
@@ -341,7 +352,7 @@ describe(rootType, () => {
             }
         });
 
-        it("navigate to still other page and go back twice", async () => {
+        it("navigate to still other page and go back twice", async function () {
             shared.testStillOtherPageNavigatedSlide(screen);
 
             if (appSuspendResume) {
@@ -378,7 +389,7 @@ describe(rootType, () => {
             await screen.loadedSomePage();
         });
 
-        it("go back to home page again", async () => {
+        it("go back to home page again", async function () {
             await screen.goBackFromSomePage();
 
             await screen.goBackFromFrameHome();

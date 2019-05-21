@@ -27,5 +27,6 @@ export function loadExamples() {
     examples.set("tab-view-tab-text-font-size", "tab-view/tab-view-tab-text-font-size");
     examples.set("tab-view-android-swipe", "tab-view/tab-view-android-swipe");
     examples.set("tab-view-icon-title-placement", "tab-view/icon-title-placement");
+    examples.set("tab-text-color", "tab-view/tab-text-color");
     return examples;
 }

@@ -1,12 +1,18 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import {
+    iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
+} from ".";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
 //Types.
-import { FrameBase, View, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
+import {
+    FrameBase, View, isCategorySet, layout, NavigationContext,
+    NavigationType, traceCategories, traceEnabled, traceWrite
+} from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
+import { createViewFromEntry } from "../builder";
 import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
@@ -14,9 +20,10 @@ export * from "./frame-common";
 const majorVersion = utils.ios.MajorVersion;
 
 const ENTRY = "_entry";
+const DELEGATE = "_delegate";
 const NAV_DEPTH = "_navDepth";
 const TRANSITION = "_transition";
-const DELEGATE = "_delegate";
+const NON_ANIMATED_TRANSITION = "non-animated";
 
 let navDepth = -1;
 
@@ -46,18 +53,24 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
         if (currentEntryChanged) {
-            this._updateBackstack(entry, isBack);
+            this._updateBackstack(entry, navigationType);
 
-            super.setCurrent(entry, isBack);
+            super.setCurrent(entry, navigationType);
         }
     }
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
+        // NavigationType.replace for HMR.
+        // Otherwise, default to NavigationType.forward.
+        const isReplace = this.navigationType === NavigationType.replace;
+        if (!isReplace) {
+            this.navigationType = NavigationType.forward;
+        }
         super._navigateCore(backstackEntry);
 
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -69,7 +82,9 @@ export class Frame extends FrameBase {
         if (clearHistory) {
             navDepth = -1;
         }
-        navDepth++;
+        if (!isReplace) {
+            navDepth++;
+        }
 
         let navigationTransition: NavigationTransition;
         let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
@@ -81,7 +96,7 @@ export class Frame extends FrameBase {
         }
         else {
             //https://github.com/NativeScript/NativeScript/issues/1787
-            viewController[TRANSITION] = { name: "non-animated" };
+            viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
         }
 
         let nativeTransition = _getNativeTransition(navigationTransition, true);
@@ -136,7 +151,8 @@ export class Frame extends FrameBase {
         }
 
         // We should hide the current entry from the back stack.
-        if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
+        // This is the case for HMR when NavigationType.replace.
+        if (!Frame._isEntryBackstackVisible(this._currentEntry) || isReplace) {
             let newControllers = NSMutableArray.alloc<UIViewController>().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
                 throw new Error("Wrong controllers count.");
@@ -168,6 +184,7 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
+        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry[NAV_DEPTH];
 
@@ -469,7 +486,7 @@ class UINavigationControllerImpl extends UINavigationController {
             traceWrite(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
-        if (navigationTransition && navigationTransition.name === "non-animated") {
+        if (navigationTransition && navigationTransition.name === NON_ANIMATED_TRANSITION) {
             //https://github.com/NativeScript/NativeScript/issues/1787
             return super.popViewControllerAnimated(false);
         }
@@ -493,7 +510,7 @@ class UINavigationControllerImpl extends UINavigationController {
             traceWrite(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
-        if (navigationTransition && navigationTransition.name === "non-animated") {
+        if (navigationTransition && navigationTransition.name === NON_ANIMATED_TRANSITION) {
             //https://github.com/NativeScript/NativeScript/issues/1787
             return super.popToViewControllerAnimated(viewController, false);
         }

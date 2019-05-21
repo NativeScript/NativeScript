@@ -1099,3 +1099,9 @@ export const visibilityProperty = new CssProperty<Style, Visibility>({
     }
 });
 visibilityProperty.register(Style);
+
+export const androidElevationProperty = new CssProperty<Style, number>({ name: "androidElevation", cssName: "android-elevation", valueConverter: parseFloat });
+androidElevationProperty.register(Style);
+
+export const androidDynamicElevationOffsetProperty = new CssProperty<Style, number>({ name: "androidDynamicElevationOffset", cssName: "android-dynamic-elevation-offset", valueConverter: parseFloat });
+androidDynamicElevationOffsetProperty.register(Style);

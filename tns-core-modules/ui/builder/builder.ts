@@ -60,7 +60,9 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
 export function loadPage(moduleNamePath: string, fileName: string, context?: any): View {
     const componentModule = loadInternal(fileName, context, moduleNamePath);
     const componentView = componentModule && componentModule.component;
-    markAsModuleRoot(componentView, moduleNamePath);
+    if (componentView && moduleNamePath) {
+        markAsModuleRoot(componentView, moduleNamePath);
+    }
     return componentView;
 }
 
@@ -162,6 +164,10 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
     if (componentModule && componentModule.component) {
         // Save exports to root component (will be used for templates).
         (<any>componentModule.component).exports = context;
+    }
+
+    if (!componentModule) {
+        throw new Error("Failed to load component from module: " + filePathRelativeToApp + " or file: " + fileName);
     }
 
     return componentModule;

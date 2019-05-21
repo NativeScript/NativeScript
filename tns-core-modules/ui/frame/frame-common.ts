@@ -3,13 +3,20 @@ import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTr
 import { Page } from "../page";
 
 // Types.
-import { getAncestor } from "../core/view/view-common";
+import { getAncestor, viewMatchesModuleContext } from "../core/view/view-common";
 import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, Property, CSSType } from "../core/view";
 import { createViewFromEntry } from "../builder";
 import { profile } from "../../profiling";
 
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
+import { getModuleName } from "../../utils/utils";
 export * from "../core/view";
+
+export enum NavigationType {
+    back,
+    forward,
+    replace
+}
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;
@@ -48,6 +55,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
     public static defaultTransition: NavigationTransition;
+    public navigationType: NavigationType;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
@@ -206,7 +214,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return this._currentEntry === entry;
     }
 
-    public setCurrent(entry: BackstackEntry, isBack: boolean): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const newPage = entry.resolvedPage;
         // In case we navigated forward to a page that was in the backstack
         // with clearHistory: true
@@ -217,6 +225,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         this._currentEntry = entry;
 
+        const isBack = navigationType === NavigationType.back;
         if (isBack) {
             this._pushInFrameStack();
         }
@@ -229,15 +238,18 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._executingEntry = null;
     }
 
-    public _updateBackstack(entry: BackstackEntry, isBack: boolean): void {
+    public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
+        const isBack = navigationType === NavigationType.back;
+        const isReplace = navigationType === NavigationType.replace;
         this.raiseCurrentPageNavigatedEvents(isBack);
         const current = this._currentEntry;
 
+        // Do nothing for Hot Module Replacement
         if (isBack) {
             const index = this._backStack.indexOf(entry);
             this._backStack.splice(index + 1).forEach(e => this._removeEntry(e));
             this._backStack.pop();
-        } else {
+        } else if (!isReplace) {
             if (entry.entry.clearHistory) {
                 this._backStack.forEach(e => this._removeEntry(e));
                 this._backStack.length = 0;
@@ -345,7 +357,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     @profile
-    private performNavigation(navigationContext: NavigationContext) {
+    public performNavigation(navigationContext: NavigationContext) {
         const navContext = navigationContext.entry;
         this._executingEntry = navContext;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
@@ -564,36 +576,92 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        // Execute a navigation if not handled on `View` level
-        if (!super._onLivesync(context)) {
-            if (!this._currentEntry || !this._currentEntry.entry) {
+        if (super._onLivesync(context)) {
+            return true;
+        }
+
+        // Fallback
+        if (!context) {
+            return this.legacyLivesync();
+        }
+
+        return false;
+    }
+
+    public _handleLivesync(context?: ModuleContext): boolean {
+        if (super._handleLivesync(context)) {
+            return true;
+        }
+
+        // Handle markup/script changes in currentPage
+        if (this.currentPage &&
+            viewMatchesModuleContext(this.currentPage, context, ["markup", "script"])) {
+
+            traceWrite(`Change Handled: Replacing page ${context.path}`, traceCategories.Livesync);
+
+            this.replacePage(context);
+            return true;
+        }
+
+        return false;
+    }
+
+    private legacyLivesync(): boolean {
+        // Reset activity/window content when:
+        // + Changes are not handled on View
+        // + There is no ModuleContext
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync()`, traceCategories.Livesync);
+        }
+
+        if (!this._currentEntry || !this._currentEntry.entry) {
+            return false;
+        }
+
+        const currentEntry = this._currentEntry.entry;
+        const newEntry: NavigationEntry = {
+            animated: false,
+            clearHistory: true,
+            context: currentEntry.context,
+            create: currentEntry.create,
+            moduleName: currentEntry.moduleName,
+            backstackVisible: currentEntry.backstackVisible
+        }
+
+        // If create returns the same page instance we can't recreate it.
+        // Instead of navigation set activity content.
+        // This could happen if current page was set in XML as a Page instance.
+        if (newEntry.create) {
+            const page = newEntry.create();
+            if (page === this.currentPage) {
                 return false;
             }
-
-            const currentEntry = this._currentEntry.entry;
-            const newEntry: NavigationEntry = {
-                animated: false,
-                clearHistory: true,
-                context: currentEntry.context,
-                create: currentEntry.create,
-                moduleName: currentEntry.moduleName,
-                backstackVisible: currentEntry.backstackVisible
-            }
-
-            // If create returns the same page instance we can't recreate it.
-            // Instead of navigation set activity content.
-            // This could happen if current page was set in XML as a Page instance.
-            if (newEntry.create) {
-                const page = newEntry.create();
-                if (page === this.currentPage) {
-                    return false;
-                }
-            }
-
-            this.navigate(newEntry);
         }
+
+        this.navigate(newEntry);
         return true;
     }
+
+    protected replacePage(context: ModuleContext): void {
+        // Set NavigationType.replace for HMR.
+        // In IOS on `viewDidAppear()` this will be set to NavigationType.forward.
+        this.navigationType = NavigationType.replace;
+        const currentBackstackEntry = this._currentEntry;
+        const contextModuleName = getModuleName(context.path);
+
+        const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
+        const newBackstackEntry: BackstackEntry = {
+            entry: currentBackstackEntry.entry,
+            resolvedPage: newPage,
+            navDepth: currentBackstackEntry.navDepth,
+            fragmentTag: currentBackstackEntry.fragmentTag,
+            frameId: currentBackstackEntry.frameId
+        };
+
+        const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
+        this.performNavigation(navContext);
+    }
+
 }
 
 export function getFrameById(id: string): FrameBase {

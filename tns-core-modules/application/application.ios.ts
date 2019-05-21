@@ -19,7 +19,7 @@ import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { ios } from "../utils/utils";
-import { profile, level as profilingLevel, Level } from "../profiling";
+import { profile } from "../profiling";
 
 const getVisibleViewController = ios.getVisibleViewController;
 
@@ -106,6 +106,7 @@ class IOSApplication implements IOSApplicationDefinition {
     get delegate(): typeof UIApplicationDelegate {
         return this._delegate;
     }
+
     set delegate(value: typeof UIApplicationDelegate) {
         if (this._delegate !== value) {
             this._delegate = value;
@@ -133,7 +134,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
     @profile
     private didFinishLaunchingWithOptions(notification: NSNotification) {
-        if (!displayedOnce && profilingLevel() >= Level.lifecycle) {
+        if (!displayedOnce) {
             displayedLinkTarget = CADisplayLinkTarget.new();
             displayedLink = CADisplayLink.displayLinkWithTargetSelector(displayedLinkTarget, "onDisplayed");
             displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
@@ -228,8 +229,16 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): void {
-        // If view can't handle livesync set window controller.
-        if (this._rootView && !this._rootView._onLivesync(context)) {
+        // Handle application root module
+        const isAppRootModuleChanged = context && context.path && context.path.includes(getMainEntry().moduleName) && context.type !== "style";
+
+        // Set window content when:
+        // + Application root module is changed
+        // + View did not handle the change
+        // Note:
+        // The case when neither app root module is changed, nor livesync is handled on View,
+        // then changes will not apply until navigate forward to the module.
+        if (isAppRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
             this.setWindowContent();
         }
     }
@@ -258,7 +267,6 @@ class IOSApplication implements IOSApplicationDefinition {
             this._window.makeKeyAndVisible();
         }
     }
-
 }
 
 const iosApp = new IOSApplication();

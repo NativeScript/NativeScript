@@ -1018,7 +1018,7 @@ export const classNameProperty = new Property<ViewBase, string>({
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
         let classes = view.cssClasses;
         classes.clear();
-        if (typeof newValue === "string") {
+        if (typeof newValue === "string" && newValue !== "") {
             newValue.split(" ").forEach(c => classes.add(c));
         }
         view._onCssStateChange();

@@ -3,14 +3,14 @@
  * @module "ui/frame"
  */ /** */
 
+import { NavigationType } from "./frame-common";
 import { Page, View, Observable, EventData } from "../page";
 import { Transition } from "../transition";
 
 export * from "../page";
 
 /**
- * Represents the logical View unit that is responsible for navigation withing an application.
- * Typically an application will have a Frame object at a root level.
+ * Represents the logical View unit that is responsible for navigation within an application.
  * Nested frames are supported, enabling hierarchical navigation scenarios.
  */
 export class Frame extends View {
@@ -113,12 +113,13 @@ export class Frame extends View {
      * @param entry to check
      */
     isCurrent(entry: BackstackEntry): boolean;
+
     /**
      * @private
      * @param entry to set as current
-     * @param isBack true when we set current because of back navigation.
+     * @param navigationType
      */
-    setCurrent(entry: BackstackEntry, isBack: boolean): void;
+    setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
     /**
      * @private
      */
@@ -145,6 +146,11 @@ export class Frame extends View {
     _updateActionBar(page?: Page, disableNavBarAnimation?: boolean);
     /**
      * @private
+     * @param navigationContext
+     */
+    public performNavigation(navigationContext: NavigationContext): void;
+    /**
+     * @private
      */
     _getNavBarVisible(page: Page): boolean;
     /**
@@ -154,7 +160,7 @@ export class Frame extends View {
     /**
      * @private
      */
-    _updateBackstack(entry: BackstackEntry, isBack: boolean): void;
+    _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void;
     /**
      * @private
      */
@@ -167,10 +173,12 @@ export class Frame extends View {
      * @private
      */
     _removeFromFrameStack();
+
     /**
      * @private
+     * Represents the type of navigation.
      */
-    _isBack?: boolean;
+    navigationType: NavigationType;
     //@endprivate
 
     /**
@@ -273,6 +281,14 @@ export interface NavigationEntry extends ViewEntry {
      * True to clear the navigation history, false otherwise. Very useful when navigating away from login pages.
      */
     clearHistory?: boolean;
+}
+
+/**
+ * Represents a context passed to navigation methods.
+ */
+export interface NavigationContext {
+    entry: BackstackEntry;
+    isBackNavigation: boolean;
 }
 
 /**

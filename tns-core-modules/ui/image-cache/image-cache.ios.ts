@@ -72,7 +72,11 @@ export class Cache extends common.Cache {
             .then((response) => {
                 try {
                     const image = UIImage.alloc().initWithData(response.content.raw);
-                    this._onDownloadCompleted(request.key, image);
+                    if (image) {
+                        this._onDownloadCompleted(request.key, image);
+                    } else {
+                        this._onDownloadError(request.key, new Error("No result for provided url"));
+                    }
                 } catch (err) {
                     this._onDownloadError(request.key, err);
                 }
