@@ -11,6 +11,7 @@ import { View } from "../core/view";
 // Types.
 import { Color } from "../../color";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
+import { PercentLength } from "../styling/style-properties";
 
 export { Color, traceEnabled, traceWrite, traceCategories, traceType };
 export { AnimationPromise } from ".";
@@ -21,6 +22,8 @@ export module Properties {
     export const translate = "translate";
     export const rotate = "rotate";
     export const scale = "scale";
+    export const height = "height";
+    export const width = "width";
 }
 
 export interface PropertyAnimation {
@@ -166,6 +169,9 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
                 throw new Error(`Property ${item} must be valid Pair. Value: ${animationDefinition[item]}`);
             } else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
                 throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
+            } else if (item === Properties.width || item === Properties.height) {
+                // Coerce input into a PercentLength object in case it's a string.
+                animationDefinition[item] = PercentLength.parse(<any>animationDefinition[item]);
             }
         }
 
@@ -237,8 +243,34 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             });
         }
 
+        // height
+        if (animationDefinition.height !== undefined) {
+            propertyAnimations.push({
+                target: animationDefinition.target,
+                property: Properties.height,
+                value: animationDefinition.height,
+                duration: animationDefinition.duration,
+                delay: animationDefinition.delay,
+                iterations: animationDefinition.iterations,
+                curve: animationDefinition.curve
+            });
+        }
+
+        // width
+        if (animationDefinition.width !== undefined) {
+            propertyAnimations.push({
+                target: animationDefinition.target,
+                property: Properties.width,
+                value: animationDefinition.width,
+                duration: animationDefinition.duration,
+                delay: animationDefinition.delay,
+                iterations: animationDefinition.iterations,
+                curve: animationDefinition.curve
+            });
+        }
+
         if (propertyAnimations.length === 0) {
-            throw new Error("No animation property specified.");
+            throw new Error("No known animation properties specified");
         }
 
         return propertyAnimations;
