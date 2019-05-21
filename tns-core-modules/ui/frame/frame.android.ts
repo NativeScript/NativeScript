@@ -3,7 +3,6 @@ import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
     AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
-import { ModuleType } from "../../ui/core/view/view-common";
 import { Page } from "../page";
 
 // Types.
@@ -90,7 +89,7 @@ export function reloadPage(context?: ModuleContext): void {
     if (callbacks) {
         const rootView: View = callbacks.getRootView();
         // Handle application root module
-        const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== ModuleType.style;
+        const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== "style";
 
         // Reset activity content when:
         // + Application root module is changed
@@ -337,39 +336,6 @@ export class Frame extends FrameBase {
         }
 
         return false;
-    }
-
-    public _onLivesync(context?: ModuleContext): boolean {
-        if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
-        }
-
-        if (!this._currentEntry || !this._currentEntry.entry) {
-            return false;
-        }
-
-        if (context && context.type && context.path) {
-            // Set NavigationType.replace for HMR.
-            this.navigationType = NavigationType.replace;
-            const currentBackstackEntry = this._currentEntry;
-            const contextModuleName = getModuleName(context.path);
-
-            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
-            const newBackstackEntry: BackstackEntry = {
-                entry: currentBackstackEntry.entry,
-                resolvedPage: newPage,
-                navDepth: currentBackstackEntry.navDepth,
-                fragmentTag: currentBackstackEntry.fragmentTag,
-                frameId: currentBackstackEntry.frameId
-            };
-
-            const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
-            this.performNavigation(navContext);
-            return true;
-        } else {
-            // Fallback
-            return super._onLivesync();
-        }
     }
 
     @profile

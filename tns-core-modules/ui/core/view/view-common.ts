@@ -21,6 +21,7 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
+import { isAndroid } from "../../../platform";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
@@ -37,16 +38,23 @@ function ensureAnimationModule() {
     }
 }
 
-export enum ModuleType {
-    markup = "markup",
-    script = "script",
-    style = "style"
-}
-
 export function CSSType(type: string): ClassDecorator {
     return (cls) => {
         cls.prototype.cssType = type;
     };
+}
+
+export function viewMatchesModuleContext(
+    view: ViewDefinition,
+    context: ModuleContext, 
+    types: ModuleType[]): boolean {
+        
+    return context &&
+        view._moduleName &&
+        context.type && 
+        types.some(type => type === context.type) &&
+        context.path && 
+        context.path.includes(view._moduleName);
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
@@ -147,62 +155,36 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
         }
 
-        _rootModalViews.forEach(v => v.closeModal());
-        _rootModalViews.length = 0;
-
-        if (context && context.type && context.path) {
-            // Handle local styles
-            if (context.type === ModuleType.style) {
-                return this.changeLocalStyles(context.path);
-            }
-            // Handle module markup and script changes
-            else {
-                return this.changeModule(context);
-            }
-        }
-
-        return false;
-    }
-
-    private changeLocalStyles(contextPath: string): boolean {
-        if (!this.changeStyles(this, contextPath)) {
-            eachDescendant(this, (child: ViewBase) => {
-                this.changeStyles(child, contextPath);
-                return true;
-            });
-        }
-
-        // Do not reset activity/window content for local styles changes
-        return true;
-    }
-
-    private changeStyles(view: ViewBase, contextPath: string): boolean {
-        if (traceEnabled()) {
-            traceWrite(`${view}.${view._moduleName}`, traceCategories.Livesync);
-        }
-
-        if (view._moduleName && contextPath.includes(view._moduleName)) {
-            (<this>view).changeCssFile(contextPath);
+        if (this._handleLivesync(context)) {
             return true;
         }
-        return false;
-    }
 
-    private changeModule(context: ModuleContext): boolean {
-        eachDescendant(this, (child: ViewBase) => {
-            if (traceEnabled()) {
-                traceWrite(`${child}.${child._moduleName}`, traceCategories.Livesync);
+        let handled = false;
+        this.eachChildView((child) => {
+            if (child._onLivesync(context)) {
+                handled = true;
+                return false;
             }
-
-            // Handle changes in module's Page
-            if (child._moduleName && context.path.includes(child._moduleName) && child.page) {
-                child.page._onLivesync(context);
-            }
-            return true;
         });
+        return handled;
+    }
 
-        // Do not reset activity/window content for module changes
-        return true;
+    public _handleLivesync(context?: ModuleContext): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${this}._handleLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
+        // Handle local CSS
+        if (viewMatchesModuleContext(this, context, ["style"])) {
+            if (traceEnabled()) {
+                traceWrite(`Change Handled: Changing CSS for ${this}`, traceCategories.Livesync);
+            }
+
+            this.changeCssFile(context.path);
+            return true;
+        }
+
+        return false;
     }
 
     _setupAsRootView(context: any): void {
@@ -368,7 +350,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     }
                 }
 
-                that._hideNativeModalView(parent, whenClosedCallback);
+                if (isAndroid || (parent.viewController && parent.viewController.presentedViewController)) {
+                    that._hideNativeModalView(parent, whenClosedCallback);
+                } else {
+                    whenClosedCallback();
+                }
             }
         };
     }
@@ -695,6 +681,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
     set scaleY(value: number) {
         this.style.scaleY = value;
+    }
+
+    get androidElevation(): number {
+        return this.style.androidElevation;
+    }
+    set androidElevation(value: number) {
+        this.style.androidElevation = value;
+    }
+
+    get androidDynamicElevationOffset(): number {
+        return this.style.androidDynamicElevationOffset;
+    }
+    set androidDynamicElevationOffset(value: number) {
+        this.style.androidDynamicElevationOffset = value;
     }
 
     //END Style property shortcuts

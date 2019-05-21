@@ -162,10 +162,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const span = new Span();
         span.text = "long label";
         span.fontWeight = "bold";
-    
+
         const span2 = new Span();
         span2.text = "long label";
-    
+
         const formattedString = new FormattedString();
         formattedString.spans.push(span);
         formattedString.spans.push(span2);
@@ -176,7 +176,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const span3 = new Span();
         span3.text = "short label";
         span3.fontWeight = "bold";
-    
+
         const formattedString2 = new FormattedString();
         formattedString2.spans.push(span3);
         label.formattedText = formattedString2;
@@ -210,7 +210,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const span = new Span();
         span.text = "short label";
         span.fontWeight = "bold";
-    
+
         const formattedString = new FormattedString();
         formattedString.spans.push(span);
         label.formattedText = formattedString;
@@ -220,10 +220,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const span2 = new Span();
         span2.text = "long label";
         span2.fontWeight = "bold";
-    
+
         const span3 = new Span();
         span3.text = "long label";
-    
+
         const formattedString2 = new FormattedString();
         formattedString2.spans.push(span2);
         formattedString2.spans.push(span3);
@@ -733,6 +733,21 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             return host;
         });
     }
+    
+    public test_FormattedText_ShouldNotCrash_WheRemovedFromSpan() {
+        const label = this.testView;
+        label.color = new colorModule.Color("red");
+        this.waitUntilTestElementIsLoaded();
+
+        const span = new Span();
+        span.text = "test";
+        
+        const formattedString = new FormattedString();
+        formattedString.spans.push(span);
+
+        label._addChildFromBuilder("FormattedString", formattedString);
+        label._removeView(formattedString);
+    };
 }
 
 export function createTestCase(): LabelTest {

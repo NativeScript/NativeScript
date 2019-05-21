@@ -29,6 +29,7 @@ const majorVersion = iosUtils.MajorVersion;
 export class View extends ViewCommon {
     nativeViewProtected: UIView;
     viewController: UIViewController;
+    private _popoverPresentationDelegate: ios.UIPopoverPresentationControllerDelegateImp;
 
     private _isLaidOut = false;
     private _hasTransfrom = false;
@@ -416,6 +417,8 @@ export class View extends ViewCommon {
 
             if (presentationStyle === UIModalPresentationStyle.Popover) {
                 const popoverPresentationController = controller.popoverPresentationController;
+                this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+                popoverPresentationController.delegate = this._popoverPresentationDelegate;
                 const view = parent.nativeViewProtected;
                 // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
                 // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
@@ -906,7 +909,7 @@ export namespace ios {
 
         public viewDidLoad(): void {
             super.viewDidLoad();
-    
+
             // Unify translucent and opaque bars layout
             // this.edgesForExtendedLayout = UIRectEdgeBottom;
             this.extendedLayoutIncludesOpaqueBars = true;
@@ -979,6 +982,28 @@ export namespace ios {
             const owner = this.owner.get();
             if (owner && !owner.parent) {
                 owner.callUnloaded();
+            }
+        }
+    }
+
+    export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
+        public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
+
+        private owner: WeakRef<View>;
+        private closedCallback: Function;
+
+        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
+            const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
+            instance.owner = owner;
+            instance.closedCallback = whenClosedCallback;
+
+            return instance;
+        }
+
+        public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
+            const owner = this.owner.get();
+            if (owner && typeof this.closedCallback === "function") {
+                this.closedCallback();
             }
         }
     }
