@@ -5,13 +5,13 @@ import { View } from "../core/view";
 import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
-    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
+    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
+    heightProperty, widthProperty, PercentLength
 } from "../styling/style-properties";
 
 import { layout } from "../../utils/utils";
-import { device } from "../../platform";
+import { device, screen } from "../../platform";
 import lazy from "../../utils/lazy";
-
 export * from "./animation-common";
 
 interface AnimationDefinitionInternal extends AnimationDefinition {
@@ -38,6 +38,8 @@ propertyKeys[Properties.opacity] = Symbol(keyPrefix + Properties.opacity);
 propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
 propertyKeys[Properties.scale] = Symbol(keyPrefix + Properties.scale);
 propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
+propertyKeys[Properties.height] = Symbol(keyPrefix + Properties.height);
+propertyKeys[Properties.width] = Symbol(keyPrefix + Properties.width);
 
 export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator): android.view.animation.Interpolator {
     switch (curve) {
@@ -224,7 +226,7 @@ export class Animation extends AnimationBase {
         }
     }
 
-    private _onAndroidAnimationCancel() { // tslint:disable-line 
+    private _onAndroidAnimationCancel() { // tslint:disable-line
         this._propertyResetCallbacks.forEach(v => v());
         this._rejectAnimationFinishedPromise();
 
@@ -450,9 +452,48 @@ export class Animation extends AnimationBase {
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
+            case Properties.width:
+            case Properties.height: {
 
+                const isVertical: boolean = propertyAnimation.property === "height";
+                const extentProperty = isVertical ? heightProperty : widthProperty;
+
+                extentProperty._initDefaultNativeValue(style);
+                nativeArray = Array.create("float", 2);
+                let toValue = propertyAnimation.value;
+                let parent = propertyAnimation.target.parent as View;
+                if (!parent) {
+                    throw new Error(`cannot animate ${propertyAnimation.property} on root view`);
+                }
+                const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
+                toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / screen.mainScreen.scale;
+                const nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
+                const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
+                originalValue1 = nativeHeight / screen.mainScreen.scale;
+                nativeArray[0] = originalValue1;
+                nativeArray[1] = toValue;
+                let extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
+                extentAnimator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                    onAnimationUpdate(animator: android.animation.ValueAnimator) {
+                        const argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
+                        propertyAnimation.target.style[setLocal ? extentProperty.name : extentProperty.keyframe] = argb;
+                    }
+                }));
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style[targetStyle] = propertyAnimation.value;
+                }));
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style[targetStyle] = originalValue1;
+                    if (propertyAnimation.target.nativeViewProtected) {
+                        const setter = propertyAnimation.target[extentProperty.setNative];
+                        setter(propertyAnimation.target.style[propertyAnimation.property]);
+                    }
+                }));
+                animators.push(extentAnimator);
+                break;
+            }
             default:
-                throw new Error("Cannot animate " + propertyAnimation.property);
+                throw new Error(`Animating property '${propertyAnimation.property}' is unsupported`);
         }
 
         for (let i = 0, length = animators.length; i < length; i++) {

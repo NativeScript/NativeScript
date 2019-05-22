@@ -452,6 +452,12 @@ export class View extends ViewCommon {
             return;
         }
 
+        // modal view has already been closed by UI, probably as a popover
+        if (!parent.viewController.presentedViewController) {
+            whenClosedCallback();
+            return;
+        }
+
         const parentController = parent.viewController;
         const animated = (<any>this.viewController).animated;
 
