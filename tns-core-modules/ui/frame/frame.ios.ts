@@ -7,12 +7,11 @@ import { profile } from "../../profiling";
 
 //Types.
 import {
-    FrameBase, View, isCategorySet, layout, NavigationContext,
+    FrameBase, View, isCategorySet, layout,
     NavigationType, traceCategories, traceEnabled, traceWrite
 } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
-import { createViewFromEntry } from "../builder";
 import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
@@ -24,6 +23,7 @@ const DELEGATE = "_delegate";
 const NAV_DEPTH = "_navDepth";
 const TRANSITION = "_transition";
 const NON_ANIMATED_TRANSITION = "non-animated";
+const HMR_REPLACE_TRANSITION = "fade";
 
 let navDepth = -1;
 
@@ -88,13 +88,16 @@ export class Frame extends FrameBase {
 
         let navigationTransition: NavigationTransition;
         let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
-        if (animated) {
+        if (isReplace) {
+            animated = true;
+            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 }
+            viewController[TRANSITION] = navigationTransition;
+        } else if (animated) {
             navigationTransition = this._getNavigationTransition(backstackEntry.entry);
             if (navigationTransition) {
                 viewController[TRANSITION] = navigationTransition;
             }
-        }
-        else {
+        } else {
             //https://github.com/NativeScript/NativeScript/issues/1787
             viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
         }
