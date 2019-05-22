@@ -1,14 +1,14 @@
 ﻿// Definitions.
 import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
-    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
+    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition, NavigationEntry
 } from ".";
 import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, stack, NavigationContext, NavigationType,
+    FrameBase, goBack, stack, NavigationType,
     Observable, View, traceCategories, traceEnabled, traceError, traceWrite
 } from "./frame-common";
 
@@ -21,7 +21,6 @@ import { profile } from "../../profiling";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
-import { getModuleName } from "../../utils/utils";
 
 export * from "./frame-common";
 
@@ -37,6 +36,7 @@ const INTENT_EXTRA = "com.tns.activity";
 const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
 const FRAMEID = "_frameId";
 const CALLBACKS = "_callbacks";
+const HMR_REPLACE_TRANSITION = "fade";
 
 const ownerSymbol = Symbol("_owner");
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
@@ -319,6 +319,18 @@ export class Frame extends FrameBase {
             restoreAnimatorState(this._currentEntry, this._cachedAnimatorState);
             this._cachedAnimatorState = null;
         }
+
+        // restore original fragment transitions if we just completed replace navigation (hmr)
+        if (navigationType === NavigationType.replace) {
+            _clearEntry(entry);
+
+            const animated = entry.entry.animated;
+            const navigationTransition = this._getNavigationTransition(entry.entry);
+            const currentEntry = null;
+            const newEntry = entry;
+            const transaction = null;
+            _setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, transaction, this._android.frameId);
+        }
     }
 
     public onBackPressed(): boolean {
@@ -381,12 +393,20 @@ export class Frame extends FrameBase {
         const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         const newFragment = this.createFragment(newEntry, newFragmentTag);
         const transaction = manager.beginTransaction();
-        const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
+        let animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
         // NOTE: Don't use transition for the initial navigation (same as on iOS)
         // On API 21+ transition won't be triggered unless there was at least one
         // layout pass so we will wait forever for transitionCompleted handler...
         // https://github.com/NativeScript/NativeScript/issues/4895
-        const navigationTransition = this._currentEntry ? this._getNavigationTransition(newEntry.entry) : null;
+        let navigationTransition: NavigationTransition;
+        if (isReplace) {
+            animated = true;
+            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 };
+        } else if (this._currentEntry) {
+            navigationTransition = this._getNavigationTransition(newEntry.entry);
+        } else {
+            navigationTransition = null;
+        }
 
         _setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, transaction, this._android.frameId);
 

@@ -1,5 +1,5 @@
 ﻿// Definitions.
-import { Frame } from "../frame";
+import { Frame, BackstackEntry } from "../frame";
 import { NavigationType } from "../frame/frame-common";
 
 // Types.
@@ -15,6 +15,8 @@ export * from "./page-common";
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
+const TRANSITION = "_transition";
+const NON_ANIMATED_TRANSITION = "non-animated";
 
 const majorVersion = iosUtils.MajorVersion;
 
@@ -130,7 +132,7 @@ class UIViewControllerImpl extends UIViewController {
         const frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
-            const newEntry = this[ENTRY];
+            const newEntry: BackstackEntry = this[ENTRY];
 
             let isBack: boolean;
             let navType = frame.navigationType;
@@ -146,6 +148,18 @@ class UIViewControllerImpl extends UIViewController {
             }
 
             frame.setCurrent(newEntry, navType);
+            
+            if (frame.navigationType === NavigationType.replace) {
+                let controller = newEntry.resolvedPage.ios;
+                if (controller) {
+                    if (newEntry.entry.animated) {
+                        controller[TRANSITION] = frame._getNavigationTransition(newEntry.entry);
+                    } else {
+                        controller[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
+                    }
+                }
+            }
+
             frame.navigationType = isBack ? NavigationType.back : NavigationType.forward;
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
