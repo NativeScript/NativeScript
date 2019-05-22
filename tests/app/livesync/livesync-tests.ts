@@ -146,9 +146,5 @@ function _test_onLiveSync_ModuleContext_TypeStyle(context: { type, path }) {
 }
 
 function waitUntilLivesyncComplete(frame: Frame) {
-    if (isAndroid) {
-        TKUnit.waitUntilReady(() => frame._executingEntry === null);
-    } else {
-        TKUnit.waitUntilReady(() => frame.currentPage.isLoaded);
-    }
+    TKUnit.waitUntilReady(() => frame._executingEntry === null);
 }

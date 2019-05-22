@@ -5,8 +5,12 @@
 } from "./button-common";
 import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
+import { device } from "../../platform";
+import lazy from "../../utils/lazy";
 
 export * from "./button-common";
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 interface ClickListener {
     new(owner: Button): android.view.View.OnClickListener;
@@ -150,5 +154,24 @@ export class Button extends ButtonBase {
         // Button initial value is center.
         const newValue = value === "initial" ? "center" : value;
         super[textAlignmentProperty.setNative](newValue);
+    }
+
+    protected getDefaultElevation(): number {
+        if (sdkVersion() < 21) {
+            return 0;
+        }
+
+        // NOTE: Button widget has StateListAnimator that defines the elevation value and
+        // at the time of the getDefault() query the animator is not applied yet so we
+        // return the hardcoded @dimen/button_elevation_material value 2dp here instead
+        return 2;
+    }
+
+    protected getDefaultDynamicElevationOffset(): number {
+        if (sdkVersion() < 21) {
+            return 0;
+        }
+
+        return 4; // 4dp @dimen/button_pressed_z_material
     }
 }
