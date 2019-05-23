@@ -8,7 +8,7 @@ import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, Gesture
 export * from "./gestures-common";
 
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
-    let observer = new GesturesObserver(target, callback, context);
+    const observer = new GesturesObserver(target, callback, context);
     observer.observe(type);
     return observer;
 }
@@ -16,7 +16,23 @@ export function observe(target: View, type: GestureTypes, callback: (args: Gestu
 class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
     public static ObjCProtocols = [UIGestureRecognizerDelegate];
     public gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
+        // If both gesture recognizers are of type UITapGestureRecognizer, do not allow
+        // simultaneous recognition.
+        if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UITapGestureRecognizer) {
+            return false;
+        }
         return true;
+    }
+
+    public gestureRecognizerShouldRequireFailureOfGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
+        // If both gesture recognizers are of type UITapGestureRecognizer & one of them is a doubleTap,
+        // we must require a failure.
+        if (gestureRecognizer instanceof UITapGestureRecognizer
+            && otherGestureRecognizer instanceof UITapGestureRecognizer
+            && otherGestureRecognizer.numberOfTapsRequired === 2) {
+            return true;
+        }
+        return false;
     }
 }
 let recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
@@ -48,12 +64,12 @@ class UIGestureRecognizerImpl extends NSObject {
     }
 
     public recognize(recognizer: UIGestureRecognizer): void {
-        let owner = this._owner.get();
-        let callback = this._callback ? this._callback : (owner ? owner.callback : null);
-        let typeParam = this._type;
-        let target = owner ? owner.target : undefined;
+        const owner = this._owner.get();
+        const callback = this._callback ? this._callback : (owner ? owner.callback : null);
+        const typeParam = this._type;
+        const target = owner ? owner.target : undefined;
 
-        let args = {
+        const args = {
             type: typeParam,
             view: target,
             ios: recognizer,
@@ -82,7 +98,7 @@ export class GesturesObserver extends GesturesObserverBase {
     public androidOnTouchEvent(motionEvent: android.view.MotionEvent): void {
         //
     }
-    
+
     public observe(type: GestureTypes) {
         if (this.target) {
             this.type = type;
@@ -106,17 +122,14 @@ export class GesturesObserver extends GesturesObserverBase {
         this._detach();
 
         if (target && target.nativeViewProtected && target.nativeViewProtected.addGestureRecognizer) {
-            let nativeView = <UIView>target.nativeViewProtected;
+            const nativeView = <UIView>target.nativeViewProtected;
 
             if (type & GestureTypes.tap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap));
             }
 
             if (type & GestureTypes.doubleTap) {
-                let r = <UITapGestureRecognizer>this._createRecognizer(GestureTypes.doubleTap);
-                r.numberOfTapsRequired = 2;
-
-                nativeView.addGestureRecognizer(r);
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap));
             }
 
             if (type & GestureTypes.pinch) {
@@ -203,8 +216,8 @@ export class GesturesObserver extends GesturesObserverBase {
     private _createRecognizer(type: GestureTypes, callback?: (args: GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer {
         let recognizer: UIGestureRecognizer;
         let name = toString(type);
-        let target = _createUIGestureRecognizerTarget(this, type, callback, this.context);
-        let recognizerType = _getUIGestureRecognizerType(type);
+        const target = _createUIGestureRecognizerTarget(this, type, callback, this.context);
+        const recognizerType = _getUIGestureRecognizerType(type);
 
         if (recognizerType) {
             recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
@@ -212,9 +225,10 @@ export class GesturesObserver extends GesturesObserverBase {
             if (type === GestureTypes.swipe && swipeDirection) {
                 name = name + swipeDirection.toString();
                 (<UISwipeGestureRecognizer>recognizer).direction = swipeDirection;
-            }
-            else if (type === GestureTypes.touch) {
+            } else if (type === GestureTypes.touch) {
                 (<TouchGestureRecognizer>recognizer).observer = this;
+            } else if (type === GestureTypes.doubleTap) {
+                (<UITapGestureRecognizer>recognizer).numberOfTapsRequired = 2;
             }
 
             if (recognizer) {
