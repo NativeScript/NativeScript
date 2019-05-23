@@ -1,3 +1,14 @@
+## [5.4.1](https://github.com/NativeScript/NativeScript/compare/5.4.0...5.4.1) (2019-05-23)
+
+
+### Bug Fixes
+
+* **android:** CommonLayoutParams measure/layout child guard ([#7271](https://github.com/NativeScript/NativeScript/issues/7271)) ([333ab36](https://github.com/NativeScript/NativeScript/commit/333ab36))
+* **android:** elevation should not require explicit dynamic elevation offset ([#7250](https://github.com/NativeScript/NativeScript/issues/7250)) ([be6e408](https://github.com/NativeScript/NativeScript/commit/be6e408))
+* **hmr:** quick fade upon replace navigation ([#7251](https://github.com/NativeScript/NativeScript/issues/7251)) ([0aca087](https://github.com/NativeScript/NativeScript/commit/0aca087))
+
+
+
 <a name="5.4.0"></a>
 # [5.4.0](https://github.com/NativeScript/NativeScript/compare/5.3.2...5.4.0) (2019-05-14)
 
