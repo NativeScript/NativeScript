@@ -12,6 +12,7 @@ export function pageLoaded(args: EventData) {
     examples.set("action-bar", "action-bar/main-page");
     examples.set("bindings", "bindings/main-page");
     examples.set("bottom-navigation", "bottom-navigation/main-page");
+    examples.set("tabs", "tabs/main-page");
     examples.set("button", "button/main-page");
     examples.set("css", "css/main-page");
     examples.set("dialogs", "dialogs/main-page");

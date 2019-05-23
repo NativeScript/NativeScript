@@ -90,7 +90,7 @@ export function test_frame_topmost_matches_selectedIndex() {
     // iOS cannot preload tab items
     // Android preloads 1 tab item to the sides by default
     // set this to 0, so that both platforms behave the same.
-    tabView.androidOffscreenTabLimit = 0;
+    // tabView.androidOffscreenTabLimit = 0;
 
     const entry: NavigationEntry = {
         create: () => tabView

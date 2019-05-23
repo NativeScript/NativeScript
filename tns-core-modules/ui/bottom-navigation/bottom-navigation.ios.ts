@@ -203,7 +203,7 @@ export class TabContentItem extends TabContentItemBase {
     }
 }
 
-@CSSType("BottomNavigation")
+// @CSSType("BottomNavigation")
 export class BottomNavigation extends TabNavigationBase {
     public viewController: UITabBarControllerImpl;
     public items: TabContentItem[];

@@ -193,7 +193,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
     }
 }
 
-@CSSType("BottomNavigation")
+// @CSSType("BottomNavigation")
 export class BottomNavigation extends TabNavigationBase {
     private _contentView: org.nativescript.widgets.ContentLayout;
     private _contentViewId: number = -1;
