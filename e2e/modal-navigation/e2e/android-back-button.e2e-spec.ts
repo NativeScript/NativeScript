@@ -1,14 +1,15 @@
-import { AppiumDriver, createDriver, SearchOptions } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
 import { Screen, driverDefaultWaitTime, elementDefaultWaitTimeInSeconds } from "./screen"
 import { assert } from "chai";
 
 const exampleAndroidBackBtnEvents = "Android Back Btn Events";
 
-describe("android-navigate-back", () => {
+describe("android-navigate-back", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
 
-    before(async () => {
+    before(async function () {
+        nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         driver.defaultWaitTime = driverDefaultWaitTime;
         screen = new Screen(driver);
@@ -22,7 +23,7 @@ describe("android-navigate-back", () => {
         }
     });
 
-    after(async () => {
+    after(async function () {
         await driver.resetApp();
     });
 

@@ -7,12 +7,11 @@ import { profile } from "../../profiling";
 
 //Types.
 import {
-    FrameBase, View, isCategorySet, layout, NavigationContext,
+    FrameBase, View, isCategorySet, layout,
     NavigationType, traceCategories, traceEnabled, traceWrite
 } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
 
-import { createViewFromEntry } from "../builder";
 import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
@@ -24,6 +23,7 @@ const DELEGATE = "_delegate";
 const NAV_DEPTH = "_navDepth";
 const TRANSITION = "_transition";
 const NON_ANIMATED_TRANSITION = "non-animated";
+const HMR_REPLACE_TRANSITION = "fade";
 
 let navDepth = -1;
 
@@ -63,39 +63,6 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _onLivesync(context?: ModuleContext): boolean {
-        if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
-        }
-
-        if (!this._currentEntry || !this._currentEntry.entry) {
-            return false;
-        }
-
-        if (context && context.type && context.path) {
-            // Set NavigationType.replace for HMR.
-            // When `viewDidAppear()` set to NavigationType.forward.
-            this.navigationType = NavigationType.replace;
-            const currentBackstackEntry = this._currentEntry;
-
-            const contextModuleName = utils.getModuleName(context.path);
-            const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
-            const newBackstackEntry: BackstackEntry = {
-                entry: currentBackstackEntry.entry,
-                resolvedPage: newPage,
-                navDepth: currentBackstackEntry.navDepth,
-                fragmentTag: undefined
-            }
-
-            const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
-            this.performNavigation(navContext);
-            return true;
-        } else {
-            // Fallback
-            return super._onLivesync();
-        }
-    }
-
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
         // NavigationType.replace for HMR.
@@ -121,13 +88,16 @@ export class Frame extends FrameBase {
 
         let navigationTransition: NavigationTransition;
         let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
-        if (animated) {
+        if (isReplace) {
+            animated = true;
+            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 }
+            viewController[TRANSITION] = navigationTransition;
+        } else if (animated) {
             navigationTransition = this._getNavigationTransition(backstackEntry.entry);
             if (navigationTransition) {
                 viewController[TRANSITION] = navigationTransition;
             }
-        }
-        else {
+        } else {
             //https://github.com/NativeScript/NativeScript/issues/1787
             viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
         }
