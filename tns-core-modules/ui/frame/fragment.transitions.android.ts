@@ -169,8 +169,11 @@ export function _setAndroidFragmentTransitions(
 
     // Having transition means we have custom animation
     if (transition) {
-        // we do not use Android backstack so setting popEnter / popExit is meaningless (3rd and 4th optional args)
-        fragmentTransaction.setCustomAnimations(AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
+        if (fragmentTransaction) {
+            // we do not use Android backstack so setting popEnter / popExit is meaningless (3rd and 4th optional args)
+            fragmentTransaction.setCustomAnimations(AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
+        }
+        
         setupAllAnimation(newEntry, transition);
         if (currentFragmentNeedsDifferentAnimation) {
             setupExitAndPopEnterAnimation(currentEntry, transition);
@@ -502,6 +505,8 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
         clearAnimationListener(entry.exitAnimator, listener);
         clearAnimationListener(entry.popEnterAnimator, listener);
         clearAnimationListener(entry.popExitAnimator, listener);
+        clearAnimationListener(entry.defaultEnterAnimator, listener);
+        clearAnimationListener(entry.defaultExitAnimator, listener);
     }
 }
 

@@ -99,7 +99,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     // We use our own layout method because the one in FrameLayout is broken when margins are set and gravity is CENTER_VERTICAL or CENTER_HORIZONTAL.
     @SuppressLint("RtlHardcoded")
     protected static void layoutChild(View child, int left, int top, int right, int bottom) {
-        if (child.getVisibility() == View.GONE) {
+        if (child == null || child.getVisibility() == View.GONE) {
             return;
         }
 
@@ -223,7 +223,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     }
 
     protected static void measureChild(View child, int widthMeasureSpec, int heightMeasureSpec) {
-        if (child.getVisibility() == View.GONE) {
+        if (child == null || child.getVisibility() == View.GONE) {
             return;
         }
 
