@@ -126,8 +126,8 @@ export interface AndroidApplication {
 }
 
 const androidApp = new AndroidApplication();
-// use the exports object instead of 'export var' due to global namespace collision
-exports.android = androidApp;
+export { androidApp as android };
+
 setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
