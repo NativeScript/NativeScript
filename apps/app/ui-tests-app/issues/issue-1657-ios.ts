@@ -1,6 +1,6 @@
 import { EventData } from "tns-core-modules/data/observable";
-var frameModule = require("ui/frame");
-var platform = require("platform");
+var frameModule = require("tns-core-modules/ui/frame");
+var platform = require("tns-core-modules/platform");
 var defaultSpeed = -1;
 
 export function navigatingTo(args: EventData) {
