@@ -4,6 +4,8 @@
     messageType as traceMessageType,
 } from "../trace";
 
+import { layoutCommon } from "./utils-common";
+
 export * from "./utils-common";
 
 import { getNativeApplication, android as androidApp } from "../application";
@@ -61,6 +63,10 @@ export module layout {
         };
     }
 }
+
+// TODO(webpack-workflow): Export all methods from layoutCommon
+// Think of a cleaner way to do that
+Object.assign(layout, layoutCommon);
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
