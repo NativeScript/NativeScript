@@ -1,9 +1,9 @@
-import * as definition from ".";
-import * as observable from "../data/observable";
-import * as platform from "../platform";
+import { ImageAsset as ImageAssetDefinition, ImageAssetOptions } from ".";
+import { Observable } from "../data/observable";
+import { screen as platformScreen } from "../platform";
 
-export class ImageAsset extends observable.Observable implements definition.ImageAsset {
-    private _options: definition.ImageAssetOptions;
+export class ImageAssetBase extends Observable implements ImageAssetDefinition {
+    private _options: ImageAssetOptions;
     private _nativeImage: any;
 
     ios: PHAsset;
@@ -14,11 +14,11 @@ export class ImageAsset extends observable.Observable implements definition.Imag
         this._options = { keepAspectRatio: true, autoScaleFactor: true };
     }
 
-    get options(): definition.ImageAssetOptions {
+    get options(): ImageAssetOptions {
         return this._options;
     }
 
-    set options(value: definition.ImageAssetOptions) {
+    set options(value: ImageAssetOptions) {
         this._options = value;
     }
 
@@ -46,8 +46,8 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
     };
 }
 
-export function getRequestedImageSize(src: { width: number, height: number }, options: definition.ImageAssetOptions): { width: number, height: number } {
-    const screen = platform.screen.mainScreen;
+export function getRequestedImageSize(src: { width: number, height: number }, options: ImageAssetOptions): { width: number, height: number } {
+    const screen = platformScreen.mainScreen;
 
     let reqWidth = options.width || Math.min(src.width, screen.widthPixels);
     let reqHeight = options.height || Math.min(src.height, screen.heightPixels);
