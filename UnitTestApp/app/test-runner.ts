@@ -91,23 +91,23 @@ allTests["FORMATTEDSTRING"] = formattedStringTests;
 import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
 allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
 
-// import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
-// allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
+import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
+allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
 
-// import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
-// allTests["WEAK-EVENTS"] = weakEventsTests;
+import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
+allTests["WEAK-EVENTS"] = weakEventsTests;
 
-// import * as traceErrorTests from "./trace/trace-error-tests";
-// allTests["TRACE-ERROR"] = traceErrorTests;
+import * as traceErrorTests from "./trace/trace-error-tests";
+allTests["TRACE-ERROR"] = traceErrorTests;
 
-// import * as connectivityTests from "./connectivity/connectivity-tests";
-// allTests["CONNECTIVITY"] = connectivityTests;
+import * as connectivityTests from "./connectivity/connectivity-tests";
+allTests["CONNECTIVITY"] = connectivityTests;
 
-// import * as proxyViewContainerTests from "./ui/proxy-view-container/proxy-view-container-tests";
-// allTests["PROXY-VIEW-CONTAINER"] = proxyViewContainerTests;
+import * as proxyViewContainerTests from "./ui/proxy-view-container/proxy-view-container-tests";
+allTests["PROXY-VIEW-CONTAINER"] = proxyViewContainerTests;
 
-// import * as scrollViewTests from "./ui/scroll-view/scroll-view-tests";
-// allTests["SCROLL-VIEW"] = scrollViewTests;
+import * as scrollViewTests from "./ui/scroll-view/scroll-view-tests";
+allTests["SCROLL-VIEW"] = scrollViewTests;
 
 // import * as actionBarTests from "./ui/action-bar/action-bar-tests";
 // allTests["ACTION-BAR"] = actionBarTests;
