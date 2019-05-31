@@ -84,5 +84,5 @@ export var assertElementValueIsNaN = function (elementId: string) {
 }
 
 export var navigateToPage = function (pageName: string) {
-    helper.navigateToModule("/ui/test-pages/" + pageName);
+    helper.navigateToModule("ui/test-pages/" + pageName);
 }

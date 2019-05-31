@@ -79,17 +79,17 @@ allTests["COLOR"] = colorTests;
 import * as bindableTests from "./ui/core/bindable/bindable-tests";
 allTests["BINDABLE"] = bindableTests;
 
-// import * as bindintExpressionTests from "./ui/core/bindable/binding-expressions-tests";
-// allTests["BINDING-EXPRESSIONS"] = bindintExpressionTests;
+import * as bindingExpressionTests from "./ui/core/bindable/binding-expressions-tests";
+allTests["BINDING-EXPRESSIONS"] = bindingExpressionTests;
 
 import * as xmlParserTests from "./xml-parser-tests/xml-parser-tests";
 allTests["XML-PARSER"] = xmlParserTests;
 
-// import * as formattedStringTests from "./text/formatted-string-tests";
-// allTests["FORMATTEDSTRING"] = formattedStringTests;
+import * as formattedStringTests from "./text/formatted-string-tests";
+allTests["FORMATTEDSTRING"] = formattedStringTests;
 
-// import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
-// allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
+import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
+allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
 
 // import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
 // allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;

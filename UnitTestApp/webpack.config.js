@@ -170,7 +170,7 @@ module.exports = env => {
                                 unitTesting,
                                 appFullPath,
                                 projectRoot,
-                                registerModules: /(root|page\d*|Page\d*|Templates)\.(xml|css|js|ts|scss)$/
+                                registerModules: /(root|page\d*|Page\d*|Templates)\.(xml|css|js|ts|scss)$/ // NB: MODIFIED
                             }
                         },
                     ].filter(loader => !!loader)
@@ -235,6 +235,7 @@ module.exports = env => {
                 { from: { glob: "fonts/**" } },
                 { from: { glob: "**/*.jpg" } },
                 { from: { glob: "**/*.png" } },
+                { from: { glob: "file-system-access-tests/**/*.expected" } }, // NB: MODIFIED
             ], { ignore: [`${relative(appPath, appResourcesFullPath)}/**`] }),
             // Generate a bundle starter script and activate it in package.json
             new nsWebpack.GenerateBundleStarterPlugin(
