@@ -1,0 +1,6 @@
+<Page loaded="pageLoaded" title="MyPageTitle" icon="res://icon">
+ 
+  <StackLayout>
+    <Button text="button" tap="buttonTap"/>
+  </StackLayout>
+</Page>

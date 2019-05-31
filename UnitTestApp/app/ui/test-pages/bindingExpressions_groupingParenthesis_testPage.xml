@@ -1,0 +1,6 @@
+﻿<Page loaded="pageLoaded">
+  <StackLayout>
+    <TextField id="textField1" text="{{ (var1 + var2) * ( var3 + var4) }}" />
+    <TextField id="textField2" text="{{ ((var1 + var3) * var4) / var2 }}" />
+  </StackLayout>
+</Page>

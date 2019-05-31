@@ -1,0 +1,54 @@
+<Page loaded="pageLoaded" unloaded="pageUnloaded" backgroundColor="red">
+  <StackLayout>
+    <StackLayout>
+      <Button text="1button1" />
+      <Button text="1button2" />
+      <Button text="1button3" />
+      <Button text="1button4" />
+      <Button text="1button5" />
+      <Button text="1button6" />
+      <Button text="1button7" />
+      <Button text="1button8" />
+    </StackLayout>
+    <StackLayout>
+      <Button text="2button1" />
+      <Button text="2button2" />
+      <Button text="2button3" />
+      <Button text="2button4" />
+      <Button text="2button5" />
+      <Button text="2button6" />
+      <Button text="2button7" />
+      <Button text="2button8" />
+    </StackLayout>
+    <StackLayout>
+      <Button text="3button1" />
+      <Button text="3button2" />
+      <Button text="3button3" />
+      <Button text="3button4" />
+      <Button text="3button5" />
+      <Button text="3button6" />
+      <Button text="3button7" />
+      <Button text="3button8" />
+    </StackLayout>
+    <StackLayout>
+      <Button text="4button1" />
+      <Button text="4button2" />
+      <Button text="4button3" />
+      <Button text="4button4" />
+      <Button text="4button5" />
+      <Button text="4button6" />
+      <Button text="4button7" />
+      <Button text="4button8" />
+    </StackLayout>
+    <StackLayout>
+      <Button text="5button1" />
+      <Button text="5button2" />
+      <Button text="5button3" />
+      <Button text="5button4" />
+      <Button text="5button5" />
+      <Button text="5button6" />
+      <Button text="5button7" />
+      <Button text="5button8" />
+    </StackLayout>
+  </StackLayout>
+</Page>

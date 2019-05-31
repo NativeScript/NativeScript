@@ -55,8 +55,8 @@ export const allTests = {};
 // import * as appSettingsTests from "./application-settings/application-settings-tests";
 // allTests["APPLICATION-SETTINGS"] = appSettingsTests;
 
-// import * as applicationTests from "./application/application-tests";
-// allTests["APPLICATION"] = applicationTests;
+import * as applicationTests from "./application/application-tests";
+allTests["APPLICATION"] = applicationTests;
 
 // import * as imageSourceTests from "./image-source/image-source-tests";
 // allTests["IMAGE-SOURCE"] = imageSourceTests;

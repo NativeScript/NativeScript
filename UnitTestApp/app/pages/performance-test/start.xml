@@ -1,0 +1,7 @@
+<Page loaded="pageLoaded" >
+  <StackLayout>
+    <Button text="test small" tag="test-small" tap="navigate" />
+    <Button text="test big" tag="test-big" tap="navigate" />
+    <Button text="telerik next session" tag="telerik-next-session" tap="navigate" />
+  </StackLayout>
+</Page>

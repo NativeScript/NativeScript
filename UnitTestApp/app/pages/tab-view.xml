@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page loaded="onPageLoaded">
+  <Page.actionBar>
+    <ActionBar title="Title" class="custom-action-bar">
+      <ActionBar.actionItems>
+        <ActionItem text="set" tap="setStyle"/>
+        <ActionItem text="clear" tap="clearStyle"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <TabView selectedColor="green">
+    <TabView.items>
+      <TabViewItem title="{{ firstTitle }}" iconSource="{{ firstIcon }}">
+        <TabViewItem.view>
+          <GridLayout>
+            <Button tap="onTap" text="click" />
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="{{ secondTitle }}" iconSource="{{ secondIcon }}">
+        <TabViewItem.view>
+          <GridLayout>
+            <Label text="Second Tab" verticalAlignment="center" horizontalAlignment="center"/>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>

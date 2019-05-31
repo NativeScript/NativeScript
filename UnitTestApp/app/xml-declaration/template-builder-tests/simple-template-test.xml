@@ -1,0 +1,8 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      xmlns:tc="xml-declaration/template-builder-tests/template-view">
+	<tc:TemplateView id="template-view">
+		<tc:TemplateView.template>
+			<Button text="Click!" />
+		</tc:TemplateView.template>
+	</tc:TemplateView>
+</Page>

@@ -1,0 +1,17 @@
+<TabView>
+    <TabView.items>
+
+    <TabViewItem title="Tab">
+        <TabViewItem.view>
+            <Label text="Tab" id="my-test-label"/>
+        </TabViewItem.view>
+    </TabViewItem>
+
+    <TabViewItem title="Tab">
+        <TabViewItem.view>
+            <Label text="Tab" />
+        </TabViewItem.view>
+    </TabViewItem>
+
+    </TabView.items>
+</TabView>

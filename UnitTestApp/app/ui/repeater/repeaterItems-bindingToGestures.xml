@@ -1,0 +1,9 @@
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+	<Repeater id="repeater" items="{{ items }}">
+		<Repeater.itemTemplate>
+			<GridLayout width="94" height="94" >
+				<Label text="{{ $parents['Page'].parentViewProperty }}" tap="{{ tapItem }}" />
+			</GridLayout>
+		</Repeater.itemTemplate>
+	</Repeater>
+</Page>

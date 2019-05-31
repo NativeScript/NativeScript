@@ -1,0 +1,12 @@
+﻿<Page loaded="pageLoaded">
+  <StackLayout>
+    <TextField id="textField1" text="{{ +varStr }}" />
+    <TextField id="textField2" text="{{ -varStr }}" />
+    <TextField id="textField3" text="{{ +varNum }}" />
+    <TextField id="textField4" text="{{ -varNum }}" />
+    <TextField id="textField5" text="{{ +varTrue }}" />
+    <TextField id="textField6" text="{{ -varTrue }}" />
+    <TextField id="textField7" text="{{ +varText }}" />
+    <TextField id="textField8" text="{{ -varText }}" />
+  </StackLayout>
+</Page>

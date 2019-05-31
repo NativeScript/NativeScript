@@ -1,0 +1,15 @@
+Button {
+    color: orange;
+}
+
+.red {
+    color: red;
+}
+
+.blue {
+    color: blue;
+}
+
+.nocolor {
+    background: red;
+}

@@ -1,0 +1,3 @@
+<GridLayout class="MyStackLayoutRoot">
+    <Label text="I'm here!!!" id="my-test-label"/>
+</GridLayout>

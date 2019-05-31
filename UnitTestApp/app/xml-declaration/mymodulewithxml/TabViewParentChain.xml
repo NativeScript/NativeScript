@@ -1,0 +1,16 @@
+<Page navigatingTo="onNavigatingTo">
+    <TabView selectedIndex= "1">
+        <TabView.items>
+            <TabViewItem title="First">
+                <TabViewItem.view>
+                    <Label text="First View" />
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem title= "Second">
+                <TabViewItem.view>
+                    <Label text="Second View" loaded="loaded"/>
+                </TabViewItem.view>
+            </TabViewItem>
+        </TabView.items>
+    </TabView>
+</Page>
