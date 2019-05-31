@@ -53,24 +53,19 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
+    public setCurrent(entry: BackstackEntry): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
+        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
         if (currentEntryChanged) {
-            this._updateBackstack(entry, navigationType);
+            this._updateBackstack(entry, navigationContext.navigationType);
 
-            super.setCurrent(entry, navigationType);
+            super.setCurrent(entry);
         }
     }
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
-        // NavigationType.replace for HMR.
-        // Otherwise, default to NavigationType.forward.
-        const isReplace = this.navigationType === NavigationType.replace;
-        if (!isReplace) {
-            this.navigationType = NavigationType.forward;
-        }
         super._navigateCore(backstackEntry);
 
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -82,6 +77,9 @@ export class Frame extends FrameBase {
         if (clearHistory) {
             navDepth = -1;
         }
+
+        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
+        const isReplace = navigationContext.navigationType === NavigationType.replace;
         if (!isReplace) {
             navDepth++;
         }
@@ -187,7 +185,6 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry[NAV_DEPTH];
 

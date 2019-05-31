@@ -163,24 +163,12 @@ export class Frame extends FrameBase {
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events.
         // As JS instances are alive it is already done for the current page.
-        if (!this.isLoaded || this._executingEntry || !this._attachedToWindow) {
+        if (!this.isLoaded || this._executingContext || !this._attachedToWindow) {
             return;
         }
 
         const animatedEntries = _getAnimatedEntries(this._android.frameId);
         if (animatedEntries) {
-            // // recreate UI on the animated fragments because we have new context.
-            // // We need to recreate the UI because it Frame will do it only for currentPage.
-            // // Once currentPage is changed due to transition end we will have no UI on the
-            // // new Page.
-            // animatedEntries.forEach(entry =>  {
-            //     const page = entry.resolvedPage;
-            //     if (page._context !== this._context) {
-            //         page._tearDownUI(true);
-            //         page._setupUI(this._context);
-            //     }
-            // });
-
             // Wait until animations are completed.
             if (animatedEntries.size > 0) {
                 return;
@@ -212,7 +200,13 @@ export class Frame extends FrameBase {
     }
 
     public _getChildFragmentManager() {
-        const backstackEntry = this._executingEntry || this._currentEntry;
+        let backstackEntry;
+        if (this._executingContext && this._executingContext.entry) {
+            backstackEntry = this._executingContext.entry;
+        } else {
+            backstackEntry = this._currentEntry;
+        }
+
         if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
             return backstackEntry.fragment.getChildFragmentManager();
         }
@@ -271,9 +265,11 @@ export class Frame extends FrameBase {
         return newFragment;
     }
 
-    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
+    public setCurrent(entry: BackstackEntry): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
+        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
+        const navigationType = navigationContext.navigationType;
         if (currentEntryChanged) {
             this._updateBackstack(entry, navigationType);
 
@@ -304,7 +300,7 @@ export class Frame extends FrameBase {
                 }
             }
 
-            super.setCurrent(entry, navigationType);
+            super.setCurrent(entry);
 
             // If we had real navigation process queue.
             this._processNavigationQueue(entry.resolvedPage);
@@ -324,7 +320,7 @@ export class Frame extends FrameBase {
         if (navigationType === NavigationType.replace) {
             _clearEntry(entry);
 
-            const animated = entry.entry.animated;
+            const animated = this._getIsAnimatedNavigation(entry.entry);
             const navigationTransition = this._getNavigationTransition(entry.entry);
             const currentEntry = null;
             const newEntry = entry;
@@ -353,12 +349,6 @@ export class Frame extends FrameBase {
     @profile
     public _navigateCore(newEntry: BackstackEntry) {
         super._navigateCore(newEntry);
-        // NavigationType.replace for HMR.
-        // Otherwise, default to NavigationType.forward.
-        const isReplace = this.navigationType === NavigationType.replace;
-        if (!isReplace) {
-            this.navigationType = NavigationType.forward;
-        }
 
         // set frameId here so that we could use it in fragment.transitions
         newEntry.frameId = this._android.frameId;
@@ -385,6 +375,8 @@ export class Frame extends FrameBase {
             navDepth = -1;
         }
 
+        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
+        const isReplace = navigationContext.navigationType === NavigationType.replace;
         if (!isReplace) {
             navDepth++;
         }
@@ -419,7 +411,6 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry.navDepth;
 
@@ -477,18 +468,18 @@ export class Frame extends FrameBase {
         const listener = getAttachListener();
         this.nativeViewProtected.removeOnAttachStateChangeListener(listener);
         this.nativeViewProtected[ownerSymbol] = null;
-        this._tearDownPending = !!this._executingEntry;
+        this._tearDownPending = !!this._executingContext;
         const current = this._currentEntry;
-
+        const executingContext = this._executingContext || { entry: null };
         this.backStack.forEach(entry => {
             // Don't destroy current and executing entries or UI will look blank.
             // We will do it in setCurrent.
-            if (entry !== this._executingEntry) {
+            if (entry !== executingContext.entry) {
                 clearEntry(entry);
             }
         });
 
-        if (current && !this._executingEntry) {
+        if (current && !executingContext.entry) {
             clearEntry(current);
         }
 
@@ -711,11 +702,11 @@ function findPageForFragment(fragment: android.support.v4.app.Fragment, frame: F
 
     let entry: BackstackEntry;
     const current = frame._currentEntry;
-    const navigating = frame._executingEntry;
+    const executingContext = frame._executingContext;
     if (current && current.fragmentTag === fragmentTag) {
         entry = current;
-    } else if (navigating && navigating.fragmentTag === fragmentTag) {
-        entry = navigating;
+    } else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
+        entry = executingContext.entry;
     }
 
     let page: Page;

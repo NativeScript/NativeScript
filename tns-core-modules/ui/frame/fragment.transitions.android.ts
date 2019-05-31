@@ -735,8 +735,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
         // Will be null if Frame is shown modally...
         // transitionOrAnimationCompleted fires again (probably bug in android).
         if (current) {
-            const navType = frame.navigationType;
-            setTimeout(() => frame.setCurrent(current, navType));
+            setTimeout(() => frame.setCurrent(current));
         }
     } else {
         completedEntries.set(frameId, entry);
