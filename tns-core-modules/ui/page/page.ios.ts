@@ -140,10 +140,12 @@ class UIViewControllerImpl extends UIViewController {
         if (!owner._presentedViewController && frame) {
             const newEntry: BackstackEntry = this[ENTRY];
 
-            frame.setCurrent(newEntry);
-            
+            // frame.setCurrent(...) will reset executing context so retrieve it here
             const navigationContext = frame._executingContext || { navigationType: NavigationType.unset };
             const isReplace = navigationContext.navigationType === NavigationType.replace;
+
+            frame.setCurrent(newEntry);
+            
             if (isReplace) {
                 let controller = newEntry.resolvedPage.ios;
                 if (controller) {
