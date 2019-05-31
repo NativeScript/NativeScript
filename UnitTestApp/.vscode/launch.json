@@ -1,0 +1,72 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": true
+        },
+        {
+            "name": "Test on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": false,
+            "stopOnEntry": true,
+            "launchTests": true,
+            "tnsArgs": [
+                "--justlaunch"
+            ]
+        },
+        {
+            "name": "Attach on iOS",
+            "type": "nativescript",
+            "request": "attach",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": false
+        },
+        {
+            "name": "Launch on Android",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": true
+        },
+        {
+            "name": "Test on Android",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": false,
+            "stopOnEntry": true,
+            "launchTests": true,
+            "tnsArgs": [
+                "--justlaunch"
+            ]
+        },
+        {
+            "name": "Attach on Android",
+            "type": "nativescript",
+            "request": "attach",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": false
+        }
+    ]
+}

@@ -82,8 +82,8 @@ allTests["BINDABLE"] = bindableTests;
 // import * as bindintExpressionTests from "./ui/core/bindable/binding-expressions-tests";
 // allTests["BINDING-EXPRESSIONS"] = bindintExpressionTests;
 
-// import * as xmlParserTests from "./xml-parser-tests/xml-parser-tests";
-// allTests["XML-PARSER"] = xmlParserTests;
+import * as xmlParserTests from "./xml-parser-tests/xml-parser-tests";
+allTests["XML-PARSER"] = xmlParserTests;
 
 // import * as formattedStringTests from "./text/formatted-string-tests";
 // allTests["FORMATTEDSTRING"] = formattedStringTests;

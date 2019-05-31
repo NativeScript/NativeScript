@@ -58,7 +58,19 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
                     global.registerModule(jsNickName, () => context(key));
                 }
             });
+        } else if (registerName.startsWith("./")) {
+            const moduleNickNames = [
+                // This is for supporting module names like "main/main-page.xml"
+                registerName.substr(2),
+            ];
+
+            moduleNickNames.forEach(moduleNickName => {
+                if (!global.moduleExists(moduleNickName)) {
+                    global.registerModule(moduleNickName, () => context(key));
+                }
+            });
         }
+
         if (isSourceFile || !global.moduleExists(registerName)) {
             global.registerModule(registerName, () => context(key));
         }

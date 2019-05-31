@@ -185,8 +185,7 @@ export var test_XmlParser_NamespacesTest = function () {
 };
 
 export function test_MultiParserTemplate() {
-    const file = fs.File.fromPath(fs.path.join(__dirname, "itemTemplates.xml"));
-    const xml = file.readTextSync();
+    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml")
 
     const view: any = builder.parse(xml);
     TKUnit.assertNotNull(view.items)
