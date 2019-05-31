@@ -261,17 +261,17 @@ allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 // import * as livesyncTests from "./livesync/livesync-tests";
 // allTests["LIVESYNC"] = livesyncTests;
 
-// import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
-// allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
+import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
+allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 
-// import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
-// allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
+import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
+allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
 // import * as rootViewTests from "./ui/root-view/root-view-tests";
 // allTests["ROOT-VIEW"] = rootViewTests;
 
-// import * as utilsTests from "./utils/utils-tests";
-// allTests["UTILS"] = utilsTests;
+import * as utilsTests from "./utils/utils-tests";
+allTests["UTILS"] = utilsTests;
 
 const testsSuitesWithLongDelay = {
     HTTP: 15 * 1000,

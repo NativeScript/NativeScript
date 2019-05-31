@@ -1,4 +1,4 @@
-import TKUnit = require("../../tk-unit");
+import * as TKUnit from "../../tk-unit";
 import { isAndroid } from "tns-core-modules/platform";
 import { _resetRootView } from "tns-core-modules/application/";
 import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";
