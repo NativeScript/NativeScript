@@ -1,9 +1,8 @@
 /* tslint:disable:no-unused-variable */
 import * as app from "tns-core-modules/application";
 import * as TKUnit from "../TKUnit"; 
-import * as commonTests from "./application-tests-common";
 
-global.moduleMerge(commonTests, exports);
+export * from "./application-tests-common";
 
 // >> application-app-android
 var androidApp = app.android;

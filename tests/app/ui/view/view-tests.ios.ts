@@ -1,5 +1,3 @@
-import * as commonTests from "./view-tests-common";
-
 import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
@@ -8,7 +6,7 @@ import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
 import * as utils from "tns-core-modules/utils/utils";
 
-global.moduleMerge(commonTests, exports);
+export * from "./view-tests-common";
 
 class MyGrid extends GridLayout {
     public backgroundDrawCount: number = 0;

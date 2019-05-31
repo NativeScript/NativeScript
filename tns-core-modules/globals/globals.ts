@@ -114,7 +114,7 @@ global.registerModule("fetch", () => require("fetch"));
 }
 
 function registerOnGlobalContext(name: string, module: string): void {
-
+    console.log("----> registerOnGlobalContext", name, module, global)
     Object.defineProperty(global, name, {
         get: function () {
             // We do not need to cache require() call since it is already cached in the runtime.

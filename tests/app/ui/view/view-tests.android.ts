@@ -1,5 +1,4 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import * as commonTests from "./view-tests-common";
 import * as helper from "../../ui/helper";
 import { View, isIOS, unsetValue } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
@@ -12,7 +11,7 @@ import { Color } from "tns-core-modules/color";
 // enable the trace, it is disabled by default
 trace.enable();
 
-global.moduleMerge(commonTests, exports);
+export * from "./view-tests-common";
 
 // function setup(): StackLayout {
 //     const page = helper.getClearCurrentPage();
