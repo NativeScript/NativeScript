@@ -31,35 +31,35 @@ export function isRunningOnEmulator(): boolean {
 
 export const allTests = {};
 
-// import * as domNodeTest from "./debugger/dom-node-tests";
-// allTests["DOM-NODE"] = domNodeTest;
+import * as domNodeTest from "./debugger/dom-node-tests";
+allTests["DOM-NODE"] = domNodeTest;
 
-// import * as profilingTests from "./profiling/profiling-tests";
-// allTests["PROFILING"] = profilingTests;
+import * as profilingTests from "./profiling/profiling-tests";
+allTests["PROFILING"] = profilingTests;
 
-// import * as platformTests from "./platform/platform-tests";
-// allTests["PLATFORM"] = platformTests;
+import * as platformTests from "./platform/platform-tests";
+allTests["PLATFORM"] = platformTests;
 
-// import * as fsTests from "./file-system/file-system-tests";
-// allTests["FILE-SYSTEM"] = fsTests;
+import * as fsTests from "./file-system/file-system-tests";
+allTests["FILE-SYSTEM"] = fsTests;
 
-// // import * as httpTests from "./http/http-tests";
-// // allTests["HTTP"] = httpTests;
+// import * as httpTests from "./http/http-tests";
+// allTests["HTTP"] = httpTests;
 
-// // import * as xhrTests from "./xhr/xhr-tests";
-// // allTests["XHR"] = xhrTests;
+// import * as xhrTests from "./xhr/xhr-tests";
+// allTests["XHR"] = xhrTests;
 
-// // import * as fetchTests from "./fetch/fetch-tests";
-// // allTests["FETCH"] = fetchTests;
+// import * as fetchTests from "./fetch/fetch-tests";
+// allTests["FETCH"] = fetchTests;
 
-// import * as appSettingsTests from "./application-settings/application-settings-tests";
-// allTests["APPLICATION-SETTINGS"] = appSettingsTests;
+import * as appSettingsTests from "./application-settings/application-settings-tests";
+allTests["APPLICATION-SETTINGS"] = appSettingsTests;
 
 import * as applicationTests from "./application/application-tests";
 allTests["APPLICATION"] = applicationTests;
 
-// import * as imageSourceTests from "./image-source/image-source-tests";
-// allTests["IMAGE-SOURCE"] = imageSourceTests;
+import * as imageSourceTests from "./image-source/image-source-tests";
+allTests["IMAGE-SOURCE"] = imageSourceTests;
 
 // import * as observableArrayTests from "./data/observable-array-tests";
 // allTests["OBSERVABLE-ARRAY"] = observableArrayTests;

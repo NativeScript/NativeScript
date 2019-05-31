@@ -947,7 +947,7 @@ export function testBackgroundImage() {
     lbl.className = "myClass";
     helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
         const page = <Page>views[1];
-        page.css = ".myClass { background-image: url('~/logo.png') }";
+        page.css = ".myClass { background-image: url('~/assets/logo.png') }";
         TKUnit.assertEqual(definition.checkNativeBackgroundImage(lbl), true, "Style background-image not loaded correctly.");
     });
 };

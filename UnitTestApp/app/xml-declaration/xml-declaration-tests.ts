@@ -493,7 +493,7 @@ export function test_parse_ShouldParseBindingsWithCommaInsideDoubleQuote() {
 
 export function test_parse_CanBindBackgroundImage() {
     var p = <Page>builder.parse("<Page><StackLayout backgroundImage='{{ myProp }}' /></Page>");
-    var expected = "~/logo.png"
+    var expected = "~/assets/logo.png"
     var obj = new observable.Observable();
     obj.set("myProp", expected);
     p.bindingContext = obj;

@@ -19,7 +19,7 @@ import * as ObservableModule from "tns-core-modules/data/observable";
 import * as color from "tns-core-modules/color";
 import * as backgroundModule from "tns-core-modules/ui/styling/background";
 import { android as androidApp } from "tns-core-modules/application";
-const imagePath = "~/logo.png";
+const imagePath = "~/assets/logo.png";
 
 export function test_recycling() {
     helper.nativeView_recycling_test(() => new Image());
@@ -107,7 +107,7 @@ export const test_SettingImageSrcToURL_async = function (done) {
 export const test_SettingImageSrcToFileWithinApp_sync = function () {
     // >> img-create-local
     const image = new ImageModule.Image();
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
     // << img-create-local
 
     runImageTestSync(image, image.src);
@@ -116,7 +116,7 @@ export const test_SettingImageSrcToFileWithinApp_sync = function () {
 export const test_SettingImageSrcToFileWithinApp_async = function (done) {
     const image = new ImageModule.Image();
     (<any>image).useCache = false;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
     runImageTestAsync(image, image.src, done);
 };
 
@@ -164,9 +164,9 @@ export const __test_SettingImageSrcTwiceMustNotMismatch = function (done) {
         }
     });
     image.loadMode = "async";
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
     image.src = null;
-    // At somepoint image.imageSource was set to "~/logo.png";
+    // At somepoint image.imageSource was set to "~/assets/logo.png";
 };
 
 export const test_SettingStretch_AspectFit = function () {
@@ -267,7 +267,7 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 
     let called = false;
     image.requestLayout = () => called = true;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
 
     TKUnit.assertFalse(called, "image.requestLayout should not be called.");
 });
@@ -285,7 +285,7 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 
     let called = false;
     image.requestLayout = () => called = true;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
 
     TKUnit.assertFalse(called, "image.requestLayout should not be called.");
 });
@@ -301,7 +301,7 @@ export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() 
 
     let called = false;
     image.requestLayout = () => called = true;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
 
     TKUnit.assertTrue(called, "image.requestLayout should be called.");
 });

@@ -21,7 +21,7 @@ export function test_actionItem_visibility() {
 
 export function test_navigationButton_visibility() {
     const actionItem = new ActionItem();
-    actionItem.icon = "~/small-image.png";
+    actionItem.icon = "~/assets/small-image.png";
     const page = createPageAndNavigate();
     page.actionBar.navigationButton = actionItem;
 
@@ -34,7 +34,7 @@ export function test_navigationButton_visibility() {
 
 export function test_navigationButton_contentDecription() {
     const actionItem = new ActionItem();
-    actionItem.icon = "~/small-image.png";
+    actionItem.icon = "~/assets/small-image.png";
     const actionItemText = "NavButton with small-image";
     actionItem.text = actionItemText;
     const page = createPageAndNavigate();

@@ -180,7 +180,7 @@ export var testFileReadWriteBinary = function () {
     var fileName = "logo.png";
     var error;
 
-    var sourceFile = fs.File.fromPath(__dirname + "/../" + fileName);
+    var sourceFile = fs.File.fromPath(__dirname + "/assets/" + fileName);
     var destinationFile = fs.knownFolders.documents().getFile(fileName);
 
     var source = sourceFile.readSync(e => { error = e; });

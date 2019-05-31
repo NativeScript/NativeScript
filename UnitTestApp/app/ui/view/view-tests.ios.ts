@@ -54,7 +54,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
     layout.className = "myClass";
     layout.backgroundColor = new Color(255, 255, 0, 0);
 
-    root.css = ".myClass { background-image: url('~/logo.png') }";
+    root.css = ".myClass { background-image: url('~/assets/logo.png') }";
     root.content = layout;
 
     function trackCount() {

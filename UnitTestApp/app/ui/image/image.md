@@ -76,7 +76,7 @@ The sample above, demonstrates, how to load an image source while providing URL 
 ``` XML
 <Page>
   <StackLayout>
-     {%raw%}<Image src="~/logo.png" stretch ="none" / >{%endraw%}
+     {%raw%}<Image src="~/assets/logo.png" stretch ="none" / >{%endraw%}
   </StackLayout>
 </Page>
 ```
