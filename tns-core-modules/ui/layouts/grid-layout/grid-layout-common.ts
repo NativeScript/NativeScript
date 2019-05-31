@@ -5,7 +5,7 @@ export * from "../layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
-        throw new Error("element cannot be null or undefinied.");
+        throw new Error("element cannot be null or undefined.");
     }
     return element;
 }
@@ -291,7 +291,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     }
 
     protected invalidate(): void {
-        // handled natively in android and overriden in ios.
+        // handled natively in android and overridden in ios.
     }
 
     set rows(value: string) {
