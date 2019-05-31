@@ -114,7 +114,6 @@ global.registerModule("fetch", () => require("fetch"));
 }
 
 function registerOnGlobalContext(name: string, module: string): void {
-    console.log("----> registerOnGlobalContext", name, module, global)
     Object.defineProperty(global, name, {
         get: function () {
             // We do not need to cache require() call since it is already cached in the runtime.
@@ -122,7 +121,7 @@ function registerOnGlobalContext(name: string, module: string): void {
 
             // Redefine the property to make sure the above code is executed only once.
             let resolvedValue = m[name];
-            Object.defineProperty(this, name, { value: resolvedValue, configurable: true, writable: true });
+            Object.defineProperty(global, name, { value: resolvedValue, configurable: true, writable: true });
 
             return resolvedValue;
         },
