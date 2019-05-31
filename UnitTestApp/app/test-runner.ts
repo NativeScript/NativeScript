@@ -109,29 +109,29 @@ allTests["PROXY-VIEW-CONTAINER"] = proxyViewContainerTests;
 import * as scrollViewTests from "./ui/scroll-view/scroll-view-tests";
 allTests["SCROLL-VIEW"] = scrollViewTests;
 
-// import * as actionBarTests from "./ui/action-bar/action-bar-tests";
-// allTests["ACTION-BAR"] = actionBarTests;
+import * as actionBarTests from "./ui/action-bar/action-bar-tests";
+allTests["ACTION-BAR"] = actionBarTests;
 
 // import * as xmlDeclarationTests from "./xml-declaration/xml-declaration-tests";
 // allTests["XML-DECLARATION"] = xmlDeclarationTests;
 
-// import * as dockLayoutTests from "./ui/layouts/dock-layout-tests";
-// allTests["DOCKLAYOUT"] = dockLayoutTests;
+import * as dockLayoutTests from "./ui/layouts/dock-layout-tests";
+allTests["DOCKLAYOUT"] = dockLayoutTests;
 
-// import * as wrapLayoutTests from "./ui/layouts/wrap-layout-tests";
-// allTests["WRAPLAYOUT"] = wrapLayoutTests;
+import * as wrapLayoutTests from "./ui/layouts/wrap-layout-tests";
+allTests["WRAPLAYOUT"] = wrapLayoutTests;
 
-// import * as absoluteLayoutTests from "./ui/layouts/absolute-layout-tests";
-// allTests["ABSOLUTELAYOUT"] = absoluteLayoutTests;
+import * as absoluteLayoutTests from "./ui/layouts/absolute-layout-tests";
+allTests["ABSOLUTELAYOUT"] = absoluteLayoutTests;
 
-// import * as gridLayoutTests from "./ui/layouts/grid-layout-tests";
-// allTests["GRIDLAYOUT"] = gridLayoutTests;
+import * as gridLayoutTests from "./ui/layouts/grid-layout-tests";
+allTests["GRIDLAYOUT"] = gridLayoutTests;
 
-// import * as stackLayoutTests from "./ui/layouts/stack-layout-tests";
-// allTests["STACKLAYOUT"] = stackLayoutTests;
+import * as stackLayoutTests from "./ui/layouts/stack-layout-tests";
+allTests["STACKLAYOUT"] = stackLayoutTests;
 
-// import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
-// allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
+import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
+allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
 
 // import * as safeAreaLayoutTests from "./ui/layouts/safe-area-tests";
 // import * as safeAreaListViewtTests from "./ui/list-view/list-view-safe-area-tests";
