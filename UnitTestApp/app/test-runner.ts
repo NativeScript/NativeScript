@@ -61,23 +61,23 @@ allTests["APPLICATION"] = applicationTests;
 import * as imageSourceTests from "./image-source/image-source-tests";
 allTests["IMAGE-SOURCE"] = imageSourceTests;
 
-// import * as observableArrayTests from "./data/observable-array-tests";
-// allTests["OBSERVABLE-ARRAY"] = observableArrayTests;
+import * as observableArrayTests from "./data/observable-array-tests";
+allTests["OBSERVABLE-ARRAY"] = observableArrayTests;
 
-// import * as virtualArrayTests from "./data/virtual-array-tests";
-// allTests["VIRTUAL-ARRAY"] = virtualArrayTests;
+import * as virtualArrayTests from "./data/virtual-array-tests";
+allTests["VIRTUAL-ARRAY"] = virtualArrayTests;
 
-// import * as observableTests from "./data/observable-tests";
-// allTests["OBSERVABLE"] = observableTests;
+import * as observableTests from "./data/observable-tests";
+allTests["OBSERVABLE"] = observableTests;
 
-// import * as timerTests from "./timer/timer-tests";
-// allTests["TIMER"] = timerTests;
+import * as timerTests from "./timer/timer-tests";
+allTests["TIMER"] = timerTests;
 
-// import * as colorTests from "./color/color-tests";
-// allTests["COLOR"] = colorTests;
+import * as colorTests from "./color/color-tests";
+allTests["COLOR"] = colorTests;
 
-// import * as bindableTests from "./ui/core/bindable/bindable-tests";
-// allTests["BINDABLE"] = bindableTests;
+import * as bindableTests from "./ui/core/bindable/bindable-tests";
+allTests["BINDABLE"] = bindableTests;
 
 // import * as bindintExpressionTests from "./ui/core/bindable/binding-expressions-tests";
 // allTests["BINDING-EXPRESSIONS"] = bindintExpressionTests;

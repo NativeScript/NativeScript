@@ -170,6 +170,7 @@ module.exports = env => {
                                 unitTesting,
                                 appFullPath,
                                 projectRoot,
+                                registerModules: /(root|page\d*|Page\d*|Templates)\.(xml|css|js|ts|scss)$/
                             }
                         },
                     ].filter(loader => !!loader)
