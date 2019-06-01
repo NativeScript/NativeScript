@@ -6,9 +6,10 @@ const COMPONENT_MODULE = "component-module";
 const MISSING_MODULE = "missing-module";
 const LABEL = "label";
 
+const testDir = "ui/builder";
 function getViewComponent(componentModule: string) {
-    const moduleNamePath = path.join(__dirname, componentModule);
-    const fileName = path.join(__dirname, `${componentModule}.xml`);
+    const moduleNamePath = path.join(testDir, componentModule);
+    const fileName = path.join(testDir, `${componentModule}.xml`);
     const view = loadPage(moduleNamePath, fileName);
     return view;
 }

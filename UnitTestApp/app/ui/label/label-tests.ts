@@ -22,6 +22,8 @@ import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 import * as helper from "../../ui-helper";
 import { Span, FormattedString } from "tns-core-modules/text/formatted-string";
 
+const testDir = "ui/label";
+
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
     public create(): LabelModule.Label {
@@ -525,7 +527,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         view.id = "testLabel";
         page.addCss("#testLabel { text-align: " + this.expectedTextAlignment + "; }");
-        page.addCssFile(fs.path.join(__dirname, "label-tests.css"));
+        page.addCssFile(fs.path.join(testDir, "label-tests-page.css"));
 
         const actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -559,7 +561,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.waitUntilTestElementIsLoaded();
 
         view.id = "testLabel";
-        page.addCssFile(fs.path.join(__dirname, "label-tests-wrong.css"));
+        page.addCssFile(fs.path.join(testDir, "label-tests-wrong-page.css"));
         TKUnit.assertNotEqual(this.errorMessage, undefined);
     }
 

@@ -97,7 +97,7 @@ class CSSSource {
                 }
             }
         } catch (e) {
-            //
+            traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
         }
 
         return CSSSource.fromFile(appRelativeUri, keyframes);
