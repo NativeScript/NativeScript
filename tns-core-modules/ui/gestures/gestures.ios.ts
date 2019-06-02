@@ -300,8 +300,8 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): Swipe
 }
 
 function _getPinchData(args: GestureEventData): PinchGestureEventData {
-    let recognizer = <UIPinchGestureRecognizer>args.ios;
-    let center = recognizer.locationInView(args.view.nativeViewProtected);
+    const recognizer = <UIPinchGestureRecognizer>args.ios;
+    const center = recognizer.locationInView(args.view.nativeViewProtected);
 
     return <PinchGestureEventData>{
         type: args.type,
@@ -318,7 +318,7 @@ function _getPinchData(args: GestureEventData): PinchGestureEventData {
 }
 
 function _getSwipeData(args: GestureEventData): SwipeGestureEventData {
-    let recognizer = <UISwipeGestureRecognizer>args.ios;
+    const recognizer = <UISwipeGestureRecognizer>args.ios;
 
     return <SwipeGestureEventData>{
         type: args.type,
@@ -332,7 +332,8 @@ function _getSwipeData(args: GestureEventData): SwipeGestureEventData {
 }
 
 function _getPanData(args: GestureEventData, view: UIView): PanGestureEventData {
-    let recognizer = <UIPanGestureRecognizer>args.ios;
+    const recognizer = <UIPanGestureRecognizer>args.ios;
+
     return <PanGestureEventData>{
         type: args.type,
         view: args.view,
@@ -347,7 +348,8 @@ function _getPanData(args: GestureEventData, view: UIView): PanGestureEventData 
 }
 
 function _getRotationData(args: GestureEventData): RotationGestureEventData {
-    let recognizer = <UIRotationGestureRecognizer>args.ios;
+    const recognizer = <UIRotationGestureRecognizer>args.ios;
+
     return <RotationGestureEventData>{
         type: args.type,
         view: args.view,
@@ -409,6 +411,7 @@ class Pointer implements Pointer {
     private _view: View;
 
     private _location: CGPoint;
+
     private get location(): CGPoint {
         if (!this._location) {
             this._location = this.ios.locationInView(this._view.nativeViewProtected);
