@@ -15,6 +15,7 @@ export function observe(target: View, type: GestureTypes, callback: (args: Gestu
 
 class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
     public static ObjCProtocols = [UIGestureRecognizerDelegate];
+
     public gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
         // If both gesture recognizers are of type UITapGestureRecognizer, do not allow
         // simultaneous recognition.
@@ -48,7 +49,7 @@ class UIGestureRecognizerImpl extends NSObject {
     private _context: any;
 
     public static initWithOwnerTypeCallback(owner: WeakRef<GesturesObserver>, type: any, callback?: Function, thisArg?: any): UIGestureRecognizerImpl {
-        let handler = <UIGestureRecognizerImpl>UIGestureRecognizerImpl.new();
+        const handler = <UIGestureRecognizerImpl>UIGestureRecognizerImpl.new();
         handler._owner = owner;
         handler._type = type;
 
