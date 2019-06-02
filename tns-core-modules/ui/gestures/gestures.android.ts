@@ -1,5 +1,11 @@
 ﻿// Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from ".";
+import {
+	DoubleTapGestureEventData,
+	GestureEventData,
+	SwipeGestureEventData,
+	PanGestureEventData,
+	RotationGestureEventData
+} from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
@@ -46,7 +52,9 @@ function initializeTapAndDoubleTapGestureListener() {
 
         public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
             if (this._type & GestureTypes.doubleTap) {
-                let args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
+                const locationX = motionEvent.getX() / layout.getDisplayDensity();
+                const locationY = motionEvent.getY() / layout.getDisplayDensity();
+                const args = _getDoubleTapArgs(GestureTypes.doubleTap, this._target, motionEvent, locationX, locationY);
                 _executeCallback(this._observer, args);
             }
             return true;
@@ -363,6 +371,20 @@ function _getArgs(type: GestureTypes, view: View, e: android.view.MotionEvent): 
     };
 }
 
+function _getDoubleTapArgs(type: GestureTypes, view: View,
+    e: android.view.MotionEvent, locationX: number, locationY: number): DoubleTapGestureEventData {
+    return <DoubleTapGestureEventData>{
+        type: type,
+        view: view,
+        android: e,
+        ios: undefined,
+        locationX: locationX,
+        locationY: locationY,
+        object: view,
+        eventName: toString(type),
+    };
+}
+
 function _getSwipeArgs(direction: SwipeDirection, view: View,
     initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent): SwipeGestureEventData {
     return <SwipeGestureEventData>{
@@ -387,7 +409,7 @@ function _getPanArgs(deltaX: number, deltaY: number, view: View, state: GestureS
         ios: undefined,
         object: view,
         eventName: toString(GestureTypes.pan),
-        state: state
+        state: state,
     };
 }
 
