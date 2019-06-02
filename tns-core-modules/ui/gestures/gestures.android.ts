@@ -31,7 +31,7 @@ function initializeTapAndDoubleTapGestureListener() {
 
         private _lastTapTime: number = 0;
         private _tapTimeoutId: number;
-
+        
         private static DoubleTapTimeout = android.view.ViewConfiguration.getDoubleTapTimeout();
 
         constructor(observer: GesturesObserver, target: View, type: number) {
