@@ -198,69 +198,74 @@ allTests["IMAGE-CACHE"] = imageCacheTests;
 import * as sliderTests from "./ui/slider/slider-tests";
 allTests["SLIDER"] = sliderTests;
 
-// import * as switchTests from "./ui/switch/switch-tests";
-// allTests["SWITCH"] = switchTests;
+import * as switchTests from "./ui/switch/switch-tests";
+allTests["SWITCH"] = switchTests;
 
-// import * as progressTests from "./ui/progress/progress-tests";
-// allTests["PROGRESS"] = progressTests;
+import * as progressTests from "./ui/progress/progress-tests";
+allTests["PROGRESS"] = progressTests;
 
-// import * as placeholderTests from "./ui/placeholder/placeholder-tests";
-// allTests["PLACEHOLDER"] = placeholderTests;
+import * as placeholderTests from "./ui/placeholder/placeholder-tests";
+allTests["PLACEHOLDER"] = placeholderTests;
 
+// TODO: Enable
 // import * as pageTests from "./ui/page/page-tests";
 // allTests["PAGE"] = pageTests;
 
-// import * as listViewTests from "./ui/list-view/list-view-tests";
-// allTests["LISTVIEW"] = listViewTests;
+import * as listViewTests from "./ui/list-view/list-view-tests";
+allTests["LISTVIEW"] = listViewTests;
 
-// import * as activityIndicatorTests from "./ui/activity-indicator/activity-indicator-tests";
-// allTests["ACTIVITY-INDICATOR"] = activityIndicatorTests;
+import * as activityIndicatorTests from "./ui/activity-indicator/activity-indicator-tests";
+allTests["ACTIVITY-INDICATOR"] = activityIndicatorTests;
 
+// TODO: Enable
 // import * as textFieldTests from "./ui/text-field/text-field-tests";
 // allTests["TEXT-FIELD"] = textFieldTests;
 
+// TODO: Enable
 // import * as textViewTests from "./ui/text-view/text-view-tests";
 // allTests["TEXT-VIEW"] = textViewTests;
 
-// import * as listPickerTests from "./ui/list-picker/list-picker-tests";
-// allTests["LIST-PICKER"] = listPickerTests;
+import * as listPickerTests from "./ui/list-picker/list-picker-tests";
+allTests["LIST-PICKER"] = listPickerTests;
 
-// import * as datePickerTests from "./ui/date-picker/date-picker-tests";
-// allTests["DATE-PICKER"] = datePickerTests;
+import * as datePickerTests from "./ui/date-picker/date-picker-tests";
+allTests["DATE-PICKER"] = datePickerTests;
 
-// import * as timePickerTests from "./ui/time-picker/time-picker-tests";
-// allTests["TIME-PICKER"] = timePickerTests;
+import * as timePickerTests from "./ui/time-picker/time-picker-tests";
+allTests["TIME-PICKER"] = timePickerTests;
 
-// import * as webViewTests from "./ui/web-view/web-view-tests";
-// allTests["WEB-VIEW"] = webViewTests;
+import * as webViewTests from "./ui/web-view/web-view-tests";
+allTests["WEB-VIEW"] = webViewTests;
 
-// import * as htmlViewTests from "./ui/html-view/html-view-tests";
-// allTests["HTML-VIEW"] = htmlViewTests;
+import * as htmlViewTests from "./ui/html-view/html-view-tests";
+allTests["HTML-VIEW"] = htmlViewTests;
 
-// import * as repeaterTests from "./ui/repeater/repeater-tests";
-// allTests["REPEATER"] = repeaterTests;
+import * as repeaterTests from "./ui/repeater/repeater-tests";
+allTests["REPEATER"] = repeaterTests;
 
-// import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
-// allTests["SEGMENTED-BAR"] = segmentedBarTests;
+import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
+allTests["SEGMENTED-BAR"] = segmentedBarTests;
 
-// import * as animationTests from "./ui/animation/animation-tests";
-// allTests["ANIMATION"] = animationTests;
+import * as animationTests from "./ui/animation/animation-tests";
+allTests["ANIMATION"] = animationTests;
 
-// import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
-// allTests["LIFECYCLE"] = lifecycle;
+import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
+allTests["LIFECYCLE"] = lifecycle;
 
+// TODO: Enable
 // import * as cssAnimationTests from "./ui/animation/css-animation-tests";
 // allTests["CSS-ANIMATION"] = cssAnimationTests;
 
-// import * as transitionTests from "./navigation/transition-tests";
-// allTests["TRANSITIONS"] = transitionTests;
+import * as transitionTests from "./navigation/transition-tests";
+allTests["TRANSITIONS"] = transitionTests;
 
-// import * as searchBarTests from "./ui/search-bar/search-bar-tests";
-// allTests["SEARCH-BAR"] = searchBarTests;
+import * as searchBarTests from "./ui/search-bar/search-bar-tests";
+allTests["SEARCH-BAR"] = searchBarTests;
 
-// import * as navigationTests from "./navigation/navigation-tests";
-// allTests["NAVIGATION"] = navigationTests;
+import * as navigationTests from "./navigation/navigation-tests";
+allTests["NAVIGATION"] = navigationTests;
 
+// TODO: Enable
 // import * as livesyncTests from "./livesync/livesync-tests";
 // allTests["LIVESYNC"] = livesyncTests;
 
@@ -270,6 +275,7 @@ allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
+// TODO: Enable
 // import * as rootViewTests from "./ui/root-view/root-view-tests";
 // allTests["ROOT-VIEW"] = rootViewTests;
 

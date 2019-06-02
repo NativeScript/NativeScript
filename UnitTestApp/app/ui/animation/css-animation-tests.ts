@@ -314,7 +314,7 @@ export function test_ReadAnimationWithUnsortedKeyframes() {
 }
 
 export function test_ReadAnimationsWithCSSImport() {
-    let css = "@import '~/ui/animation/test.css'; .test { animation-name: test; }";
+    let css = "@import '~/ui/animation/test-page.css'; .test { animation-name: test; }";
     let animation = createAnimationFromCSS(css, "test");
     TKUnit.assertEqual(animation.keyframes.length, 3);
     TKUnit.assertEqual(animation.keyframes[1].declarations[0].property, "backgroundColor");

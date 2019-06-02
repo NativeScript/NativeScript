@@ -364,7 +364,7 @@ export var test_RepeaterItemsGestureBindings = function () {
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
     }
 
-    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures-page", null, testFunc);
 }
 
 export var test_RepeaterItemsParentBindingsShouldWork = function () {
@@ -390,7 +390,7 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
     }
 
-    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures-page", null, testFunc);
 }
 
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
