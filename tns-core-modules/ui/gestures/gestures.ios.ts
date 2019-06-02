@@ -1,5 +1,12 @@
 ﻿// Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
+import {
+	DoubleTapGestureEventData,
+	GestureEventData,
+	SwipeGestureEventData,
+	PanGestureEventData,
+	RotationGestureEventData,
+	PinchGestureEventData
+} from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
@@ -82,7 +89,7 @@ export class GesturesObserver extends GesturesObserverBase {
     public androidOnTouchEvent(motionEvent: android.view.MotionEvent): void {
         //
     }
-    
+
     public observe(type: GestureTypes) {
         if (this.target) {
             this.type = type;
@@ -113,7 +120,9 @@ export class GesturesObserver extends GesturesObserverBase {
             }
 
             if (type & GestureTypes.doubleTap) {
-                let r = <UITapGestureRecognizer>this._createRecognizer(GestureTypes.doubleTap);
+                let r = <UITapGestureRecognizer>this._createRecognizer(GestureTypes.doubleTap, args => {
+                    this._executeCallback(_getDoubleTapData(args, target.nativeViewProtected));
+                });
                 r.numberOfTapsRequired = 2;
 
                 nativeView.addGestureRecognizer(r);
@@ -284,6 +293,21 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): Swipe
     }
 }
 
+function _getDoubleTapData(args: GestureEventData, view: UIView): DoubleTapGestureEventData {
+	const recognizer = <UITapGestureRecognizer>args.ios;
+
+	return <DoubleTapGestureEventData>{
+		type: args.type,
+		view: args.view,
+		ios: args.ios,
+		android: undefined,
+		locationX: recognizer.locationInView(view).x,
+		locationY: recognizer.locationInView(view).y,
+		object: args.view,
+		eventName: toString(args.type)
+	};
+}
+
 function _getPinchData(args: GestureEventData): PinchGestureEventData {
     let recognizer = <UIPinchGestureRecognizer>args.ios;
     let center = recognizer.locationInView(args.view.nativeViewProtected);
@@ -312,7 +336,7 @@ function _getSwipeData(args: GestureEventData): SwipeGestureEventData {
         android: undefined,
         direction: _getSwipeDirection(recognizer.direction),
         object: args.view,
-        eventName: toString(args.type),
+        eventName: toString(args.type)
     };
 }
 

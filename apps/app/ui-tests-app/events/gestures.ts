@@ -8,7 +8,7 @@ import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
 export function createPage() {
 
     var stack = new stackLayoutModule.StackLayout();
-    var labelHeight = Math.round(deviceProperties.screen.mainScreen.heightPixels / (7 * deviceProperties.screen.mainScreen.scale));
+    var labelHeight = Math.round(deviceProperties.screen.mainScreen.heightPixels / (10 * deviceProperties.screen.mainScreen.scale));
     var stopButton = new button.Button();
     stopButton.text = "Stop Detecting Gestures";
     stack.addChild(stopButton);
@@ -49,6 +49,17 @@ export function createPage() {
     rotaionLabel.textWrap = true;
     stack.addChild(rotaionLabel);
 
+    const doubleTapStackLayout = new stackLayoutModule.StackLayout();
+    doubleTapStackLayout.width = 140;
+    doubleTapStackLayout.height = 140;
+    doubleTapStackLayout.backgroundColor = "#f22004";
+    stack.addChild(doubleTapStackLayout);
+
+    const doubleTapBoxLabel = new labelModule.Label();
+    doubleTapBoxLabel.text = "";
+    doubleTapBoxLabel.textWrap = true;
+    stack.addChild(doubleTapBoxLabel);
+
     stopButton.on(button.Button.tapEvent, function () {
         observer1.disconnect();
         observer2.disconnect();
@@ -57,6 +68,7 @@ export function createPage() {
         observer5.disconnect();
         observer6.disconnect();
         observer7.disconnect();
+        observer8.disconnect();
         tapLabel.text = "Gestures detection disabled";
         doubletapLabel.text = "Gestures detection disabled";
         longpressLabel.text = "Gestures detection disabled";
@@ -64,6 +76,7 @@ export function createPage() {
         panLabel.text = "Gestures detection disabled";
         pinchLabel.text = "Gestures detection disabled";
         rotaionLabel.text = "Gestures detection disabled";
+        doubleTapBoxLabel.text = "Gestures detection disabled";
     });
 
     tapLabel.on(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
@@ -107,6 +120,12 @@ export function createPage() {
     });
 
     var observer7 = rotaionLabel.getGestureObservers(gestures.GestureTypes.rotation)[0];
+
+    doubleTapStackLayout.on(gestures.GestureTypes.doubleTap, function (args: gestures.DoubleTapGestureEventData) {
+        doubleTapBoxLabel.text = "Tap Location: x: " + args.locationX + ", y: " + args.locationY;
+    });
+
+    const observer8 = doubleTapStackLayout.getGestureObservers(gestures.GestureTypes.doubleTap)[0];
 
     var page = new pages.Page();
     page.content = stack;
