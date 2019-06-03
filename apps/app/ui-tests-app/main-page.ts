@@ -8,6 +8,7 @@ export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
     const wrapLayout = page.getViewById<WrapLayout>("wrapLayoutWithExamples");
     const examples: Map<string, string> = new Map<string, string>();
+    examples.set("animation", "animation/main-page");
     examples.set("action-bar", "action-bar/main-page");
     examples.set("bindings", "bindings/main-page");
     examples.set("button", "button/main-page");
