@@ -131,12 +131,12 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         const oldLayout = <LayoutBase>oldParent;
 
         if (addingToParent && newLayout instanceof LayoutBase) {
-            this.eachChildView((child) => {
+            this.eachLayoutChild((child) => {
                 newLayout._registerLayoutChild(child);
                 return true;
             });
         } else if (oldLayout instanceof LayoutBase) {
-            this.eachChildView((child) => {
+            this.eachLayoutChild((child) => {
                 oldLayout._unregisterLayoutChild(child);
                 return true;
             });
