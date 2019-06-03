@@ -9,7 +9,7 @@ import * as dependencyObservableModule from "tns-core-modules/ui/core/dependency
 // ```
 // </snippet>
 
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as types from "tns-core-modules/utils/types";
 import * as observableModule from "tns-core-modules/data/observable";
 

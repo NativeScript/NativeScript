@@ -1,5 +1,5 @@
 import * as frameModule from "tns-core-modules/ui/frame";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { unsetValue, PercentLength } from "tns-core-modules/ui/core/view";
 
 export * from "./frame-tests-common";

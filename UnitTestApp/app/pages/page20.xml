@@ -1,5 +1,0 @@
-<Page id="page" loaded="onLoaded">
-  <StackLayout>
-    <Button tap="onTap" text="Show Modal Page"/>
-  </StackLayout>
-</Page>

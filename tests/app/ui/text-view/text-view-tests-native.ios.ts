@@ -1,6 +1,6 @@
 ﻿import * as textViewModule from "tns-core-modules/ui/text-view";
 import * as colorModule from "tns-core-modules/color";
-import { getColor } from "../helper";
+import { getColor } from "../../ui-helper";
 import * as enums from "tns-core-modules/ui/enums";
 
 export function getNativeText(textView: textViewModule.TextView): string {

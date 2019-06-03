@@ -1,4 +1,4 @@
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 // >> webview-require

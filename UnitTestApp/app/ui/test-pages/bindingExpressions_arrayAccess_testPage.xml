@@ -1,6 +1,0 @@
-﻿<Page loaded="pageLoaded">
-  <StackLayout>
-    <TextField id="textField1" text="{{ strArray[1] }}" />
-    <TextField id="textField2" text="{{ numArray[2] }}" />
-  </StackLayout>
-</Page>

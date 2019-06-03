@@ -1,7 +1,7 @@
 ﻿import { Page } from "tns-core-modules/ui/page";
 import { GridLayout, ItemSpec } from "tns-core-modules/ui/layouts/grid-layout";
 import { Button } from "tns-core-modules/ui/button";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as view from "tns-core-modules/ui/core/view";
 import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as builder from "tns-core-modules/ui/builder";
@@ -9,7 +9,7 @@ import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
 import * as platform from "tns-core-modules/platform";
 import * as commonTests from "./common-layout-tests";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 var DELTA = 1;
 
 class RemovalTrackingGridLayout extends GridLayout {

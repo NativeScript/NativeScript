@@ -1,7 +1,7 @@
 ﻿import * as buttonModule from "tns-core-modules/ui/button";
 import * as colorModule from "tns-core-modules/color";
 import * as enums from "tns-core-modules/ui/enums";
-import { getColor } from "../helper";
+import { getColor } from "../../ui-helper";
 
 export function getNativeText(button: buttonModule.Button): string {
     return button.ios.titleForState(UIControlState.Normal);

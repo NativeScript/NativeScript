@@ -1,2 +1,6 @@
-{ "name" : "tns-samples-tests",
-  "main" : "app/app.js" }
+{
+  "main": "app.js",
+  "android": {
+    "v8Flags": "--expose_gc"
+  }
+}

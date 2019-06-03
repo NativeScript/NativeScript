@@ -1,4 +1,7 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -8,10 +11,20 @@
             "platform": "ios",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "watch": true,
+            "watch": true
+        },
+        {
+            "name": "Test on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": false,
             "stopOnEntry": true,
+            "launchTests": true,
             "tnsArgs": [
-                "--sync-all-files"
+                "--justlaunch"
             ]
         },
         {
@@ -30,10 +43,20 @@
             "platform": "android",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "watch": true,
+            "watch": true
+        },
+        {
+            "name": "Test on Android",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": false,
             "stopOnEntry": true,
+            "launchTests": true,
             "tnsArgs": [
-                "--sync-all-files"
+                "--justlaunch"
             ]
         },
         {

@@ -1,8 +1,8 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 import * as view from "tns-core-modules/ui/core/view";
 import * as page from "tns-core-modules/ui/page";
 import * as types from "tns-core-modules/utils/types";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 function assertInState(view: view.View, state: string, knownStates: string[]): void {
     let pseudo = view.cssPseudoClasses;

@@ -1,6 +1,0 @@
-<Page shownModally="onShownModally">
-  <StackLayout>
-    <Label text="In Modal Page" />
-    <Repeater items="{{ $value }}" verticalAlignment="top" />
-  </StackLayout>
-</Page>

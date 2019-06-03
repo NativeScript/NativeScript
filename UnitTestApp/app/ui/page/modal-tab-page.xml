@@ -1,8 +1,0 @@
-<Page backgroundColor="green" navigatedTo="onNavigatedTo">
-
-    <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="Modal"></Label>
-    </ActionBar>
-
-    <Label text="Text" />
-</Page>

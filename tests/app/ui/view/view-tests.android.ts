@@ -1,5 +1,5 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../../ui/helper";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { View, isIOS, unsetValue } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import * as types from "tns-core-modules/utils/types";

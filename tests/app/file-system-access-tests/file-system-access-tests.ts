@@ -1,9 +1,8 @@
-﻿import * as TKUnit from "../TKUnit";
+﻿import * as TKUnit from "../tk-unit";
 import * as fs from "tns-core-modules/file-system";
 
 export var test_UTF8_BOM_is_not_returned = function () {
-    var actualResult: string;
-    var path = fs.path.join(__dirname, "xml.expected");
+    var path = fs.path.join(fs.knownFolders.currentApp().path, "file-system-access-tests", "xml.expected");
     if (!fs.File.exists(path)) {
         TKUnit.assert(false, "Could not read file utf8.txt");
         return;
@@ -24,7 +23,7 @@ export var test_UTF8_BOM_is_not_returned = function () {
 };
 
 export var test_file_exists_on_folder = function () {
-    var path = fs.path.join(__dirname, "folder");
+    var path = fs.path.join(fs.knownFolders.currentApp().path, "file-system-access-tests", "folder");
 
     if (!fs.Folder.exists(path)) {
         TKUnit.assert(false, `Could not read path ${path}`);

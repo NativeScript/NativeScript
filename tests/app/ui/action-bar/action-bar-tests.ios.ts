@@ -1,8 +1,8 @@
 ﻿import { createPageAndNavigate } from "./action-bar-tests-common";
 import * as PageModule from "tns-core-modules/ui/page";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as LabelModule from "tns-core-modules/ui/label";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 import * as view from "tns-core-modules/ui/core/view";
 import * as actionBar from "tns-core-modules/ui/action-bar";
 import { Visibility } from "tns-core-modules/ui/enums";

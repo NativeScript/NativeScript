@@ -1,11 +1,11 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 import * as segmentedBarTestsNative from "./segmented-bar-tests-native";
-import { buildUIAndRunTest } from "../helper";
+import { buildUIAndRunTest } from "../../ui-helper";
 import { View } from "tns-core-modules/ui/core/view";
 import { BindingOptions } from "tns-core-modules/ui/core/bindable";
 import { Observable } from "tns-core-modules/data/observable";
 import { Color } from "tns-core-modules/color";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 // >> article-require-segmentedbar-module
 import * as segmentedBarModule from "tns-core-modules/ui/segmented-bar";

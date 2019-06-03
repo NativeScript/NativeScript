@@ -1,5 +1,5 @@
 import { ImageSource } from "tns-core-modules/image-source";
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as http from "tns-core-modules/http";
 import * as fs from "tns-core-modules/file-system";
 import { addHeader } from "tns-core-modules/http/http-request";

@@ -1,4 +1,4 @@
-import { assert, assertEqual } from "../TKUnit";
+import { assert, assertEqual } from "../tk-unit";
 import { DOMNode } from "tns-core-modules/debugger/dom-node";
 import { attachDOMInspectorCommandCallbacks, attachCSSInspectorCommandCallbacks, attachDOMInspectorEventCallbacks } from "tns-core-modules/debugger/devtools-elements";
 import { InspectorCommands, InspectorEvents } from "tns-core-modules/debugger/devtools-elements";

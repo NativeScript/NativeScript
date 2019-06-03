@@ -1,5 +1,5 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { UITest } from "../../ui-test";
 import { getResources as appGetResources } from "tns-core-modules/application";
 import { Observable, EventData } from "tns-core-modules/data/observable";

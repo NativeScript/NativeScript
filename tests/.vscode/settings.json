@@ -1,11 +1,3 @@
 {
-    "xml.fileAssociations": [
-        {
-            "systemId": "/Users/myankov/Work/NativeScript/tests/schema/tns.xsd",
-            "pattern": "**/**/*.xml"
-        }
-    ],
-    "files.exclude": {
-        "schema": true
-    }
+    "nativescript.iosTeamId": "W7TGC3P93K"
 }

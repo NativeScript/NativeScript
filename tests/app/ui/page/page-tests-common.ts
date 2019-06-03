@@ -14,8 +14,8 @@ function pageLoaded(args) {
 }
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
-import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
 import { Frame, stack } from "tns-core-modules/ui/frame";

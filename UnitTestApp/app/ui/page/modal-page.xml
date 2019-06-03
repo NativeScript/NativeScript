@@ -1,5 +1,0 @@
-<Page showingModally="onShowingModally" shownModally="onShownModally">
-  <StackLayout>
-    <Label text="Modal Page" />
-  </StackLayout>
-</Page>

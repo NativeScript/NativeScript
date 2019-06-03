@@ -1,10 +1,10 @@
 ﻿import * as button from "tns-core-modules/ui/button";
 import { DockLayout } from "tns-core-modules/ui/layouts/dock-layout";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
-import * as testHelper from "../helper";
+import * as testHelper from "../../ui-helper";
 
 // >> dock-layout-require
 import * as dockModule from "tns-core-modules/ui/layouts/dock-layout";

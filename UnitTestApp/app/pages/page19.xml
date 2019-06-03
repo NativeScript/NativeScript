@@ -1,3 +1,0 @@
-<Page loaded="onLoaded">
-  <ListView items="{{ $value }}" verticalAlignment="top" />
-</Page>

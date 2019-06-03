@@ -1,7 +1,0 @@
-﻿<Page loaded="pageLoaded">
-  <StackLayout>
-    <TextField id="textField1" text="{{ varTrue && varFalse }}" />
-    <TextField id="textField2" text="{{ varTrue || varFalse }}" />
-    <TextField id="textField3" text="{{ varTrue && varFalse || varText }}" />
-  </StackLayout>
-</Page>

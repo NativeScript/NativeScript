@@ -1,9 +1,9 @@
 import { Observable, fromObject, fromObjectRecursive } from "tns-core-modules/data/observable";
 import { ViewBase } from "tns-core-modules/ui/core/view-base";
 import { BindingOptions } from "tns-core-modules/ui/core/bindable";
-import * as TKUnit from "../../../TKUnit";
+import * as TKUnit from "../../../tk-unit";
 import * as types from "tns-core-modules/utils/types";
-import * as helper from "../../helper";
+import * as helper from "../../../ui-helper";
 import * as utils from "tns-core-modules/utils/utils";
 import * as bindingBuilder from "tns-core-modules/ui/builder/binding-builder";
 import * as appModule from "tns-core-modules/application";

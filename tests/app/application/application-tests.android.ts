@@ -1,6 +1,6 @@
 /* tslint:disable:no-unused-variable */
 import * as app from "tns-core-modules/application";
-import * as TKUnit from "../TKUnit"; 
+import * as TKUnit from "../tk-unit"; 
 
 export * from "./application-tests-common";
 

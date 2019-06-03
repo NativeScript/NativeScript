@@ -1,5 +1,0 @@
-﻿<Page loaded="pageLoaded">
-  <StackLayout>
-    <TextField id="textField1" text="{{ author ? 'by ' + author : '[no author]' }}" />
-  </StackLayout>
-</Page>
