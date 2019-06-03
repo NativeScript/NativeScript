@@ -1,5 +1,5 @@
 //
-//  NSObject+PropertyBag.h
+//  UIView+PropertyBag.h
 //  TNSWidgets
 //
 //  Created by Manol Donev on 21.08.18.
@@ -7,9 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 
-@interface NSObject (PropertyBag)
+@interface UIView (PropertyBag)
 
 - (id) propertyValueForKey:(NSString*) key;
 - (void) setPropertyValue:(id) value forKey:(NSString*) key;
