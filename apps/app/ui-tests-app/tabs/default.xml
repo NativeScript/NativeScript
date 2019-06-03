@@ -40,13 +40,13 @@
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
-      <StackLayout>
+      <StackLayout backgroundColor="red">
         <Label text="Second View"/>
         <Button tap="goToFirst" text="go to first" />
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
-      <StackLayout>
+      <StackLayout backgroundColor="green">
         <Label text="First View"/>
         <Button tap="goToSecond" text="go to second" />
       </StackLayout>

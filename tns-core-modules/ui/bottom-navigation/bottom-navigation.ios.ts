@@ -196,9 +196,10 @@ export class TabContentItem extends TabContentItemBase {
         if (tabView && tabView.items) {
             const index = tabView.items.indexOf(this);
 
-            if (index === tabView.selectedIndex) {
-                super.loadView(view);
-            }
+            // if (index === tabView.selectedIndex) {
+            //     super.loadView(view);
+            // }
+            super.loadView(view);
         }
     }
 }

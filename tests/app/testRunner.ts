@@ -186,6 +186,9 @@ allTests["BOTTOM-NAVIGATION"] = bottomNavigationTests;
 import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-navigation-navigation-tests";
 allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
 
+import * as tabsTests from "./ui/tabs/tabs-tests";
+allTests["TABS"] = tabsTests;
+
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
 
