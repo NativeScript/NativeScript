@@ -189,6 +189,9 @@ allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
 import * as tabsTests from "./ui/tabs/tabs-tests";
 allTests["TABS"] = tabsTests;
 
+import * as tabsNavigationTests from "./ui/tabs/tabs-navigation-tests";
+allTests["TABS-NAVIGATION"] = tabsNavigationTests;
+
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
 
@@ -275,6 +278,9 @@ allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 
 import * as bottomNavigationRootTests from "./ui/bottom-navigation/bottom-navigation-root-tests";
 allTests["BOTTOM-NAVIGATION-ROOT"] = bottomNavigationRootTests;
+
+import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
+allTests["TABS-ROOT"] = tabsRootTests;
 
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
