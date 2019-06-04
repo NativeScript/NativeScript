@@ -724,6 +724,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
     entries.delete(entry);
     if (entries.size === 0) {
         const frame = entry.resolvedPage.frame;
+
         // We have 0 or 1 entry per frameId in completedEntries
         // So there is no need to make it to Set like waitingQueue
         const previousCompletedAnimationEntry = completedEntries.get(frameId);
@@ -734,8 +735,8 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
         current = current || entry;
         // Will be null if Frame is shown modally...
         // transitionOrAnimationCompleted fires again (probably bug in android).
-        if (current) {
-            setTimeout(() => frame.setCurrent(current));
+        if (current && frame._executingContext) {
+            setTimeout(() => frame.setCurrent(current, frame._executingContext.navigationType));
         }
     } else {
         completedEntries.set(frameId, entry);

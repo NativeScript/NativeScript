@@ -117,8 +117,9 @@ export class Frame extends View {
     /**
      * @private
      * @param entry to set as current
+     * @param navigationType
      */
-    setCurrent(entry: BackstackEntry): void;
+    setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
     /**
      * @private
      */

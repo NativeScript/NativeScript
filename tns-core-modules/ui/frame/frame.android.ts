@@ -265,11 +265,9 @@ export class Frame extends FrameBase {
         return newFragment;
     }
 
-    public setCurrent(entry: BackstackEntry): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
-        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
-        const navigationType = navigationContext.navigationType;
         if (currentEntryChanged) {
             this._updateBackstack(entry, navigationType);
 
@@ -300,7 +298,7 @@ export class Frame extends FrameBase {
                 }
             }
 
-            super.setCurrent(entry);
+            super.setCurrent(entry, navigationType);
 
             // If we had real navigation process queue.
             this._processNavigationQueue(entry.resolvedPage);
@@ -375,8 +373,7 @@ export class Frame extends FrameBase {
             navDepth = -1;
         }
 
-        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
-        const isReplace = navigationContext.navigationType === NavigationType.replace;
+        const isReplace = this._executingContext && this._executingContext.navigationType === NavigationType.replace;
         if (!isReplace) {
             navDepth++;
         }
@@ -470,16 +467,16 @@ export class Frame extends FrameBase {
         this.nativeViewProtected[ownerSymbol] = null;
         this._tearDownPending = !!this._executingContext;
         const current = this._currentEntry;
-        const executingContext = this._executingContext || { entry: null };
+        const executingEntry = this._executingContext ? this._executingContext.entry : null;
         this.backStack.forEach(entry => {
             // Don't destroy current and executing entries or UI will look blank.
             // We will do it in setCurrent.
-            if (entry !== executingContext.entry) {
+            if (entry !== executingEntry) {
                 clearEntry(entry);
             }
         });
 
-        if (current && !executingContext.entry) {
+        if (current && !executingEntry) {
             clearEntry(current);
         }
 

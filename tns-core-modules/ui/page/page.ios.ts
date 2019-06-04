@@ -26,7 +26,8 @@ function isBackNavigationTo(page: Page, entry): boolean {
         return false;
     }
 
-    const navigationContext = frame._executingContext || { navigationType: NavigationType.unset };
+    // if executing context is null here this most probably means back navigation through iOS back button
+    const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
     const isReplace = navigationContext.navigationType === NavigationType.replace;
     if (isReplace) {
         return false;
@@ -141,10 +142,11 @@ class UIViewControllerImpl extends UIViewController {
             const newEntry: BackstackEntry = this[ENTRY];
 
             // frame.setCurrent(...) will reset executing context so retrieve it here
-            const navigationContext = frame._executingContext || { navigationType: NavigationType.unset };
+            // if executing context is null here this most probably means back navigation through iOS back button
+            const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
             const isReplace = navigationContext.navigationType === NavigationType.replace;
 
-            frame.setCurrent(newEntry);
+            frame.setCurrent(newEntry, navigationContext.navigationType);
             
             if (isReplace) {
                 let controller = newEntry.resolvedPage.ios;

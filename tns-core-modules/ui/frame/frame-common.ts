@@ -13,7 +13,6 @@ import { getModuleName } from "../../utils/utils";
 export * from "../core/view";
 
 export enum NavigationType {
-    unset,
     back,
     forward,
     replace
@@ -219,7 +218,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return this._currentEntry === entry;
     }
 
-    public setCurrent(entry: BackstackEntry): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const newPage = entry.resolvedPage;
         // In case we navigated forward to a page that was in the backstack
         // with clearHistory: true
@@ -230,8 +229,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         this._currentEntry = entry;
 
-        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
-        const navigationType = navigationContext.navigationType;
         const isBack = navigationType === NavigationType.back;
         if (isBack) {
             this._pushInFrameStack();

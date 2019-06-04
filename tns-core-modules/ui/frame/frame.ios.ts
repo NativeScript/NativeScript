@@ -53,14 +53,13 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    public setCurrent(entry: BackstackEntry): void {
+    public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
         const current = this._currentEntry;
         const currentEntryChanged = current !== entry;
-        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
         if (currentEntryChanged) {
-            this._updateBackstack(entry, navigationContext.navigationType);
+            this._updateBackstack(entry, navigationType);
 
-            super.setCurrent(entry);
+            super.setCurrent(entry, navigationType);
         }
     }
 
@@ -78,8 +77,7 @@ export class Frame extends FrameBase {
             navDepth = -1;
         }
 
-        const navigationContext = this._executingContext || { navigationType: NavigationType.unset };
-        const isReplace = navigationContext.navigationType === NavigationType.replace;
+        const isReplace = this._executingContext && this._executingContext.navigationType === NavigationType.replace;
         if (!isReplace) {
             navDepth++;
         }
