@@ -1,22 +1,23 @@
 //
-//  NSObject+PropertyBag.m
+//  UIView+PropertyBag.m
 //  TNSWidgets
 //
 //  Created by Manol Donev on 21.08.18.
 //  Copyright © 2018 Telerik A D. All rights reserved.
 //
 
-#import "NSObject+PropertyBag.h"
 #import "NSObject+Swizzling.h"
+#import "UIView+PropertyBag.h"
+#import <UIKit/UIKit.h>
 
 
-@implementation NSObject (PropertyBag)
+@implementation UIView (PropertyBag)
 
-+ (void) load{
++ (void) load {
     [self loadPropertyBag];
 }
 
-+ (void) loadPropertyBag{
++ (void) loadPropertyBag {
     @autoreleasepool {
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
@@ -36,7 +37,10 @@ __strong NSMutableDictionary *_propertyBagHolder; // Properties for every class 
 }
 
 - (NSMutableDictionary*) propertyBag {
-    if (_propertyBagHolder == nil) _propertyBagHolder = [[NSMutableDictionary alloc] initWithCapacity:100];
+    if (_propertyBagHolder == nil) {
+        _propertyBagHolder = [[NSMutableDictionary alloc] initWithCapacity:100];
+    }
+
     NSMutableDictionary *propBag = [_propertyBagHolder valueForKey:[[NSString alloc] initWithFormat:@"%p", self]];
     if (propBag == nil) {
         propBag = [NSMutableDictionary dictionary];
@@ -54,8 +58,14 @@ __strong NSMutableDictionary *_propertyBagHolder; // Properties for every class 
     [_propertyBagHolder setValue:propertyBag forKey:[[NSString alloc] initWithFormat:@"%p", self]];
 }
 
+- (void) removePropertyBag {
+    if (_propertyBagHolder != nil) {
+        [_propertyBagHolder removeObjectForKey:[[NSString alloc] initWithFormat:@"%p", self]];
+    }
+}
+
 - (void)propertyBag_dealloc {
-    [self setPropertyBag:nil];
+    [self removePropertyBag];
     [self propertyBag_dealloc]; // swizzled
 }
 
