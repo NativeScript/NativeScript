@@ -17,6 +17,7 @@ export function loadExamples() {
     examples.set("color", "bottom-navigation/color");
     examples.set("icon-title-placement", "bottom-navigation/icon-title-placement");
     examples.set("icon-change", "bottom-navigation/icon-change");
+    examples.set("swipe-enabled", "tabs/swipe-enabled");
     
     return examples;
 }

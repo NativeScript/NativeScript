@@ -4,7 +4,8 @@ import { Font } from "../styling/font";
 import { ios as iosView, ViewBase } from "../core/view";
 import {
     TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon, TabStrip, TabStripItem, tabStripProperty
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, 
+    Color, traceMissingIcon, TabStrip, TabStripItem, tabStripProperty, swipeEnabledProperty
 } from "./tabs-common";
 import { textTransformProperty, TextTransform } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -49,6 +50,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 
 class UIPageViewControllerImpl extends UIPageViewController {
     tabBar: MDCTabBar;
+    scrollView: UIScrollView;
 
     private _owner: WeakRef<Tabs>;
 
@@ -156,6 +158,13 @@ class UIPageViewControllerImpl extends UIPageViewController {
         if (scrollView) {
             // The part of the UIPageViewController that is changing the pages is a UIScrollView
             // We want to expand it to the size of the UIPageViewController as it is not so by default
+            this.scrollView = scrollView;
+
+            const owner = this._owner.get();
+            if (!owner.swipeEnabled) {
+                scrollView.scrollEnabled = false;
+            }
+
             scrollView.frame = CGRectMake(this.view.safeAreaInsets.left, this.tabBar.frame.size.height, this.view.bounds.size.width, this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom); //this.view.bounds;
         }
 
@@ -956,6 +965,15 @@ export class Tabs extends TabNavigationBase {
     }
     [tabStripProperty.setNative](value: TabStrip) {
         this.setTabStripItems(value.items);
+    }
+
+    [swipeEnabledProperty.getDefault](): boolean {
+        return true;
+    }
+    [swipeEnabledProperty.setNative](value: boolean) {
+        if (this.viewController && this.viewController.scrollView) {
+            this.viewController.scrollView.scrollEnabled = value;
+        }
     }
 }
 

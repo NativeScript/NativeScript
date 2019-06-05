@@ -1,7 +1,7 @@
 ﻿import { TabContentItem as TabContentItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
-    traceWrite, traceCategories, traceMessageType
+    traceWrite, traceCategories, traceMessageType, booleanConverter
 } from "../core/view";
 
 export * from "../core/view";
@@ -109,6 +109,7 @@ export class TabNavigationBase extends View implements AddChildFromBuilder, AddA
     public items: TabContentItemDefinition[];
     public tabStrip: TabStrip;
     public selectedIndex: number;
+    public swipeEnabled: boolean;
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -238,6 +239,11 @@ export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
     }
 });
 tabStripProperty.register(TabNavigationBase);
+
+export const swipeEnabledProperty = new Property<TabNavigationBase, boolean>({
+    name: "swipeEnabled", defaultValue: true, valueConverter: booleanConverter
+});
+swipeEnabledProperty.register(TabNavigationBase);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);

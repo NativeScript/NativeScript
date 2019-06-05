@@ -4,7 +4,7 @@ import { Font } from "../styling/font";
 import {
     TabNavigationBase, TabContentItemBase, TabStripItem, itemsProperty, selectedIndexProperty,
     fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, traceMissingIcon, TabStrip, tabStripProperty
+    traceWrite, traceMissingIcon, TabStrip, tabStripProperty, swipeEnabledProperty
 } from "./tabs-common";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
@@ -416,7 +416,7 @@ export class Tabs extends TabNavigationBase {
 
             viewPager.setLayoutParams(lp);
 
-            // if (!this.androidSwipeEnabled) {
+            // if (!this.swipeEnabled) {
             //     viewPager.setSwipePageEnabled(false);
             // }
         // } else {
@@ -684,5 +684,12 @@ export class Tabs extends TabNavigationBase {
     }
     [tabStripProperty.setNative](value: TabStrip) {
         this.setTabStripItems(value.items);
+    }
+
+    [swipeEnabledProperty.getDefault](): boolean {
+        return true;
+    }
+    [swipeEnabledProperty.setNative](value: boolean) {
+        (<any>this._viewPager).setSwipePageEnabled(value);
     }
 }
