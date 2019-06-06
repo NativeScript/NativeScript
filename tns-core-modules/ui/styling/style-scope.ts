@@ -371,7 +371,13 @@ export class CssState {
     }
 
     public isSelectorsLatestVersionApplied(): boolean {
-        return this.viewRef.get()._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
+        let view = this.viewRef.get();
+        if (view) {
+            return this.viewRef.get()._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
+        }
+
+        traceWrite(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, traceCategories.Style, traceMessageType.warn);
+        return false;
     }
 
     public onLoaded(): void {
@@ -401,13 +407,14 @@ export class CssState {
     @profile
     private updateDynamicState(): void {
         let view = this.viewRef.get();
-
-        const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(view) : true);
-        view._batchUpdate(() => {
-            this.stopKeyframeAnimations();
-            this.setPropertyValues(matchingSelectors);
-            this.playKeyframeAnimations(matchingSelectors);
-        });
+        if (view) {
+            const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(view) : true);
+            view._batchUpdate(() => {
+                this.stopKeyframeAnimations();
+                this.setPropertyValues(matchingSelectors);
+                this.playKeyframeAnimations(matchingSelectors);
+            });
+        }
     }
 
     private playKeyframeAnimations(matchingSelectors: SelectorCore[]): void {
@@ -427,9 +434,14 @@ export class CssState {
         });
 
         if (this._playsKeyframeAnimations = animations.length > 0) {
-            animations.map(animation => animation.play(<View>this.viewRef.get()));
-            Object.freeze(animations);
-            this._appliedAnimations = animations;
+            let view = this.viewRef.get();
+            if (view) {
+                animations.map(animation => animation.play(<View>view));
+                Object.freeze(animations);
+                this._appliedAnimations = animations;
+            } else {
+                traceWrite(`KeyframeAnimations cannot play because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.error);
+            }
         }
     }
 
@@ -444,15 +456,18 @@ export class CssState {
         this._appliedAnimations = CssState.emptyAnimationArray;
 
         let view = this.viewRef.get();
-
-        view.style["keyframe:rotate"] = unsetValue;
-        view.style["keyframe:scaleX"] = unsetValue;
-        view.style["keyframe:scaleY"] = unsetValue;
-        view.style["keyframe:translateX"] = unsetValue;
-        view.style["keyframe:translateY"] = unsetValue;
-        view.style["keyframe:backgroundColor"] = unsetValue;
-        view.style["keyframe:opacity"] = unsetValue;
-        this._playsKeyframeAnimations = false;
+        if (view) {
+            view.style["keyframe:rotate"] = unsetValue;
+            view.style["keyframe:scaleX"] = unsetValue;
+            view.style["keyframe:scaleY"] = unsetValue;
+            view.style["keyframe:translateX"] = unsetValue;
+            view.style["keyframe:translateY"] = unsetValue;
+            view.style["keyframe:backgroundColor"] = unsetValue;
+            view.style["keyframe:opacity"] = unsetValue;
+            this._playsKeyframeAnimations = false;
+        } else {
+            traceWrite(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.error);
+        }
     }
 
     /**
@@ -463,40 +478,42 @@ export class CssState {
      */
     private setPropertyValues(matchingSelectors: SelectorCore[]): void {
         let view = this.viewRef.get();
-        const newPropertyValues = new view.style.PropertyBag();
-        matchingSelectors.forEach(selector =>
-            selector.ruleset.declarations.forEach(declaration =>
-                newPropertyValues[declaration.property] = declaration.value));
-        Object.freeze(newPropertyValues);
-
-        const oldProperties = this._appliedPropertyValues;
-        for (const key in oldProperties) {
-            if (!(key in newPropertyValues)) {
-                if (key in view.style) {
-                    view.style[`css:${key}`] = unsetValue;
-                } else {
-                    // TRICKY: How do we unset local value?
+        if (view) {
+            const newPropertyValues = new view.style.PropertyBag();
+            matchingSelectors.forEach(selector =>
+                selector.ruleset.declarations.forEach(declaration =>
+                    newPropertyValues[declaration.property] = declaration.value));
+            Object.freeze(newPropertyValues);
+    
+            const oldProperties = this._appliedPropertyValues;
+            for (const key in oldProperties) {
+                if (!(key in newPropertyValues)) {
+                    if (key in view.style) {
+                        view.style[`css:${key}`] = unsetValue;
+                    } else {
+                        // TRICKY: How do we unset local value?
+                    }
                 }
             }
-        }
-        for (const property in newPropertyValues) {
-            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
-                continue;
-            }
-            const value = newPropertyValues[property];
-            try {
-                if (property in view.style) {
-                    view.style[`css:${property}`] = value;
-                } else {
-                    const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-                    view[camelCasedProperty] = value;
+            for (const property in newPropertyValues) {
+                if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+                    continue;
                 }
-            } catch (e) {
-                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                const value = newPropertyValues[property];
+                try {
+                    if (property in view.style) {
+                        view.style[`css:${property}`] = value;
+                    } else {
+                        const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+                        view[camelCasedProperty] = value;
+                    }
+                } catch (e) {
+                    traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                }
             }
+    
+            this._appliedPropertyValues = newPropertyValues;
         }
-
-        this._appliedPropertyValues = newPropertyValues;
     }
 
     private subscribeForDynamicUpdates(): void {
@@ -541,7 +558,12 @@ export class CssState {
     }
 
     toString(): string {
-        return `${this.viewRef.get()}._cssState`;
+        let view = this.viewRef.get();
+        if (view) {
+            return `${view}._cssState`;
+        } else {
+            traceWrite(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+        }
     }
 }
 CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;

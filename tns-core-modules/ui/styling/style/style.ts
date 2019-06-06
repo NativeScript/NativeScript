@@ -10,7 +10,11 @@ import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "../../layouts/flexbox-layout";
-
+import {
+    write as traceWrite,
+    categories as traceCategories,
+    messageType as traceMessageType,
+} from "../../../trace";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
 export class Style extends Observable implements StyleDefinition {
@@ -19,7 +23,13 @@ export class Style extends Observable implements StyleDefinition {
     }
 
     toString() {
-        return `${this.viewRef.get()}.style`;
+        let view = this.viewRef.get();
+        if (view) {
+            return `${view}.style`;
+
+        } else {
+            traceWrite(`toString() of Style cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+        }
     }
 
     public fontInternal: Font;

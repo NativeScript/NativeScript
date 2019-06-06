@@ -483,52 +483,54 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
             if (changed) {
                 const view = this.viewRef.get();
-                if (reset) {
-                    delete this[key];
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
-                    }
-
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
-                            }
-                        } else {
-                            if (defaultValueKey in this) {
-                                view[setNative](this[defaultValueKey]);
-                                delete this[defaultValueKey];
+                if (view) {
+                    if (reset) {
+                        delete this[key];
+                        if (valueChanged) {
+                            valueChanged(this, oldValue, value);
+                        }
+    
+                        if (view[setNative]) {
+                            if (view._suspendNativeUpdatesCount) {
+                                if (view._suspendedUpdates) {
+                                    view._suspendedUpdates[propertyName] = property;
+                                }
                             } else {
-                                view[setNative](defaultValue);
+                                if (defaultValueKey in this) {
+                                    view[setNative](this[defaultValueKey]);
+                                    delete this[defaultValueKey];
+                                } else {
+                                    view[setNative](defaultValue);
+                                }
+                            }
+                        }
+                    } else {
+                        this[key] = value;
+                        if (valueChanged) {
+                            valueChanged(this, oldValue, value);
+                        }
+    
+                        if (view[setNative]) {
+                            if (view._suspendNativeUpdatesCount) {
+                                if (view._suspendedUpdates) {
+                                    view._suspendedUpdates[propertyName] = property;
+                                }
+                            } else {
+                                if (!(defaultValueKey in this)) {
+                                    this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                                }
+                                view[setNative](value);
                             }
                         }
                     }
-                } else {
-                    this[key] = value;
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
+    
+                    if (this.hasListeners(eventName)) {
+                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
-
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
-                            }
-                        } else {
-                            if (!(defaultValueKey in this)) {
-                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-                            }
-                            view[setNative](value);
-                        }
+    
+                    if (affectsLayout) {
+                        view.requestLayout();
                     }
-                }
-
-                if (this.hasListeners(eventName)) {
-                    this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
-                }
-
-                if (affectsLayout) {
-                    view.requestLayout();
                 }
             }
         }
@@ -558,52 +560,54 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
             if (changed) {
                 const view = this.viewRef.get();
-                if (reset) {
-                    delete this[key];
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
-                    }
-
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
-                            }
-                        } else {
-                            if (defaultValueKey in this) {
-                                view[setNative](this[defaultValueKey]);
-                                delete this[defaultValueKey];
+                if (view) {
+                    if (reset) {
+                        delete this[key];
+                        if (valueChanged) {
+                            valueChanged(this, oldValue, value);
+                        }
+    
+                        if (view[setNative]) {
+                            if (view._suspendNativeUpdatesCount) {
+                                if (view._suspendedUpdates) {
+                                    view._suspendedUpdates[propertyName] = property;
+                                }
                             } else {
-                                view[setNative](defaultValue);
+                                if (defaultValueKey in this) {
+                                    view[setNative](this[defaultValueKey]);
+                                    delete this[defaultValueKey];
+                                } else {
+                                    view[setNative](defaultValue);
+                                }
+                            }
+                        }
+                    } else {
+                        this[key] = value;
+                        if (valueChanged) {
+                            valueChanged(this, oldValue, value);
+                        }
+    
+                        if (view[setNative]) {
+                            if (view._suspendNativeUpdatesCount) {
+                                if (view._suspendedUpdates) {
+                                    view._suspendedUpdates[propertyName] = property;
+                                }
+                            } else {
+                                if (!(defaultValueKey in this)) {
+                                    this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                                }
+                                view[setNative](value);
                             }
                         }
                     }
-                } else {
-                    this[key] = value;
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
+    
+                    if (this.hasListeners(eventName)) {
+                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
-
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
-                            }
-                        } else {
-                            if (!(defaultValueKey in this)) {
-                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-                            }
-                            view[setNative](value);
-                        }
+    
+                    if (affectsLayout) {
+                        view.requestLayout();
                     }
-                }
-
-                if (this.hasListeners(eventName)) {
-                    this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
-                }
-
-                if (affectsLayout) {
-                    view.requestLayout();
                 }
             }
         }
@@ -761,7 +765,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                     }
 
                     const view = this.viewRef.get();
-                    if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
+                    if (view && view[setNative] && (computedValueChanged || isSet !== wasSet)) {
                         if (view._suspendNativeUpdatesCount) {
                             if (view._suspendedUpdates) {
                                 view._suspendedUpdates[propertyName] = property;
@@ -879,7 +883,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const view = this.viewRef.get();
             let value: U;
             let unsetNativeValue = false;
-            if (reset) {
+            if (reset && view) {
                 // If unsetValue - we want to reset this property.
                 let parent = view.parent;
                 let style = parent ? parent.style : null;
@@ -908,55 +912,57 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
             if (changed) {
                 const view = this.viewRef.get();
-                if (valueChanged) {
-                    valueChanged(this, oldValue, value);
-                }
-
-                if (view[setNative]) {
-                    if (view._suspendNativeUpdatesCount) {
-                        if (view._suspendedUpdates) {
-                            view._suspendedUpdates[propertyName] = property;
-                        }
-                    } else {
-                        if (unsetNativeValue) {
-                            if (defaultValueKey in this) {
-                                view[setNative](this[defaultValueKey]);
-                                delete this[defaultValueKey];
-                            } else {
-                                view[setNative](defaultValue);
+                if (view) {
+                    if (valueChanged) {
+                        valueChanged(this, oldValue, value);
+                    }
+    
+                    if (view[setNative]) {
+                        if (view._suspendNativeUpdatesCount) {
+                            if (view._suspendedUpdates) {
+                                view._suspendedUpdates[propertyName] = property;
                             }
                         } else {
-                            if (!(defaultValueKey in this)) {
-                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                            if (unsetNativeValue) {
+                                if (defaultValueKey in this) {
+                                    view[setNative](this[defaultValueKey]);
+                                    delete this[defaultValueKey];
+                                } else {
+                                    view[setNative](defaultValue);
+                                }
+                            } else {
+                                if (!(defaultValueKey in this)) {
+                                    this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                                }
+    
+                                view[setNative](value);
                             }
-
-                            view[setNative](value);
                         }
                     }
-                }
-
-                if (this.hasListeners(eventName)) {
-                    this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
-                }
-
-                if (affectsLayout) {
-                    view.requestLayout();
-                }
-
-                view.eachChild((child) => {
-                    const childStyle = child.style;
-                    const childValueSource = childStyle[sourceKey] || ValueSource.Default;
-                    if (reset) {
-                        if (childValueSource === ValueSource.Inherited) {
-                            setDefaultFunc.call(childStyle, unsetValue);
-                        }
-                    } else {
-                        if (childValueSource <= ValueSource.Inherited) {
-                            setInheritedFunc.call(childStyle, value);
-                        }
+    
+                    if (this.hasListeners(eventName)) {
+                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
-                    return true;
-                });
+    
+                    if (affectsLayout) {
+                        view.requestLayout();
+                    }
+    
+                    view.eachChild((child) => {
+                        const childStyle = child.style;
+                        const childValueSource = childStyle[sourceKey] || ValueSource.Default;
+                        if (reset) {
+                            if (childValueSource === ValueSource.Inherited) {
+                                setDefaultFunc.call(childStyle, unsetValue);
+                            }
+                        } else {
+                            if (childValueSource <= ValueSource.Inherited) {
+                                setInheritedFunc.call(childStyle, value);
+                            }
+                        }
+                        return true;
+                    });
+                }
             }
         };
 
@@ -997,19 +1003,25 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         const converter = options.converter;
 
         function setLocalValue(this: T, value: string | P): void {
-            this.viewRef.get()._batchUpdate(() => {
-                for (let [p, v] of converter(value)) {
-                    this[p.name] = v;
-                }
-            });
+            let view = this.viewRef.get()
+            if (view) {
+                view._batchUpdate(() => {
+                    for (let [p, v] of converter(value)) {
+                        this[p.name] = v;
+                    }
+                });
+            }
         }
 
         function setCssValue(this: T, value: string): void {
-            this.viewRef.get()._batchUpdate(() => {
-                for (let [p, v] of converter(value)) {
-                    this[p.cssName] = v;
-                }
-            });
+            let view = this.viewRef.get()
+            if (view) {
+                view._batchUpdate(() => {
+                    for (let [p, v] of converter(value)) {
+                        this[p.cssName] = v;
+                    }
+                });
+            }
         }
 
         this.cssValueDescriptor = {
