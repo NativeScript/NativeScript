@@ -411,24 +411,17 @@ export class Tabs extends TabNavigationBase {
 
         lp.row = 1;
 
-        // if (this.androidTabsPosition === "top") {
+        if (this.tabsPosition === "top") {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
             viewPager.setLayoutParams(lp);
+        } else {
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+            nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
 
-            // if (!this.swipeEnabled) {
-            //     viewPager.setSwipePageEnabled(false);
-            // }
-        // } else {
-        //     nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-        //     nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-
-        //     tabLayout.setLayoutParams(lp);
-        //     viewPager.setSwipePageEnabled(false);
-        //     // set completely transparent accent color for tab selected indicator.
-        //     accentColor = 0x00FFFFFF;
-        // }
+            tabLayout.setLayoutParams(lp);
+        }
 
         nativeView.addView(viewPager);
         (<any>nativeView).viewPager = viewPager;
@@ -472,7 +465,7 @@ export class Tabs extends TabNavigationBase {
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
         const lastIndex = this.items.length - 1;
-        const offsideItems = this.offscreenTabLimit; // 1; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
+        const offsideItems = this.offscreenTabLimit;
 
         let toUnload = [];
         let toLoad = [];
@@ -656,7 +649,7 @@ export class Tabs extends TabNavigationBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = true; // this.androidTabsPosition === "top";
+        const smoothScroll = true;
 
         if (traceEnabled()) {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);

@@ -113,7 +113,21 @@ class UIPageViewControllerImpl extends UIPageViewController {
     public viewDidLayoutSubviews(): void {
         super.viewDidLayoutSubviews();
 
-        this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, this.view.safeAreaInsets.top, this.tabBar.frame.size.width, this.tabBar.frame.size.height); //this.view.safeAreaLayoutGuide.layoutFrame;
+        const owner = this._owner.get();
+        const tabsPosition = owner.tabsPosition;
+
+        let tabBarTop = this.view.safeAreaInsets.top;
+        let tabBarHeight = this.tabBar.frame.size.height;
+        let scrollViewTop = this.tabBar.frame.size.height;
+        let scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom;
+
+        if (tabsPosition === "bottom") {
+            tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - this.view.safeAreaInsets.bottom;
+            scrollViewTop = this.view.frame.origin.y;
+            scrollViewHeight = this.view.frame.size.height - this.view.safeAreaInsets.bottom;
+        }
+
+        this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight); //this.view.safeAreaLayoutGuide.layoutFrame;
         // this.additionalSafeAreaInsets = new UIEdgeInsets({ top: this.tabBar.frame.size.height, left: 0, bottom: 0, right: 0 });
         // const tabBar = MDCTabBar.alloc().initWithFrame(this.view.safeAreaLayoutGuide.layoutFrame);
 
@@ -173,12 +187,11 @@ class UIPageViewControllerImpl extends UIPageViewController {
             // We want to expand it to the size of the UIPageViewController as it is not so by default
             this.scrollView = scrollView;
 
-            const owner = this._owner.get();
             if (!owner.swipeEnabled) {
                 scrollView.scrollEnabled = false;
             }
 
-            scrollView.frame = CGRectMake(this.view.safeAreaInsets.left, this.tabBar.frame.size.height, this.view.bounds.size.width, this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom); //this.view.bounds;
+            scrollView.frame = CGRectMake(this.view.safeAreaInsets.left, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
         }
 
         // if (mdcBar) {

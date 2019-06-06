@@ -111,6 +111,7 @@ export class TabNavigationBase extends View implements AddChildFromBuilder, AddA
     public selectedIndex: number;
     public swipeEnabled: boolean;
     public offscreenTabLimit: number;
+    public tabsPosition: "top" | "bottom";
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -253,6 +254,9 @@ export const offscreenTabLimitProperty = new Property<TabNavigationBase, number>
     name: "offscreenTabLimit", defaultValue: 1, valueConverter: (v) => parseInt(v)
 });
 offscreenTabLimitProperty.register(TabNavigationBase);
+
+export const tabsPositionProperty = new Property<TabNavigationBase, "top" | "bottom">({ name: "tabsPosition", defaultValue: "top" });
+tabsPositionProperty.register(TabNavigationBase);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);
