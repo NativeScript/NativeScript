@@ -37,7 +37,9 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 
 export interface NavigationContext {
     entry: BackstackEntry;
+    // TODO: remove isBackNavigation for NativeScript 6.0
     isBackNavigation: boolean;
+    navigationType: NavigationType
 }
 
 @CSSType("Frame")
@@ -51,11 +53,10 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     public actionBarVisibility: "auto" | "never" | "always";
     public _currentEntry: BackstackEntry;
-    public _executingEntry: BackstackEntry;
+    public _executingContext: NavigationContext;
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
     public static defaultTransition: NavigationTransition;
-    public navigationType: NavigationType;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
@@ -75,7 +76,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         let previousForwardNotInBackstack = false;
         this._navigationQueue.forEach(item => {
             const entry = item.entry;
-            if (item.isBackNavigation) {
+            const isBackNavigation = item.navigationType === NavigationType.back;
+            if (isBackNavigation) {
                 previousForwardNotInBackstack = false;
                 if (!entry) {
                     backstack--;
@@ -135,7 +137,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         const navigationContext: NavigationContext = {
             entry: backstackEntry,
-            isBackNavigation: true
+            isBackNavigation: true,
+            navigationType: NavigationType.back
         }
 
         this._navigationQueue.push(navigationContext);
@@ -203,7 +206,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         const navigationContext: NavigationContext = {
             entry: backstackEntry,
-            isBackNavigation: false
+            isBackNavigation: false,
+            navigationType: NavigationType.forward
         }
 
         this._navigationQueue.push(navigationContext);
@@ -232,10 +236,10 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         newPage.onNavigatedTo(isBack);
 
-        // Reset executing entry after NavigatedTo is raised;
+        // Reset executing context after NavigatedTo is raised;
         // we do not want to execute two navigations in parallel in case
         // additional navigation is triggered from the NavigatedTo handler.
-        this._executingEntry = null;
+        this._executingContext = null;
     }
 
     public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
@@ -342,13 +346,14 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     protected _processNextNavigationEntry() {
-        if (!this.isLoaded || this._executingEntry) {
+        if (!this.isLoaded || this._executingContext) {
             return;
         }
 
         if (this._navigationQueue.length > 0) {
             const navigationContext = this._navigationQueue[0];
-            if (navigationContext.isBackNavigation) {
+            const isBackNavigation = navigationContext.navigationType === NavigationType.back;
+            if (isBackNavigation) {
                 this.performGoBack(navigationContext);
             } else {
                 this.performNavigation(navigationContext);
@@ -358,10 +363,12 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     @profile
     public performNavigation(navigationContext: NavigationContext) {
-        const navContext = navigationContext.entry;
-        this._executingEntry = navContext;
-        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
-        this._navigateCore(navContext);
+        this._executingContext = navigationContext;
+
+        const backstackEntry = navigationContext.entry;
+        const isBackNavigation = navigationContext.navigationType === NavigationType.back;
+        this._onNavigatingTo(backstackEntry, isBackNavigation);
+        this._navigateCore(backstackEntry);
     }
 
     @profile
@@ -373,7 +380,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             navigationContext.entry = backstackEntry;
         }
 
-        this._executingEntry = backstackEntry;
+        this._executingContext = navigationContext;
         this._onNavigatingTo(backstackEntry, true);
         this._goBackCore(backstackEntry);
     }
@@ -643,9 +650,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     protected replacePage(context: ModuleContext): void {
-        // Set NavigationType.replace for HMR.
-        // In IOS on `viewDidAppear()` this will be set to NavigationType.forward.
-        this.navigationType = NavigationType.replace;
         const currentBackstackEntry = this._currentEntry;
         const contextModuleName = getModuleName(context.path);
 
@@ -658,10 +662,15 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             frameId: currentBackstackEntry.frameId
         };
 
-        const navContext: NavigationContext = { entry: newBackstackEntry, isBackNavigation: false };
-        this.performNavigation(navContext);
-    }
+        const navigationContext: NavigationContext = { 
+            entry: newBackstackEntry,
+            isBackNavigation: false,
+            navigationType: NavigationType.replace
+        };
 
+        this._navigationQueue.push(navigationContext);
+        this._processNextNavigationEntry();
+    }
 }
 
 export function getFrameById(id: string): FrameBase {

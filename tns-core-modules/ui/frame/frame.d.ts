@@ -135,11 +135,19 @@ export class Frame extends View {
     /**
      * @private
      */
-    _executingEntry: BackstackEntry;
+    _executingContext: NavigationContext;
     /**
      * @private
      */
     _processNavigationQueue(page: Page);
+    /**
+     * @private
+     */
+    _getIsAnimatedNavigation(entry: NavigationEntry): boolean;
+    /**
+     * @private
+     */
+    _getNavigationTransition(entry: NavigationEntry): NavigationTransition;
     /**
      * @private
      */
@@ -173,12 +181,6 @@ export class Frame extends View {
      * @private
      */
     _removeFromFrameStack();
-
-    /**
-     * @private
-     * Represents the type of navigation.
-     */
-    navigationType: NavigationType;
     //@endprivate
 
     /**
@@ -289,6 +291,7 @@ export interface NavigationEntry extends ViewEntry {
 export interface NavigationContext {
     entry: BackstackEntry;
     isBackNavigation: boolean;
+    navigationType: NavigationType;
 }
 
 /**

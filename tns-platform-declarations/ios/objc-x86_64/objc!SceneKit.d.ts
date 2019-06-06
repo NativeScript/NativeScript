@@ -2939,7 +2939,7 @@ declare const enum SCNPhysicsCollisionCategory {
 
 	Static = 2,
 
-	All = 18446744073709551615
+	All = -1
 }
 
 declare class SCNPhysicsConeTwistJoint extends SCNPhysicsBehavior {

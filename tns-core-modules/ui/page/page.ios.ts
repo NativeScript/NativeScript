@@ -22,18 +22,25 @@ const majorVersion = iosUtils.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
     const frame = page.frame;
-    if (!frame || frame.navigationType === NavigationType.replace) {
+    if (!frame) {
+        return false;
+    }
+
+    // if executing context is null here this most probably means back navigation through iOS back button
+    const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
+    const isReplace = navigationContext.navigationType === NavigationType.replace;
+    if (isReplace) {
         return false;
     }
 
     if (frame.navigationQueueIsEmpty()) {
         return true;
-    } else {
-        const navigationQueue = (<any>frame)._navigationQueue;
-        for (let i = 0; i < navigationQueue.length; i++) {
-            if (navigationQueue[i].entry === entry) {
-                return navigationQueue[i].isBackNavigation;
-            }
+    }
+
+    const navigationQueue = (<any>frame)._navigationQueue;
+    for (let i = 0; i < navigationQueue.length; i++) {
+        if (navigationQueue[i].entry === entry) {
+            return navigationQueue[i].navigationType === NavigationType.back;
         }
     }
 
@@ -129,38 +136,29 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         const navigationController = this.navigationController;
-        const frame = navigationController ? (<any>navigationController).owner : null;
+        const frame: Frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
             const newEntry: BackstackEntry = this[ENTRY];
 
-            let isBack: boolean;
-            let navType = frame.navigationType;
-            // We are on the current page which happens when navigation is canceled so isBack should be false.
-            if (navType !== NavigationType.replace && frame.currentPage === owner && frame._navigationQueue.length === 0) {
-                isBack = false;
-                navType = NavigationType.forward;
-            } else {
-                isBack = isBackNavigationTo(owner, newEntry);
-                if (isBack) {
-                    navType = NavigationType.back;
-                }
-            }
+            // frame.setCurrent(...) will reset executing context so retrieve it here
+            // if executing context is null here this most probably means back navigation through iOS back button
+            const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
+            const isReplace = navigationContext.navigationType === NavigationType.replace;
 
-            frame.setCurrent(newEntry, navType);
+            frame.setCurrent(newEntry, navigationContext.navigationType);
             
-            if (frame.navigationType === NavigationType.replace) {
+            if (isReplace) {
                 let controller = newEntry.resolvedPage.ios;
                 if (controller) {
-                    if (newEntry.entry.animated) {
+                    const animated = frame._getIsAnimatedNavigation(newEntry.entry);
+                    if (animated) {
                         controller[TRANSITION] = frame._getNavigationTransition(newEntry.entry);
                     } else {
                         controller[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
                     }
                 }
             }
-
-            frame.navigationType = isBack ? NavigationType.back : NavigationType.forward;
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
@@ -209,7 +207,7 @@ class UIViewControllerImpl extends UIViewController {
             const willSelectViewController = tab && (<any>tab)._willSelectViewController;
             if (!willSelectViewController
                 || willSelectViewController === tab.selectedViewController) {
-                let isBack = isBackNavigationFrom(this, owner);
+                const isBack = isBackNavigationFrom(this, owner);
                 owner.onNavigatingFrom(isBack);
             }
         }

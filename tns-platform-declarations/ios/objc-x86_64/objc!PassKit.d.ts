@@ -375,7 +375,7 @@ declare const enum PKPassType {
 
 	Payment = 1,
 
-	Any = 18446744073709551615
+	Any = -1
 }
 
 declare class PKPayment extends NSObject {
