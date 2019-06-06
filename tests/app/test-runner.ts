@@ -112,7 +112,10 @@ allTests["SCROLL-VIEW"] = scrollViewTests;
 import * as actionBarTests from "./ui/action-bar/action-bar-tests";
 allTests["ACTION-BAR"] = actionBarTests;
 
-// TODO: Enable
+//TODO: 13 tests commented out. Reasons:
+// 1. Loading module without XML and bundle is not supported at this moment
+// 2. Using CODEFILE/IMPORT/CSSFILE with bundle is not supported at this moment
+// 3. Attempted to assign to readonly property
 import * as xmlDeclarationTests from "./xml-declaration/xml-declaration-tests";
 allTests["XML-DECLARATION"] = xmlDeclarationTests;
 
@@ -148,9 +151,8 @@ if (platform.isIOS && ios.MajorVersion > 10) {
     allTests["SAFEAREA-WEBVIEW"] = webViewSafeAreaTests;
 }
 
-// TODO: Enable
-// import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
-// allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
+import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
+allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 
 import * as frameTests from "./ui/frame/frame-tests";
 allTests["FRAME"] = frameTests;
@@ -161,9 +163,8 @@ allTests["VIEW"] = viewTests;
 import * as viewLayoutChangedEventTests from "./ui/view/view-tests-layout-event";
 allTests["VIEW-LAYOUT-EVENT"] = viewLayoutChangedEventTests;
 
-// TODO: Enable
-// import * as styleTests from "./ui/styling/style-tests";
-// allTests["STYLE"] = styleTests;
+import * as styleTests from "./ui/styling/style-tests";
+allTests["STYLE"] = styleTests;
 
 import * as visualStateTests from "./ui/styling/visual-state-tests";
 allTests["VISUAL-STATE"] = visualStateTests;
@@ -207,9 +208,10 @@ allTests["PROGRESS"] = progressTests;
 import * as placeholderTests from "./ui/placeholder/placeholder-tests";
 allTests["PLACEHOLDER"] = placeholderTests;
 
-// TODO: Enable
-// import * as pageTests from "./ui/page/page-tests";
-// allTests["PAGE"] = pageTests;
+//TODO: 1 test commented out in page-tests-common. Reason:
+// 1. CSS is not applied when creating Label from code
+import * as pageTests from "./ui/page/page-tests";
+allTests["PAGE"] = pageTests;
 
 import * as listViewTests from "./ui/list-view/list-view-tests";
 allTests["LISTVIEW"] = listViewTests;
@@ -217,13 +219,11 @@ allTests["LISTVIEW"] = listViewTests;
 import * as activityIndicatorTests from "./ui/activity-indicator/activity-indicator-tests";
 allTests["ACTIVITY-INDICATOR"] = activityIndicatorTests;
 
-// TODO: Enable
-// import * as textFieldTests from "./ui/text-field/text-field-tests";
-// allTests["TEXT-FIELD"] = textFieldTests;
+import * as textFieldTests from "./ui/text-field/text-field-tests";
+allTests["TEXT-FIELD"] = textFieldTests;
 
-// TODO: Enable
-// import * as textViewTests from "./ui/text-view/text-view-tests";
-// allTests["TEXT-VIEW"] = textViewTests;
+import * as textViewTests from "./ui/text-view/text-view-tests";
+allTests["TEXT-VIEW"] = textViewTests;
 
 import * as listPickerTests from "./ui/list-picker/list-picker-tests";
 allTests["LIST-PICKER"] = listPickerTests;
@@ -252,9 +252,8 @@ allTests["ANIMATION"] = animationTests;
 import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
 allTests["LIFECYCLE"] = lifecycle;
 
-// TODO: Enable
-// import * as cssAnimationTests from "./ui/animation/css-animation-tests";
-// allTests["CSS-ANIMATION"] = cssAnimationTests;
+import * as cssAnimationTests from "./ui/animation/css-animation-tests";
+allTests["CSS-ANIMATION"] = cssAnimationTests;
 
 import * as transitionTests from "./navigation/transition-tests";
 allTests["TRANSITIONS"] = transitionTests;
@@ -265,9 +264,9 @@ allTests["SEARCH-BAR"] = searchBarTests;
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
-// TODO: Enable
-// import * as livesyncTests from "./livesync/livesync-tests";
-// allTests["LIVESYNC"] = livesyncTests;
+//TODO: These test should be run with --no-hrm
+import * as livesyncTests from "./livesync/livesync-tests";
+allTests["LIVESYNC"] = livesyncTests;
 
 import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
 allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
@@ -275,9 +274,10 @@ allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
-// TODO: Enable
-// import * as rootViewTests from "./ui/root-view/root-view-tests";
-// allTests["ROOT-VIEW"] = rootViewTests;
+//TODO: 2 test commented out. Reason:
+// 1.Loading module without XML and bundle is not supported at this moment
+import * as rootViewTests from "./ui/root-view/root-view-tests";
+allTests["ROOT-VIEW"] = rootViewTests;
 
 import * as utilsTests from "./utils/utils-tests";
 allTests["UTILS"] = utilsTests;

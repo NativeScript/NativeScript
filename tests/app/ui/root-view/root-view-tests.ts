@@ -23,19 +23,24 @@ function createTestFrameRootEntry() {
     };
 }
 
-export function test_custom_component_rootview_css_applied() {
-    var entry = {
-        moduleName: "ui/root-view/root-modules/custom-component-root"
-    };
+// Loading module without XML and bundle is not supported at this moment
+// export function test_custom_component_rootview_css_applied() {
+//     var entry = {
+//         moduleName: "ui/root-view/root-modules/custom-component-root"
+//     };
 
-    _resetRootView(entry);
+//     _resetRootView(entry);
 
-    var rootView = getRootView();
-    TKUnit.waitUntilReady(() => rootView.isLoaded);
+//     var rootView = getRootView();
+//     TKUnit.waitUntilReady(() => rootView.isLoaded);
 
-    TKUnit.assert(rootView instanceof myCustomControlWithoutXml.MyControl);
-    helper.assertViewBackgroundColor(rootView, "#0000FF");
-};
+//     TKUnit.assert(rootView instanceof myCustomControlWithoutXml.MyControl);
+//     helper.assertViewBackgroundColor(rootView, "#0000FF");
+// };
+
+// export function test_custom_component_rootview_layout_updates() {
+//     layout_invalidate_test("./ui/root-view/root-modules/custom-component-root");
+// }
 
 export function test_tabview_rootview_css_applied() {
     var entry = {
@@ -67,10 +72,6 @@ export function test_gridlayout_rootview_css_applied() {
 
 export function test_gridlayout_rootview_layout_updates() {
     layout_invalidate_test("ui/root-view/root-modules/gridlayout-root");
-}
-
-export function test_custom_component_rootview_layout_updates() {
-    layout_invalidate_test("ui/root-view/root-modules/custom-component-root");
 }
 
 export function test_tabview_rootview_layout_updates() {

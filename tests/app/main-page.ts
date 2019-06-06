@@ -19,7 +19,7 @@ trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 // ));
 
 function runTests() {
-    setTimeout(() => tests.runAll("XML-DECLARATION"), 10);
+    setTimeout(() => tests.runAll(""), 10);
 }
 
 export function onNavigatedTo(args) {
