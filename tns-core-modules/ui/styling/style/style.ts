@@ -14,12 +14,12 @@ import {
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
 export class Style extends Observable implements StyleDefinition {
-    constructor(public view: ViewBase) {
+    constructor(public viewRef: WeakRef<ViewBase>) {
         super();
     }
 
     toString() {
-        return `${this.view}.style`;
+        return `${this.viewRef.get()}.style`;
     }
 
     public fontInternal: Font;

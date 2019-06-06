@@ -482,7 +482,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
+                const view = this.viewRef.get();
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -557,7 +557,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
+                const view = this.viewRef.get();
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -760,7 +760,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         valueChanged(this, oldValue, value);
                     }
 
-                    const view = this.view;
+                    const view = this.viewRef.get();
                     if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
                         if (view._suspendNativeUpdatesCount) {
                             if (view._suspendedUpdates) {
@@ -819,7 +819,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
         const defaultValueKey = this.defaultValueKey;
 
         if (!(defaultValueKey in target)) {
-            const view = target.view;
+            const view = target.viewRef.get();
             const getDefault = this.getDefault;
             target[defaultValueKey] = view[getDefault] ? view[getDefault]() : this.defaultValue;
         }
@@ -876,7 +876,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             }
 
             const oldValue: U = key in this ? this[key] : defaultValue;
-            const view = this.view;
+            const view = this.viewRef.get();
             let value: U;
             let unsetNativeValue = false;
             if (reset) {
@@ -907,7 +907,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
+                const view = this.viewRef.get();
                 if (valueChanged) {
                     valueChanged(this, oldValue, value);
                 }
@@ -997,7 +997,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         const converter = options.converter;
 
         function setLocalValue(this: T, value: string | P): void {
-            this.view._batchUpdate(() => {
+            this.viewRef.get()._batchUpdate(() => {
                 for (let [p, v] of converter(value)) {
                     this[p.name] = v;
                 }
@@ -1005,7 +1005,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         }
 
         function setCssValue(this: T, value: string): void {
-            this.view._batchUpdate(() => {
+            this.viewRef.get()._batchUpdate(() => {
                 for (let [p, v] of converter(value)) {
                     this[p.cssName] = v;
                 }

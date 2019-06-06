@@ -185,7 +185,7 @@ export const zeroLength: Length = { value: 0, unit: "px" };
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
+        target.viewRef.get().effectiveMinWidth = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
@@ -193,7 +193,7 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
+        target.viewRef.get().effectiveMinHeight = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 minHeightProperty.register(Style);
@@ -204,7 +204,7 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
     //       on the animation property, so fake it here. x_x
     valueChanged: (target, oldValue, newValue) => {
         if (isIOS) {
-            target.view.requestLayout();
+            target.viewRef.get().requestLayout();
         }
     }, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
@@ -215,7 +215,7 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
     //       on the animation property, so fake it here. -_-
     valueChanged: (target, oldValue, newValue) => {
         if (isIOS) {
-            target.view.requestLayout();
+            target.viewRef.get().requestLayout();
         }
     }, valueConverter: PercentLength.parse,
 
@@ -265,7 +265,7 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+        target.viewRef.get().effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
@@ -273,7 +273,7 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+        target.viewRef.get().effectivePaddingRight = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
@@ -281,7 +281,7 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+        target.viewRef.get().effectivePaddingTop = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
@@ -289,7 +289,7 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+        target.viewRef.get().effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingBottomProperty.register(Style);
@@ -850,7 +850,7 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderTopWidth = value;
+        target.viewRef.get().effectiveBorderTopWidth = value;
         const background = target.backgroundInternal.withBorderTopWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -865,7 +865,7 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderRightWidth = value;
+        target.viewRef.get().effectiveBorderRightWidth = value;
         const background = target.backgroundInternal.withBorderRightWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -880,7 +880,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderBottomWidth = value;
+        target.viewRef.get().effectiveBorderBottomWidth = value;
         const background = target.backgroundInternal.withBorderBottomWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -895,7 +895,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderLeftWidth = value;
+        target.viewRef.get().effectiveBorderLeftWidth = value;
         const background = target.backgroundInternal.withBorderLeftWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -1123,7 +1123,7 @@ export namespace Visibility {
 
 export const visibilityProperty = new CssProperty<Style, Visibility>({
     name: "visibility", cssName: "visibility", defaultValue: Visibility.VISIBLE, affectsLayout: isIOS, valueConverter: Visibility.parse, valueChanged: (target, oldValue, newValue) => {
-        target.view.isCollapsed = (newValue === Visibility.COLLAPSE);
+        target.viewRef.get().isCollapsed = (newValue === Visibility.COLLAPSE);
     }
 });
 visibilityProperty.register(Style);
