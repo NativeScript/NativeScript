@@ -139,8 +139,8 @@ export class Style extends Observable {
     public statusBarStyle: "light" | "dark";
     public androidStatusBarBackground: Color;
 
-    constructor(ownerView: ViewBase);
-    public view: ViewBase;
+    constructor(ownerView: WeakRef<ViewBase>);
+    public viewRef: WeakRef<ViewBase>;
 
     //flexbox layout properties
     public flexDirection: FlexDirection;
