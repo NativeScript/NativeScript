@@ -155,6 +155,9 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
     if (global.moduleExists(filePathRelativeToApp)) {
         const text = global.loadModule(filePathRelativeToApp);
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
+    } else if (global.moduleExists(fileName)) { 
+        const text = global.loadModule(fileName);
+        componentModule = parseInternal(text, context, fileName, moduleNamePath);
     } else if (fileName && File.exists(fileName)) {
         const file = File.fromPath(fileName);
         const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message) });
