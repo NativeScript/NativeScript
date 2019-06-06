@@ -27,7 +27,7 @@ export function getNativeSelectedIndex(tabView: Tabs): number {
 }
 
 export function getNativeFont(tabView: Tabs): UIFont {
-    const tabBar = <UITabBar>tabView.ios.tabBar;
+    const tabBar = <UITabBar>tabView.viewController.tabBar;
     if (tabBar.items.count > 0) {
         const currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
         if (currentAttrs) {

@@ -97,6 +97,19 @@ class UIPageViewControllerImpl extends UIPageViewController {
         this.view.addSubview(tabBar);
     }
 
+    public viewWillAppear(animated: boolean): void {
+        super.viewWillAppear(animated);
+        const owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        // Tabs can be reset as a root view. Call loaded here in this scenario.
+        if (!owner.isLoaded) {
+            owner.callLoaded();
+        }
+    }
+
     public viewDidLayoutSubviews(): void {
         super.viewDidLayoutSubviews();
 
@@ -528,9 +541,11 @@ export class TabContentItem extends TabContentItemBase {
         if (tabView && tabView.items) {
             const index = tabView.items.indexOf(this);
 
-            if (index === tabView.selectedIndex) {
-                super.loadView(view);
-            }
+            // if (index === tabView.selectedIndex) {
+            //     super.loadView(view);
+            // }
+
+            super.loadView(view);
         }
     }
 }
