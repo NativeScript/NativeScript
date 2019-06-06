@@ -110,6 +110,7 @@ export class TabNavigationBase extends View implements AddChildFromBuilder, AddA
     public tabStrip: TabStrip;
     public selectedIndex: number;
     public swipeEnabled: boolean;
+    public offscreenTabLimit: number;
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -124,7 +125,7 @@ export class TabNavigationBase extends View implements AddChildFromBuilder, AddA
             }
             this.items.push(<TabContentItemBase>value);
             this._addView(value);
-            selectedIndexProperty.coerce(this);
+            // selectedIndexProperty.coerce(this);
         } else if (name === "TabStrip") {
             this.tabStrip = value;
         }
@@ -240,10 +241,18 @@ export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
 });
 tabStripProperty.register(TabNavigationBase);
 
+// TODO: Add Unit tests
 export const swipeEnabledProperty = new Property<TabNavigationBase, boolean>({
     name: "swipeEnabled", defaultValue: true, valueConverter: booleanConverter
 });
 swipeEnabledProperty.register(TabNavigationBase);
+
+// TODO: Add Unit tests
+// TODO: Coerce to max number of items?
+export const offscreenTabLimitProperty = new Property<TabNavigationBase, number>({
+    name: "offscreenTabLimit", defaultValue: 1, valueConverter: (v) => parseInt(v)
+});
+offscreenTabLimitProperty.register(TabNavigationBase);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);

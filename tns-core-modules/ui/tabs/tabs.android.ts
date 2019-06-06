@@ -4,7 +4,8 @@ import { Font } from "../styling/font";
 import {
     TabNavigationBase, TabContentItemBase, TabStripItem, itemsProperty, selectedIndexProperty,
     fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, traceMissingIcon, TabStrip, tabStripProperty, swipeEnabledProperty
+    traceWrite, traceMissingIcon, TabStrip, tabStripProperty, swipeEnabledProperty,
+    offscreenTabLimitProperty
 } from "./tabs-common";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
@@ -471,7 +472,7 @@ export class Tabs extends TabNavigationBase {
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
         const lastIndex = this.items.length - 1;
-        const offsideItems = 1; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
+        const offsideItems = this.offscreenTabLimit; // 1; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
 
         let toUnload = [];
         let toLoad = [];
@@ -654,13 +655,6 @@ export class Tabs extends TabNavigationBase {
         this._tabLayout.updateItemAt(index, spec);
     }
 
-    // [androidOffscreenTabLimitProperty.getDefault](): number {
-    //     return this._viewPager.getOffscreenPageLimit();
-    // }
-    // [androidOffscreenTabLimitProperty.setNative](value: number) {
-    //     this._viewPager.setOffscreenPageLimit(value);
-    // }
-
     [selectedIndexProperty.setNative](value: number) {
         const smoothScroll = true; // this.androidTabsPosition === "top";
 
@@ -687,9 +681,17 @@ export class Tabs extends TabNavigationBase {
     }
 
     [swipeEnabledProperty.getDefault](): boolean {
+        // TODO: create native method and get native?
         return true;
     }
     [swipeEnabledProperty.setNative](value: boolean) {
         (<any>this._viewPager).setSwipePageEnabled(value);
+    }
+
+    [offscreenTabLimitProperty.getDefault](): number {
+        return this._viewPager.getOffscreenPageLimit();
+    }
+    [offscreenTabLimitProperty.setNative](value: number) {
+        this._viewPager.setOffscreenPageLimit(value);
     }
 }

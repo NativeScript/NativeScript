@@ -5,7 +5,8 @@ import { ios as iosView, ViewBase } from "../core/view";
 import {
     TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, 
-    Color, traceMissingIcon, TabStrip, TabStripItem, tabStripProperty, swipeEnabledProperty
+    Color, traceMissingIcon, TabStrip, TabStripItem, tabStripProperty, swipeEnabledProperty,
+    offscreenTabLimitProperty
 } from "./tabs-common";
 import { textTransformProperty, TextTransform } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -31,12 +32,11 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     }
 
     public tabBarShouldSelectItem(tabBar: MDCTabBar, item: UITabBarItem): boolean {
-        debugger;
         return true;
     }
 
     public tabBarWillSelectItem(tabBar: MDCTabBar, item: UITabBarItem): void {
-        debugger;
+        //
     }
 
     public tabBarDidSelectItem(tabBar: MDCTabBar, selectedItem: UITabBarItem): void {
@@ -648,7 +648,7 @@ export class Tabs extends TabNavigationBase {
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
         const lastIndex = this.items.length - 1;
-        const offsideItems = 1; // this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
+        const offsideItems = this.offscreenTabLimit;
 
         let toUnload = [];
         let toLoad = [];
