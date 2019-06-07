@@ -4354,7 +4354,7 @@ declare const enum UICollisionBehaviorMode {
 
 	Boundaries = 2,
 
-	Everything = 18446744073709551615
+	Everything = -1
 }
 
 declare class UIColor extends NSObject implements NSCopying, NSItemProviderReading, NSItemProviderWriting, NSSecureCoding {
@@ -4831,7 +4831,7 @@ declare const enum UIDataDetectorTypes {
 
 	None = 0,
 
-	All = 18446744073709551615
+	All = -1
 }
 
 interface UIDataSourceModelAssociation {
@@ -9348,7 +9348,7 @@ declare const enum UIPopoverArrowDirection {
 
 	Any = 15,
 
-	Unknown = 18446744073709551615
+	Unknown = -1
 }
 
 declare class UIPopoverBackgroundView extends UIView implements UIPopoverBackgroundViewMethods {
@@ -10286,7 +10286,7 @@ declare const enum UIRectCorner {
 
 	BottomRight = 8,
 
-	AllCorners = 18446744073709551615
+	AllCorners = -1
 }
 
 declare const enum UIRectEdge {

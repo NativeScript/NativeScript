@@ -1,3 +1,16 @@
+<a name="5.4.2"></a>
+## [5.4.2](https://github.com/NativeScript/NativeScript/compare/5.4.1...5.4.2) (2019-06-06)
+
+
+### Bug Fixes
+
+* **hmr:** support for multi module replacement ([7c22ffe](https://github.com/NativeScript/NativeScript/commit/7c22ffe))
+* register layout child for nested custom components ([#7230](https://github.com/NativeScript/NativeScript/issues/7230)) ([3604df8](https://github.com/NativeScript/NativeScript/commit/3604df8))
+* **ios:** potential memory leak with propertybag implementation ([#7298](https://github.com/NativeScript/NativeScript/issues/7298)) ([1c22a73](https://github.com/NativeScript/NativeScript/commit/1c22a73))
+* **platform-declarations-ios:** Change 2^64-1 enum values to -1 ([6720139](https://github.com/NativeScript/NativeScript/commit/6720139))
+
+
+
 ## [5.4.1](https://github.com/NativeScript/NativeScript/compare/5.4.0...5.4.1) (2019-05-23)
 
 

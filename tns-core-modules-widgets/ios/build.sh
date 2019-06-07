@@ -19,3 +19,17 @@ cp -r TNSWidgets/build/Release-iphoneos/TNSWidgets.framework/Info.plist TNSWidge
 
 lipo -create TNSWidgets/build/Release-iphoneos/TNSWidgets.framework/TNSWidgets TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework/TNSWidgets -o TNSWidgets/build/TNSWidgets.framework/TNSWidgets
 file TNSWidgets/build/TNSWidgets.framework/TNSWidgets
+
+echo "Build fat dSYM at TNSWidgets/build/TNSWidgets.framework.dSYM"
+cp -r TNSWidgets/build/Release-iphoneos/TNSWidgets.framework.dSYM TNSWidgets/build
+rm "TNSWidgets/build/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets"
+lipo -create -output "TNSWidgets/build/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets" \
+    "TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets" \
+    "TNSWidgets/build/Release-iphoneos/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets"
+file TNSWidgets/build/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets
+
+echo "Archiving dSYM at TNSWidgets/build/TNSWidgets.framework.dSYM.zip"
+(cd TNSWidgets/build && zip -qr TNSWidgets.framework.dSYM.zip TNSWidgets.framework.dSYM)
+
+echo "Removing TNSWidgets/build/TNSWidgets.framework.dSYM"
+rm -rf TNSWidgets/build/TNSWidgets.framework.dSYM

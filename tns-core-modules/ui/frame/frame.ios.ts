@@ -65,12 +65,6 @@ export class Frame extends FrameBase {
 
     @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
-        // NavigationType.replace for HMR.
-        // Otherwise, default to NavigationType.forward.
-        const isReplace = this.navigationType === NavigationType.replace;
-        if (!isReplace) {
-            this.navigationType = NavigationType.forward;
-        }
         super._navigateCore(backstackEntry);
 
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -82,6 +76,8 @@ export class Frame extends FrameBase {
         if (clearHistory) {
             navDepth = -1;
         }
+
+        const isReplace = this._executingContext && this._executingContext.navigationType === NavigationType.replace;
         if (!isReplace) {
             navDepth++;
         }
@@ -187,7 +183,6 @@ export class Frame extends FrameBase {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        this.navigationType = NavigationType.back;
         super._goBackCore(backstackEntry);
         navDepth = backstackEntry[NAV_DEPTH];
 
