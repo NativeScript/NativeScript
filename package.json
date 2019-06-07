@@ -80,7 +80,7 @@
     "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
     "prepublish": "echo \"Development reminder for setup\n  - tns-core-modules: npm run setup\n  - tns-core-modules-widgets: npm run setup-widgets\n\"",
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
-    "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && http-server",
+    "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "test-tsc-es2016": "npm run tsc -- -p tsconfig.public.es2016.json",
     "tslint": "tslint --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' 'e2e/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'",
     "madge-ios": "tsc --skipLibCheck && tns prepare ios --path tests && madge --circular tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
