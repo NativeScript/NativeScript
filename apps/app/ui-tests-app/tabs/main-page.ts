@@ -18,6 +18,7 @@ export function loadExamples() {
     examples.set("icon-title-placement", "bottom-navigation/icon-title-placement");
     examples.set("icon-change", "bottom-navigation/icon-change");
     examples.set("swipe-enabled", "tabs/swipe-enabled");
+    examples.set("tabs-position", "tabs/tabs-position");
     
     return examples;
 }
