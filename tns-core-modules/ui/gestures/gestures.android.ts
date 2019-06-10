@@ -29,9 +29,9 @@ function initializeTapAndDoubleTapGestureListener() {
         private _target: View;
         private _type: number;
 
-        private _lastTapTime: number = 0;
+        private _lastUpTime: number = 0;
         private _tapTimeoutId: number;
-        
+
         private static DoubleTapTimeout = android.view.ViewConfiguration.getDoubleTapTimeout();
 
         constructor(observer: GesturesObserver, target: View, type: number) {
@@ -43,14 +43,17 @@ function initializeTapAndDoubleTapGestureListener() {
             return global.__native(this);
         }
 
+        public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
+            this._handleSingleTap(motionEvent);
+            this._lastUpTime = Date.now();
+            return true;
+        }
+
         public onDown(motionEvent: android.view.MotionEvent): boolean {
             const tapTime = Date.now();
-            if ((tapTime - this._lastTapTime) <= TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout) {
+            if ((tapTime - this._lastUpTime) <= TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout) {
                 this._handleDoubleTap(motionEvent);
-            } else {
-                this._handleSingleTap(motionEvent);
             }
-            this._lastTapTime = tapTime;
             return true;
         }
 
