@@ -18,7 +18,7 @@ const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
 interface PagerAdapter {
-    new(owner: Tabs): android.support.v4.view.PagerAdapter;
+    new(owner: Tabs): androidx.viewpager.widget.PagerAdapter;
 }
 
 const TABID = "_tabId";
@@ -81,10 +81,10 @@ function initializeNativeClasses() {
     const POSITION_UNCHANGED = -1;
     const POSITION_NONE = -2;
 
-    class FragmentPagerAdapter extends android.support.v4.view.PagerAdapter {
+    class FragmentPagerAdapter extends androidx.viewpager.widget.PagerAdapter {
         public items: Array<TabContentItem>;
-        private mCurTransaction: android.support.v4.app.FragmentTransaction;
-        private mCurrentPrimaryItem: android.support.v4.app.Fragment;
+        private mCurTransaction: androidx.fragment.app.FragmentTransaction;
+        private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
 
         constructor(public owner: Tabs) {
             super();
@@ -120,7 +120,7 @@ function initializeNativeClasses() {
             const itemId = this.getItemId(position);
             const name = makeFragmentName(container.getId(), itemId);
 
-            let fragment: android.support.v4.app.Fragment = fragmentManager.findFragmentByTag(name);
+            let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
             if (fragment != null) {
                 this.mCurTransaction.attach(fragment);
             } else {
@@ -152,7 +152,7 @@ function initializeNativeClasses() {
                 this.mCurTransaction = fragmentManager.beginTransaction();
             }
 
-            const fragment: android.support.v4.app.Fragment = <android.support.v4.app.Fragment>object;
+            const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
             this.mCurTransaction.detach(fragment);
 
             if (this.mCurrentPrimaryItem === fragment) {
@@ -167,7 +167,7 @@ function initializeNativeClasses() {
         }
 
         setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-            const fragment = <android.support.v4.app.Fragment>object;
+            const fragment = <androidx.fragment.app.Fragment>object;
             if (fragment !== this.mCurrentPrimaryItem) {
                 if (this.mCurrentPrimaryItem != null) {
                     this.mCurrentPrimaryItem.setMenuVisibility(false);
@@ -197,7 +197,7 @@ function initializeNativeClasses() {
         }
 
         isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
-            return (<android.support.v4.app.Fragment>object).getView() === view;
+            return (<androidx.fragment.app.Fragment>object).getView() === view;
         }
 
         saveState(): android.os.Parcelable {
@@ -262,7 +262,7 @@ function getDefaultAccentColor(context: android.content.Context): number {
 }
 
 function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.nativescript.widgets.TabLayout) {
-    const compat = <any>android.support.v4.view.ViewCompat;
+    const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
         compat.setElevation(grid, val);
@@ -282,8 +282,8 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 
 export class Tabs extends TabsBase {
     private _tabLayout: org.nativescript.widgets.TabLayout;
-    private _viewPager: android.support.v4.view.ViewPager;
-    private _pagerAdapter: android.support.v4.view.PagerAdapter;
+    private _viewPager: androidx.viewpager.widget.ViewPager;
+    private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
     private _androidViewId: number = -1;
 
     constructor() {

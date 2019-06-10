@@ -122,7 +122,7 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
 }
 
 function setElevation(grid: org.nativescript.widgets.GridLayout, bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
-    const compat = <any>android.support.v4.view.ViewCompat;
+    const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
         compat.setElevation(grid, val);
@@ -145,7 +145,7 @@ export class BottomNavigation extends TabNavigationBase {
     private _contentView: org.nativescript.widgets.ContentLayout;
     private _contentViewId: number = -1;
     private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
-    private _currentFragment: android.support.v4.app.Fragment;
+    private _currentFragment: androidx.fragment.app.Fragment;
 
     constructor() {
         super();
@@ -316,7 +316,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         const name = makeFragmentName(containerView.getId(), index);
 
-        let fragment: android.support.v4.app.Fragment = fragmentManager.findFragmentByTag(name);
+        let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
         if (fragment != null) {
             transaction.attach(fragment);
         } else {

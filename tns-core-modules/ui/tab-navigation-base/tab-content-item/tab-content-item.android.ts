@@ -45,7 +45,7 @@ export class TabContentItem extends TabContentItemBase {
         return this.nativeViewProtected;
     }
 
-    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
+    public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
         const tabView = <TabNavigationBase>this.parent;
         let tabFragment = null;
         const fragmentManager = tabView._getFragmentManager();
