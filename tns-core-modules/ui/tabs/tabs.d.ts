@@ -3,87 +3,49 @@
  * @module "ui/tab-view"
  */ /** */
 
- import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
- import { TextTransform } from "../text-base";
+ import { Property, EventData } from "../core/view";
+ import { TabNavigationBase, SelectedIndexChangedEventData } from "../tab-navigation-base/tab-navigation-base";
+ import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+ import { TabStrip } from "../tab-navigation-base/tab-strip";
+
+ export * from "../tab-navigation-base/tab-content-item";
+ export * from "../tab-navigation-base/tab-navigation-base";
+ export * from "../tab-navigation-base/tab-strip";
+ export * from "../tab-navigation-base/tab-strip-item";
  
  /**
-  * Represents a tab strip entry.
+  * Represents a swipeable tabs view.
   */
- export class TabStripItem extends ViewBase {
+ export class Tabs extends TabNavigationBase {
      /**
-      * Gets or sets the title of the tab strip entry.
-      */
-     title: string;
- 
-     /**
-      * Gets or sets the icon source of the tab strip entry.
-      */
-     iconSource: string;
- }
- 
- /**
-  * Represents a tab strip.
-  */
- export class TabStrip extends ViewBase {
-     /**
-      * Gets or sets the items of the tab strip.
-      */
-     items: Array<TabStripItem>;
- 
-     /**
-      * Gets or sets the icon rendering mode on iOS
-      */
-     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
- }
- 
- /**
-  * Represents a tabbed view content entry.
-  */
- export class TabContentItem extends ViewBase {
-     /**
-      * Gets or sets the view of the TabViewItem.
-      */
-     public view: View;
- 
-     /**
-      * @private
-      */
-     canBeLoaded?: boolean;
- }
- 
- /**
-  * Defines the data for the TabView.selectedIndexChanged event.
-  */
- export interface SelectedIndexChangedEventData extends EventData {
-     /**
-      * The old selected index.
-      */
-     oldIndex: number;
- 
-     /**
-      * The new selected index.
-      */
-     newIndex: number;
- }
- 
- /**
-  * Represents a bottom navigation view.
-  */
- export class Tabs extends View {
-     /**
-      * Gets or sets the items of the TabView.
+      * Gets or sets the items of the Tabs.
       */
      items: Array<TabContentItem>;
  
      /**
-      * Gets or sets the tab strip of the TabView.
+      * Gets or sets the tab strip of the Tabs.
       */
      tabStrip: TabStrip;
  
      /**
-      * Gets or sets the selectedIndex of the TabView.
+      * Gets or sets the selectedIndex of the Tabs.
       */
      selectedIndex: number;
+
+     /**
+      * Gets or sets the swipe enabled state of the Tabs.
+      */
+     swipeEnabled: boolean;
+
+     /**
+      * Gets or sets the number of offscreen preloaded tabs of the Tabs.
+      */
+     offscreenTabLimit: number;
+
+     /**
+      * Gets or sets the position state of the Tabs.
+      */
+     tabsPosition: "top" | "bottom";
  
      /**
       * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -117,6 +79,3 @@
  export const itemsProperty: Property<Tabs, TabContentItem[]>;
  export const tabStripProperty: Property<Tabs, TabStrip>
  export const selectedIndexProperty: Property<Tabs, number>;
- 
- export const iosIconRenderingModeProperty: Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
- 

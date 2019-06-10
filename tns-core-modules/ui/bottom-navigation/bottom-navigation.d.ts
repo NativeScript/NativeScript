@@ -1,55 +1,17 @@
 ﻿/**
- * Contains the TabView class, which represents a standard content component with tabs.
- * @module "ui/tab-view"
+ * Contains the BottomNavigation class, which represents a tab navigation widget with static tabs at the bottom.
+ * @module "ui/tab-navigation/bottom-navigation"
  */ /** */
 
-import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
-import { TextTransform } from "../text-base";
+import { TabNavigationBase } from "../tab-navigation-base/tab-navigation-base";
+import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+import { TabStrip } from "../tab-navigation-base/tab-strip";
+import { Property, CoercibleProperty, EventData } from "../core/view";
 
-/**
- * Represents a tab strip entry.
- */
-export class TabStripItem extends ViewBase {
-    /**
-     * Gets or sets the title of the tab strip entry.
-     */
-    title: string;
-
-    /**
-     * Gets or sets the icon source of the tab strip entry.
-     */
-    iconSource: string;
-}
-
-/**
- * Represents a tab strip.
- */
-export class TabStrip extends ViewBase {
-    /**
-     * Gets or sets the items of the tab strip.
-     */
-    items: Array<TabStripItem>;
-
-    /**
-     * Gets or sets the icon rendering mode on iOS
-     */
-    iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
-}
-
-/**
- * Represents a tabbed view content entry.
- */
-export class TabContentItem extends ViewBase {
-    /**
-     * Gets or sets the view of the TabViewItem.
-     */
-    public view: View;
-
-    /**
-     * @private
-     */
-    canBeLoaded?: boolean;
-}
+export * from "../tab-navigation-base/tab-content-item";
+export * from "../tab-navigation-base/tab-navigation-base";
+export * from "../tab-navigation-base/tab-strip";
+export * from "../tab-navigation-base/tab-strip-item";
 
 /**
  * Defines the data for the TabView.selectedIndexChanged event.
@@ -67,21 +29,21 @@ export interface SelectedIndexChangedEventData extends EventData {
 }
 
 /**
- * Represents a bottom navigation view.
+ * Represents a tab navigation widget with static tabs at the bottom.
  */
-export class BottomNavigation extends View {
+export class BottomNavigation extends TabNavigationBase {
     /**
-     * Gets or sets the items of the TabView.
+     * Gets or sets the items of the BottomNavigation.
      */
     items: Array<TabContentItem>;
 
     /**
-     * Gets or sets the tab strip of the TabView.
+     * Gets or sets the tab strip of the BottomNavigation.
      */
     tabStrip: TabStrip;
 
     /**
-     * Gets or sets the selectedIndex of the TabView.
+     * Gets or sets the selectedIndex of the BottomNavigation.
      */
     selectedIndex: number;
 
@@ -116,6 +78,4 @@ export class BottomNavigation extends View {
 
 export const itemsProperty: Property<BottomNavigation, TabContentItem[]>;
 export const tabStripProperty: Property<BottomNavigation, TabStrip>
-export const selectedIndexProperty: Property<BottomNavigation, number>;
-
-export const iosIconRenderingModeProperty: Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
+export const selectedIndexProperty: CoercibleProperty<BottomNavigation, number>;

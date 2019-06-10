@@ -1,20 +1,21 @@
-﻿import { TabContentItem as TabContentItemDefinition } from ".";
-import { Font } from "../styling/font";
+﻿// Types
+import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
+import { TabStrip } from "../tab-navigation-base/tab-strip";
 
-import { ios as iosView, ViewBase } from "../core/view";
-import {
-    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, 
-    Color, traceMissingIcon, TabStrip, TabStripItem, tabStripProperty, swipeEnabledProperty,
-    offscreenTabLimitProperty
-} from "./tabs-common";
-import { textTransformProperty, TextTransform } from "../text-base";
-import { fromFileOrResource } from "../../image-source";
-import { profile } from "../../profiling";
+// Requires
+import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Frame } from "../frame";
-import { ios as iosUtils } from "../../utils/utils"
+import { ios as iosView, View } from "../core/view";
+import { ios as iosUtils, layout } from "../../utils/utils"
 import { device } from "../../platform";
-import { viewMatchesModuleContext } from "tns-core-modules/ui/core/view/view.ios";
+import { fromFileOrResource } from "../../image-source";
+import { Color } from "../../color";
+
+// TODO
+// import { profile } from "../../profiling";
+
 export * from "./tabs-common";
 
 const majorVersion = iosUtils.MajorVersion;
@@ -269,7 +270,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         //     prevViewController = owner.getViewController(prevItem);
         // }
 
-        (<TabContentItemDefinition>prevItem).canBeLoaded = true;
+        (<TabContentItem>prevItem).canBeLoaded = true;
 
         return prevViewController;
     }
@@ -295,7 +296,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         //     nextViewController = owner.getViewController(nextItem);
         // }
 
-        (<TabContentItemDefinition>nextItem).canBeLoaded = true;
+        (<TabContentItem>nextItem).canBeLoaded = true;
         // nextItem.loadView(nextItem.view);
 
         return nextViewController;
@@ -536,35 +537,13 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
     }
 }
 
-export class TabContentItem extends TabContentItemBase {
-    private __controller: UIViewController;
-
-    public setViewController(controller: UIViewController, nativeView: UIView) {
-        this.__controller = controller;
-        this.setNativeView(nativeView);
-    }
-
-    public disposeNativeView() {
-        this.__controller = undefined;
-        this.setNativeView(undefined);
-    }
-
-    public loadView(view: ViewBase): void {
-        const tabView = this.parent as TabNavigationBase;
-        if (tabView && tabView.items) {
-            const index = tabView.items.indexOf(this);
-
-            // if (index === tabView.selectedIndex) {
-            //     super.loadView(view);
-            // }
-
-            super.loadView(view);
-        }
-    }
-}
-
-// @CSSType("Tabs")
-export class Tabs extends TabNavigationBase {
+export class Tabs extends TabsBase {
+    public nativeViewProtected: UIView;
+    public selectedIndex: number;
+    // public swipeEnabled: boolean;
+    // public offscreenTabLimit: number;
+    // public tabsPosition: "top" | "bottom";
+    public isLoaded: boolean;
     public viewController: UIPageViewControllerImpl;
     public items: TabContentItem[];
     public _ios: UIPageViewControllerImpl;
@@ -599,14 +578,15 @@ export class Tabs extends TabNavigationBase {
         super.disposeNativeView();
     }
 
-    @profile
+    // TODO
+    // @profile
     public onLoaded() {
         super.onLoaded();
 
         const selectedIndex = this.selectedIndex;
         const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].view;
         if (selectedView instanceof Frame) {
-            selectedView._pushInFrameStackRecursive();
+            (<Frame>selectedView)._pushInFrameStackRecursive();
         }
 
         this._ios.dataSource = this._dataSource;
@@ -712,74 +692,79 @@ export class Tabs extends TabNavigationBase {
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
-        if (traceEnabled()) {
-            traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
+        // }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         } else {
-            if (traceEnabled()) {
-                traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
-            }
+            // TODO
+            // if (traceEnabled()) {
+            //     traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
+            // }
         }
     }
 
     private _actionBarHiddenByTabView: boolean;
-    public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
-        if (traceEnabled()) {
-            traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
-        }
+    // public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
+    //     // TODO
+    //     // if (traceEnabled()) {
+    //     //     traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
+    //     // }
 
-        // The "< Back" and "< More" navigation bars should not be visible simultaneously.
-        const page = this.page || this._selectedView.page || (<any>this)._selectedView.currentPage;
-        if (!page || !page.frame) {
-            return;
-        }
+    //     // The "< Back" and "< More" navigation bars should not be visible simultaneously.
+    //     const page = this.page || this._selectedView.page || (<any>this)._selectedView.currentPage;
+    //     if (!page || !page.frame) {
+    //         return;
+    //     }
 
-        let actionBarVisible = page.frame._getNavBarVisible(page);
+    //     let actionBarVisible = page.frame._getNavBarVisible(page);
 
-        if (backToMoreWillBeVisible && actionBarVisible) {
-            page.frame.ios._disableNavBarAnimation = true;
-            page.actionBarHidden = true;
-            page.frame.ios._disableNavBarAnimation = false;
-            this._actionBarHiddenByTabView = true;
-            if (traceEnabled()) {
-                traceWrite(`TabView hid action bar`, traceCategories.Debug);
-            }
-            return;
-        }
+    //     if (backToMoreWillBeVisible && actionBarVisible) {
+    //         page.frame.ios._disableNavBarAnimation = true;
+    //         page.actionBarHidden = true;
+    //         page.frame.ios._disableNavBarAnimation = false;
+    //         this._actionBarHiddenByTabView = true;
+    //         // TODO
+    //         // if (traceEnabled()) {
+    //         //     traceWrite(`TabView hid action bar`, traceCategories.Debug);
+    //         // }
+    //         return;
+    //     }
 
-        if (!backToMoreWillBeVisible && this._actionBarHiddenByTabView) {
-            page.frame.ios._disableNavBarAnimation = true;
-            page.actionBarHidden = false;
-            page.frame.ios._disableNavBarAnimation = false;
-            this._actionBarHiddenByTabView = undefined;
-            if (traceEnabled()) {
-                traceWrite(`TabView restored action bar`, traceCategories.Debug);
-            }
-            return;
-        }
-    }
+    //     if (!backToMoreWillBeVisible && this._actionBarHiddenByTabView) {
+    //         page.frame.ios._disableNavBarAnimation = true;
+    //         page.actionBarHidden = false;
+    //         page.frame.ios._disableNavBarAnimation = false;
+    //         this._actionBarHiddenByTabView = undefined;
+    //         // TODO
+    //         // if (traceEnabled()) {
+    //         //     traceWrite(`TabView restored action bar`, traceCategories.Debug);
+    //         // }
+    //         return;
+    //     }
+    // }
 
     public getViewController(item: TabContentItem): UIViewController {
         let newController: UIViewController = item.view ? item.view.viewController : null;
 
         if (newController) {
-            item.setViewController(newController, newController.view);
+            (<any>item).setViewController(newController, newController.view);
             return newController;
         }
 
         if (item.view.ios instanceof UIViewController) {
             newController = item.view.ios;
-            item.setViewController(newController, newController.view);
+            (<any>item).setViewController(newController, newController.view);
         } else if (item.view.ios && item.view.ios.controller instanceof UIViewController) {
             newController = item.view.ios.controller;
-            item.setViewController(newController, newController.view);
+            (<any>item).setViewController(newController, newController.view);
         } else {
             newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
             newController.view.addSubview(item.view.nativeViewProtected);
             item.view.viewController = newController;
-            item.setViewController(newController, item.view.nativeViewProtected);
+            (<any>item).setViewController(newController, item.view.nativeViewProtected);
         }
 
         return newController;
@@ -810,7 +795,7 @@ export class Tabs extends TabNavigationBase {
         // this._ios.setViewControllersDirectionAnimatedCompletion(controllers, UIPageViewControllerNavigationDirection.Forward, false, null);
 
         iterateIndexRange(this.selectedIndex, 1, this.items.length, (index) => {
-            (<TabContentItemDefinition>items[index]).canBeLoaded = true;
+            (<TabContentItem>items[index]).canBeLoaded = true;
         });
 
         // (<TabContentItemDefinition>selectedItem).canBeLoaded = true;
@@ -917,7 +902,8 @@ export class Tabs extends TabNavigationBase {
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
-                traceMissingIcon(iconSource);
+                // TODO
+                // traceMissingIcon(iconSource);
             }
         }
 
@@ -937,17 +923,18 @@ export class Tabs extends TabNavigationBase {
     }
 
     // TODO: Move this to TabStripItem
-    [fontInternalProperty.getDefault](): Font {
-        return null;
-    }
-    [fontInternalProperty.setNative](value: Font) {
-        this._updateIOSTabBarColorsAndFonts();
-    }
+    // [fontInternalProperty.getDefault](): Font {
+    //     return null;
+    // }
+    // [fontInternalProperty.setNative](value: Font) {
+    //     this._updateIOSTabBarColorsAndFonts();
+    // }
 
     [selectedIndexProperty.setNative](value: number) {
-        if (traceEnabled()) {
-            traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
+        // }
 
         if (value > -1) {
             const item = this.items[value];

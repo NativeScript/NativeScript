@@ -1,15 +1,14 @@
-// import { TabViewItem as TabViewItemDefinition } from ".";
-import { Font } from "../styling/font";
+// Types
+import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+import { TabStrip } from "../tab-navigation-base/tab-strip";
+import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 
-import {
-    TabNavigationBase, TabContentItemBase, TabStripItem, itemsProperty, selectedIndexProperty,
-    fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, traceMissingIcon, TabStrip, tabStripProperty, swipeEnabledProperty,
-    offscreenTabLimitProperty
-} from "./tabs-common";
-import { fromFileOrResource } from "../../image-source";
-import { RESOURCE_PREFIX, ad } from "../../utils/utils";
+// Requires
+import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
 import { Frame } from "../frame";
+import { fromFileOrResource } from "../../image-source";
+import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import * as application from "../../application";
 
 export * from "./tabs-common";
@@ -235,7 +234,8 @@ function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItem
         if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
             if (result.iconId === 0) {
-                traceMissingIcon(item.iconSource);
+                // TODO
+                // traceMissingIcon(item.iconSource);
             }
         } else {
             const is = fromFileOrResource(item.iconSource);
@@ -243,7 +243,8 @@ function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItem
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
             } else {
-                traceMissingIcon(item.iconSource);
+                // TODO
+                // traceMissingIcon(item.iconSource);
             }
         }
     }
@@ -258,95 +259,6 @@ function getDefaultAccentColor(context: android.content.Context): number {
         defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
     }
     return defaultAccentColor;
-}
-
-export class TabContentItem extends TabContentItemBase {
-    nativeViewProtected: android.widget.TextView;
-    public tabItemSpec: org.nativescript.widgets.TabItemSpec;
-    public index: number;
-    private _defaultTransformationMethod: android.text.method.TransformationMethod;
-
-    get _hasFragments(): boolean {
-        return true;
-    }
-
-    public initNativeView(): void {
-        super.initNativeView();
-        if (this.nativeViewProtected) {
-            this._defaultTransformationMethod = this.nativeViewProtected.getTransformationMethod();
-        }
-    }
-
-    public onLoaded(): void {
-        super.onLoaded();
-    }
-
-    public resetNativeView(): void {
-        super.resetNativeView();
-        if (this.nativeViewProtected) {
-            // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-            this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-        }
-    }
-
-    public disposeNativeView(): void {
-        super.disposeNativeView();
-        (<any>this).canBeLoaded = false;
-    }
-
-    public createNativeView() {
-        return this.nativeViewProtected;
-    }
-
-    // public _update(): void {
-    //     const tv = this.nativeViewProtected;
-    //     const tabView = this.parent as Tabs;
-    //     if (tv && tabView) {
-    //         this.tabItemSpec = createTabItemSpec(this);
-    //         tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
-    //     }
-    // }
-
-    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
-        const tabView = this.parent as Tabs;
-        let tabFragment = null;
-        const fragmentManager = tabView._getFragmentManager();
-        for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
-            if (fragment.index === this.index) {
-                tabFragment = fragment;
-                break;
-            }
-        }
-
-        // TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
-        if (!tabFragment) {
-            if (traceEnabled()) {
-                traceWrite(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
-            }
-
-            return (<any>tabView)._getRootFragmentManager();
-        }
-
-        return tabFragment.getChildFragmentManager();
-    }
-
-    [fontSizeProperty.getDefault](): { nativeSize: number } {
-        return { nativeSize: this.nativeViewProtected.getTextSize() };
-    }
-    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-        if (typeof value === "number") {
-            this.nativeViewProtected.setTextSize(value);
-        } else {
-            this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-        }
-    }
-
-    [fontInternalProperty.getDefault](): android.graphics.Typeface {
-        return this.nativeViewProtected.getTypeface();
-    }
-    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
-        this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
-    }
 }
 
 function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.nativescript.widgets.TabLayout) {
@@ -368,7 +280,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
     }
 }
 
-export class Tabs extends TabNavigationBase {
+export class Tabs extends TabsBase {
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
@@ -388,8 +300,8 @@ export class Tabs extends TabNavigationBase {
 
         if (oldItems) {
             oldItems.forEach((item: TabContentItem, i, arr) => {
-                item.index = 0;
-                item.tabItemSpec = null;
+                (<any>item).index = 0;
+                (<any>item).tabItemSpec = null;
                 item.setNativeView(null);
             });
         }
@@ -397,9 +309,10 @@ export class Tabs extends TabNavigationBase {
 
     public createNativeView() {
         initializeNativeClasses();
-        if (traceEnabled()) {
-            traceWrite("TabView._createUI(" + this + ");", traceCategory);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView._createUI(" + this + ");", traceCategory);
+        // }
 
         const context: android.content.Context = this._context;
         const nativeView = new org.nativescript.widgets.GridLayout(context);
@@ -489,7 +402,7 @@ export class Tabs extends TabNavigationBase {
         const newItem = items[newIndex];
         const selectedView = newItem && newItem.view;
         if (selectedView instanceof Frame) {
-            selectedView._pushInFrameStackRecursive();
+            (<Frame>selectedView)._pushInFrameStackRecursive();
         }
 
         toLoad.forEach(index => {
@@ -651,9 +564,10 @@ export class Tabs extends TabNavigationBase {
     [selectedIndexProperty.setNative](value: number) {
         const smoothScroll = true;
 
-        if (traceEnabled()) {
-            traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
+        // }
 
         this._viewPager.setCurrentItem(value, smoothScroll);
     }

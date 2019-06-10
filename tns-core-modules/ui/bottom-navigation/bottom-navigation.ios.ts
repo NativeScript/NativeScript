@@ -1,18 +1,22 @@
-﻿import { TabContentItem as TabContentItemDefinition } from ".";
-import { Font } from "../styling/font";
+﻿// Types
+import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 
-import { ios as iosView, ViewBase } from "../core/view";
-import {
-    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon, TabStripItem
-} from "./bottom-navigation-common"
-import { textTransformProperty, TextTransform } from "../text-base";
-import { fromFileOrResource } from "../../image-source";
-import { profile } from "../../profiling";
+//Requires
+import { TabNavigationBase, itemsProperty, selectedIndexProperty } from "../tab-navigation-base/tab-navigation-base";
 import { Frame } from "../frame";
-import { ios as iosUtils } from "../../utils/utils"
+import { ios as iosView, View, CSSType } from "../core/view";
+import { ios as iosUtils, layout } from "../../utils/utils"
 import { device } from "../../platform";
-export * from "./bottom-navigation-common";
+import { Color } from "../../color";
+import { fromFileOrResource } from "../../image-source";
+// TODO:
+// import { profile } from "../../profiling";
+
+export * from "../tab-navigation-base/tab-content-item";
+export * from "../tab-navigation-base/tab-navigation-base";
+export * from "../tab-navigation-base/tab-strip";
+export * from "../tab-navigation-base/tab-strip-item";
 
 const majorVersion = iosUtils.MajorVersion;
 const isPhone = device.deviceType === "Phone";
@@ -27,7 +31,8 @@ class UITabBarControllerImpl extends UITabBarController {
         return handler;
     }
 
-    @profile
+    // TODO
+    // @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
@@ -45,7 +50,8 @@ class UITabBarControllerImpl extends UITabBarController {
         }
     }
 
-    @profile
+    // TODO
+    // @profile
     public viewDidDisappear(animated: boolean): void {
         super.viewDidDisappear(animated);
         const owner = this._owner.get();
@@ -78,9 +84,10 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     }
 
     public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
-        if (traceEnabled()) {
-            traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // }
 
         let owner = this._owner.get();
         if (owner) {
@@ -99,9 +106,10 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     }
 
     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // }
 
         const owner = this._owner.get();
         if (owner) {
@@ -124,9 +132,10 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 
     navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+        // }
 
         let owner = this._owner.get();
         if (owner) {
@@ -138,9 +147,10 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 
     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+        // }
         // We don't need Edit button in More screen.
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
         let owner = this._owner.get();
@@ -178,33 +188,7 @@ function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UIT
     }
 }
 
-export class TabContentItem extends TabContentItemBase {
-    private __controller: UIViewController;
-
-    public setViewController(controller: UIViewController, nativeView: UIView) {
-        this.__controller = controller;
-        this.setNativeView(nativeView);
-    }
-
-    public disposeNativeView() {
-        this.__controller = undefined;
-        this.setNativeView(undefined);
-    }
-
-    public loadView(view: ViewBase): void {
-        const tabView = this.parent as TabNavigationBase;
-        if (tabView && tabView.items) {
-            const index = tabView.items.indexOf(this);
-
-            // if (index === tabView.selectedIndex) {
-            //     super.loadView(view);
-            // }
-            super.loadView(view);
-        }
-    }
-}
-
-// @CSSType("BottomNavigation")
+@CSSType("BottomNavigation")
 export class BottomNavigation extends TabNavigationBase {
     public viewController: UITabBarControllerImpl;
     public items: TabContentItem[];
@@ -232,7 +216,8 @@ export class BottomNavigation extends TabNavigationBase {
         super.disposeNativeView();
     }
 
-    @profile
+    // TODO
+    // @profile
     public onLoaded() {
         super.onLoaded();
 
@@ -302,26 +287,29 @@ export class BottomNavigation extends TabNavigationBase {
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
-        if (traceEnabled()) {
-            traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
+        // }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         } else {
-            if (traceEnabled()) {
-                traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
-            }
+            // TODO
+            // if (traceEnabled()) {
+            //     traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
+            // }
         }
     }
 
     private _actionBarHiddenByTabView: boolean;
     public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
-        if (traceEnabled()) {
-            traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
+        // }
 
         // The "< Back" and "< More" navigation bars should not be visible simultaneously.
-        const page = this.page || this._selectedView.page || (<any>this)._selectedView.currentPage;
+        const page = this.page || (<any>this)._selectedView.page || (<any>this)._selectedView.currentPage;
         if (!page || !page.frame) {
             return;
         }
@@ -333,9 +321,10 @@ export class BottomNavigation extends TabNavigationBase {
             page.actionBarHidden = true;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = true;
-            if (traceEnabled()) {
-                traceWrite(`TabView hid action bar`, traceCategories.Debug);
-            }
+            // TODO
+            // if (traceEnabled()) {
+            //     traceWrite(`TabView hid action bar`, traceCategories.Debug);
+            // }
             return;
         }
 
@@ -344,9 +333,10 @@ export class BottomNavigation extends TabNavigationBase {
             page.actionBarHidden = false;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = undefined;
-            if (traceEnabled()) {
-                traceWrite(`TabView restored action bar`, traceCategories.Debug);
-            }
+            // TODO
+            // if (traceEnabled()) {
+            //     traceWrite(`TabView restored action bar`, traceCategories.Debug);
+            // }
             return;
         }
     }
@@ -355,21 +345,21 @@ export class BottomNavigation extends TabNavigationBase {
         let newController: UIViewController = item.view ? item.view.viewController : null;
 
         if (newController) {
-            item.setViewController(newController, newController.view);
+            (<any>item).setViewController(newController, newController.view);
             return newController;
         }
 
         if (item.view.ios instanceof UIViewController) {
             newController = item.view.ios;
-            item.setViewController(newController, newController.view);
+            (<any>item).setViewController(newController, newController.view);
         } else if (item.view.ios && item.view.ios.controller instanceof UIViewController) {
             newController = item.view.ios.controller;
-            item.setViewController(newController, newController.view);
+            (<any>item).setViewController(newController, newController.view);
         } else {
             newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
             newController.view.addSubview(item.view.nativeViewProtected);
             item.view.viewController = newController;
-            item.setViewController(newController, item.view.nativeViewProtected);
+            (<any>item).setViewController(newController, item.view.nativeViewProtected);
         }
 
         return newController;
@@ -405,7 +395,7 @@ export class BottomNavigation extends TabNavigationBase {
             }
 
             controllers.addObject(controller);
-            (<TabContentItemDefinition>item).canBeLoaded = true;
+            (<TabContentItem>item).canBeLoaded = true;
         });
 
         this._ios.viewControllers = controllers;
@@ -432,7 +422,8 @@ export class BottomNavigation extends TabNavigationBase {
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
-                traceMissingIcon(iconSource);
+                // TODO
+                // traceMissingIcon(iconSource);
             }
         }
 
@@ -452,17 +443,18 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     // TODO: Move this to TabStripItem
-    [fontInternalProperty.getDefault](): Font {
-        return null;
-    }
-    [fontInternalProperty.setNative](value: Font) {
-        this._updateIOSTabBarColorsAndFonts();
-    }
+    // [fontInternalProperty.getDefault](): Font {
+    //     return null;
+    // }
+    // [fontInternalProperty.setNative](value: Font) {
+    //     this._updateIOSTabBarColorsAndFonts();
+    // }
 
     [selectedIndexProperty.setNative](value: number) {
-        if (traceEnabled()) {
-            traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
-        }
+        // TODO
+        // if (traceEnabled()) {
+        //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
+        // }
 
         if (value > -1) {
             (<any>this._ios)._willSelectViewController = this._ios.viewControllers[value];

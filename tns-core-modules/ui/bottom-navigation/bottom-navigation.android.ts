@@ -1,14 +1,21 @@
-import { TabContentItem as TabContentItemDefinition } from ".";
+// Types
+import { TabStrip } from "../tab-navigation-base/tab-strip";
+import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
+import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 
-import {
-    TabNavigationBase, TabContentItemBase, itemsProperty, selectedIndexProperty, tabStripProperty, TabStrip, layout, traceCategory, traceEnabled,
-    traceWrite, traceMissingIcon, TabStripItem
-} from "./bottom-navigation-common";
-import { fromFileOrResource } from "../../image-source";
-import { RESOURCE_PREFIX, ad } from "../../utils/utils";
+// Requires
+import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { CSSType } from "../core/view";
 import { Frame } from "../frame";
+import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
+import { fromFileOrResource } from "../../image-source";
+// TODO: Impl trace
+// import { isEnabled as traceEnabled, write as traceWrite } from "../../../trace";
 
-export * from "./bottom-navigation-common";
+export * from "../tab-navigation-base/tab-content-item";
+export * from "../tab-navigation-base/tab-navigation-base";
+export * from "../tab-navigation-base/tab-strip";
+export * from "../tab-navigation-base/tab-strip-item";
 
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 8;
@@ -96,7 +103,8 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
         if (tabStripItem.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(tabStripItem.iconSource.substr(RESOURCE_PREFIX.length));
             if (result.iconId === 0) {
-                traceMissingIcon(tabStripItem.iconSource);
+                // TODO: 
+                // traceMissingIcon(tabStripItem.iconSource);
             }
         } else {
             const is = fromFileOrResource(tabStripItem.iconSource);
@@ -104,74 +112,13 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
             } else {
-                traceMissingIcon(tabStripItem.iconSource);
+                // TODO: 
+                // traceMissingIcon(tabStripItem.iconSource);
             }
         }
     }
 
     return result;
-}
-
-export class TabContentItem extends TabContentItemBase {
-    nativeViewProtected: android.widget.TextView;
-    public tabItemSpec: org.nativescript.widgets.TabItemSpec;
-    public index: number;
-    private _defaultTransformationMethod: android.text.method.TransformationMethod;
-
-    get _hasFragments(): boolean {
-        return true;
-    }
-
-    public initNativeView(): void {
-        super.initNativeView();
-        if (this.nativeViewProtected) {
-            this._defaultTransformationMethod = this.nativeViewProtected.getTransformationMethod();
-        }
-    }
-
-    public onLoaded(): void {
-        super.onLoaded();
-    }
-
-    public resetNativeView(): void {
-        super.resetNativeView();
-        if (this.nativeViewProtected) {
-            // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-            this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-        }
-    }
-
-    public disposeNativeView(): void {
-        super.disposeNativeView();
-        (<TabContentItemDefinition>this).canBeLoaded = false;
-    }
-
-    public createNativeView() {
-        return this.nativeViewProtected;
-    }
-
-    public _getChildFragmentManager(): android.support.v4.app.FragmentManager {
-        const tabView = this.parent as BottomNavigation;
-        let tabFragment = null;
-        const fragmentManager = tabView._getFragmentManager();
-        for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
-            if (fragment.index === this.index) {
-                tabFragment = fragment;
-                break;
-            }
-        }
-
-        // TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
-        if (!tabFragment) {
-            if (traceEnabled()) {
-                traceWrite(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
-            }
-
-            return (<any>tabView)._getRootFragmentManager();
-        }
-
-        return tabFragment.getChildFragmentManager();
-    }
 }
 
 function setElevation(grid: org.nativescript.widgets.GridLayout, bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
@@ -193,7 +140,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
     }
 }
 
-// @CSSType("BottomNavigation")
+@CSSType("BottomNavigation")
 export class BottomNavigation extends TabNavigationBase {
     private _contentView: org.nativescript.widgets.ContentLayout;
     private _contentViewId: number = -1;
@@ -214,8 +161,8 @@ export class BottomNavigation extends TabNavigationBase {
 
         if (oldItems) {
             oldItems.forEach((item: TabContentItem, i, arr) => {
-                item.index = 0;
-                item.tabItemSpec = null;
+                (<any>item).index = 0;
+                (<any>item).tabItemSpec = null;
                 item.setNativeView(null);
             });
         }
@@ -223,9 +170,9 @@ export class BottomNavigation extends TabNavigationBase {
 
     public createNativeView() {
         initializeNativeClasses();
-        if (traceEnabled()) {
-            traceWrite("BottomNavigation._createUI(" + this + ");", traceCategory);
-        }
+        // if (traceEnabled()) {
+        //     traceWrite("BottomNavigation._createUI(" + this + ");", traceCategory);
+        // }
 
         const context: android.content.Context = this._context;
         const nativeView = new org.nativescript.widgets.GridLayout(context);
@@ -389,7 +336,7 @@ export class BottomNavigation extends TabNavigationBase {
         transaction.commitNowAllowingStateLoss();
     }
 
-    private setAdapterItems(items: Array<TabContentItemDefinition>) {
+    private setAdapterItems(items: Array<TabContentItem>) {
         if (this.tabStrip && this.tabStrip.items) {
             const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
             this.tabStrip.items.forEach((item, i, arr) => {
@@ -410,9 +357,9 @@ export class BottomNavigation extends TabNavigationBase {
     [selectedIndexProperty.setNative](value: number) {
         const smoothScroll = false;
 
-        if (traceEnabled()) {
-            traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
-        }
+        // if (traceEnabled()) {
+        //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
+        // }
 
         this._bottomNavigationBar.setSelectedPosition(value);
     }
