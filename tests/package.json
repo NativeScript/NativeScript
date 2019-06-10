@@ -2,10 +2,10 @@
   "nativescript": {
     "id": "org.nativescript.UnitTestApp",
     "tns-android": {
-      "version": "5.4.0"
+      "version": "next"
     },
     "tns-ios": {
-      "version": "5.4.0"
+      "version": "next"
     }
   },
   "main": "app.js",
@@ -13,7 +13,6 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "nativescript-theme-core": "~1.0.4",
     "tns-core-modules": "file:../tns-core-modules"
   },
   "devDependencies": {
