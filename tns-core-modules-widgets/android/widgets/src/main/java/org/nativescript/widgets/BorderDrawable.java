@@ -17,7 +17,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Shader;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;

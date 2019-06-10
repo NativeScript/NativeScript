@@ -59,7 +59,7 @@ export class Page extends PageBase {
 
     [statusBarStyleProperty.getDefault](): { color: number, systemUiVisibility: number } {
         if (device.sdkVersion >= "21") {
-            const window = (<android.support.v7.app.AppCompatActivity>this._context).getWindow();
+            const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
             const decorView = window.getDecorView();
 
             return {
@@ -72,7 +72,7 @@ export class Page extends PageBase {
     }
     [statusBarStyleProperty.setNative](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
         if (device.sdkVersion >= "21") {
-            const window = (<android.support.v7.app.AppCompatActivity>this._context).getWindow();
+            const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
             const decorView = window.getDecorView();
 
             if (value === "light") {
@@ -91,7 +91,7 @@ export class Page extends PageBase {
 
     [androidStatusBarBackgroundProperty.getDefault](): number {
         if (device.sdkVersion >= "21") {
-            const window = (<android.support.v7.app.AppCompatActivity>this._context).getWindow();
+            const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
             return (<any>window).getStatusBarColor();
         }
 
@@ -99,7 +99,7 @@ export class Page extends PageBase {
     }
     [androidStatusBarBackgroundProperty.setNative](value: number | Color) {
         if (device.sdkVersion >= "21") {
-            const window = (<android.support.v7.app.AppCompatActivity>this._context).getWindow();
+            const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
             const color = value instanceof Color ? value.android : value;
             (<any>window).setStatusBarColor(color);
         }

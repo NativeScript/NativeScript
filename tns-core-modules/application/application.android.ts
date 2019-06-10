@@ -44,8 +44,8 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
-    public foregroundActivity: android.support.v7.app.AppCompatActivity;
-    public startActivity: android.support.v7.app.AppCompatActivity;
+    public foregroundActivity: androidx.appcompat.app.AppCompatActivity;
+    public startActivity: androidx.appcompat.app.AppCompatActivity;
     public packageName: string;
     // we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
     private callbacks: any = {};
@@ -235,7 +235,7 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 };
 
 function initLifecycleCallbacks() {
-    const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: android.support.v7.app.AppCompatActivity) => {
+    const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: androidx.appcompat.app.AppCompatActivity) => {
         // Set app theme after launch screen was used during startup
         const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
         if (activityInfo.metaData) {
@@ -246,11 +246,11 @@ function initLifecycleCallbacks() {
         }
     });
 
-    const notifyActivityCreated = profile("notifyActivityCreated", function (activity: android.support.v7.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
+    const notifyActivityCreated = profile("notifyActivityCreated", function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
         androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
     });
 
-    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: android.support.v7.app.AppCompatActivity) {
+    const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: androidx.appcompat.app.AppCompatActivity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
         // store the listener not to trigger GC collection before collecting the method
         this.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
@@ -264,7 +264,7 @@ function initLifecycleCallbacks() {
     });
 
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
-        onActivityCreated: profile("onActivityCreated", function (activity: android.support.v7.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
+        onActivityCreated: profile("onActivityCreated", function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
             setThemeOnLaunch(activity);
 
             if (!androidApp.startActivity) {
@@ -278,7 +278,7 @@ function initLifecycleCallbacks() {
             }
         }),
 
-        onActivityDestroyed: profile("onActivityDestroyed", function (activity: android.support.v7.app.AppCompatActivity) {
+        onActivityDestroyed: profile("onActivityDestroyed", function (activity: androidx.appcompat.app.AppCompatActivity) {
             if (activity === androidApp.foregroundActivity) {
                 androidApp.foregroundActivity = undefined;
             }
@@ -292,7 +292,7 @@ function initLifecycleCallbacks() {
             gc();
         }),
 
-        onActivityPaused: profile("onActivityPaused", function (activity: android.support.v7.app.AppCompatActivity) {
+        onActivityPaused: profile("onActivityPaused", function (activity: androidx.appcompat.app.AppCompatActivity) {
             if ((<any>activity).isNativeScriptActivity) {
                 androidApp.paused = true;
                 notify(<ApplicationEventData>{ eventName: suspendEvent, object: androidApp, android: activity });
@@ -301,21 +301,21 @@ function initLifecycleCallbacks() {
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityPaused, object: androidApp, activity: activity });
         }),
 
-        onActivityResumed: profile("onActivityResumed", function (activity: android.support.v7.app.AppCompatActivity) {
+        onActivityResumed: profile("onActivityResumed", function (activity: androidx.appcompat.app.AppCompatActivity) {
             androidApp.foregroundActivity = activity;
 
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityResumed, object: androidApp, activity: activity });
         }),
 
-        onActivitySaveInstanceState: profile("onActivitySaveInstanceState", function (activity: android.support.v7.app.AppCompatActivity, outState: android.os.Bundle) {
+        onActivitySaveInstanceState: profile("onActivitySaveInstanceState", function (activity: androidx.appcompat.app.AppCompatActivity, outState: android.os.Bundle) {
             androidApp.notify(<AndroidActivityBundleEventData>{ eventName: SaveActivityState, object: androidApp, activity: activity, bundle: outState });
         }),
 
-        onActivityStarted: profile("onActivityStarted", function (activity: android.support.v7.app.AppCompatActivity) {
+        onActivityStarted: profile("onActivityStarted", function (activity: androidx.appcompat.app.AppCompatActivity) {
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityStarted, object: androidApp, activity: activity });
         }),
 
-        onActivityStopped: profile("onActivityStopped", function (activity: android.support.v7.app.AppCompatActivity) {
+        onActivityStopped: profile("onActivityStopped", function (activity: androidx.appcompat.app.AppCompatActivity) {
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityStopped, object: androidApp, activity: activity });
         })
     });

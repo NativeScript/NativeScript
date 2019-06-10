@@ -13,3 +13,4 @@ android {
     additionalParameters "--no-version-vectors"  
   }  
 } 
+project.ext.useAndroidX=true
