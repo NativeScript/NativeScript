@@ -64,11 +64,11 @@ export function _setAndroidFragmentTransitions(
     navigationTransition: NavigationTransition,
     currentEntry: ExpandedEntry,
     newEntry: ExpandedEntry,
-    fragmentTransaction: android.support.v4.app.FragmentTransaction,
+    fragmentTransaction: androidx.fragment.app.FragmentTransaction,
     frameId: number): void {
 
-    const currentFragment: android.support.v4.app.Fragment = currentEntry ? currentEntry.fragment : null;
-    const newFragment: android.support.v4.app.Fragment = newEntry.fragment;
+    const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
+    const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
     const entries = waitingQueue.get(frameId);
     if (entries && entries.size > 0) {
         throw new Error("Calling navigation before previous navigation finish.");
@@ -193,7 +193,7 @@ export function _setAndroidFragmentTransitions(
     printTransitions(newEntry);
 }
 
-export function _onFragmentCreateAnimator(entry: ExpandedEntry, fragment: android.support.v4.app.Fragment, nextAnim: number, enter: boolean): android.animation.Animator {
+export function _onFragmentCreateAnimator(entry: ExpandedEntry, fragment: androidx.fragment.app.Fragment, nextAnim: number, enter: boolean): android.animation.Animator {
     let animator: android.animation.Animator;
     switch (nextAnim) {
         case AnimationType.enterFakeResourceId:
@@ -406,7 +406,7 @@ function clearAnimationListener(animator: ExpandedAnimator, listener: android.an
 
 function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: boolean): void {
     if (sdkVersion() >= 21) {
-        const fragment: android.support.v4.app.Fragment = entry.fragment;
+        const fragment: androidx.fragment.app.Fragment = entry.fragment;
         const exitListener = entry.exitTransitionListener;
         if (exitListener) {
             const exitTransition = fragment.getExitTransition();
@@ -459,7 +459,7 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
     clearExitAndReenterTransitions(entry, removeListener);
 
     if (sdkVersion() >= 21) {
-        const fragment: android.support.v4.app.Fragment = entry.fragment;
+        const fragment: androidx.fragment.app.Fragment = entry.fragment;
         const enterListener = entry.enterTransitionListener;
         if (enterListener) {
             const enterTransition = fragment.getEnterTransition();
@@ -510,7 +510,7 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
     }
 }
 
-function allowTransitionOverlap(fragment: android.support.v4.app.Fragment): void {
+function allowTransitionOverlap(fragment: androidx.fragment.app.Fragment): void {
     if (fragment) {
         fragment.setAllowEnterTransitionOverlap(true);
         fragment.setAllowReturnTransitionOverlap(true);
@@ -523,7 +523,7 @@ function setEnterTransition(navigationTransition: NavigationTransition, entry: E
 
     // attach listener to JS object so that it will be alive as long as entry.
     entry.enterTransitionListener = listener;
-    const fragment: android.support.v4.app.Fragment = entry.fragment;
+    const fragment: androidx.fragment.app.Fragment = entry.fragment;
     fragment.setEnterTransition(transition);
 }
 
@@ -533,7 +533,7 @@ function setExitTransition(navigationTransition: NavigationTransition, entry: Ex
 
     // attach listener to JS object so that it will be alive as long as entry.
     entry.exitTransitionListener = listener;
-    const fragment: android.support.v4.app.Fragment = entry.fragment;
+    const fragment: androidx.fragment.app.Fragment = entry.fragment;
     fragment.setExitTransition(transition);
 }
 
@@ -543,7 +543,7 @@ function setReenterTransition(navigationTransition: NavigationTransition, entry:
 
     // attach listener to JS object so that it will be alive as long as entry.
     entry.reenterTransitionListener = listener;
-    const fragment: android.support.v4.app.Fragment = entry.fragment;
+    const fragment: androidx.fragment.app.Fragment = entry.fragment;
     fragment.setReenterTransition(transition);
 }
 
@@ -553,7 +553,7 @@ function setReturnTransition(navigationTransition: NavigationTransition, entry: 
 
     // attach listener to JS object so that it will be alive as long as entry.
     entry.returnTransitionListener = listener;
-    const fragment: android.support.v4.app.Fragment = entry.fragment;
+    const fragment: androidx.fragment.app.Fragment = entry.fragment;
     fragment.setReturnTransition(transition);
 }
 

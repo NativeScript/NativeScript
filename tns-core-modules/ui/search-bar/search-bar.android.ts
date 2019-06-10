@@ -12,11 +12,11 @@ const SEARCHTEXT = Symbol("searchText");
 const QUERY = Symbol("query");
 
 interface QueryTextListener {
-    new (owner: SearchBar): android.support.v7.widget.SearchView.OnQueryTextListener;
+    new (owner: SearchBar): androidx.appcompat.widget.SearchView.OnQueryTextListener;
 }
 
 interface CloseListener {
-    new (owner: SearchBar): android.support.v7.widget.SearchView.OnCloseListener;
+    new (owner: SearchBar): androidx.appcompat.widget.SearchView.OnCloseListener;
 }
 
 let QueryTextListener: QueryTextListener;
@@ -27,8 +27,8 @@ function initializeNativeClasses(): void {
         return;
     }
 
-    @Interfaces([android.support.v7.widget.SearchView.OnQueryTextListener])
-    class CompatQueryTextListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnQueryTextListener {
+    @Interfaces([androidx.appcompat.widget.SearchView.OnQueryTextListener])
+    class CompatQueryTextListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnQueryTextListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -60,8 +60,8 @@ function initializeNativeClasses(): void {
         }
     }
 
-    @Interfaces([android.support.v7.widget.SearchView.OnCloseListener])
-    class CompatCloseListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnCloseListener {
+    @Interfaces([androidx.appcompat.widget.SearchView.OnCloseListener])
+    class CompatCloseListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnCloseListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -105,7 +105,7 @@ function enableUserInteractionSearchView(nativeView: any, value: boolean) {
 }
 
 export class SearchBar extends SearchBarBase {
-    nativeViewProtected: android.support.v7.widget.SearchView;
+    nativeViewProtected: androidx.appcompat.widget.SearchView;
     private _searchTextView: android.widget.TextView;
     private _searchPlate: android.widget.LinearLayout;
 
@@ -123,7 +123,7 @@ export class SearchBar extends SearchBarBase {
     }
 
     public createNativeView() {
-        const nativeView = new android.support.v7.widget.SearchView(this._context)
+        const nativeView = new androidx.appcompat.widget.SearchView(this._context)
         nativeView.setIconified(false);
         return nativeView;
     }

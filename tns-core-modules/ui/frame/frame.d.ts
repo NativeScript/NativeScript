@@ -198,7 +198,7 @@ export class Frame extends View {
 }
 
 /**
- * Sets the extended android.support.v4.app.Fragment class to the Frame and navigation routine. An instance of this class will be created to represent the Page currently visible on the srceen. This method is available only for the Android platform.
+ * Sets the extended androidx.fragment.app.Fragment class to the Frame and navigation routine. An instance of this class will be created to represent the Page currently visible on the srceen. This method is available only for the Android platform.
  */
 export function setFragmentClass(clazz: any): void;
 
@@ -398,12 +398,12 @@ export interface AndroidFrame extends Observable {
     /**
      * Gets the native [android Activity](http://developer.android.com/reference/android/app/Activity.html) instance associated with this Frame. In case of nested Frame objects, this property points to the activity of the root Frame.
      */
-    activity: any /* android.support.v7.app.AppCompatActivity */;
+    activity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * Gets the current (foreground) activity for the application. This property will recursively traverse all existing Frame objects and check for own Activity property.
      */
-    currentActivity: any /* android.support.v7.app.AppCompatActivity */;
+    currentActivity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * Gets the actionBar property of the currentActivity.
@@ -423,7 +423,7 @@ export interface AndroidFrame extends Observable {
     cachePagesOnNavigate: boolean;
 
     /**
-     * Finds the native android.support.v4.app.Fragment instance created for the specified Page.
+     * Finds the native androidx.fragment.app.Fragment instance created for the specified Page.
      * @param page The Page instance to search for.
      */
     fragmentForPage(entry: BackstackEntry): any;
@@ -487,7 +487,7 @@ export interface iOSFrame {
     //@endprivate
 }
 
-export function setActivityCallbacks(activity: any /*android.support.v7.app.AppCompatActivity*/): void;
+export function setActivityCallbacks(activity: any /*androidx.appcompat.app.AppCompatActivity*/): void;
 //@private
 /**
  * @private
@@ -496,5 +496,5 @@ export function reloadPage(): void;
 /**
  * @private
  */
-export function setFragmentCallbacks(fragment: any /*android.support.v4.app.Fragment*/): void;
+export function setFragmentCallbacks(fragment: any /*androidx.fragment.app.Fragment*/): void;
 //@endprivate

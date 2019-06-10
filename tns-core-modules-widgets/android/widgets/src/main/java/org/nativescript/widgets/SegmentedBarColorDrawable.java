@@ -2,7 +2,7 @@ package org.nativescript.widgets;
 
 import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
-import android.support.annotation.ColorInt;
+import androidx.annotation.ColorInt;
 
 /**
  * Created by hhristov on 2/23/17.
