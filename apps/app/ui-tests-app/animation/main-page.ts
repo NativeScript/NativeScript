@@ -11,10 +11,10 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("animation-curves", "animation/animation-curves");
-    examples.set("animation-army-100", "animation/animation-army-100");
-    examples.set("height-basic", "animation/height-basic");
-    examples.set("layout-stack-height", "animation/layout-stack-height");
-    examples.set("effect-summary-details", "animation/effect-summary-details");
+    examples.set("animation-curves", "animation/animation-curves-page");
+    examples.set("animation-army-100", "animation/animation-army-100-page");
+    examples.set("height-basic", "animation/height-basic-page");
+    examples.set("layout-stack-height", "animation/layout-stack-height-page");
+    examples.set("effect-summary-details", "animation/effect-summary-details-page");
     return examples;
 }

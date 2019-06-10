@@ -11,8 +11,8 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("basics", "bindings/basics");
-    examples.set("xmlbasics", "bindings/xmlbasics");
+    examples.set("basics", "bindings/basics-page");
+    examples.set("xmlbasics", "bindings/xmlbasics-page");
 
     return examples;
 }
