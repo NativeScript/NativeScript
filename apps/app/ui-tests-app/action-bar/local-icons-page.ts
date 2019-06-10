@@ -5,8 +5,8 @@ import { ActionBar } from "tns-core-modules/ui/action-bar";
 
 const iconModes = ["automatic", "alwaysOriginal", "alwaysTemplate", undefined];
 
-export function navigate(args) {
-    frame.topmost().navigate("ui-tests-app/action-bar/clean");
+export function navigate() {
+    frame.topmost().navigate("ui-tests-app/action-bar/clean-page");
 }
 
 export function onChangeRenderingMode(args: EventData) {

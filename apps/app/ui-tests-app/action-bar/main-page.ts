@@ -11,23 +11,23 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("actColor", "action-bar/color");
-    examples.set("actBG", "action-bar/background");
-    examples.set("actStyle", "action-bar/all");
-    examples.set("actIcons", "action-bar/system-icons");
-    examples.set("actLocalIcons", "action-bar/local-icons");
-    examples.set("actResIcons", "action-bar/icons");
-    examples.set("actView", "action-bar/action-view");
-    examples.set("actionItemPosition", "action-bar/action-item-position");
-    examples.set("actBGCss", "action-bar/background-css");
-    examples.set("actTransparentBgCss", "action-bar/transparent-bg-css");
-    examples.set("modalHiddenActBar", "action-bar/modal-test-hidden-action-bar");
-    examples.set("modalShownActBar", "action-bar/modal-test-with-action-bar");
-    examples.set("flat", "action-bar/flat");
-    examples.set("flat-tab", "action-bar/flat-tab");
-    examples.set("flat-tab-opaque-bar", "action-bar/flat-tab-opaque-bar");
-    examples.set("flat-layout", "action-bar/flat-layout");
-    examples.set("flat-scrollview", "action-bar/flat-scrollview");
+    examples.set("actColor", "action-bar/color-page");
+    examples.set("actBG", "action-bar/background-page");
+    examples.set("actStyle", "action-bar/all-page");
+    examples.set("actIcons", "action-bar/system-icons-page");
+    examples.set("actLocalIcons", "action-bar/local-icons-page");
+    examples.set("actResIcons", "action-bar/icons-page");
+    examples.set("actView", "action-bar/action-view-page");
+    examples.set("actionItemPosition", "action-bar/action-item-position-page");
+    examples.set("actBGCss", "action-bar/background-css-page");
+    examples.set("actTransparentBgCss", "action-bar/transparent-bg-css-page");
+    examples.set("modalHiddenActBar", "action-bar/modal-test-hidden-action-bar-page");
+    examples.set("modalShownActBar", "action-bar/modal-test-with-action-bar-page");
+    examples.set("flat", "action-bar/flat-page");
+    examples.set("flat-tab", "action-bar/flat-tab-page");
+    examples.set("flat-tab-opaque-bar", "action-bar/flat-tab-opaque-bar-page");
+    examples.set("flat-layout", "action-bar/flat-layout-page");
+    examples.set("flat-scrollview", "action-bar/flat-scrollview-page");
 
     return examples;
 }
