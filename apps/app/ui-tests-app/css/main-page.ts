@@ -5,7 +5,7 @@ import { Page } from "tns-core-modules/ui/page";
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
-    const wrapLayout = <WrapLayout>page.getViewById("wrapLayoutWithExamples-page");
+    const wrapLayout = <WrapLayout>page.getViewById("wrapLayoutWithExamples");
     page.bindingContext = new SubMainPageViewModel(wrapLayout, loadExamples());
 }
 
