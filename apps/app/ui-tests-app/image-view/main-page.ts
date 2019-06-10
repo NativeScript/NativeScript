@@ -11,12 +11,12 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("roundbtn", "image-view/rounded-buttons");
-    examples.set("roundimg", "image-view/rounded-images");
-    examples.set("mode-matrix", "image-view/mode-matrix");
-    examples.set("stretch-modes", "image-view/stretch-modes");
-    examples.set("missing-image", "image-view/missing-image");
-    examples.set("image-asset", "image-view/image-asset/image-asset");
+    examples.set("roundbtn", "image-view/rounded-buttons-page");
+    examples.set("roundimg", "image-view/rounded-images-page");
+    examples.set("mode-matrix", "image-view/mode-matrix-page");
+    examples.set("stretch-modes", "image-view/stretch-modes-page");
+    examples.set("missing-image", "image-view/missing-image-page");
+    examples.set("image-asset", "image-view/image-asset/image-asset-page");
 
     return examples;
 }
