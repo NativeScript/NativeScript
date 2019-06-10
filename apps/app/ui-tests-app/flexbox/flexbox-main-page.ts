@@ -11,13 +11,12 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("flexboxall", "flexbox/flexbox");
-    examples.set("flexboxcss", "flexbox/flexbox-css");
-    examples.set("flexboxdemo", "flexbox/flexbox-demo");
-    examples.set("flexrepeat", "flexbox/flexbox-repeater");
-    examples.set("flex-perf", "flexbox/flexbox-perf-comparison");
-    examples.set("flexbox-4143", "flexbox/flexbox-4143");
-    examples.set("flexbox-4834", "flexbox/flexbox-4834");
-
+    examples.set("flexboxall", "flexbox/flexbox-page");
+    examples.set("flexboxcss", "flexbox/flexbox-css-page");
+    examples.set("flexboxdemo", "flexbox/flexbox-demo-page");
+    examples.set("flexrepeat", "flexbox/flexbox-repeater-page");
+    examples.set("flex-perf", "flexbox/flexbox-perf-comparison-page");
+    examples.set("flexbox-4143", "flexbox/flexbox-4143-page");
+    examples.set("flexbox-4834", "flexbox/flexbox-4834-page");
     return examples;
 }
