@@ -5,6 +5,6 @@
     </ActionBar>
 
     <GridLayout backgroundColor="blue">
-        <Frame id="nestedFrame" defaultPage="ui-tests-app/nested-frames/nested-page-flat" actionBarVisibility="always"></Frame>
+        <Frame id="nestedFrame" defaultPage="ui-tests-app/nested-frames/nested-flat-page" actionBarVisibility="always"></Frame>
     </GridLayout>
 </Page>
