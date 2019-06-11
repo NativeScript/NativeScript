@@ -12,7 +12,7 @@ export function pageLoaded(args: EventData) {
 
     let examples: Map<string, string> = new Map<string, string>();
     if (isAndroid) {
-        examples.set("background-image", "perf/memory-leaks/background-image");
+        examples.set("background-image", "perf/memory-leaks/background-image-page");
     }
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
