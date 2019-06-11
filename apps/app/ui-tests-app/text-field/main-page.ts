@@ -11,10 +11,10 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("secured-text-field", "text-field/secured-text-field-4135");
-    examples.set("max-length", "text-field/max-length");
-    examples.set("text-field-border", "text-field/text-field-border");
-    examples.set("focus-blur-events", "text-field/focus-blur-events");
+    examples.set("secured-text-field", "text-field/secured-text-field-4135-page");
+    examples.set("max-length", "text-field/max-length-page");
+    examples.set("text-field-border", "text-field/text-field-border-page");
+    examples.set("focus-blur-events", "text-field/focus-blur-events-page");
 
     return examples;
 }

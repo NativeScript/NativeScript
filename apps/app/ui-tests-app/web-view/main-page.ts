@@ -11,8 +11,8 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("webview", "web-view/web-view");
-    examples.set("webtest", "web-view/web-view-test");
-    examples.set("query", "web-view/query-params");
+    examples.set("webview", "web-view/web-view-page");
+    examples.set("webtest", "web-view/web-view-test-page");
+    examples.set("query", "web-view/query-params-page");
     return examples;
 }

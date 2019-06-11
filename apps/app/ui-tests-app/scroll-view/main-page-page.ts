@@ -11,10 +11,11 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("issue-4147", "search-bar/issue-4147");
-    examples.set("search-bar", "search-bar/search-bar");
-    examples.set("issue-5039", "search-bar/issue-5039");
-    examples.set("issue-5655", "search-bar/issue-5655");
-    
+    examples.set("scrolling-and-sizing", "scroll-view/scrolling-and-sizing-page");
+    examples.set("safe-area-root-element", "scroll-view/safe-area-root-element-page");
+    examples.set("safe-area-sub-element", "scroll-view/safe-area-sub-element-page");
+    examples.set("safe-area-images", "scroll-view/safe-area-images-page");
+    examples.set("safe-area-images-overflow", "scroll-view/safe-area-images-overflow-page");
+    examples.set("layout-outside-scroll", "scroll-view/layout-outside-scroll-page");
     return examples;
 }
