@@ -42,6 +42,7 @@ Install devDependencies:
 npm install
 ```
 
+<!---
 ## TypeScript
 
 The following commands are commonly used to compile the `tns-core-modules`:
@@ -56,6 +57,8 @@ tsc --skipLibCheck
 tsc --skipLibCheck -w
 ```
 
+NOTE: transpile `tns-core-modules` only.
+
 The modules have `typescript` as a devDependency so you should also be able to use the locally installed TypeScript compiler from node_modules:
 
 ```bash
@@ -67,6 +70,7 @@ You can compile the TypeScript files in the `tns-core-modules` and `tns-platform
 ```bash
 npm run tsc
 ```
+--->
 
 ## Running Unit Tests
 
