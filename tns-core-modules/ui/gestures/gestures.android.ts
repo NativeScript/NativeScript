@@ -10,6 +10,8 @@ import {
 // Import layout from utils directly to avoid circular references
 import { layout } from "../../utils/utils";
 
+import * as timer from "../../timer";
+
 export * from "./gestures-common";
 
 interface TapAndDoubleTapGestureListener {
@@ -27,6 +29,11 @@ function initializeTapAndDoubleTapGestureListener() {
         private _target: View;
         private _type: number;
 
+        private _lastUpTime: number = 0;
+        private _tapTimeoutId: number;
+
+        private static DoubleTapTimeout = android.view.ViewConfiguration.getDoubleTapTimeout();
+
         constructor(observer: GesturesObserver, target: View, type: number) {
             super();
 
@@ -37,28 +44,42 @@ function initializeTapAndDoubleTapGestureListener() {
         }
 
         public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
-            if (this._type & GestureTypes.tap) {
-                let args = _getArgs(GestureTypes.tap, this._target, motionEvent);
-                _executeCallback(this._observer, args);
-            }
-            return true;
-        }
-
-        public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
-            if (this._type & GestureTypes.doubleTap) {
-                let args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
-                _executeCallback(this._observer, args);
-            }
+            this._handleSingleTap(motionEvent);
+            this._lastUpTime = Date.now();
             return true;
         }
 
         public onDown(motionEvent: android.view.MotionEvent): boolean {
+            const tapTime = Date.now();
+            if ((tapTime - this._lastUpTime) <= TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout) {
+                this._handleDoubleTap(motionEvent);
+            }
             return true;
         }
 
         public onLongPress(motionEvent: android.view.MotionEvent): void {
             if (this._type & GestureTypes.longPress) {
-                let args = _getArgs(GestureTypes.longPress, this._target, motionEvent);
+                const args = _getArgs(GestureTypes.longPress, this._target, motionEvent);
+                _executeCallback(this._observer, args);
+            }
+        }
+
+        private _handleSingleTap(motionEvent: android.view.MotionEvent): void {
+            this._tapTimeoutId = timer.setTimeout(() => {
+                if (this._type & GestureTypes.tap) {
+                    const args = _getArgs(GestureTypes.tap, this._target, motionEvent);
+                    _executeCallback(this._observer, args);
+                }
+                timer.clearTimeout(this._tapTimeoutId);
+            }, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
+        }
+
+        private _handleDoubleTap(motionEvent: android.view.MotionEvent): void {
+            if (this._tapTimeoutId) {
+                timer.clearTimeout(this._tapTimeoutId);
+            }
+            if (this._type & GestureTypes.doubleTap) {
+                const args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
                 _executeCallback(this._observer, args);
             }
         }
@@ -94,7 +115,7 @@ function initializePinchGestureListener() {
         public onScaleBegin(detector: android.view.ScaleGestureDetector): boolean {
             this._scale = detector.getScaleFactor();
 
-            let args = new PinchGestureEventData(
+            const args = new PinchGestureEventData(
                 this._target,
                 detector,
                 this._scale,
@@ -109,7 +130,7 @@ function initializePinchGestureListener() {
         public onScale(detector: android.view.ScaleGestureDetector): boolean {
             this._scale *= detector.getScaleFactor();
 
-            let args = new PinchGestureEventData(
+            const args = new PinchGestureEventData(
                 this._target,
                 detector,
                 this._scale,
@@ -123,7 +144,7 @@ function initializePinchGestureListener() {
         public onScaleEnd(detector: android.view.ScaleGestureDetector): void {
             this._scale *= detector.getScaleFactor();
 
-            let args = new PinchGestureEventData(
+            const args = new PinchGestureEventData(
                 this._target,
                 detector,
                 this._scale,
@@ -172,41 +193,28 @@ function initializeSwipeGestureListener() {
                 let deltaX = currentEvent.getX() - initialEvent.getX();
 
                 if (Math.abs(deltaX) > Math.abs(deltaY)) {
-
                     if (Math.abs(deltaX) > SWIPE_THRESHOLD
                         && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-
                         if (deltaX > 0) {
-
                             args = _getSwipeArgs(SwipeDirection.right, this._target, initialEvent, currentEvent);
                             _executeCallback(this._observer, args);
-
                             result = true;
                         } else {
-
                             args = _getSwipeArgs(SwipeDirection.left, this._target, initialEvent, currentEvent);
                             _executeCallback(this._observer, args);
-
                             result = true;
                         }
                     }
-
                 } else {
-
                     if (Math.abs(deltaY) > SWIPE_THRESHOLD
                         && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-
                         if (deltaY > 0) {
-
                             args = _getSwipeArgs(SwipeDirection.down, this._target, initialEvent, currentEvent);
                             _executeCallback(this._observer, args);
-
                             result = true;
                         } else {
-
                             args = _getSwipeArgs(SwipeDirection.up, this._target, initialEvent, currentEvent);
                             _executeCallback(this._observer, args);
-
                             result = true;
                         }
                     }
@@ -228,7 +236,7 @@ const INVALID_POINTER_ID = -1;
 const TO_DEGREES = (180 / Math.PI);
 
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
-    let observer = new GesturesObserver(target, callback, context);
+    const observer = new GesturesObserver(target, callback, context);
     observer.observe(type);
     return observer;
 }
@@ -292,7 +300,7 @@ export class GesturesObserver extends GesturesObserverBase {
     private _attach(target: View, type: GestureTypes) {
         this._detach();
 
-        if (type & GestureTypes.tap || type & GestureTypes.doubleTap || type & GestureTypes.longPress) {
+        if ((type & GestureTypes.tap) || (type & GestureTypes.doubleTap) || (type & GestureTypes.longPress)) {
             initializeTapAndDoubleTapGestureListener();
             this._simpleGestureDetector = new androidx.core.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
         }
@@ -465,7 +473,7 @@ class CustomPanGestureDetector {
         return true;
     }
 
-    private trackStop(currentEvent: android.view.MotionEvent, cahceEvent: boolean) {
+    private trackStop(currentEvent: android.view.MotionEvent, cacheEvent: boolean) {
         if (this.isTracking) {
             let args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.ended, null, currentEvent);
             _executeCallback(this.observer, args);
@@ -475,10 +483,9 @@ class CustomPanGestureDetector {
             this.isTracking = false;
         }
 
-        if (cahceEvent) {
+        if (cacheEvent) {
             this.lastEventCache = currentEvent;
-        }
-        else {
+        } else {
             this.lastEventCache = undefined;
         }
     }
@@ -509,8 +516,7 @@ class CustomPanGestureDetector {
                 x: event.getRawX() / this.density,
                 y: event.getRawY() / this.density
             };
-        }
-        else {
+        } else {
             const offX = event.getRawX() - event.getX();
             const offY = event.getRawY() - event.getY();
             let res = { x: 0, y: 0 };
@@ -559,8 +565,7 @@ class CustomRotateGestureDetector {
                 if (this.trackedPtrId1 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId2) {
                     this.trackedPtrId1 = pointerID;
                     assigned = true;
-                }
-                else if (this.trackedPtrId2 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId1) {
+                } else if (this.trackedPtrId2 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId1) {
                     this.trackedPtrId2 = pointerID;
                     assigned = true;
                 }
@@ -585,8 +590,7 @@ class CustomRotateGestureDetector {
             case android.view.MotionEvent.ACTION_POINTER_UP:
                 if (pointerID === this.trackedPtrId1) {
                     this.trackedPtrId1 = INVALID_POINTER_ID;
-                }
-                else if (pointerID === this.trackedPtrId2) {
+                } else if (pointerID === this.trackedPtrId2) {
                     this.trackedPtrId2 = INVALID_POINTER_ID;
                 }
 
