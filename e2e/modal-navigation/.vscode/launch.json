@@ -15,13 +15,8 @@
                 "--timeout",
                 "999999",
                 "--colors",
-                // "${workspaceFolder}/test",
-                "--opts",
-                "./e2e/config/mocha.opts",
-                "--runType",
-                "android23",
-                "--reuseDevice",
-                "--verbose"
+                "${workspaceFolder}/e2e",
+                "android"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },

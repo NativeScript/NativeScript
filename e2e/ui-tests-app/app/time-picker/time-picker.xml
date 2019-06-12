@@ -1,0 +1,3 @@
+<Page>
+   <TimePicker automationText="timePicker" hour="5" minute="30" minHour="3" maxHour="7" />
+</Page>

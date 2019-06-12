@@ -29,8 +29,12 @@
     "madge": "^2.2.0",
     "markdown-snippet-injector": "0.2.2",
     "mocha": "^3.5.0",
+    "mocha-junit-reporter": "~1.18.0",
+    "mocha-multi": "~1.0.1",
     "mocha-typescript": "^1.1.9",
+    "mochawesome": "~3.1.2",
     "module-alias": "^2.0.1",
+    "nativescript-dev-appium": "^5.4.1-2019-06-10-03",
     "nativescript-typedoc-theme": "git://github.com/NativeScript/nativescript-typedoc-theme.git#master",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
@@ -86,6 +90,8 @@
     "madge-ios": "tsc --skipLibCheck && tns prepare ios --path tests && madge --circular tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
     "madge-ios-image": "tsc --skipLibCheck && tns prepare ios --path tests && madge --image graph-tests-ios.svg tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
     "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules",
-    "madge-android-image": "tsc --skipLibCheck && tns prepare android --path tests && madge --image graph-tests-android.svg tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules"
+    "madge-android-image": "tsc --skipLibCheck && tns prepare android --path tests && madge --image graph-tests-android.svg tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules",
+    "e2e": "node ./node_modules/nativescript-dev-appium/check-dev-deps.js &&  tsc -p e2e  &&  mocha --opts ./e2e/config/mocha.opts ",
+    "e2e-watch": "tsc -p e2e --watch"
   }
 }
