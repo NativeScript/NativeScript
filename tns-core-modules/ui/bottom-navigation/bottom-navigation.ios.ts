@@ -256,6 +256,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         const oldItem = items[oldIndex];
         if (oldItem) {
+            oldItem.canBeLoaded = false;
             oldItem.unloadView(oldItem.view);
         }
 
@@ -266,6 +267,7 @@ export class BottomNavigation extends TabNavigationBase {
                 selectedView._pushInFrameStackRecursive();
             }
 
+            newItem.canBeLoaded = true;
             newItem.loadView(newItem.view);
         }
 
@@ -395,7 +397,6 @@ export class BottomNavigation extends TabNavigationBase {
             }
 
             controllers.addObject(controller);
-            (<TabContentItem>item).canBeLoaded = true;
         });
 
         this._ios.viewControllers = controllers;

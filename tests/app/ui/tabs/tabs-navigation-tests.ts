@@ -206,7 +206,7 @@ function tabViewIsFullyLoaded(tabView: Tabs): boolean {
 
     if (tabView.android) {
         const bottomNavigationBar = (<org.nativescript.widgets.BottomNavigationBar>(<any>tabView)._bottomNavigationBar);
-        if (bottomNavigationBar.getItemCount() === 0) {
+        if (bottomNavigationBar && bottomNavigationBar.getItemCount() === 0) {
             return false;
         }
     }
@@ -267,8 +267,8 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
     topFrame.currentPage.id = null;
 
-    TKUnit.arrayAssert(loadedEventsCount, [2, 0]);
-    TKUnit.arrayAssert(unloadedEventsCount, [1, 0]);
+    TKUnit.arrayAssert(loadedEventsCount, [2, 2]);
+    TKUnit.arrayAssert(unloadedEventsCount, [1, 1]);
 }
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: Tabs) {

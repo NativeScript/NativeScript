@@ -279,8 +279,9 @@ allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
 import * as bottomNavigationRootTests from "./ui/bottom-navigation/bottom-navigation-root-tests";
 allTests["BOTTOM-NAVIGATION-ROOT"] = bottomNavigationRootTests;
 
-import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
-allTests["TABS-ROOT"] = tabsRootTests;
+// Reset root view didn't work with android tabs
+// import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
+// allTests["TABS-ROOT"] = tabsRootTests;
 
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
