@@ -56,8 +56,8 @@ export function createPage() {
     stack.addChild(rotaionLabel);
 
     const doubleTapStackLayout = new stackLayoutModule.StackLayout();
-    doubleTapStackLayout.width = 140;
-    doubleTapStackLayout.height = 140;
+    doubleTapStackLayout.width = 100;
+    doubleTapStackLayout.height = 100;
     doubleTapStackLayout.backgroundColor = "#f22004";
     stack.addChild(doubleTapStackLayout);
 
@@ -146,7 +146,7 @@ export function createPage() {
         doubleTapBoxLabel.text = "Tap Location: x: " + args.locationX + ", y: " + args.locationY;
     });
 
-    const observer10 = tapAndDoubleTapLabel.getGestureObservers(gestures.GestureTypes.doubleTap)[0];
+    const observer10 = doubleTapStackLayout.getGestureObservers(gestures.GestureTypes.doubleTap)[0];
 
     const page = new pages.Page();
     page.content = stack;
