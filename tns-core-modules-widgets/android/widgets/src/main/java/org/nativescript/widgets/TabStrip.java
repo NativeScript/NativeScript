@@ -159,6 +159,12 @@ class TabStrip extends LinearLayout {
         updateTabsTextColor();
     }
 
+    void setSelectedPosition(int position) {
+        mSelectedPosition = position;
+        invalidate();
+        updateTabsTextColor();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         final int height = getHeight();
