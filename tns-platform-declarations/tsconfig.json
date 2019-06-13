@@ -3,6 +3,7 @@
     "exclude": [
         "android-*.d.ts",
         "android/android-*.d.ts",
+        "android/androidx-*.d.ts",
         "ios/objc-x86_64",
         "node_modules",
         "package"

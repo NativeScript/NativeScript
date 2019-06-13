@@ -69,13 +69,13 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             }
             return bounce();
         case "ease":
-            return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
+            return (<any>androidx).core.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
         default:
             if (traceEnabled()) {
                 traceWrite("Animation curve resolved to original: " + curve, traceCategories.Animation);
             }
             if (curve instanceof CubicBezierAnimationCurve) {
-                return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
+                return (<any>androidx).core.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
             } else if (curve && (<any>curve).getInterpolation) {
                 return <android.view.animation.Interpolator>curve;
             } else if ((<any>curve) instanceof android.view.animation.LinearInterpolator) {

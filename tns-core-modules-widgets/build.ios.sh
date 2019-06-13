@@ -17,7 +17,8 @@ mkdir dist/package/platforms/ios
 cd ios
 ./build.sh
 cd ..
-cp -r ios/TNSWidgets/build/TNSWidgets.framework dist/package/platforms/ios/TNSWidgets.framework
+echo "Copy TNSWidgets.framework and TNSWidgets.framework.dSYM.zip to dist/package/platforms/ios"
+cp -r ios/TNSWidgets/build/TNSWidgets.framework* dist/package/platforms/ios
 
 echo "Copy NPM artefacts"
 cp LICENSE dist/package/LICENSE

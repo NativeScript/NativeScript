@@ -707,11 +707,8 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
+    _getFragmentManager(): any; /* androidx.fragment.app.FragmentManager */
     _handleLivesync(context?: { type: string, path: string }): boolean;
-    /**
-     * @private
-     */
-    _getFragmentManager(): any; /* android.support.v4.app.FragmentManager */
 
     /**
      * Updates styleScope or create new styleScope.
