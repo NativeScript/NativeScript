@@ -1,11 +1,11 @@
 ﻿// Definitions.
 import {
-	DoubleTapGestureEventData,
-	GestureEventData,
-	SwipeGestureEventData,
-	PanGestureEventData,
-	RotationGestureEventData,
-	PinchGestureEventData
+    DoubleTapGestureEventData,
+    GestureEventData,
+    SwipeGestureEventData,
+    PanGestureEventData,
+    RotationGestureEventData,
+    PinchGestureEventData
 } from ".";
 import { View, EventData } from "../core/view";
 
@@ -309,18 +309,18 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): Swipe
 }
 
 function _getDoubleTapData(args: GestureEventData, view: UIView): DoubleTapGestureEventData {
-	const recognizer = <UITapGestureRecognizer>args.ios;
+    const recognizer = <UITapGestureRecognizer>args.ios;
 
-	return <DoubleTapGestureEventData>{
-		type: args.type,
-		view: args.view,
-		ios: args.ios,
-		android: undefined,
-		locationX: recognizer.locationInView(view).x,
-		locationY: recognizer.locationInView(view).y,
-		object: args.view,
-		eventName: toString(args.type),
-	};
+    return <DoubleTapGestureEventData>{
+        type: args.type,
+        view: args.view,
+        ios: args.ios,
+        android: undefined,
+        locationX: recognizer.locationInView(view).x,
+        locationY: recognizer.locationInView(view).y,
+        object: args.view,
+        eventName: toString(args.type),
+    };
 }
 
 function _getPinchData(args: GestureEventData): PinchGestureEventData {

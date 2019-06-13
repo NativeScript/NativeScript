@@ -1,10 +1,10 @@
 ﻿// Definitions.
 import {
-	DoubleTapGestureEventData,
-	GestureEventData,
-	SwipeGestureEventData,
-	PanGestureEventData,
-	RotationGestureEventData
+    DoubleTapGestureEventData,
+    GestureEventData,
+    SwipeGestureEventData,
+    PanGestureEventData,
+    RotationGestureEventData
 } from ".";
 import { View, EventData } from "../core/view";
 
