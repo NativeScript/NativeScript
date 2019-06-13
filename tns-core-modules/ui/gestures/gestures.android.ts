@@ -85,7 +85,9 @@ function initializeTapAndDoubleTapGestureListener() {
                 timer.clearTimeout(this._tapTimeoutId);
             }
             if (this._type & GestureTypes.doubleTap) {
-                const args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
+                const locationX = motionEvent.getX() / layout.getDisplayDensity();
+                const locationY = motionEvent.getY() / layout.getDisplayDensity();
+                const args = _getDoubleTapArgs(GestureTypes.doubleTap, this._target, motionEvent, locationX, locationY);
                 _executeCallback(this._observer, args);
             }
         }
