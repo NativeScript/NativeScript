@@ -398,6 +398,28 @@
                 getItemCount(): number;
             }
 
+            export class BottomNavigationBar extends android.widget.LinearLayout {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
+
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
+                setTabTextFontSize(fontSize: number): void;
+                getTabTextFontSize(): number;
+
+                onSelectedPositionChange(position: number): void ;
+                setSelectedPosition(position: number): void;
+                setItems(items: Array<TabItemSpec>): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+
+                getTextViewForItemAt(index: number): android.widget.TextView;
+                getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
+            }
+
             export class TabViewPager extends androidx.viewpager.widget.ViewPager {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
