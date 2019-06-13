@@ -184,6 +184,18 @@ allTests["BUTTON"] = buttonTests;
 import * as labelTests from "./ui/label/label-tests";
 allTests["LABEL"] = labelTests;
 
+import * as bottomNavigationTests from "./ui/bottom-navigation/bottom-navigation-tests";
+allTests["BOTTOM-NAVIGATION"] = bottomNavigationTests;
+
+import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-navigation-navigation-tests";
+allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
+
+import * as tabsTests from "./ui/tabs/tabs-tests";
+allTests["TABS"] = tabsTests;
+
+import * as tabsNavigationTests from "./ui/tabs/tabs-navigation-tests";
+allTests["TABS-NAVIGATION"] = tabsNavigationTests;
+
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
 
@@ -264,12 +276,19 @@ allTests["SEARCH-BAR"] = searchBarTests;
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
-//TODO: These test should be run with --no-hrm
-import * as livesyncTests from "./livesync/livesync-tests";
-allTests["LIVESYNC"] = livesyncTests;
+// TODO: These test should be run with --no-hrm
+// import * as livesyncTests from "./livesync/livesync-tests";
+// allTests["LIVESYNC"] = livesyncTests;
 
 import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
 allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
+
+import * as bottomNavigationRootTests from "./ui/bottom-navigation/bottom-navigation-root-tests";
+allTests["BOTTOM-NAVIGATION-ROOT"] = bottomNavigationRootTests;
+
+// Reset root view didn't work with android tabs
+// import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
+// allTests["TABS-ROOT"] = tabsRootTests;
 
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
