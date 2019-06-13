@@ -8,7 +8,7 @@ import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
 export function createPage() {
 
     const stack = new stackLayoutModule.StackLayout();
-    const labelHeight = Math.round(deviceProperties.screen.mainScreen.heightPixels / (7 * deviceProperties.screen.mainScreen.scale));
+    const labelHeight = Math.round(deviceProperties.screen.mainScreen.heightPixels / (10 * deviceProperties.screen.mainScreen.scale));
     const stopButton = new button.Button();
     stopButton.text = "Stop Detecting Gestures";
     stack.addChild(stopButton);
@@ -76,6 +76,7 @@ export function createPage() {
         observer7.disconnect();
         observer8.disconnect();
         observer9.disconnect();
+        observer10.disconnect();
         tapLabel.text = "Gestures detection disabled";
         doubletapLabel.text = "Gestures detection disabled";
         longpressLabel.text = "Gestures detection disabled";
@@ -84,6 +85,7 @@ export function createPage() {
         pinchLabel.text = "Gestures detection disabled";
         rotaionLabel.text = "Gestures detection disabled";
         tapAndDoubleTapLabel.text = "Gestures detection disabled";
+        doubleTapBoxLabel.text = "Gestures detection disabled";
     });
 
     tapLabel.on(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
@@ -144,7 +146,7 @@ export function createPage() {
         doubleTapBoxLabel.text = "Tap Location: x: " + args.locationX + ", y: " + args.locationY;
     });
 
-    const observer8 = doubleTapStackLayout.getGestureObservers(gestures.GestureTypes.doubleTap)[0];
+    const observer10 = tapAndDoubleTapLabel.getGestureObservers(gestures.GestureTypes.doubleTap)[0];
 
     const page = new pages.Page();
     page.content = stack;

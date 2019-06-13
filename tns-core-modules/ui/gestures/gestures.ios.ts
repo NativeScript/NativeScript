@@ -137,7 +137,9 @@ export class GesturesObserver extends GesturesObserverBase {
             }
 
             if (type & GestureTypes.doubleTap) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap, args => {
+                    this._executeCallback(_getDoubleTapData(args, target.nativeViewProtected));
+                }));
             }
 
             if (type & GestureTypes.pinch) {
@@ -317,7 +319,7 @@ function _getDoubleTapData(args: GestureEventData, view: UIView): DoubleTapGestu
 		locationX: recognizer.locationInView(view).x,
 		locationY: recognizer.locationInView(view).y,
 		object: args.view,
-		eventName: toString(args.type)
+		eventName: toString(args.type),
 	};
 }
 
@@ -335,7 +337,7 @@ function _getPinchData(args: GestureEventData): PinchGestureEventData {
         getFocusY: () => center.y,
         object: args.view,
         eventName: toString(args.type),
-        state: getState(recognizer)
+        state: getState(recognizer),
     };
 }
 
@@ -349,7 +351,7 @@ function _getSwipeData(args: GestureEventData): SwipeGestureEventData {
         android: undefined,
         direction: _getSwipeDirection(recognizer.direction),
         object: args.view,
-        eventName: toString(args.type)
+        eventName: toString(args.type),
     };
 }
 
@@ -365,7 +367,7 @@ function _getPanData(args: GestureEventData, view: UIView): PanGestureEventData 
         deltaY: recognizer.translationInView(view).y,
         object: args.view,
         eventName: toString(args.type),
-        state: getState(recognizer)
+        state: getState(recognizer),
     };
 }
 
@@ -380,7 +382,7 @@ function _getRotationData(args: GestureEventData): RotationGestureEventData {
         rotation: recognizer.rotation * (180.0 / Math.PI),
         object: args.view,
         eventName: toString(args.type),
-        state: getState(recognizer)
+        state: getState(recognizer),
     };
 }
 
