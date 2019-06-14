@@ -11,6 +11,8 @@ script:
   - jdk_switcher use openjdk8
 install:
   - brew update
+  - brew tap caskroom/versions
+  - brew cask install java8
   - brew cask install android-sdk
   # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
   - yes | sdkmanager "platforms;android-28" >/dev/null
