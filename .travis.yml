@@ -8,11 +8,12 @@ jdk:
   - oraclejdk8
   - openjdk8
 script:
+  - export JAVA_HOME=$HOME/openjdk8
+  - $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+  - # do stuff with open OpenJDK 11
   - jdk_switcher use openjdk8
 install:
   - brew update
-  - brew tap caskroom/versions
-  - brew cask install java8
   - brew cask install android-sdk
   # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
   - yes | sdkmanager "platforms;android-28" >/dev/null
