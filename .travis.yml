@@ -5,8 +5,9 @@ env:
 language: objective-c
 osx_image: xcode10.2
 jdk:
-  - oraclejdk8
-  - openjdk8
+  - openjdk10
+script:
+  - jdk_switcher use openjdk10
 install:
   - brew update
   - brew cask install android-sdk
