@@ -4,6 +4,7 @@ import * as platform from "tns-core-modules/platform";
 import { Animation } from "tns-core-modules/ui/animation";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { isIOS } from "tns-core-modules/platform";
+import * as uiUtils from "tns-core-modules/ui/utils";
 
 let toggle = false;
 
@@ -49,8 +50,7 @@ export function theFinalFrontier(args) {
 
     let statusBar = 0;
     if (isIOS) {
-        const {ios} = require("tns-core-modules/ui/utils");
-        statusBar = ios.getStatusBarHeight();
+        statusBar = uiUtils.ios.getStatusBarHeight();
     }
 
     const textViewHeight: number = ctx.screenHeight - statusBar - detailHeaderHeight;
