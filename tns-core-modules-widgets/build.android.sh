@@ -18,10 +18,10 @@ cd android
 cd ..
 cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
 
-if [ "$PACKAGE_VERSION" ]
+if [ "$1" ]
 then
-  echo "Suffix package.json's version with tag: $PACKAGE_VERSION"
-  sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$PACKAGE_VERSION'"/g' ./dist/package/package.json
+  echo "Suffix package.json's version with tag: $1"
+  sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$1'"/g' ./dist/package/package.json
 fi
 
 if [ "$SKIP_PACK" ]

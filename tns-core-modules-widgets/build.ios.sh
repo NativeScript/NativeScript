@@ -38,10 +38,10 @@ echo "Copy ios/TNSWidgets/build/*.framework dist/package/platforms/ios"
 cp -R ios/TNSWidgets/build/*.framework dist/package/platforms/ios
 cp ios/TNSWidgets/build/*.framework.dSYM.zip dist/package/platforms/ios
 
-if [ "$PACKAGE_VERSION" ]
+if [ "$1" ]
 then
-  echo "Suffix package.json's version with tag: $PACKAGE_VERSION"
-  sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$PACKAGE_VERSION'"/g' ./dist/package/package.json
+  echo "Suffix package.json's version with tag: $1"
+  sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$1'"/g' ./dist/package/package.json
 fi
 
 if [ "$SKIP_PACK" ]
