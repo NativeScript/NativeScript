@@ -4,6 +4,9 @@ env:
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
 language: objective-c
 osx_image: xcode10.2
+jdk:
+  - oraclejdk8
+  - openjdk8
 install:
   - brew update
   - brew cask install android-sdk
