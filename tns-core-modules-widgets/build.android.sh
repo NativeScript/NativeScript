@@ -6,23 +6,20 @@ set -e
 echo "Use dumb gradle terminal"
 export TERM=dumb
 
-echo "Clean dist"
-rm -rf dist
-mkdir dist
-mkdir dist/package
-mkdir dist/package/platforms
+rm -rf mkdir dist/package/platforms/android || true
+mkdir -p dist
+mkdir -p dist/package
+mkdir -p dist/package/platforms
+mkdir dist/package/platforms/android
 
 echo "Build android"
-mkdir dist/package/platforms/android
 cd android
 ./gradlew --quiet assembleRelease
 cd ..
 cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
 
 echo "Copy NPM artefacts"
-cp LICENSE dist/package/LICENSE
-cp README.md dist/package/README.md
-cp package.json dist/package/package.json
+cp .npmignore LICENSE README.md package.json dist/package
 if [ "$1" ]
 then
   echo "Suffix package.json's version with tag: $1"

@@ -6,19 +6,21 @@ set -e
 echo "Use dumb terminal"
 export TERM=dumb
 
-echo "Clean dist"
-rm -rf dist
-mkdir dist
-mkdir dist/package
-mkdir dist/package/platforms
+rm -rf mkdir dist/package/platforms/ios || true
+mkdir -p dist
+mkdir -p dist/package
+mkdir -p dist/package/platforms
+mkdir dist/package/platforms/ios
 
 echo "Build iOS"
-mkdir dist/package/platforms/ios
+
 cd ios
 ./build.sh
 cd ..
-echo "Copy TNSWidgets.framework and TNSWidgets.framework.dSYM.zip to dist/package/platforms/ios"
-cp -r ios/TNSWidgets/build/*.framework* dist/package/platforms/ios
+echo "Copy ios/TNSWidgets/build/*.framework dist/package/platforms/ios"
+
+cp -R ios/TNSWidgets/build/*.framework dist/package/platforms/ios
+cp ios/TNSWidgets/build/*.framework.dSYM.zip dist/package/platforms/ios
 
 echo "Copy NPM artefacts"
 cp .npmignore LICENSE README.md package.json dist/package
