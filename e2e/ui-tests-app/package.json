@@ -13,8 +13,7 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "nativescript-theme-core": "~1.0.4",
-    "tns-core-modules": "next"
+    "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
     "@testdeck/mocha": "0.0.6",
@@ -39,7 +38,6 @@
     "e2e-watch": "tsc -p e2e --watch",
     "pretest": "tsc -p e2e",
     "test": "npx mocha --opts ./e2e/config/mocha.opts ",
-    "watch": "testdeck-watch",
-    "prepare": "tsc"
+    "watch": "testdeck-watch"
   }
 }
