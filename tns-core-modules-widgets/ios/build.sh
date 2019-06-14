@@ -6,7 +6,7 @@ set -e
 (
     echo "update pods"
     cd TNSWidgets
-    pod update
+    pod install
 )
 
 echo "Build for iphonesimulator"
