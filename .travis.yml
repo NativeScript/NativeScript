@@ -3,7 +3,7 @@ env:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
 language: objective-c
-osx_image: xcode9.3
+osx_image: xcode10.2
 install:
   - brew update
   - brew cask install android-sdk
