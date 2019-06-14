@@ -3,6 +3,12 @@
 echo "Set exit on simple errors"
 set -e
 
+(
+    echo "update pods"
+    cd TNSWidgets
+    pod update
+)
+
 echo "Build for iphonesimulator"
 xcodebuild -workspace TNSWidgets/TNSWidgets.xcworkspace -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build -quiet
 
