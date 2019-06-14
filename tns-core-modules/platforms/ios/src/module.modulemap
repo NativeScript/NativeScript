@@ -1,4 +1,0 @@
-module NativeScriptEmbedder {
-    header "NativeScriptEmbedder.h"
-    export *
-}

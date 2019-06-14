@@ -1,0 +1,6 @@
+platform :ios, '10.0'
+use_frameworks!
+
+target 'TNSWidgets' do
+    pod 'MaterialComponents/Tabs', '84.4.0'
+end

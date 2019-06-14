@@ -67,7 +67,7 @@
     "dev-tsc-all": "npm run dev-tsc-tns-platform-declarations && npm run tsc && npm run dev-tsc-tests && npm run dev-tsc-apps && && npm run dev-tsc-e2e",
     "dev-link-tns-platform-declarations": "cd tns-platform-declarations && npm link",
     "dev-link-tns-core-modules": "cd tns-core-modules && npm link",
-    "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd tns-core-modules && npm link tns-core-modules-widgets)",
+    "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd tns-core-modules && npm i ../tns-core-modules-widgets/dist/package --save)",
     "dev-link-tests": "cd tests && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-apps": "cd apps && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-e2e-modal": "cd e2e && cd modal-navigation && npm link tns-platform-declarations && npm link tns-core-modules",

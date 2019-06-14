@@ -18,12 +18,10 @@ cd ios
 ./build.sh
 cd ..
 echo "Copy TNSWidgets.framework and TNSWidgets.framework.dSYM.zip to dist/package/platforms/ios"
-cp -r ios/TNSWidgets/build/TNSWidgets.framework* dist/package/platforms/ios
+cp -r ios/TNSWidgets/build/*.framework* dist/package/platforms/ios
 
 echo "Copy NPM artefacts"
-cp LICENSE dist/package/LICENSE
-cp README.md dist/package/README.md
-cp package.json dist/package/package.json
+cp .npmignore LICENSE README.md package.json dist/package
 if [ "$1" ]
 then
   echo "Suffix package.json's version with tag: $1"
