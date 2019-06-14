@@ -2,6 +2,6 @@
   <StackLayout style.borderColor="black" style.borderWidth="1" iosOverflowSafeArea="false">
     <Label class="ui-tests-app-issue-1639-red" text="main-page red from app.css" textWrap="true" />
     <Label class="local-red" text="main-page red from issue-1639.css" textWrap="true" />
-    <cC:customView/>
+    <cC:customView-page/>
   </StackLayout>
 </Page>
