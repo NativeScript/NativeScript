@@ -6,8 +6,8 @@ set -e
 echo "Use dumb terminal"
 export TERM=dumb
 
-rm -rf dist/package/platforms/android || true
-mkdir -p dist/package/platforms/android
+rm -rf dist/package/platforms/ios || true
+mkdir -p dist/package/platforms/ios
 
 echo "Build iOS"
 
