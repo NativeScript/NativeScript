@@ -1,4 +1,4 @@
-<Page cssFile="~/css/test-page.css" >
+<Page cssFile="./test.css" >
   <TabView androidSwipeEnabled="false">
     <TabView.items>
 
