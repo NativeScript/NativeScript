@@ -49,7 +49,7 @@ export function theFinalFrontier(args) {
 
     let statusBar = 0;
     if (isIOS) {
-        statusBar = require("tns-core-modules/ui/utils").getStatusBarHeight();
+        statusBar = require("tns-core-modules/ui/utils.ios.js").getStatusBarHeight();
     }
 
     const textViewHeight: number = ctx.screenHeight - statusBar - detailHeaderHeight;
