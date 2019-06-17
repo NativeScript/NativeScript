@@ -19,7 +19,7 @@ export function loadExamples() {
     examples.set("customfonts", "font/custom-fonts-page");
     examples.set("all-fonts", "font/all-fonts-page");
     examples.set("awesome-3654", "font/font-awesome/issue-3654-page");
-    examples.set("fonts-weight", "font/fonts-weight/main-page-page");
+    examples.set("fonts-weight", "font/fonts-weight/main-page");
 
     return examples;
 }

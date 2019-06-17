@@ -11,7 +11,7 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("gestures", "events/gestures-page-page");
+    examples.set("gestures", "events/gestures-page");
     examples.set("touch", "events/touch-event-page");
     examples.set("pan", "events/pan-event-page");
     examples.set("swipe-passtrough", "events/swipe-event-passtrough-page");
