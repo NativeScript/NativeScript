@@ -1,4 +1,4 @@
-﻿import * as vmModule from "./view-model";
+﻿import * as vmModule from "./view-model-page";
 
 var viewModel = vmModule.imageViewModel;
 

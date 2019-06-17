@@ -10,7 +10,7 @@ export class ImageViewModel extends observable.Observable {
 
     constructor() {
         super();
-        let asset = new imageAssetModule.ImageAsset("~/splashscreen.png");
+        let asset = new imageAssetModule.ImageAsset("~/resources/images/splashscreen.png");
         asset.options = {
             width: 300,
             height: 300,
