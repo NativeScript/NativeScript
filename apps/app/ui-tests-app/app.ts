@@ -88,5 +88,6 @@ application.on(application.discardedErrorEvent, function (args: application.Disc
     console.log("### [Discarded] stack: " + args.error.stack);
 });
 
+global.registerModule("ui-tests-app/app.css", () => require("~/ui-tests-app/app.css"));
 application.setCssFileName("ui-tests-app/app.css");
 application.run({ moduleName: "ui-tests-app/app-root" });
