@@ -3,30 +3,11 @@
 echo "Set exit on simple errors"
 set -e
 
-# for i in "$@"
-# do
-# case $i in
-#     --package_version=*)
-#     PACKAGE_VERSION="${i#*=}"
-#     shift # past argument=value
-#     ;;
-#     --skip-pack=*)
-#     SKIP_PACK="true"
-#     shift # past argument=value
-#     ;;
-# esac
-# done
-# echo "PACKAGE_VERSION  = ${PACKAGE_VERSION}"
-# echo "PUBLISH = ${PUBLISH}"
-
 echo "Use dumb terminal"
 export TERM=dumb
 
-rm -rf mkdir dist/package/platforms/ios || true
-mkdir -p dist
-mkdir -p dist/package
-mkdir -p dist/package/platforms
-mkdir dist/package/platforms/ios
+rm -rf mkdir dist/package/platforms/android || true
+mkdir -p dist/package/platforms/android
 
 echo "Build iOS"
 

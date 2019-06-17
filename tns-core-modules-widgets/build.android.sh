@@ -7,10 +7,7 @@ echo "Use dumb gradle terminal"
 export TERM=dumb
 
 rm -rf mkdir dist/package/platforms/android || true
-mkdir -p dist
-mkdir -p dist/package
-mkdir -p dist/package/platforms
-mkdir dist/package/platforms/android
+mkdir -p dist/package/platforms/android
 
 echo "Build android"
 cd android
