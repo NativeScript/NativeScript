@@ -3,33 +3,53 @@
 echo "Set exit on simple errors"
 set -e
 
+(
+    echo "update pods"
+    cd TNSWidgets
+    pod install
+)
+
 echo "Build for iphonesimulator"
-xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -sdk iphonesimulator -target TNSWidgets -configuration Release clean build CONFIGURATION_BUILD_DIR=build/Release-iphonesimulator -quiet
+xcodebuild -workspace TNSWidgets/TNSWidgets.xcworkspace -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build -quiet
 
 echo "Build for iphoneos"
-xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -sdk iphoneos -target TNSWidgets -configuration Release clean build CONFIGURATION_BUILD_DIR=build/Release-iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
+xcodebuild -workspace TNSWidgets/TNSWidgets.xcworkspace -scheme TNSWidgets -sdk iphoneos -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
 
-echo "Build fat framework at TNSWidgets/build/TNSWidgets.framework"
-rm -rf TNSWidgets/build/TNSWidgets.framework
-mkdir TNSWidgets/build/TNSWidgets.framework
+function buildFatFramework() {
+    FRAMEWORK_NAME=$1
+    RELATIVE_DIR=$2
+    SRC_IPHONEOS=TNSWidgets/build/Release-iphoneos/$RELATIVE_DIR/$FRAMEWORK_NAME.framework
+    SRC_SIMULATOR=TNSWidgets/build/Release-iphonesimulator/$RELATIVE_DIR/$FRAMEWORK_NAME.framework
+    DEST=TNSWidgets/build/$FRAMEWORK_NAME.framework
+    echo; echo "Build fat framework at $DEST"
+    rm -rf $DEST
+    mkdir $DEST
 
-cp -r TNSWidgets/build/Release-iphoneos/TNSWidgets.framework/Headers TNSWidgets/build/TNSWidgets.framework/Headers
-cp -r TNSWidgets/build/Release-iphoneos/TNSWidgets.framework/Modules TNSWidgets/build/TNSWidgets.framework/Modules
-cp -r TNSWidgets/build/Release-iphoneos/TNSWidgets.framework/Info.plist TNSWidgets/build/TNSWidgets.framework/Info.plist
+    cp -r `find $SRC_IPHONEOS -depth 1 | grep -v 'PrivateHeaders'` $DEST/
 
-lipo -create TNSWidgets/build/Release-iphoneos/TNSWidgets.framework/TNSWidgets TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework/TNSWidgets -o TNSWidgets/build/TNSWidgets.framework/TNSWidgets
-file TNSWidgets/build/TNSWidgets.framework/TNSWidgets
+    lipo -create $SRC_IPHONEOS/$FRAMEWORK_NAME $SRC_SIMULATOR/$FRAMEWORK_NAME -o $DEST/$FRAMEWORK_NAME
+    file $DEST/$FRAMEWORK_NAME
 
-echo "Build fat dSYM at TNSWidgets/build/TNSWidgets.framework.dSYM"
-cp -r TNSWidgets/build/Release-iphoneos/TNSWidgets.framework.dSYM TNSWidgets/build
-rm "TNSWidgets/build/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets"
-lipo -create -output "TNSWidgets/build/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets" \
-    "TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets" \
-    "TNSWidgets/build/Release-iphoneos/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets"
-file TNSWidgets/build/TNSWidgets.framework.dSYM/Contents/Resources/DWARF/TNSWidgets
+    if [ -d $SRC_IPHONEOS.dSYM ]; then
+        echo "Build fat dSYM at $DEST.dSYM"
+        cp -r $SRC_IPHONEOS.dSYM TNSWidgets/build
+        rm "$DEST.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME"
+        lipo -create -output "$DEST.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME" \
+            "$SRC_SIMULATOR.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME" \
+            "$SRC_IPHONEOS.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME"
+        file $DEST.dSYM/Contents/Resources/DWARF/$FRAMEWORK_NAME
 
-echo "Archiving dSYM at TNSWidgets/build/TNSWidgets.framework.dSYM.zip"
-(cd TNSWidgets/build && zip -qr TNSWidgets.framework.dSYM.zip TNSWidgets.framework.dSYM)
+        echo "Archiving dSYM at $DEST.dSYM.zip"
+        (cd TNSWidgets/build && zip -qr $FRAMEWORK_NAME.framework.dSYM.zip $FRAMEWORK_NAME.framework.dSYM)
 
-echo "Removing TNSWidgets/build/TNSWidgets.framework.dSYM"
-rm -rf TNSWidgets/build/TNSWidgets.framework.dSYM
+        echo "Removing $DEST.dSYM"
+        rm -rf $DEST.dSYM
+    else
+        echo "info: $SRC_IPHONEOS.dSYM doesn't exist. Skipping dSYM archive."
+    fi
+}
+
+buildFatFramework TNSWidgets .
+buildFatFramework Pods_TNSWidgets .
+buildFatFramework MDFInternationalization MDFInternationalization
+buildFatFramework MaterialComponents MaterialComponents
