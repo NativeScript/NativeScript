@@ -1,0 +1,27 @@
+<Page loaded="onLoaded">
+    <GridLayout rows="65,65,65,65,65,65" columns="65,65,65">
+        <GridLayout row="0" col="0" borderWidth="3" borderRadius="10" class="b1" />
+        <GridLayout row="0" col="1" borderWidth="0 3" borderRadius="10" class="b2" />
+        <GridLayout row="0" col="2" borderWidth="3 0" borderRadius="10" class="b3" />
+
+        <GridLayout row="1" col="0" borderWidth="2 4 6 8" borderRadius="10" class="b4" />
+        <GridLayout row="1" col="1" borderWidth="5 10 15 20" borderRadius="0 10 20 30" class="b5"/>
+        <GridLayout row="1" col="2" borderWidth="20 15 10 5" borderRadius="30 20 10 0" class="b1" />
+
+        <GridLayout row="2" col="0" borderWidth="3 3 3 0" borderRadius="0 10 0 10" class="b2" />
+        <GridLayout row="2" col="1" borderWidth="0 3" borderRadius="0 10 0 10" class="b3" />
+        <GridLayout row="2" col="2" borderWidth="3" borderRadius="0 10 0 10" class="b4" />
+
+        <GridLayout row="3" col="0" borderWidth="3" borderRadius="100 100 100 0" class="b5" />
+        <GridLayout row="3" col="1" borderWidth="3" borderRadius="100 100 0 0" class="b1" />
+        <GridLayout row="3" col="2" borderWidth="3" borderRadius="40 0 0 0" class="b2" />
+
+        <GridLayout row="4" col="0" borderWidth="20" borderRadius="0 10 20 30" class="b3" />
+        <GridLayout row="4" col="1" borderWidth="20" borderRadius="20 30 40 50" class="b4" />
+        <GridLayout row="4" col="2" class="g1" />
+
+        <GridLayout row="5" col="0" class="g2" />
+        <GridLayout row="5" col="1" class="g3" />
+        <GridLayout row="5" col="2" class="g4" />
+    </GridLayout>
+</Page>

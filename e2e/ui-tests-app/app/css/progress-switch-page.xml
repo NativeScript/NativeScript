@@ -1,0 +1,16 @@
+﻿<Page>
+  <StackLayout>
+    <Progress value="42" color="red" backgroundColor="green" height="10" width="300" />
+
+    <Switch checked="true" color="red" backgroundColor="green" height="30" width="52" borderWidth="2" borderColor="blue" borderRadius="15" />
+    <Switch checked="false" color="red" backgroundColor="green" height="30" width="52" borderWidth="2" borderColor="blue" borderRadius="15" />
+
+    <Switch checked="true" color="red" backgroundColor="green" offBackgroundColor="purple" height="30" width="52" borderWidth="2" borderColor="blue" borderRadius="15" />
+    <Switch checked="false" color="red" backgroundColor="green" offBackgroundColor="purple" height="30" width="52" borderWidth="2" borderColor="blue" borderRadius="15" />
+
+    <Switch checked="true" color="red" offBackgroundColor="purple" height="30" width="52" borderWidth="2" borderColor="blue" borderRadius="15" />
+    <Switch checked="false" color="red" offBackgroundColor="purple" height="30" width="52" borderWidth="2" borderColor="blue" borderRadius="15" />
+
+    <Switch />
+  </StackLayout>
+</Page>

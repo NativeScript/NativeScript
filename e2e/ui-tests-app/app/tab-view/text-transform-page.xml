@@ -1,0 +1,29 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigate">
+    <TabView>
+        <TabView.items>
+            <TabViewItem title="tAb ViEw" id="tab1">
+                <TabViewItem.view>
+                    <StackLayout>
+                        <Button text="apply" tap="applyTap"/>
+                        <Button text="reset" tap="resetTap"/>
+                    </StackLayout>
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem title="tAb ViEw" id="tab2">
+                <TabViewItem.view>
+                    <Label text="empty tab" />
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem title="tAb ViEw" id="tab3">
+                <TabViewItem.view>
+                    <Label text="empty tab" />
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem title="tAb ViEw" id="tab4">
+                <TabViewItem.view>
+                    <Label text="empty tab" />
+                </TabViewItem.view>
+            </TabViewItem>
+        </TabView.items>
+    </TabView>
+</Page>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page>
+  <Progress verticalAlignment="center" maxValue="100" value="60" margin="10"/>
+</Page>

@@ -1,0 +1,7 @@
+<Page loaded="loaded">
+    <ListView items="{{ items }}" >
+      <ListView.itemTemplate>
+        <Label text="{{ $value }}" style="text-transform: uppercase; text-decoration: underline;"/>
+      </ListView.itemTemplate>
+    </ListView>
+</Page>

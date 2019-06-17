@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page loaded="pageLoaded">
+  <GridLayout rows="auto, *">
+    <GridLayout row="0" columns="*,30" id="parentLayout">
+      <TextView col="0" automationText="tv" id="textView" hint="Enter example name" text="{{ exampleName }}" />
+      <Button col="1" automationText="Run" id="btnRun" text="&#xf046;" tap="{{ loadExampleFromTextField }}" style="font-family:FontAwesome; padding:0; background-color:#33cc33; color:white; border-radius:5; height:30; padding:0;"/>
+    </GridLayout>
+    <WrapLayout row="1" id="wrapLayoutWithExamples"/>
+    <ListView row="1" items="{{ filteredListOfExamples }}" itemTap="{{ loadExampleFromListView }}" id="filteredListOfExamplesListView">
+      <ListView.itemTemplate>
+        <GridLayout columns="*,2*">
+          <Label text="{{ name }}" textWrap="true" />
+          <Label text="{{ path }}" textWrap="true" col="1"/>
+        </GridLayout>
+      </ListView.itemTemplate>
+    </ListView>
+  </GridLayout>
+</Page>

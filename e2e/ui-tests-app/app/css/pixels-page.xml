@@ -1,0 +1,60 @@
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true" backgroundColor="orange">
+   <StackLayout margin="2px">
+
+    <Label text="pixels" />
+    <StackLayout borderWidth="1px" borderColor="black" horizontalAlignment="left" verticalAlignment="top" orientation="horizontal" padding="1px">
+      <Label     text="Label"      borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
+      <Button    text="Button"     borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" androidElevation="0" />
+      <TextView  text="Text View"  borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
+      <TextField text="Text Field" borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
+      <Image src="~/resources/images/gravatar.png" borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px" />
+    </StackLayout>
+
+     <StackLayout borderWidth="2px" borderColor="green" orientation="horizontal" padding="2px">
+      <Label     text="Label"      borderWidth="5px" borderRadius="10px" borderColor="black" padding="5px" margin="5px" />
+      <Button    text="Button"     borderWidth="4px" borderRadius="10px" borderColor="black" padding="4px" margin="4px" androidElevation="0" />
+      <TextView  text="Text View"  borderWidth="3px" borderRadius="10px" borderColor="black" padding="3px" margin="3px" />
+      <TextField text="Text Field" borderWidth="2px" borderRadius="10px" borderColor="black" padding="2px" margin="2px" />
+    </StackLayout>
+
+    <StackLayout borderWidth="3px" borderColor="black" orientation="horizontal" padding="3px">
+        <StackLayout borderWidth="1px" borderRadius="10px" borderColor="green" padding="1px" margin="1px">
+            <StackLayout borderWidth="1px" borderColor="black" margin="0px" width="75px" height="75px" />
+        </StackLayout>
+        <StackLayout borderWidth="2px" borderRadius="10px" borderColor="green" padding="2px" margin="2px">
+            <StackLayout borderWidth="2px" borderColor="black" margin="1px" width="75px" height="75px" />
+        </StackLayout>
+        <StackLayout borderWidth="3px" borderRadius="10px" borderColor="green" padding="3px" margin="3px">
+            <StackLayout borderWidth="3px" borderColor="black" margin="2px" width="75px" height="75px" />
+        </StackLayout>
+    </StackLayout>
+
+    <Label text="device independent pixels" />
+    <StackLayout borderWidth="1" borderColor="black" horizontalAlignment="left" verticalAlignment="top" orientation="horizontal" padding="1">
+      <Label     text="Label"      borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
+      <Button    text="Button"     borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" androidElevation="0" />
+      <TextView  text="Text View"  borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
+      <TextField text="Text Field" borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
+      <Image src="~/resources/images/gravatar.png" borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1" />
+    </StackLayout>
+
+     <StackLayout borderWidth="2" borderColor="green" orientation="horizontal" padding="2">
+      <Label     text="Label"      borderWidth="5" borderRadius="10" borderColor="black" padding="5" margin="5" />
+      <Button    text="Button"     borderWidth="4" borderRadius="10" borderColor="black" padding="4" margin="4" androidElevation="0" />
+      <TextView  text="Text View"  borderWidth="3" borderRadius="10" borderColor="black" padding="3" margin="3" />
+      <TextField text="Text Field" borderWidth="2" borderRadius="10" borderColor="black" padding="2" margin="2" />
+    </StackLayout>
+
+    <StackLayout borderWidth="3" borderColor="black" orientation="horizontal" padding="3">
+        <StackLayout borderWidth="1" borderRadius="10" borderColor="green" padding="1" margin="1">
+            <StackLayout borderWidth="1" borderColor="black" margin="0" width="75" height="75" />
+        </StackLayout>
+        <StackLayout borderWidth="2" borderRadius="10" borderColor="green" padding="2" margin="2">
+            <StackLayout borderWidth="2" borderColor="black" margin="1" width="75" height="75" />
+        </StackLayout>
+        <StackLayout borderWidth="3" borderRadius="10" borderColor="green" padding="3" margin="3">
+            <StackLayout borderWidth="3" borderColor="black" margin="2" width="75" height="75" />
+        </StackLayout>
+    </StackLayout>
+   </StackLayout>
+</Page>

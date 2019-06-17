@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page >
+    <Page.actionBar>
+        <ActionBar title="issue-4147">
+            <NavigationButton text="Go Back" android.systemIcon="ic_menu_back" tap="onNavBtnTap"/>
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout>
+        <SearchBar id="bg-color" hint="bg-color" text="" textFieldHintColor="green" />
+        <SearchBar class="color" hint="color" text="color" />
+        <SearchBar hint="Hint Text" id="searchBar" textFieldHintColor="#FFFFFF" style="color:#FFFFFF;background-color: #795548;height:60" />
+        <SearchBar hint="Hint Text" textFieldHintColor="#FFFFFF" textFieldBackgroundColor="red" style="background-color:green;" />
+    </StackLayout>
+</Page>

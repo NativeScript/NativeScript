@@ -1,0 +1,6 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="onLoaded">
+    <StackLayout>
+        <TextField id="textField" />
+        <TextView id="textView" />
+    </StackLayout>
+</Page>
