@@ -95,7 +95,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === CHILD_SPAN) {
+        if (value instanceof Span) {
             this.spans.push(value);
         }
     }
