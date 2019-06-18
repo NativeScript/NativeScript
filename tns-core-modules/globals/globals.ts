@@ -18,7 +18,13 @@ const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
 (<any>global).moduleResolvers = [global.require];
 
 global.registerModule = function (name: string, loader: ModuleLoader): void {
+    // console.log("[global.registerModule]", name);
     modules.set(name, loader);
+}
+
+global._unregisterModule = function (name: string): void {
+    // console.log("[global._unregisterModule]", name);
+    modules.delete(name)
 }
 
 interface Context {
@@ -82,17 +88,27 @@ global.moduleExists = function (name: string): boolean {
 }
 
 global.loadModule = function (name: string): any {
+    // console.log("[global.loadModule]", name);
+
     const loader = modules.get(name);
     if (loader) {
-        return loader();
+        // console.log("[global.loadModule] loader: ", name, loader);
+        return loader(name);
     }
+
     for (let resolver of (<any>global).moduleResolvers) {
         const result = resolver(name);
         if (result) {
+            // console.log("[global.loadModule] resolver: ", name, result);
             modules.set(name, () => result);
             return result;
         }
     }
+}
+
+global.getRegisteredModules = function (): string[] {
+    // console.log("[global.getRegisteredModules]", name);
+    return Array.from(modules.keys());
 }
 
 global.zonedCallback = function (callback: Function): Function {

@@ -1,4 +1,4 @@
-﻿<Page>
+<Page cssFile="~/ui-tests-app/css/test-page.css">
   <TabView>
     <TabView.items>
 
