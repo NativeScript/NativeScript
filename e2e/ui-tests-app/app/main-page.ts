@@ -25,11 +25,11 @@ export function pageLoaded(args: EventData) {
     examples.set("layouts", "layouts/main-page");
     examples.set("list-picker", "list-picker/main-page");
     examples.set("list-view", "list-view/main-page");
-    examples.set("modalview", "modal-view/modal-view");
+    examples.set("modalview", "modal-view/modal-view-page");
     examples.set("page", "page/main-page");
     examples.set("perf", "perf/main-page");
     examples.set("scroll-view", "scroll-view/main-page");
-    examples.set("segStyle", "segmented-bar/all");
+    examples.set("segStyle", "segmented-bar/all-page");
     examples.set("search-bar", "search-bar/main-page");
     examples.set("tab-view", "tab-view/main-page");
     examples.set("timePicker", "time-picker/time-picker");
