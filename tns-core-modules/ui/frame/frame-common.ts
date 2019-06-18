@@ -711,7 +711,7 @@ export function goBack(): boolean {
     return false;
 }
 
-export function stack(): Array<FrameBase> {
+export function _stack(): Array<FrameBase> {
     return frameStack;
 }
 

@@ -8,18 +8,17 @@ import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-n
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
-import { ios as iosUtils, layout } from "../../utils/utils"
-import { device } from "../../platform";
+import { /*ios as iosUtils,*/ layout } from "../../utils/utils"
+// import { device } from "../../platform";
 import { fromFileOrResource } from "../../image-source";
-import { Color } from "../../color";
 
 // TODO
 // import { profile } from "../../profiling";
 
 export * from "./tabs-common";
 
-const majorVersion = iosUtils.MajorVersion;
-const isPhone = device.deviceType === "Phone";
+// const majorVersion = iosUtils.MajorVersion;
+// const isPhone = device.deviceType === "Phone";
 
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     public static ObjCProtocols = [MDCTabBarDelegate];
@@ -501,33 +500,33 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
 //     }
 // }
 
-function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
-    if (!tabStripItem || !tabBarItem) {
-        return;
-    }
+// function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
+//     if (!tabStripItem || !tabBarItem) {
+//         return;
+//     }
 
-    // For iOS <11 icon is *always* above the text.
-    // For iOS 11 icon is above the text *only* on phones in portrait mode.
-    const orientation = controller.interfaceOrientation;
-    const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
-    const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
+//     // For iOS <11 icon is *always* above the text.
+//     // For iOS 11 icon is above the text *only* on phones in portrait mode.
+//     const orientation = controller.interfaceOrientation;
+//     const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
+//     const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
 
-    if (!tabStripItem.iconSource) {
-        if (isIconAboveTitle) {
-            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
-        } else {
-            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
-        }
-    }
+//     if (!tabStripItem.iconSource) {
+//         if (isIconAboveTitle) {
+//             tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+//         } else {
+//             tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
+//         }
+//     }
 
-    if (!tabStripItem.title) {
-        if (isIconAboveTitle) {
-            tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
-        } else {
-            tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
-        }
-    }
-}
+//     if (!tabStripItem.title) {
+//         if (isIconAboveTitle) {
+//             tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
+//         } else {
+//             tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
+//         }
+//     }
+// }
 
 function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
     const rangeStart = Math.max(0, index - eps);
@@ -706,7 +705,7 @@ export class Tabs extends TabsBase {
         }
     }
 
-    private _actionBarHiddenByTabView: boolean;
+    // private _actionBarHiddenByTabView: boolean;
     // public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
     //     // TODO
     //     // if (traceEnabled()) {
@@ -788,7 +787,7 @@ export class Tabs extends TabsBase {
 
         // const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
 
-        const selectedItem = items[this.selectedIndex];
+        // const selectedItem = items[this.selectedIndex];
         // const controller = this.getViewController(selectedItem);
         // controllers.addObject(controller);
 
@@ -910,17 +909,17 @@ export class Tabs extends TabsBase {
         return image;
     }
 
-    private _updateIOSTabBarColorsAndFonts(): void {
-        // if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
-        //     return;
-        // }
+    // private _updateIOSTabBarColorsAndFonts(): void {
+    //     if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
+    //         return;
+    //     }
 
-        // const tabBar = <UITabBar>this.ios.tabBar;
-        // const states = getTitleAttributesForStates(this);
-        // for (let i = 0; i < tabBar.items.count; i++) {
-        //     applyStatesToItem(tabBar.items[i], states);
-        // }
-    }
+    //     const tabBar = <UITabBar>this.ios.tabBar;
+    //     const states = getTitleAttributesForStates(this);
+    //     for (let i = 0; i < tabBar.items.count; i++) {
+    //         applyStatesToItem(tabBar.items[i], states);
+    //     }
+    // }
 
     // TODO: Move this to TabStripItem
     // [fontInternalProperty.getDefault](): Font {
@@ -992,35 +991,35 @@ export class Tabs extends TabsBase {
     }
 }
 
-interface TabStates {
-    normalState?: any;
-    selectedState?: any;
-}
+// interface TabStates {
+//     normalState?: any;
+//     selectedState?: any;
+// }
 
-function getTitleAttributesForStates(tabView: Tabs): TabStates {
-    const result: TabStates = {};
+// function getTitleAttributesForStates(tabView: Tabs): TabStates {
+//     const result: TabStates = {};
 
-    const defaultTabItemFontSize = 10;
-    const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
-    const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
-    const tabItemTextColor = tabView.style.tabTextColor;
-    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    result.normalState = { [NSFontAttributeName]: font }
-    if (textColor) {
-        result.normalState[UITextAttributeTextColor] = textColor
-    }
+//     const defaultTabItemFontSize = 10;
+//     const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
+//     const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+//     const tabItemTextColor = tabView.style.tabTextColor;
+//     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+//     result.normalState = { [NSFontAttributeName]: font }
+//     if (textColor) {
+//         result.normalState[UITextAttributeTextColor] = textColor
+//     }
 
-    const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
-    const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-    result.selectedState = { [NSFontAttributeName]: font }
-    if (selectedTextColor) {
-        result.selectedState[UITextAttributeTextColor] = selectedTextColor
-    }
+//     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
+//     const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
+//     result.selectedState = { [NSFontAttributeName]: font }
+//     if (selectedTextColor) {
+//         result.selectedState[UITextAttributeTextColor] = selectedTextColor
+//     }
 
-    return result;
-}
+//     return result;
+// }
 
-function applyStatesToItem(item: UITabBarItem, states: TabStates) {
-    item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
-    item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
-}
+// function applyStatesToItem(item: UITabBarItem, states: TabStates) {
+//     item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
+//     item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
+// }

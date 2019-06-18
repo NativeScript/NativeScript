@@ -1,14 +1,14 @@
 ﻿// Definitions.
 import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
-    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition, NavigationEntry
+    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
 import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, stack, NavigationType,
+    FrameBase, goBack, _stack, NavigationType,
     Observable, View, traceCategories, traceEnabled, traceError, traceWrite
 } from "./frame-common";
 
@@ -596,7 +596,6 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 
     private _showActionBar = true;
     private _owner: Frame;
-    public cachePagesOnNavigate: boolean = true;
 
     constructor(owner: Frame) {
         super();
@@ -657,7 +656,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
             return activity;
         }
 
-        let frames = stack();
+        let frames = _stack();
         for (let length = frames.length, i = length - 1; i >= 0; i--) {
             activity = frames[i].android.activity;
             if (activity) {
@@ -1213,12 +1212,11 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         savedInstanceState: android.os.Bundle,
         fireLaunchEvent: boolean
     ): void {
-        const shouldCreateRootFrame = application.shouldCreateRootFrame();
         let rootView = this._rootView;
 
         if (traceEnabled()) {
             traceWrite(
-                `Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: ${shouldCreateRootFrame} fireLaunchEvent: ${fireLaunchEvent}`,
+                `Frame.setActivityContent rootView: ${rootView} fireLaunchEvent: ${fireLaunchEvent}`,
                 traceCategories.NativeLifecycle
             );
         }
@@ -1239,36 +1237,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
                     throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
                 }
 
-                if (shouldCreateRootFrame) {
-                    const extras = intent.getExtras();
-                    let frameId = -1;
-
-                    // We have extras when we call - new Frame().navigate();
-                    // savedInstanceState is used when activity is recreated.
-                    // NOTE: On API 23+ we get extras on first run.
-                    // Check changed - first try to get frameId from Extras if not from saveInstanceState.
-                    if (extras) {
-                        frameId = extras.getInt(INTENT_EXTRA, -1);
-                    }
-
-                    if (savedInstanceState && frameId < 0) {
-                        frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
-                    }
-
-                    if (!rootView) {
-                        // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
-                        // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
-                        rootView = getFrameByNumberId(frameId) || new Frame();
-                    }
-
-                    if (rootView instanceof Frame) {
-                        rootView.navigate(mainEntry);
-                    } else {
-                        throw new Error("A Frame must be used to navigate to a Page.");
-                    }
-                } else {
-                    rootView = createViewFromEntry(mainEntry);
-                }
+                rootView = createViewFromEntry(mainEntry);
             }
 
             this._rootView = rootView;
@@ -1276,13 +1245,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
 
         // Initialize native visual tree;
-        if (shouldCreateRootFrame) {
-            // Don't setup as styleScopeHost
-            rootView._setupUI(activity);
-        } else {
-            // setup view as styleScopeHost
-            rootView._setupAsRootView(activity);
-        }
+        // setup view as styleScopeHost
+        rootView._setupAsRootView(activity);
 
         activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
     }

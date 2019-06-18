@@ -263,8 +263,6 @@ export class View extends ViewCommon {
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: androidx.fragment.app.FragmentManager;
     private _rootManager: androidx.fragment.app.FragmentManager;
-    private _originalElevation: number;
-    private _originalStateListAnimator: any; /* android.animation.StateListAnimator; */
 
     nativeViewProtected: android.view.View;
 

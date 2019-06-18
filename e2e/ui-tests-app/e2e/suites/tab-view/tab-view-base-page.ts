@@ -1,6 +1,4 @@
-import { AppiumDriver, logInfo, logError } from "nativescript-dev-appium";
-import { Platform } from "mobile-devices-controller";
-import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
+import { AppiumDriver } from "nativescript-dev-appium";
 import { PageObjectBaseModel } from "../../page-object-base-model";
 
 export class TabViewBasePage extends PageObjectBaseModel {

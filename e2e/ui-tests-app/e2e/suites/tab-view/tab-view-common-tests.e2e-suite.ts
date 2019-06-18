@@ -1,4 +1,4 @@
-import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
+import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-appium";
 import { TabViewBasePage } from "./tab-view-base-page";
 import { Platform } from "mobile-devices-controller";
 
@@ -77,10 +77,9 @@ describe("tab-view-common-tests-suite", async function () {
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
 
-
     it("tabView_icon_change", async function () {
         await tabViewBasePage.navigateToSample("tab-view-icon-change");
-        const index = driver.nsCapabilities.device.platform == Platform.IOS
+        const index = driver.nsCapabilities.device.platform === Platform.IOS
             ? (driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
 
         let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
@@ -88,7 +87,7 @@ describe("tab-view-common-tests-suite", async function () {
         await tabViewBasePage.imageHelper.compareScreen("tabView_icon_change", 5, 0.01);
 
         btns = await driver.findElementsByClassName(driver.locators.button, 5000);
-        await btns[index -1 ].tap();
+        await btns[index - 1].tap();
         await tabViewBasePage.imageHelper.compareScreen("tabView_icon_change", 5, 0.01);
 
         await tabViewBasePage.imageHelper.assertImages();

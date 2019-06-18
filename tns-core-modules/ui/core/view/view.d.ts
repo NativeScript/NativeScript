@@ -493,7 +493,7 @@ export abstract class View extends ViewBase {
 
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
-    /**
+        /**
      * @deprecated use on() instead
      *
      * @param type - Type of the gesture.

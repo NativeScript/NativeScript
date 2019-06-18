@@ -1,7 +1,7 @@
 import * as view from "tns-core-modules/ui/core/view";
 import * as pages from "tns-core-modules/ui/page";
 
-export function loaded(args){
+export function loaded(args) {
     var page = <pages.Page>(<view.View>args.object).page;
    const view = page.getViewById("test-element");
    (<any>view).textTransform = "capitalize";
