@@ -1,8 +1,6 @@
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Button } from "tns-core-modules/ui/button";
 import { TextView } from "tns-core-modules/ui/text-view";
-import { View } from "tns-core-modules/ui/core/view";
-import { EventData } from "tns-core-modules/data/observable";
 let buttonsCount = 1;
 
 export function onLayoutChanged(args) {

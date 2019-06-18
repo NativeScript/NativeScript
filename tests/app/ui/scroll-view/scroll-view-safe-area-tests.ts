@@ -4,13 +4,12 @@ import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as TKUnit from "../../tk-unit";
 import * as view from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
 
 import * as helper from "../../ui-helper";
 import { parse } from "tns-core-modules/ui/builder";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, check, lessOrCloseEnough, greaterOrCloseEnough,
+    equal, lessOrCloseEnough, greaterOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftWith, isRightWith, isBelowWith
 } from "../layouts/layout-tests-helper";

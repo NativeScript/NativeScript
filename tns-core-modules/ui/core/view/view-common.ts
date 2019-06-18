@@ -21,7 +21,6 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
-import { isAndroid } from "../../../platform";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";

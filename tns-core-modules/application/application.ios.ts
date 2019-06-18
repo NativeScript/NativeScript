@@ -342,11 +342,6 @@ function _start(entry?: string | NavigationEntry) {
     }
 }
 
-export function start(entry?: string | NavigationEntry) {
-    console.log("application.start() is deprecated; use application.run() instead");
-    _start(entry);
-}
-
 export function run(entry?: string | NavigationEntry) {
     createRootFrame.value = false;
     _start(entry);

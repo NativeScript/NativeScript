@@ -29,17 +29,10 @@ export function test_NavigateToNewPage_WithAndroidCache() {
         return testPage;
     };
 
-    const androidFrame = topmost().android;
-    const cachingBefore = androidFrame.cachePagesOnNavigate;
-    try {
-        const currentPage = topmost().currentPage;
-        androidFrame.cachePagesOnNavigate = true;
-        helper.navigateWithHistory(pageFactory);
-        TKUnit.assertNotNull(currentPage.nativeView);
-        helper.goBack();
-    } finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
+    const currentPage = topmost().currentPage;
+    helper.navigateWithHistory(pageFactory);
+    TKUnit.assertNotNull(currentPage.nativeView);
+    helper.goBack();
 
     TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
     TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
@@ -80,18 +73,7 @@ export function test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow()
         return testPage;
     };
 
-    const androidFrame = topmost().android;
-    const cachingBefore = androidFrame.cachePagesOnNavigate;
-
     helper.navigate(pageFactory);
-
-    try {
-        // Set caching to same value.
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-    finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
 }
 
 export var test_Resolve_Fragment_ForPage = function () {
