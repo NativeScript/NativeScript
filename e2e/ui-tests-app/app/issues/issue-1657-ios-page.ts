@@ -14,7 +14,7 @@ export function navigatingTo(args: EventData) {
 
 export function onTap() {
   frameModule.topmost().navigate({
-    moduleName: "issues/sub-page-1657"
+    moduleName: "issues/sub-1657-page"
   });
 }
 
