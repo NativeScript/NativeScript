@@ -443,7 +443,6 @@ export class Frame extends FrameBase {
 
         removed.fragment = null;
         removed.viewSavedState = null;
-        removed.resolvedPage = null;
     }
 
     public createNativeView() {
