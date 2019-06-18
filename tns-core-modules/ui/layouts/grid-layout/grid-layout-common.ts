@@ -310,8 +310,20 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 
 GridLayoutBase.prototype.recycleNativeView = "auto";
 
-export const columnProperty = new Property<View, number>({
+export const colProperty = new Property<View, number>({
     name: "col", defaultValue: 0,
+    valueChanged: (target, oldValue, newValue) => {
+        const grid = target.parent;
+        if (grid instanceof GridLayoutBase) {
+            grid.onColumnChanged(target, oldValue, newValue);
+        }
+    },
+    valueConverter: (v) => Math.max(0, parseInt(v))
+});
+colProperty.register(View);
+
+export const columnProperty = new Property<View, number>({
+    name: "column", defaultValue: 0,
     valueChanged: (target, oldValue, newValue) => {
         const grid = target.parent;
         if (grid instanceof GridLayoutBase) {
@@ -322,8 +334,20 @@ export const columnProperty = new Property<View, number>({
 });
 columnProperty.register(View);
 
-export const columnSpanProperty = new Property<View, number>({
+export const colSpanProperty = new Property<View, number>({
     name: "colSpan", defaultValue: 1,
+    valueChanged: (target, oldValue, newValue) => {
+        const grid = target.parent;
+        if (grid instanceof GridLayoutBase) {
+            grid.onColumnSpanChanged(target, oldValue, newValue);
+        }
+    },
+    valueConverter: (v) => Math.max(1, parseInt(v))
+});
+colSpanProperty.register(View);
+
+export const columnSpanProperty = new Property<View, number>({
+    name: "columnSpan", defaultValue: 1,
     valueChanged: (target, oldValue, newValue) => {
         const grid = target.parent;
         if (grid instanceof GridLayoutBase) {
