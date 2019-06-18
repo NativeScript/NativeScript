@@ -244,6 +244,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _defaultPaddingLeft: number;
     public _isPaddingRelative: boolean;
 
+    public _moduleName: string;
+
     constructor() {
         super();
         this._domId = viewIdCounter++;
@@ -651,7 +653,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public resetNativeView(): void {
-        //    
+        //
     }
 
     private resetNativeViewInternal(): void {
@@ -688,7 +690,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this._context = context;
 
-         // This will account for nativeView that is created in createNativeView, recycled
+        // This will account for nativeView that is created in createNativeView, recycled
         // or for backward compatability - set before _setupUI in iOS contructor.
         let nativeView = this.nativeViewProtected;
 
@@ -864,9 +866,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     /**
+     * @deprecated
+     * 
      * This used to be the way to set attribute values in early {N} versions.
      * Now attributes are expected to be set as plain properties on the view instances.
-     * @deprecated
      */
     public _applyXmlAttribute(attribute: string, value: string): boolean {
         if (attribute === "style" || attribute === "rows" || attribute === "columns" || attribute === "fontAttributes") {
@@ -1015,7 +1018,7 @@ export const classNameProperty = new Property<ViewBase, string>({
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
         let classes = view.cssClasses;
         classes.clear();
-        if (typeof newValue === "string") {
+        if (typeof newValue === "string" && newValue !== "") {
             newValue.split(" ").forEach(c => classes.add(c));
         }
         view._onCssStateChange();

@@ -18,6 +18,8 @@ trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 // ));
 
 function runTests() {
+    // setTimeout(() => tests.runAll("BOTTOM-NAVIGATION-ROOT.test_android_default_offset_should_preload_1_tab_on_each_side"), 10);
+    // setTimeout(() => tests.runAll("BOTTOM-NAVIGATION-ROOT"), 10);
     setTimeout(() => tests.runAll(""), 10);
 }
 

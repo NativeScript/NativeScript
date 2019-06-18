@@ -20,6 +20,7 @@
     border-color: gray;
 }
 .control Button {
+    android-elevation: 0;
     border-width: 1 1 0 0;
     border-color: gray;
     font-size: 9;

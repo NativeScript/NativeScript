@@ -85,13 +85,7 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     }
 
     get _childrenCount(): number {
-        var count = 0;
-
-        if (this.itemsLayout) {
-            count++;
-        }
-
-        return count;
+        return this.itemsLayout ? 1 : 0;
     }
 
     public eachChildView(callback: (child: View) => boolean) {

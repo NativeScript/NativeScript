@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" class="page">
+    <ScrollView id="scroll-view">
+        <StackLayout>
+            <GridLayout rows="auto, auto, auto" backgroundColor="lightgray">
+                <Button row="0" text="Change w/ Visibility" automationText="changeVisibilityTop" tap="{{ onChangeVisibility }}"></Button>
+                <Button row="1" text="Scroll To Bottom" automationText="scrollToBottom" tap="{{ onScrollToBottom }}"></Button>
+                <Label row="2" visibility="{{ isVisible ? 'visible' : 'collapsed' }}" text="{{ content }}" color="black"></Label>
+            </GridLayout>
+
+            <GridLayout height="2000" backgroundColor="yellow"></GridLayout>
+
+            <GridLayout rows="auto, auto, auto" backgroundColor="lightgray">
+                <Button row="0" text="Change w/ Visibility" automationText="changeVisibilityBottom"  tap="{{ onChangeVisibility }}"></Button>
+                <Button row="1" text="Scroll To Top" automationText="scrollToTop" tap="{{ onScrollToTop }}"></Button>
+                <Label row="2" visibility="{{ isVisible ? 'visible' : 'collapsed' }}" text="{{ content }}" color="black"></Label>
+            </GridLayout>
+        </StackLayout>
+    </ScrollView>
+</Page>

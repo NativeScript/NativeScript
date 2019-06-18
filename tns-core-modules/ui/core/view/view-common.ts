@@ -7,8 +7,7 @@ import {
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
     getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty,
-    ShowModalOptions
+    InheritedProperty, ShowModalOptions
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -22,8 +21,10 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
+import { isAndroid } from "../../../platform";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
+import { BackgroundRepeat } from "../../styling/style-properties";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";
@@ -41,6 +42,19 @@ export function CSSType(type: string): ClassDecorator {
     return (cls) => {
         cls.prototype.cssType = type;
     };
+}
+
+export function viewMatchesModuleContext(
+    view: ViewDefinition,
+    context: ModuleContext, 
+    types: ModuleType[]): boolean {
+        
+    return context &&
+        view._moduleName &&
+        context.type && 
+        types.some(type => type === context.type) &&
+        context.path && 
+        context.path.includes(view._moduleName);
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
@@ -136,6 +150,43 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
+    public _onLivesync(context?: ModuleContext): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
+        if (this._handleLivesync(context)) {
+            return true;
+        }
+
+        let handled = false;
+        this.eachChildView((child) => {
+            if (child._onLivesync(context)) {
+                handled = true;
+                return false;
+            }
+        });
+        return handled;
+    }
+
+    public _handleLivesync(context?: ModuleContext): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${this}._handleLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
+        // Handle local CSS
+        if (viewMatchesModuleContext(this, context, ["style"])) {
+            if (traceEnabled()) {
+                traceWrite(`Change Handled: Changing CSS for ${this}`, traceCategories.Livesync);
+            }
+
+            this.changeCssFile(context.path);
+            return true;
+        }
+
+        return false;
+    }
+
     _setupAsRootView(context: any): void {
         super._setupAsRootView(context);
         if (!this._styleScope) {
@@ -210,12 +261,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    _onLivesync(): boolean {
-        _rootModalViews.forEach(v => v.closeModal());
-        _rootModalViews.length = 0;
-        return false;
-    }
-
     public onBackPressed(): boolean {
         return false;
     }
@@ -233,7 +278,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             if (args.length === 2) {
                 options = <ShowModalOptions>args[1];
             } else {
-                // TODO: Add deprecation warning
+                if (args[0] instanceof ViewCommon) {
+                    console.log("showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) " +
+                        "is deprecated. Use showModal(view: ViewBase, modalOptions: ShowModalOptions) instead.");
+                } else {
+                    console.log("showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean) " +
+                        "is deprecated. Use showModal(moduleName: string, modalOptions: ShowModalOptions) instead.");
+                }
+
                 options = {
                     context: args[1],
                     closeCallback: args[2],
@@ -480,6 +532,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.backgroundImage = value;
     }
 
+    get backgroundSize(): string {
+        return this.style.backgroundSize;
+    }
+    set backgroundSize(value: string) {
+        this.style.backgroundSize = value;
+    }
+
+    get backgroundPosition(): string {
+        return this.style.backgroundPosition;
+    }
+    set backgroundPosition(value: string) {
+        this.style.backgroundPosition = value;
+    }
+
+    get backgroundRepeat(): BackgroundRepeat {
+        return this.style.backgroundRepeat;
+    }
+    set backgroundRepeat(value: BackgroundRepeat) {
+        this.style.backgroundRepeat = value;
+    }
+
     get minWidth(): Length {
         return this.style.minWidth;
     }
@@ -604,6 +677,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
     set scaleY(value: number) {
         this.style.scaleY = value;
+    }
+
+    get androidElevation(): number {
+        return this.style.androidElevation;
+    }
+    set androidElevation(value: number) {
+        this.style.androidElevation = value;
+    }
+
+    get androidDynamicElevationOffset(): number {
+        return this.style.androidDynamicElevationOffset;
+    }
+    set androidDynamicElevationOffset(value: number) {
+        this.style.androidDynamicElevationOffset = value;
     }
 
     //END Style property shortcuts

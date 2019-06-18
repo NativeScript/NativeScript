@@ -29,6 +29,7 @@ const majorVersion = iosUtils.MajorVersion;
 export class View extends ViewCommon {
     nativeViewProtected: UIView;
     viewController: UIViewController;
+    private _popoverPresentationDelegate: ios.UIPopoverPresentationControllerDelegateImp;
 
     private _isLaidOut = false;
     private _hasTransfrom = false;
@@ -416,6 +417,8 @@ export class View extends ViewCommon {
 
             if (presentationStyle === UIModalPresentationStyle.Popover) {
                 const popoverPresentationController = controller.popoverPresentationController;
+                this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+                popoverPresentationController.delegate = this._popoverPresentationDelegate;
                 const view = parent.nativeViewProtected;
                 // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
                 // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
@@ -431,7 +434,7 @@ export class View extends ViewCommon {
         const animated = options.animated === undefined ? true : !!options.animated;
         (<any>controller).animated = animated;
         parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
-        const transitionCoordinator = iosUtils.getter(parentController, parentController.transitionCoordinator);
+        const transitionCoordinator = parentController.transitionCoordinator;
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
                 .call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
@@ -446,6 +449,12 @@ export class View extends ViewCommon {
     protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         if (!parent || !parent.viewController) {
             traceError("Trying to hide modal view but no parent with viewController specified.")
+            return;
+        }
+
+        // modal view has already been closed by UI, probably as a popover
+        if (!parent.viewController.presentedViewController) {
+            whenClosedCallback();
             return;
         }
 
@@ -643,7 +652,7 @@ export class CustomLayoutView extends ContainerView {
     nativeViewProtected: UIView;
 
     createNativeView() {
-        return UIView.alloc().initWithFrame(iosUtils.getter(UIScreen, UIScreen.mainScreen).bounds);
+        return UIView.alloc().initWithFrame(UIScreen.mainScreen.bounds);
     }
 
     get ios(): UIView {
@@ -789,36 +798,32 @@ export namespace ios {
     }
 
     export function expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
-        const locationInWindow = view.getLocationInWindow();
-        const inWindowLeft = layout.round(layout.toDevicePixels(locationInWindow.x));
-        const inWindowTop = layout.round(layout.toDevicePixels(locationInWindow.y));
-        const inWindowRight = inWindowLeft + layout.round(layout.toDevicePixels(frame.size.width));
-        const inWindowBottom = inWindowTop + layout.round(layout.toDevicePixels(frame.size.height));
-
-        const availableSpace = getAvailableSpaceFromParent(view);
+        const availableSpace = getAvailableSpaceFromParent(view, frame);
         const safeArea = availableSpace.safeArea;
         const fullscreen = availableSpace.fullscreen;
+        const inWindow = availableSpace.inWindow;
 
         const position = ios.getPositionFromFrame(frame);
         const safeAreaPosition = ios.getPositionFromFrame(safeArea);
         const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
+        const inWindowPosition = ios.getPositionFromFrame(inWindow);
 
         const adjustedPosition = position;
 
-        if (position.left && inWindowLeft <= safeAreaPosition.left) {
+        if (position.left && inWindowPosition.left <= safeAreaPosition.left) {
             adjustedPosition.left = fullscreenPosition.left;
         }
 
-        if (position.top && inWindowTop <= safeAreaPosition.top) {
+        if (position.top && inWindowPosition.top <= safeAreaPosition.top) {
             adjustedPosition.top = fullscreenPosition.top;
         }
 
-        if (inWindowRight < fullscreenPosition.right && inWindowRight >= safeAreaPosition.right + fullscreenPosition.left) {
-            adjustedPosition.right += fullscreenPosition.right - inWindowRight;
+        if (inWindowPosition.right < fullscreenPosition.right && inWindowPosition.right >= safeAreaPosition.right + fullscreenPosition.left) {
+            adjustedPosition.right += fullscreenPosition.right - inWindowPosition.right;
         }
 
-        if (inWindowBottom < fullscreenPosition.bottom && inWindowBottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
-            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowBottom;
+        if (inWindowPosition.bottom < fullscreenPosition.bottom && inWindowPosition.bottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
+            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowPosition.bottom;
         }
 
         const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
@@ -849,18 +854,16 @@ export namespace ios {
         layoutParent(view.parent);
     }
 
-    function getAvailableSpaceFromParent(view: View): { safeArea: CGRect, fullscreen: CGRect } {
+    function getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect, fullscreen: CGRect, inWindow: CGRect } {
         if (!view) {
             return;
         }
 
-        let fullscreen = null;
-        let safeArea = null;
+        let scrollView = null;
+        let viewControllerView = null;
 
         if (view.viewController) {
-            const nativeView = view.viewController.view;
-            safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
-            fullscreen = nativeView.frame;
+            viewControllerView = view.viewController.view;
         } else {
             let parent = view.parent as View;
             while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
@@ -868,18 +871,37 @@ export namespace ios {
             }
 
             if (parent.nativeViewProtected instanceof UIScrollView) {
-                const nativeView = parent.nativeViewProtected;
-                const insets = nativeView.safeAreaInsets;
-                safeArea = CGRectMake(insets.left, insets.top, nativeView.contentSize.width - insets.left - insets.right, nativeView.contentSize.height - insets.top - insets.bottom);
-                fullscreen = CGRectMake(0, 0, nativeView.contentSize.width, nativeView.contentSize.height);
+                scrollView = parent.nativeViewProtected;
             } else if (parent.viewController) {
-                const nativeView = parent.viewController.view;
-                safeArea = nativeView.safeAreaLayoutGuide.layoutFrame;
-                fullscreen = nativeView.frame;
+                viewControllerView = parent.viewController.view;
             }
         }
 
-        return { safeArea: safeArea, fullscreen: fullscreen }
+        let fullscreen = null;
+        let safeArea = null;
+
+        if (viewControllerView) {
+            safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
+            fullscreen = viewControllerView.frame;
+        }
+        else if (scrollView) {
+            const insets = scrollView.safeAreaInsets;
+            safeArea = CGRectMake(insets.left, insets.top, scrollView.contentSize.width - insets.left - insets.right, scrollView.contentSize.height - insets.top - insets.bottom);
+            fullscreen = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
+        }
+
+        const locationInWindow = view.getLocationInWindow();
+        let inWindowLeft = locationInWindow.x;
+        let inWindowTop = locationInWindow.y;
+
+        if (scrollView) {
+            inWindowLeft += scrollView.contentOffset.x;
+            inWindowTop += scrollView.contentOffset.y;
+        }
+
+        const inWindow = CGRectMake(inWindowLeft, inWindowTop, frame.size.width, frame.size.height);
+
+        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow }
     }
 
     export class UILayoutViewController extends UIViewController {
@@ -889,6 +911,14 @@ export namespace ios {
             const controller = <UILayoutViewController>UILayoutViewController.new();
             controller.owner = owner;
             return controller;
+        }
+
+        public viewDidLoad(): void {
+            super.viewDidLoad();
+
+            // Unify translucent and opaque bars layout
+            // this.edgesForExtendedLayout = UIRectEdgeBottom;
+            this.extendedLayoutIncludesOpaqueBars = true;
         }
 
         public viewWillLayoutSubviews(): void {
@@ -946,9 +976,6 @@ export namespace ios {
                 return;
             }
 
-            // Unify translucent and opaque bars layout
-            this.extendedLayoutIncludesOpaqueBars = true;
-
             updateAutoAdjustScrollInsets(this, owner);
 
             if (!owner.parent) {
@@ -961,6 +988,28 @@ export namespace ios {
             const owner = this.owner.get();
             if (owner && !owner.parent) {
                 owner.callUnloaded();
+            }
+        }
+    }
+
+    export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
+        public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
+
+        private owner: WeakRef<View>;
+        private closedCallback: Function;
+
+        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
+            const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
+            instance.owner = owner;
+            instance.closedCallback = whenClosedCallback;
+
+            return instance;
+        }
+
+        public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
+            const owner = this.owner.get();
+            if (owner && typeof this.closedCallback === "function") {
+                this.closedCallback();
             }
         }
     }

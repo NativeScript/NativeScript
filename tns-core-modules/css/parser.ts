@@ -518,7 +518,7 @@ function parseArgumentsList<T>(text: string, start: number, argument: (value: st
         return { start, end, value };
     }
 
-    for (var index = 0; true; index++) {
+    for (let index = 0; true; index++) {
         const arg = argument(text, end, index);
         if (!arg) {
             return null;
@@ -1490,7 +1490,7 @@ export class CSSNativeScript {
         let value = "";
         let reading: "property" | "value" = "property";
 
-        for (var i = 0; i < declarationsInputTokens.length; i++) {
+        for (let i = 0; i < declarationsInputTokens.length; i++) {
             let inputToken = declarationsInputTokens[i];
             if (reading === "property") {
                 if (inputToken === ":") {

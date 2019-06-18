@@ -27,7 +27,7 @@ export module ad {
     function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
         return (
             nativeView instanceof android.widget.Button ||
-            (nativeView instanceof android.support.v7.widget.Toolbar
+            (nativeView instanceof androidx.appcompat.widget.Toolbar
                 && getSDK() >= 21 // There is an issue with the DrawableContainer which was fixed for API version 21 and above: https://code.google.com/p/android/issues/detail?id=60183
             )
         );

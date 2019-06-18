@@ -1,11 +1,11 @@
 ﻿// Definitions.
-import { Frame } from "../frame";
+import { Frame, BackstackEntry } from "../frame";
+import { NavigationType } from "../frame/frame-common";
 
 // Types.
 import { ios as iosView } from "../core/view";
 import {
-    PageBase, View, layout,
-    actionBarHiddenProperty, statusBarStyleProperty, Color
+    PageBase, View, layout, actionBarHiddenProperty, statusBarStyleProperty, Color
 } from "./page-common";
 
 import { profile } from "../../profiling";
@@ -15,6 +15,8 @@ export * from "./page-common";
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
+const TRANSITION = "_transition";
+const NON_ANIMATED_TRANSITION = "non-animated";
 
 const majorVersion = iosUtils.MajorVersion;
 
@@ -24,14 +26,21 @@ function isBackNavigationTo(page: Page, entry): boolean {
         return false;
     }
 
+    // if executing context is null here this most probably means back navigation through iOS back button
+    const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
+    const isReplace = navigationContext.navigationType === NavigationType.replace;
+    if (isReplace) {
+        return false;
+    }
+
     if (frame.navigationQueueIsEmpty()) {
         return true;
-    } else {
-        const navigationQueue = (<any>frame)._navigationQueue;
-        for (let i = 0; i < navigationQueue.length; i++) {
-            if (navigationQueue[i].entry === entry) {
-                return navigationQueue[i].isBackNavigation;
-            }
+    }
+
+    const navigationQueue = (<any>frame)._navigationQueue;
+    for (let i = 0; i < navigationQueue.length; i++) {
+        if (navigationQueue[i].entry === entry) {
+            return navigationQueue[i].navigationType === NavigationType.back;
         }
     }
 
@@ -68,6 +77,14 @@ class UIViewControllerImpl extends UIViewController {
         return controller;
     }
 
+    public viewDidLoad(): void {
+        super.viewDidLoad();
+
+        // Unify translucent and opaque bars layout
+        // this.edgesForExtendedLayout = UIRectEdgeBottom;
+        this.extendedLayoutIncludesOpaqueBars = true;
+    }
+
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
@@ -100,9 +117,6 @@ class UIViewControllerImpl extends UIViewController {
             frame._updateActionBar(owner);
         }
 
-        // Unify translucent and opaque bars layout
-        this.extendedLayoutIncludesOpaqueBars = true;
-
         // Set autoAdjustScrollInsets in will appear - as early as possible
         iosView.updateAutoAdjustScrollInsets(this, owner);
 
@@ -122,20 +136,29 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         const navigationController = this.navigationController;
-        const frame = navigationController ? (<any>navigationController).owner : null;
+        const frame: Frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
         if (!owner._presentedViewController && frame) {
-            const newEntry = this[ENTRY];
+            const newEntry: BackstackEntry = this[ENTRY];
 
-            let isBack: boolean;
-            // We are on the current page which happens when navigation is canceled so isBack should be false.
-            if (frame.currentPage === owner && frame._navigationQueue.length === 0) {
-                isBack = false;
-            } else {
-                isBack = isBackNavigationTo(owner, newEntry);
+            // frame.setCurrent(...) will reset executing context so retrieve it here
+            // if executing context is null here this most probably means back navigation through iOS back button
+            const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
+            const isReplace = navigationContext.navigationType === NavigationType.replace;
+
+            frame.setCurrent(newEntry, navigationContext.navigationType);
+            
+            if (isReplace) {
+                let controller = newEntry.resolvedPage.ios;
+                if (controller) {
+                    const animated = frame._getIsAnimatedNavigation(newEntry.entry);
+                    if (animated) {
+                        controller[TRANSITION] = frame._getNavigationTransition(newEntry.entry);
+                    } else {
+                        controller[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
+                    }
+                }
             }
-
-            frame.setCurrent(newEntry, isBack);
 
             // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
             frame.ios.controller.delegate = this[DELEGATE];
@@ -177,14 +200,14 @@ class UIViewControllerImpl extends UIViewController {
 
         const frame = owner.frame;
         // Skip navigation events if we are hiding because we are about to show a modal page,
-        // or because we are closing a modal page, 
+        // or because we are closing a modal page,
         // or because we are in tab and another controller is selected.
         const tab = this.tabBarController;
         if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
             const willSelectViewController = tab && (<any>tab)._willSelectViewController;
             if (!willSelectViewController
                 || willSelectViewController === tab.selectedViewController) {
-                let isBack = isBackNavigationFrom(this, owner);
+                const isBack = isBackNavigationFrom(this, owner);
                 owner.onNavigatingFrom(isBack);
             }
         }

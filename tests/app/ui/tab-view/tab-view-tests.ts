@@ -59,7 +59,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         }
 
         if (tabView.android) {
-            var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+            var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
             if (viewPager.getChildCount() === 0) {
                 return false;
             }

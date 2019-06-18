@@ -33,6 +33,17 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 export function CSSType(type: string): ClassDecorator;
 
 /**
+ * 
+ * @param view The view
+ * @param context The ModuleType
+ * @param type Type of the ModuleType to be matched
+ */
+export function viewMatchesModuleContext(
+    view: View,
+    context: ModuleContext,
+    type: ModuleType[]): boolean;
+
+/**
  * Denotes a length number that is in device independent pixel units.
  */
 export type dip = number;
@@ -212,6 +223,16 @@ export abstract class View extends ViewBase {
      * Gets or sets the color of the view.
      */
     color: Color;
+
+    /**
+     * Gets or sets the elevation of the android view.
+     */
+    androidElevation: number;
+
+    /**
+     * Gets or sets the dynamic elevation offset of the android view.
+     */
+    androidDynamicElevationOffset: number;
 
     /**
      * Gets or sets the background style property.
@@ -473,7 +494,8 @@ export abstract class View extends ViewBase {
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
     /**
-     * [Deprecated. Please use the on() instead.] Adds a gesture observer.
+     * @deprecated use on() instead
+     *
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when gesture is received.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
@@ -685,7 +707,8 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
-    _getFragmentManager(): any; /* android.support.v4.app.FragmentManager */
+    _getFragmentManager(): any; /* androidx.fragment.app.FragmentManager */
+    _handleLivesync(context?: { type: string, path: string }): boolean;
 
     /**
      * Updates styleScope or create new styleScope.

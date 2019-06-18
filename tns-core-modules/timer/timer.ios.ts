@@ -1,8 +1,8 @@
 ﻿import * as utils from "../utils/utils";
 
 //iOS specific timer functions implementation.
-var timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
-var timerId = 0;
+const timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
+let timerId = 0;
 
 interface KeyValuePair<K, V> {
     k: K;
@@ -55,7 +55,7 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
     let timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
 
     // https://github.com/NativeScript/NativeScript/issues/2116
-    utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).addTimerForMode(timer, NSRunLoopCommonModes);
+    NSRunLoop.currentRunLoop.addTimerForMode(timer, NSRunLoopCommonModes);
 
     let pair: KeyValuePair<NSTimer, TimerTargetImpl> = { k: timer, v: timerTarget };
     timeoutCallbacks.set(id, pair);
@@ -80,4 +80,4 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
     return createTimerAndGetId(zonedCallback(invoke), milliseconds, true);
 }
 
-export var clearInterval = clearTimeout;
+export const clearInterval = clearTimeout;

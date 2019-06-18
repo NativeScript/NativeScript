@@ -11,47 +11,47 @@ import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 /**
  * String value used when hooking to launch event.
  */
-export var launchEvent: string;
+export const launchEvent: string;
 
 /**
  * String value used when hooking to displayed event.
  */
-export var displayedEvent: string;
+export const displayedEvent: string;
 
 /**
  * String value used when hooking to uncaughtError event.
  */
-export var uncaughtErrorEvent: string;
+export const uncaughtErrorEvent: string;
 
 /**
  * String value used when hooking to discardedError event.
  */
-export var discardedErrorEvent: string;
+export const discardedErrorEvent: string;
 
 /**
  * String value used when hooking to suspend event.
  */
-export var suspendEvent: string;
+export const suspendEvent: string;
 
 /**
  * String value used when hooking to resume event.
  */
-export var resumeEvent: string;
+export const resumeEvent: string;
 
 /**
  * String value used when hooking to exit event.
  */
-export var exitEvent: string;
+export const exitEvent: string;
 
 /**
  * String value used when hooking to lowMemory event.
  */
-export var lowMemoryEvent: string;
+export const lowMemoryEvent: string;
 
 /**
  * String value used when hooking to orientationChanged event.
  */
-export var orientationChangedEvent: string;
+export const orientationChangedEvent: string;
 
 /**
  * Event data containing information for the application events.
@@ -186,7 +186,8 @@ export function on(event: "livesync", callback: (args: EventData) => void);
 export function off(eventNames: string, callback?: any, thisArg?: any);
 
 /**
- * Deprecated. Use application run.
+ * @deprecated use application.run() instead.
+ *
  * Call this method to start the application. Important: All code after this method call will not be executed!
  */
 export function start(entry?: NavigationEntry | string);
@@ -307,7 +308,7 @@ export interface AndroidActivityEventData {
     /**
      * The activity.
      */
-    activity: any /* android.support.v7.app.AppCompatActivity */;
+    activity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * The name of the event.
@@ -371,6 +372,16 @@ export interface AndroidActivityResultEventData extends AndroidActivityEventData
 }
 
 /**
+ * Data for the Android activity newIntent event.
+ */
+export interface AndroidActivityNewIntentEventData extends AndroidActivityEventData {
+    /**
+     * The intent.
+     */
+    intent: any /* android.content.Intent */;
+}
+
+/**
  * Data for the Android activity back pressed event.
  */
 export interface AndroidActivityBackPressedEventData extends AndroidActivityEventData {
@@ -397,17 +408,17 @@ export class AndroidApplication extends Observable {
     /**
      * The currently active (loaded) [android Activity](http://developer.android.com/reference/android/app/Activity.html). This property is automatically updated upon Activity events.
      */
-    foregroundActivity: any /* android.support.v7.app.AppCompatActivity */;
+    foregroundActivity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
-     * Deprecated. Please use startActivity, foregroundActivity or context property.
+     * @deprecated use startActivity, foregroundActivity or context instead
      */
     currentContext: any /* android.content.Context */;
 
     /**
      * The main (start) Activity for the application.
      */
-    startActivity: any /* android.support.v7.app.AppCompatActivity */;
+    startActivity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
      * The name of the application package.
@@ -480,6 +491,11 @@ export class AndroidApplication extends Observable {
     on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
 
     /**
+     * This event is raised when the Android app was launched by an Intent with data.
+     */
+    on(event: "activityNewIntent", callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
+
+    /**
      * This event is raised when the Android activity requests permissions.
      */
     on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
@@ -528,6 +544,11 @@ export class AndroidApplication extends Observable {
      * String value used when hooking to activityBackPressed event.
      */
     public static activityBackPressedEvent: string;
+
+    /**
+     * String value used when hooking to activityNewIntent event.
+     */
+    public static activityNewIntentEvent: string;
 
     /**
      * String value used when hooking to requestPermissions event.

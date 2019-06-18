@@ -166,10 +166,10 @@
                 public verticalAlignment: VerticalAlignment;
             }
 
-            export class FragmentBase extends android.support.v4.app.Fragment {
+            export class FragmentBase extends androidx.fragment.app.Fragment {
                 constructor();
 
-                public getRemovingParentFragment(): android.support.v4.app.Fragment;
+                public getRemovingParentFragment(): androidx.fragment.app.Fragment;
             }
 
             export enum Stretch {
@@ -390,7 +390,7 @@
                 setTabTextFontSize(fontSize: number): void;
                 getTabTextFontSize(): number;
 
-                setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
+                setItems(items: Array<TabItemSpec>, viewPager: androidx.viewpager.widget.ViewPager): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;
 
                 getTextViewForItemAt(index: number): android.widget.TextView;
@@ -398,7 +398,29 @@
                 getItemCount(): number;
             }
 
-            export class TabViewPager extends android.support.v4.view.ViewPager {
+            export class BottomNavigationBar extends android.widget.LinearLayout {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
+
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
+                setTabTextFontSize(fontSize: number): void;
+                getTabTextFontSize(): number;
+
+                onSelectedPositionChange(position: number): void ;
+                setSelectedPosition(position: number): void;
+                setItems(items: Array<TabItemSpec>): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+
+                getTextViewForItemAt(index: number): android.widget.TextView;
+                getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
+            }
+
+            export class TabViewPager extends androidx.viewpager.widget.ViewPager {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
 

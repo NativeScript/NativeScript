@@ -1,7 +1,7 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
 
-    <ActionBar class="action-bar">
-        <Label class="action-bar-title" text="layout home page" horizontalAlignment="center" />
+    <ActionBar>
+        <Label text="layout home page" horizontalAlignment="center" />
     </ActionBar>
 
     <GridLayout rows="auto, *">

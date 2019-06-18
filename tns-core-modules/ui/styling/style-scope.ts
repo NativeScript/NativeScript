@@ -168,7 +168,8 @@ class CSSSource {
                 if (!this._source && this._file) {
                     this.load();
                 }
-                if (this._source) {
+                // [object Object] check guards against empty app.css file
+                if (this._source && this.source !== "[object Object]") {
                     this.parseCSSAst();
                 }
             }
@@ -569,8 +570,7 @@ export class StyleScope {
         this.appendCss(null, cssFileName);
     }
 
-    @profile
-    private changeCssFile(cssFileName: string): void {
+    public changeCssFile(cssFileName: string): void {
         if (!cssFileName) {
             return;
         }
@@ -776,15 +776,3 @@ function isParentDirectory(uriPart: string): boolean {
 function isKeyframe(node: CssNode): node is KeyframesDefinition {
     return node.type === "keyframes";
 }
-
-// class InlineSelector implements SelectorCore {
-//     constructor(ruleSet: RuleSet) {
-//         this.ruleset = ruleSet;
-//     }
-
-//     public specificity = 0x01000000;
-//     public rarity = 0;
-//     public dynamic: boolean = false;
-//     public ruleset: RuleSet;
-//     public match(node: Node): boolean { return true; }
-// }

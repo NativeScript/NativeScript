@@ -12,7 +12,7 @@ import { isString } from "../../utils/types";
 export * from "./text-base-common";
 
 interface TextTransformation {
-    new (owner: TextBase): android.text.method.TransformationMethod;
+    new(owner: TextBase): android.text.method.TransformationMethod;
 }
 
 let TextTransformation: TextTransformation;
@@ -36,7 +36,9 @@ function initializeTextTransformation(): void {
                 return createSpannableStringBuilder(formattedText);
             }
             else {
-                return getTransformedText(this.textBase.text, this.textBase.textTransform);
+                const text = this.textBase.text;
+                const stringValue = (text === null || text === undefined) ? "" : text.toString();
+                return getTransformedText(stringValue, this.textBase.textTransform);
             }
         }
 
@@ -133,7 +135,7 @@ export class TextBase extends TextBaseCommon {
 
         if (spannableStringBuilder && nativeView instanceof android.widget.Button &&
             !(nativeView.getTransformationMethod() instanceof TextTransformation)) {
-            // Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method 
+            // Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method
             // with our transformation method which can handle formatted text.
             // Otherwise, the default tranformation method of the Android Button will overwrite and ignore our spannableStringBuilder.
             nativeView.setTransformationMethod(new TextTransformation(this));
@@ -342,7 +344,7 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
 }
 
 function createSpannableStringBuilder(formattedString: FormattedString): android.text.SpannableStringBuilder {
-    if (!formattedString) {
+    if (!formattedString || !formattedString.parent) {
         return null;
     }
 

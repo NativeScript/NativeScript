@@ -18,7 +18,7 @@ import {
 } from "../core/view";
 
 export module knownCollections {
-    export var actionItems = "actionItems";
+    export const actionItems = "actionItems";
 }
 
 @CSSType("ActionBar")
@@ -29,6 +29,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
     public title: string;
     public flat: boolean;
+    public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     get navigationButton(): NavigationButton {
         return this._navigationButton;
@@ -87,6 +88,10 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
             this.update();
         }
+    }
+    
+    get ios(): any {
+        return undefined;
     }
 
     get android(): AndroidActionBarSettings {
@@ -230,7 +235,7 @@ export class ActionItems implements ActionItemsDefinition {
         }
 
         // Add new items
-        for (var i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
             this.addItem(items[i]);
         }
 
@@ -345,6 +350,9 @@ export function traceMissingIcon(icon: string) {
         traceCategories.Error,
         traceMessageType.error);
 }
+
+export const iosIconRenderingModeProperty = new Property<ActionBarBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "alwaysOriginal" });
+iosIconRenderingModeProperty.register(ActionBarBase);
 
 export const textProperty = new Property<ActionItemBase, string>({ name: "text", defaultValue: "", valueChanged: onItemChanged });
 textProperty.register(ActionItemBase);

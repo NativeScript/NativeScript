@@ -1,9 +1,10 @@
-import { AppiumDriver } from "nativescript-dev-appium";
+import { AppiumDriver, logInfo } from "nativescript-dev-appium";
 import { assert } from "chai";
 
 const layoutWithFrame = "Layout w/ frame";
 const layoutWithMultiFrame = "Layout w/ multi frame";
 const pageWithFrame = "Page w/ frame";
+const pageWithFrameNonDefaultTransition = "Frame to NestedFrame (non-default transition)";
 const pageWithMultiFrame = "Page w/ multi frame";
 const pageTabTopWithFrames = "Page w/ tabs (top)";
 const pageTabBottomWithFrames = "Page w/ tabs (bottom)";
@@ -17,6 +18,7 @@ const tabTopHome = "tab top page";
 const tabBottomHome = "tab bottom page";
 const tabRootTopHome = "tab root top home";
 const tabRootBottomHome = "tab root bottom home";
+const navigateToStillOtherPageSlide = "navigate to still other page (slide transition)";
 const navigateToSomePageDefault = "navigate to some page (default transition)";
 const navigateToSomePageNone = "navigate to some page (no transition)";
 const navigateToSomePageSlide = "navigate to some page (slide transition)";
@@ -28,6 +30,7 @@ const navigateToOtherPageFlip = "navigate to other page (flip transition)";
 const players = "Players";
 const teams = "Teams";
 const playerBack = "playerBack";
+const stillOtherPageBack = "stillOtherPageBack";
 const somePageBack = "somePageBack";
 const otherPageBack = "otherPageBack";
 const teamBack = "teamBack";
@@ -38,6 +41,7 @@ const resetApp = "reset app";
 
 export const driverDefaultWaitTime = 10000;
 export const home = "Home";
+export const stillOtherPage = "still other page";
 export const somePage = "some page";
 export const otherPage = "other page";
 
@@ -153,6 +157,10 @@ export class Screen {
         await this.navigateToPage(pageWithFrame);
     }
 
+    navigateToPageWithFrameNonDefaultTransition = async () => {
+        await this.navigateToPage(pageWithFrameNonDefaultTransition);
+    }
+
     navigateToPageWithMultiFrame = async () => {
         await this.navigateToPage(pageWithMultiFrame);
     }
@@ -172,6 +180,10 @@ export class Screen {
     navigateToTabBottomRootWithFrames = async () => {
         await this.navigateToPage(tabBottomRootWithFrames);
     }
+
+    navigateToStillOtherPageSlide = async () => {
+        await this.navigateToPage(navigateToStillOtherPageSlide);
+    };
 
     navigateToSomePageDefault = async () => {
         await this.navigateToPage(navigateToSomePageDefault);
@@ -215,6 +227,8 @@ export class Screen {
 
     resetToHome = async () => {
         const btnReset = await this._driver.waitForElement(resetApp);
+
+        console.info(`====== Reset home "${resetApp}"`)
         await btnReset.tap();
     };
 
@@ -225,6 +239,10 @@ export class Screen {
     goBackToTeamsList = async () => {
         await this.goBack(teamBack);
     };
+
+    goBackFromStillOtherPage = async () => {
+        await this.goBack(stillOtherPageBack);
+    }
 
     goBackFromSomePage = async () => {
         await this.goBack(somePageBack);
@@ -248,17 +266,19 @@ export class Screen {
 
     togglePlayersTab = async () => {
         const lblPlayers = await this._driver.waitForElement(players);
+        logInfo(`====== Navigate to "${players}"`);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
         const lblTeams = await this._driver.waitForElement(teams);
+        logInfo(`====== Navigate to "${teams}"`);
         await lblTeams.tap();
     }
 
     loadedHome = async () => {
         const lblHome = await this._driver.waitForElement(home);
-        assert.isNotNull(lblHome);
+        assert.isDefined(lblHome);
         console.log(home + " loaded!");
     };
 
@@ -293,7 +313,11 @@ export class Screen {
 
     loadedTabBottomRootWithFrames = async () => {
         await this.loadedPage(tabRootBottomHome);
-    } 
+    }
+    
+    loadedStillOtherPage = async () => {
+        await this.loadedPage(stillOtherPage);
+    }
 
     loadedSomePage = async () => {
         await this.loadedPage(somePage);
@@ -305,7 +329,7 @@ export class Screen {
 
     loadedPlayersList = async () => {
         const lblPlayerOne = await this._driver.waitForElement(playersData["playerOneDefault"].name);
-        assert.isNotNull(lblPlayerOne);
+        assert.isDefined(lblPlayerOne);
         console.log(players + " loaded!");
     }
 
@@ -315,7 +339,7 @@ export class Screen {
 
     loadedTeamsList = async () => {
         const lblTeamOne = await this._driver.waitForElement(teamsData["teamOneDefault"].name);
-        assert.isNotNull(lblTeamOne);
+        assert.isDefined(lblTeamOne);
         console.log(teams + " loaded!");
     }
 
@@ -323,34 +347,43 @@ export class Screen {
         await this.loadedItem(team);
     }
 
+    loadedElement = async (element: string) => {
+        const el = await this._driver.waitForElement(element);
+        assert.isDefined(el);
+        console.log(`${element} loaded!`);
+    };
+
     private navigateToPage = async (page: string) => {
         const btnPage = await this._driver.waitForElement(page);
+        logInfo(`====== Navigate to "${page}"`);
         await btnPage.tap();
     };
 
     private loadedPage = async (page: string) => {
         const lblPage = await this._driver.waitForElement(page);
-        assert.isNotNull(lblPage);
+        assert.isDefined(lblPage);
         console.log(page + " loaded!");
     };
 
     private navigateToItem = async (item: Item) => {
         const lblItem = await this._driver.waitForElement(item.name);
+        logInfo(`====== Navigate to "${item.name}"`);
         await lblItem.tap();
     }
 
     private loadedItem = async (item: Item) => {
         const lblItemName = await this._driver.waitForElement(item.name);
-        assert.isNotNull(lblItemName);
+        assert.isDefined(lblItemName);
 
         const lblItemDescription = await this._driver.waitForElement(item.description);
-        assert.isNotNull(lblItemDescription);
+        assert.isDefined(lblItemDescription);
 
         console.log(item.name + " loaded!");
     }
 
     private goBack = async (accessibilityId: string) => {
         const btnBack = await this._driver.waitForElement(accessibilityId);
+        logInfo(`====== Go back with "${accessibilityId}"`);
         await btnBack.tap();
     }
 }

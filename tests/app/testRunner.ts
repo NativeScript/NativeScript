@@ -168,14 +168,29 @@ allTests["VISUAL-STATE"] = visualStateTests;
 import * as valueSourceTests from "./ui/styling/value-source-tests";
 allTests["VALUE-SOURCE"] = valueSourceTests;
 
-import * as buttonTests from "./ui/button/button-tests";
-allTests["BUTTON"] = buttonTests;
-
 import * as borderTests from "./ui/border/border-tests";
 allTests["BORDER"] = borderTests;
 
+import * as builderTests from "./ui/builder/builder-tests";
+allTests["BUILDER"] = builderTests;
+
+import * as buttonTests from "./ui/button/button-tests";
+allTests["BUTTON"] = buttonTests;
+
 import * as labelTests from "./ui/label/label-tests";
 allTests["LABEL"] = labelTests;
+
+import * as bottomNavigationTests from "./ui/bottom-navigation/bottom-navigation-tests";
+allTests["BOTTOM-NAVIGATION"] = bottomNavigationTests;
+
+import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-navigation-navigation-tests";
+allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
+
+import * as tabsTests from "./ui/tabs/tabs-tests";
+allTests["TABS"] = tabsTests;
+
+import * as tabsNavigationTests from "./ui/tabs/tabs-navigation-tests";
+allTests["TABS-NAVIGATION"] = tabsNavigationTests;
 
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
@@ -185,6 +200,9 @@ allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
 
 import * as imageTests from "./ui/image/image-tests";
 allTests["IMAGE"] = imageTests;
+
+import * as imageCacheTests from "./ui/image-cache/image-cache-tests";
+allTests["IMAGE-CACHE"] = imageCacheTests;
 
 import * as sliderTests from "./ui/slider/slider-tests";
 allTests["SLIDER"] = sliderTests;
@@ -257,6 +275,13 @@ allTests["LIVESYNC"] = livesyncTests;
 
 import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
 allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
+
+import * as bottomNavigationRootTests from "./ui/bottom-navigation/bottom-navigation-root-tests";
+allTests["BOTTOM-NAVIGATION-ROOT"] = bottomNavigationRootTests;
+
+// Reset root view didn't work with android tabs
+// import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
+// allTests["TABS-ROOT"] = tabsRootTests;
 
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;

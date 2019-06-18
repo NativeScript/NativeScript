@@ -2,12 +2,11 @@
 import * as imageSource from "tns-core-modules/image-source";
 import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
 import * as enums from "tns-core-modules/ui/enums";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { Label } from "tns-core-modules/ui/label";
+import { Image } from "tns-core-modules/ui/image";
 
 export function createPage() {
-    var StackLayout = require("ui/layouts/stack-layout").StackLayout;
-    var Label = require("ui/label").Label;
-    var Image = require("ui/image").Image;
-
     var stack = new StackLayout();
     var grid = new gridModule.GridLayout();
     stack.addChild(grid);
@@ -20,7 +19,7 @@ export function createPage() {
     var defaultImageSource = imageSource.fromFile(__dirname + "/test.png");
 
     var img = new Image();
-    img.source = defaultImageSource;
+    img.src = defaultImageSource;
 
     img.width = 80;
     img.height = 80;

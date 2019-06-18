@@ -4,6 +4,8 @@
 
 import { dip, px } from "../ui/core/view";
 
+export * from "./mainthread-helper"
+
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
 
@@ -24,13 +26,13 @@ export module layout {
     /**
      * Bits that provide the actual measured size.
      */
-    export var MEASURED_HEIGHT_STATE_SHIFT: number;
-    export var MEASURED_SIZE_MASK: number;
-    export var MEASURED_STATE_MASK: number;
-    export var MEASURED_STATE_TOO_SMALL: number;
-    export var UNSPECIFIED: number;
-    export var EXACTLY: number;
-    export var AT_MOST: number;
+    export const MEASURED_HEIGHT_STATE_SHIFT: number;
+    export const MEASURED_SIZE_MASK: number;
+    export const MEASURED_STATE_MASK: number;
+    export const MEASURED_STATE_TOO_SMALL: number;
+    export const UNSPECIFIED: number;
+    export const EXACTLY: number;
+    export const AT_MOST: number;
 
     /**
      * Gets layout mode from a given specification as string.
@@ -184,12 +186,14 @@ export module ad {
  */
 export module ios {
     /**
+     * @deprecated use the respective native property directly
+     *
      * Checks if the property is a function and if it is, calls it on this.
      * Designed to support backward compatibility for methods that became properties.
      * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
      * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
      */
-    export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
+    export function getter<T>(_this: any, propertyValue: T | { (): T }): T;
 
     // Common properties between UILabel, UITextView and UITextField
     export interface TextUIView {
@@ -227,7 +231,7 @@ export module ios {
     /**
      * Gets the iOS device major version (for 8.1 will return 8).
      */
-    export var MajorVersion: number;
+    export const MajorVersion: number;
 
     /**
      * Opens file with associated application.
@@ -253,7 +257,7 @@ export module ios {
      * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
      * Returns the visible UIViewController.
      */
-    export function getVisibleViewController(rootViewController: any/* UIViewController*/ ): any/* UIViewController*/;
+    export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
 }
 
 /**
@@ -266,6 +270,22 @@ export function GC();
  * @param object The Java/Objective-C object to release.
  */
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
+
+/**
+ * Checks if the current thread is the main thread. Directly calls the passed function
+ * if it is, or dispatches it to the main thread otherwise.
+ * @param func The function to execute on the main thread.
+ */
+export function executeOnMainThread(func: Function);
+
+/**
+ * Returns a function wrapper which executes the supplied function on the main thread.
+ * The wrapper behaves like the original function and passes all of its arguments BUT
+ * discards its return value.
+ * @param func The function to execute on the main thread
+ * @returns The wrapper function which schedules execution to the main thread
+ */
+export function mainThreadify(func: Function): (...args: any[]) => void
 
 /**
  * Returns true if the specified path points to a resource or local file.
@@ -286,6 +306,12 @@ export function isDataURI(uri: string): boolean
 export function openUrl(url: string): boolean
 
 /**
+ * Opens file.
+ * @param {string} filePath The file.
+ */
+export function openFile(filePath: string): boolean
+
+/**
  * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
  * @param source The original value.
  */
@@ -296,6 +322,12 @@ export function escapeRegexSymbols(source: string): string
  * @param value The original value.
  */
 export function convertString(value: any): any
+
+/**
+ * Gets module name from path.
+ * @param path The module path.
+ */
+export function getModuleName(path: string): string
 
 /**
  * Sorts an array by using merge sort algorithm (which ensures stable sort since the built-in Array.sort() does not promise a stable sort).

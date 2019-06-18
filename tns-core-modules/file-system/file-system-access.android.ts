@@ -14,7 +14,7 @@ export class FileSystemAccess {
     private _pathSeparator = "/";
 
     public getLastModified(path: string): Date {
-        var javaFile = new java.io.File(path);
+        const javaFile = new java.io.File(path);
         return new Date(javaFile.lastModified());
     }
 
@@ -25,8 +25,8 @@ export class FileSystemAccess {
 
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
-            var javaFile = new java.io.File(path);
-            var parent = javaFile.getParentFile();
+            const javaFile = new java.io.File(path);
+            const parent = javaFile.getParentFile();
 
             return { path: parent.getAbsolutePath(), name: parent.getName() };
         } catch (exception) {
@@ -44,8 +44,8 @@ export class FileSystemAccess {
     }
 
     public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
-        var javaFile = new java.io.File(path);
-        var dirInfo = this.ensureFile(javaFile, true, onError);
+        const javaFile = new java.io.File(path);
+        const dirInfo = this.ensureFile(javaFile, true, onError);
         if (!dirInfo) {
             return undefined;
         }
@@ -62,14 +62,14 @@ export class FileSystemAccess {
     }
 
     public getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }> {
-        var fileInfos = new Array<{ path: string; name: string; extension: string }>();
-        var onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
+        const fileInfos = new Array<{ path: string; name: string; extension: string }>();
+        const onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
             return true;
         }
 
-        var errorOccurred;
-        var localError = function (error: any) {
+        let errorOccurred;
+        const localError = function (error: any) {
             if (onError) {
                 onError(error);
             }
@@ -87,18 +87,18 @@ export class FileSystemAccess {
     }
 
     public fileExists(path: string): boolean {
-        var file = new java.io.File(path);
+        const file = new java.io.File(path);
         return file.exists();
     }
 
     public folderExists(path: string): boolean {
-        var file = new java.io.File(path);
+        const file = new java.io.File(path);
         return file.exists() && file.isDirectory();
     }
 
     public deleteFile(path: string, onError?: (error: any) => any) {
         try {
-            var javaFile = new java.io.File(path);
+            const javaFile = new java.io.File(path);
             if (!javaFile.isFile()) {
                 if (onError) {
                     onError({ message: "The specified parameter is not a File entity." });
@@ -121,7 +121,7 @@ export class FileSystemAccess {
 
     public deleteFolder(path: string, onError?: (error: any) => any) {
         try {
-            var javaFile = new java.io.File(path);
+            const javaFile = new java.io.File(path);
             if (!javaFile.getCanonicalFile().isDirectory()) {
                 if (onError) {
                     onError({ message: "The specified parameter is not a Folder entity." });
@@ -147,7 +147,7 @@ export class FileSystemAccess {
 
     public emptyFolder(path: string, onError?: (error: any) => any) {
         try {
-            var javaFile = new java.io.File(path);
+            const javaFile = new java.io.File(path);
             if (!javaFile.getCanonicalFile().isDirectory()) {
                 if (onError) {
                     onError({ message: "The specified parameter is not a Folder entity." });
@@ -166,7 +166,7 @@ export class FileSystemAccess {
     }
 
     public rename(path: string, newPath: string, onError?: (error: any) => any) {
-        var javaFile = new java.io.File(path);
+        const javaFile = new java.io.File(path);
         if (!javaFile.exists()) {
             if (onError) {
                 onError(new Error("The file to rename does not exist"));
@@ -175,7 +175,7 @@ export class FileSystemAccess {
             return;
         }
 
-        var newFile = new java.io.File(newPath);
+        const newFile = new java.io.File(newPath);
         if (newFile.exists()) {
             if (onError) {
                 onError(new Error("A file with the same name already exists."));
@@ -192,17 +192,17 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        var dir = getApplicationContext().getFilesDir();
+        const dir = getApplicationContext().getFilesDir();
         return dir.getAbsolutePath();
     }
 
     public getLogicalRootPath(): string {
-        var dir = getApplicationContext().getFilesDir();
+        const dir = getApplicationContext().getFilesDir();
         return dir.getCanonicalPath();
     }
 
     public getTempFolderPath(): string {
-        var dir = getApplicationContext().getCacheDir();
+        const dir = getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();
     }
 
@@ -212,10 +212,10 @@ export class FileSystemAccess {
 
     public read(path: string, onError?: (error: any) => any) {
         try {
-            var javaFile = new java.io.File(path);
-            var stream = new java.io.FileInputStream(javaFile);
-            var bytes = (<any>Array).create("byte", javaFile.length());
-            var dataInputStream = new java.io.DataInputStream(stream);
+            const javaFile = new java.io.File(path);
+            const stream = new java.io.FileInputStream(javaFile);
+            const bytes = (<any>Array).create("byte", javaFile.length());
+            const dataInputStream = new java.io.DataInputStream(stream);
             dataInputStream.readFully(bytes);
             return bytes;
         } catch (exception) {
@@ -227,8 +227,8 @@ export class FileSystemAccess {
 
     public write(path: string, bytes: native.Array<number>, onError?: (error: any) => any) {
         try {
-            var javaFile = new java.io.File(path);
-            var stream = new java.io.FileOutputStream(javaFile);
+            const javaFile = new java.io.File(path);
+            const stream = new java.io.FileOutputStream(javaFile);
             stream.write(bytes, 0, bytes.length);
             stream.close();
         } catch (exception) {
@@ -240,20 +240,20 @@ export class FileSystemAccess {
 
     public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         try {
-            var javaFile = new java.io.File(path);
-            var stream = new java.io.FileInputStream(javaFile);
+            const javaFile = new java.io.File(path);
+            const stream = new java.io.FileInputStream(javaFile);
 
-            var actualEncoding = encoding;
+            let actualEncoding = encoding;
             if (!actualEncoding) {
                 actualEncoding = textModule.encoding.UTF_8;
             }
-            var reader = new java.io.InputStreamReader(stream, actualEncoding);
-            var bufferedReader = new java.io.BufferedReader(reader);
+            const reader = new java.io.InputStreamReader(stream, actualEncoding);
+            const bufferedReader = new java.io.BufferedReader(reader);
 
             // TODO: We will need to read the entire file to a CharBuffer instead of reading it line by line
             // TODO: bufferedReader.read(CharBuffer) does not currently work
-            var line = undefined;
-            var result = "";
+            let line = undefined;
+            let result = "";
             while (true) {
                 line = bufferedReader.readLine();
                 if (line === null) {
@@ -295,14 +295,14 @@ export class FileSystemAccess {
 
     public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
         try {
-            var javaFile = new java.io.File(path);
-            var stream = new java.io.FileOutputStream(javaFile);
+            const javaFile = new java.io.File(path);
+            const stream = new java.io.FileOutputStream(javaFile);
 
-            var actualEncoding = encoding;
+            let actualEncoding = encoding;
             if (!actualEncoding) {
                 actualEncoding = textModule.encoding.UTF_8;
             }
-            var writer = new java.io.OutputStreamWriter(stream, actualEncoding);
+            const writer = new java.io.OutputStreamWriter(stream, actualEncoding);
 
             writer.write(content);
             writer.close();
@@ -314,16 +314,15 @@ export class FileSystemAccess {
     }
 
     private deleteFolderContent(file: java.io.File): boolean {
-        var filesList = file.listFiles();
+        const filesList = file.listFiles();
         if (filesList.length === 0) {
             return true; // Nothing to delete, so success!
         }
 
-        var i,
-            childFile: java.io.File,
-            success: boolean = false;
+        let childFile: java.io.File;
+        let success: boolean = false;
 
-        for (i = 0; i < filesList.length; i++) {
+        for (let i = 0; i < filesList.length; i++) {
             childFile = filesList[i];
             if (childFile.getCanonicalFile().isDirectory()) {
                 success = this.deleteFolderContent(childFile);
@@ -341,7 +340,7 @@ export class FileSystemAccess {
     private ensureFile(javaFile: java.io.File, isFolder: boolean, onError?: (error: any) => any): { path: string; name: string; extension: string } {
         try {
             if (!javaFile.exists()) {
-                var created;
+                let created;
                 if (isFolder) {
                     created = javaFile.mkdirs();
                 } else {
@@ -362,7 +361,7 @@ export class FileSystemAccess {
                 }
             }
 
-            var path = javaFile.getAbsolutePath();
+            const path = javaFile.getAbsolutePath();
             return { path: path, name: javaFile.getName(), extension: this.getFileExtension(path) };
         } catch (exception) {
             // TODO: unified approach for error messages
@@ -377,7 +376,7 @@ export class FileSystemAccess {
     // TODO: This method is the same as in the iOS implementation.
     // Make it in a separate file / module so it can be reused from both implementations.
     private getFileExtension(path: string): string {
-        var dotIndex = path.lastIndexOf(".");
+        const dotIndex = path.lastIndexOf(".");
         if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
             return path.substring(dotIndex);
         }
@@ -387,7 +386,7 @@ export class FileSystemAccess {
 
     private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
         try {
-            var javaFile = new java.io.File(path);
+            let javaFile = new java.io.File(path);
             if (!javaFile.getCanonicalFile().isDirectory()) {
                 if (onError) {
                     onError("There is no folder existing at path " + path);
@@ -396,13 +395,12 @@ export class FileSystemAccess {
                 return;
             }
 
-            var filesList = javaFile.listFiles();
-            var length = filesList.length;
-            var i;
-            var info;
-            var retVal;
+            const filesList = javaFile.listFiles();
+            const length = filesList.length;
+            let info;
+            let retVal;
 
-            for (i = 0; i < length; i++) {
+            for (let i = 0; i < length; i++) {
                 javaFile = filesList[i];
 
                 info = {
@@ -431,13 +429,13 @@ export class FileSystemAccess {
     }
 
     public normalizePath(path: string): string {
-        var file = new java.io.File(path);
+        const file = new java.io.File(path);
         return file.getAbsolutePath();
     }
 
     public joinPath(left: string, right: string): string {
-        var file1 = new java.io.File(left);
-        var file2 = new java.io.File(file1, right);
+        const file1 = new java.io.File(left);
+        const file2 = new java.io.File(file1, right);
 
         return file2.getPath();
     }
@@ -451,9 +449,8 @@ export class FileSystemAccess {
             return paths[0];
         }
 
-        var i,
-            result = paths[0];
-        for (i = 1; i < paths.length; i++) {
+        let result = paths[0];
+        for (let i = 1; i < paths.length; i++) {
             result = this.joinPath(result, paths[i]);
         }
 

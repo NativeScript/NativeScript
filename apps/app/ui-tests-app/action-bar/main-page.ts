@@ -15,6 +15,8 @@ export function loadExamples() {
     examples.set("actBG", "action-bar/background");
     examples.set("actStyle", "action-bar/all");
     examples.set("actIcons", "action-bar/system-icons");
+    examples.set("actLocalIcons", "action-bar/local-icons");
+    examples.set("actResIcons", "action-bar/icons");
     examples.set("actView", "action-bar/action-view");
     examples.set("actionItemPosition", "action-bar/action-item-position");
     examples.set("actBGCss", "action-bar/background-css");

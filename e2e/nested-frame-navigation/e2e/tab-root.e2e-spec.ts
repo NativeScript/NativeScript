@@ -1,4 +1,4 @@
-import { AppiumDriver, createDriver } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
 import { Screen, playersData, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
@@ -7,15 +7,14 @@ import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "
 // NOTE: TabTop is Android only scenario (for iOS we will essentially execute 2x TabBottom)
 const roots = ["TabTop", "TabBottom"];
 
-function hyphenate(s: string) {
-    return s.replace(/([a-zA-Z])(?=[A-Z])/g, "$1-").toLowerCase();
-}
-
-describe("tab-root:", () => {
+const rootType = "tab-root";
+describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;
 
-    before(async () => {
+    before(async function () {
+        nsCapabilities.testReporter.context = this;
+        logWarn(`====== ${rootType} ========`)
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
@@ -25,7 +24,7 @@ describe("tab-root:", () => {
         driver.defaultWaitTime = 8000;
     });
 
-    after(async () => {
+    after(async function () {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(false);
         }
@@ -39,33 +38,49 @@ describe("tab-root:", () => {
         }
     });
 
-    roots.forEach(root => {
-        const rootWithHyphen = hyphenate(root);
+    for (let index = 0; index < roots.length; index++) {
+        const root = roots[index];
+        describe(`${rootType}-${root}-scenarios:`, async function () {
 
-        describe(`${rootWithHyphen} scenarios:`, () => {
+            before(async function () {
+                nsCapabilities.testReporter.context = this;
+            });
 
-            transitions.forEach(transition => {
+            for (let index = 0; index < transitions.length; index++) {
+                const transition = transitions[index];
+
                 const playerOne = playersData[`playerOne${transition}`];
                 const playerTwo = playersData[`playerTwo${transition}`];
                 const teamOne = teamsData[`teamOne${transition}`];
                 const teamTwo = teamsData[`teamTwo${transition}`];
 
-                describe(`transition: ${transition} scenarios:`, () => {
+                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, async function () {
 
-                    it("loaded home page", async () => {
+                    before(async function () {
+                        nsCapabilities.testReporter.context = this;
+
+                        if (transition === "Flip" &&
+                            driver.isAndroid && parseInt(driver.platformVersion) === 19) {
+                            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                            console.log("skipping flip transition tests on api level 19");
+                            this.skip();
+                        }
+                    });
+
+                    it("loaded home page", async function () {
                         await screen.loadedHome();
                     });
 
-                    it(`loaded ${rootWithHyphen} root with frames`, async () => {
+                    it(`loaded ${root} root with frames`, async function () {
                         await screen[`navigateTo${root}RootWithFrames`]();
                         await screen[`loaded${root}RootWithFrames`]();
                     });
 
-                    it("loaded players list", async () => {
+                    it("loaded players list", async function () {
                         await screen.loadedPlayersList();
                     });
 
-                    it("loaded player details and go back twice", async () => {
+                    it("loaded player details and go back twice", async function () {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
                         if (appSuspendResume) {
@@ -84,7 +99,7 @@ describe("tab-root:", () => {
                         await shared.testPlayerNavigatedBack(screen, driver);
                     });
 
-                    it("toggle teams tab", async () => {
+                    it("toggle teams tab", async function () {
                         await screen.toggleTeamsTab();
 
                         if (appSuspendResume) {
@@ -93,11 +108,11 @@ describe("tab-root:", () => {
                         }
                     });
 
-                    it("loaded teams list", async () => {
+                    it("loaded teams list", async function () {
                         await screen.loadedTeamsList();
                     });
 
-                    it("mix player and team list actions and go back", async () => {
+                    it("mix player and team list actions and go back", async function () {
                         await screen.togglePlayersTab();
 
                         if (appSuspendResume) {
@@ -109,16 +124,21 @@ describe("tab-root:", () => {
 
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (appSuspendResume) {
-                            await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name) // wait for player
+                        if (driver.isIOS) {
+                            if (appSuspendResume) {
+                                await driver.backgroundApp(suspendTime);
+                                await driver.waitForElement(playerTwo.name) // wait for player
+                            }
                         }
 
                         await screen.toggleTeamsTab();
 
-                        if (appSuspendResume) {
-                            await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamOne.name) // wait for teams list
+                        if (driver.isIOS) {
+                            // TODO: run in background from appium breaks the test. Investigate the issue, once with the app and with appium
+                            if (appSuspendResume) {
+                                await driver.backgroundApp(suspendTime);
+                                await driver.waitForElement(teamOne.name) // wait for teams list
+                            }
                         }
 
                         await screen.loadedTeamsList();
@@ -150,12 +170,12 @@ describe("tab-root:", () => {
                         await screen.loadedPlayersList();
                     });
 
-                    it("loaded home page again", async () => {
+                    it("loaded home page again", async function () {
                         await screen.resetToHome();
                         await screen.loadedHome();
                     });
                 });
-            });
+            };
         });
-    });
+    }
 });
