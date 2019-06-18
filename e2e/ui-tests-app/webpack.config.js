@@ -190,7 +190,7 @@ module.exports = env => {
                     use: "nativescript-dev-webpack/markup-hot-loader"
                 },
 
-               { test: /\.(html|xml)$/, use: "nativescript-dev-webpack/xml-namespace-loader" },
+                { test: /\.(html|xml)$/, use: "nativescript-dev-webpack/xml-namespace-loader" },
 
                 {
                     test: /\.css$/,
@@ -207,7 +207,7 @@ module.exports = env => {
 
                 // TODO: Invetigate why do we need???
                 {
-                    test:  /\.png$|.jpg$|.ttf$|.otf$|.gradle$|.storyboard$|.plist$/,
+                    test: /\.png$|.jpg$|.ttf$|.otf$|.gradle$|.storyboard$|.plist$/,
                     use: { loader: "raw-loader" }
                 },
 
@@ -244,6 +244,7 @@ module.exports = env => {
                 { from: { glob: "**/*.jpg" } },
                 { from: { glob: "**/*.png" } },
                 { from: { glob: "**/*.html" } },
+                { from: { glob: "web-view/test.css" } },
             ], { ignore: [`${relative(appPath, appResourcesFullPath)}/**`] }),
             // Generate a bundle starter script and activate it in package.json
             new nsWebpack.GenerateBundleStarterPlugin(
