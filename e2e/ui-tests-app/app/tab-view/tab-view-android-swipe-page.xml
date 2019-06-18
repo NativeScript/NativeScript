@@ -1,5 +1,5 @@
-<Page cssFile="./test.css" >
-  <TabView androidSwipeEnabled="false">
+<Page>
+  <TabView androidSwipeEnabled="false" fontSize="10">
     <TabView.items>
 
       <TabViewItem title="Tab 1">

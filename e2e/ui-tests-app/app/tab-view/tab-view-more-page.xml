@@ -1,5 +1,5 @@
-﻿<Page cssFile="./test.css">
-  <TabView>
+﻿<Page>
+  <TabView fontSize="10">
     <TabView.items>
 
       <TabViewItem title="Tab 1">
