@@ -1,5 +1,5 @@
-﻿import frame = require("tns-core-modules/ui/frame");
+﻿import * as frame from "tns-core-modules/ui/frame";
 
-export function navigate(args) {
-    frame.topmost().navigate("~/action-bar/clean-page");
+export function navigate() {
+    frame.topmost().navigate("action-bar/clean-page");
 }
