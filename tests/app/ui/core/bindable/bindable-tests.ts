@@ -218,12 +218,19 @@ export function test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCol
 
         try {
             stack.addChild(weakRef.get());
+            TKUnit.waitUntilReady(() => weakRef.get().isLoaded);
+
             TKUnit.assertEqual(weakRef.get().text, expectedValue, "Binding is not working properly!");
             stack.removeChild(weakRef.get());
             TKUnit.waitUntilReady(() => !weakRef.get().isLoaded);
+
             utils.GC();
-            TKUnit.assert(!weakRef.get(), "UIElement is still alive!");
-            testFinished = true;
+            // Give time for the GC to kick in
+            setTimeout(() => {
+                utils.GC();
+                TKUnit.assert(!weakRef.get(), "UIElement is still alive!");
+                testFinished = true;
+            }, 100);
         }
         catch (e) {
             done(e);
