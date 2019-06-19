@@ -6,34 +6,39 @@ set -e
 echo "Use dumb terminal"
 export TERM=dumb
 
-echo "Clean dist"
-rm -rf dist
-mkdir dist
-mkdir dist/package
-mkdir dist/package/platforms
+rm -rf dist/package/platforms/ios || true
+mkdir -p dist/package/platforms/ios
 
 echo "Build iOS"
-mkdir dist/package/platforms/ios
+
 cd ios
 ./build.sh
 cd ..
-echo "Copy TNSWidgets.framework and TNSWidgets.framework.dSYM.zip to dist/package/platforms/ios"
-cp -r ios/TNSWidgets/build/TNSWidgets.framework* dist/package/platforms/ios
+echo "Copy ios/TNSWidgets/build/*.framework dist/package/platforms/ios"
 
-echo "Copy NPM artefacts"
-cp LICENSE dist/package/LICENSE
-cp README.md dist/package/README.md
-cp package.json dist/package/package.json
+cp -R ios/TNSWidgets/build/MaterialComponents.framework dist/package/platforms/ios
+cp -R ios/TNSWidgets/build/MDFInternationalization.framework dist/package/platforms/ios
+cp -R ios/TNSWidgets/build/Pods_TNSWidgets.framework dist/package/platforms/ios
+cp -R ios/TNSWidgets/build/TNSWidgets.framework dist/package/platforms/ios
+
+cp ios/TNSWidgets/build/*.framework.dSYM.zip dist/package/platforms/ios
+
 if [ "$1" ]
 then
   echo "Suffix package.json's version with tag: $1"
   sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$1'"/g' ./dist/package/package.json
 fi
 
-echo "NPM pack"
-cd dist/package
-PACKAGE="$(npm pack)"
-cd ../..
-mv dist/package/$PACKAGE dist/$PACKAGE
-echo "Output: dist/$PACKAGE"
-
+if [ "$SKIP_PACK" ]
+then
+  echo "SKIP pack" 
+else
+  echo "Copy NPM artefacts"
+  cp .npmignore LICENSE README.md package.json dist/package
+  echo "NPM pack"
+  cd dist/package
+  PACKAGE="$(npm pack)"
+  cd ../..
+  mv dist/package/$PACKAGE dist/$PACKAGE
+  echo "Output: dist/$PACKAGE"
+fi

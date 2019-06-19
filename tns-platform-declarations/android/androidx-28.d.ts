@@ -1292,8 +1292,9 @@ declare module android {
 						public getSessionActivity(): android.app.PendingIntent;
 						public getRatingType(): number;
 						public addQueueItem(param0: android.support.v4.media.MediaDescriptionCompat, param1: number): void;
-						public getSessionToken(): android.support.v4.media.session.MediaSessionCompat.Token;
+						/** @deprecated */
 						public removeQueueItemAt(param0: number): void;
+						public getSessionToken(): android.support.v4.media.session.MediaSessionCompat.Token;
 						public getMediaController(): any;
 						public constructor(param0: android.content.Context, param1: android.support.v4.media.session.MediaSessionCompat.Token);
 						public getFlags(): number;
@@ -1938,7 +1939,6 @@ declare module android {
 							public onPrepareFromMediaId(param0: string, param1: android.os.Bundle): void;
 							public onPrepareFromUri(param0: android.net.Uri, param1: android.os.Bundle): void;
 							public onSeekTo(param0: number): void;
-							public onRemoveQueueItemAt(param0: number): void;
 							public onCustomAction(param0: string, param1: android.os.Bundle): void;
 							public onRemoveQueueItem(param0: android.support.v4.media.MediaDescriptionCompat): void;
 							public onPlayFromMediaId(param0: string, param1: android.os.Bundle): void;
@@ -1958,6 +1958,8 @@ declare module android {
 							public onCommand(param0: string, param1: android.os.Bundle, param2: android.os.ResultReceiver): void;
 							public onSkipToPrevious(): void;
 							public onPause(): void;
+							/** @deprecated */
+							public onRemoveQueueItemAt(param0: number): void;
 							public onMediaButtonEvent(param0: android.content.Intent): boolean;
 							public onSetRating(param0: android.support.v4.media.RatingCompat): void;
 						}
@@ -2849,7 +2851,6 @@ declare module android {
 							public constructor(param0: android.support.v4.media.session.PlaybackStateCompat);
 							public addCustomAction(param0: android.support.v4.media.session.PlaybackStateCompat.CustomAction): android.support.v4.media.session.PlaybackStateCompat.Builder;
 							public setActions(param0: number): android.support.v4.media.session.PlaybackStateCompat.Builder;
-							public setErrorMessage(param0: string): android.support.v4.media.session.PlaybackStateCompat.Builder;
 							public setErrorMessage(param0: number, param1: string): android.support.v4.media.session.PlaybackStateCompat.Builder;
 							public build(): android.support.v4.media.session.PlaybackStateCompat;
 							public addCustomAction(param0: string, param1: string, param2: number): android.support.v4.media.session.PlaybackStateCompat.Builder;
@@ -2857,6 +2858,8 @@ declare module android {
 							public setExtras(param0: android.os.Bundle): android.support.v4.media.session.PlaybackStateCompat.Builder;
 							public setState(param0: number, param1: number, param2: number, param3: number): android.support.v4.media.session.PlaybackStateCompat.Builder;
 							public setBufferedPosition(param0: number): android.support.v4.media.session.PlaybackStateCompat.Builder;
+							/** @deprecated */
+							public setErrorMessage(param0: string): android.support.v4.media.session.PlaybackStateCompat.Builder;
 							public setActiveQueueItemId(param0: number): android.support.v4.media.session.PlaybackStateCompat.Builder;
 						}
 						export class CustomAction extends java.lang.Object implements android.os.Parcelable {
@@ -3106,92 +3109,6 @@ declare module android {
 					}
 				}
 			}
-		}
-	}
-}
-
-declare module androidx {
-	export module activity {
-		export class ComponentActivity extends androidx.core.app.ComponentActivity implements androidx.lifecycle.LifecycleOwner, androidx.lifecycle.ViewModelStoreOwner {
-			public static class: java.lang.Class<androidx.activity.ComponentActivity>;
-			public onPreparePanel(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.Menu): boolean;
-			public onRetainCustomNonConfigurationInstance(): any;
-			public dispatchTrackballEvent(param0: globalAndroid.view.MotionEvent): boolean;
-			public dispatchTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
-			public onSearchRequested(param0: any): boolean;
-			public onPanelClosed(param0: number, param1: globalAndroid.view.Menu): void;
-			public onSearchRequested(): boolean;
-			public dispatchKeyShortcutEvent(param0: globalAndroid.view.KeyEvent): boolean;
-			public constructor(param0: globalAndroid.content.Context);
-			public onDetachedFromWindow(): void;
-			public onPointerCaptureChanged(param0: boolean): void;
-			public constructor(param0: globalAndroid.content.Context, param1: number);
-			public onCreate(param0: globalAndroid.os.Bundle): void;
-			public constructor();
-			public onCreateView(param0: string, param1: globalAndroid.content.Context, param2: globalAndroid.util.AttributeSet): globalAndroid.view.View;
-			public onCreate(param0: globalAndroid.os.Bundle, param1: any): void;
-			public getViewModelStore(): androidx.lifecycle.ViewModelStore;
-			public superDispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
-			public onWindowFocusChanged(param0: boolean): void;
-			public onActionModeFinished(param0: globalAndroid.view.ActionMode): void;
-			public onContentChanged(): void;
-			public removeOnBackPressedCallback(param0: androidx.activity.OnBackPressedCallback): void;
-			public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
-			public onCreatePanelView(param0: number): globalAndroid.view.View;
-			public onMenuItemSelected(param0: number, param1: globalAndroid.view.MenuItem): boolean;
-			public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-			public onRetainNonConfigurationInstance(): any;
-			public dispatchGenericMotionEvent(param0: globalAndroid.view.MotionEvent): boolean;
-			public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback, param1: number): globalAndroid.view.ActionMode;
-			public onTrimMemory(param0: number): void;
-			public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources.Theme);
-			public onBackPressed(): void;
-			public onSaveInstanceState(param0: globalAndroid.os.Bundle): void;
-			public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-			public getLastCustomNonConfigurationInstance(): any;
-			public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: globalAndroid.view.Menu, param2: number): void;
-			public addOnBackPressedCallback(param0: androidx.lifecycle.LifecycleOwner, param1: androidx.activity.OnBackPressedCallback): void;
-			public onActionModeStarted(param0: globalAndroid.view.ActionMode): void;
-			public dispatchPopulateAccessibilityEvent(param0: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
-			public getLifecycle(): androidx.lifecycle.Lifecycle;
-			public onWindowAttributesChanged(param0: globalAndroid.view.WindowManager.LayoutParams): void;
-			public onCreateContextMenu(param0: globalAndroid.view.ContextMenu, param1: globalAndroid.view.View, param2: globalAndroid.view.ContextMenu.ContextMenuInfo): void;
-			public onCreateView(param0: globalAndroid.view.View, param1: string, param2: globalAndroid.content.Context, param3: globalAndroid.util.AttributeSet): globalAndroid.view.View;
-			public onSaveInstanceState(param0: globalAndroid.os.Bundle, param1: any): void;
-			public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-			public addOnBackPressedCallback(param0: androidx.activity.OnBackPressedCallback): void;
-			public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-			public onAttachedToWindow(): void;
-			public onMenuOpened(param0: number, param1: globalAndroid.view.Menu): boolean;
-			public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
-			public onCreatePanelMenu(param0: number, param1: globalAndroid.view.Menu): boolean;
-		}
-		export module ComponentActivity {
-			export class LifecycleAwareOnBackPressedCallback extends java.lang.Object implements androidx.activity.OnBackPressedCallback, androidx.lifecycle.GenericLifecycleObserver {
-				public static class: java.lang.Class<androidx.activity.ComponentActivity.LifecycleAwareOnBackPressedCallback>;
-				public handleOnBackPressed(): boolean;
-				public onStateChanged(param0: androidx.lifecycle.LifecycleOwner, param1: androidx.lifecycle.Lifecycle.Event): void;
-				public onRemoved(): void;
-			}
-			export class NonConfigurationInstances extends java.lang.Object {
-				public static class: java.lang.Class<androidx.activity.ComponentActivity.NonConfigurationInstances>;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module activity {
-		export class OnBackPressedCallback extends java.lang.Object {
-			public static class: java.lang.Class<androidx.activity.OnBackPressedCallback>;
-			/**
-			 * Constructs a new instance of the androidx.activity.OnBackPressedCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-			 */
-			public constructor(implementation: {
-				handleOnBackPressed(): boolean;
-			});
-			public constructor();
-			public handleOnBackPressed(): boolean;
 		}
 	}
 }
@@ -4447,22 +4364,34 @@ declare module androidx {
 				public static DISPLAY_HOME_AS_UP: number;
 				public static DISPLAY_SHOW_TITLE: number;
 				public static DISPLAY_SHOW_CUSTOM: number;
+				/** @deprecated */
+				public setNavigationMode(param0: number): void;
 				public getHeight(): number;
 				public setShowHideAnimationEnabled(param0: boolean): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
 				public onMenuKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public setIcon(param0: number): void;
 				public setTitle(param0: string): void;
 				public constructor();
+				/** @deprecated */
+				public removeTabAt(param0: number): void;
 				public show(): void;
 				public setDisplayShowHomeEnabled(param0: boolean): void;
+				/** @deprecated */
+				public getNavigationItemCount(): number;
 				public isShowing(): boolean;
-				public setListNavigationCallbacks(param0: globalAndroid.widget.SpinnerAdapter, param1: androidx.appcompat.app.ActionBar.OnNavigationListener): void;
 				public setHideOnContentScrollEnabled(param0: boolean): void;
 				public setTitle(param0: number): void;
 				public setCustomView(param0: number): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setStackedBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public newTab(): androidx.appcompat.app.ActionBar.Tab;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number): void;
+				/** @deprecated */
+				public setListNavigationCallbacks(param0: globalAndroid.widget.SpinnerAdapter, param1: androidx.appcompat.app.ActionBar.OnNavigationListener): void;
 				public setDefaultDisplayHomeAsUpEnabled(param0: boolean): void;
 				public setWindowTitle(param0: string): void;
 				public setCustomView(param0: globalAndroid.view.View): void;
@@ -4475,52 +4404,58 @@ declare module androidx {
 				public setCustomView(param0: globalAndroid.view.View, param1: androidx.appcompat.app.ActionBar.LayoutParams): void;
 				public setHomeActionContentDescription(param0: string): void;
 				public addOnMenuVisibilityListener(param0: androidx.appcompat.app.ActionBar.OnMenuVisibilityListener): void;
-				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
+				/** @deprecated */
+				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
 				public setSubtitle(param0: string): void;
+				/** @deprecated */
+				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
 				public openOptionsMenu(): boolean;
 				public setLogo(param0: number): void;
 				public getElevation(): number;
 				public onKeyShortcut(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public getSelectedNavigationIndex(): number;
 				public getSubtitle(): string;
+				/** @deprecated */
+				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setSubtitle(param0: number): void;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number): void;
-				public removeTabAt(param0: number): void;
-				public removeAllTabs(): void;
 				public setHomeButtonEnabled(param0: boolean): void;
 				public setHomeAsUpIndicator(param0: number): void;
 				public setElevation(param0: number): void;
 				public startActionMode(param0: androidx.appcompat.view.ActionMode.Callback): androidx.appcompat.view.ActionMode;
 				public removeOnMenuVisibilityListener(param0: androidx.appcompat.app.ActionBar.OnMenuVisibilityListener): void;
-				public getNavigationMode(): number;
 				public isHideOnContentScrollEnabled(): boolean;
 				public getHideOffset(): number;
 				public getCustomView(): globalAndroid.view.View;
-				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
+				/** @deprecated */
+				public getNavigationMode(): number;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
 				public getDisplayOptions(): number;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
-				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
-				public getSelectedNavigationIndex(): number;
+				/** @deprecated */
+				public getTabCount(): number;
 				public closeOptionsMenu(): boolean;
 				public setDisplayHomeAsUpEnabled(param0: boolean): void;
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
-				public getTabCount(): number;
 				public setHomeAsUpIndicator(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setDisplayShowCustomEnabled(param0: boolean): void;
 				public setHomeActionContentDescription(param0: number): void;
 				public setDisplayShowTitleEnabled(param0: boolean): void;
 				public setSplitBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public collapseActionView(): boolean;
-				public getNavigationItemCount(): number;
+				/** @deprecated */
+				public removeAllTabs(): void;
 				public isTitleTruncated(): boolean;
-				public setSelectedNavigationItem(param0: number): void;
 				public setLogo(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public getTitle(): string;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
-				public hide(): void;
+				/** @deprecated */
 				public selectTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
-				public setNavigationMode(param0: number): void;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
+				public getTitle(): string;
+				/** @deprecated */
+				public setSelectedNavigationItem(param0: number): void;
+				public hide(): void;
+				/** @deprecated */
+				public newTab(): androidx.appcompat.app.ActionBar.Tab;
 				public setDisplayOptions(param0: number, param1: number): void;
 			}
 			export module ActionBar {
@@ -4716,8 +4651,8 @@ declare module androidx {
 			export class ActionBarDrawerToggleHoneycomb extends java.lang.Object {
 				public static class: java.lang.Class<androidx.appcompat.app.ActionBarDrawerToggleHoneycomb>;
 				public static setActionBarDescription(param0: androidx.appcompat.app.ActionBarDrawerToggleHoneycomb.SetIndicatorInfo, param1: globalAndroid.app.Activity, param2: number): androidx.appcompat.app.ActionBarDrawerToggleHoneycomb.SetIndicatorInfo;
-				public static setActionBarUpIndicator(param0: globalAndroid.app.Activity, param1: globalAndroid.graphics.drawable.Drawable, param2: number): androidx.appcompat.app.ActionBarDrawerToggleHoneycomb.SetIndicatorInfo;
 				public static getThemeUpIndicator(param0: globalAndroid.app.Activity): globalAndroid.graphics.drawable.Drawable;
+				public static setActionBarUpIndicator(param0: androidx.appcompat.app.ActionBarDrawerToggleHoneycomb.SetIndicatorInfo, param1: globalAndroid.app.Activity, param2: globalAndroid.graphics.drawable.Drawable, param3: number): androidx.appcompat.app.ActionBarDrawerToggleHoneycomb.SetIndicatorInfo;
 			}
 			export module ActionBarDrawerToggleHoneycomb {
 				export class SetIndicatorInfo extends java.lang.Object {
@@ -4846,7 +4781,6 @@ declare module androidx {
 				}
 				export class RecycleListView extends globalAndroid.widget.ListView {
 					public static class: java.lang.Class<androidx.appcompat.app.AlertController.RecycleListView>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -4867,12 +4801,16 @@ declare module androidx {
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
 					public onGlobalLayout(): void;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public bringChildToFront(param0: globalAndroid.view.View): void;
 					public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -4889,6 +4827,8 @@ declare module androidx {
 					public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
 					public canResolveTextAlignment(): boolean;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
 					public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -4899,7 +4839,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
@@ -5016,6 +4955,8 @@ declare module androidx {
 					public setNegativeButton(param0: string, param1: globalAndroid.content.DialogInterface.OnClickListener): androidx.appcompat.app.AlertDialog.Builder;
 					public setNeutralButton(param0: number, param1: globalAndroid.content.DialogInterface.OnClickListener): androidx.appcompat.app.AlertDialog.Builder;
 					public setOnItemSelectedListener(param0: globalAndroid.widget.AdapterView.OnItemSelectedListener): androidx.appcompat.app.AlertDialog.Builder;
+					/** @deprecated */
+					public setView(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): androidx.appcompat.app.AlertDialog.Builder;
 					public setNeutralButton(param0: string, param1: globalAndroid.content.DialogInterface.OnClickListener): androidx.appcompat.app.AlertDialog.Builder;
 					public setSingleChoiceItems(param0: globalAndroid.database.Cursor, param1: number, param2: string, param3: globalAndroid.content.DialogInterface.OnClickListener): androidx.appcompat.app.AlertDialog.Builder;
 					public setMultiChoiceItems(param0: native.Array<string>, param1: native.Array<boolean>, param2: globalAndroid.content.DialogInterface.OnMultiChoiceClickListener): androidx.appcompat.app.AlertDialog.Builder;
@@ -5025,12 +4966,12 @@ declare module androidx {
 					public setTitle(param0: string): androidx.appcompat.app.AlertDialog.Builder;
 					public show(): androidx.appcompat.app.AlertDialog;
 					public create(): androidx.appcompat.app.AlertDialog;
+					/** @deprecated */
+					public setInverseBackgroundForced(param0: boolean): androidx.appcompat.app.AlertDialog.Builder;
 					public constructor(param0: globalAndroid.content.Context);
 					public setIcon(param0: number): androidx.appcompat.app.AlertDialog.Builder;
 					public setRecycleOnMeasureEnabled(param0: boolean): androidx.appcompat.app.AlertDialog.Builder;
-					public setView(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): androidx.appcompat.app.AlertDialog.Builder;
 					public setView(param0: globalAndroid.view.View): androidx.appcompat.app.AlertDialog.Builder;
-					public setInverseBackgroundForced(param0: boolean): androidx.appcompat.app.AlertDialog.Builder;
 				}
 			}
 		}
@@ -5044,6 +4985,10 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.app.AppCompatActivity>;
 				public onSupportNavigateUp(): boolean;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public setSupportProgressBarIndeterminate(param0: boolean): void;
+				/** @deprecated */
+				public supportInvalidateOptionsMenu(): void;
 				public dispatchTrackballEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public findViewById(param0: number): globalAndroid.view.View;
 				public onSupportActionModeStarted(param0: androidx.appcompat.view.ActionMode): void;
@@ -5054,6 +4999,8 @@ declare module androidx {
 				public openOptionsMenu(): void;
 				public onCreateView(param0: string, param1: globalAndroid.content.Context, param2: globalAndroid.util.AttributeSet): globalAndroid.view.View;
 				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public setSupportProgress(param0: number): void;
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: number);
 				public onTrimMemory(param0: number): void;
@@ -5078,20 +5025,19 @@ declare module androidx {
 				public supportRequestWindowFeature(param0: number): boolean;
 				public getSupportActionBar(): androidx.appcompat.app.ActionBar;
 				public onSearchRequested(): boolean;
-				public setSupportProgressBarIndeterminate(param0: boolean): void;
 				public setSupportActionBar(param0: androidx.appcompat.widget.Toolbar): void;
 				public invalidateOptionsMenu(): void;
 				public getViewModelStore(): androidx.lifecycle.ViewModelStore;
 				public setTheme(param0: number): void;
+				/** @deprecated */
+				public setSupportProgressBarVisibility(param0: boolean): void;
 				public onMenuItemSelected(param0: number, param1: globalAndroid.view.MenuItem): boolean;
 				public onCreatePanelMenu(param0: number, param1: globalAndroid.view.Menu): boolean;
 				public onCreateView(param0: globalAndroid.view.View, param1: string, param2: globalAndroid.content.Context, param3: globalAndroid.util.AttributeSet): globalAndroid.view.View;
 				public supportShouldUpRecreateTask(param0: globalAndroid.content.Intent): boolean;
 				public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback, param1: number): globalAndroid.view.ActionMode;
 				public getMenuInflater(): globalAndroid.view.MenuInflater;
-				public onSupportContentChanged(): void;
 				public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
-				public setSupportProgressBarIndeterminateVisibility(param0: boolean): void;
 				public closeOptionsMenu(): void;
 				public dispatchGenericMotionEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public onCreateSupportNavigateUpTaskStack(param0: androidx.core.app.TaskStackBuilder): void;
@@ -5105,7 +5051,8 @@ declare module androidx {
 				public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public onStop(): void;
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
-				public setSupportProgressBarVisibility(param0: boolean): void;
+				/** @deprecated */
+				public onSupportContentChanged(): void;
 				public onSupportActionModeFinished(param0: androidx.appcompat.view.ActionMode): void;
 				public onPostCreate(param0: globalAndroid.os.Bundle, param1: any): void;
 				public onActionModeStarted(param0: globalAndroid.view.ActionMode): void;
@@ -5116,9 +5063,10 @@ declare module androidx {
 				public onSearchRequested(param0: any): boolean;
 				public setContentView(param0: number): void;
 				public dispatchPopulateAccessibilityEvent(param0: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
-				public setSupportProgress(param0: number): void;
 				public dispatchTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public onSaveInstanceState(param0: globalAndroid.os.Bundle): void;
+				/** @deprecated */
+				public setSupportProgressBarIndeterminateVisibility(param0: boolean): void;
 				public onCreateContextMenu(param0: globalAndroid.view.ContextMenu, param1: globalAndroid.view.View, param2: globalAndroid.view.ContextMenu.ContextMenuInfo): void;
 				public setContentView(param0: globalAndroid.view.View): void;
 				public onCreatePanelView(param0: number): globalAndroid.view.View;
@@ -5320,7 +5268,6 @@ declare module androidx {
 				}
 				export class ListMenuDecorView extends androidx.appcompat.widget.ContentFrameLayout {
 					public static class: java.lang.Class<androidx.appcompat.app.AppCompatDelegateImpl.ListMenuDecorView>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -5340,12 +5287,16 @@ declare module androidx {
 					public clearChildFocus(param0: globalAndroid.view.View): void;
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public bringChildToFront(param0: globalAndroid.view.View): void;
 					public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public setBackgroundResource(param0: number): void;
@@ -5359,6 +5310,8 @@ declare module androidx {
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 					public canResolveTextAlignment(): boolean;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
 					public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -5370,7 +5323,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
@@ -5508,7 +5460,6 @@ declare module androidx {
 				public createImageButton(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatImageButton;
 				public createAutoCompleteTextView(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatAutoCompleteTextView;
 				public constructor();
-				public createToggleButton(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatToggleButton;
 				public createRadioButton(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatRadioButton;
 				public createCheckBox(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatCheckBox;
 				public createSpinner(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatSpinner;
@@ -5558,20 +5509,34 @@ declare module androidx {
 		export module app {
 			export class ToolbarActionBar extends androidx.appcompat.app.ActionBar {
 				public static class: java.lang.Class<androidx.appcompat.app.ToolbarActionBar>;
+				/** @deprecated */
+				public setNavigationMode(param0: number): void;
 				public getHeight(): number;
 				public setShowHideAnimationEnabled(param0: boolean): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
 				public onMenuKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public setIcon(param0: number): void;
 				public setTitle(param0: string): void;
+				/** @deprecated */
+				public removeTabAt(param0: number): void;
 				public show(): void;
 				public getWrappedWindowCallback(): globalAndroid.view.Window.Callback;
 				public setDisplayShowHomeEnabled(param0: boolean): void;
+				/** @deprecated */
+				public getNavigationItemCount(): number;
 				public isShowing(): boolean;
 				public setListNavigationCallbacks(param0: globalAndroid.widget.SpinnerAdapter, param1: androidx.appcompat.app.ActionBar.OnNavigationListener): void;
 				public setTitle(param0: number): void;
 				public setCustomView(param0: number): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setStackedBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number): void;
+				/** @deprecated */
+				public setListNavigationCallbacks(param0: globalAndroid.widget.SpinnerAdapter, param1: androidx.appcompat.app.ActionBar.OnNavigationListener): void;
 				public setDefaultDisplayHomeAsUpEnabled(param0: boolean): void;
 				public newTab(): androidx.appcompat.app.ActionBar.Tab;
 				public setWindowTitle(param0: string): void;
@@ -5584,13 +5549,21 @@ declare module androidx {
 				public setCustomView(param0: globalAndroid.view.View, param1: androidx.appcompat.app.ActionBar.LayoutParams): void;
 				public setHomeActionContentDescription(param0: string): void;
 				public addOnMenuVisibilityListener(param0: androidx.appcompat.app.ActionBar.OnMenuVisibilityListener): void;
+				/** @deprecated */
+				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
 				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
 				public setSubtitle(param0: string): void;
+				/** @deprecated */
+				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
 				public openOptionsMenu(): boolean;
 				public setLogo(param0: number): void;
 				public getElevation(): number;
 				public onKeyShortcut(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public getSelectedNavigationIndex(): number;
 				public getSubtitle(): string;
+				/** @deprecated */
+				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setSubtitle(param0: number): void;
 				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number): void;
 				public removeTabAt(param0: number): void;
@@ -5601,9 +5574,15 @@ declare module androidx {
 				public removeOnMenuVisibilityListener(param0: androidx.appcompat.app.ActionBar.OnMenuVisibilityListener): void;
 				public getNavigationMode(): number;
 				public getCustomView(): globalAndroid.view.View;
+				/** @deprecated */
+				public getNavigationMode(): number;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
 				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public getDisplayOptions(): number;
 				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
+				/** @deprecated */
+				public getTabCount(): number;
 				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
 				public getSelectedNavigationIndex(): number;
 				public closeOptionsMenu(): boolean;
@@ -5618,15 +5597,23 @@ declare module androidx {
 				public setDisplayShowTitleEnabled(param0: boolean): void;
 				public collapseActionView(): boolean;
 				public getNavigationItemCount(): number;
+				/** @deprecated */
+				public removeAllTabs(): void;
 				public isTitleTruncated(): boolean;
 				public setSelectedNavigationItem(param0: number): void;
 				public setLogo(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
+				/** @deprecated */
+				public selectTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public getTitle(): string;
+				/** @deprecated */
+				public setSelectedNavigationItem(param0: number): void;
 				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
 				public hide(): void;
 				public selectTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setNavigationMode(param0: number): void;
+				/** @deprecated */
+				public newTab(): androidx.appcompat.app.ActionBar.Tab;
 				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
 				public setDisplayOptions(param0: number, param1: number): void;
 			}
@@ -5712,92 +5699,128 @@ declare module androidx {
 		export module app {
 			export class WindowDecorActionBar extends androidx.appcompat.app.ActionBar implements androidx.appcompat.widget.ActionBarOverlayLayout.ActionBarVisibilityCallback {
 				public static class: java.lang.Class<androidx.appcompat.app.WindowDecorActionBar>;
+				/** @deprecated */
+				public setNavigationMode(param0: number): void;
 				public getHeight(): number;
 				public onContentScrollStopped(): void;
-				public hasLogo(): boolean;
 				public showForSystem(): void;
-				public setShowHideAnimationEnabled(param0: boolean): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
 				public setIcon(param0: number): void;
 				public setTitle(param0: string): void;
-				public constructor();
+				/** @deprecated */
+				public removeTabAt(param0: number): void;
 				public show(): void;
 				public setDisplayShowHomeEnabled(param0: boolean): void;
 				public enableContentAnimations(param0: boolean): void;
-				public isShowing(): boolean;
+				/** @deprecated */
+				public getNavigationItemCount(): number;
 				public setHideOnContentScrollEnabled(param0: boolean): void;
 				public setListNavigationCallbacks(param0: globalAndroid.widget.SpinnerAdapter, param1: androidx.appcompat.app.ActionBar.OnNavigationListener): void;
-				public setTitle(param0: number): void;
-				public setCustomView(param0: number): void;
-				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setStackedBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public newTab(): androidx.appcompat.app.ActionBar.Tab;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number): void;
 				public setDefaultDisplayHomeAsUpEnabled(param0: boolean): void;
-				public setWindowTitle(param0: string): void;
-				public setCustomView(param0: globalAndroid.view.View): void;
-				public getThemedContext(): globalAndroid.content.Context;
 				public setDisplayOptions(param0: number): void;
 				public setDisplayUseLogoEnabled(param0: boolean): void;
 				public dispatchMenuVisibilityChanged(param0: boolean): void;
 				public setHideOffset(param0: number): void;
-				public setCustomView(param0: globalAndroid.view.View, param1: androidx.appcompat.app.ActionBar.LayoutParams): void;
 				public animateToMode(param0: boolean): void;
-				public setHomeActionContentDescription(param0: string): void;
 				public addOnMenuVisibilityListener(param0: androidx.appcompat.app.ActionBar.OnMenuVisibilityListener): void;
-				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
-				public onWindowVisibilityChanged(param0: number): void;
+				/** @deprecated */
+				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
 				public setSubtitle(param0: string): void;
-				public doShow(param0: boolean): void;
 				public getElevation(): number;
 				public setLogo(param0: number): void;
-				public onKeyShortcut(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public getSubtitle(): string;
-				public setSubtitle(param0: number): void;
 				public removeAllTabs(): void;
 				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number): void;
-				public removeTabAt(param0: number): void;
-				public setHomeButtonEnabled(param0: boolean): void;
 				public onContentScrollStarted(): void;
-				public constructor(param0: globalAndroid.app.Activity, param1: boolean);
 				public setHomeAsUpIndicator(param0: number): void;
-				public setElevation(param0: number): void;
-				public startActionMode(param0: androidx.appcompat.view.ActionMode.Callback): androidx.appcompat.view.ActionMode;
 				public removeOnMenuVisibilityListener(param0: androidx.appcompat.app.ActionBar.OnMenuVisibilityListener): void;
 				public doHide(param0: boolean): void;
-				public getNavigationMode(): number;
-				public isHideOnContentScrollEnabled(): boolean;
 				public getHideOffset(): number;
 				public getCustomView(): globalAndroid.view.View;
-				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
-				public getDisplayOptions(): number;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
-				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
-				public constructor(param0: globalAndroid.app.Dialog);
+				/** @deprecated */
+				public getNavigationMode(): number;
 				public getSelectedNavigationIndex(): number;
-				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
 				public setDisplayHomeAsUpEnabled(param0: boolean): void;
 				public setHomeAsUpIndicator(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public getTabCount(): number;
 				public constructor(param0: globalAndroid.view.View);
-				public setDisplayShowCustomEnabled(param0: boolean): void;
-				public setHomeActionContentDescription(param0: number): void;
 				public setDisplayShowTitleEnabled(param0: boolean): void;
-				public requestFocus(): boolean;
 				public setSplitBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public collapseActionView(): boolean;
-				public hideForSystem(): void;
-				public getNavigationItemCount(): number;
 				public isTitleTruncated(): boolean;
 				public setSelectedNavigationItem(param0: number): void;
-				public setLogo(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public setIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
+				/** @deprecated */
+				public selectTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public getTitle(): string;
 				public hasIcon(): boolean;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
+				/** @deprecated */
+				public setSelectedNavigationItem(param0: number): void;
 				public hide(): void;
 				public selectTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
 				public setNavigationMode(param0: number): void;
-				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
+				/** @deprecated */
+				public newTab(): androidx.appcompat.app.ActionBar.Tab;
 				public setDisplayOptions(param0: number, param1: number): void;
+				public hasLogo(): boolean;
+				public setShowHideAnimationEnabled(param0: boolean): void;
+				public constructor();
+				public isShowing(): boolean;
+				public setTitle(param0: number): void;
+				public setCustomView(param0: number): void;
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+				/** @deprecated */
+				public setListNavigationCallbacks(param0: globalAndroid.widget.SpinnerAdapter, param1: androidx.appcompat.app.ActionBar.OnNavigationListener): void;
+				public newTab(): androidx.appcompat.app.ActionBar.Tab;
+				public setWindowTitle(param0: string): void;
+				public setCustomView(param0: globalAndroid.view.View): void;
+				public getThemedContext(): globalAndroid.content.Context;
+				public setCustomView(param0: globalAndroid.view.View, param1: androidx.appcompat.app.ActionBar.LayoutParams): void;
+				public setHomeActionContentDescription(param0: string): void;
+				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
+				public onWindowVisibilityChanged(param0: number): void;
+				/** @deprecated */
+				public getSelectedTab(): androidx.appcompat.app.ActionBar.Tab;
+				public doShow(param0: boolean): void;
+				public onKeyShortcut(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
+				/** @deprecated */
+				public getSelectedNavigationIndex(): number;
+				public setSubtitle(param0: number): void;
+				public removeTabAt(param0: number): void;
+				public setHomeButtonEnabled(param0: boolean): void;
+				public constructor(param0: globalAndroid.app.Activity, param1: boolean);
+				public setElevation(param0: number): void;
+				public startActionMode(param0: androidx.appcompat.view.ActionMode.Callback): androidx.appcompat.view.ActionMode;
+				public getNavigationMode(): number;
+				public isHideOnContentScrollEnabled(): boolean;
+				/** @deprecated */
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
+				public removeTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
+				public getDisplayOptions(): number;
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab): void;
+				/** @deprecated */
+				public getTabCount(): number;
+				public getTabAt(param0: number): androidx.appcompat.app.ActionBar.Tab;
+				public constructor(param0: globalAndroid.app.Dialog);
+				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
+				public getTabCount(): number;
+				public setDisplayShowCustomEnabled(param0: boolean): void;
+				public setHomeActionContentDescription(param0: number): void;
+				public requestFocus(): boolean;
+				public collapseActionView(): boolean;
+				public hideForSystem(): void;
+				public getNavigationItemCount(): number;
+				/** @deprecated */
+				public removeAllTabs(): void;
+				public setLogo(param0: globalAndroid.graphics.drawable.Drawable): void;
+				public setIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: number, param2: boolean): void;
+				public addTab(param0: androidx.appcompat.app.ActionBar.Tab, param1: boolean): void;
 			}
 			export module WindowDecorActionBar {
 				export class ActionModeImpl extends androidx.appcompat.view.ActionMode implements androidx.appcompat.view.menu.MenuBuilder.Callback {
@@ -5877,28 +5900,26 @@ declare module androidx {
 	export module appcompat {
 		export module graphics {
 			export module drawable {
-				export class AnimatedStateListDrawableCompat extends androidx.appcompat.graphics.drawable.StateListDrawable implements androidx.core.graphics.drawable.TintAwareDrawable {
+				export class AnimatedStateListDrawableCompat extends androidx.appcompat.graphics.drawable.StateListDrawable {
 					public static class: java.lang.Class<androidx.appcompat.graphics.drawable.AnimatedStateListDrawableCompat>;
 					public addTransition(param0: number, param1: number, param2: globalAndroid.graphics.drawable.Drawable, param3: boolean): void;
 					public static createFromXmlInner(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources, param2: org.xmlpull.v1.XmlPullParser, param3: globalAndroid.util.AttributeSet, param4: globalAndroid.content.res.Resources.Theme): androidx.appcompat.graphics.drawable.AnimatedStateListDrawableCompat;
 					public inflate(param0: globalAndroid.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.util.AttributeSet): void;
 					public inflate(param0: globalAndroid.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.util.AttributeSet, param3: globalAndroid.content.res.Resources.Theme): void;
-					public setTintList(param0: globalAndroid.content.res.ColorStateList): void;
 					public jumpToCurrentState(): void;
 					public onStateChange(param0: native.Array<number>): boolean;
 					public isStateful(): boolean;
 					public mutate(): globalAndroid.graphics.drawable.Drawable;
 					public static createFromXmlInner(param0: globalAndroid.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.util.AttributeSet): globalAndroid.graphics.drawable.Drawable;
 					public addState(param0: native.Array<number>, param1: globalAndroid.graphics.drawable.Drawable, param2: number): void;
-					public setTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
 					public static createFromXmlInner(param0: globalAndroid.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.util.AttributeSet, param3: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
 					public inflate(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources, param2: org.xmlpull.v1.XmlPullParser, param3: globalAndroid.util.AttributeSet, param4: globalAndroid.content.res.Resources.Theme): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public constructor();
 					public setVisible(param0: boolean, param1: boolean): boolean;
 					public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+					public setConstantState(param0: androidx.appcompat.graphics.drawable.DrawableContainer.DrawableContainerState): void;
 					public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-					public setTint(param0: number): void;
 					public static create(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.content.res.Resources.Theme): androidx.appcompat.graphics.drawable.AnimatedStateListDrawableCompat;
 					public addState(param0: native.Array<number>, param1: globalAndroid.graphics.drawable.Drawable): void;
 				}
@@ -5963,6 +5984,8 @@ declare module androidx {
 					public getChangingConfigurations(): number;
 					public getPadding(param0: globalAndroid.graphics.Rect): boolean;
 					public getHotspotBounds(param0: globalAndroid.graphics.Rect): void;
+					/** @deprecated */
+					public setDither(param0: boolean): void;
 					public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
 					public setEnterFadeDuration(param0: number): void;
 					public getMinimumHeight(): number;
@@ -5987,6 +6010,7 @@ declare module androidx {
 					public getOutline(param0: any): void;
 					public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+					public setConstantState(param0: androidx.appcompat.graphics.drawable.DrawableContainer.DrawableContainerState): void;
 				}
 				export module DrawableContainer {
 					export class BlockInvalidateCallback extends java.lang.Object implements globalAndroid.graphics.drawable.Drawable.Callback {
@@ -6049,6 +6073,8 @@ declare module androidx {
 					public setFilterBitmap(param0: boolean): void;
 					public constructor();
 					public getPadding(param0: globalAndroid.graphics.Rect): boolean;
+					/** @deprecated */
+					public setDither(param0: boolean): void;
 					public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
 					public getState(): native.Array<number>;
 					public getMinimumHeight(): number;
@@ -6155,6 +6181,7 @@ declare module androidx {
 					public applyTheme(param0: globalAndroid.content.res.Resources.Theme): void;
 					public isStateful(): boolean;
 					public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+					public setConstantState(param0: androidx.appcompat.graphics.drawable.DrawableContainer.DrawableContainerState): void;
 					public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 					public mutate(): globalAndroid.graphics.drawable.Drawable;
 					public addState(param0: native.Array<number>, param1: globalAndroid.graphics.drawable.Drawable): void;
@@ -6479,7 +6506,6 @@ declare module androidx {
 					public setChecked(param0: boolean): globalAndroid.view.MenuItem;
 					public getSubMenu(): globalAndroid.view.SubMenu;
 					public getIntent(): globalAndroid.content.Intent;
-					public requiresActionButton(): boolean;
 					public setCheckable(param0: boolean): globalAndroid.view.MenuItem;
 					public getMenuInfo(): globalAndroid.view.ContextMenu.ContextMenuInfo;
 					public setAlphabeticShortcut(param0: string, param1: number): globalAndroid.view.MenuItem;
@@ -6495,7 +6521,6 @@ declare module androidx {
 					public setActionView(param0: number): globalAndroid.view.MenuItem;
 					public getNumericShortcut(): string;
 					public isActionViewExpanded(): boolean;
-					public requiresOverflow(): boolean;
 					public getAlphabeticShortcut(): string;
 					public setActionView(param0: number): androidx.core.internal.view.SupportMenuItem;
 					public getIcon(): globalAndroid.graphics.drawable.Drawable;
@@ -6650,8 +6675,21 @@ declare module androidx {
 	export module appcompat {
 		export module view {
 			export module menu {
-				export abstract class BaseMenuWrapper extends java.lang.Object {
-					public static class: java.lang.Class<androidx.appcompat.view.menu.BaseMenuWrapper>;
+				export abstract class BaseMenuWrapper<T>  extends androidx.appcompat.view.menu.BaseWrapper<any> {
+					public static class: java.lang.Class<androidx.appcompat.view.menu.BaseMenuWrapper<any>>;
+				}
+			}
+		}
+	}
+}
+
+declare module androidx {
+	export module appcompat {
+		export module view {
+			export module menu {
+				export class BaseWrapper<T>  extends java.lang.Object {
+					public static class: java.lang.Class<androidx.appcompat.view.menu.BaseWrapper<any>>;
+					public getWrappedObject(): T;
 				}
 			}
 		}
@@ -6732,7 +6770,6 @@ declare module androidx {
 			export module menu {
 				export class ExpandedMenuView extends globalAndroid.widget.ListView implements androidx.appcompat.view.menu.MenuBuilder.ItemInvoker, androidx.appcompat.view.menu.MenuView, globalAndroid.widget.AdapterView.OnItemClickListener {
 					public static class: java.lang.Class<androidx.appcompat.view.menu.ExpandedMenuView>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -6753,6 +6790,8 @@ declare module androidx {
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
 					public onGlobalLayout(): void;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public getWindowAnimations(): number;
@@ -6760,6 +6799,8 @@ declare module androidx {
 					public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -6776,6 +6817,8 @@ declare module androidx {
 					public onItemClick(param0: globalAndroid.widget.AdapterView<any>, param1: globalAndroid.view.View, param2: number, param3: number): void;
 					public canResolveTextAlignment(): boolean;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
 					public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -6786,7 +6829,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
@@ -6823,7 +6865,6 @@ declare module androidx {
 			export module menu {
 				export class ListMenuItemView extends globalAndroid.widget.LinearLayout implements androidx.appcompat.view.menu.MenuView.ItemView, globalAndroid.widget.AbsListView.SelectionBoundsAdjuster {
 					public static class: java.lang.Class<androidx.appcompat.view.menu.ListMenuItemView>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public setTitle(param0: string): void;
@@ -6848,12 +6889,16 @@ declare module androidx {
 					public setEnabled(param0: boolean): void;
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public bringChildToFront(param0: globalAndroid.view.View): void;
 					public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -6868,6 +6913,8 @@ declare module androidx {
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 					public canResolveTextAlignment(): boolean;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public setGroupDividerEnabled(param0: boolean): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
@@ -6880,7 +6927,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public onFinishInflate(): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
@@ -7186,7 +7232,6 @@ declare module androidx {
 					public setActionView(param0: number): globalAndroid.view.MenuItem;
 					public getNumericShortcut(): string;
 					public isActionViewExpanded(): boolean;
-					public requiresOverflow(): boolean;
 					public getAlphabeticShortcut(): string;
 					public setActionView(param0: number): androidx.core.internal.view.SupportMenuItem;
 					public hasCollapsibleActionView(): boolean;
@@ -7232,7 +7277,7 @@ declare module androidx {
 	export module appcompat {
 		export module view {
 			export module menu {
-				export class MenuItemWrapperICS extends androidx.appcompat.view.menu.BaseMenuWrapper implements globalAndroid.view.MenuItem {
+				export class MenuItemWrapperICS extends androidx.appcompat.view.menu.BaseMenuWrapper<androidx.core.internal.view.SupportMenuItem> implements globalAndroid.view.MenuItem  {
 					public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperICS>;
 					public getTitle(): string;
 					public setTitleCondensed(param0: string): globalAndroid.view.MenuItem;
@@ -7278,7 +7323,6 @@ declare module androidx {
 					public getActionProvider(): globalAndroid.view.ActionProvider;
 					public isCheckable(): boolean;
 					public isChecked(): boolean;
-					public constructor(param0: globalAndroid.content.Context, param1: androidx.core.internal.view.SupportMenuItem);
 					public getItemId(): number;
 					public setShortcut(param0: string, param1: string, param2: number, param3: number): globalAndroid.view.MenuItem;
 					public setShortcut(param0: string, param1: string): globalAndroid.view.MenuItem;
@@ -7295,20 +7339,12 @@ declare module androidx {
 					export class ActionProviderWrapper extends androidx.core.view.ActionProvider {
 						public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperICS.ActionProviderWrapper>;
 						public onCreateActionView(): globalAndroid.view.View;
+						public constructor(param0: globalAndroid.content.Context);
 						public onPrepareSubMenu(param0: globalAndroid.view.SubMenu): void;
 						public onPerformDefaultAction(): boolean;
+						public constructor(param0: androidx.appcompat.view.menu.MenuItemWrapperICS, param1: globalAndroid.content.Context, param2: globalAndroid.view.ActionProvider);
 						public onCreateActionView(param0: globalAndroid.view.MenuItem): globalAndroid.view.View;
 						public hasSubMenu(): boolean;
-					}
-					export class ActionProviderWrapperJB extends androidx.appcompat.view.menu.MenuItemWrapperICS.ActionProviderWrapper implements globalAndroid.view.ActionProvider.VisibilityListener {
-						public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperICS.ActionProviderWrapperJB>;
-						public onCreateActionView(): globalAndroid.view.View;
-						public overridesItemVisibility(): boolean;
-						public setVisibilityListener(param0: androidx.core.view.ActionProvider.VisibilityListener): void;
-						public refreshVisibility(): void;
-						public isVisible(): boolean;
-						public onCreateActionView(param0: globalAndroid.view.MenuItem): globalAndroid.view.View;
-						public onActionProviderVisibilityChanged(param0: boolean): void;
 					}
 					export class CollapsibleActionViewWrapper extends globalAndroid.widget.FrameLayout implements androidx.appcompat.view.CollapsibleActionView {
 						public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperICS.CollapsibleActionViewWrapper>;
@@ -7320,11 +7356,12 @@ declare module androidx {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public onActionViewExpanded(): void;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -7339,7 +7376,6 @@ declare module androidx {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -7354,6 +7390,8 @@ declare module androidx {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -7374,18 +7412,101 @@ declare module androidx {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public onActionViewCollapsed(): void;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
 					}
-					export class OnActionExpandListenerWrapper extends java.lang.Object implements globalAndroid.view.MenuItem.OnActionExpandListener {
+					export class OnActionExpandListenerWrapper extends androidx.appcompat.view.menu.BaseWrapper<globalAndroid.view.MenuItem.OnActionExpandListener> implements globalAndroid.view.MenuItem.OnActionExpandListener  {
 						public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperICS.OnActionExpandListenerWrapper>;
 						public onMenuItemActionExpand(param0: globalAndroid.view.MenuItem): boolean;
 						public onMenuItemActionCollapse(param0: globalAndroid.view.MenuItem): boolean;
 					}
-					export class OnMenuItemClickListenerWrapper extends java.lang.Object implements globalAndroid.view.MenuItem.OnMenuItemClickListener {
+					export class OnMenuItemClickListenerWrapper extends androidx.appcompat.view.menu.BaseWrapper<globalAndroid.view.MenuItem.OnMenuItemClickListener> implements globalAndroid.view.MenuItem.OnMenuItemClickListener  {
 						public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperICS.OnMenuItemClickListenerWrapper>;
 						public onMenuItemClick(param0: globalAndroid.view.MenuItem): boolean;
+					}
+				}
+			}
+		}
+	}
+}
+
+declare module androidx {
+	export module appcompat {
+		export module view {
+			export module menu {
+				export class MenuItemWrapperJB extends androidx.appcompat.view.menu.MenuItemWrapperICS {
+					public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperJB>;
+					public getTitle(): string;
+					public setTitleCondensed(param0: string): globalAndroid.view.MenuItem;
+					public setTooltipText(param0: string): globalAndroid.view.MenuItem;
+					public setOnActionExpandListener(param0: globalAndroid.view.MenuItem.OnActionExpandListener): globalAndroid.view.MenuItem;
+					public setIconTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): globalAndroid.view.MenuItem;
+					public getGroupId(): number;
+					public setVisible(param0: boolean): globalAndroid.view.MenuItem;
+					public hasSubMenu(): boolean;
+					public getContentDescription(): string;
+					public getTitleCondensed(): string;
+					public setIntent(param0: globalAndroid.content.Intent): globalAndroid.view.MenuItem;
+					public setEnabled(param0: boolean): globalAndroid.view.MenuItem;
+					public isEnabled(): boolean;
+					public setActionProvider(param0: globalAndroid.view.ActionProvider): globalAndroid.view.MenuItem;
+					public setIconTintList(param0: globalAndroid.content.res.ColorStateList): globalAndroid.view.MenuItem;
+					public setChecked(param0: boolean): globalAndroid.view.MenuItem;
+					public getSubMenu(): globalAndroid.view.SubMenu;
+					public getIntent(): globalAndroid.content.Intent;
+					public setCheckable(param0: boolean): globalAndroid.view.MenuItem;
+					public getMenuInfo(): globalAndroid.view.ContextMenu.ContextMenuInfo;
+					public setAlphabeticShortcut(param0: string, param1: number): globalAndroid.view.MenuItem;
+					public getNumericModifiers(): number;
+					public isVisible(): boolean;
+					public getAlphabeticModifiers(): number;
+					public collapseActionView(): boolean;
+					public getTooltipText(): string;
+					public expandActionView(): boolean;
+					public setTitle(param0: number): globalAndroid.view.MenuItem;
+					public setActionView(param0: number): globalAndroid.view.MenuItem;
+					public getNumericShortcut(): string;
+					public isActionViewExpanded(): boolean;
+					public getAlphabeticShortcut(): string;
+					public getIcon(): globalAndroid.graphics.drawable.Drawable;
+					public setIcon(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.view.MenuItem;
+					public setIcon(param0: number): globalAndroid.view.MenuItem;
+					public setShowAsAction(param0: number): void;
+					public getIconTintMode(): globalAndroid.graphics.PorterDuff.Mode;
+					public setAlphabeticShortcut(param0: string): globalAndroid.view.MenuItem;
+					public setTitle(param0: string): globalAndroid.view.MenuItem;
+					public getOrder(): number;
+					public getActionProvider(): globalAndroid.view.ActionProvider;
+					public isCheckable(): boolean;
+					public isChecked(): boolean;
+					public getItemId(): number;
+					public setShortcut(param0: string, param1: string, param2: number, param3: number): globalAndroid.view.MenuItem;
+					public setShortcut(param0: string, param1: string): globalAndroid.view.MenuItem;
+					public getIconTintList(): globalAndroid.content.res.ColorStateList;
+					public setOnMenuItemClickListener(param0: globalAndroid.view.MenuItem.OnMenuItemClickListener): globalAndroid.view.MenuItem;
+					public setNumericShortcut(param0: string): globalAndroid.view.MenuItem;
+					public setContentDescription(param0: string): globalAndroid.view.MenuItem;
+					public getActionView(): globalAndroid.view.View;
+					public setNumericShortcut(param0: string, param1: number): globalAndroid.view.MenuItem;
+					public setActionView(param0: globalAndroid.view.View): globalAndroid.view.MenuItem;
+					public setShowAsActionFlags(param0: number): globalAndroid.view.MenuItem;
+				}
+				export module MenuItemWrapperJB {
+					export class ActionProviderWrapperJB extends androidx.appcompat.view.menu.MenuItemWrapperICS.ActionProviderWrapper implements globalAndroid.view.ActionProvider.VisibilityListener {
+						public static class: java.lang.Class<androidx.appcompat.view.menu.MenuItemWrapperJB.ActionProviderWrapperJB>;
+						public onCreateActionView(): globalAndroid.view.View;
+						public constructor(param0: androidx.appcompat.view.menu.MenuItemWrapperJB, param1: globalAndroid.content.Context, param2: globalAndroid.view.ActionProvider);
+						public overridesItemVisibility(): boolean;
+						public constructor(param0: globalAndroid.content.Context);
+						public setVisibilityListener(param0: androidx.core.view.ActionProvider.VisibilityListener): void;
+						public refreshVisibility(): void;
+						public isVisible(): boolean;
+						public constructor(param0: androidx.appcompat.view.menu.MenuItemWrapperICS, param1: globalAndroid.content.Context, param2: globalAndroid.view.ActionProvider);
+						public onCreateActionView(param0: globalAndroid.view.MenuItem): globalAndroid.view.View;
+						public onActionProviderVisibilityChanged(param0: boolean): void;
 					}
 				}
 			}
@@ -7581,9 +7702,23 @@ declare module androidx {
 	export module appcompat {
 		export module view {
 			export module menu {
-				export class MenuWrapperICS extends androidx.appcompat.view.menu.BaseMenuWrapper implements globalAndroid.view.Menu {
+				export class MenuWrapperFactory extends java.lang.Object {
+					public static class: java.lang.Class<androidx.appcompat.view.menu.MenuWrapperFactory>;
+					public static wrapSupportMenu(param0: globalAndroid.content.Context, param1: androidx.core.internal.view.SupportMenu): globalAndroid.view.Menu;
+					public static wrapSupportSubMenu(param0: globalAndroid.content.Context, param1: androidx.core.internal.view.SupportSubMenu): globalAndroid.view.SubMenu;
+					public static wrapSupportMenuItem(param0: globalAndroid.content.Context, param1: androidx.core.internal.view.SupportMenuItem): globalAndroid.view.MenuItem;
+				}
+			}
+		}
+	}
+}
+
+declare module androidx {
+	export module appcompat {
+		export module view {
+			export module menu {
+				export class MenuWrapperICS extends androidx.appcompat.view.menu.BaseMenuWrapper<androidx.core.internal.view.SupportMenu> implements globalAndroid.view.Menu  {
 					public static class: java.lang.Class<androidx.appcompat.view.menu.MenuWrapperICS>;
-					public constructor(param0: globalAndroid.content.Context, param1: androidx.core.internal.view.SupportMenu);
 					public setGroupVisible(param0: number, param1: boolean): void;
 					public setGroupCheckable(param0: number, param1: boolean, param2: boolean): void;
 					public setQwertyMode(param0: boolean): void;
@@ -7776,6 +7911,8 @@ declare module androidx {
 					public setGroupEnabled(param0: number, param1: boolean): void;
 					public addSubMenu(param0: number, param1: number, param2: number, param3: string): globalAndroid.view.SubMenu;
 					public isShortcutKey(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+					public getWrappedObject(): androidx.core.internal.view.SupportSubMenu;
+					public getWrappedObject(): any;
 					public removeItem(param0: number): void;
 					public hasVisibleItems(): boolean;
 					public setHeaderTitle(param0: number): globalAndroid.view.SubMenu;
@@ -7799,6 +7936,8 @@ declare module androidx {
 				public mVisibilityAnim: androidx.core.view.ViewPropertyAnimatorCompat;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public showOverflowMenu(): boolean;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -7817,7 +7956,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -7826,6 +7964,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setupAnimatorToVisibility(param0: number, param1: number): androidx.core.view.ViewPropertyAnimatorCompat;
 				public setVisibility(param0: number): void;
 				public hideOverflowMenu(): boolean;
@@ -7854,6 +7994,8 @@ declare module androidx {
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public onHoverEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -7865,7 +8007,6 @@ declare module androidx {
 				public isOverflowReserved(): boolean;
 				public canShowOverflowMenu(): boolean;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public positionChild(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: boolean): number;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
@@ -7920,6 +8061,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.ActionBarContainer>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -7942,7 +8085,6 @@ declare module androidx {
 				public setStackedBackground(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
@@ -7951,6 +8093,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setVisibility(param0: number): void;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
@@ -7979,6 +8123,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public onHoverEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -7988,7 +8134,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public setSplitBackground(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -8013,6 +8158,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.ActionBarContextView>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public showOverflowMenu(): boolean;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -8033,7 +8180,6 @@ declare module androidx {
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
 				public setCustomView(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -8042,6 +8188,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public hideOverflowMenu(): boolean;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public setSubtitle(param0: string): void;
@@ -8074,6 +8222,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
@@ -8083,7 +8233,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public getTitle(): string;
@@ -8108,7 +8257,7 @@ declare module androidx {
 declare module androidx {
 	export module appcompat {
 		export module widget {
-			export class ActionBarOverlayLayout extends globalAndroid.view.ViewGroup implements androidx.appcompat.widget.DecorContentParent, androidx.core.view.NestedScrollingParent, androidx.core.view.NestedScrollingParent2, androidx.core.view.NestedScrollingParent3 {
+			export class ActionBarOverlayLayout extends globalAndroid.view.ViewGroup implements androidx.appcompat.widget.DecorContentParent, androidx.core.view.NestedScrollingParent {
 				public static class: java.lang.Class<androidx.appcompat.widget.ActionBarOverlayLayout>;
 				public generateDefaultLayoutParams(): androidx.appcompat.widget.ActionBarOverlayLayout.LayoutParams;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -8125,11 +8274,14 @@ declare module androidx {
 				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
+				/** @deprecated */
+				public fitSystemWindows(param0: globalAndroid.graphics.Rect): boolean;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public hideOverflowMenu(): boolean;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public isTextDirectionResolved(): boolean;
@@ -8144,6 +8296,8 @@ declare module androidx {
 				public setOverlayMode(param0: boolean): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setShowingForActionMode(param0: boolean): void;
@@ -8153,18 +8307,18 @@ declare module androidx {
 				public dismissPopups(): void;
 				public onWindowSystemUiVisibilityChanged(param0: number): void;
 				public canShowOverflowMenu(): boolean;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getTitle(): string;
 				public hasIcon(): boolean;
 				public isOverflowMenuShowing(): boolean;
 				public setActionBarVisibilityCallback(param0: androidx.appcompat.widget.ActionBarOverlayLayout.ActionBarVisibilityCallback): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
-				public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): boolean;
 				public isOverflowMenuShowPending(): boolean;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
 				public getParent(): globalAndroid.view.ViewParent;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
 				public hasLogo(): boolean;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public showOverflowMenu(): boolean;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public setActionBarHideOffset(param0: number): void;
@@ -8184,20 +8338,17 @@ declare module androidx {
 				public getTextAlignment(): number;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
 				public onWindowVisibilityChanged(param0: number): void;
-				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number): void;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onDetachedFromWindow(): void;
 				public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 				public setMenuPrepared(): void;
 				public generateDefaultLayoutParams(): globalAndroid.view.ViewGroup.LayoutParams;
-				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number, param6: native.Array<number>): void;
 				public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 				public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 				public generateLayoutParams(param0: globalAndroid.util.AttributeSet): globalAndroid.view.ViewGroup.LayoutParams;
 				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 				public isTextAlignmentResolved(): boolean;
-				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): void;
 				public getLayoutDirection(): number;
 				public removeView(param0: globalAndroid.view.View): void;
 				public canResolveTextDirection(): boolean;
@@ -8209,7 +8360,6 @@ declare module androidx {
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
 				public fitSystemWindows(param0: globalAndroid.graphics.Rect): boolean;
-				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: number): void;
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 				public isInOverlayMode(): boolean;
@@ -8224,7 +8374,6 @@ declare module androidx {
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public onMeasure(param0: number, param1: number): void;
-				public onStopNestedScroll(param0: globalAndroid.view.View, param1: number): void;
 				public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 				public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
 				public shouldDelayChildPressedState(): boolean;
@@ -8401,12 +8550,13 @@ declare module androidx {
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public peekMenu(): androidx.appcompat.view.menu.MenuBuilder;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public setPresenter(param0: androidx.appcompat.widget.ActionMenuPresenter): void;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getMenu(): globalAndroid.view.Menu;
 				public hideOverflowMenu(): boolean;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -8422,6 +8572,8 @@ declare module androidx {
 				public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public dismissPopupMenus(): void;
@@ -8429,7 +8581,6 @@ declare module androidx {
 				public generateDefaultLayoutParams(): androidx.appcompat.widget.ActionMenuView.LayoutParams;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public isOverflowReserved(): boolean;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public isOverflowMenuShowing(): boolean;
 				public getWindowAnimations(): number;
 				public setMenuCallbacks(param0: androidx.appcompat.view.menu.MenuPresenter.Callback, param1: androidx.appcompat.view.menu.MenuBuilder.Callback): void;
@@ -8442,6 +8593,8 @@ declare module androidx {
 				public generateOverflowButtonLayoutParams(): androidx.appcompat.widget.ActionMenuView.LayoutParams;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
 				public setPopupTheme(param0: number): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public showOverflowMenu(): boolean;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -8646,6 +8799,8 @@ declare module androidx {
 				public isShowingPopup(): boolean;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public setOnDismissListener(param0: globalAndroid.widget.PopupWindow.OnDismissListener): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -8666,7 +8821,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -8676,6 +8830,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -8700,6 +8856,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setExpandActivityOverflowButtonContentDescription(param0: number): void;
@@ -8709,7 +8867,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setDefaultActionButtonContentDescription(param0: number): void;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
@@ -8760,7 +8917,6 @@ declare module androidx {
 				}
 				export class InnerLayout extends globalAndroid.widget.LinearLayout {
 					public static class: java.lang.Class<androidx.appcompat.widget.ActivityChooserView.InnerLayout>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -8779,12 +8935,16 @@ declare module androidx {
 					public clearChildFocus(param0: globalAndroid.view.View): void;
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public bringChildToFront(param0: globalAndroid.view.View): void;
 					public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -8797,6 +8957,8 @@ declare module androidx {
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 					public canResolveTextAlignment(): boolean;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
 					public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -8807,7 +8969,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
@@ -8840,6 +9001,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.AlertDialogLayout>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -8857,7 +9020,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -8866,6 +9028,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -8889,6 +9053,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
@@ -8896,7 +9062,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -8919,7 +9084,11 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatAutoCompleteTextView>;
 				public drawableStateChanged(): void;
 				public onFilterComplete(param0: number): void;
+				/** @deprecated */
+				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
 				public onCreateInputConnection(param0: globalAndroid.view.inputmethod.EditorInfo): globalAndroid.view.inputmethod.InputConnection;
@@ -8968,7 +9137,11 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatButton>;
 				public drawableStateChanged(): void;
 				public setAutoSizeTextTypeWithDefaults(param0: number): void;
+				/** @deprecated */
+				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setTextSize(param0: number, param1: number): void;
 				public setAutoSizeTextTypeUniformWithPresetSizes(param0: native.Array<number>, param1: number): void;
@@ -9054,6 +9227,8 @@ declare module androidx {
 				public drawableStateChanged(): void;
 				public setChecked(param0: boolean): void;
 				public isChecked(): boolean;
+				/** @deprecated */
+				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public onCreateInputConnection(param0: globalAndroid.view.inputmethod.EditorInfo): globalAndroid.view.inputmethod.InputConnection;
@@ -9154,7 +9329,11 @@ declare module androidx {
 			export class AppCompatEditText extends globalAndroid.widget.EditText implements androidx.core.view.TintableBackgroundView {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatEditText>;
 				public drawableStateChanged(): void;
+				/** @deprecated */
+				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
 				public getText(): globalAndroid.text.Editable;
@@ -9169,13 +9348,11 @@ declare module androidx {
 				public setCustomSelectionActionModeCallback(param0: globalAndroid.view.ActionMode.Callback): void;
 				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
-				public getTextClassifier(): any;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public getSupportBackgroundTintMode(): globalAndroid.graphics.PorterDuff.Mode;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setSupportBackgroundTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-				public setTextClassifier(param0: any): void;
 				public getSupportBackgroundTintList(): globalAndroid.content.res.ColorStateList;
 				public getText(): string;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -9205,6 +9382,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatImageButton>;
 				public drawableStateChanged(): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setImageDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
@@ -9258,6 +9437,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatImageView>;
 				public drawableStateChanged(): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setImageDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
@@ -9298,7 +9479,11 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView>;
 				public drawableStateChanged(): void;
 				public onFilterComplete(param0: number): void;
+				/** @deprecated */
+				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
 				public onCreateInputConnection(param0: globalAndroid.view.inputmethod.EditorInfo): globalAndroid.view.inputmethod.InputConnection;
@@ -9481,11 +9666,12 @@ declare module androidx {
 				public getTextDirection(): number;
 				public constructor(param0: globalAndroid.content.Context, param1: number);
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public getPopupBackground(): globalAndroid.graphics.drawable.Drawable;
 				public getDropDownWidth(): number;
@@ -9495,14 +9681,17 @@ declare module androidx {
 				public isLayoutDirectionResolved(): boolean;
 				public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public getPrompt(): string;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public setPopupBackgroundResource(param0: number): void;
 				public setBackgroundResource(param0: number): void;
@@ -9513,6 +9702,8 @@ declare module androidx {
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number, param4: number);
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
 				public getDropDownHorizontalOffset(): number;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -9609,18 +9800,6 @@ declare module androidx {
 declare module androidx {
 	export module appcompat {
 		export module widget {
-			export class AppCompatTextClassifierHelper extends java.lang.Object {
-				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatTextClassifierHelper>;
-				public getTextClassifier(): any;
-				public setTextClassifier(param0: any): void;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module appcompat {
-		export module widget {
 			export class AppCompatTextHelper extends java.lang.Object {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatTextHelper>;
 			}
@@ -9633,11 +9812,12 @@ declare module androidx {
 		export module widget {
 			export class AppCompatTextView extends globalAndroid.widget.TextView implements androidx.core.view.TintableBackgroundView, androidx.core.widget.AutoSizeableTextView {
 				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatTextView>;
+				/** @deprecated */
+				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
 				public getAutoSizeStepGranularity(): number;
 				public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
-				public setCompoundDrawablesRelativeWithIntrinsicBounds(param0: number, param1: number, param2: number, param3: number): void;
 				public onCreateInputConnection(param0: globalAndroid.view.inputmethod.EditorInfo): globalAndroid.view.inputmethod.InputConnection;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 				public setAutoSizeTextTypeUniformWithConfiguration(param0: number, param1: number, param2: number, param3: number): void;
@@ -9648,15 +9828,12 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
-				public getTextClassifier(): any;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public setSupportBackgroundTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
 				public setTextSize(param0: number): void;
 				public setFirstBaselineToTopHeight(param0: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getAutoSizeTextType(): number;
-				public setTextClassifier(param0: any): void;
-				public setCompoundDrawablesWithIntrinsicBounds(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.graphics.drawable.Drawable, param2: globalAndroid.graphics.drawable.Drawable, param3: globalAndroid.graphics.drawable.Drawable): void;
 				public getAutoSizeMaxTextSize(): number;
 				public setLastBaselineToBottomHeight(param0: number): void;
 				public setTextAppearance(param0: number): void;
@@ -9664,13 +9841,14 @@ declare module androidx {
 				public setAutoSizeTextTypeWithDefaults(param0: number): void;
 				public getTextMetricsParamsCompat(): androidx.core.text.PrecomputedTextCompat.Params;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setTextSize(param0: number, param1: number): void;
 				public setAutoSizeTextTypeUniformWithPresetSizes(param0: native.Array<number>, param1: number): void;
 				public getLastBaselineToBottomHeight(): number;
 				public setTextMetricsParamsCompat(param0: androidx.core.text.PrecomputedTextCompat.Params): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
-				public setCompoundDrawablesWithIntrinsicBounds(param0: number, param1: number, param2: number, param3: number): void;
 				public getAutoSizeTextAvailableSizes(): native.Array<number>;
 				public setCustomSelectionActionModeCallback(param0: globalAndroid.view.ActionMode.Callback): void;
 				public getSupportBackgroundTintMode(): globalAndroid.graphics.PorterDuff.Mode;
@@ -9686,7 +9864,6 @@ declare module androidx {
 				public onMeasure(param0: number, param1: number): void;
 				public setLineHeight(param0: number): void;
 				public setBackgroundResource(param0: number): void;
-				public setCompoundDrawablesRelativeWithIntrinsicBounds(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.graphics.drawable.Drawable, param2: globalAndroid.graphics.drawable.Drawable, param3: globalAndroid.graphics.drawable.Drawable): void;
 				public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 			}
 		}
@@ -9706,38 +9883,12 @@ declare module androidx {
 declare module androidx {
 	export module appcompat {
 		export module widget {
-			export class AppCompatToggleButton extends globalAndroid.widget.ToggleButton {
-				public static class: java.lang.Class<androidx.appcompat.widget.AppCompatToggleButton>;
-				public setChecked(param0: boolean): void;
-				public isChecked(): boolean;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
-				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-				public toggle(): void;
-				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public sendAccessibilityEvent(param0: number): void;
-				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-				public onPreDraw(): boolean;
-				public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
-				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-				public constructor(param0: globalAndroid.content.Context);
-				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module appcompat {
-		export module widget {
 			export class ButtonBarLayout extends globalAndroid.widget.LinearLayout {
 				public static class: java.lang.Class<androidx.appcompat.widget.ButtonBarLayout>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -9755,7 +9906,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -9765,6 +9915,8 @@ declare module androidx {
 				public getMinimumHeight(): number;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -9788,13 +9940,14 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setAllowStacking(param0: boolean): void;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
@@ -9819,6 +9972,8 @@ declare module androidx {
 				public dispatchFitSystemWindows(param0: globalAndroid.graphics.Rect): void;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public getMinWidthMinor(): globalAndroid.util.TypedValue;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -9839,7 +9994,6 @@ declare module androidx {
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
 				public setDecorPadding(param0: number, param1: number, param2: number, param3: number): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -9848,6 +10002,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -9874,6 +10030,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public getFixedWidthMinor(): globalAndroid.util.TypedValue;
@@ -9882,7 +10040,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -10104,36 +10261,25 @@ declare module androidx {
 declare module androidx {
 	export module appcompat {
 		export module widget {
-			export class DialogTitle extends androidx.appcompat.widget.AppCompatTextView {
+			export class DialogTitle extends globalAndroid.widget.TextView {
 				public static class: java.lang.Class<androidx.appcompat.widget.DialogTitle>;
-				public setAutoSizeTextTypeWithDefaults(param0: number): void;
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-				public setAutoSizeTextTypeUniformWithPresetSizes(param0: native.Array<number>, param1: number): void;
-				public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
-				public getAutoSizeStepGranularity(): number;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-				public setAutoSizeTextTypeUniformWithConfiguration(param0: number, param1: number, param2: number, param3: number): void;
+				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public sendAccessibilityEvent(param0: number): void;
 				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public onPreDraw(): boolean;
+				public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
-				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-				public getAutoSizeTextAvailableSizes(): native.Array<number>;
-				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public getSupportBackgroundTintMode(): globalAndroid.graphics.PorterDuff.Mode;
-				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public setSupportBackgroundTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-				public getAutoSizeTextType(): number;
-				public getSupportBackgroundTintList(): globalAndroid.content.res.ColorStateList;
-				public getAutoSizeMinTextSize(): number;
-				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-				public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public onMeasure(param0: number, param1: number): void;
-				public getAutoSizeMaxTextSize(): number;
+				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
+				public setCustomSelectionActionModeCallback(param0: globalAndroid.view.ActionMode.Callback): void;
+				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 			}
 		}
 	}
@@ -10163,6 +10309,8 @@ declare module androidx {
 				public onFilterComplete(param0: number): void;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -10183,7 +10331,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -10194,6 +10341,8 @@ declare module androidx {
 				public dispatchDraw(param0: globalAndroid.graphics.Canvas): void;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onGlobalLayout(): void;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
@@ -10222,6 +10371,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public isFocused(): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public lookForSelectablePosition(param0: number, param1: boolean): number;
 				public onHoverEvent(param0: globalAndroid.view.MotionEvent): boolean;
@@ -10232,7 +10383,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public beforeTextChanged(param0: string, param1: number, param2: number, param3: number): void;
@@ -10274,6 +10424,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.FitWindowsFrameLayout>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -10291,8 +10443,9 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
+				/** @deprecated */
+				public fitSystemWindows(param0: globalAndroid.graphics.Rect): boolean;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 				public setOnFitSystemWindowsListener(param0: androidx.appcompat.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
@@ -10301,6 +10454,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -10324,6 +10479,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public fitSystemWindows(param0: globalAndroid.graphics.Rect): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -10331,7 +10488,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -10353,6 +10509,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.FitWindowsLinearLayout>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -10370,8 +10528,9 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
+				/** @deprecated */
+				public fitSystemWindows(param0: globalAndroid.graphics.Rect): boolean;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 				public setOnFitSystemWindowsListener(param0: androidx.appcompat.widget.FitWindowsViewGroup.OnFitSystemWindowsListener): void;
@@ -10380,6 +10539,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -10403,6 +10564,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public fitSystemWindows(param0: globalAndroid.graphics.Rect): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -10410,7 +10573,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -10510,11 +10672,12 @@ declare module androidx {
 				public setBaselineAligned(param0: boolean): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public getDividerWidth(): number;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public isTextDirectionResolved(): boolean;
 				public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -10530,12 +10693,13 @@ declare module androidx {
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 				public getShowDividers(): number;
 				public setGravity(param0: number): void;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 				public setOrientation(param0: number): void;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public onInitializeAccessibilityNodeInfo(param0: globalAndroid.view.accessibility.AccessibilityNodeInfo): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -10544,6 +10708,8 @@ declare module androidx {
 				public getParent(): globalAndroid.view.ViewParent;
 				public setDividerDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -10790,7 +10956,6 @@ declare module androidx {
 			export module MenuPopupWindow {
 				export class MenuDropDownListView extends androidx.appcompat.widget.DropDownListView {
 					public static class: java.lang.Class<androidx.appcompat.widget.MenuPopupWindow.MenuDropDownListView>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -10811,6 +10976,8 @@ declare module androidx {
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
 					public onGlobalLayout(): void;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public bringChildToFront(param0: globalAndroid.view.View): void;
@@ -10818,6 +10985,8 @@ declare module androidx {
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public constructor(param0: globalAndroid.content.Context, param1: boolean);
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -10833,6 +11002,8 @@ declare module androidx {
 					public onTextChanged(param0: string, param1: number, param2: number, param3: number): void;
 					public canResolveTextAlignment(): boolean;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
 					public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -10844,7 +11015,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public setHoverListener(param0: androidx.appcompat.widget.MenuItemHoverListener): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
@@ -10925,54 +11095,65 @@ declare module androidx {
 		export module widget {
 			export class ResourcesWrapper extends globalAndroid.content.res.Resources {
 				public static class: java.lang.Class<androidx.appcompat.widget.ResourcesWrapper>;
-				public getDimensionPixelSize(param0: number): number;
 				public openRawResourceFd(param0: number): globalAndroid.content.res.AssetFileDescriptor;
-				public getDrawableForDensity(param0: number, param1: number): globalAndroid.graphics.drawable.Drawable;
-				public getString(param0: number): string;
+				/** @deprecated */
+				public getColor(param0: number): number;
 				public getColorStateList(param0: number, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.content.res.ColorStateList;
-				public getInteger(param0: number): number;
 				public getLayout(param0: number): globalAndroid.content.res.XmlResourceParser;
 				public getConfiguration(): globalAndroid.content.res.Configuration;
-				public getAnimation(param0: number): globalAndroid.content.res.XmlResourceParser;
 				public getDisplayMetrics(): globalAndroid.util.DisplayMetrics;
 				public getDrawableForDensity(param0: number, param1: number, param2: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
 				public getResourceEntryName(param0: number): string;
 				public parseBundleExtra(param0: string, param1: globalAndroid.util.AttributeSet, param2: globalAndroid.os.Bundle): void;
 				public getDrawable(param0: number, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
-				public getString(param0: number, param1: native.Array<any>): string;
-				public parseBundleExtras(param0: globalAndroid.content.res.XmlResourceParser, param1: globalAndroid.os.Bundle): void;
-				public updateConfiguration(param0: globalAndroid.content.res.Configuration, param1: globalAndroid.util.DisplayMetrics): void;
+				/** @deprecated */
+				public getDrawableForDensity(param0: number, param1: number): globalAndroid.graphics.drawable.Drawable;
 				public openRawResource(param0: number, param1: globalAndroid.util.TypedValue): java.io.InputStream;
 				public getTextArray(param0: number): native.Array<string>;
 				public obtainTypedArray(param0: number): globalAndroid.content.res.TypedArray;
 				public getDimension(param0: number): number;
 				public getColor(param0: number, param1: globalAndroid.content.res.Resources.Theme): number;
-				public getResourceTypeName(param0: number): string;
 				public getQuantityText(param0: number, param1: number): string;
 				public getMovie(param0: number): globalAndroid.graphics.Movie;
-				public openRawResource(param0: number): java.io.InputStream;
 				public getValueForDensity(param0: number, param1: number, param2: globalAndroid.util.TypedValue, param3: boolean): void;
-				public getText(param0: number): string;
 				public getIntArray(param0: number): native.Array<number>;
-				public getValue(param0: number, param1: globalAndroid.util.TypedValue, param2: boolean): void;
 				public obtainAttributes(param0: globalAndroid.util.AttributeSet, param1: native.Array<number>): globalAndroid.content.res.TypedArray;
 				public getColor(param0: number): number;
 				public constructor(param0: globalAndroid.content.res.Resources);
-				public getStringArray(param0: number): native.Array<string>;
-				public getFraction(param0: number, param1: number, param2: number): number;
-				public getQuantityString(param0: number, param1: number, param2: native.Array<any>): string;
+				/** @deprecated */
 				public getDrawable(param0: number): globalAndroid.graphics.drawable.Drawable;
+				public getQuantityString(param0: number, param1: number, param2: native.Array<any>): string;
 				public getText(param0: number, param1: string): string;
-				public getDimensionPixelOffset(param0: number): number;
 				public getXml(param0: number): globalAndroid.content.res.XmlResourceParser;
-				public getResourcePackageName(param0: number): string;
 				public getColorStateList(param0: number): globalAndroid.content.res.ColorStateList;
 				public getBoolean(param0: number): boolean;
-				public getIdentifier(param0: string, param1: string, param2: string): number;
 				public getResourceName(param0: number): string;
-				public constructor(param0: globalAndroid.content.res.AssetManager, param1: globalAndroid.util.DisplayMetrics, param2: globalAndroid.content.res.Configuration);
-				public getQuantityString(param0: number, param1: number): string;
 				public getValue(param0: string, param1: globalAndroid.util.TypedValue, param2: boolean): void;
+				public getDimensionPixelSize(param0: number): number;
+				public getDrawableForDensity(param0: number, param1: number): globalAndroid.graphics.drawable.Drawable;
+				public getString(param0: number): string;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.res.AssetManager, param1: globalAndroid.util.DisplayMetrics, param2: globalAndroid.content.res.Configuration);
+				public getInteger(param0: number): number;
+				public getAnimation(param0: number): globalAndroid.content.res.XmlResourceParser;
+				public getString(param0: number, param1: native.Array<any>): string;
+				public parseBundleExtras(param0: globalAndroid.content.res.XmlResourceParser, param1: globalAndroid.os.Bundle): void;
+				public updateConfiguration(param0: globalAndroid.content.res.Configuration, param1: globalAndroid.util.DisplayMetrics): void;
+				/** @deprecated */
+				public updateConfiguration(param0: globalAndroid.content.res.Configuration, param1: globalAndroid.util.DisplayMetrics): void;
+				public getResourceTypeName(param0: number): string;
+				public openRawResource(param0: number): java.io.InputStream;
+				public getText(param0: number): string;
+				public getValue(param0: number, param1: globalAndroid.util.TypedValue, param2: boolean): void;
+				public getStringArray(param0: number): native.Array<string>;
+				public getFraction(param0: number, param1: number, param2: number): number;
+				public getDrawable(param0: number): globalAndroid.graphics.drawable.Drawable;
+				public getDimensionPixelOffset(param0: number): number;
+				public getResourcePackageName(param0: number): string;
+				public getIdentifier(param0: string, param1: string, param2: string): number;
+				public getQuantityString(param0: number, param1: number): string;
+				/** @deprecated */
+				public getColorStateList(param0: number): globalAndroid.content.res.ColorStateList;
 			}
 		}
 	}
@@ -11005,6 +11186,8 @@ declare module androidx {
 				public mVisAnimListener: androidx.appcompat.widget.ScrollingTabContainerView.VisibilityAnimListener;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -11023,7 +11206,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -11033,6 +11215,8 @@ declare module androidx {
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
 				public updateTab(param0: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public setTabSelected(param0: number): void;
@@ -11062,6 +11246,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public setAllowCollapse(param0: boolean): void;
 				public animateToTab(param0: number): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
@@ -11071,7 +11257,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -11104,7 +11289,6 @@ declare module androidx {
 				}
 				export class TabView extends globalAndroid.widget.LinearLayout {
 					public static class: java.lang.Class<androidx.appcompat.widget.ScrollingTabContainerView.TabView>;
-					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public focusSearch(param0: number): globalAndroid.view.View;
 					public focusableViewAvailable(param0: globalAndroid.view.View): void;
 					public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -11125,12 +11309,16 @@ declare module androidx {
 					public constructor(param0: androidx.appcompat.widget.ScrollingTabContainerView, param1: globalAndroid.content.Context, param2: androidx.appcompat.app.ActionBar.Tab, param3: boolean);
 					public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 					public getLayoutDirection(): number;
+					/** @deprecated */
+					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 					public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 					public bringChildToFront(param0: globalAndroid.view.View): void;
 					public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 					public requestTransparentRegion(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 					public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 					public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -11144,6 +11332,8 @@ declare module androidx {
 					public canResolveTextAlignment(): boolean;
 					public getTab(): androidx.appcompat.app.ActionBar.Tab;
 					public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+					/** @deprecated */
+					public requestFitSystemWindows(): void;
 					public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 					public canResolveTextDirection(): boolean;
 					public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -11155,7 +11345,6 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-					public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 					public sendAccessibilityEvent(param0: number): void;
 					public requestLayout(): void;
@@ -11217,7 +11406,6 @@ declare module androidx {
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public setQueryRefinementEnabled(param0: boolean): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public getQueryHint(): string;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
@@ -11225,6 +11413,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public setSearchableInfo(param0: globalAndroid.app.SearchableInfo): void;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public clearFocus(): void;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public isTextDirectionResolved(): boolean;
@@ -11240,12 +11430,13 @@ declare module androidx {
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 				public getInputType(): number;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public setSubmitButtonEnabled(param0: boolean): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public getImeOptions(): number;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public getQuery(): string;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -11253,6 +11444,8 @@ declare module androidx {
 				public isIconified(): boolean;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
 				public setIconified(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setOnSearchClickListener(param0: globalAndroid.view.View.OnClickListener): void;
@@ -11459,25 +11652,28 @@ declare module androidx {
 				public newView(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public isEnabled(param0: number): boolean;
 				public bindView(param0: globalAndroid.view.View, param1: globalAndroid.content.Context, param2: globalAndroid.database.Cursor): void;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
 				public notifyDataSetInvalidated(): void;
 				public getView(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public areAllItemsEnabled(): boolean;
 				public runQueryOnBackgroundThread(param0: string): globalAndroid.database.Cursor;
 				public setQueryRefinement(param0: number): void;
-				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor);
 				public close(): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: boolean);
 				public notifyDataSetChanged(): void;
 				public changeCursor(param0: globalAndroid.database.Cursor): void;
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: number);
 				public convertToString(param0: globalAndroid.database.Cursor): string;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
 				public getDropDownView(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public hasStableIds(): boolean;
 				public static getColumnString(param0: globalAndroid.database.Cursor, param1: string): string;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: number);
 				public getQueryRefinement(): number;
 				public constructor(param0: globalAndroid.content.Context, param1: androidx.appcompat.widget.SearchView, param2: globalAndroid.app.SearchableInfo, param3: java.util.WeakHashMap<string,globalAndroid.graphics.drawable.Drawable.ConstantState>);
+				/** @deprecated */
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: boolean);
 			}
 			export module SuggestionsAdapter {
@@ -11674,6 +11870,7 @@ declare module androidx {
 			export class TintResources extends androidx.appcompat.widget.ResourcesWrapper {
 				public static class: java.lang.Class<androidx.appcompat.widget.TintResources>;
 				public getDrawable(param0: number, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
+				/** @deprecated */
 				public constructor(param0: globalAndroid.content.res.AssetManager, param1: globalAndroid.util.DisplayMetrics, param2: globalAndroid.content.res.Configuration);
 				public constructor(param0: globalAndroid.content.res.Resources);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources);
@@ -11734,7 +11931,6 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.appcompat.widget.Toolbar>;
 				public setLogoDescription(param0: number): void;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
-				public setCollapseContentDescription(param0: string): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public checkLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): boolean;
 				public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -11748,13 +11944,13 @@ declare module androidx {
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public getNavigationContentDescription(): string;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
-				public getCollapseContentDescription(): string;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public getTitleMarginStart(): number;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getMenu(): globalAndroid.view.Menu;
 				public hideOverflowMenu(): boolean;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -11779,11 +11975,12 @@ declare module androidx {
 				public getTitleMarginEnd(): number;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public getCurrentContentInsetStart(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public dismissPopupMenus(): void;
-				public setCollapseIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 				public generateDefaultLayoutParams(): androidx.appcompat.widget.Toolbar.LayoutParams;
 				public setContentInsetsAbsolute(param0: number, param1: number): void;
@@ -11792,7 +11989,6 @@ declare module androidx {
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public setNavigationIcon(param0: number): void;
 				public canShowOverflowMenu(): boolean;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setTitleTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 				public setContentInsetEndWithActions(param0: number): void;
 				public hasExpandedActionView(): boolean;
@@ -11809,6 +12005,8 @@ declare module androidx {
 				public setOnMenuItemClickListener(param0: androidx.appcompat.widget.Toolbar.OnMenuItemClickListener): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
 				public setPopupTheme(param0: number): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public showOverflowMenu(): boolean;
 				public getContentInsetLeft(): number;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
@@ -11839,17 +12037,14 @@ declare module androidx {
 				public setLogoDescription(param0: string): void;
 				public setNavigationContentDescription(param0: number): void;
 				public getContentInsetEnd(): number;
-				public setCollapseIcon(param0: number): void;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onDetachedFromWindow(): void;
 				public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
-				public setCollapseContentDescription(param0: number): void;
 				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 				public setSubtitle(param0: number): void;
 				public generateDefaultLayoutParams(): globalAndroid.view.ViewGroup.LayoutParams;
 				public getCurrentContentInsetRight(): number;
 				public setTitleMarginEnd(param0: number): void;
-				public getCollapseIcon(): globalAndroid.graphics.drawable.Drawable;
 				public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 				public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 				public generateLayoutParams(param0: globalAndroid.util.AttributeSet): globalAndroid.view.ViewGroup.LayoutParams;
@@ -12052,10 +12247,13 @@ declare module androidx {
 				public static MAX_SDK_WHERE_REQUIRED: number;
 				public getDrawable(param0: number, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
 				public static shouldBeUsed(): boolean;
+				/** @deprecated */
 				public constructor(param0: globalAndroid.content.res.AssetManager, param1: globalAndroid.util.DisplayMetrics, param2: globalAndroid.content.res.Configuration);
 				public static setCompatVectorFromResourcesEnabled(param0: boolean): void;
 				public static isCompatVectorFromResourcesEnabled(): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources);
+				/** @deprecated */
+				public getDrawable(param0: number): globalAndroid.graphics.drawable.Drawable;
 				public getDrawable(param0: number): globalAndroid.graphics.drawable.Drawable;
 			}
 		}
@@ -12364,6 +12562,8 @@ declare module androidx {
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
 				public setCardBackgroundColor(param0: number): void;
 				public getCardElevation(): number;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -12387,7 +12587,6 @@ declare module androidx {
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public setMinimumHeight(param0: number): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -12396,6 +12595,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getContentPaddingTop(): number;
 				public getPreventCornerOverlap(): boolean;
 				public getRadius(): number;
@@ -12427,6 +12628,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public setContentPadding(param0: number, param1: number, param2: number, param3: number): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -12438,7 +12641,6 @@ declare module androidx {
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public getUseCompatPadding(): boolean;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -12805,32 +13007,28 @@ declare module androidx {
 	export module collection {
 		export class LongSparseArray<E>  extends java.lang.Cloneable {
 			public static class: java.lang.Class<androidx.collection.LongSparseArray<any>>;
-			public append(param0: number, param1: any): void;
-			public put(param0: number, param1: any): void;
-			public containsValue(param0: any): boolean;
-			public putAll(param0: androidx.collection.LongSparseArray<any>): void;
-			public replace(param0: number, param1: any): any;
-			public keyAt(param0: number): number;
-			public clone(): androidx.collection.LongSparseArray<any>;
-			public get(param0: number): any;
-			public removeAt(param0: number): void;
-			public replace(param0: number, param1: any, param2: any): boolean;
 			public containsKey(param0: number): boolean;
+			public append(param0: number, param1: any): void;
 			public clear(): void;
-			public putIfAbsent(param0: number, param1: any): any;
+			public put(param0: number, param1: any): void;
 			public size(): number;
 			public isEmpty(): boolean;
+			public containsValue(param0: any): boolean;
 			public delete(param0: number): void;
 			public indexOfValue(param0: any): number;
 			public constructor(param0: number);
 			public constructor();
 			public remove(param0: number): void;
+			public putAll(param0: androidx.collection.LongSparseArray<any>): void;
+			public keyAt(param0: number): number;
 			public clone(): any;
 			public valueAt(param0: number): any;
 			public toString(): string;
+			public clone(): androidx.collection.LongSparseArray<any>;
+			public get(param0: number): any;
+			public removeAt(param0: number): void;
 			public get(param0: number, param1: any): any;
 			public setValueAt(param0: number, param1: any): void;
-			public remove(param0: number, param1: any): boolean;
 			public indexOfKey(param0: number): number;
 		}
 	}
@@ -12988,31 +13186,26 @@ declare module androidx {
 	export module collection {
 		export class SimpleArrayMap<K, V>  extends java.lang.Object {
 			public static class: java.lang.Class<androidx.collection.SimpleArrayMap<any,any>>;
-			public equals(param0: any): boolean;
-			public put(param0: K, param1: V): V;
-			public containsValue(param0: any): boolean;
-			public removeAt(param0: number): V;
-			public constructor(param0: androidx.collection.SimpleArrayMap<K,V>);
-			public ensureCapacity(param0: number): void;
-			public keyAt(param0: number): K;
 			public clear(): void;
-			public putIfAbsent(param0: K, param1: V): V;
+			public equals(param0: any): boolean;
 			public isEmpty(): boolean;
+			public put(param0: K, param1: V): V;
 			public size(): number;
+			public containsValue(param0: any): boolean;
 			public valueAt(param0: number): V;
 			public constructor(param0: number);
+			public removeAt(param0: number): V;
+			public constructor(param0: androidx.collection.SimpleArrayMap<K,V>);
 			public setValueAt(param0: number, param1: V): V;
 			public constructor();
 			public get(param0: any): V;
-			public getOrDefault(param0: any, param1: V): V;
+			public ensureCapacity(param0: number): void;
 			public toString(): string;
 			public indexOfKey(param0: any): number;
-			public remove(param0: any, param1: any): boolean;
 			public remove(param0: any): V;
-			public replace(param0: K, param1: V): V;
 			public containsKey(param0: any): boolean;
 			public putAll(param0: androidx.collection.SimpleArrayMap<any,any>): void;
-			public replace(param0: K, param1: V, param2: V): boolean;
+			public keyAt(param0: number): K;
 			public hashCode(): number;
 		}
 	}
@@ -13022,33 +13215,29 @@ declare module androidx {
 	export module collection {
 		export class SparseArrayCompat<E>  extends java.lang.Cloneable {
 			public static class: java.lang.Class<androidx.collection.SparseArrayCompat<any>>;
-			public append(param0: number, param1: any): void;
-			public put(param0: number, param1: any): void;
-			public containsValue(param0: any): boolean;
-			public replace(param0: number, param1: any): any;
-			public clone(): androidx.collection.SparseArrayCompat<any>;
-			public keyAt(param0: number): number;
-			public removeAtRange(param0: number, param1: number): void;
-			public get(param0: number): any;
-			public removeAt(param0: number): void;
-			public replace(param0: number, param1: any, param2: any): boolean;
-			public putAll(param0: androidx.collection.SparseArrayCompat<any>): void;
 			public containsKey(param0: number): boolean;
+			public append(param0: number, param1: any): void;
 			public clear(): void;
-			public putIfAbsent(param0: number, param1: any): any;
+			public put(param0: number, param1: any): void;
 			public size(): number;
 			public isEmpty(): boolean;
+			public containsValue(param0: any): boolean;
 			public delete(param0: number): void;
 			public indexOfValue(param0: any): number;
 			public constructor(param0: number);
 			public constructor();
 			public remove(param0: number): void;
+			public clone(): androidx.collection.SparseArrayCompat<any>;
+			public keyAt(param0: number): number;
 			public clone(): any;
 			public valueAt(param0: number): any;
 			public toString(): string;
+			public removeAtRange(param0: number, param1: number): void;
+			public get(param0: number): any;
+			public removeAt(param0: number): void;
+			public putAll(param0: androidx.collection.SparseArrayCompat<any>): void;
 			public get(param0: number, param1: any): any;
 			public setValueAt(param0: number, param1: any): void;
-			public remove(param0: number, param1: any): boolean;
 			public indexOfKey(param0: number): number;
 		}
 	}
@@ -13074,11 +13263,12 @@ declare module androidx {
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public setStatusBarBackgroundColor(param0: number): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setVisibility(param0: number): void;
 				public generateLayoutParams(param0: globalAndroid.util.AttributeSet): androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -13094,6 +13284,8 @@ declare module androidx {
 				public setStatusBarBackgroundResource(param0: number): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public setFitsSystemWindows(param0: boolean): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -13101,7 +13293,6 @@ declare module androidx {
 				public dispatchDependentViewsChanged(param0: globalAndroid.view.View): void;
 				public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getSuggestedMinimumWidth(): number;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): boolean;
@@ -13110,6 +13301,8 @@ declare module androidx {
 				public onAttachedToWindow(): void;
 				public getParent(): globalAndroid.view.ViewParent;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -13184,20 +13377,25 @@ declare module androidx {
 				export abstract class Behavior<V>  extends java.lang.Object {
 					public static class: java.lang.Class<androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<any>>;
 					public onNestedScrollAccepted(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number, param5: number): void;
-					public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number): void;
+					/** @deprecated */
+					public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View): void;
 					public blocksInteractionBelow(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V): boolean;
-					public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
 					public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
 					public getInsetDodgeRect(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.graphics.Rect): boolean;
 					public onAttachedToLayoutParams(param0: androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams): void;
-					public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View): void;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
+					/** @deprecated */
+					public onNestedScrollAccepted(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): void;
 					public onSaveInstanceState(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V): globalAndroid.os.Parcelable;
 					public constructor();
 					public getScrimColor(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V): number;
 					public onRequestChildRectangleOnScreen(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.graphics.Rect, param3: boolean): boolean;
 					public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number, param5: number): boolean;
+					/** @deprecated */
+					public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 					public onDependentViewRemoved(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View): void;
+					/** @deprecated */
+					public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
 					public onTouchEvent(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.MotionEvent): boolean;
 					public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number): void;
 					public onLayoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: number): boolean;
@@ -13205,17 +13403,17 @@ declare module androidx {
 					public onInterceptTouchEvent(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.MotionEvent): boolean;
 					public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
 					public onDetachedFromLayoutParams(): void;
-					public onNestedScrollAccepted(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): void;
 					public onNestedFling(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: boolean): boolean;
 					public layoutDependsOn(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View): boolean;
 					public onApplyWindowInsets(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: androidx.core.view.WindowInsetsCompat): androidx.core.view.WindowInsetsCompat;
 					public getScrimOpacity(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V): number;
 					public onRestoreInstanceState(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.os.Parcelable): void;
+					/** @deprecated */
+					public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number): void;
 					public onNestedPreFling(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number): boolean;
 					public static setTag(param0: globalAndroid.view.View, param1: any): void;
 					public onDependentViewChanged(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View): boolean;
 					public onMeasureChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: number, param3: number, param4: number, param5: number): boolean;
-					public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: V, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 				}
 				export class DefaultBehavior extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<androidx.coordinatorlayout.widget.CoordinatorLayout.DefaultBehavior>;
@@ -13380,9 +13578,10 @@ declare module androidx {
 				public static setExitSharedElementCallback(param0: globalAndroid.app.Activity, param1: androidx.core.app.SharedElementCallback): void;
 				public static getPermissionCompatDelegate(): androidx.core.app.ActivityCompat.PermissionCompatDelegate;
 				public static requireViewById(param0: globalAndroid.app.Activity, param1: number): globalAndroid.view.View;
+				/** @deprecated */
+				public static invalidateOptionsMenu(param0: globalAndroid.app.Activity): boolean;
 				public static finishAfterTransition(param0: globalAndroid.app.Activity): void;
 				public static postponeEnterTransition(param0: globalAndroid.app.Activity): void;
-				public static invalidateOptionsMenu(param0: globalAndroid.app.Activity): boolean;
 				public constructor();
 				public static startPostponedEnterTransition(param0: globalAndroid.app.Activity): void;
 				public static finishAffinity(param0: globalAndroid.app.Activity): void;
@@ -13532,9 +13731,10 @@ declare module androidx {
 		export module app {
 			export class AppLaunchChecker extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.app.AppLaunchChecker>;
+				/** @deprecated */
+				public constructor();
 				public static onActivityCreate(param0: globalAndroid.app.Activity): void;
 				public static hasStartedFromLauncher(param0: globalAndroid.content.Context): boolean;
-				public constructor();
 			}
 		}
 	}
@@ -13581,7 +13781,7 @@ declare module androidx {
 declare module androidx {
 	export module core {
 		export module app {
-			export class ComponentActivity extends globalAndroid.app.Activity implements androidx.core.view.KeyEventDispatcher.Component {
+			export class ComponentActivity extends globalAndroid.app.Activity implements androidx.lifecycle.LifecycleOwner, androidx.core.view.KeyEventDispatcher.Component {
 				public static class: java.lang.Class<androidx.core.app.ComponentActivity>;
 				public onMenuItemSelected(param0: number, param1: globalAndroid.view.MenuItem): boolean;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -13592,6 +13792,7 @@ declare module androidx {
 				public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback, param1: number): globalAndroid.view.ActionMode;
 				public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public onActionModeFinished(param0: globalAndroid.view.ActionMode): void;
+				public getLifecycle(): androidx.lifecycle.Lifecycle;
 				public constructor();
 				public dispatchGenericMotionEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public onCreateView(param0: string, param1: globalAndroid.content.Context, param2: globalAndroid.util.AttributeSet): globalAndroid.view.View;
@@ -13599,6 +13800,7 @@ declare module androidx {
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
 				public onMenuOpened(param0: number, param1: globalAndroid.view.Menu): boolean;
+				public onCreate(param0: globalAndroid.os.Bundle, param1: any): void;
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: number);
 				public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
@@ -13612,11 +13814,14 @@ declare module androidx {
 				public dispatchPopulateAccessibilityEvent(param0: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: globalAndroid.view.Menu, param2: number): void;
 				public dispatchTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
+				public onSaveInstanceState(param0: globalAndroid.os.Bundle): void;
 				public onWindowAttributesChanged(param0: globalAndroid.view.WindowManager.LayoutParams): void;
+				public onSaveInstanceState(param0: globalAndroid.os.Bundle, param1: any): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources.Theme);
 				public onCreateContextMenu(param0: globalAndroid.view.ContextMenu, param1: globalAndroid.view.View, param2: globalAndroid.view.ContextMenu.ContextMenuInfo): void;
 				public onContentChanged(): void;
 				public onCreatePanelView(param0: number): globalAndroid.view.View;
+				public onCreate(param0: globalAndroid.os.Bundle): void;
 				public superDispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public onPanelClosed(param0: number, param1: globalAndroid.view.Menu): void;
 				public onDetachedFromWindow(): void;
@@ -13658,17 +13863,6 @@ declare module androidx {
 					public constructor();
 					public getWrapper(): any;
 				}
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module app {
-			export class DialogCompat extends java.lang.Object {
-				public static class: java.lang.Class<androidx.core.app.DialogCompat>;
-				public static requireViewById(param0: globalAndroid.app.Dialog, param1: number): globalAndroid.view.View;
 			}
 		}
 	}
@@ -13963,8 +14157,9 @@ declare module androidx {
 				public static getChannelId(param0: globalAndroid.app.Notification): string;
 				public static getGroupAlertBehavior(param0: globalAndroid.app.Notification): number;
 				public static getInvisibleActions(param0: globalAndroid.app.Notification): java.util.List<androidx.core.app.NotificationCompat.Action>;
-				public constructor();
 				public static getCategory(param0: globalAndroid.app.Notification): string;
+				/** @deprecated */
+				public constructor();
 				public static getShortcutId(param0: globalAndroid.app.Notification): string;
 				public static getExtras(param0: globalAndroid.app.Notification): globalAndroid.os.Bundle;
 				public static getTimeoutAfter(param0: globalAndroid.app.Notification): number;
@@ -14046,22 +14241,28 @@ declare module androidx {
 					}
 					export class WearableExtender extends java.lang.Object implements androidx.core.app.NotificationCompat.Action.Extender {
 						public static class: java.lang.Class<androidx.core.app.NotificationCompat.Action.WearableExtender>;
-						public getConfirmLabel(): string;
 						public constructor();
 						public getHintDisplayActionInline(): boolean;
-						public getInProgressLabel(): string;
-						public setConfirmLabel(param0: string): androidx.core.app.NotificationCompat.Action.WearableExtender;
+						/** @deprecated */
+						public getConfirmLabel(): string;
 						public clone(): any;
+						/** @deprecated */
+						public setConfirmLabel(param0: string): androidx.core.app.NotificationCompat.Action.WearableExtender;
 						public setHintLaunchesActivity(param0: boolean): androidx.core.app.NotificationCompat.Action.WearableExtender;
+						/** @deprecated */
+						public setInProgressLabel(param0: string): androidx.core.app.NotificationCompat.Action.WearableExtender;
 						public setAvailableOffline(param0: boolean): androidx.core.app.NotificationCompat.Action.WearableExtender;
-						public setCancelLabel(param0: string): androidx.core.app.NotificationCompat.Action.WearableExtender;
 						public extend(param0: androidx.core.app.NotificationCompat.Action.Builder): androidx.core.app.NotificationCompat.Action.Builder;
+						/** @deprecated */
+						public getInProgressLabel(): string;
+						/** @deprecated */
+						public setCancelLabel(param0: string): androidx.core.app.NotificationCompat.Action.WearableExtender;
+						/** @deprecated */
+						public getCancelLabel(): string;
 						public getHintLaunchesActivity(): boolean;
 						public constructor(param0: androidx.core.app.NotificationCompat.Action);
 						public clone(): androidx.core.app.NotificationCompat.Action.WearableExtender;
-						public setInProgressLabel(param0: string): androidx.core.app.NotificationCompat.Action.WearableExtender;
 						public setHintDisplayActionInline(param0: boolean): androidx.core.app.NotificationCompat.Action.WearableExtender;
-						public getCancelLabel(): string;
 						public isAvailableOffline(): boolean;
 					}
 				}
@@ -14132,6 +14333,8 @@ declare module androidx {
 					public setWhen(param0: number): androidx.core.app.NotificationCompat.Builder;
 					public setShowWhen(param0: boolean): androidx.core.app.NotificationCompat.Builder;
 					public setVisibility(param0: number): androidx.core.app.NotificationCompat.Builder;
+					/** @deprecated */
+					public getNotification(): globalAndroid.app.Notification;
 					public setGroup(param0: string): androidx.core.app.NotificationCompat.Builder;
 					public setTimeoutAfter(param0: number): androidx.core.app.NotificationCompat.Builder;
 					public setProgress(param0: number, param1: number, param2: boolean): androidx.core.app.NotificationCompat.Builder;
@@ -14164,13 +14367,13 @@ declare module androidx {
 					public setContentIntent(param0: globalAndroid.app.PendingIntent): androidx.core.app.NotificationCompat.Builder;
 					public setCustomContentView(param0: globalAndroid.widget.RemoteViews): androidx.core.app.NotificationCompat.Builder;
 					public setOngoing(param0: boolean): androidx.core.app.NotificationCompat.Builder;
-					public constructor(param0: globalAndroid.content.Context);
 					public setSmallIcon(param0: number): androidx.core.app.NotificationCompat.Builder;
 					public setContent(param0: globalAndroid.widget.RemoteViews): androidx.core.app.NotificationCompat.Builder;
 					public getContentView(): globalAndroid.widget.RemoteViews;
+					/** @deprecated */
+					public constructor(param0: globalAndroid.content.Context);
 					public setFullScreenIntent(param0: globalAndroid.app.PendingIntent, param1: boolean): androidx.core.app.NotificationCompat.Builder;
 					public setSortKey(param0: string): androidx.core.app.NotificationCompat.Builder;
-					public getNotification(): globalAndroid.app.Notification;
 					public setTicker(param0: string): androidx.core.app.NotificationCompat.Builder;
 				}
 				export class CarExtender extends java.lang.Object implements androidx.core.app.NotificationCompat.Extender {
@@ -14257,36 +14460,41 @@ declare module androidx {
 					public static class: java.lang.Class<androidx.core.app.NotificationCompat.MessagingStyle>;
 					public static MAXIMUM_RETAINED_MESSAGES: number;
 					public isGroupConversation(): boolean;
-					public constructor(param0: string);
 					public setGroupConversation(param0: boolean): androidx.core.app.NotificationCompat.MessagingStyle;
+					/** @deprecated */
+					public constructor(param0: string);
 					public setConversationTitle(param0: string): androidx.core.app.NotificationCompat.MessagingStyle;
 					public addMessage(param0: androidx.core.app.NotificationCompat.MessagingStyle.Message): androidx.core.app.NotificationCompat.MessagingStyle;
 					public restoreFromCompatExtras(param0: globalAndroid.os.Bundle): void;
 					public addCompatExtras(param0: globalAndroid.os.Bundle): void;
-					public addMessage(param0: string, param1: number, param2: string): androidx.core.app.NotificationCompat.MessagingStyle;
 					public constructor();
 					public constructor(param0: androidx.core.app.Person);
-					public getUserDisplayName(): string;
 					public getConversationTitle(): string;
+					/** @deprecated */
+					public addMessage(param0: string, param1: number, param2: string): androidx.core.app.NotificationCompat.MessagingStyle;
 					public getUser(): androidx.core.app.Person;
 					public getMessages(): java.util.List<androidx.core.app.NotificationCompat.MessagingStyle.Message>;
 					public addMessage(param0: string, param1: number, param2: androidx.core.app.Person): androidx.core.app.NotificationCompat.MessagingStyle;
 					public apply(param0: androidx.core.app.NotificationBuilderWithBuilderAccessor): void;
 					public static extractMessagingStyleFromNotification(param0: globalAndroid.app.Notification): androidx.core.app.NotificationCompat.MessagingStyle;
+					/** @deprecated */
+					public getUserDisplayName(): string;
 				}
 				export module MessagingStyle {
 					export class Message extends java.lang.Object {
 						public static class: java.lang.Class<androidx.core.app.NotificationCompat.MessagingStyle.Message>;
+						/** @deprecated */
+						public getSender(): string;
 						public getDataMimeType(): string;
 						public getTimestamp(): number;
 						public getPerson(): androidx.core.app.Person;
 						public getDataUri(): globalAndroid.net.Uri;
 						public setData(param0: string, param1: globalAndroid.net.Uri): androidx.core.app.NotificationCompat.MessagingStyle.Message;
 						public constructor(param0: string, param1: number, param2: androidx.core.app.Person);
+						/** @deprecated */
 						public constructor(param0: string, param1: number, param2: string);
 						public getText(): string;
 						public getExtras(): globalAndroid.os.Bundle;
-						public getSender(): string;
 					}
 				}
 				export class NotificationVisibility extends java.lang.Object implements java.lang.annotation.Annotation {
@@ -14351,53 +14559,71 @@ declare module androidx {
 					public static SCREEN_TIMEOUT_SHORT: number;
 					public static SCREEN_TIMEOUT_LONG: number;
 					public clone(): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public getGravity(): number;
+					/** @deprecated */
+					public setCustomSizePreset(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
 					public setDismissalId(param0: string): androidx.core.app.NotificationCompat.WearableExtender;
 					public setDisplayIntent(param0: globalAndroid.app.PendingIntent): androidx.core.app.NotificationCompat.WearableExtender;
 					public getHintAmbientBigPicture(): boolean;
 					public getBackground(): globalAndroid.graphics.Bitmap;
 					public clearActions(): androidx.core.app.NotificationCompat.WearableExtender;
 					public getContentIntentAvailableOffline(): boolean;
+					/** @deprecated */
+					public getHintScreenTimeout(): number;
+					/** @deprecated */
+					public setContentIcon(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
 					public clone(): any;
 					public constructor();
 					public getPages(): java.util.List<globalAndroid.app.Notification>;
-					public getCustomSizePreset(): number;
-					public setBackground(param0: globalAndroid.graphics.Bitmap): androidx.core.app.NotificationCompat.WearableExtender;
-					public setStartScrollBottom(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
 					public setHintHideIcon(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
-					public setContentAction(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
-					public setContentIconGravity(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
-					public addPages(param0: java.util.List<globalAndroid.app.Notification>): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
 					public getContentIconGravity(): number;
-					public setHintScreenTimeout(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
+					public setBackground(param0: globalAndroid.graphics.Bitmap): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public getHintAvoidBackgroundClipping(): boolean;
+					public setStartScrollBottom(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public setHintAvoidBackgroundClipping(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
+					public setContentAction(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public setHintShowBackgroundOnly(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
+					public addPages(param0: java.util.List<globalAndroid.app.Notification>): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public setCustomContentHeight(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
 					public getHintHideIcon(): boolean;
+					/** @deprecated */
+					public setHintScreenTimeout(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
 					public getBridgeTag(): string;
 					public setHintAmbientBigPicture(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
 					public getDismissalId(): string;
 					public getDisplayIntent(): globalAndroid.app.PendingIntent;
-					public getCustomContentHeight(): number;
 					public getStartScrollBottom(): boolean;
 					public setHintContentIntentLaunchesActivity(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
 					public addActions(param0: java.util.List<androidx.core.app.NotificationCompat.Action>): androidx.core.app.NotificationCompat.WearableExtender;
-					public getGravity(): number;
-					public setCustomSizePreset(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
-					public setHintAvoidBackgroundClipping(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
-					public setHintShowBackgroundOnly(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
-					public getHintAvoidBackgroundClipping(): boolean;
+					/** @deprecated */
+					public setContentIconGravity(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public getHintShowBackgroundOnly(): boolean;
+					/** @deprecated */
+					public getCustomSizePreset(): number;
 					public setBridgeTag(param0: string): androidx.core.app.NotificationCompat.WearableExtender;
-					public setGravity(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
-					public setCustomContentHeight(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
+					/** @deprecated */
+					public getCustomContentHeight(): number;
 					public getHintContentIntentLaunchesActivity(): boolean;
+					/** @deprecated */
 					public getContentIcon(): number;
 					public clearPages(): androidx.core.app.NotificationCompat.WearableExtender;
 					public setContentIntentAvailableOffline(param0: boolean): androidx.core.app.NotificationCompat.WearableExtender;
 					public getContentAction(): number;
-					public getHintScreenTimeout(): number;
 					public getActions(): java.util.List<androidx.core.app.NotificationCompat.Action>;
-					public getHintShowBackgroundOnly(): boolean;
+					/** @deprecated */
+					public setGravity(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
 					public addAction(param0: androidx.core.app.NotificationCompat.Action): androidx.core.app.NotificationCompat.WearableExtender;
 					public extend(param0: androidx.core.app.NotificationCompat.Builder): androidx.core.app.NotificationCompat.Builder;
 					public addPage(param0: globalAndroid.app.Notification): androidx.core.app.NotificationCompat.WearableExtender;
-					public setContentIcon(param0: number): androidx.core.app.NotificationCompat.WearableExtender;
 					public constructor(param0: globalAndroid.app.Notification);
 				}
 			}
@@ -14562,19 +14788,17 @@ declare module androidx {
 		export module app {
 			export class Person extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.app.Person>;
-				public static fromAndroidPerson(param0: any): androidx.core.app.Person;
-				public getIcon(): androidx.core.graphics.drawable.IconCompat;
-				public toBundle(): globalAndroid.os.Bundle;
-				public getName(): string;
-				public static fromBundle(param0: globalAndroid.os.Bundle): androidx.core.app.Person;
-				public toPersistableBundle(): any;
-				public getKey(): string;
 				public isBot(): boolean;
-				public static fromPersistableBundle(param0: any): androidx.core.app.Person;
 				public toAndroidPerson(): any;
 				public getUri(): string;
+				public static fromAndroidPerson(param0: any): androidx.core.app.Person;
+				public getIcon(): androidx.core.graphics.drawable.IconCompat;
 				public isImportant(): boolean;
+				public toBundle(): globalAndroid.os.Bundle;
 				public toBuilder(): androidx.core.app.Person.Builder;
+				public getName(): string;
+				public static fromBundle(param0: globalAndroid.os.Bundle): androidx.core.app.Person;
+				public getKey(): string;
 			}
 			export module Person {
 				export class Builder extends java.lang.Object {
@@ -14596,48 +14820,20 @@ declare module androidx {
 declare module androidx {
 	export module core {
 		export module app {
-			export class RemoteActionCompat extends java.lang.Object {
-				public static class: java.lang.Class<androidx.core.app.RemoteActionCompat>;
-				public getIcon(): androidx.core.graphics.drawable.IconCompat;
-				public getContentDescription(): string;
-				public toRemoteAction(): any;
-				public toBundle(): globalAndroid.os.Bundle;
-				public shouldShowIcon(): boolean;
-				public setEnabled(param0: boolean): void;
-				public getTitle(): string;
-				public constructor(param0: androidx.core.graphics.drawable.IconCompat, param1: string, param2: string, param3: globalAndroid.app.PendingIntent);
-				public constructor(param0: androidx.core.app.RemoteActionCompat);
-				public getActionIntent(): globalAndroid.app.PendingIntent;
-				public static createFromRemoteAction(param0: any): androidx.core.app.RemoteActionCompat;
-				public setShouldShowIcon(param0: boolean): void;
-				public static createFromBundle(param0: globalAndroid.os.Bundle): androidx.core.app.RemoteActionCompat;
-				public isEnabled(): boolean;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module app {
 			export class RemoteInput extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.app.RemoteInput>;
 				public static RESULTS_CLIP_LABEL: string;
 				public static EXTRA_RESULTS_DATA: string;
-				public static SOURCE_FREE_FORM_INPUT: number;
-				public static SOURCE_CHOICE: number;
 				public getChoices(): native.Array<string>;
+				public getResultKey(): string;
 				public getAllowFreeFormInput(): boolean;
 				public getExtras(): globalAndroid.os.Bundle;
 				public getLabel(): string;
-				public static getResultsSource(param0: globalAndroid.content.Intent): number;
+				public static addResultsToIntent(param0: native.Array<androidx.core.app.RemoteInput>, param1: globalAndroid.content.Intent, param2: globalAndroid.os.Bundle): void;
 				public static getDataResultsFromIntent(param0: globalAndroid.content.Intent, param1: string): java.util.Map<string,globalAndroid.net.Uri>;
+				public static getResultsFromIntent(param0: globalAndroid.content.Intent): globalAndroid.os.Bundle;
 				public isDataOnly(): boolean;
 				public static addDataResultToIntent(param0: androidx.core.app.RemoteInput, param1: globalAndroid.content.Intent, param2: java.util.Map<string,globalAndroid.net.Uri>): void;
-				public static setResultsSource(param0: globalAndroid.content.Intent, param1: number): void;
-				public getResultKey(): string;
-				public static addResultsToIntent(param0: native.Array<androidx.core.app.RemoteInput>, param1: globalAndroid.content.Intent, param2: globalAndroid.os.Bundle): void;
-				public static getResultsFromIntent(param0: globalAndroid.content.Intent): globalAndroid.os.Bundle;
 				public getAllowedDataTypes(): java.util.Set<string>;
 			}
 			export module RemoteInput {
@@ -14651,23 +14847,6 @@ declare module androidx {
 					public addExtras(param0: globalAndroid.os.Bundle): androidx.core.app.RemoteInput.Builder;
 					public build(): androidx.core.app.RemoteInput;
 					public setAllowFreeFormInput(param0: boolean): androidx.core.app.RemoteInput.Builder;
-				}
-				export class Source extends java.lang.Object implements java.lang.annotation.Annotation {
-					public static class: java.lang.Class<androidx.core.app.RemoteInput.Source>;
-					/**
-					 * Constructs a new instance of the androidx.core.app.RemoteInput$Source interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-					 */
-					public constructor(implementation: {
-						equals(param0: any): boolean;
-						hashCode(): number;
-						toString(): string;
-						annotationType(): java.lang.Class<any>;
-					});
-					public constructor();
-					public equals(param0: any): boolean;
-					public toString(): string;
-					public annotationType(): java.lang.Class<any>;
-					public hashCode(): number;
 				}
 			}
 		}
@@ -14807,6 +14986,8 @@ declare module androidx {
 		export module app {
 			export class TaskStackBuilder extends java.lang.Iterable<globalAndroid.content.Intent> {
 				public static class: java.lang.Class<androidx.core.app.TaskStackBuilder>;
+				/** @deprecated */
+				public getIntent(param0: number): globalAndroid.content.Intent;
 				public addParentStack(param0: globalAndroid.content.ComponentName): androidx.core.app.TaskStackBuilder;
 				public startActivities(): void;
 				public getIntents(): native.Array<globalAndroid.content.Intent>;
@@ -14817,15 +14998,16 @@ declare module androidx {
 				public startActivities(param0: globalAndroid.os.Bundle): void;
 				public iterator(): java.util.Iterator<any>;
 				public static create(param0: globalAndroid.content.Context): androidx.core.app.TaskStackBuilder;
+				/** @deprecated */
+				public iterator(): java.util.Iterator<globalAndroid.content.Intent>;
 				public getPendingIntent(param0: number, param1: number, param2: globalAndroid.os.Bundle): globalAndroid.app.PendingIntent;
 				public getPendingIntent(param0: number, param1: number): globalAndroid.app.PendingIntent;
 				public addNextIntentWithParentStack(param0: globalAndroid.content.Intent): androidx.core.app.TaskStackBuilder;
 				public addParentStack(param0: globalAndroid.app.Activity): androidx.core.app.TaskStackBuilder;
+				/** @deprecated */
 				public static from(param0: globalAndroid.content.Context): androidx.core.app.TaskStackBuilder;
-				public getIntent(param0: number): globalAndroid.content.Intent;
 				public forEach(param0: any /* any*/): void;
 				public addParentStack(param0: java.lang.Class<any>): androidx.core.app.TaskStackBuilder;
-				public iterator(): java.util.Iterator<globalAndroid.content.Intent>;
 			}
 			export module TaskStackBuilder {
 				export class SupportParentable extends java.lang.Object {
@@ -14869,7 +15051,6 @@ declare module androidx {
 				public static getCodeCacheDir(param0: globalAndroid.content.Context): java.io.File;
 				public static createDeviceProtectedStorageContext(param0: globalAndroid.content.Context): globalAndroid.content.Context;
 				public constructor();
-				public static getMainExecutor(param0: globalAndroid.content.Context): java.util.concurrent.Executor;
 				public static startActivity(param0: globalAndroid.content.Context, param1: globalAndroid.content.Intent, param2: globalAndroid.os.Bundle): void;
 				public static startActivities(param0: globalAndroid.content.Context, param1: native.Array<globalAndroid.content.Intent>, param2: globalAndroid.os.Bundle): boolean;
 				public static getDataDir(param0: globalAndroid.content.Context): java.io.File;
@@ -14884,10 +15065,6 @@ declare module androidx {
 			export module ContextCompat {
 				export class LegacyServiceMapHolder extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.content.ContextCompat.LegacyServiceMapHolder>;
-				}
-				export class MainHandlerExecutor extends java.lang.Object implements java.util.concurrent.Executor {
-					public static class: java.lang.Class<androidx.core.content.ContextCompat.MainHandlerExecutor>;
-					public execute(param0: java.lang.Runnable): void;
 				}
 			}
 		}
@@ -15011,7 +15188,9 @@ declare module androidx {
 			export module SharedPreferencesCompat {
 				export class EditorCompat extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.content.SharedPreferencesCompat.EditorCompat>;
+					/** @deprecated */
 					public apply(param0: globalAndroid.content.SharedPreferences.Editor): void;
+					/** @deprecated */
 					public static getInstance(): androidx.core.content.SharedPreferencesCompat.EditorCompat;
 				}
 				export module EditorCompat {
@@ -15108,7 +15287,6 @@ declare module androidx {
 				export class ShortcutInfoCompat extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.content.pm.ShortcutInfoCompat>;
 					public getDisabledMessage(): string;
-					public getCategories(): java.util.Set<string>;
 					public getShortLabel(): string;
 					public getId(): string;
 					public getIntent(): globalAndroid.content.Intent;
@@ -15120,20 +15298,16 @@ declare module androidx {
 				export module ShortcutInfoCompat {
 					export class Builder extends java.lang.Object {
 						public static class: java.lang.Class<androidx.core.content.pm.ShortcutInfoCompat.Builder>;
-						public setAlwaysBadged(): androidx.core.content.pm.ShortcutInfoCompat.Builder;
-						public setLongLived(): androidx.core.content.pm.ShortcutInfoCompat.Builder;
-						public setActivity(param0: globalAndroid.content.ComponentName): androidx.core.content.pm.ShortcutInfoCompat.Builder;
-						public setIntents(param0: native.Array<globalAndroid.content.Intent>): androidx.core.content.pm.ShortcutInfoCompat.Builder;
-						public constructor(param0: globalAndroid.content.Context, param1: string);
-						public setPerson(param0: androidx.core.app.Person): androidx.core.content.pm.ShortcutInfoCompat.Builder;
 						public setDisabledMessage(param0: string): androidx.core.content.pm.ShortcutInfoCompat.Builder;
+						public setAlwaysBadged(): androidx.core.content.pm.ShortcutInfoCompat.Builder;
 						public setShortLabel(param0: string): androidx.core.content.pm.ShortcutInfoCompat.Builder;
 						public setIcon(param0: androidx.core.graphics.drawable.IconCompat): androidx.core.content.pm.ShortcutInfoCompat.Builder;
 						public build(): androidx.core.content.pm.ShortcutInfoCompat;
+						public setActivity(param0: globalAndroid.content.ComponentName): androidx.core.content.pm.ShortcutInfoCompat.Builder;
 						public setLongLabel(param0: string): androidx.core.content.pm.ShortcutInfoCompat.Builder;
 						public setIntent(param0: globalAndroid.content.Intent): androidx.core.content.pm.ShortcutInfoCompat.Builder;
-						public setPersons(param0: native.Array<androidx.core.app.Person>): androidx.core.content.pm.ShortcutInfoCompat.Builder;
-						public setCategories(param0: java.util.Set<string>): androidx.core.content.pm.ShortcutInfoCompat.Builder;
+						public setIntents(param0: native.Array<globalAndroid.content.Intent>): androidx.core.content.pm.ShortcutInfoCompat.Builder;
+						public constructor(param0: globalAndroid.content.Context, param1: string);
 					}
 				}
 			}
@@ -15164,7 +15338,6 @@ declare module androidx {
 					public static class: java.lang.Class<androidx.core.content.res.ColorStateListInflaterCompat>;
 					public static createFromXml(param0: globalAndroid.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.content.res.Resources.Theme): globalAndroid.content.res.ColorStateList;
 					public static createFromXmlInner(param0: globalAndroid.content.res.Resources, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.util.AttributeSet, param3: globalAndroid.content.res.Resources.Theme): globalAndroid.content.res.ColorStateList;
-					public static inflate(param0: globalAndroid.content.res.Resources, param1: number, param2: globalAndroid.content.res.Resources.Theme): globalAndroid.content.res.ColorStateList;
 				}
 			}
 		}
@@ -15314,7 +15487,6 @@ declare module androidx {
 				export class ResourcesCompat extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.content.res.ResourcesCompat>;
 					public static getFont(param0: globalAndroid.content.Context, param1: number): globalAndroid.graphics.Typeface;
-					public static getFloat(param0: globalAndroid.content.res.Resources, param1: number): number;
 					public static getDrawableForDensity(param0: globalAndroid.content.res.Resources, param1: number, param2: number, param3: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
 					public static getColorStateList(param0: globalAndroid.content.res.Resources, param1: number, param2: globalAndroid.content.res.Resources.Theme): globalAndroid.content.res.ColorStateList;
 					public static getFont(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.util.TypedValue, param3: number, param4: androidx.core.content.res.ResourcesCompat.FontCallback): globalAndroid.graphics.Typeface;
@@ -15353,7 +15525,6 @@ declare module androidx {
 					public static getText(param0: globalAndroid.content.res.TypedArray, param1: number, param2: number): string;
 					public static hasAttribute(param0: org.xmlpull.v1.XmlPullParser, param1: string): boolean;
 					public static getNamedComplexColor(param0: globalAndroid.content.res.TypedArray, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.content.res.Resources.Theme, param3: string, param4: number, param5: number): androidx.core.content.res.ComplexColorCompat;
-					public static getNamedColorStateList(param0: globalAndroid.content.res.TypedArray, param1: org.xmlpull.v1.XmlPullParser, param2: globalAndroid.content.res.Resources.Theme, param3: string, param4: number): globalAndroid.content.res.ColorStateList;
 					public static getInt(param0: globalAndroid.content.res.TypedArray, param1: number, param2: number, param3: number): number;
 					public static getBoolean(param0: globalAndroid.content.res.TypedArray, param1: number, param2: number, param3: boolean): boolean;
 					public static getTextArray(param0: globalAndroid.content.res.TypedArray, param1: number, param2: number): native.Array<string>;
@@ -15384,8 +15555,10 @@ declare module androidx {
 		export module database {
 			export class DatabaseUtilsCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.database.DatabaseUtilsCompat>;
-				public static appendSelectionArgs(param0: native.Array<string>, param1: native.Array<string>): native.Array<string>;
+				/** @deprecated */
 				public static concatenateWhere(param0: string, param1: string): string;
+				/** @deprecated */
+				public static appendSelectionArgs(param0: native.Array<string>, param1: native.Array<string>): native.Array<string>;
 			}
 		}
 	}
@@ -15464,7 +15637,6 @@ declare module androidx {
 		export module graphics {
 			export class PathParser extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.graphics.PathParser>;
-				public static interpolatePathDataNodes(param0: native.Array<androidx.core.graphics.PathParser.PathDataNode>, param1: native.Array<androidx.core.graphics.PathParser.PathDataNode>, param2: native.Array<androidx.core.graphics.PathParser.PathDataNode>, param3: number): boolean;
 				public static deepCopyNodes(param0: native.Array<androidx.core.graphics.PathParser.PathDataNode>): native.Array<androidx.core.graphics.PathParser.PathDataNode>;
 				public static canMorph(param0: native.Array<androidx.core.graphics.PathParser.PathDataNode>, param1: native.Array<androidx.core.graphics.PathParser.PathDataNode>): boolean;
 				public static createPathFromPathData(param0: string): globalAndroid.graphics.Path;
@@ -15651,13 +15823,14 @@ declare module androidx {
 					public static class: java.lang.Class<androidx.core.graphics.drawable.DrawableCompat>;
 					public static getColorFilter(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.ColorFilter;
 					public static setAutoMirrored(param0: globalAndroid.graphics.drawable.Drawable, param1: boolean): void;
-					public static jumpToCurrentState(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public static applyTheme(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.content.res.Resources.Theme): void;
 					public static clearColorFilter(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public static setTint(param0: globalAndroid.graphics.drawable.Drawable, param1: number): void;
 					public static wrap(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.drawable.Drawable;
 					public static unwrap(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.drawable.Drawable;
 					public static setLayoutDirection(param0: globalAndroid.graphics.drawable.Drawable, param1: number): boolean;
+					/** @deprecated */
+					public static jumpToCurrentState(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public static setHotspotBounds(param0: globalAndroid.graphics.drawable.Drawable, param1: number, param2: number, param3: number, param4: number): void;
 					public static setTintList(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.content.res.ColorStateList): void;
 					public static setTintMode(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.graphics.PorterDuff.Mode): void;
@@ -15707,7 +15880,6 @@ declare module androidx {
 					public static createWithContentUri(param0: string): androidx.core.graphics.drawable.IconCompat;
 					public static createWithResource(param0: globalAndroid.content.res.Resources, param1: string, param2: number): androidx.core.graphics.drawable.IconCompat;
 					public toBundle(): globalAndroid.os.Bundle;
-					public getBitmap(): globalAndroid.graphics.Bitmap;
 					public toIcon(): any;
 					public setTintList(param0: globalAndroid.content.res.ColorStateList): androidx.core.graphics.drawable.IconCompat;
 					public loadDrawable(param0: globalAndroid.content.Context): globalAndroid.graphics.drawable.Drawable;
@@ -15769,6 +15941,8 @@ declare module androidx {
 					public getIntrinsicWidth(): number;
 					public setTargetDensity(param0: globalAndroid.util.DisplayMetrics): void;
 					public setFilterBitmap(param0: boolean): void;
+					/** @deprecated */
+					public setDither(param0: boolean): void;
 					public getColorFilter(): globalAndroid.graphics.ColorFilter;
 					public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
 					public setAntiAlias(param0: boolean): void;
@@ -15897,6 +16071,8 @@ declare module androidx {
 					public getChangingConfigurations(): number;
 					public setFilterBitmap(param0: boolean): void;
 					public getPadding(param0: globalAndroid.graphics.Rect): boolean;
+					/** @deprecated */
+					public setDither(param0: boolean): void;
 					public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
 					public getState(): native.Array<number>;
 					public getMinimumHeight(): number;
@@ -15920,6 +16096,21 @@ declare module androidx {
 					public draw(param0: globalAndroid.graphics.Canvas): void;
 					public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 					public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
+				}
+				export module WrappedDrawableApi14 {
+					export abstract class DrawableWrapperState extends globalAndroid.graphics.drawable.Drawable.ConstantState {
+						public static class: java.lang.Class<androidx.core.graphics.drawable.WrappedDrawableApi14.DrawableWrapperState>;
+						public newDrawable(param0: globalAndroid.content.res.Resources, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
+						public getChangingConfigurations(): number;
+						public newDrawable(): globalAndroid.graphics.drawable.Drawable;
+						public newDrawable(param0: globalAndroid.content.res.Resources): globalAndroid.graphics.drawable.Drawable;
+					}
+					export class DrawableWrapperStateBase extends androidx.core.graphics.drawable.WrappedDrawableApi14.DrawableWrapperState {
+						public static class: java.lang.Class<androidx.core.graphics.drawable.WrappedDrawableApi14.DrawableWrapperStateBase>;
+						public newDrawable(param0: globalAndroid.content.res.Resources, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
+						public newDrawable(): globalAndroid.graphics.drawable.Drawable;
+						public newDrawable(param0: globalAndroid.content.res.Resources): globalAndroid.graphics.drawable.Drawable;
+					}
 				}
 			}
 		}
@@ -15948,21 +16139,13 @@ declare module androidx {
 					public getWrappedDrawable(): globalAndroid.graphics.drawable.Drawable;
 					public setTint(param0: number): void;
 				}
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module graphics {
-			export module drawable {
-				export class WrappedDrawableState extends globalAndroid.graphics.drawable.Drawable.ConstantState {
-					public static class: java.lang.Class<androidx.core.graphics.drawable.WrappedDrawableState>;
-					public newDrawable(param0: globalAndroid.content.res.Resources, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
-					public getChangingConfigurations(): number;
-					public newDrawable(): globalAndroid.graphics.drawable.Drawable;
-					public newDrawable(param0: globalAndroid.content.res.Resources): globalAndroid.graphics.drawable.Drawable;
+				export module WrappedDrawableApi21 {
+					export class DrawableWrapperStateLollipop extends androidx.core.graphics.drawable.WrappedDrawableApi14.DrawableWrapperState {
+						public static class: java.lang.Class<androidx.core.graphics.drawable.WrappedDrawableApi21.DrawableWrapperStateLollipop>;
+						public newDrawable(param0: globalAndroid.content.res.Resources, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
+						public newDrawable(): globalAndroid.graphics.drawable.Drawable;
+						public newDrawable(param0: globalAndroid.content.res.Resources): globalAndroid.graphics.drawable.Drawable;
+					}
 				}
 			}
 		}
@@ -16144,8 +16327,6 @@ declare module androidx {
 						getIconTintList(): globalAndroid.content.res.ColorStateList;
 						setIconTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): globalAndroid.view.MenuItem;
 						getIconTintMode(): globalAndroid.graphics.PorterDuff.Mode;
-						requiresActionButton(): boolean;
-						requiresOverflow(): boolean;
 						getItemId(): number;
 						getGroupId(): number;
 						getOrder(): number;
@@ -16226,7 +16407,6 @@ declare module androidx {
 					public getSupportActionProvider(): androidx.core.view.ActionProvider;
 					public setChecked(param0: boolean): globalAndroid.view.MenuItem;
 					public getSubMenu(): globalAndroid.view.SubMenu;
-					public requiresActionButton(): boolean;
 					public getIntent(): globalAndroid.content.Intent;
 					public setCheckable(param0: boolean): globalAndroid.view.MenuItem;
 					public getMenuInfo(): globalAndroid.view.ContextMenu.ContextMenuInfo;
@@ -16242,7 +16422,6 @@ declare module androidx {
 					public setTitle(param0: number): globalAndroid.view.MenuItem;
 					public getNumericShortcut(): string;
 					public isActionViewExpanded(): boolean;
-					public requiresOverflow(): boolean;
 					public getAlphabeticShortcut(): string;
 					public getIcon(): globalAndroid.graphics.drawable.Drawable;
 					public setIcon(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.view.MenuItem;
@@ -16481,15 +16660,22 @@ declare module androidx {
 		export module net {
 			export class TrafficStatsCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.net.TrafficStatsCompat>;
-				public static getThreadStatsTag(): number;
+				/** @deprecated */
 				public static clearThreadStatsTag(): void;
+				/** @deprecated */
+				public static incrementOperationCount(param0: number, param1: number): void;
+				/** @deprecated */
+				public static untagSocket(param0: java.net.Socket): void;
+				/** @deprecated */
+				public static setThreadStatsTag(param0: number): void;
 				public static tagDatagramSocket(param0: java.net.DatagramSocket): void;
 				public static untagDatagramSocket(param0: java.net.DatagramSocket): void;
+				/** @deprecated */
 				public static incrementOperationCount(param0: number): void;
-				public static untagSocket(param0: java.net.Socket): void;
-				public static setThreadStatsTag(param0: number): void;
+				/** @deprecated */
+				public static getThreadStatsTag(): number;
+				/** @deprecated */
 				public static tagSocket(param0: java.net.Socket): void;
-				public static incrementOperationCount(param0: number, param1: number): void;
 			}
 		}
 	}
@@ -16500,12 +16686,17 @@ declare module androidx {
 		export module os {
 			export class BuildCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.os.BuildCompat>;
-				public static isAtLeastNMR1(): boolean;
-				public static isAtLeastOMR1(): boolean;
+				/** @deprecated */
 				public static isAtLeastO(): boolean;
+				/** @deprecated */
+				public static isAtLeastNMR1(): boolean;
+				/** @deprecated */
+				public static isAtLeastOMR1(): boolean;
+				/** @deprecated */
 				public static isAtLeastN(): boolean;
-				public static isAtLeastP(): boolean;
 				public static isAtLeastQ(): boolean;
+				/** @deprecated */
+				public static isAtLeastP(): boolean;
 			}
 		}
 	}
@@ -16568,9 +16759,17 @@ declare module androidx {
 		export module os {
 			export class HandlerCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.os.HandlerCompat>;
-				public static createAsync(param0: globalAndroid.os.Looper, param1: globalAndroid.os.Handler.Callback): globalAndroid.os.Handler;
-				public static createAsync(param0: globalAndroid.os.Looper): globalAndroid.os.Handler;
 				public static postDelayed(param0: globalAndroid.os.Handler, param1: java.lang.Runnable, param2: any, param3: number): boolean;
+			}
+		}
+	}
+}
+
+declare module androidx {
+	export module core {
+		export module os {
+			export class LocaleHelper extends java.lang.Object {
+				public static class: java.lang.Class<androidx.core.os.LocaleHelper>;
 			}
 		}
 	}
@@ -16598,6 +16797,36 @@ declare module androidx {
 				public static getAdjustedDefault(): androidx.core.os.LocaleListCompat;
 				public unwrap(): any;
 			}
+			export module LocaleListCompat {
+				export class LocaleListCompatApi24Impl extends java.lang.Object implements androidx.core.os.LocaleListInterface {
+					public static class: java.lang.Class<androidx.core.os.LocaleListCompat.LocaleListCompatApi24Impl>;
+					public equals(param0: any): boolean;
+					public indexOf(param0: java.util.Locale): number;
+					public toString(): string;
+					public isEmpty(): boolean;
+					public getLocaleList(): any;
+					public get(param0: number): java.util.Locale;
+					public toLanguageTags(): string;
+					public getFirstMatch(param0: native.Array<string>): java.util.Locale;
+					public size(): number;
+					public setLocaleList(param0: native.Array<java.util.Locale>): void;
+					public hashCode(): number;
+				}
+				export class LocaleListCompatBaseImpl extends java.lang.Object implements androidx.core.os.LocaleListInterface {
+					public static class: java.lang.Class<androidx.core.os.LocaleListCompat.LocaleListCompatBaseImpl>;
+					public equals(param0: any): boolean;
+					public indexOf(param0: java.util.Locale): number;
+					public toString(): string;
+					public isEmpty(): boolean;
+					public getLocaleList(): any;
+					public get(param0: number): java.util.Locale;
+					public toLanguageTags(): string;
+					public getFirstMatch(param0: native.Array<string>): java.util.Locale;
+					public size(): number;
+					public setLocaleList(param0: native.Array<java.util.Locale>): void;
+					public hashCode(): number;
+				}
+			}
 		}
 	}
 }
@@ -16605,18 +16834,11 @@ declare module androidx {
 declare module androidx {
 	export module core {
 		export module os {
-			export class LocaleListCompatWrapper extends java.lang.Object implements androidx.core.os.LocaleListInterface {
-				public static class: java.lang.Class<androidx.core.os.LocaleListCompatWrapper>;
-				public get(param0: number): java.util.Locale;
-				public getLocaleList(): any;
-				public indexOf(param0: java.util.Locale): number;
+			export class LocaleListHelper extends java.lang.Object {
+				public static class: java.lang.Class<androidx.core.os.LocaleListHelper>;
 				public hashCode(): number;
-				public getFirstMatch(param0: native.Array<string>): java.util.Locale;
 				public equals(param0: any): boolean;
-				public toLanguageTags(): string;
-				public isEmpty(): boolean;
 				public toString(): string;
-				public size(): number;
 			}
 		}
 	}
@@ -16631,11 +16853,15 @@ declare module androidx {
 				 * Constructs a new instance of the androidx.core.os.LocaleListInterface interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 				 */
 				public constructor(implementation: {
+					setLocaleList(param0: native.Array<java.util.Locale>): void;
 					getLocaleList(): any;
 					get(param0: number): java.util.Locale;
 					isEmpty(): boolean;
 					size(): number;
 					indexOf(param0: java.util.Locale): number;
+					equals(param0: any): boolean;
+					hashCode(): number;
+					toString(): string;
 					toLanguageTags(): string;
 					getFirstMatch(param0: native.Array<string>): java.util.Locale;
 				});
@@ -16643,42 +16869,14 @@ declare module androidx {
 				public get(param0: number): java.util.Locale;
 				public getLocaleList(): any;
 				public indexOf(param0: java.util.Locale): number;
-				public getFirstMatch(param0: native.Array<string>): java.util.Locale;
-				public toLanguageTags(): string;
-				public isEmpty(): boolean;
-				public size(): number;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module os {
-			export class LocaleListPlatformWrapper extends java.lang.Object implements androidx.core.os.LocaleListInterface {
-				public static class: java.lang.Class<androidx.core.os.LocaleListPlatformWrapper>;
-				public get(param0: number): java.util.Locale;
-				public getLocaleList(): any;
-				public indexOf(param0: java.util.Locale): number;
 				public hashCode(): number;
 				public getFirstMatch(param0: native.Array<string>): java.util.Locale;
 				public equals(param0: any): boolean;
 				public toLanguageTags(): string;
+				public setLocaleList(param0: native.Array<java.util.Locale>): void;
 				public isEmpty(): boolean;
 				public toString(): string;
 				public size(): number;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module os {
-			export class MessageCompat extends java.lang.Object {
-				public static class: java.lang.Class<androidx.core.os.MessageCompat>;
-				public static setAsynchronous(param0: globalAndroid.os.Message, param1: boolean): void;
-				public static isAsynchronous(param0: globalAndroid.os.Message): boolean;
 			}
 		}
 	}
@@ -16716,6 +16914,7 @@ declare module androidx {
 		export module os {
 			export class ParcelableCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.os.ParcelableCompat>;
+				/** @deprecated */
 				public static newCreator(param0: androidx.core.os.ParcelableCompatCreatorCallbacks<any>): globalAndroid.os.Parcelable.Creator<any>;
 			}
 			export module ParcelableCompat {
@@ -16902,19 +17101,6 @@ declare module androidx {
 					});
 					public constructor();
 					public onReply(param0: T): void;
-				}
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module telephony {
-			export module mbms {
-				export class MbmsHelper extends java.lang.Object {
-					public static class: java.lang.Class<androidx.core.telephony.mbms.MbmsHelper>;
-					public static getBestNameForService(param0: globalAndroid.content.Context, param1: any): string;
 				}
 			}
 		}
@@ -17366,33 +17552,24 @@ declare module androidx {
 		export module util {
 			export class Preconditions extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.util.Preconditions>;
+				public static checkCollectionNotEmpty(param0: java.util.Collection<any>, param1: string): java.util.Collection<any>;
 				public static checkArgument(param0: boolean, param1: any): void;
 				public static checkState(param0: boolean): void;
+				public static checkCollectionElementsNotNull(param0: java.util.Collection<any>, param1: string): java.util.Collection<any>;
+				public static checkArrayElementsNotNull(param0: native.Array<any>, param1: string): native.Array<any>;
+				public static checkArgumentNonnegative(param0: number): number;
+				public static checkFlagsArgument(param0: number, param1: number): number;
+				public static checkArrayElementsInRange(param0: native.Array<number>, param1: number, param2: number, param3: string): native.Array<number>;
+				public static checkStringNotEmpty(param0: string): string;
 				public static checkNotNull(param0: any, param1: any): any;
 				public static checkState(param0: boolean, param1: string): void;
 				public static checkArgumentNonnegative(param0: number, param1: string): number;
+				public static checkArgumentPositive(param0: number, param1: string): number;
 				public static checkArgumentInRange(param0: number, param1: number, param2: number, param3: string): number;
 				public static checkArgument(param0: boolean): void;
-				public static checkArgumentNonnegative(param0: number): number;
+				public static checkStringNotEmpty(param0: string, param1: any): string;
 				public static checkNotNull(param0: any): any;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module util {
-			export class Supplier<T>  extends java.lang.Object {
-				public static class: java.lang.Class<androidx.core.util.Supplier<any>>;
-				/**
-				 * Constructs a new instance of the androidx.core.util.Supplier<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-				 */
-				public constructor(implementation: {
-					get(): T;
-				});
-				public constructor();
-				public get(): T;
+				public static checkArgumentFinite(param0: number, param1: string): number;
 			}
 		}
 	}
@@ -17425,7 +17602,6 @@ declare module androidx {
 				public onPopulateAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public dispatchPopulateAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onRequestSendAccessibilityEvent(param0: globalAndroid.view.ViewGroup, param1: globalAndroid.view.View, param2: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
-				public constructor(param0: any);
 				public sendAccessibilityEvent(param0: globalAndroid.view.View, param1: number): void;
 				public performAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public constructor();
@@ -17691,8 +17867,10 @@ declare module androidx {
 			export class LayoutInflaterCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.LayoutInflaterCompat>;
 				public static setFactory2(param0: globalAndroid.view.LayoutInflater, param1: globalAndroid.view.LayoutInflater.Factory2): void;
-				public static setFactory(param0: globalAndroid.view.LayoutInflater, param1: androidx.core.view.LayoutInflaterFactory): void;
+				/** @deprecated */
 				public static getFactory(param0: globalAndroid.view.LayoutInflater): androidx.core.view.LayoutInflaterFactory;
+				/** @deprecated */
+				public static setFactory(param0: globalAndroid.view.LayoutInflater, param1: androidx.core.view.LayoutInflaterFactory): void;
 			}
 			export module LayoutInflaterCompat {
 				export class Factory2Wrapper extends java.lang.Object implements globalAndroid.view.LayoutInflater.Factory2 {
@@ -17747,8 +17925,9 @@ declare module androidx {
 		export module view {
 			export class MenuCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.MenuCompat>;
-				public static setGroupDividerEnabled(param0: globalAndroid.view.Menu, param1: boolean): void;
+				/** @deprecated */
 				public static setShowAsAction(param0: globalAndroid.view.MenuItem, param1: number): void;
+				public static setGroupDividerEnabled(param0: globalAndroid.view.Menu, param1: boolean): void;
 			}
 		}
 	}
@@ -17764,27 +17943,35 @@ declare module androidx {
 				public static SHOW_AS_ACTION_ALWAYS: number;
 				public static SHOW_AS_ACTION_WITH_TEXT: number;
 				public static SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW: number;
-				public static getAlphabeticModifiers(param0: globalAndroid.view.MenuItem): number;
-				public static getActionProvider(param0: globalAndroid.view.MenuItem): androidx.core.view.ActionProvider;
-				public static setIconTintMode(param0: globalAndroid.view.MenuItem, param1: globalAndroid.graphics.PorterDuff.Mode): void;
-				public static expandActionView(param0: globalAndroid.view.MenuItem): boolean;
-				public static setOnActionExpandListener(param0: globalAndroid.view.MenuItem, param1: androidx.core.view.MenuItemCompat.OnActionExpandListener): globalAndroid.view.MenuItem;
-				public static setNumericShortcut(param0: globalAndroid.view.MenuItem, param1: string, param2: number): void;
+				/** @deprecated */
 				public static setShowAsAction(param0: globalAndroid.view.MenuItem, param1: number): void;
-				public static getContentDescription(param0: globalAndroid.view.MenuItem): string;
+				public static getAlphabeticModifiers(param0: globalAndroid.view.MenuItem): number;
+				/** @deprecated */
+				public static setActionView(param0: globalAndroid.view.MenuItem, param1: number): globalAndroid.view.MenuItem;
+				/** @deprecated */
 				public static getActionView(param0: globalAndroid.view.MenuItem): globalAndroid.view.View;
+				public static getActionProvider(param0: globalAndroid.view.MenuItem): androidx.core.view.ActionProvider;
+				/** @deprecated */
+				public static setOnActionExpandListener(param0: globalAndroid.view.MenuItem, param1: androidx.core.view.MenuItemCompat.OnActionExpandListener): globalAndroid.view.MenuItem;
+				/** @deprecated */
+				public static setActionView(param0: globalAndroid.view.MenuItem, param1: globalAndroid.view.View): globalAndroid.view.MenuItem;
+				/** @deprecated */
+				public static expandActionView(param0: globalAndroid.view.MenuItem): boolean;
+				public static setIconTintMode(param0: globalAndroid.view.MenuItem, param1: globalAndroid.graphics.PorterDuff.Mode): void;
+				/** @deprecated */
+				public static isActionViewExpanded(param0: globalAndroid.view.MenuItem): boolean;
+				public static setNumericShortcut(param0: globalAndroid.view.MenuItem, param1: string, param2: number): void;
+				public static getContentDescription(param0: globalAndroid.view.MenuItem): string;
 				public static setActionProvider(param0: globalAndroid.view.MenuItem, param1: androidx.core.view.ActionProvider): globalAndroid.view.MenuItem;
 				public static getIconTintMode(param0: globalAndroid.view.MenuItem): globalAndroid.graphics.PorterDuff.Mode;
-				public static collapseActionView(param0: globalAndroid.view.MenuItem): boolean;
 				public static setTooltipText(param0: globalAndroid.view.MenuItem, param1: string): void;
 				public static setAlphabeticShortcut(param0: globalAndroid.view.MenuItem, param1: string, param2: number): void;
 				public static getIconTintList(param0: globalAndroid.view.MenuItem): globalAndroid.content.res.ColorStateList;
 				public static getTooltipText(param0: globalAndroid.view.MenuItem): string;
-				public static setActionView(param0: globalAndroid.view.MenuItem, param1: globalAndroid.view.View): globalAndroid.view.MenuItem;
-				public static setActionView(param0: globalAndroid.view.MenuItem, param1: number): globalAndroid.view.MenuItem;
 				public static getNumericModifiers(param0: globalAndroid.view.MenuItem): number;
 				public static setIconTintList(param0: globalAndroid.view.MenuItem, param1: globalAndroid.content.res.ColorStateList): void;
-				public static isActionViewExpanded(param0: globalAndroid.view.MenuItem): boolean;
+				/** @deprecated */
+				public static collapseActionView(param0: globalAndroid.view.MenuItem): boolean;
 				public static setContentDescription(param0: globalAndroid.view.MenuItem, param1: string): void;
 				public static setShortcut(param0: globalAndroid.view.MenuItem, param1: string, param2: string, param3: number, param4: number): void;
 			}
@@ -17867,17 +18054,28 @@ declare module androidx {
 				public static AXIS_GENERIC_15: number;
 				public static AXIS_GENERIC_16: number;
 				public static BUTTON_PRIMARY: number;
-				public static getPointerId(param0: globalAndroid.view.MotionEvent, param1: number): number;
-				public static getPointerCount(param0: globalAndroid.view.MotionEvent): number;
+				/** @deprecated */
 				public static getActionMasked(param0: globalAndroid.view.MotionEvent): number;
-				public static findPointerIndex(param0: globalAndroid.view.MotionEvent, param1: number): number;
-				public static getSource(param0: globalAndroid.view.MotionEvent): number;
-				public static isFromSource(param0: globalAndroid.view.MotionEvent, param1: number): boolean;
-				public static getButtonState(param0: globalAndroid.view.MotionEvent): number;
-				public static getActionIndex(param0: globalAndroid.view.MotionEvent): number;
+				/** @deprecated */
 				public static getY(param0: globalAndroid.view.MotionEvent, param1: number): number;
-				public static getAxisValue(param0: globalAndroid.view.MotionEvent, param1: number, param2: number): number;
+				/** @deprecated */
+				public static getPointerId(param0: globalAndroid.view.MotionEvent, param1: number): number;
+				/** @deprecated */
+				public static getPointerCount(param0: globalAndroid.view.MotionEvent): number;
+				public static isFromSource(param0: globalAndroid.view.MotionEvent, param1: number): boolean;
+				/** @deprecated */
 				public static getX(param0: globalAndroid.view.MotionEvent, param1: number): number;
+				/** @deprecated */
+				public static getButtonState(param0: globalAndroid.view.MotionEvent): number;
+				/** @deprecated */
+				public static getActionIndex(param0: globalAndroid.view.MotionEvent): number;
+				/** @deprecated */
+				public static getSource(param0: globalAndroid.view.MotionEvent): number;
+				/** @deprecated */
+				public static getAxisValue(param0: globalAndroid.view.MotionEvent, param1: number, param2: number): number;
+				/** @deprecated */
+				public static findPointerIndex(param0: globalAndroid.view.MotionEvent, param1: number): number;
+				/** @deprecated */
 				public static getAxisValue(param0: globalAndroid.view.MotionEvent, param1: number): number;
 			}
 		}
@@ -17965,52 +18163,6 @@ declare module androidx {
 declare module androidx {
 	export module core {
 		export module view {
-			export class NestedScrollingChild3 extends java.lang.Object implements androidx.core.view.NestedScrollingChild2 {
-				public static class: java.lang.Class<androidx.core.view.NestedScrollingChild3>;
-				/**
-				 * Constructs a new instance of the androidx.core.view.NestedScrollingChild3 interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-				 */
-				public constructor(implementation: {
-					dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>, param5: number, param6: native.Array<number>): void;
-					startNestedScroll(param0: number, param1: number): boolean;
-					stopNestedScroll(param0: number): void;
-					hasNestedScrollingParent(param0: number): boolean;
-					dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>, param5: number): boolean;
-					dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>, param4: number): boolean;
-					setNestedScrollingEnabled(param0: boolean): void;
-					isNestedScrollingEnabled(): boolean;
-					startNestedScroll(param0: number): boolean;
-					stopNestedScroll(): void;
-					hasNestedScrollingParent(): boolean;
-					dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
-					dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
-					dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
-					dispatchNestedPreFling(param0: number, param1: number): boolean;
-				});
-				public constructor();
-				public stopNestedScroll(param0: number): void;
-				public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>, param4: number): boolean;
-				public startNestedScroll(param0: number, param1: number): boolean;
-				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>, param5: number): boolean;
-				public stopNestedScroll(): void;
-				public setNestedScrollingEnabled(param0: boolean): void;
-				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
-				public startNestedScroll(param0: number): boolean;
-				public hasNestedScrollingParent(param0: number): boolean;
-				public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
-				public hasNestedScrollingParent(): boolean;
-				public dispatchNestedPreFling(param0: number, param1: number): boolean;
-				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>, param5: number, param6: native.Array<number>): void;
-				public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
-				public isNestedScrollingEnabled(): boolean;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module view {
 			export class NestedScrollingChildHelper extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.NestedScrollingChildHelper>;
 				public stopNestedScroll(param0: number): void;
@@ -18027,7 +18179,6 @@ declare module androidx {
 				public onDetachedFromWindow(): void;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
 				public dispatchNestedPreFling(param0: number, param1: number): boolean;
-				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>, param5: number, param6: native.Array<number>): void;
 				public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>): boolean;
 				public constructor(param0: globalAndroid.view.View);
 				public isNestedScrollingEnabled(): boolean;
@@ -18113,50 +18264,6 @@ declare module androidx {
 declare module androidx {
 	export module core {
 		export module view {
-			export class NestedScrollingParent3 extends java.lang.Object implements androidx.core.view.NestedScrollingParent2 {
-				public static class: java.lang.Class<androidx.core.view.NestedScrollingParent3>;
-				/**
-				 * Constructs a new instance of the androidx.core.view.NestedScrollingParent3 interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-				 */
-				public constructor(implementation: {
-					onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number, param6: native.Array<number>): void;
-					onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): boolean;
-					onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): void;
-					onStopNestedScroll(param0: globalAndroid.view.View, param1: number): void;
-					onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number): void;
-					onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: number): void;
-					onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-					onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
-					onStopNestedScroll(param0: globalAndroid.view.View): void;
-					onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-					onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
-					onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
-					onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
-					getNestedScrollAxes(): number;
-				});
-				public constructor();
-				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
-				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
-				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): void;
-				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number): void;
-				public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-				public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): boolean;
-				public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
-				public onStopNestedScroll(param0: globalAndroid.view.View, param1: number): void;
-				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
-				public onStopNestedScroll(param0: globalAndroid.view.View): void;
-				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: number): void;
-				public getNestedScrollAxes(): number;
-				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number, param6: native.Array<number>): void;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module view {
 			export class NestedScrollingParentHelper extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.NestedScrollingParentHelper>;
 				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
@@ -18183,21 +18290,6 @@ declare module androidx {
 				});
 				public constructor();
 				public onApplyWindowInsets(param0: globalAndroid.view.View, param1: androidx.core.view.WindowInsetsCompat): androidx.core.view.WindowInsetsCompat;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module view {
-			export class OneShotPreDrawListener extends java.lang.Object implements globalAndroid.view.ViewTreeObserver.OnPreDrawListener, globalAndroid.view.View.OnAttachStateChangeListener {
-				public static class: java.lang.Class<androidx.core.view.OneShotPreDrawListener>;
-				public onPreDraw(): boolean;
-				public static add(param0: globalAndroid.view.View, param1: java.lang.Runnable): androidx.core.view.OneShotPreDrawListener;
-				public onViewAttachedToWindow(param0: globalAndroid.view.View): void;
-				public removeListener(): void;
-				public onViewDetachedFromWindow(param0: globalAndroid.view.View): void;
 			}
 		}
 	}
@@ -18246,8 +18338,10 @@ declare module androidx {
 			export class ScaleGestureDetectorCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.ScaleGestureDetectorCompat>;
 				public static isQuickScaleEnabled(param0: globalAndroid.view.ScaleGestureDetector): boolean;
+				/** @deprecated */
 				public static setQuickScaleEnabled(param0: any, param1: boolean): void;
 				public static setQuickScaleEnabled(param0: globalAndroid.view.ScaleGestureDetector, param1: boolean): void;
+				/** @deprecated */
 				public static isQuickScaleEnabled(param0: any): boolean;
 			}
 		}
@@ -18311,7 +18405,9 @@ declare module androidx {
 		export module view {
 			export class VelocityTrackerCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.VelocityTrackerCompat>;
+				/** @deprecated */
 				public static getXVelocity(param0: globalAndroid.view.VelocityTracker, param1: number): number;
+				/** @deprecated */
 				public static getYVelocity(param0: globalAndroid.view.VelocityTracker, param1: number): number;
 			}
 		}
@@ -18360,167 +18456,193 @@ declare module androidx {
 				public static isKeyboardNavigationCluster(param0: globalAndroid.view.View): boolean;
 				public static setLabelFor(param0: globalAndroid.view.View, param1: number): void;
 				public static setBackgroundTintMode(param0: globalAndroid.view.View, param1: globalAndroid.graphics.PorterDuff.Mode): void;
-				public static getScaleY(param0: globalAndroid.view.View): number;
 				public static setImportantForAccessibility(param0: globalAndroid.view.View, param1: number): void;
-				public static getPivotY(param0: globalAndroid.view.View): number;
-				public static setScaleX(param0: globalAndroid.view.View, param1: number): void;
 				public static hasNestedScrollingParent(param0: globalAndroid.view.View, param1: number): boolean;
 				public static startNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
+				/** @deprecated */
+				public static setY(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static setActivated(param0: globalAndroid.view.View, param1: boolean): void;
 				public static hasOverlappingRendering(param0: globalAndroid.view.View): boolean;
 				public static offsetLeftAndRight(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static getMeasuredState(param0: globalAndroid.view.View): number;
 				public static setPointerIcon(param0: globalAndroid.view.View, param1: androidx.core.view.PointerIconCompat): void;
+				/** @deprecated */
+				public static getLayerType(param0: globalAndroid.view.View): number;
 				public static setHasTransientState(param0: globalAndroid.view.View, param1: boolean): void;
 				public static getScrollIndicators(param0: globalAndroid.view.View): number;
 				public static startDragAndDrop(param0: globalAndroid.view.View, param1: globalAndroid.content.ClipData, param2: globalAndroid.view.View.DragShadowBuilder, param3: any, param4: number): boolean;
 				public static cancelDragAndDrop(param0: globalAndroid.view.View): void;
 				public static setTranslationZ(param0: globalAndroid.view.View, param1: number): void;
 				public static restoreDefaultFocus(param0: globalAndroid.view.View): boolean;
-				public static getTranslationY(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static getScaleX(param0: globalAndroid.view.View): number;
 				public static getImportantForAutofill(param0: globalAndroid.view.View): number;
 				public static setTransitionName(param0: globalAndroid.view.View, param1: string): void;
 				public static dispatchNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: native.Array<number>, param5: number): boolean;
-				public static setTranslationX(param0: globalAndroid.view.View, param1: number): void;
 				public static dispatchApplyWindowInsets(param0: globalAndroid.view.View, param1: androidx.core.view.WindowInsetsCompat): androidx.core.view.WindowInsetsCompat;
-				public static setOverScrollMode(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static jumpDrawablesToCurrentState(param0: globalAndroid.view.View): void;
 				public static updateDragShadow(param0: globalAndroid.view.View, param1: globalAndroid.view.View.DragShadowBuilder): void;
 				public static getBackgroundTintList(param0: globalAndroid.view.View): globalAndroid.content.res.ColorStateList;
-				public static getMeasuredWidthAndState(param0: globalAndroid.view.View): number;
-				public static setPivotY(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static resolveSizeAndState(param0: number, param1: number, param2: number): number;
 				public static getMinimumHeight(param0: globalAndroid.view.View): number;
 				public static setElevation(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static getPivotX(param0: globalAndroid.view.View): number;
 				public static setTooltipText(param0: globalAndroid.view.View, param1: string): void;
 				public static setZ(param0: globalAndroid.view.View, param1: number): void;
 				public static setNextClusterForwardId(param0: globalAndroid.view.View, param1: number): void;
-				public static setFitsSystemWindows(param0: globalAndroid.view.View, param1: boolean): void;
-				public static getX(param0: globalAndroid.view.View): number;
-				public static getLayerType(param0: globalAndroid.view.View): number;
-				public static setRotation(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static setPivotX(param0: globalAndroid.view.View, param1: number): void;
 				public static stopNestedScroll(param0: globalAndroid.view.View): void;
 				public static stopNestedScroll(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static setRotationX(param0: globalAndroid.view.View, param1: number): void;
 				public static getZ(param0: globalAndroid.view.View): number;
-				public static canScrollVertically(param0: globalAndroid.view.View, param1: number): boolean;
-				public static setAlpha(param0: globalAndroid.view.View, param1: number): void;
 				public static isInLayout(param0: globalAndroid.view.View): boolean;
 				public static setLayerPaint(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Paint): void;
 				public static getImportantForAccessibility(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static getMatrix(param0: globalAndroid.view.View): globalAndroid.graphics.Matrix;
 				public static removeOnUnhandledKeyEventListener(param0: globalAndroid.view.View, param1: androidx.core.view.ViewCompat.OnUnhandledKeyEventListenerCompat): void;
-				public static isAccessibilityHeading(param0: globalAndroid.view.View): boolean;
 				public static postOnAnimationDelayed(param0: globalAndroid.view.View, param1: java.lang.Runnable, param2: number): void;
 				public static generateViewId(): number;
+				/** @deprecated */
+				public static setTranslationX(param0: globalAndroid.view.View, param1: number): void;
 				public static getLayoutDirection(param0: globalAndroid.view.View): number;
-				public static setY(param0: globalAndroid.view.View, param1: number): void;
-				public static setPivotX(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static getAlpha(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static setScaleX(param0: globalAndroid.view.View, param1: number): void;
 				public static setClipBounds(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public static requestApplyInsets(param0: globalAndroid.view.View): void;
 				public static dispatchFinishTemporaryDetach(param0: globalAndroid.view.View): void;
-				public static getAccessibilityPaneTitle(param0: globalAndroid.view.View): string;
-				public static onPopulateAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public static onInitializeAccessibilityNodeInfo(param0: globalAndroid.view.View, param1: androidx.core.view.accessibility.AccessibilityNodeInfoCompat): void;
-				public static setAccessibilityHeading(param0: globalAndroid.view.View, param1: boolean): void;
-				public static setSaveFromParentEnabled(param0: globalAndroid.view.View, param1: boolean): void;
+				/** @deprecated */
+				public static setChildrenDrawingOrderEnabled(param0: globalAndroid.view.ViewGroup, param1: boolean): void;
 				public static setKeyboardNavigationCluster(param0: globalAndroid.view.View, param1: boolean): void;
-				public static isOpaque(param0: globalAndroid.view.View): boolean;
 				public static animate(param0: globalAndroid.view.View): androidx.core.view.ViewPropertyAnimatorCompat;
-				public static enableAccessibleClickableSpanSupport(param0: globalAndroid.view.View): void;
-				public static setLayerType(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.graphics.Paint): void;
 				public static postInvalidateOnAnimation(param0: globalAndroid.view.View): void;
-				public static setRotationY(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static getX(param0: globalAndroid.view.View): number;
 				public static dispatchNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 				public static hasExplicitFocusable(param0: globalAndroid.view.View): boolean;
 				public static dispatchNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: native.Array<number>): boolean;
 				public static offsetTopAndBottom(param0: globalAndroid.view.View, param1: number): void;
 				public static getTransitionName(param0: globalAndroid.view.View): string;
+				/** @deprecated */
+				public static getY(param0: globalAndroid.view.View): number;
 				public static isLayoutDirectionResolved(param0: globalAndroid.view.View): boolean;
-				public static getOverScrollMode(param0: globalAndroid.view.View): number;
 				public static getAccessibilityNodeProvider(param0: globalAndroid.view.View): androidx.core.view.accessibility.AccessibilityNodeProviderCompat;
-				public static getRotation(param0: globalAndroid.view.View): number;
 				public static getPaddingEnd(param0: globalAndroid.view.View): number;
 				public static dispatchNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 				public static setOnApplyWindowInsetsListener(param0: globalAndroid.view.View, param1: androidx.core.view.OnApplyWindowInsetsListener): void;
 				public static setScrollIndicators(param0: globalAndroid.view.View, param1: number): void;
-				public static onInitializeAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
-				public static combineMeasuredStates(param0: number, param1: number): number;
+				/** @deprecated */
+				public static getMeasuredHeightAndState(param0: globalAndroid.view.View): number;
 				public static hasNestedScrollingParent(param0: globalAndroid.view.View): boolean;
-				public static setScaleY(param0: globalAndroid.view.View, param1: number): void;
 				public static setScrollIndicators(param0: globalAndroid.view.View, param1: number, param2: number): void;
 				public static hasTransientState(param0: globalAndroid.view.View): boolean;
-				public static getScaleX(param0: globalAndroid.view.View): number;
 				public static onApplyWindowInsets(param0: globalAndroid.view.View, param1: androidx.core.view.WindowInsetsCompat): androidx.core.view.WindowInsetsCompat;
 				public static getPaddingStart(param0: globalAndroid.view.View): number;
 				public static isLaidOut(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public static isOpaque(param0: globalAndroid.view.View): boolean;
 				public static addOnUnhandledKeyEventListener(param0: globalAndroid.view.View, param1: androidx.core.view.ViewCompat.OnUnhandledKeyEventListenerCompat): void;
 				public constructor();
 				public static setNestedScrollingEnabled(param0: globalAndroid.view.View, param1: boolean): void;
+				/** @deprecated */
+				public static getMeasuredWidthAndState(param0: globalAndroid.view.View): number;
 				public static getNextClusterForwardId(param0: globalAndroid.view.View): number;
-				public static resolveSizeAndState(param0: number, param1: number, param2: number): number;
 				public static getElevation(param0: globalAndroid.view.View): number;
 				public static setImportantForAutofill(param0: globalAndroid.view.View, param1: number): void;
 				public static setFocusedByDefault(param0: globalAndroid.view.View, param1: boolean): void;
-				public static getPivotX(param0: globalAndroid.view.View): number;
-				public static setScreenReaderFocusable(param0: globalAndroid.view.View, param1: boolean): void;
 				public static isImportantForAutofill(param0: globalAndroid.view.View): boolean;
-				public static getTranslationX(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static setSaveFromParentEnabled(param0: globalAndroid.view.View, param1: boolean): void;
 				public static isNestedScrollingEnabled(param0: globalAndroid.view.View): boolean;
 				public static getTranslationZ(param0: globalAndroid.view.View): number;
 				public static hasOnClickListeners(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public static getScaleY(param0: globalAndroid.view.View): number;
 				public static getWindowSystemUiVisibility(param0: globalAndroid.view.View): number;
 				public static startNestedScroll(param0: globalAndroid.view.View, param1: number): boolean;
-				public static getAlpha(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static getOverScrollMode(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static setRotationY(param0: globalAndroid.view.View, param1: number): void;
 				public static isFocusedByDefault(param0: globalAndroid.view.View): boolean;
-				public static setActivated(param0: globalAndroid.view.View, param1: boolean): void;
+				/** @deprecated */
+				public static setPivotY(param0: globalAndroid.view.View, param1: number): void;
 				public static setBackground(param0: globalAndroid.view.View, param1: globalAndroid.graphics.drawable.Drawable): void;
-				public static getMeasuredState(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static getPivotY(param0: globalAndroid.view.View): number;
 				public static postOnAnimation(param0: globalAndroid.view.View, param1: java.lang.Runnable): void;
 				public static performAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public static combineMeasuredStates(param0: number, param1: number): number;
+				/** @deprecated */
 				public static canScrollHorizontally(param0: globalAndroid.view.View, param1: number): boolean;
-				public static setAccessibilityPaneTitle(param0: globalAndroid.view.View, param1: string): void;
-				public static setTranslationY(param0: globalAndroid.view.View, param1: number): void;
-				public static getY(param0: globalAndroid.view.View): number;
 				public static dispatchNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: native.Array<number>): boolean;
 				public static isAttachedToWindow(param0: globalAndroid.view.View): boolean;
-				public static dispatchNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: native.Array<number>, param6: number, param7: native.Array<number>): void;
 				public static setAccessibilityLiveRegion(param0: globalAndroid.view.View, param1: number): void;
 				public static dispatchNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: native.Array<number>, param6: number): boolean;
+				/** @deprecated */
+				public static setX(param0: globalAndroid.view.View, param1: number): void;
 				public static setAccessibilityDelegate(param0: globalAndroid.view.View, param1: androidx.core.view.AccessibilityDelegateCompat): void;
 				public static getClipBounds(param0: globalAndroid.view.View): globalAndroid.graphics.Rect;
-				public static getParentForAccessibility(param0: globalAndroid.view.View): globalAndroid.view.ViewParent;
+				/** @deprecated */
 				public static getRotationY(param0: globalAndroid.view.View): number;
-				public static addKeyboardNavigationClusters(param0: globalAndroid.view.View, param1: java.util.Collection<globalAndroid.view.View>, param2: number): void;
+				public static getParentForAccessibility(param0: globalAndroid.view.View): globalAndroid.view.ViewParent;
+				/** @deprecated */
 				public static getRotationX(param0: globalAndroid.view.View): number;
+				public static addKeyboardNavigationClusters(param0: globalAndroid.view.View, param1: java.util.Collection<globalAndroid.view.View>, param2: number): void;
+				/** @deprecated */
+				public static getRotation(param0: globalAndroid.view.View): number;
 				public static getAccessibilityLiveRegion(param0: globalAndroid.view.View): number;
+				/** @deprecated */
+				public static getTranslationX(param0: globalAndroid.view.View): number;
 				public static getDisplay(param0: globalAndroid.view.View): globalAndroid.view.Display;
+				/** @deprecated */
+				public static getTranslationY(param0: globalAndroid.view.View): number;
 				public static postInvalidateOnAnimation(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
+				/** @deprecated */
+				public static setAlpha(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static setScaleY(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static onInitializeAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public static getLabelFor(param0: globalAndroid.view.View): number;
 				public static dispatchStartTemporaryDetach(param0: globalAndroid.view.View): void;
+				/** @deprecated */
+				public static setTranslationY(param0: globalAndroid.view.View, param1: number): void;
 				public static keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): globalAndroid.view.View;
+				/** @deprecated */
+				public static canScrollVertically(param0: globalAndroid.view.View, param1: number): boolean;
 				public static getFitsSystemWindows(param0: globalAndroid.view.View): boolean;
 				public static requireViewById(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
-				public static setRotationX(param0: globalAndroid.view.View, param1: number): void;
 				public static isPaddingRelative(param0: globalAndroid.view.View): boolean;
-				public static getAccessibilityDelegate(param0: globalAndroid.view.View): androidx.core.view.AccessibilityDelegateCompat;
 				public static hasAccessibilityDelegate(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public static setLayerType(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.graphics.Paint): void;
 				public static getBackgroundTintMode(param0: globalAndroid.view.View): globalAndroid.graphics.PorterDuff.Mode;
 				public static isImportantForAccessibility(param0: globalAndroid.view.View): boolean;
-				public static setX(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static setOverScrollMode(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public static onPopulateAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public static setPaddingRelative(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
+				/** @deprecated */
+				public static setRotation(param0: globalAndroid.view.View, param1: number): void;
 				public static setLayoutDirection(param0: globalAndroid.view.View, param1: number): void;
-				public static getMatrix(param0: globalAndroid.view.View): globalAndroid.graphics.Matrix;
 				public static setAutofillHints(param0: globalAndroid.view.View, param1: native.Array<string>): void;
-				public static isScreenReaderFocusable(param0: globalAndroid.view.View): boolean;
-				public static getMeasuredHeightAndState(param0: globalAndroid.view.View): number;
-				public static jumpDrawablesToCurrentState(param0: globalAndroid.view.View): void;
-				public static setChildrenDrawingOrderEnabled(param0: globalAndroid.view.ViewGroup, param1: boolean): void;
+				/** @deprecated */
+				public static setFitsSystemWindows(param0: globalAndroid.view.View, param1: boolean): void;
 			}
 			export module ViewCompat {
-				export class AccessibilityPaneVisibilityManager extends java.lang.Object implements globalAndroid.view.ViewTreeObserver.OnGlobalLayoutListener, globalAndroid.view.View.OnAttachStateChangeListener {
-					public static class: java.lang.Class<androidx.core.view.ViewCompat.AccessibilityPaneVisibilityManager>;
-					public onViewDetachedFromWindow(param0: globalAndroid.view.View): void;
-					public onGlobalLayout(): void;
-					public onViewAttachedToWindow(param0: globalAndroid.view.View): void;
-				}
-				export abstract class AccessibilityViewProperty<T>  extends java.lang.Object {
-					public static class: java.lang.Class<androidx.core.view.ViewCompat.AccessibilityViewProperty<any>>;
-				}
 				export class FocusDirection extends java.lang.Object implements java.lang.annotation.Annotation {
 					public static class: java.lang.Class<androidx.core.view.ViewCompat.FocusDirection>;
 					/**
@@ -18651,11 +18773,13 @@ declare module androidx {
 		export module view {
 			export class ViewConfigurationCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.ViewConfigurationCompat>;
-				public static hasPermanentMenuKey(param0: globalAndroid.view.ViewConfiguration): boolean;
+				/** @deprecated */
+				public static getScaledPagingTouchSlop(param0: globalAndroid.view.ViewConfiguration): number;
 				public static shouldShowMenuShortcutsWhenKeyboardPresent(param0: globalAndroid.view.ViewConfiguration, param1: globalAndroid.content.Context): boolean;
 				public static getScaledHorizontalScrollFactor(param0: globalAndroid.view.ViewConfiguration, param1: globalAndroid.content.Context): number;
+				/** @deprecated */
+				public static hasPermanentMenuKey(param0: globalAndroid.view.ViewConfiguration): boolean;
 				public static getScaledVerticalScrollFactor(param0: globalAndroid.view.ViewConfiguration, param1: globalAndroid.content.Context): number;
-				public static getScaledPagingTouchSlop(param0: globalAndroid.view.ViewConfiguration): number;
 				public static getScaledHoverSlop(param0: globalAndroid.view.ViewConfiguration): number;
 			}
 		}
@@ -18670,12 +18794,14 @@ declare module androidx {
 				public static LAYOUT_MODE_CLIP_BOUNDS: number;
 				public static LAYOUT_MODE_OPTICAL_BOUNDS: number;
 				public static isTransitionGroup(param0: globalAndroid.view.ViewGroup): boolean;
-				public static getNestedScrollAxes(param0: globalAndroid.view.ViewGroup): number;
+				/** @deprecated */
 				public static onRequestSendAccessibilityEvent(param0: globalAndroid.view.ViewGroup, param1: globalAndroid.view.View, param2: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+				public static getNestedScrollAxes(param0: globalAndroid.view.ViewGroup): number;
 				public static getLayoutMode(param0: globalAndroid.view.ViewGroup): number;
-				public static setMotionEventSplittingEnabled(param0: globalAndroid.view.ViewGroup, param1: boolean): void;
 				public static setTransitionGroup(param0: globalAndroid.view.ViewGroup, param1: boolean): void;
 				public static setLayoutMode(param0: globalAndroid.view.ViewGroup, param1: number): void;
+				/** @deprecated */
+				public static setMotionEventSplittingEnabled(param0: globalAndroid.view.ViewGroup, param1: boolean): void;
 			}
 		}
 	}
@@ -18686,10 +18812,8 @@ declare module androidx {
 		export module view {
 			export class ViewParentCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.view.ViewParentCompat>;
-				public static requestSendAccessibilityEvent(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public static onStopNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: number): void;
 				public static onStopNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View): void;
-				public static onNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: number, param3: number, param4: number, param5: number, param6: number, param7: native.Array<number>): void;
 				public static onNestedPreScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: number, param3: number, param4: native.Array<number>, param5: number): void;
 				public static onNestedPreFling(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: number, param3: number): boolean;
 				public static onNestedScrollAccepted(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.View, param3: number): void;
@@ -18697,6 +18821,8 @@ declare module androidx {
 				public static onNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: number, param3: number, param4: number, param5: number, param6: number): void;
 				public static onStartNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.View, param3: number): boolean;
 				public static onNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: number, param3: number, param4: number, param5: number): void;
+				/** @deprecated */
+				public static requestSendAccessibilityEvent(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public static onNestedScrollAccepted(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.View, param3: number, param4: number): void;
 				public static onStartNestedScroll(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.View, param3: number, param4: number): boolean;
 				public static notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.ViewParent, param1: globalAndroid.view.View, param2: globalAndroid.view.View, param3: number): void;
@@ -18865,22 +18991,6 @@ declare module androidx {
 	export module core {
 		export module view {
 			export module accessibility {
-				export class AccessibilityClickableSpanCompat extends globalAndroid.text.style.ClickableSpan {
-					public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityClickableSpanCompat>;
-					public static SPAN_ID: string;
-					public constructor();
-					public onClick(param0: globalAndroid.view.View): void;
-					public constructor(param0: number, param1: androidx.core.view.accessibility.AccessibilityNodeInfoCompat, param2: number);
-				}
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module core {
-		export module view {
-			export module accessibility {
 				export class AccessibilityEventCompat extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityEventCompat>;
 					public static TYPE_VIEW_HOVER_ENTER: number;
@@ -18905,19 +19015,20 @@ declare module androidx {
 					public static CONTENT_CHANGE_TYPE_SUBTREE: number;
 					public static CONTENT_CHANGE_TYPE_TEXT: number;
 					public static CONTENT_CHANGE_TYPE_CONTENT_DESCRIPTION: number;
-					public static CONTENT_CHANGE_TYPE_PANE_TITLE: number;
-					public static CONTENT_CHANGE_TYPE_PANE_APPEARED: number;
-					public static CONTENT_CHANGE_TYPE_PANE_DISAPPEARED: number;
 					public static TYPES_ALL_MASK: number;
 					public static getContentChangeTypes(param0: globalAndroid.view.accessibility.AccessibilityEvent): number;
 					public static getAction(param0: globalAndroid.view.accessibility.AccessibilityEvent): number;
-					public static setMovementGranularity(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: number): void;
-					public static appendRecord(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: androidx.core.view.accessibility.AccessibilityRecordCompat): void;
+					/** @deprecated */
 					public static getRecord(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: number): androidx.core.view.accessibility.AccessibilityRecordCompat;
+					/** @deprecated */
+					public static appendRecord(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: androidx.core.view.accessibility.AccessibilityRecordCompat): void;
+					public static setMovementGranularity(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: number): void;
 					public static setContentChangeTypes(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: number): void;
 					public static getMovementGranularity(param0: globalAndroid.view.accessibility.AccessibilityEvent): number;
-					public static asRecord(param0: globalAndroid.view.accessibility.AccessibilityEvent): androidx.core.view.accessibility.AccessibilityRecordCompat;
+					/** @deprecated */
 					public static getRecordCount(param0: globalAndroid.view.accessibility.AccessibilityEvent): number;
+					/** @deprecated */
+					public static asRecord(param0: globalAndroid.view.accessibility.AccessibilityEvent): androidx.core.view.accessibility.AccessibilityRecordCompat;
 					public static setAction(param0: globalAndroid.view.accessibility.AccessibilityEvent, param1: number): void;
 				}
 			}
@@ -18931,13 +19042,18 @@ declare module androidx {
 			export module accessibility {
 				export class AccessibilityManagerCompat extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityManagerCompat>;
-					public static isTouchExplorationEnabled(param0: globalAndroid.view.accessibility.AccessibilityManager): boolean;
-					public static removeTouchExplorationStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener): boolean;
-					public static getInstalledAccessibilityServiceList(param0: globalAndroid.view.accessibility.AccessibilityManager): java.util.List<globalAndroid.accessibilityservice.AccessibilityServiceInfo>;
-					public static addTouchExplorationStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener): boolean;
-					public static getEnabledAccessibilityServiceList(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: number): java.util.List<globalAndroid.accessibilityservice.AccessibilityServiceInfo>;
-					public static addAccessibilityStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener): boolean;
+					/** @deprecated */
 					public static removeAccessibilityStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener): boolean;
+					/** @deprecated */
+					public static addAccessibilityStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener): boolean;
+					public static removeTouchExplorationStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener): boolean;
+					/** @deprecated */
+					public static isTouchExplorationEnabled(param0: globalAndroid.view.accessibility.AccessibilityManager): boolean;
+					public static addTouchExplorationStateChangeListener(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener): boolean;
+					/** @deprecated */
+					public static getEnabledAccessibilityServiceList(param0: globalAndroid.view.accessibility.AccessibilityManager, param1: number): java.util.List<globalAndroid.accessibilityservice.AccessibilityServiceInfo>;
+					/** @deprecated */
+					public static getInstalledAccessibilityServiceList(param0: globalAndroid.view.accessibility.AccessibilityManager): java.util.List<globalAndroid.accessibilityservice.AccessibilityServiceInfo>;
 				}
 				export module AccessibilityManagerCompat {
 					export class AccessibilityStateChangeListener extends java.lang.Object {
@@ -18949,11 +19065,13 @@ declare module androidx {
 							onAccessibilityStateChanged(param0: boolean): void;
 						});
 						public constructor();
+						/** @deprecated */
 						public onAccessibilityStateChanged(param0: boolean): void;
 					}
 					export abstract class AccessibilityStateChangeListenerCompat extends java.lang.Object implements androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener {
 						public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListenerCompat>;
 						public constructor();
+						/** @deprecated */
 						public onAccessibilityStateChanged(param0: boolean): void;
 					}
 					export class AccessibilityStateChangeListenerWrapper extends java.lang.Object implements globalAndroid.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener {
@@ -19077,8 +19195,6 @@ declare module androidx {
 					public getDrawingOrder(): number;
 					public getWindow(): androidx.core.view.accessibility.AccessibilityWindowInfoCompat;
 					public setLabelFor(param0: globalAndroid.view.View, param1: number): void;
-					public getInfo(): any;
-					public static getClickableSpans(param0: string): native.Array<globalAndroid.text.style.ClickableSpan>;
 					public addAction(param0: number): void;
 					public isCheckable(): boolean;
 					public removeChild(param0: globalAndroid.view.View, param1: number): boolean;
@@ -19116,6 +19232,8 @@ declare module androidx {
 					public setPackageName(param0: string): void;
 					public setScrollable(param0: boolean): void;
 					public getText(): string;
+					/** @deprecated */
+					public getInfo(): any;
 					public setScreenReaderFocusable(param0: boolean): void;
 					public setPassword(param0: boolean): void;
 					public setRoleDescription(param0: string): void;
@@ -19137,6 +19255,7 @@ declare module androidx {
 					public isPassword(): boolean;
 					public setTraversalAfter(param0: globalAndroid.view.View): void;
 					public setTooltipText(param0: string): void;
+					/** @deprecated */
 					public constructor(param0: any);
 					public getTextSelectionEnd(): number;
 					public setImportantForAccessibility(param0: boolean): void;
@@ -19162,7 +19281,6 @@ declare module androidx {
 					public setViewIdResourceName(param0: string): void;
 					public setLabelFor(param0: globalAndroid.view.View): void;
 					public equals(param0: any): boolean;
-					public addSpansToExtras(param0: string, param1: globalAndroid.view.View): void;
 					public isLongClickable(): boolean;
 					public getWindowId(): number;
 					public getChild(param0: number): androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
@@ -19226,7 +19344,6 @@ declare module androidx {
 					}
 					export class CollectionItemInfoCompat extends java.lang.Object {
 						public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityNodeInfoCompat.CollectionItemInfoCompat>;
-						public isHeading(): boolean;
 						public static obtain(param0: number, param1: number, param2: number, param3: number, param4: boolean): androidx.core.view.accessibility.AccessibilityNodeInfoCompat.CollectionItemInfoCompat;
 						public getColumnSpan(): number;
 						public static obtain(param0: number, param1: number, param2: number, param3: number, param4: boolean, param5: boolean): androidx.core.view.accessibility.AccessibilityNodeInfoCompat.CollectionItemInfoCompat;
@@ -19234,6 +19351,8 @@ declare module androidx {
 						public getRowIndex(): number;
 						public getColumnIndex(): number;
 						public getRowSpan(): number;
+						/** @deprecated */
+						public isHeading(): boolean;
 					}
 					export class RangeInfoCompat extends java.lang.Object {
 						public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityNodeInfoCompat.RangeInfoCompat>;
@@ -19290,61 +19409,113 @@ declare module androidx {
 			export module accessibility {
 				export class AccessibilityRecordCompat extends java.lang.Object {
 					public static class: java.lang.Class<androidx.core.view.accessibility.AccessibilityRecordCompat>;
-					public isScrollable(): boolean;
-					public setRemovedCount(param0: number): void;
-					public recycle(): void;
-					public getMaxScrollX(): number;
-					public getBeforeText(): string;
-					public static setMaxScrollX(param0: globalAndroid.view.accessibility.AccessibilityRecord, param1: number): void;
-					public getContentDescription(): string;
-					public setCurrentItemIndex(param0: number): void;
-					public setScrollY(param0: number): void;
-					public static setMaxScrollY(param0: globalAndroid.view.accessibility.AccessibilityRecord, param1: number): void;
-					public getText(): java.util.List<string>;
-					public isFullScreen(): boolean;
-					public isEnabled(): boolean;
-					public setChecked(param0: boolean): void;
-					public setAddedCount(param0: number): void;
-					public setEnabled(param0: boolean): void;
-					public setScrollable(param0: boolean): void;
-					public setBeforeText(param0: string): void;
-					public setPassword(param0: boolean): void;
-					public setFromIndex(param0: number): void;
-					public setToIndex(param0: number): void;
-					public getParcelableData(): globalAndroid.os.Parcelable;
-					public getSource(): androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
-					public getImpl(): any;
-					public getCurrentItemIndex(): number;
-					public setSource(param0: globalAndroid.view.View): void;
-					public setContentDescription(param0: string): void;
-					public getScrollY(): number;
-					public static setSource(param0: globalAndroid.view.accessibility.AccessibilityRecord, param1: globalAndroid.view.View, param2: number): void;
-					public isPassword(): boolean;
-					public getRemovedCount(): number;
-					public constructor(param0: any);
+					/** @deprecated */
 					public getFromIndex(): number;
+					/** @deprecated */
+					public getText(): java.util.List<string>;
+					public static setMaxScrollX(param0: globalAndroid.view.accessibility.AccessibilityRecord, param1: number): void;
+					/** @deprecated */
 					public getClassName(): string;
-					public setSource(param0: globalAndroid.view.View, param1: number): void;
-					public static getMaxScrollX(param0: globalAndroid.view.accessibility.AccessibilityRecord): number;
-					public static obtain(): androidx.core.view.accessibility.AccessibilityRecordCompat;
-					public hashCode(): number;
-					public setMaxScrollX(param0: number): void;
+					/** @deprecated */
+					public getScrollY(): number;
+					public static setMaxScrollY(param0: globalAndroid.view.accessibility.AccessibilityRecord, param1: number): void;
+					/** @deprecated */
+					public getParcelableData(): globalAndroid.os.Parcelable;
+					/** @deprecated */
+					public getItemCount(): number;
+					/** @deprecated */
+					public getAddedCount(): number;
+					/** @deprecated */
+					public setContentDescription(param0: string): void;
+					/** @deprecated */
 					public isChecked(): boolean;
+					/** @deprecated */
+					public setSource(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public isScrollable(): boolean;
+					/** @deprecated */
+					public setFullScreen(param0: boolean): void;
+					/** @deprecated */
+					public hashCode(): number;
+					/** @deprecated */
+					public isPassword(): boolean;
+					/** @deprecated */
+					public isFullScreen(): boolean;
+					/** @deprecated */
+					public setMaxScrollX(param0: number): void;
+					/** @deprecated */
+					public static obtain(param0: androidx.core.view.accessibility.AccessibilityRecordCompat): androidx.core.view.accessibility.AccessibilityRecordCompat;
+					/** @deprecated */
+					public setScrollable(param0: boolean): void;
+					/** @deprecated */
+					public setSource(param0: globalAndroid.view.View, param1: number): void;
+					/** @deprecated */
+					public setScrollY(param0: number): void;
+					public static setSource(param0: globalAndroid.view.accessibility.AccessibilityRecord, param1: globalAndroid.view.View, param2: number): void;
+					/** @deprecated */
+					public getRemovedCount(): number;
+					/** @deprecated */
+					public constructor(param0: any);
+					/** @deprecated */
+					public setRemovedCount(param0: number): void;
+					/** @deprecated */
+					public setBeforeText(param0: string): void;
+					/** @deprecated */
+					public setFromIndex(param0: number): void;
+					/** @deprecated */
+					public getMaxScrollY(): number;
+					/** @deprecated */
+					public getContentDescription(): string;
+					/** @deprecated */
+					public setCurrentItemIndex(param0: number): void;
+					public static getMaxScrollX(param0: globalAndroid.view.accessibility.AccessibilityRecord): number;
+					/** @deprecated */
+					public getImpl(): any;
+					/** @deprecated */
+					public setMaxScrollY(param0: number): void;
+					/** @deprecated */
+					public static obtain(): androidx.core.view.accessibility.AccessibilityRecordCompat;
+					/** @deprecated */
+					public setPassword(param0: boolean): void;
+					/** @deprecated */
+					public setEnabled(param0: boolean): void;
+					/** @deprecated */
+					public getCurrentItemIndex(): number;
+					/** @deprecated */
+					public getWindowId(): number;
+					/** @deprecated */
+					public isEnabled(): boolean;
+					/** @deprecated */
+					public setToIndex(param0: number): void;
+					public hashCode(): number;
+					/** @deprecated */
+					public recycle(): void;
+					/** @deprecated */
+					public setParcelableData(param0: globalAndroid.os.Parcelable): void;
+					/** @deprecated */
+					public setChecked(param0: boolean): void;
+					/** @deprecated */
+					public getMaxScrollX(): number;
 					public static getMaxScrollY(param0: globalAndroid.view.accessibility.AccessibilityRecord): number;
+					/** @deprecated */
+					public getSource(): androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+					/** @deprecated */
+					public setScrollX(param0: number): void;
+					/** @deprecated */
 					public setClassName(param0: string): void;
+					/** @deprecated */
+					public setAddedCount(param0: number): void;
+					/** @deprecated */
+					public getBeforeText(): string;
+					/** @deprecated */
 					public getToIndex(): number;
 					public equals(param0: any): boolean;
-					public static obtain(param0: androidx.core.view.accessibility.AccessibilityRecordCompat): androidx.core.view.accessibility.AccessibilityRecordCompat;
+					/** @deprecated */
+					public equals(param0: any): boolean;
+					/** @deprecated */
 					public setItemCount(param0: number): void;
-					public getWindowId(): number;
-					public getItemCount(): number;
-					public getMaxScrollY(): number;
+					/** @deprecated */
 					public getScrollX(): number;
-					public setFullScreen(param0: boolean): void;
-					public setScrollX(param0: number): void;
-					public setMaxScrollY(param0: number): void;
-					public getAddedCount(): number;
-					public setParcelableData(param0: globalAndroid.os.Parcelable): void;
 				}
 			}
 		}
@@ -19424,6 +19595,7 @@ declare module androidx {
 					public static IME_FLAG_NO_PERSONALIZED_LEARNING: number;
 					public static IME_FLAG_FORCE_ASCII: number;
 					public static setContentMimeTypes(param0: globalAndroid.view.inputmethod.EditorInfo, param1: native.Array<string>): void;
+					/** @deprecated */
 					public constructor();
 					public static getContentMimeTypes(param0: globalAndroid.view.inputmethod.EditorInfo): native.Array<string>;
 				}
@@ -19441,6 +19613,7 @@ declare module androidx {
 					public static INPUT_CONTENT_GRANT_READ_URI_PERMISSION: number;
 					public static commitContent(param0: globalAndroid.view.inputmethod.InputConnection, param1: globalAndroid.view.inputmethod.EditorInfo, param2: androidx.core.view.inputmethod.InputContentInfoCompat, param3: number, param4: globalAndroid.os.Bundle): boolean;
 					public static createWrapper(param0: globalAndroid.view.inputmethod.InputConnection, param1: globalAndroid.view.inputmethod.EditorInfo, param2: androidx.core.view.inputmethod.InputConnectionCompat.OnCommitContentListener): globalAndroid.view.inputmethod.InputConnection;
+					/** @deprecated */
 					public constructor();
 				}
 				export module InputConnectionCompat {
@@ -19658,15 +19831,24 @@ declare module androidx {
 		export module widget {
 			export class EdgeEffectCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.widget.EdgeEffectCompat>;
-				public onPull(param0: number): boolean;
-				public onRelease(): boolean;
-				public constructor(param0: globalAndroid.content.Context);
-				public static onPull(param0: globalAndroid.widget.EdgeEffect, param1: number, param2: number): void;
-				public setSize(param0: number, param1: number): void;
-				public onPull(param0: number, param1: number): boolean;
+				/** @deprecated */
 				public onAbsorb(param0: number): boolean;
+				/** @deprecated */
+				public onRelease(): boolean;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
 				public isFinished(): boolean;
+				/** @deprecated */
+				public setSize(param0: number, param1: number): void;
+				/** @deprecated */
+				public onPull(param0: number): boolean;
+				public static onPull(param0: globalAndroid.widget.EdgeEffect, param1: number, param2: number): void;
+				/** @deprecated */
+				public onPull(param0: number, param1: number): boolean;
+				/** @deprecated */
 				public finish(): void;
+				/** @deprecated */
 				public draw(param0: globalAndroid.graphics.Canvas): boolean;
 			}
 		}
@@ -19693,6 +19875,7 @@ declare module androidx {
 			export class ListPopupWindowCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.widget.ListPopupWindowCompat>;
 				public static createDragToOpenListener(param0: globalAndroid.widget.ListPopupWindow, param1: globalAndroid.view.View): globalAndroid.view.View.OnTouchListener;
+				/** @deprecated */
 				public static createDragToOpenListener(param0: any, param1: globalAndroid.view.View): globalAndroid.view.View.OnTouchListener;
 			}
 		}
@@ -19730,7 +19913,7 @@ declare module androidx {
 declare module androidx {
 	export module core {
 		export module widget {
-			export class NestedScrollView extends globalAndroid.widget.FrameLayout implements androidx.core.view.NestedScrollingParent3, androidx.core.view.NestedScrollingChild3, androidx.core.view.ScrollingView {
+			export class NestedScrollView extends globalAndroid.widget.FrameLayout implements androidx.core.view.NestedScrollingParent2, androidx.core.view.NestedScrollingChild2, androidx.core.view.ScrollingView {
 				public static class: java.lang.Class<androidx.core.widget.NestedScrollView>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -19750,7 +19933,6 @@ declare module androidx {
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public fullScroll(param0: number): boolean;
 				public computeScrollDeltaToGetChildRectOnScreen(param0: globalAndroid.graphics.Rect): number;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public stopNestedScroll(param0: number): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public smoothScrollBy(param0: number, param1: number): void;
@@ -19759,6 +19941,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public getBottomFadingEdgeStrength(): number;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public computeHorizontalScrollExtent(): number;
 				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
@@ -19776,13 +19960,14 @@ declare module androidx {
 				public computeHorizontalScrollOffset(): number;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public dispatchNestedPreFling(param0: number, param1: number): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public dispatchNestedPreScroll(param0: number, param1: number, param2: native.Array<number>, param3: native.Array<number>, param4: number): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public computeScroll(): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public isFillViewport(): boolean;
 				public stopNestedScroll(): void;
 				public setSmoothScrollingEnabled(param0: boolean): void;
@@ -19794,6 +19979,8 @@ declare module androidx {
 				public getParent(): globalAndroid.view.ViewParent;
 				public isNestedScrollingEnabled(): boolean;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public computeVerticalScrollOffset(): number;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -19824,7 +20011,6 @@ declare module androidx {
 				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 				public getMaxScrollAmount(): number;
 				public arrowScroll(param0: number): boolean;
-				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number, param6: native.Array<number>): void;
 				public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 				public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
@@ -19843,7 +20029,6 @@ declare module androidx {
 				public constructor(param0: globalAndroid.content.Context);
 				public isSmoothScrollingEnabled(): boolean;
 				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: number): void;
-				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>, param5: number, param6: native.Array<number>): void;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 				public keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 				public onSaveInstanceState(): globalAndroid.os.Parcelable;
@@ -19927,24 +20112,42 @@ declare module androidx {
 		export module widget {
 			export class ScrollerCompat extends java.lang.Object {
 				public static class: java.lang.Class<androidx.core.widget.ScrollerCompat>;
-				public getCurrVelocity(): number;
-				public notifyHorizontalEdgeReached(param0: number, param1: number, param2: number): void;
-				public startScroll(param0: number, param1: number, param2: number, param3: number): void;
-				public getFinalX(): number;
-				public abortAnimation(): void;
-				public springBack(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number): boolean;
-				public getFinalY(): number;
-				public isFinished(): boolean;
-				public fling(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number, param6: number, param7: number, param8: number, param9: number): void;
-				public getCurrY(): number;
-				public fling(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number, param6: number, param7: number): void;
-				public isOverScrolled(): boolean;
-				public notifyVerticalEdgeReached(param0: number, param1: number, param2: number): void;
-				public computeScrollOffset(): boolean;
-				public static create(param0: globalAndroid.content.Context, param1: globalAndroid.view.animation.Interpolator): androidx.core.widget.ScrollerCompat;
-				public static create(param0: globalAndroid.content.Context): androidx.core.widget.ScrollerCompat;
-				public startScroll(param0: number, param1: number, param2: number, param3: number, param4: number): void;
+				/** @deprecated */
 				public getCurrX(): number;
+				/** @deprecated */
+				public springBack(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number): boolean;
+				/** @deprecated */
+				public startScroll(param0: number, param1: number, param2: number, param3: number, param4: number): void;
+				/** @deprecated */
+				public getFinalX(): number;
+				/** @deprecated */
+				public fling(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number, param6: number, param7: number, param8: number, param9: number): void;
+				/** @deprecated */
+				public fling(param0: number, param1: number, param2: number, param3: number, param4: number, param5: number, param6: number, param7: number): void;
+				/** @deprecated */
+				public notifyVerticalEdgeReached(param0: number, param1: number, param2: number): void;
+				/** @deprecated */
+				public static create(param0: globalAndroid.content.Context): androidx.core.widget.ScrollerCompat;
+				/** @deprecated */
+				public abortAnimation(): void;
+				/** @deprecated */
+				public getCurrVelocity(): number;
+				/** @deprecated */
+				public getFinalY(): number;
+				/** @deprecated */
+				public isFinished(): boolean;
+				/** @deprecated */
+				public startScroll(param0: number, param1: number, param2: number, param3: number): void;
+				/** @deprecated */
+				public getCurrY(): number;
+				/** @deprecated */
+				public notifyHorizontalEdgeReached(param0: number, param1: number, param2: number): void;
+				/** @deprecated */
+				public isOverScrolled(): boolean;
+				/** @deprecated */
+				public computeScrollOffset(): boolean;
+				/** @deprecated */
+				public static create(param0: globalAndroid.content.Context, param1: globalAndroid.view.animation.Interpolator): androidx.core.widget.ScrollerCompat;
 			}
 		}
 	}
@@ -20077,7 +20280,6 @@ declare module androidx {
 				public mFilterQueryProvider: globalAndroid.widget.FilterQueryProvider;
 				public static FLAG_AUTO_REQUERY: number;
 				public static FLAG_REGISTER_CONTENT_OBSERVER: number;
-				public init(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: boolean): void;
 				public getCursor(): globalAndroid.database.Cursor;
 				public getFilter(): globalAndroid.widget.Filter;
 				public constructor();
@@ -20085,6 +20287,8 @@ declare module androidx {
 				public isEnabled(param0: number): boolean;
 				public bindView(param0: globalAndroid.view.View, param1: globalAndroid.content.Context, param2: globalAndroid.database.Cursor): void;
 				public setFilterQueryProvider(param0: globalAndroid.widget.FilterQueryProvider): void;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
 				public getItem(param0: number): any;
 				public getView(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public areAllItemsEnabled(): boolean;
@@ -20094,7 +20298,8 @@ declare module androidx {
 				public getCount(): number;
 				public changeCursor(param0: globalAndroid.database.Cursor): void;
 				public convertToString(param0: globalAndroid.database.Cursor): string;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
+				/** @deprecated */
+				public init(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: boolean): void;
 				public onContentChanged(): void;
 				public getDropDownView(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public hasStableIds(): boolean;
@@ -20157,25 +20362,28 @@ declare module androidx {
 		export module widget {
 			export abstract class ResourceCursorAdapter extends androidx.cursoradapter.widget.CursorAdapter {
 				public static class: java.lang.Class<androidx.cursoradapter.widget.ResourceCursorAdapter>;
-				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: boolean);
 				public getCursor(): globalAndroid.database.Cursor;
 				public getFilter(): globalAndroid.widget.Filter;
 				public changeCursor(param0: globalAndroid.database.Cursor): void;
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: number);
 				public convertToString(param0: globalAndroid.database.Cursor): string;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
 				public constructor();
 				public getDropDownView(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public newView(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public setDropDownViewResource(param0: number): void;
 				public isEnabled(param0: number): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: number);
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor);
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
 				public areAllItemsEnabled(): boolean;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: boolean);
 				public newDropDownView(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
 				public setViewResource(param0: number): void;
 				public runQueryOnBackgroundThread(param0: string): globalAndroid.database.Cursor;
-				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: boolean);
 			}
 		}
 	}
@@ -20195,26 +20403,30 @@ declare module androidx {
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: native.Array<string>, param4: native.Array<number>, param5: number);
 				public setViewImage(param0: globalAndroid.widget.ImageView, param1: string): void;
 				public isEnabled(param0: number): boolean;
-				public bindView(param0: globalAndroid.view.View, param1: globalAndroid.content.Context, param2: globalAndroid.database.Cursor): void;
-				public setViewText(param0: globalAndroid.widget.TextView, param1: string): void;
+				/** @deprecated */
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: native.Array<string>, param4: native.Array<number>);
+				public bindView(param0: globalAndroid.view.View, param1: globalAndroid.content.Context, param2: globalAndroid.database.Cursor): void;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
+				public setViewText(param0: globalAndroid.widget.TextView, param1: string): void;
 				public areAllItemsEnabled(): boolean;
 				public runQueryOnBackgroundThread(param0: string): globalAndroid.database.Cursor;
 				public setStringConversionColumn(param0: number): void;
-				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: boolean);
 				public getCursorToStringConverter(): androidx.cursoradapter.widget.SimpleCursorAdapter.CursorToStringConverter;
 				public setCursorToStringConverter(param0: androidx.cursoradapter.widget.SimpleCursorAdapter.CursorToStringConverter): void;
 				public changeCursor(param0: globalAndroid.database.Cursor): void;
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: number);
 				public convertToString(param0: globalAndroid.database.Cursor): string;
-				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor);
 				public getViewBinder(): androidx.cursoradapter.widget.SimpleCursorAdapter.ViewBinder;
 				public getDropDownView(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.ViewGroup): globalAndroid.view.View;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.database.Cursor, param2: number);
 				public swapCursor(param0: globalAndroid.database.Cursor): globalAndroid.database.Cursor;
-				public setViewBinder(param0: androidx.cursoradapter.widget.SimpleCursorAdapter.ViewBinder): void;
+				/** @deprecated */
 				public constructor(param0: globalAndroid.content.Context, param1: number, param2: globalAndroid.database.Cursor, param3: boolean);
+				public setViewBinder(param0: androidx.cursoradapter.widget.SimpleCursorAdapter.ViewBinder): void;
 				public changeCursorAndColumns(param0: globalAndroid.database.Cursor, param1: native.Array<string>, param2: native.Array<number>): void;
 			}
 			export module SimpleCursorAdapter {
@@ -20275,7 +20487,6 @@ declare module androidx {
 				public invalidateVirtualView(param0: number, param1: number): void;
 				public requestKeyboardFocusForVirtualView(param0: number): boolean;
 				public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
-				public getFocusedVirtualView(): number;
 				public constructor();
 				public getAccessibilityFocusedVirtualViewId(): number;
 				public dispatchHoverEvent(param0: globalAndroid.view.MotionEvent): boolean;
@@ -20294,7 +20505,8 @@ declare module androidx {
 				public onInitializeAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public onPopulateEventForVirtualView(param0: number, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public getVisibleVirtualViews(param0: java.util.List<java.lang.Integer>): void;
-				public constructor(param0: any);
+				/** @deprecated */
+				public getFocusedVirtualView(): number;
 				public getVirtualViewAt(param0: number, param1: number): number;
 			}
 			export module ExploreByTouchHelper {
@@ -20600,12 +20812,13 @@ declare module androidx {
 				public setDrawerShadow(param0: number, param1: number): void;
 				public closeDrawer(param0: globalAndroid.view.View, param1: boolean): void;
 				public setStatusBarBackgroundColor(param0: number): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public closeDrawer(param0: globalAndroid.view.View): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public isTextDirectionResolved(): boolean;
 				public getDrawerLockMode(param0: number): number;
@@ -20617,6 +20830,8 @@ declare module androidx {
 				public onRtlPropertiesChanged(param0: number): void;
 				public isLayoutDirectionResolved(): boolean;
 				public openDrawer(param0: number, param1: boolean): void;
+				/** @deprecated */
+				public setDrawerListener(param0: androidx.drawerlayout.widget.DrawerLayout.DrawerListener): void;
 				public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 				public setDrawerShadow(param0: globalAndroid.graphics.drawable.Drawable, param1: number): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
@@ -20628,14 +20843,14 @@ declare module androidx {
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 				public setDrawerLockMode(param0: number): void;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public isDrawerOpen(param0: globalAndroid.view.View): boolean;
 				public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public computeScroll(): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
-				public setDrawerListener(param0: androidx.drawerlayout.widget.DrawerLayout.DrawerListener): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public openDrawer(param0: number): void;
 				public drawChild(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.view.View, param2: number): boolean;
@@ -20643,6 +20858,8 @@ declare module androidx {
 				public onAttachedToWindow(): void;
 				public getParent(): globalAndroid.view.ViewParent;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -20789,8 +21006,9 @@ declare module androidx {
 				public commitNowAllowingStateLoss(): void;
 				public replace(param0: number, param1: androidx.fragment.app.Fragment): androidx.fragment.app.FragmentTransaction;
 				public setTransition(param0: number): androidx.fragment.app.FragmentTransaction;
-				public dump(param0: string, param1: java.io.PrintWriter): void;
 				public isAddToBackStackAllowed(): boolean;
+				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
+				public getTransition(): number;
 				public hide(param0: androidx.fragment.app.Fragment): androidx.fragment.app.FragmentTransaction;
 				public setTransitionStyle(param0: number): androidx.fragment.app.FragmentTransaction;
 				public setReorderingAllowed(param0: boolean): androidx.fragment.app.FragmentTransaction;
@@ -20823,9 +21041,12 @@ declare module androidx {
 				public add(param0: number, param1: androidx.fragment.app.Fragment): androidx.fragment.app.FragmentTransaction;
 				public attach(param0: androidx.fragment.app.Fragment): androidx.fragment.app.FragmentTransaction;
 				public getBreadCrumbShortTitleRes(): number;
+				public getTransitionStyle(): number;
 				public getBreadCrumbShortTitle(): string;
 				public setAllowOptimization(param0: boolean): androidx.fragment.app.FragmentTransaction;
 				public getBreadCrumbTitleRes(): number;
+				/** @deprecated */
+				public setAllowOptimization(param0: boolean): androidx.fragment.app.FragmentTransaction;
 				public setBreadCrumbShortTitle(param0: number): androidx.fragment.app.FragmentTransaction;
 			}
 			export module BackStackRecord {
@@ -20875,12 +21096,13 @@ declare module androidx {
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
 				public dismissAllowingStateLoss(): void;
 				public onCancel(param0: globalAndroid.content.DialogInterface): void;
+				/** @deprecated */
+				public onAttach(param0: globalAndroid.app.Activity): void;
 				public setStyle(param0: number, param1: number): void;
 				public showNow(param0: androidx.fragment.app.FragmentManager, param1: string): void;
 				public getShowsDialog(): boolean;
 				public setupDialog(param0: globalAndroid.app.Dialog, param1: number): void;
 				public onLowMemory(): void;
-				public onAttach(param0: globalAndroid.app.Activity): void;
 				public setCancelable(param0: boolean): void;
 				public onSaveInstanceState(param0: globalAndroid.os.Bundle): void;
 				public onGetLayoutInflater(param0: globalAndroid.os.Bundle): globalAndroid.view.LayoutInflater;
@@ -20888,7 +21110,6 @@ declare module androidx {
 				public setShowsDialog(param0: boolean): void;
 				public onAttach(param0: globalAndroid.content.Context): void;
 				public onDismiss(param0: globalAndroid.content.DialogInterface): void;
-				public requireDialog(): globalAndroid.app.Dialog;
 				public onCreate(param0: globalAndroid.os.Bundle): void;
 				public onStart(): void;
 				public getTheme(): number;
@@ -20925,7 +21146,11 @@ declare module androidx {
 				public setReturnTransition(param0: any): void;
 				public setReenterTransition(param0: any): void;
 				public startPostponedEnterTransition(): void;
+				/** @deprecated */
+				public getLayoutInflater(param0: globalAndroid.os.Bundle): globalAndroid.view.LayoutInflater;
 				public getViewModelStore(): androidx.lifecycle.ViewModelStore;
+				/** @deprecated */
+				public getLoaderManager(): androidx.loader.app.LoaderManager;
 				public getString(param0: number): string;
 				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public startActivityForResult(param0: globalAndroid.content.Intent, param1: number, param2: globalAndroid.os.Bundle): void;
@@ -20964,7 +21189,6 @@ declare module androidx {
 				public equals(param0: any): boolean;
 				public getFragmentManager(): androidx.fragment.app.FragmentManager;
 				public onAttachFragment(param0: androidx.fragment.app.Fragment): void;
-				public getLayoutInflater(param0: globalAndroid.os.Bundle): globalAndroid.view.LayoutInflater;
 				public getSharedElementEnterTransition(): any;
 				public shouldShowRequestPermissionRationale(param0: string): boolean;
 				public getUserVisibleHint(): boolean;
@@ -20984,6 +21208,8 @@ declare module androidx {
 				public isResumed(): boolean;
 				public onOptionsMenuClosed(param0: globalAndroid.view.Menu): void;
 				public getAllowEnterTransitionOverlap(): boolean;
+				/** @deprecated */
+				public onInflate(param0: globalAndroid.app.Activity, param1: globalAndroid.util.AttributeSet, param2: globalAndroid.os.Bundle): void;
 				public onDestroyView(): void;
 				public requireActivity(): androidx.fragment.app.FragmentActivity;
 				public onDetach(): void;
@@ -20991,7 +21217,6 @@ declare module androidx {
 				public isVisible(): boolean;
 				public getChildFragmentManager(): androidx.fragment.app.FragmentManager;
 				public onActivityCreated(param0: globalAndroid.os.Bundle): void;
-				public onInflate(param0: globalAndroid.app.Activity, param1: globalAndroid.util.AttributeSet, param2: globalAndroid.os.Bundle): void;
 				public setAllowEnterTransitionOverlap(param0: boolean): void;
 				public onPause(): void;
 				public getString(param0: number, param1: native.Array<any>): string;
@@ -21002,13 +21227,13 @@ declare module androidx {
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
 				public getTargetFragment(): androidx.fragment.app.Fragment;
 				public getLayoutInflater(): globalAndroid.view.LayoutInflater;
+				/** @deprecated */
+				public onAttach(param0: globalAndroid.app.Activity): void;
 				public getArguments(): globalAndroid.os.Bundle;
 				public getViewLifecycleOwnerLiveData(): androidx.lifecycle.LiveData<androidx.lifecycle.LifecycleOwner>;
 				public onLowMemory(): void;
 				public getId(): number;
 				public onInflate(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: globalAndroid.os.Bundle): void;
-				public getLoaderManager(): androidx.loader.app.LoaderManager;
-				public onAttach(param0: globalAndroid.app.Activity): void;
 				public setHasOptionsMenu(param0: boolean): void;
 				public startIntentSenderForResult(param0: globalAndroid.content.IntentSender, param1: number, param2: globalAndroid.content.Intent, param3: number, param4: number, param5: number, param6: globalAndroid.os.Bundle): void;
 				public requireFragmentManager(): androidx.fragment.app.FragmentManager;
@@ -21063,32 +21288,44 @@ declare module androidx {
 declare module androidx {
 	export module fragment {
 		export module app {
-			export class FragmentActivity extends androidx.activity.ComponentActivity implements androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback, androidx.core.app.ActivityCompat.RequestPermissionsRequestCodeValidator {
+			export class FragmentActivity extends androidx.core.app.ComponentActivity implements androidx.lifecycle.ViewModelStoreOwner, androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback, androidx.core.app.ActivityCompat.RequestPermissionsRequestCodeValidator {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentActivity>;
 				public supportPostponeEnterTransition(): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public supportInvalidateOptionsMenu(): void;
+				/** @deprecated */
+				public startActivityFromFragment(param0: globalAndroid.app.Fragment, param1: globalAndroid.content.Intent, param2: number): void;
 				public dispatchTrackballEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public onActionModeFinished(param0: globalAndroid.view.ActionMode): void;
-				public getSupportFragmentManager(): androidx.fragment.app.FragmentManager;
 				public getLifecycle(): androidx.lifecycle.Lifecycle;
+				public getSupportFragmentManager(): androidx.fragment.app.FragmentManager;
 				public constructor();
 				public onMultiWindowModeChanged(param0: boolean, param1: globalAndroid.content.res.Configuration): void;
 				public onCreateView(param0: string, param1: globalAndroid.content.Context, param2: globalAndroid.util.AttributeSet): globalAndroid.view.View;
 				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: number);
+				/** @deprecated */
+				public onMultiWindowModeChanged(param0: boolean): void;
 				public onAttachFragment(param0: androidx.fragment.app.Fragment): void;
 				public supportFinishAfterTransition(): void;
 				public onTrimMemory(param0: number): void;
+				/** @deprecated */
+				public getSupportLoaderManager(): androidx.loader.app.LoaderManager;
 				public setEnterSharedElementCallback(param0: any): void;
-				public getThemedContext(): globalAndroid.content.Context;
 				public onPreparePanel(param0: number, param1: globalAndroid.view.View, param2: globalAndroid.view.Menu): boolean;
+				public getLastCustomNonConfigurationInstance(): any;
 				public onResume(): void;
 				public onPointerCaptureChanged(param0: boolean): void;
+				/** @deprecated */
+				public onAttachFragment(param0: globalAndroid.app.Fragment): void;
 				public dispatchKeyShortcutEvent(param0: globalAndroid.view.KeyEvent): boolean;
-				public supportInvalidateOptionsMenu(): void;
-				public startActivityFromFragment(param0: globalAndroid.app.Fragment, param1: globalAndroid.content.Intent, param2: number): void;
+				/** @deprecated */
+				public onPictureInPictureModeChanged(param0: boolean): void;
 				public onProvideKeyboardShortcuts(param0: java.util.List<any>, param1: globalAndroid.view.Menu, param2: number): void;
+				/** @deprecated */
+				public startActivityFromFragment(param0: globalAndroid.app.Fragment, param1: globalAndroid.content.Intent, param2: number, param3: globalAndroid.os.Bundle): void;
 				public onWindowAttributesChanged(param0: globalAndroid.view.WindowManager.LayoutParams): void;
 				public onSaveInstanceState(param0: globalAndroid.os.Bundle, param1: any): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.Resources.Theme);
@@ -21104,6 +21341,7 @@ declare module androidx {
 				public onMultiWindowModeChanged(param0: boolean): void;
 				public onDetachedFromWindow(): void;
 				public onSearchRequested(): boolean;
+				public onBackPressed(): void;
 				public getViewModelStore(): androidx.lifecycle.ViewModelStore;
 				public onMenuItemSelected(param0: number, param1: globalAndroid.view.MenuItem): boolean;
 				public onCreatePanelMenu(param0: number, param1: globalAndroid.view.Menu): boolean;
@@ -21114,7 +21352,6 @@ declare module androidx {
 				public startActivityForResult(param0: globalAndroid.content.Intent, param1: number, param2: globalAndroid.os.Bundle): void;
 				public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback, param1: number): globalAndroid.view.ActionMode;
 				public startIntentSenderForResult(param0: globalAndroid.content.IntentSender, param1: number, param2: globalAndroid.content.Intent, param3: number, param4: number, param5: number): void;
-				public onAttachFragment(param0: globalAndroid.app.Fragment): void;
 				public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public dispatchGenericMotionEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public onRequestPermissionsResult(param0: number, param1: native.Array<string>, param2: native.Array<number>): void;
@@ -21125,7 +21362,6 @@ declare module androidx {
 				public onPictureInPictureModeChanged(param0: boolean): void;
 				public onWindowStartingActionMode(param0: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public onStop(): void;
-				public startActivityFromFragment(param0: globalAndroid.app.Fragment, param1: globalAndroid.content.Intent, param2: number, param3: globalAndroid.os.Bundle): void;
 				public setExitSharedElementCallback(param0: any): void;
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
 				public onActionModeStarted(param0: globalAndroid.view.ActionMode): void;
@@ -21138,10 +21374,10 @@ declare module androidx {
 				public onStateNotSaved(): void;
 				public onSaveInstanceState(param0: globalAndroid.os.Bundle): void;
 				public startIntentSenderForResult(param0: globalAndroid.content.IntentSender, param1: number, param2: globalAndroid.content.Intent, param3: number, param4: number, param5: number, param6: globalAndroid.os.Bundle): void;
-				public getSupportLoaderManager(): androidx.loader.app.LoaderManager;
 				public onCreateContextMenu(param0: globalAndroid.view.ContextMenu, param1: globalAndroid.view.View, param2: globalAndroid.view.ContextMenu.ContextMenuInfo): void;
 				public onCreatePanelView(param0: number): globalAndroid.view.View;
 				public onPrepareOptionsPanel(param0: globalAndroid.view.View, param1: globalAndroid.view.Menu): boolean;
+				public onRetainCustomNonConfigurationInstance(): any;
 				public onCreate(param0: globalAndroid.os.Bundle): void;
 				public superDispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public setExitSharedElementCallback(param0: androidx.core.app.SharedElementCallback): void;
@@ -21151,12 +21387,12 @@ declare module androidx {
 				public onWindowFocusChanged(param0: boolean): void;
 				public onAttachedToWindow(): void;
 				public supportStartPostponedEnterTransition(): void;
+				public onRetainNonConfigurationInstance(): any;
 			}
 			export module FragmentActivity {
-				export class HostCallbacks extends androidx.fragment.app.FragmentHostCallback<androidx.fragment.app.FragmentActivity> implements androidx.lifecycle.ViewModelStoreOwner  {
+				export class HostCallbacks extends androidx.fragment.app.FragmentHostCallback<androidx.fragment.app.FragmentActivity> {
 					public static class: java.lang.Class<androidx.fragment.app.FragmentActivity.HostCallbacks>;
 					public onStartActivityFromFragment(param0: androidx.fragment.app.Fragment, param1: globalAndroid.content.Intent, param2: number): void;
-					public getViewModelStore(): androidx.lifecycle.ViewModelStore;
 					public onShouldShowRequestPermissionRationale(param0: string): boolean;
 					public onGetLayoutInflater(): globalAndroid.view.LayoutInflater;
 					public onGetWindowAnimations(): number;
@@ -21175,6 +21411,9 @@ declare module androidx {
 					public onStartIntentSenderFromFragment(param0: androidx.fragment.app.Fragment, param1: globalAndroid.content.IntentSender, param2: number, param3: globalAndroid.content.Intent, param4: number, param5: number, param6: number, param7: globalAndroid.os.Bundle): void;
 					public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.os.Handler, param2: number);
 					public onDump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
+				}
+				export class NonConfigurationInstances extends java.lang.Object {
+					public static class: java.lang.Class<androidx.fragment.app.FragmentActivity.NonConfigurationInstances>;
 				}
 			}
 		}
@@ -21201,60 +21440,58 @@ declare module androidx {
 			export class FragmentController extends java.lang.Object {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentController>;
 				public getActiveFragments(param0: java.util.List<androidx.fragment.app.Fragment>): java.util.List<androidx.fragment.app.Fragment>;
-				public doLoaderDestroy(): void;
-				public reportLoaderStart(): void;
-				public retainLoaderNonConfig(): androidx.collection.SimpleArrayMap<string,androidx.loader.app.LoaderManager>;
 				public saveAllState(): globalAndroid.os.Parcelable;
 				public dispatchMultiWindowModeChanged(param0: boolean): void;
 				public dispatchLowMemory(): void;
+				/** @deprecated */
+				public restoreAllState(param0: globalAndroid.os.Parcelable, param1: java.util.List<androidx.fragment.app.Fragment>): void;
 				public onCreateView(param0: globalAndroid.view.View, param1: string, param2: globalAndroid.content.Context, param3: globalAndroid.util.AttributeSet): globalAndroid.view.View;
-				public retainNonConfig(): java.util.List<androidx.fragment.app.Fragment>;
 				public dispatchContextItemSelected(param0: globalAndroid.view.MenuItem): boolean;
 				public getActiveFragmentsCount(): number;
 				public dispatchPictureInPictureModeChanged(param0: boolean): void;
+				/** @deprecated */
+				public doLoaderStop(param0: boolean): void;
+				/** @deprecated */
+				public restoreLoaderNonConfig(param0: androidx.collection.SimpleArrayMap<string,androidx.loader.app.LoaderManager>): void;
+				/** @deprecated */
 				public dumpLoaders(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public getSupportFragmentManager(): androidx.fragment.app.FragmentManager;
 				public dispatchStop(): void;
-				public restoreAllState(param0: globalAndroid.os.Parcelable, param1: java.util.List<androidx.fragment.app.Fragment>): void;
 				public dispatchOptionsItemSelected(param0: globalAndroid.view.MenuItem): boolean;
 				public noteStateNotSaved(): void;
 				public dispatchConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
-				public doLoaderStart(): void;
 				public dispatchPrepareOptionsMenu(param0: globalAndroid.view.Menu): boolean;
+				/** @deprecated */
+				public dispatchReallyStop(): void;
 				public static createController(param0: androidx.fragment.app.FragmentHostCallback<any>): androidx.fragment.app.FragmentController;
 				public dispatchResume(): void;
+				/** @deprecated */
+				public getSupportLoaderManager(): androidx.loader.app.LoaderManager;
 				public dispatchDestroy(): void;
 				public restoreAllState(param0: globalAndroid.os.Parcelable, param1: androidx.fragment.app.FragmentManagerNonConfig): void;
-				public restoreSaveState(param0: globalAndroid.os.Parcelable): void;
-				public restoreLoaderNonConfig(param0: androidx.collection.SimpleArrayMap<string,androidx.loader.app.LoaderManager>): void;
+				/** @deprecated */
+				public doLoaderStart(): void;
+				/** @deprecated */
+				public reportLoaderStart(): void;
 				public retainNestedNonConfig(): androidx.fragment.app.FragmentManagerNonConfig;
 				public dispatchStart(): void;
+				/** @deprecated */
+				public doLoaderRetain(): void;
+				/** @deprecated */
+				public retainLoaderNonConfig(): androidx.collection.SimpleArrayMap<string,androidx.loader.app.LoaderManager>;
 				public findFragmentByWho(param0: string): androidx.fragment.app.Fragment;
 				public dispatchPause(): void;
 				public dispatchCreate(): void;
-				public getSupportLoaderManager(): androidx.loader.app.LoaderManager;
-				public dispatchReallyStop(): void;
+				/** @deprecated */
+				public doLoaderDestroy(): void;
+				/** @deprecated */
+				public retainNonConfig(): java.util.List<androidx.fragment.app.Fragment>;
 				public attachHost(param0: androidx.fragment.app.Fragment): void;
 				public dispatchActivityCreated(): void;
 				public dispatchDestroyView(): void;
-				public doLoaderRetain(): void;
 				public dispatchCreateOptionsMenu(param0: globalAndroid.view.Menu, param1: globalAndroid.view.MenuInflater): boolean;
 				public execPendingActions(): boolean;
-				public doLoaderStop(param0: boolean): void;
 				public dispatchOptionsMenuClosed(param0: globalAndroid.view.Menu): void;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module fragment {
-		export module app {
-			export class FragmentFactory extends java.lang.Object {
-				public static class: java.lang.Class<androidx.fragment.app.FragmentFactory>;
-				public instantiate(param0: java.lang.ClassLoader, param1: string, param2: globalAndroid.os.Bundle): androidx.fragment.app.Fragment;
-				public static loadFragmentClass(param0: java.lang.ClassLoader, param1: string): java.lang.Class<any>;
-				public constructor();
 			}
 		}
 	}
@@ -21292,10 +21529,10 @@ declare module androidx {
 			export abstract class FragmentManager extends java.lang.Object {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentManager>;
 				public static POP_BACK_STACK_INCLUSIVE: number;
+				/** @deprecated */
 				public openTransaction(): androidx.fragment.app.FragmentTransaction;
 				public isDestroyed(): boolean;
 				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
-				public getFragmentFactory(): androidx.fragment.app.FragmentFactory;
 				public executePendingTransactions(): boolean;
 				public removeOnBackStackChangedListener(param0: androidx.fragment.app.FragmentManager.OnBackStackChangedListener): void;
 				public isStateSaved(): boolean;
@@ -21313,7 +21550,6 @@ declare module androidx {
 				public findFragmentByTag(param0: string): androidx.fragment.app.Fragment;
 				public findFragmentById(param0: number): androidx.fragment.app.Fragment;
 				public beginTransaction(): androidx.fragment.app.FragmentTransaction;
-				public setFragmentFactory(param0: androidx.fragment.app.FragmentFactory): void;
 				public addOnBackStackChangedListener(param0: androidx.fragment.app.FragmentManager.OnBackStackChangedListener): void;
 				public popBackStack(param0: number, param1: number): void;
 				public getBackStackEntryAt(param0: number): androidx.fragment.app.FragmentManager.BackStackEntry;
@@ -21390,7 +21626,6 @@ declare module androidx {
 				public static ANIM_STYLE_FADE_ENTER: number;
 				public static ANIM_STYLE_FADE_EXIT: number;
 				public dispatchLowMemory(): void;
-				public getFragmentFactory(): androidx.fragment.app.FragmentFactory;
 				public executePendingTransactions(): boolean;
 				public removeOnBackStackChangedListener(param0: androidx.fragment.app.FragmentManager.OnBackStackChangedListener): void;
 				public isStateSaved(): boolean;
@@ -21448,7 +21683,6 @@ declare module androidx {
 				public dispatchCreate(): void;
 				public findFragmentById(param0: number): androidx.fragment.app.Fragment;
 				public enqueueAction(param0: androidx.fragment.app.FragmentManagerImpl.OpGenerator, param1: boolean): void;
-				public setFragmentFactory(param0: androidx.fragment.app.FragmentFactory): void;
 				public popBackStack(param0: number, param1: number): void;
 				public getBackStackEntryAt(param0: number): androidx.fragment.app.FragmentManager.BackStackEntry;
 				public getFragments(): java.util.List<androidx.fragment.app.Fragment>;
@@ -21556,37 +21790,28 @@ declare module androidx {
 declare module androidx {
 	export module fragment {
 		export module app {
-			export class FragmentManagerViewModel extends androidx.lifecycle.ViewModel {
-				public static class: java.lang.Class<androidx.fragment.app.FragmentManagerViewModel>;
-				public hashCode(): number;
-				public equals(param0: any): boolean;
-				public toString(): string;
-				public onCleared(): void;
-			}
-		}
-	}
-}
-
-declare module androidx {
-	export module fragment {
-		export module app {
 			export abstract class FragmentPagerAdapter extends androidx.viewpager.widget.PagerAdapter {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentPagerAdapter>;
 				public saveState(): globalAndroid.os.Parcelable;
-				public setPrimaryItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
+				/** @deprecated */
 				public finishUpdate(param0: globalAndroid.view.View): void;
+				/** @deprecated */
+				public startUpdate(param0: globalAndroid.view.View): void;
 				public startUpdate(param0: globalAndroid.view.ViewGroup): void;
 				public instantiateItem(param0: globalAndroid.view.ViewGroup, param1: number): any;
-				public destroyItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public finishUpdate(param0: globalAndroid.view.ViewGroup): void;
 				public getItem(param0: number): androidx.fragment.app.Fragment;
 				public constructor();
-				public instantiateItem(param0: globalAndroid.view.View, param1: number): any;
 				public setPrimaryItem(param0: globalAndroid.view.ViewGroup, param1: number, param2: any): void;
+				/** @deprecated */
+				public instantiateItem(param0: globalAndroid.view.View, param1: number): any;
+				/** @deprecated */
+				public setPrimaryItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
+				/** @deprecated */
+				public destroyItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public restoreState(param0: globalAndroid.os.Parcelable, param1: java.lang.ClassLoader): void;
 				public getItemId(param0: number): number;
 				public constructor(param0: androidx.fragment.app.FragmentManager);
-				public startUpdate(param0: globalAndroid.view.View): void;
 				public isViewFromObject(param0: globalAndroid.view.View, param1: any): boolean;
 				public destroyItem(param0: globalAndroid.view.ViewGroup, param1: number, param2: any): void;
 			}
@@ -21600,9 +21825,9 @@ declare module androidx {
 			export class FragmentState extends java.lang.Object implements globalAndroid.os.Parcelable {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentState>;
 				public static CREATOR: globalAndroid.os.Parcelable.Creator<androidx.fragment.app.FragmentState>;
+				public instantiate(param0: androidx.fragment.app.FragmentHostCallback<any>, param1: androidx.fragment.app.FragmentContainer, param2: androidx.fragment.app.Fragment, param3: androidx.fragment.app.FragmentManagerNonConfig, param4: androidx.lifecycle.ViewModelStore): androidx.fragment.app.Fragment;
 				public writeToParcel(param0: globalAndroid.os.Parcel, param1: number): void;
 				public describeContents(): number;
-				public instantiate(param0: java.lang.ClassLoader, param1: androidx.fragment.app.FragmentFactory): androidx.fragment.app.Fragment;
 			}
 		}
 	}
@@ -21614,19 +21839,24 @@ declare module androidx {
 			export abstract class FragmentStatePagerAdapter extends androidx.viewpager.widget.PagerAdapter {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentStatePagerAdapter>;
 				public saveState(): globalAndroid.os.Parcelable;
-				public setPrimaryItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
+				/** @deprecated */
 				public finishUpdate(param0: globalAndroid.view.View): void;
+				/** @deprecated */
+				public startUpdate(param0: globalAndroid.view.View): void;
 				public startUpdate(param0: globalAndroid.view.ViewGroup): void;
 				public instantiateItem(param0: globalAndroid.view.ViewGroup, param1: number): any;
-				public destroyItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public finishUpdate(param0: globalAndroid.view.ViewGroup): void;
 				public getItem(param0: number): androidx.fragment.app.Fragment;
 				public constructor();
-				public instantiateItem(param0: globalAndroid.view.View, param1: number): any;
 				public setPrimaryItem(param0: globalAndroid.view.ViewGroup, param1: number, param2: any): void;
+				/** @deprecated */
+				public instantiateItem(param0: globalAndroid.view.View, param1: number): any;
+				/** @deprecated */
+				public setPrimaryItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
+				/** @deprecated */
+				public destroyItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public restoreState(param0: globalAndroid.os.Parcelable, param1: java.lang.ClassLoader): void;
 				public constructor(param0: androidx.fragment.app.FragmentManager);
-				public startUpdate(param0: globalAndroid.view.View): void;
 				public isViewFromObject(param0: globalAndroid.view.View, param1: any): boolean;
 				public destroyItem(param0: globalAndroid.view.ViewGroup, param1: number, param2: any): void;
 			}
@@ -21641,9 +21871,13 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.fragment.app.FragmentTabHost>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				/** @deprecated */
+				public setup(): void;
 				public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 				public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -21660,7 +21894,6 @@ declare module androidx {
 				public onRestoreInstanceState(param0: globalAndroid.os.Parcelable): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -21671,6 +21904,8 @@ declare module androidx {
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
 				public addTab(param0: globalAndroid.widget.TabHost.TabSpec): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public onTabChanged(param0: string): void;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public setOnTabChangedListener(param0: globalAndroid.widget.TabHost.OnTabChangeListener): void;
@@ -21699,6 +21934,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setup(param0: globalAndroid.content.Context, param1: androidx.fragment.app.FragmentManager, param2: number): void;
@@ -21708,7 +21945,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -21783,6 +22019,7 @@ declare module androidx {
 				public commit(): number;
 				public add(param0: number, param1: androidx.fragment.app.Fragment): androidx.fragment.app.FragmentTransaction;
 				public attach(param0: androidx.fragment.app.Fragment): androidx.fragment.app.FragmentTransaction;
+				/** @deprecated */
 				public setAllowOptimization(param0: boolean): androidx.fragment.app.FragmentTransaction;
 				public setBreadCrumbShortTitle(param0: number): androidx.fragment.app.FragmentTransaction;
 			}
@@ -21881,7 +22118,6 @@ declare module androidx {
 				public getListAdapter(): globalAndroid.widget.ListAdapter;
 				public onLowMemory(): void;
 				public getListView(): globalAndroid.widget.ListView;
-				public requireListAdapter(): globalAndroid.widget.ListAdapter;
 				public onCreateView(param0: globalAndroid.view.LayoutInflater, param1: globalAndroid.view.ViewGroup, param2: globalAndroid.os.Bundle): globalAndroid.view.View;
 				public getLifecycle(): androidx.lifecycle.Lifecycle;
 				public constructor();
@@ -21894,6 +22130,21 @@ declare module androidx {
 				public getSelectedItemId(): number;
 				public onConfigurationChanged(param0: globalAndroid.content.res.Configuration): void;
 				public onViewCreated(param0: globalAndroid.view.View, param1: globalAndroid.os.Bundle): void;
+			}
+		}
+	}
+}
+
+declare module androidx {
+	export module fragment {
+		export module app {
+			export class OneShotPreDrawListener extends java.lang.Object implements globalAndroid.view.ViewTreeObserver.OnPreDrawListener, globalAndroid.view.View.OnAttachStateChangeListener {
+				public static class: java.lang.Class<androidx.fragment.app.OneShotPreDrawListener>;
+				public onPreDraw(): boolean;
+				public onViewAttachedToWindow(param0: globalAndroid.view.View): void;
+				public removeListener(): void;
+				public onViewDetachedFromWindow(param0: globalAndroid.view.View): void;
+				public static add(param0: globalAndroid.view.View, param1: java.lang.Runnable): androidx.fragment.app.OneShotPreDrawListener;
 			}
 		}
 	}
@@ -22053,15 +22304,25 @@ declare module androidx {
 		export module widget {
 			export class Space extends globalAndroid.view.View {
 				public static class: java.lang.Class<androidx.legacy.widget.Space>;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public onMeasure(param0: number, param1: number): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+				public draw(param0: globalAndroid.graphics.Canvas): void;
+				/** @deprecated */
 				public draw(param0: globalAndroid.graphics.Canvas): void;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public sendAccessibilityEvent(param0: number): void;
 				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
+				/** @deprecated */
+				public constructor(param0: globalAndroid.content.Context);
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
 				public onMeasure(param0: number, param1: number): void;
@@ -22567,9 +22828,10 @@ declare module androidx {
 				public restartLoader(param0: number, param1: globalAndroid.os.Bundle, param2: androidx.loader.app.LoaderManager.LoaderCallbacks<any>): androidx.loader.content.Loader<any>;
 				public getLoader(param0: number): androidx.loader.content.Loader<any>;
 				public initLoader(param0: number, param1: globalAndroid.os.Bundle, param2: androidx.loader.app.LoaderManager.LoaderCallbacks<any>): androidx.loader.content.Loader<any>;
-				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public static enableDebugLogging(param0: boolean): void;
 				public destroyLoader(param0: number): void;
+				/** @deprecated */
+				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public hasRunningLoaders(): boolean;
 				public constructor();
 			}
@@ -22603,9 +22865,10 @@ declare module androidx {
 				public restartLoader(param0: number, param1: globalAndroid.os.Bundle, param2: androidx.loader.app.LoaderManager.LoaderCallbacks<any>): androidx.loader.content.Loader<any>;
 				public getLoader(param0: number): androidx.loader.content.Loader<any>;
 				public initLoader(param0: number, param1: globalAndroid.os.Bundle, param2: androidx.loader.app.LoaderManager.LoaderCallbacks<any>): androidx.loader.content.Loader<any>;
-				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public destroyLoader(param0: number): void;
 				public toString(): string;
+				/** @deprecated */
+				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public hasRunningLoaders(): boolean;
 			}
 			export module LoaderManagerImpl {
@@ -22647,10 +22910,11 @@ declare module androidx {
 				public onCancelLoad(): boolean;
 				public cancelLoadInBackground(): void;
 				public onCanceled(param0: any): void;
-				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public loadInBackground(): any;
 				public isLoadInBackgroundCanceled(): boolean;
 				public waitForLoader(): void;
+				/** @deprecated */
+				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 			}
 			export module AsyncTaskLoader {
 				export class LoadTask extends androidx.loader.content.ModernAsyncTask<java.lang.Void,java.lang.Void,any> implements java.lang.Runnable  {
@@ -22683,10 +22947,11 @@ declare module androidx {
 				public cancelLoadInBackground(): void;
 				public getProjection(): native.Array<string>;
 				public onCanceled(param0: any): void;
-				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public loadInBackground(): any;
 				public setUri(param0: globalAndroid.net.Uri): void;
 				public loadInBackground(): globalAndroid.database.Cursor;
+				/** @deprecated */
+				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public setProjection(param0: native.Array<string>): void;
 				public onReset(): void;
 				public getUri(): globalAndroid.net.Uri;
@@ -22711,7 +22976,6 @@ declare module androidx {
 				public onStopLoading(): void;
 				public isStarted(): boolean;
 				public takeContentChanged(): boolean;
-				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public isAbandoned(): boolean;
 				public stopLoading(): void;
 				public reset(): void;
@@ -22727,6 +22991,8 @@ declare module androidx {
 				public getId(): number;
 				public cancelLoad(): boolean;
 				public toString(): string;
+				/** @deprecated */
+				public dump(param0: string, param1: java.io.FileDescriptor, param2: java.io.PrintWriter, param3: native.Array<string>): void;
 				public onReset(): void;
 				public onContentChanged(): void;
 				public registerOnLoadCanceledListener(param0: androidx.loader.content.Loader.OnLoadCanceledListener<D>): void;
@@ -23993,12 +24259,14 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.recyclerview.widget.DividerItemDecoration>;
 				public static HORIZONTAL: number;
 				public static VERTICAL: number;
+				/** @deprecated */
+				public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
+				/** @deprecated */
 				public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: number, param2: androidx.recyclerview.widget.RecyclerView): void;
 				public setOrientation(param0: number): void;
 				public setDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: globalAndroid.view.View, param2: androidx.recyclerview.widget.RecyclerView, param3: androidx.recyclerview.widget.RecyclerView.State): void;
 				public constructor(param0: globalAndroid.content.Context, param1: number);
-				public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
 				public constructor();
 			}
@@ -24012,13 +24280,14 @@ declare module androidx {
 			export class FastScroller extends androidx.recyclerview.widget.RecyclerView.ItemDecoration implements androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {
 				public static class: java.lang.Class<androidx.recyclerview.widget.FastScroller>;
 				public hide(): void;
+				/** @deprecated */
+				public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				public attachToRecyclerView(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public isDragging(): boolean;
 				public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
 				public onRequestDisallowInterceptTouchEvent(param0: boolean): void;
 				public onInterceptTouchEvent(param0: androidx.recyclerview.widget.RecyclerView, param1: globalAndroid.view.MotionEvent): boolean;
 				public onTouchEvent(param0: androidx.recyclerview.widget.RecyclerView, param1: globalAndroid.view.MotionEvent): void;
-				public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				public show(): void;
 			}
 			export module FastScroller {
@@ -24161,18 +24430,21 @@ declare module androidx {
 				public static ANIMATION_TYPE_SWIPE_SUCCESS: number;
 				public static ANIMATION_TYPE_SWIPE_CANCEL: number;
 				public static ANIMATION_TYPE_DRAG: number;
+				/** @deprecated */
+				public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
+				/** @deprecated */
+				public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				public onChildViewDetachedFromWindow(param0: globalAndroid.view.View): void;
 				public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
-				public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: number, param2: androidx.recyclerview.widget.RecyclerView): void;
 				public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: globalAndroid.view.View, param2: androidx.recyclerview.widget.RecyclerView, param3: androidx.recyclerview.widget.RecyclerView.State): void;
-				public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
 				public constructor();
+				/** @deprecated */
+				public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: number, param2: androidx.recyclerview.widget.RecyclerView): void;
 				public startSwipe(param0: androidx.recyclerview.widget.RecyclerView.ViewHolder): void;
 				public attachToRecyclerView(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public startDrag(param0: androidx.recyclerview.widget.RecyclerView.ViewHolder): void;
 				public onChildViewAttachedToWindow(param0: globalAndroid.view.View): void;
-				public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				public constructor(param0: androidx.recyclerview.widget.ItemTouchHelper.Callback);
 			}
 			export module ItemTouchHelper {
@@ -24325,6 +24597,8 @@ declare module androidx {
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 				public computeHorizontalScrollExtent(param0: androidx.recyclerview.widget.RecyclerView.State): number;
 				public isSmoothScrollbarEnabled(): boolean;
+				/** @deprecated */
+				public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public canScrollHorizontally(): boolean;
 				public isAutoMeasureEnabled(): boolean;
 				public generateDefaultLayoutParams(): androidx.recyclerview.widget.RecyclerView.LayoutParams;
@@ -24343,7 +24617,6 @@ declare module androidx {
 				public findLastCompletelyVisibleItemPosition(): number;
 				public getStackFromEnd(): boolean;
 				public getOrientation(): number;
-				public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public findLastVisibleItemPosition(): number;
 				public constructor(param0: globalAndroid.content.Context);
 				public setRecycleChildrenOnDetach(param0: boolean): void;
@@ -24585,6 +24858,8 @@ declare module androidx {
 				public findSnapView(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager): globalAndroid.view.View;
 				public createSnapScroller(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager): androidx.recyclerview.widget.LinearSmoothScroller;
 				public calculateDistanceToFinalSnap(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager, param1: globalAndroid.view.View): native.Array<number>;
+				/** @deprecated */
+				public createSnapScroller(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager): androidx.recyclerview.widget.LinearSmoothScroller;
 				public findTargetSnapPosition(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager, param1: number, param2: number): number;
 				public constructor();
 			}
@@ -24625,11 +24900,12 @@ declare module androidx {
 				public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
 				public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public getPreserveFocusAfterLayout(): boolean;
+				/** @deprecated */
+				public findViewHolderForPosition(param0: number): androidx.recyclerview.widget.RecyclerView.ViewHolder;
 				public onInterceptTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public getTextDirection(): number;
 				public getCompatAccessibilityDelegate(): androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildAdapterPosition(param0: globalAndroid.view.View): number;
 				public stopNestedScroll(param0: number): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
@@ -24637,10 +24913,14 @@ declare module androidx {
 				public getScrollState(): number;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public getAdapter(): androidx.recyclerview.widget.RecyclerView.Adapter<any>;
+				/** @deprecated */
+				public setOnScrollListener(param0: androidx.recyclerview.widget.RecyclerView.OnScrollListener): void;
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public getItemDecorationCount(): number;
 				public setHasFixedSize(param0: boolean): void;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public computeHorizontalScrollExtent(): number;
 				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
@@ -24665,6 +24945,8 @@ declare module androidx {
 				public clearOnChildAttachStateChangeListeners(): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public dispatchNestedPreFling(param0: number, param1: number): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -24677,7 +24959,6 @@ declare module androidx {
 				public offsetChildrenVertical(param0: number): void;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public addItemDecoration(param0: androidx.recyclerview.widget.RecyclerView.ItemDecoration, param1: number): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getChildItemId(param0: globalAndroid.view.View): number;
 				public findViewHolderForLayoutPosition(param0: number): androidx.recyclerview.widget.RecyclerView.ViewHolder;
 				public removeOnItemTouchListener(param0: androidx.recyclerview.widget.RecyclerView.OnItemTouchListener): void;
@@ -24688,7 +24969,6 @@ declare module androidx {
 				public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public setRecycledViewPool(param0: androidx.recyclerview.widget.RecyclerView.RecycledViewPool): void;
-				public findViewHolderForPosition(param0: number): androidx.recyclerview.widget.RecyclerView.ViewHolder;
 				public drawChild(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.view.View, param2: number): boolean;
 				public dispatchSaveInstanceState(param0: globalAndroid.util.SparseArray<globalAndroid.os.Parcelable>): void;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -24699,6 +24979,8 @@ declare module androidx {
 				public isNestedScrollingEnabled(): boolean;
 				public findViewHolderForAdapterPosition(param0: number): androidx.recyclerview.widget.RecyclerView.ViewHolder;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public computeVerticalScrollOffset(): number;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public getItemAnimator(): androidx.recyclerview.widget.RecyclerView.ItemAnimator;
@@ -24732,11 +25014,9 @@ declare module androidx {
 				public setRecyclerListener(param0: androidx.recyclerview.widget.RecyclerView.RecyclerListener): void;
 				public getClipToPadding(): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
-				public getChildPosition(param0: globalAndroid.view.View): number;
 				public getChildDrawingOrder(param0: number, param1: number): number;
 				public getItemDecorationAt(param0: number): androidx.recyclerview.widget.RecyclerView.ItemDecoration;
 				public onScrolled(param0: number, param1: number): void;
-				public setOnScrollListener(param0: androidx.recyclerview.widget.RecyclerView.OnScrollListener): void;
 				public startNestedScroll(param0: number): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
@@ -24754,6 +25034,8 @@ declare module androidx {
 				public isTextAlignmentResolved(): boolean;
 				public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 				public getLayoutDirection(): number;
+				/** @deprecated */
+				public getChildPosition(param0: globalAndroid.view.View): number;
 				public removeView(param0: globalAndroid.view.View): void;
 				public startNestedScroll(param0: number, param1: number): boolean;
 				public canResolveTextDirection(): boolean;
@@ -24985,18 +25267,20 @@ declare module androidx {
 				}
 				export abstract class ItemDecoration extends java.lang.Object {
 					public static class: java.lang.Class<androidx.recyclerview.widget.RecyclerView.ItemDecoration>;
+					/** @deprecated */
+					public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 					public constructor();
 					public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
+					/** @deprecated */
 					public onDraw(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
-					public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
+					/** @deprecated */
 					public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: number, param2: androidx.recyclerview.widget.RecyclerView): void;
+					public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView, param2: androidx.recyclerview.widget.RecyclerView.State): void;
 					public getItemOffsets(param0: globalAndroid.graphics.Rect, param1: globalAndroid.view.View, param2: androidx.recyclerview.widget.RecyclerView, param3: androidx.recyclerview.widget.RecyclerView.State): void;
-					public onDrawOver(param0: globalAndroid.graphics.Canvas, param1: androidx.recyclerview.widget.RecyclerView): void;
 				}
 				export abstract class LayoutManager extends java.lang.Object {
 					public static class: java.lang.Class<androidx.recyclerview.widget.RecyclerView.LayoutManager>;
 					public isAutoMeasureEnabled(): boolean;
-					public onRequestChildFocus(param0: androidx.recyclerview.widget.RecyclerView, param1: globalAndroid.view.View, param2: globalAndroid.view.View): boolean;
 					public setMeasuredDimension(param0: number, param1: number): void;
 					public getMinimumWidth(): number;
 					public onInterceptFocusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
@@ -25009,10 +25293,16 @@ declare module androidx {
 					public getDecoratedBoundsWithMargins(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 					public getLeftDecorationWidth(param0: globalAndroid.view.View): number;
 					public constructor();
+					/** @deprecated */
+					public static getChildMeasureSpec(param0: number, param1: number, param2: number, param3: boolean): number;
 					public addView(param0: globalAndroid.view.View): void;
 					public getWidthMode(): number;
 					public getMinimumHeight(): number;
+					/** @deprecated */
+					public setAutoMeasureEnabled(param0: boolean): void;
 					public onFocusSearchFailed(param0: globalAndroid.view.View, param1: number, param2: androidx.recyclerview.widget.RecyclerView.Recycler, param3: androidx.recyclerview.widget.RecyclerView.State): globalAndroid.view.View;
+					/** @deprecated */
+					public onRequestChildFocus(param0: androidx.recyclerview.widget.RecyclerView, param1: globalAndroid.view.View, param2: globalAndroid.view.View): boolean;
 					public getPaddingTop(): number;
 					public getHeightMode(): number;
 					public canScrollVertically(): boolean;
@@ -25048,7 +25338,6 @@ declare module androidx {
 					public removeAndRecycleView(param0: globalAndroid.view.View, param1: androidx.recyclerview.widget.RecyclerView.Recycler): void;
 					public removeViewAt(param0: number): void;
 					public computeHorizontalScrollRange(param0: androidx.recyclerview.widget.RecyclerView.State): number;
-					public setAutoMeasureEnabled(param0: boolean): void;
 					public removeCallbacks(param0: java.lang.Runnable): boolean;
 					public onInitializeAccessibilityEvent(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 					public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView, param1: androidx.recyclerview.widget.RecyclerView.Recycler): void;
@@ -25057,7 +25346,6 @@ declare module androidx {
 					public getChildCount(): number;
 					public removeAndRecycleAllViews(param0: androidx.recyclerview.widget.RecyclerView.Recycler): void;
 					public getRowCountForAccessibility(param0: androidx.recyclerview.widget.RecyclerView.Recycler, param1: androidx.recyclerview.widget.RecyclerView.State): number;
-					public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView): void;
 					public getDecoratedRight(param0: globalAndroid.view.View): number;
 					public onItemsRemoved(param0: androidx.recyclerview.widget.RecyclerView, param1: number, param2: number): void;
 					public getSelectionModeForAccessibility(param0: androidx.recyclerview.widget.RecyclerView.Recycler, param1: androidx.recyclerview.widget.RecyclerView.State): number;
@@ -25111,6 +25399,8 @@ declare module androidx {
 					public addView(param0: globalAndroid.view.View, param1: number): void;
 					public getTopDecorationHeight(param0: globalAndroid.view.View): number;
 					public attachView(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView): void;
 					public getDecoratedMeasuredWidth(param0: globalAndroid.view.View): number;
 					public onItemsUpdated(param0: androidx.recyclerview.widget.RecyclerView, param1: number, param2: number): void;
 					public detachView(param0: globalAndroid.view.View): void;
@@ -25124,7 +25414,6 @@ declare module androidx {
 					public getPosition(param0: globalAndroid.view.View): number;
 					public getColumnCountForAccessibility(param0: androidx.recyclerview.widget.RecyclerView.Recycler, param1: androidx.recyclerview.widget.RecyclerView.State): number;
 					public getItemCount(): number;
-					public static getChildMeasureSpec(param0: number, param1: number, param2: number, param3: boolean): number;
 					public detachViewAt(param0: number): void;
 					public isItemPrefetchEnabled(): boolean;
 					public smoothScrollToPosition(param0: androidx.recyclerview.widget.RecyclerView, param1: androidx.recyclerview.widget.RecyclerView.State, param2: number): void;
@@ -25168,8 +25457,9 @@ declare module androidx {
 					public getViewLayoutPosition(): number;
 					public constructor(param0: globalAndroid.view.ViewGroup.LayoutParams);
 					public viewNeedsUpdate(): boolean;
-					public getViewPosition(): number;
 					public constructor(param0: globalAndroid.view.ViewGroup.MarginLayoutParams);
+					/** @deprecated */
+					public getViewPosition(): number;
 					public getViewAdapterPosition(): number;
 					public constructor(param0: number, param1: number);
 					public isViewInvalid(): boolean;
@@ -25294,6 +25584,8 @@ declare module androidx {
 					public onSeekTargetStep(param0: number, param1: number, param2: androidx.recyclerview.widget.RecyclerView.State, param3: androidx.recyclerview.widget.RecyclerView.SmoothScroller.Action): void;
 					public getChildCount(): number;
 					public onChildAttachedToWindow(param0: globalAndroid.view.View): void;
+					/** @deprecated */
+					public instantScrollToPosition(param0: number): void;
 					public onStart(): void;
 					public computeScrollVectorForPosition(param0: number): globalAndroid.graphics.PointF;
 					public getLayoutManager(): androidx.recyclerview.widget.RecyclerView.LayoutManager;
@@ -25307,7 +25599,6 @@ declare module androidx {
 					public getChildPosition(param0: globalAndroid.view.View): number;
 					public stop(): void;
 					public onStop(): void;
-					public instantScrollToPosition(param0: number): void;
 				}
 				export module SmoothScroller {
 					export class Action extends java.lang.Object {
@@ -25381,6 +25672,7 @@ declare module androidx {
 					public toString(): string;
 					public getItemId(): number;
 					public constructor(param0: globalAndroid.view.View);
+					/** @deprecated */
 					public getPosition(): number;
 					public getLayoutPosition(): number;
 					public getAdapterPosition(): number;
@@ -25401,7 +25693,6 @@ declare module androidx {
 				public onInitializeAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 				public constructor(param0: androidx.recyclerview.widget.RecyclerView);
 				public getItemDelegate(): androidx.core.view.AccessibilityDelegateCompat;
-				public constructor(param0: any);
 				public performAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public constructor();
 			}
@@ -25410,7 +25701,6 @@ declare module androidx {
 					public static class: java.lang.Class<androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate.ItemDelegate>;
 					public constructor(param0: androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate);
 					public constructor();
-					public constructor(param0: any);
 					public onInitializeAccessibilityNodeInfo(param0: globalAndroid.view.View, param1: androidx.core.view.accessibility.AccessibilityNodeInfoCompat): void;
 					public performAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				}
@@ -25476,6 +25766,7 @@ declare module androidx {
 				public calculateScrollDistance(param0: number, param1: number): native.Array<number>;
 				public attachToRecyclerView(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public findSnapView(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager): globalAndroid.view.View;
+				/** @deprecated */
 				public createSnapScroller(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager): androidx.recyclerview.widget.LinearSmoothScroller;
 				public calculateDistanceToFinalSnap(param0: androidx.recyclerview.widget.RecyclerView.LayoutManager, param1: globalAndroid.view.View): native.Array<number>;
 				public onFling(param0: number, param1: number): boolean;
@@ -25640,6 +25931,8 @@ declare module androidx {
 				public computeHorizontalScrollExtent(param0: androidx.recyclerview.widget.RecyclerView.State): number;
 				public getColumnCountForAccessibility(param0: androidx.recyclerview.widget.RecyclerView.Recycler, param1: androidx.recyclerview.widget.RecyclerView.State): number;
 				public onItemsUpdated(param0: androidx.recyclerview.widget.RecyclerView, param1: number, param2: number, param3: any): void;
+				/** @deprecated */
+				public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public canScrollHorizontally(): boolean;
 				public onInitializeAccessibilityNodeInfoForItem(param0: androidx.recyclerview.widget.RecyclerView.Recycler, param1: androidx.recyclerview.widget.RecyclerView.State, param2: globalAndroid.view.View, param3: androidx.core.view.accessibility.AccessibilityNodeInfoCompat): void;
 				public isAutoMeasureEnabled(): boolean;
@@ -25668,7 +25961,6 @@ declare module androidx {
 				public scrollVerticallyBy(param0: number, param1: androidx.recyclerview.widget.RecyclerView.Recycler, param2: androidx.recyclerview.widget.RecyclerView.State): number;
 				public getOrientation(): number;
 				public findFirstCompletelyVisibleItemPositions(param0: native.Array<number>): native.Array<number>;
-				public onDetachedFromWindow(param0: androidx.recyclerview.widget.RecyclerView): void;
 				public setReverseLayout(param0: boolean): void;
 				public onSaveInstanceState(): globalAndroid.os.Parcelable;
 				public onItemsAdded(param0: androidx.recyclerview.widget.RecyclerView, param1: number, param2: number): void;
@@ -25929,46 +26221,56 @@ declare module androidx {
 				public onInterceptTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public getSliderFadeColor(): number;
-				public canSlide(): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public setShadowResourceRight(param0: number): void;
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public isSlideable(): boolean;
 				public isTextDirectionResolved(): boolean;
 				public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
+				/** @deprecated */
+				public smoothSlideOpen(): void;
 				public isLayoutDirectionResolved(): boolean;
 				public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 				public openPane(): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public canSlide(): boolean;
 				public canScroll(param0: globalAndroid.view.View, param1: boolean, param2: number, param3: number, param4: number): boolean;
 				public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 				public closePane(): boolean;
 				public setShadowDrawableLeft(param0: globalAndroid.graphics.drawable.Drawable): void;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setCoveredFadeColor(param0: number): void;
 				public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
+				/** @deprecated */
+				public smoothSlideClosed(): void;
 				public computeScroll(): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setShadowDrawableRight(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public drawChild(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.view.View, param2: number): boolean;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
+				/** @deprecated */
+				public setShadowDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onAttachedToWindow(): void;
 				public getParent(): globalAndroid.view.ViewParent;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public setSliderFadeColor(param0: number): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
-				public smoothSlideClosed(): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public getParallaxDistance(): number;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -25984,8 +26286,9 @@ declare module androidx {
 				public onTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
 				public setParallaxDistance(param0: number): void;
+				/** @deprecated */
+				public setShadowResource(param0: number): void;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
-				public setShadowDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onDetachedFromWindow(): void;
 				public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
@@ -26009,7 +26312,6 @@ declare module androidx {
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 				public keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 				public onSaveInstanceState(): globalAndroid.os.Parcelable;
-				public setShadowResource(param0: number): void;
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
 				public canResolveLayoutDirection(): boolean;
@@ -26020,7 +26322,6 @@ declare module androidx {
 				public isOpen(): boolean;
 				public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 				public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
-				public smoothSlideOpen(): void;
 			}
 			export module SlidingPaneLayout {
 				export class androidxslidingpanelayoutwidgetSlidingPaneLayoutAccessibilityDelegate extends androidx.core.view.AccessibilityDelegateCompat {
@@ -26204,7 +26505,6 @@ declare module androidx {
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public setSlingshotDistance(param0: number): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
-				public setColorScheme(param0: native.Array<number>): void;
 				public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 				public setEnabled(param0: boolean): void;
 				public setOnRefreshListener(param0: androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener): void;
@@ -26216,12 +26516,13 @@ declare module androidx {
 				public onInterceptTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public setProgressBackgroundColorSchemeColor(param0: number): void;
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public getProgressViewEndOffset(): number;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
@@ -26235,15 +26536,18 @@ declare module androidx {
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 				public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 				public setSize(param0: number): void;
+				/** @deprecated */
+				public setProgressBackgroundColor(param0: number): void;
 				public setDistanceToTriggerSync(param0: number): void;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public dispatchNestedPreFling(param0: number, param1: number): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public getProgressViewStartOffset(): number;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public stopNestedScroll(): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 				public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -26251,6 +26555,8 @@ declare module androidx {
 				public isNestedScrollingEnabled(): boolean;
 				public setColorSchemeColors(param0: native.Array<number>): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public setOnChildScrollUpCallback(param0: androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnChildScrollUpCallback): void;
@@ -26274,6 +26580,8 @@ declare module androidx {
 				public startNestedScroll(param0: number): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public dispatchNestedFling(param0: number, param1: number, param2: boolean): boolean;
+				/** @deprecated */
+				public setColorScheme(param0: native.Array<number>): void;
 				public onDetachedFromWindow(): void;
 				public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 				public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
@@ -26292,7 +26600,6 @@ declare module androidx {
 				public constructor(param0: globalAndroid.content.Context);
 				public canChildScrollUp(): boolean;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
-				public setProgressBackgroundColor(param0: number): void;
 				public keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
@@ -27327,6 +27634,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.transition.ViewOverlayApi14.OverlayViewGroup>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -27345,7 +27654,6 @@ declare module androidx {
 				public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -27355,6 +27663,8 @@ declare module androidx {
 				public remove(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public isTextDirectionResolved(): boolean;
@@ -27379,6 +27689,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public clear(): void;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
@@ -28064,7 +28376,6 @@ declare module androidx {
 			 */
 			public constructor(implementation: {
 				value(): number;
-				defaultValue(): string;
 				equals(param0: any): boolean;
 				hashCode(): number;
 				toString(): string;
@@ -28073,7 +28384,6 @@ declare module androidx {
 			public constructor();
 			public equals(param0: any): boolean;
 			public toString(): string;
-			public defaultValue(): string;
 			public value(): number;
 			public annotationType(): java.lang.Class<any>;
 			public hashCode(): number;
@@ -28099,12 +28409,10 @@ declare module androidx {
 	export module versionedparcelable {
 		export class ParcelUtils extends java.lang.Object {
 			public static class: java.lang.Class<androidx.versionedparcelable.ParcelUtils>;
-			public static getVersionedParcelable(param0: globalAndroid.os.Bundle, param1: string): androidx.versionedparcelable.VersionedParcelable;
 			public static fromParcelable(param0: globalAndroid.os.Parcelable): androidx.versionedparcelable.VersionedParcelable;
 			public static toOutputStream(param0: androidx.versionedparcelable.VersionedParcelable, param1: java.io.OutputStream): void;
 			public static toParcelable(param0: androidx.versionedparcelable.VersionedParcelable): globalAndroid.os.Parcelable;
 			public static fromInputStream(param0: java.io.InputStream): androidx.versionedparcelable.VersionedParcelable;
-			public static putVersionedParcelable(param0: globalAndroid.os.Bundle, param1: string, param2: androidx.versionedparcelable.VersionedParcelable): void;
 		}
 	}
 }
@@ -28113,15 +28421,11 @@ declare module androidx {
 	export module versionedparcelable {
 		export abstract class VersionedParcel extends java.lang.Object {
 			public static class: java.lang.Class<androidx.versionedparcelable.VersionedParcel>;
-			public mReadCache: androidx.collection.ArrayMap<string,java.lang.reflect.Method>;
-			public mWriteCache: androidx.collection.ArrayMap<string,java.lang.reflect.Method>;
-			public mParcelizerCache: androidx.collection.ArrayMap<string,java.lang.Class<any>>;
 			public readList(param0: java.util.List<any>, param1: number): java.util.List<any>;
 			public writeException(param0: java.lang.Exception, param1: number): void;
 			public readString(): string;
 			public readSizeF(param0: any, param1: number): any;
 			public writeFloatArray(param0: native.Array<number>, param1: number): void;
-			public readCharSequence(): string;
 			public writeSerializable(param0: java.io.Serializable, param1: number): void;
 			public writeFloat(param0: number): void;
 			public readLongArray(param0: native.Array<number>, param1: number): native.Array<number>;
@@ -28134,12 +28438,12 @@ declare module androidx {
 			public writeByteArray(param0: native.Array<number>, param1: number, param2: number, param3: number): void;
 			public readParcelable(): globalAndroid.os.Parcelable;
 			public readDoubleArray(param0: native.Array<number>, param1: number): native.Array<number>;
+			public constructor();
 			public readIntArray(): native.Array<number>;
 			public readSize(param0: any, param1: number): any;
 			public writeStrongInterface(param0: globalAndroid.os.IInterface): void;
 			public readBoolean(): boolean;
-			public writeToParcel(param0: androidx.versionedparcelable.VersionedParcelable, param1: androidx.versionedparcelable.VersionedParcel): void;
-			public writeMap(param0: java.util.Map<any,any>, param1: number): void;
+			public static readFromParcel(param0: string, param1: androidx.versionedparcelable.VersionedParcel): androidx.versionedparcelable.VersionedParcelable;
 			public writeBooleanArray(param0: native.Array<boolean>): void;
 			public static getRootCause(param0: java.lang.Throwable): java.lang.Throwable;
 			public setSerializationFlags(param0: boolean, param1: boolean): void;
@@ -28161,8 +28465,8 @@ declare module androidx {
 			public readStrongBinder(param0: globalAndroid.os.IBinder, param1: number): globalAndroid.os.IBinder;
 			public setOutputField(param0: number): void;
 			public readString(param0: string, param1: number): string;
-			public constructor(param0: androidx.collection.ArrayMap<string,java.lang.reflect.Method>, param1: androidx.collection.ArrayMap<string,java.lang.reflect.Method>, param2: androidx.collection.ArrayMap<string,java.lang.Class<any>>);
 			public writeBundle(param0: globalAndroid.os.Bundle): void;
+			public static writeToParcel(param0: androidx.versionedparcelable.VersionedParcelable, param1: androidx.versionedparcelable.VersionedParcel): void;
 			public readCharArray(param0: native.Array<string>, param1: number): native.Array<string>;
 			public readIntArray(param0: native.Array<number>, param1: number): native.Array<number>;
 			public readArray(param0: native.Array<any>): native.Array<any>;
@@ -28172,7 +28476,6 @@ declare module androidx {
 			public readDouble(param0: number, param1: number): number;
 			public writeDouble(param0: number, param1: number): void;
 			public readParcelable(param0: globalAndroid.os.Parcelable, param1: number): globalAndroid.os.Parcelable;
-			public readCharSequence(param0: string, param1: number): string;
 			public writeLongArray(param0: native.Array<number>): void;
 			public readVersionedParcelable(param0: androidx.versionedparcelable.VersionedParcelable, param1: number): androidx.versionedparcelable.VersionedParcelable;
 			public writeString(param0: string, param1: number): void;
@@ -28186,7 +28489,6 @@ declare module androidx {
 			public writeInt(param0: number, param1: number): void;
 			public createSubParcel(): androidx.versionedparcelable.VersionedParcel;
 			public writeSizeF(param0: any, param1: number): void;
-			public readFromParcel(param0: string, param1: androidx.versionedparcelable.VersionedParcel): androidx.versionedparcelable.VersionedParcelable;
 			public writeParcelable(param0: globalAndroid.os.Parcelable): void;
 			public writeBoolean(param0: boolean): void;
 			public readException(param0: java.lang.Exception, param1: number): java.lang.Exception;
@@ -28197,11 +28499,8 @@ declare module androidx {
 			public readBooleanArray(param0: native.Array<boolean>, param1: number): native.Array<boolean>;
 			public writeByteArray(param0: native.Array<number>, param1: number, param2: number): void;
 			public readBooleanArray(): native.Array<boolean>;
-			public readMap(param0: java.util.Map<any,any>, param1: number): java.util.Map<any,any>;
-			public writeCharSequence(param0: string): void;
 			public writeList(param0: java.util.List<any>, param1: number): void;
 			public writeBundle(param0: globalAndroid.os.Bundle, param1: number): void;
-			public writeCharSequence(param0: string, param1: number): void;
 			public writeString(param0: string): void;
 			public writeCharArray(param0: native.Array<string>, param1: number): void;
 			public writeDoubleArray(param0: native.Array<number>, param1: number): void;
@@ -28241,58 +28540,54 @@ declare module androidx {
 	export module versionedparcelable {
 		export class VersionedParcelParcel extends androidx.versionedparcelable.VersionedParcel {
 			public static class: java.lang.Class<androidx.versionedparcelable.VersionedParcelParcel>;
+			public writeByteArray(param0: native.Array<number>, param1: number, param2: number): void;
 			public closeField(): void;
 			public writeBoolean(param0: boolean, param1: number): void;
 			public readString(): string;
+			public readFloat(param0: number, param1: number): number;
 			public readDouble(param0: number, param1: number): number;
+			public readField(param0: number): boolean;
 			public writeDouble(param0: number, param1: number): void;
 			public readParcelable(param0: globalAndroid.os.Parcelable, param1: number): globalAndroid.os.Parcelable;
-			public readCharSequence(): string;
-			public readCharSequence(param0: string, param1: number): string;
 			public writeFloat(param0: number): void;
+			public readBoolean(param0: boolean, param1: number): boolean;
 			public writeString(param0: string, param1: number): void;
+			public readStrongBinder(): globalAndroid.os.IBinder;
+			public writeBundle(param0: globalAndroid.os.Bundle, param1: number): void;
+			public writeString(param0: string): void;
+			public readDouble(): number;
+			public writeLong(param0: number, param1: number): void;
 			public readInt(param0: number, param1: number): number;
+			public writeStrongBinder(param0: globalAndroid.os.IBinder): void;
 			public writeParcelable(param0: globalAndroid.os.Parcelable, param1: number): void;
+			public readByteArray(param0: native.Array<number>, param1: number): native.Array<number>;
+			public writeFloat(param0: number, param1: number): void;
 			public readInt(): number;
 			public readFloat(): number;
 			public writeByteArray(param0: native.Array<number>): void;
 			public writeInt(param0: number, param1: number): void;
+			public readStrongBinder(param0: globalAndroid.os.IBinder, param1: number): globalAndroid.os.IBinder;
+			public setOutputField(param0: number): void;
+			public readString(param0: string, param1: number): string;
 			public createSubParcel(): androidx.versionedparcelable.VersionedParcel;
+			public writeInt(param0: number): void;
 			public writeLong(param0: number): void;
+			public writeStrongInterface(param0: globalAndroid.os.IInterface, param1: number): void;
 			public writeByteArray(param0: native.Array<number>, param1: number, param2: number, param3: number): void;
+			public readLong(): number;
+			public writeDouble(param0: number): void;
 			public readParcelable(): globalAndroid.os.Parcelable;
+			public readByteArray(): native.Array<number>;
 			public writeParcelable(param0: globalAndroid.os.Parcelable): void;
 			public writeBoolean(param0: boolean): void;
 			public writeStrongInterface(param0: globalAndroid.os.IInterface): void;
 			public readBundle(): globalAndroid.os.Bundle;
 			public readBoolean(): boolean;
 			public writeByteArray(param0: native.Array<number>, param1: number): void;
-			public readLong(param0: number, param1: number): number;
-			public writeByteArray(param0: native.Array<number>, param1: number, param2: number): void;
-			public readFloat(param0: number, param1: number): number;
-			public readField(param0: number): boolean;
-			public writeCharSequence(param0: string): void;
-			public readBoolean(param0: boolean, param1: number): boolean;
-			public readStrongBinder(): globalAndroid.os.IBinder;
-			public writeBundle(param0: globalAndroid.os.Bundle, param1: number): void;
-			public writeCharSequence(param0: string, param1: number): void;
-			public writeString(param0: string): void;
-			public readDouble(): number;
-			public writeLong(param0: number, param1: number): void;
-			public writeStrongBinder(param0: globalAndroid.os.IBinder): void;
-			public readByteArray(param0: native.Array<number>, param1: number): native.Array<number>;
-			public writeFloat(param0: number, param1: number): void;
-			public readStrongBinder(param0: globalAndroid.os.IBinder, param1: number): globalAndroid.os.IBinder;
-			public setOutputField(param0: number): void;
-			public readString(param0: string, param1: number): string;
-			public writeInt(param0: number): void;
-			public writeStrongInterface(param0: globalAndroid.os.IInterface, param1: number): void;
-			public readLong(): number;
-			public writeDouble(param0: number): void;
-			public readByteArray(): native.Array<number>;
 			public writeBundle(param0: globalAndroid.os.Bundle): void;
 			public readBundle(param0: globalAndroid.os.Bundle, param1: number): globalAndroid.os.Bundle;
 			public writeStrongBinder(param0: globalAndroid.os.IBinder, param1: number): void;
+			public readLong(param0: number, param1: number): number;
 		}
 	}
 }
@@ -28307,8 +28602,6 @@ declare module androidx {
 			public readDouble(param0: number, param1: number): number;
 			public writeDouble(param0: number, param1: number): void;
 			public readParcelable(param0: globalAndroid.os.Parcelable, param1: number): globalAndroid.os.Parcelable;
-			public readCharSequence(): string;
-			public readCharSequence(param0: string, param1: number): string;
 			public writeFloat(param0: number): void;
 			public writeString(param0: string, param1: number): void;
 			public isStream(): boolean;
@@ -28322,6 +28615,7 @@ declare module androidx {
 			public writeLong(param0: number): void;
 			public writeByteArray(param0: native.Array<number>, param1: number, param2: number, param3: number): void;
 			public readParcelable(): globalAndroid.os.Parcelable;
+			public constructor();
 			public writeParcelable(param0: globalAndroid.os.Parcelable): void;
 			public writeBoolean(param0: boolean): void;
 			public writeStrongInterface(param0: globalAndroid.os.IInterface): void;
@@ -28334,11 +28628,9 @@ declare module androidx {
 			public writeByteArray(param0: native.Array<number>, param1: number, param2: number): void;
 			public readFloat(param0: number, param1: number): number;
 			public readField(param0: number): boolean;
-			public writeCharSequence(param0: string): void;
 			public readBoolean(param0: boolean, param1: number): boolean;
 			public readStrongBinder(): globalAndroid.os.IBinder;
 			public writeBundle(param0: globalAndroid.os.Bundle, param1: number): void;
-			public writeCharSequence(param0: string, param1: number): void;
 			public writeString(param0: string): void;
 			public readDouble(): number;
 			public writeLong(param0: number, param1: number): void;
@@ -28353,7 +28645,6 @@ declare module androidx {
 			public readLong(): number;
 			public writeDouble(param0: number): void;
 			public readByteArray(): native.Array<number>;
-			public constructor(param0: androidx.collection.ArrayMap<string,java.lang.reflect.Method>, param1: androidx.collection.ArrayMap<string,java.lang.reflect.Method>, param2: androidx.collection.ArrayMap<string,java.lang.Class<any>>);
 			public writeBundle(param0: globalAndroid.os.Bundle): void;
 			public readBundle(param0: globalAndroid.os.Bundle, param1: number): globalAndroid.os.Bundle;
 			public writeStrongBinder(param0: globalAndroid.os.IBinder, param1: number): void;
@@ -28361,6 +28652,9 @@ declare module androidx {
 		export module VersionedParcelStream {
 			export class FieldBuffer extends java.lang.Object {
 				public static class: java.lang.Class<androidx.versionedparcelable.VersionedParcelStream.FieldBuffer>;
+			}
+			export class InputBuffer extends java.lang.Object {
+				public static class: java.lang.Class<androidx.versionedparcelable.VersionedParcelStream.InputBuffer>;
 			}
 		}
 	}
@@ -28393,7 +28687,6 @@ declare module androidx {
 				isCustom(): boolean;
 				deprecatedIds(): native.Array<number>;
 				jetifyAs(): string;
-				factory(): java.lang.Class<any>;
 				equals(param0: any): boolean;
 				hashCode(): number;
 				toString(): string;
@@ -28404,7 +28697,6 @@ declare module androidx {
 			public equals(param0: any): boolean;
 			public ignoreParcelables(): boolean;
 			public isCustom(): boolean;
-			public factory(): java.lang.Class<any>;
 			public toString(): string;
 			public allowSerialization(): boolean;
 			public deprecatedIds(): native.Array<number>;
@@ -28423,23 +28715,28 @@ declare module androidx {
 				public static POSITION_NONE: number;
 				public saveState(): globalAndroid.os.Parcelable;
 				public registerDataSetObserver(param0: globalAndroid.database.DataSetObserver): void;
-				public setPrimaryItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
-				public notifyDataSetChanged(): void;
+				/** @deprecated */
 				public finishUpdate(param0: globalAndroid.view.View): void;
+				public notifyDataSetChanged(): void;
+				/** @deprecated */
+				public startUpdate(param0: globalAndroid.view.View): void;
 				public startUpdate(param0: globalAndroid.view.ViewGroup): void;
 				public instantiateItem(param0: globalAndroid.view.ViewGroup, param1: number): any;
-				public destroyItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public finishUpdate(param0: globalAndroid.view.ViewGroup): void;
 				public getCount(): number;
 				public constructor();
 				public setPrimaryItem(param0: globalAndroid.view.ViewGroup, param1: number, param2: any): void;
-				public instantiateItem(param0: globalAndroid.view.View, param1: number): any;
 				public getItemPosition(param0: any): number;
+				/** @deprecated */
+				public instantiateItem(param0: globalAndroid.view.View, param1: number): any;
+				/** @deprecated */
+				public setPrimaryItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public unregisterDataSetObserver(param0: globalAndroid.database.DataSetObserver): void;
+				/** @deprecated */
+				public destroyItem(param0: globalAndroid.view.View, param1: number, param2: any): void;
 				public restoreState(param0: globalAndroid.os.Parcelable, param1: java.lang.ClassLoader): void;
 				public getPageTitle(param0: number): string;
 				public getPageWidth(param0: number): number;
-				public startUpdate(param0: globalAndroid.view.View): void;
 				public isViewFromObject(param0: globalAndroid.view.View, param1: any): boolean;
 				public destroyItem(param0: globalAndroid.view.ViewGroup, param1: number, param2: any): void;
 			}
@@ -28454,6 +28751,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.viewpager.widget.PagerTabStrip>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -28474,7 +28773,6 @@ declare module androidx {
 				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -28485,6 +28783,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setTextSpacing(param0: number): void;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public setDrawFullUnderline(param0: boolean): void;
@@ -28501,6 +28801,8 @@ declare module androidx {
 				public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 				public getLayoutDirection(): number;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+				/** @deprecated */
+				public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public removeView(param0: globalAndroid.view.View): void;
 				public canResolveTextDirection(): boolean;
 				public canResolveTextAlignment(): boolean;
@@ -28511,6 +28813,8 @@ declare module androidx {
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public setBackgroundColor(param0: number): void;
@@ -28518,7 +28822,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public setTabIndicatorColorResource(param0: number): void;
@@ -28543,6 +28846,8 @@ declare module androidx {
 				public static class: java.lang.Class<androidx.viewpager.widget.PagerTitleStrip>;
 				public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public clearChildFocus(param0: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -28561,7 +28866,6 @@ declare module androidx {
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 				public setNonPrimaryAlpha(param0: number): void;
 				public requestTransparentRegion(param0: globalAndroid.view.View): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -28571,6 +28875,8 @@ declare module androidx {
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 				public addView(param0: globalAndroid.view.View, param1: number): void;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public setTextSpacing(param0: number): void;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
@@ -28599,6 +28905,8 @@ declare module androidx {
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public constructor(param0: globalAndroid.content.Context);
 				public setGravity(param0: number): void;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
@@ -28606,7 +28914,6 @@ declare module androidx {
 				public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public focusableViewAvailable(param0: globalAndroid.view.View): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public canResolveLayoutDirection(): boolean;
 				public addView(param0: globalAndroid.view.View): void;
 				public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -28662,12 +28969,13 @@ declare module androidx {
 				public setOffscreenPageLimit(param0: number): void;
 				public getTextDirection(): number;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 				public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 				public setCurrentItem(param0: number, param1: boolean): void;
 				public getParentForAccessibility(): globalAndroid.view.ViewParent;
 				public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+				/** @deprecated */
+				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 				public removeOnAdapterChangeListener(param0: androidx.viewpager.widget.ViewPager.OnAdapterChangeListener): void;
 				public isTextDirectionResolved(): boolean;
@@ -28684,13 +28992,14 @@ declare module androidx {
 				public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
 				public focusSearch(param0: number): globalAndroid.view.View;
 				public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
+				/** @deprecated */
+				public requestFitSystemWindows(): void;
 				public bringChildToFront(param0: globalAndroid.view.View): void;
 				public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 				public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 				public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 				public setCurrentItem(param0: number): void;
 				public computeScroll(): void;
-				public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 				public removeOnPageChangeListener(param0: androidx.viewpager.widget.ViewPager.OnPageChangeListener): void;
 				public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
 				public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
@@ -28702,7 +29011,8 @@ declare module androidx {
 				public addTouchables(param0: java.util.ArrayList<globalAndroid.view.View>): void;
 				public setAdapter(param0: androidx.viewpager.widget.PagerAdapter): void;
 				public requestDisallowInterceptTouchEvent(param0: boolean): void;
-				public setOnPageChangeListener(param0: androidx.viewpager.widget.ViewPager.OnPageChangeListener): void;
+				/** @deprecated */
+				public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 				public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 				public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 				public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -28742,6 +29052,8 @@ declare module androidx {
 				public canResolveTextAlignment(): boolean;
 				public draw(param0: globalAndroid.graphics.Canvas): void;
 				public setPageTransformer(param0: boolean, param1: androidx.viewpager.widget.ViewPager.PageTransformer): void;
+				/** @deprecated */
+				public setOnPageChangeListener(param0: androidx.viewpager.widget.ViewPager.OnPageChangeListener): void;
 				public beginFakeDrag(): boolean;
 				public requestLayout(): void;
 				public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -29088,59 +29400,61 @@ declare module com {
 	export module google {
 		export module android {
 			export module material {
-				export module animation {
-					export class TransformationListener<T>  extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.animation.TransformationListener<any>>;
-						/**
-						 * Constructs a new instance of the com.google.android.material.animation.TransformationListener<any> interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-						 */
-						public constructor(implementation: {
-							onTranslationChanged(param0: T): void;
-							onScaleChanged(param0: T): void;
-						});
-						public constructor();
-						public onTranslationChanged(param0: T): void;
-						public onScaleChanged(param0: T): void;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
 				export module appbar {
 					export class AppBarLayout extends globalAndroid.widget.LinearLayout {
 						public static class: java.lang.Class<com.google.android.material.appbar.AppBarLayout>;
 						public isLayoutRequested(): boolean;
+						public canResolveLayoutDirection(): boolean;
 						public constructor(param0: globalAndroid.content.Context);
+						public sendAccessibilityEvent(param0: number): void;
 						public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
 						public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
+						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
+						public addOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.BaseOnOffsetChangedListener<any>): void;
+						public clearChildFocus(param0: globalAndroid.view.View): void;
+						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 						public setLiftOnScroll(param0: boolean): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
+						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public generateLayoutParams(param0: globalAndroid.util.AttributeSet): globalAndroid.view.ViewGroup.LayoutParams;
+						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
+						public isTextAlignmentResolved(): boolean;
 						public setExpanded(param0: boolean, param1: boolean): void;
+						public removeOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.BaseOnOffsetChangedListener<any>): void;
+						public setOrientation(param0: number): void;
+						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public onMeasure(param0: number, param1: number): void;
 						public getTextDirection(): number;
+						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
+						public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						public removeView(param0: globalAndroid.view.View): void;
 						public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
+						public getTotalScrollRange(): number;
+						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
+						/** @deprecated */
+						public getTargetElevation(): number;
+						public generateDefaultLayoutParams(): globalAndroid.view.ViewGroup.LayoutParams;
 						public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
-						public setLiftOnScrollTargetViewId(param0: number): void;
 						public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public generateDefaultLayoutParams(): com.google.android.material.appbar.AppBarLayout.LayoutParams;
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
+						public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 						public canResolveTextDirection(): boolean;
+						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
+						public isLayoutDirectionResolved(): boolean;
+						public generateLayoutParams(param0: globalAndroid.util.AttributeSet): globalAndroid.widget.LinearLayout.LayoutParams;
 						public removeOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener): void;
+						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public requestLayout(): void;
 						public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
+						public addOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener): void;
 						public setLifted(param0: boolean): boolean;
 						public keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public bringChildToFront(param0: globalAndroid.view.View): void;
@@ -29148,89 +29462,70 @@ declare module com {
 						public addView(param0: globalAndroid.view.View, param1: number): void;
 						public setExpanded(param0: boolean): void;
 						public setLiftable(param0: boolean): boolean;
-						public isTextDirectionResolved(): boolean;
-						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
-						public isLiftOnScroll(): boolean;
-						public requestTransparentRegion(param0: globalAndroid.view.View): void;
-						public addView(param0: globalAndroid.view.View): void;
-						public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
-						public childDrawableStateChanged(param0: globalAndroid.view.View): void;
-						public requestFitSystemWindows(): void;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
-						public getParentForAccessibility(): globalAndroid.view.ViewParent;
-						public generateLayoutParams(param0: globalAndroid.util.AttributeSet): com.google.android.material.appbar.AppBarLayout.LayoutParams;
-						public getTextAlignment(): number;
-						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
-						public onCreateDrawableState(param0: number): native.Array<number>;
-						public getParent(): globalAndroid.view.ViewParent;
-						public getLayoutDirection(): number;
-						public canResolveTextAlignment(): boolean;
-						public canResolveLayoutDirection(): boolean;
-						public sendAccessibilityEvent(param0: number): void;
-						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
-						public addOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.BaseOnOffsetChangedListener<any>): void;
-						public clearChildFocus(param0: globalAndroid.view.View): void;
-						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
-						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
-						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
-						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
-						public removeOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.BaseOnOffsetChangedListener<any>): void;
-						public setOrientation(param0: number): void;
-						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
-						public getLiftOnScrollTargetViewId(): number;
-						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
-						public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
-						public removeView(param0: globalAndroid.view.View): void;
-						public getTotalScrollRange(): number;
-						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public setTargetElevation(param0: number): void;
-						public generateDefaultLayoutParams(): globalAndroid.view.ViewGroup.LayoutParams;
-						public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public isLayoutDirectionResolved(): boolean;
-						public generateLayoutParams(param0: globalAndroid.util.AttributeSet): globalAndroid.widget.LinearLayout.LayoutParams;
-						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
-						public addOnOffsetChangedListener(param0: com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener): void;
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
-						public getTargetElevation(): number;
+						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): com.google.android.material.appbar.AppBarLayout.LayoutParams;
+						/** @deprecated */
+						public setTargetElevation(param0: number): void;
+						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+						public isLiftOnScroll(): boolean;
+						public requestTransparentRegion(param0: globalAndroid.view.View): void;
 						public generateDefaultLayoutParams(): globalAndroid.widget.LinearLayout.LayoutParams;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
+						public addView(param0: globalAndroid.view.View): void;
 						public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
+						public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
+						public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 						public getMinimumHeightForVisibleOverlappingContent(): number;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+						public requestFitSystemWindows(): void;
+						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 						public checkLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): boolean;
-						public onDetachedFromWindow(): void;
+						public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
+						public getParentForAccessibility(): globalAndroid.view.ViewParent;
 						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public focusableViewAvailable(param0: globalAndroid.view.View): void;
 						public focusSearch(param0: number): globalAndroid.view.View;
 						public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 						public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.widget.LinearLayout.LayoutParams;
+						public generateLayoutParams(param0: globalAndroid.util.AttributeSet): com.google.android.material.appbar.AppBarLayout.LayoutParams;
+						public getTextAlignment(): number;
+						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
+						public onCreateDrawableState(param0: number): native.Array<number>;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
+						public getParent(): globalAndroid.view.ViewParent;
+						public getLayoutDirection(): number;
+						public canResolveTextAlignment(): boolean;
 					}
 					export module AppBarLayout {
 						export class BaseBehavior<T>  extends com.google.android.material.appbar.HeaderBehavior<any> {
 							public static class: java.lang.Class<com.google.android.material.appbar.AppBarLayout.BaseBehavior<any>>;
 							public constructor();
-							public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
+							/** @deprecated */
+							public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number): void;
 							public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number): void;
+							/** @deprecated */
+							public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View): void;
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 							public setDragCallback(param0: com.google.android.material.appbar.AppBarLayout.BaseBehavior.BaseDragCallback<any>): void;
 							public onRestoreInstanceState(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.os.Parcelable): void;
 							public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number, param5: number): boolean;
 							public onLayoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 							public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
-							public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number): void;
 							public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
-							public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View): void;
 							public onSaveInstanceState(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any): globalAndroid.os.Parcelable;
 							public onMeasureChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number, param3: number, param4: number, param5: number): boolean;
+							/** @deprecated */
+							public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
+							/** @deprecated */
 							public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 						}
 						export module BaseBehavior {
@@ -29375,7 +29670,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public setTitleEnabled(param0: boolean): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -29390,6 +29684,8 @@ declare module com {
 						public getExpandedTitleMarginTop(): number;
 						public isTextDirectionResolved(): boolean;
 						public setVisibility(param0: number): void;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public onAttachedToWindow(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public getExpandedTitleMarginEnd(): number;
@@ -29413,6 +29709,8 @@ declare module com {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setExpandedTitleTypeface(param0: globalAndroid.graphics.Typeface): void;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -29425,12 +29723,13 @@ declare module com {
 						public getScrimAnimationDuration(): number;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public setCollapsedTitleTextColor(param0: number): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public setCollapsedTitleTextColor(param0: globalAndroid.content.res.ColorStateList): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public setCollapsedTitleTextAppearance(param0: number): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -29538,7 +29837,6 @@ declare module com {
 						public onMeasureChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: globalAndroid.view.View, param2: number, param3: number, param4: number, param5: number): boolean;
 						public layoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number): void;
 						public constructor();
-						public shouldHeaderOverlapScrollingChild(): boolean;
 						public layoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: globalAndroid.view.View, param2: number): void;
 						public setOverlayTop(param0: number): void;
 						public getOverlayTop(): number;
@@ -29559,17 +29857,13 @@ declare module com {
 					export class ViewOffsetBehavior<V>  extends androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<any> {
 						public static class: java.lang.Class<com.google.android.material.appbar.ViewOffsetBehavior<any>>;
 						public layoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number): void;
-						public setHorizontalOffsetEnabled(param0: boolean): void;
 						public constructor();
-						public isVerticalOffsetEnabled(): boolean;
 						public onLayoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number): boolean;
 						public setTopAndBottomOffset(param0: number): boolean;
 						public setLeftAndRightOffset(param0: number): boolean;
 						public getLeftAndRightOffset(): number;
-						public isHorizontalOffsetEnabled(): boolean;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 						public getTopAndBottomOffset(): number;
-						public setVerticalOffsetEnabled(param0: boolean): void;
 					}
 				}
 			}
@@ -29585,17 +29879,13 @@ declare module com {
 					export class ViewOffsetHelper extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.appbar.ViewOffsetHelper>;
 						public getLayoutTop(): number;
-						public setHorizontalOffsetEnabled(param0: boolean): void;
 						public onViewLayout(): void;
 						public getLayoutLeft(): number;
-						public isVerticalOffsetEnabled(): boolean;
 						public setTopAndBottomOffset(param0: number): boolean;
 						public constructor(param0: globalAndroid.view.View);
 						public setLeftAndRightOffset(param0: number): boolean;
 						public getLeftAndRightOffset(): number;
-						public isHorizontalOffsetEnabled(): boolean;
 						public getTopAndBottomOffset(): number;
-						public setVerticalOffsetEnabled(param0: boolean): void;
 					}
 				}
 			}
@@ -29632,8 +29922,12 @@ declare module com {
 						public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number, param7: number): void;
 						public slideUp(param0: any): void;
 						public onLayoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number): boolean;
+						/** @deprecated */
+						public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 						public slideDown(param0: any): void;
+						/** @deprecated */
+						public onNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: number, param6: number): void;
 						public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
 					}
 				}
@@ -29702,8 +29996,6 @@ declare module com {
 						public static class: java.lang.Class<com.google.android.material.bottomappbar.BottomAppBar>;
 						public static FAB_ALIGNMENT_MODE_CENTER: number;
 						public static FAB_ALIGNMENT_MODE_END: number;
-						public static FAB_ANIMATION_MODE_SCALE: number;
-						public static FAB_ANIMATION_MODE_SLIDE: number;
 						public isLayoutRequested(): boolean;
 						public canResolveLayoutDirection(): boolean;
 						public constructor(param0: globalAndroid.content.Context);
@@ -29713,7 +30005,8 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
-						public setElevation(param0: number): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public getHideOnScroll(): boolean;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
@@ -29721,8 +30014,6 @@ declare module com {
 						public setTitle(param0: number): void;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
-						public getFabAnimationMode(): number;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -29731,7 +30022,6 @@ declare module com {
 						public removeView(param0: globalAndroid.view.View): void;
 						public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public setFabAnimationMode(param0: number): void;
 						public getBehavior(): androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<com.google.android.material.bottomappbar.BottomAppBar>;
 						public setCradleVerticalOffset(param0: number): void;
 						public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
@@ -29742,7 +30032,6 @@ declare module com {
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public setTitle(param0: string): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -29760,6 +30049,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -29768,7 +30059,6 @@ declare module com {
 						public setSubtitle(param0: string): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public addView(param0: globalAndroid.view.View): void;
-						public createFabDefaultXAnimation(param0: number, param1: java.util.List<globalAndroid.animation.Animator>): void;
 						public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 						public setSubtitle(param0: number): void;
 						public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
@@ -29793,6 +30083,8 @@ declare module com {
 						public setHideOnScroll(param0: boolean): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 						public onSaveInstanceState(): globalAndroid.os.Parcelable;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public onRestoreInstanceState(param0: globalAndroid.os.Parcelable): void;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
@@ -29830,23 +30122,6 @@ declare module com {
 							public toString(): string;
 							public equals(param0: any): boolean;
 						}
-						export class FabAnimationMode extends java.lang.Object implements java.lang.annotation.Annotation {
-							public static class: java.lang.Class<com.google.android.material.bottomappbar.BottomAppBar.FabAnimationMode>;
-							/**
-							 * Constructs a new instance of the com.google.android.material.bottomappbar.BottomAppBar$FabAnimationMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-							 */
-							public constructor(implementation: {
-								equals(param0: any): boolean;
-								hashCode(): number;
-								toString(): string;
-								annotationType(): java.lang.Class<any>;
-							});
-							public constructor();
-							public hashCode(): number;
-							public annotationType(): java.lang.Class<any>;
-							public toString(): string;
-							public equals(param0: any): boolean;
-						}
 						export class SavedState extends androidx.customview.view.AbsSavedState {
 							public static class: java.lang.Class<com.google.android.material.bottomappbar.BottomAppBar.SavedState>;
 							public static CREATOR: globalAndroid.os.Parcelable.Creator<com.google.android.material.bottomappbar.BottomAppBar.SavedState>;
@@ -29871,8 +30146,8 @@ declare module com {
 					export class BottomAppBarTopEdgeTreatment extends com.google.android.material.shape.EdgeTreatment {
 						public static class: java.lang.Class<com.google.android.material.bottomappbar.BottomAppBarTopEdgeTreatment>;
 						public constructor();
-						public getEdgePath(param0: number, param1: number, param2: number, param3: com.google.android.material.shape.ShapePath): void;
 						public constructor(param0: number, param1: number, param2: number);
+						public getEdgePath(param0: number, param1: number, param2: com.google.android.material.shape.ShapePath): void;
 					}
 				}
 			}
@@ -29899,11 +30174,12 @@ declare module com {
 						public showsIcon(): boolean;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public prefersCondensedTitle(): boolean;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -29921,7 +30197,6 @@ declare module com {
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public setTitle(param0: string): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public setShortcut(param0: boolean, param1: string): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -29941,6 +30216,8 @@ declare module com {
 						public isTextDirectionResolved(): boolean;
 						public getItemPosition(): number;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public setLabelVisibilityMode(param0: number): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -29974,6 +30251,8 @@ declare module com {
 						public onCreateDrawableState(param0: number): native.Array<number>;
 						public getItemData(): androidx.appcompat.view.menu.MenuItemImpl;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -30022,12 +30301,13 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
 						public getItemTextColor(): globalAndroid.content.res.ColorStateList;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public onMeasure(param0: number, param1: number): void;
 						public getIconTintList(): globalAndroid.content.res.ColorStateList;
@@ -30047,7 +30327,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public getWindowAnimations(): number;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -30062,10 +30341,13 @@ declare module com {
 						public addView(param0: globalAndroid.view.View, param1: number): void;
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public setItemBackgroundRes(param0: number): void;
-						public getItemBackgroundRes(): number;
 						public isTextDirectionResolved(): boolean;
 						public isItemHorizontalTranslationEnabled(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
+						/** @deprecated */
+						public getItemBackgroundRes(): number;
 						public setItemHorizontalTranslationEnabled(param0: boolean): void;
 						public buildMenuView(): void;
 						public setLabelVisibilityMode(param0: number): void;
@@ -30101,6 +30383,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setItemTextAppearanceActive(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getItemTextAppearanceActive(): number;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
@@ -30168,11 +30452,12 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
 						public getItemTextColor(): globalAndroid.content.res.ColorStateList;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getMaxItemCount(): number;
 						public setItemBackgroundResource(param0: number): void;
@@ -30186,6 +30471,8 @@ declare module com {
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public getMenu(): globalAndroid.view.Menu;
 						public setOnNavigationItemReselectedListener(param0: com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemReselectedListener): void;
+						/** @deprecated */
+						public getItemBackgroundResource(): number;
 						public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public setItemIconSize(param0: number): void;
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
@@ -30193,7 +30480,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -30210,6 +30496,8 @@ declare module com {
 						public isTextDirectionResolved(): boolean;
 						public isItemHorizontalTranslationEnabled(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public setOnNavigationItemSelectedListener(param0: com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener): void;
 						public setItemHorizontalTranslationEnabled(param0: boolean): void;
 						public setLabelVisibilityMode(param0: number): void;
@@ -30233,7 +30521,6 @@ declare module com {
 						public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public inflateMenu(param0: number): void;
 						public getParentForAccessibility(): globalAndroid.view.ViewParent;
-						public getItemBackgroundResource(): number;
 						public getLabelVisibilityMode(): number;
 						public setItemIconSizeRes(param0: number): void;
 						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
@@ -30247,6 +30534,8 @@ declare module com {
 						public setItemTextAppearanceActive(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 						public onSaveInstanceState(): globalAndroid.os.Parcelable;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getItemTextAppearanceActive(): number;
 						public onRestoreInstanceState(param0: globalAndroid.os.Parcelable): void;
 						public getParent(): globalAndroid.view.ViewParent;
@@ -30340,6 +30629,10 @@ declare module com {
 						public static STATE_HIDDEN: number;
 						public static STATE_HALF_EXPANDED: number;
 						public static PEEK_HEIGHT_AUTO: number;
+						/** @deprecated */
+						public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>): void;
+						/** @deprecated */
+						public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View): void;
 						public static from(param0: globalAndroid.view.View): com.google.android.material.bottomsheet.BottomSheetBehavior<any>;
 						public setPeekHeight(param0: number): void;
 						public onRestoreInstanceState(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.os.Parcelable): void;
@@ -30348,25 +30641,23 @@ declare module com {
 						public setBottomSheetCallback(param0: com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback): void;
 						public setFitToContents(param0: boolean): void;
 						public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>, param6: number): void;
-						public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 						public isFitToContents(): boolean;
 						public getSkipCollapsed(): boolean;
 						public constructor();
 						public onLayoutChild(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: number): boolean;
+						/** @deprecated */
+						public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
 						public onStopNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number): void;
 						public isHideable(): boolean;
-						public onNestedPreScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number, param5: native.Array<number>): void;
 						public onNestedPreFling(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: number, param4: number): boolean;
 						public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number, param5: number): boolean;
 						public setState(param0: number): void;
 						public onTouchEvent(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.MotionEvent): boolean;
 						public getState(): number;
-						public setPeekHeight(param0: number, param1: boolean): void;
 						public getPeekHeight(): number;
 						public onInterceptTouchEvent(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.MotionEvent): boolean;
 						public setSkipCollapsed(param0: boolean): void;
-						public onStartNestedScroll(param0: androidx.coordinatorlayout.widget.CoordinatorLayout, param1: any, param2: globalAndroid.view.View, param3: globalAndroid.view.View, param4: number): boolean;
 					}
 					export module BottomSheetBehavior {
 						export abstract class BottomSheetCallback extends java.lang.Object {
@@ -30652,7 +30943,6 @@ declare module com {
 				export module card {
 					export class MaterialCardView extends androidx.cardview.widget.CardView {
 						public static class: java.lang.Class<com.google.android.material.card.MaterialCardView>;
-						public removeViewsInLayout(param0: number, param1: number): void;
 						public isLayoutRequested(): boolean;
 						public canResolveLayoutDirection(): boolean;
 						public constructor(param0: globalAndroid.content.Context);
@@ -30663,20 +30953,19 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
-						public setLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-						public removeView(param0: globalAndroid.view.View): void;
 						public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						public removeView(param0: globalAndroid.view.View): void;
 						public getChildVisibleRect(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: globalAndroid.graphics.Point): boolean;
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public setClickable(param0: boolean): void;
 						public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 						public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
@@ -30684,24 +30973,23 @@ declare module com {
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public setStrokeWidth(param0: number): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
-						public removeViewInLayout(param0: globalAndroid.view.View): void;
 						public setRadius(param0: number): void;
-						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
+						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public requestLayout(): void;
 						public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public keyboardNavigationClusterSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
-						public addView(param0: globalAndroid.view.View, param1: number): void;
 						public bringChildToFront(param0: globalAndroid.view.View): void;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback): globalAndroid.view.ActionMode;
+						public addView(param0: globalAndroid.view.View, param1: number): void;
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
-						public removeViewAt(param0: number): void;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -30718,16 +31006,16 @@ declare module com {
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 						public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public getParentForAccessibility(): globalAndroid.view.ViewParent;
-						public removeViews(param0: number, param1: number): void;
 						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public setStrokeColor(param0: number): void;
 						public focusableViewAvailable(param0: globalAndroid.view.View): void;
 						public focusSearch(param0: number): globalAndroid.view.View;
 						public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
-						public removeAllViews(): void;
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -30758,60 +31046,24 @@ declare module com {
 	export module google {
 		export module android {
 			export module material {
-				export module checkbox {
-					export class MaterialCheckBox extends androidx.appcompat.widget.AppCompatCheckBox {
-						public static class: java.lang.Class<com.google.android.material.checkbox.MaterialCheckBox>;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-						public setChecked(param0: boolean): void;
-						public getSupportButtonTintList(): globalAndroid.content.res.ColorStateList;
-						public constructor(param0: globalAndroid.content.Context);
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public getSupportButtonTintMode(): globalAndroid.graphics.PorterDuff.Mode;
-						public sendAccessibilityEvent(param0: number): void;
-						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
-						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public setSupportButtonTintList(param0: globalAndroid.content.res.ColorStateList): void;
-						public setSupportButtonTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
-						public isChecked(): boolean;
-						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
-						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public onPreDraw(): boolean;
-						public toggle(): void;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
 				export module chip {
 					export class Chip extends androidx.appcompat.widget.AppCompatCheckBox implements com.google.android.material.chip.ChipDrawable.Delegate {
 						public static class: java.lang.Class<com.google.android.material.chip.Chip>;
 						public setChipDrawable(param0: com.google.android.material.chip.ChipDrawable): void;
 						public constructor(param0: globalAndroid.content.Context);
-						public isChipIconEnabled(): boolean;
+						/** @deprecated */
+						public isCheckedIconEnabled(): boolean;
 						public setBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
-						public setChipTextResource(param0: number): void;
 						public getFocusedRect(param0: globalAndroid.graphics.Rect): void;
 						public setChipIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setHideMotionSpec(param0: com.google.android.material.animation.MotionSpec): void;
 						public setCloseIconEndPadding(param0: number): void;
 						public getChipIcon(): globalAndroid.graphics.drawable.Drawable;
+						/** @deprecated */
+						public setCloseIconEnabled(param0: boolean): void;
 						public setBackgroundColor(param0: number): void;
-						public getChipText(): string;
 						public getCloseIconStartPadding(): number;
 						public dispatchKeyEvent(param0: globalAndroid.view.KeyEvent): boolean;
-						public isCheckedIconEnabled(): boolean;
 						public setGravity(param0: number): void;
 						public setCloseIconContentDescription(param0: string): void;
 						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
@@ -30819,6 +31071,10 @@ declare module com {
 						public setChecked(param0: boolean): void;
 						public setCloseIconResource(param0: number): void;
 						public getSupportButtonTintList(): globalAndroid.content.res.ColorStateList;
+						/** @deprecated */
+						public setChipTextResource(param0: number): void;
+						/** @deprecated */
+						public setCloseIconEnabledResource(param0: number): void;
 						public setChipCornerRadius(param0: number): void;
 						public setShowMotionSpec(param0: com.google.android.material.animation.MotionSpec): void;
 						public onChipDrawableSizeChange(): void;
@@ -30839,30 +31095,27 @@ declare module com {
 						public setOnCloseIconClickListener(param0: globalAndroid.view.View.OnClickListener): void;
 						public setIconEndPaddingResource(param0: number): void;
 						public setCloseIconStartPaddingResource(param0: number): void;
-						public setLayoutDirection(param0: number): void;
-						public setCheckedIconEnabledResource(param0: number): void;
 						public performCloseIconClick(): boolean;
 						public getCloseIcon(): globalAndroid.graphics.drawable.Drawable;
-						public onInitializeAccessibilityNodeInfo(param0: globalAndroid.view.accessibility.AccessibilityNodeInfo): void;
+						/** @deprecated */
+						public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+						public getText(): string;
 						public setChipIconSize(param0: number): void;
+						/** @deprecated */
+						public setChipIconEnabledResource(param0: number): void;
 						public setCloseIconSizeResource(param0: number): void;
 						public setCheckedIconVisible(param0: number): void;
 						public setCheckableResource(param0: number): void;
 						public getChipIconSize(): number;
 						public getChipMinHeight(): number;
-						public setCloseIconEnabledResource(param0: number): void;
-						public ensureAccessibleTouchTarget(param0: globalAndroid.view.View, param1: number): void;
 						public setCompoundDrawablesRelativeWithIntrinsicBounds(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.graphics.drawable.Drawable, param2: globalAndroid.graphics.drawable.Drawable, param3: globalAndroid.graphics.drawable.Drawable): void;
 						public setTextStartPaddingResource(param0: number): void;
-						public setChipText(param0: string): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 						public setBackgroundResource(param0: number): void;
 						public getChipCornerRadius(): number;
 						public setChipStrokeColor(param0: globalAndroid.content.res.ColorStateList): void;
-						public isCloseIconEnabled(): boolean;
 						public setCloseIconSize(param0: number): void;
 						public getCloseIconEndPadding(): number;
-						public setCloseIconEnabled(param0: boolean): void;
 						public setMinLines(param0: number): void;
 						public setCloseIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setIconStartPaddingResource(param0: number): void;
@@ -30873,6 +31126,8 @@ declare module com {
 						public setCompoundDrawables(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.graphics.drawable.Drawable, param2: globalAndroid.graphics.drawable.Drawable, param3: globalAndroid.graphics.drawable.Drawable): void;
 						public setShowMotionSpecResource(param0: number): void;
 						public setText(param0: native.Array<string>, param1: number, param2: number): void;
+						/** @deprecated */
+						public setChipText(param0: string): void;
 						public setBackground(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setTextAppearanceResource(param0: number): void;
 						public setTextEndPadding(param0: number): void;
@@ -30889,6 +31144,8 @@ declare module com {
 						public setMaxLines(param0: number): void;
 						public setRippleColorResource(param0: number): void;
 						public setChipIconVisible(param0: number): void;
+						/** @deprecated */
+						public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
 						public setIconEndPadding(param0: number): void;
 						public setChipMinHeight(param0: number): void;
 						public setChipIconVisible(param0: boolean): void;
@@ -30902,7 +31159,8 @@ declare module com {
 						public isCheckedIconVisible(): boolean;
 						public getSupportButtonTintMode(): globalAndroid.graphics.PorterDuff.Mode;
 						public getChipStrokeWidth(): number;
-						public setCheckedIconEnabled(param0: boolean): void;
+						/** @deprecated */
+						public setChipIconEnabled(param0: boolean): void;
 						public getCloseIconContentDescription(): string;
 						public setChipIconTintResource(param0: number): void;
 						public setChipStrokeWidthResource(param0: number): void;
@@ -30918,10 +31176,10 @@ declare module com {
 						public setChipStrokeColorResource(param0: number): void;
 						public setCloseIconStartPadding(param0: number): void;
 						public setTextAppearance(param0: com.google.android.material.resources.TextAppearance): void;
-						public setChipIconEnabled(param0: boolean): void;
 						public setEllipsize(param0: globalAndroid.text.TextUtils.TruncateAt): void;
 						public dispatchHoverEvent(param0: globalAndroid.view.MotionEvent): boolean;
-						public setChipIconEnabledResource(param0: number): void;
+						/** @deprecated */
+						public isCloseIconEnabled(): boolean;
 						public getCloseIconSize(): number;
 						public getEllipsize(): globalAndroid.text.TextUtils.TruncateAt;
 						public setLines(param0: number): void;
@@ -30934,16 +31192,22 @@ declare module com {
 						public getIconEndPadding(): number;
 						public isChecked(): boolean;
 						public setTextAppearance(param0: globalAndroid.content.Context, param1: number): void;
+						/** @deprecated */
+						public setCheckedIconEnabledResource(param0: number): void;
 						public setSingleLine(): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 						public setChipMinHeightResource(param0: number): void;
 						public getChipStartPadding(): number;
 						public onFocusChanged(param0: boolean, param1: number, param2: globalAndroid.graphics.Rect): void;
+						/** @deprecated */
+						public isChipIconEnabled(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public setChipBackgroundColorResource(param0: number): void;
 						public setMaxWidth(param0: number): void;
 						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public setChipStrokeWidth(param0: number): void;
+						/** @deprecated */
+						public setCheckedIconEnabled(param0: boolean): void;
 						public setCompoundDrawablesWithIntrinsicBounds(param0: globalAndroid.graphics.drawable.Drawable, param1: globalAndroid.graphics.drawable.Drawable, param2: globalAndroid.graphics.drawable.Drawable, param3: globalAndroid.graphics.drawable.Drawable): void;
 						public setCheckedIconVisible(param0: boolean): void;
 						public setSingleLine(param0: boolean): void;
@@ -30956,9 +31220,12 @@ declare module com {
 						public setCloseIconVisible(param0: boolean): void;
 						public getIconStartPadding(): number;
 						public setText(param0: string): void;
+						public onDraw(param0: globalAndroid.graphics.Canvas): void;
 						public setChipIconSizeResource(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 						public getChipDrawable(): globalAndroid.graphics.drawable.Drawable;
+						/** @deprecated */
+						public getChipText(): string;
 						public isChipIconVisible(): boolean;
 						public setCloseIconTint(param0: globalAndroid.content.res.ColorStateList): void;
 					}
@@ -30983,21 +31250,25 @@ declare module com {
 		export module android {
 			export module material {
 				export module chip {
-					export class ChipDrawable extends com.google.android.material.shape.MaterialShapeDrawable implements androidx.core.graphics.drawable.TintAwareDrawable, globalAndroid.graphics.drawable.Drawable.Callback {
+					export class ChipDrawable extends globalAndroid.graphics.drawable.Drawable implements androidx.core.graphics.drawable.TintAwareDrawable, globalAndroid.graphics.drawable.Drawable.Callback {
 						public static class: java.lang.Class<com.google.android.material.chip.ChipDrawable>;
 						public onSizeChange(): void;
 						public onLevelChange(param0: number): boolean;
-						public isChipIconEnabled(): boolean;
+						/** @deprecated */
+						public isCheckedIconEnabled(): boolean;
 						public setChipIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setHideMotionSpec(param0: com.google.android.material.animation.MotionSpec): void;
 						public setCloseIconEndPadding(param0: number): void;
 						public getChipIcon(): globalAndroid.graphics.drawable.Drawable;
 						public getMaxWidth(): number;
+						/** @deprecated */
+						public setCloseIconEnabled(param0: boolean): void;
 						public setTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
 						public getCloseIconStartPadding(): number;
-						public isCheckedIconEnabled(): boolean;
 						public setCloseIconContentDescription(param0: string): void;
 						public setCloseIconResource(param0: number): void;
+						/** @deprecated */
+						public setCloseIconEnabledResource(param0: number): void;
 						public setChipCornerRadius(param0: number): void;
 						public setShowMotionSpec(param0: com.google.android.material.animation.MotionSpec): void;
 						public setIconStartPadding(param0: number): void;
@@ -31015,30 +31286,28 @@ declare module com {
 						public static createFromAttributes(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number): com.google.android.material.chip.ChipDrawable;
 						public setIconEndPaddingResource(param0: number): void;
 						public setCloseIconStartPaddingResource(param0: number): void;
-						public setCheckedIconEnabledResource(param0: number): void;
 						public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
 						public getCloseIcon(): globalAndroid.graphics.drawable.Drawable;
 						public getText(): string;
 						public getChipTouchBounds(param0: globalAndroid.graphics.RectF): void;
 						public getUseCompatRipple(): boolean;
 						public setChipIconSize(param0: number): void;
+						/** @deprecated */
+						public setChipIconEnabledResource(param0: number): void;
 						public setCloseIconSizeResource(param0: number): void;
 						public onStateChange(param0: native.Array<number>): boolean;
 						public setCheckedIconVisible(param0: number): void;
 						public setCheckableResource(param0: number): void;
 						public getChipIconSize(): number;
 						public getChipMinHeight(): number;
-						public setCloseIconEnabledResource(param0: number): void;
 						public setTextStartPaddingResource(param0: number): void;
 						public getIntrinsicWidth(): number;
 						public getChipCornerRadius(): number;
 						public setChipStrokeColor(param0: globalAndroid.content.res.ColorStateList): void;
 						public getOpacity(): number;
-						public isCloseIconEnabled(): boolean;
 						public setDelegate(param0: com.google.android.material.chip.ChipDrawable.Delegate): void;
 						public setCloseIconSize(param0: number): void;
 						public getCloseIconEndPadding(): number;
-						public setCloseIconEnabled(param0: boolean): void;
 						public getCloseIconState(): native.Array<number>;
 						public setCloseIcon(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setIconStartPaddingResource(param0: number): void;
@@ -31070,7 +31339,8 @@ declare module com {
 						public setChipEndPadding(param0: number): void;
 						public isCheckedIconVisible(): boolean;
 						public getChipStrokeWidth(): number;
-						public setCheckedIconEnabled(param0: boolean): void;
+						/** @deprecated */
+						public setChipIconEnabled(param0: boolean): void;
 						public getCloseIconContentDescription(): string;
 						public setChipIconTintResource(param0: number): void;
 						public setChipStrokeWidthResource(param0: number): void;
@@ -31085,10 +31355,10 @@ declare module com {
 						public setChipStrokeColorResource(param0: number): void;
 						public setCloseIconStartPadding(param0: number): void;
 						public setTextAppearance(param0: com.google.android.material.resources.TextAppearance): void;
-						public setChipIconEnabled(param0: boolean): void;
 						public getTextAppearance(): com.google.android.material.resources.TextAppearance;
 						public setEllipsize(param0: globalAndroid.text.TextUtils.TruncateAt): void;
-						public setChipIconEnabledResource(param0: number): void;
+						/** @deprecated */
+						public isCloseIconEnabled(): boolean;
 						public getCloseIconSize(): number;
 						public getEllipsize(): globalAndroid.text.TextUtils.TruncateAt;
 						public getAlpha(): number;
@@ -31100,9 +31370,13 @@ declare module com {
 						public setColorFilter(param0: globalAndroid.graphics.ColorFilter): void;
 						public getHideMotionSpec(): com.google.android.material.animation.MotionSpec;
 						public getIconEndPadding(): number;
+						/** @deprecated */
+						public setCheckedIconEnabledResource(param0: number): void;
 						public setChipMinHeightResource(param0: number): void;
 						public getChipStartPadding(): number;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
+						/** @deprecated */
+						public isChipIconEnabled(): boolean;
 						public getIntrinsicHeight(): number;
 						public setChipBackgroundColorResource(param0: number): void;
 						public setMaxWidth(param0: number): void;
@@ -31110,6 +31384,8 @@ declare module com {
 						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public setChipStrokeWidth(param0: number): void;
 						public setTextResource(param0: number): void;
+						/** @deprecated */
+						public setCheckedIconEnabled(param0: boolean): void;
 						public setCheckedIconVisible(param0: boolean): void;
 						public setHideMotionSpecResource(param0: number): void;
 						public setChipCornerRadiusResource(param0: number): void;
@@ -31157,15 +31433,15 @@ declare module com {
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
 						public setChipSpacingHorizontal(param0: number): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public generateLayoutParams(param0: globalAndroid.util.AttributeSet): globalAndroid.view.ViewGroup.LayoutParams;
 						public setOnCheckedChangeListener(param0: com.google.android.material.chip.ChipGroup.OnCheckedChangeListener): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public setChipSpacingResource(param0: number): void;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
-						public setShowDividerHorizontal(param0: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
@@ -31175,16 +31451,18 @@ declare module com {
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public getCheckedChipId(): number;
 						public generateDefaultLayoutParams(): globalAndroid.view.ViewGroup.LayoutParams;
+						/** @deprecated */
+						public setFlexWrap(param0: number): void;
 						public setChipSpacingVertical(param0: number): void;
-						public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
+						/** @deprecated */
 						public setDividerDrawableHorizontal(param0: globalAndroid.graphics.drawable.Drawable): void;
+						public generateLayoutParams(param0: globalAndroid.view.ViewGroup.LayoutParams): globalAndroid.view.ViewGroup.LayoutParams;
 						public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 						public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public setOnHierarchyChangeListener(param0: globalAndroid.view.ViewGroup.OnHierarchyChangeListener): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -31201,23 +31479,24 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public setChipSpacingHorizontalResource(param0: number): void;
 						public getChipSpacingVertical(): number;
 						public setSingleSelection(param0: number): void;
+						/** @deprecated */
+						public setDividerDrawableVertical(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setSingleLine(param0: number): void;
 						public requestTransparentRegion(param0: globalAndroid.view.View): void;
-						public setShowDividerVertical(param0: number): void;
-						public setDividerDrawableVertical(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setChipSpacingVerticalResource(param0: number): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public addView(param0: globalAndroid.view.View): void;
 						public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 						public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-						public setFlexWrap(param0: number): void;
 						public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public requestFitSystemWindows(): void;
@@ -31226,6 +31505,8 @@ declare module com {
 						public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public getParentForAccessibility(): globalAndroid.view.ViewParent;
 						public setSingleSelection(param0: boolean): void;
+						/** @deprecated */
+						public setShowDividerHorizontal(param0: number): void;
 						public getChipSpacingHorizontal(): number;
 						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
 						public clearCheck(): void;
@@ -31235,7 +31516,11 @@ declare module com {
 						public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
+						/** @deprecated */
+						public setShowDividerVertical(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public check(param0: number): void;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
@@ -31311,10 +31596,11 @@ declare module com {
 						public getCircularRevealOverlayDrawable(): globalAndroid.graphics.drawable.Drawable;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setRevealInfo(param0: com.google.android.material.circularreveal.CircularRevealWidget.RevealInfo): void;
 						public getTextDirection(): number;
@@ -31332,7 +31618,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -31351,6 +31636,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -31377,6 +31664,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setCircularRevealScrimColor(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -31404,10 +31693,11 @@ declare module com {
 						public getCircularRevealOverlayDrawable(): globalAndroid.graphics.drawable.Drawable;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setRevealInfo(param0: com.google.android.material.circularreveal.CircularRevealWidget.RevealInfo): void;
 						public getTextDirection(): number;
@@ -31425,7 +31715,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -31444,6 +31733,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -31470,6 +31761,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setCircularRevealScrimColor(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -31558,10 +31851,11 @@ declare module com {
 						public getCircularRevealOverlayDrawable(): globalAndroid.graphics.drawable.Drawable;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setRevealInfo(param0: com.google.android.material.circularreveal.CircularRevealWidget.RevealInfo): void;
 						public getTextDirection(): number;
@@ -31579,7 +31873,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -31598,6 +31891,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -31624,6 +31919,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setCircularRevealScrimColor(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -31651,10 +31948,11 @@ declare module com {
 						public getCircularRevealOverlayDrawable(): globalAndroid.graphics.drawable.Drawable;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setRevealInfo(param0: com.google.android.material.circularreveal.CircularRevealWidget.RevealInfo): void;
 						public getTextDirection(): number;
@@ -31672,7 +31970,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -31691,6 +31988,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -31717,6 +32016,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setCircularRevealScrimColor(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -31836,6 +32137,8 @@ declare module com {
 							public isTextDirectionResolved(): boolean;
 							public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public isLayoutDirectionResolved(): boolean;
+							/** @deprecated */
+							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public actualDraw(param0: globalAndroid.graphics.Canvas): void;
 							public canResolveTextDirection(): boolean;
 							public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
@@ -31846,8 +32149,9 @@ declare module com {
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 							public canResolveLayoutDirection(): boolean;
 							public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+							/** @deprecated */
+							public requestFitSystemWindows(): void;
 							public focusableViewAvailable(param0: globalAndroid.view.View): void;
 							public addView(param0: globalAndroid.view.View): void;
 							public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -31873,7 +32177,6 @@ declare module com {
 							public getTextAlignment(): number;
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 							public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 							public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -31893,6 +32196,8 @@ declare module com {
 							public focusSearch(param0: number): globalAndroid.view.View;
 							public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 							public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+							/** @deprecated */
+							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public constructor(param0: globalAndroid.content.Context);
 						}
 					}
@@ -31931,6 +32236,8 @@ declare module com {
 							public isTextDirectionResolved(): boolean;
 							public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public isLayoutDirectionResolved(): boolean;
+							/** @deprecated */
+							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public actualDraw(param0: globalAndroid.graphics.Canvas): void;
 							public canResolveTextDirection(): boolean;
 							public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>, param4: number): void;
@@ -31942,8 +32249,9 @@ declare module com {
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 							public canResolveLayoutDirection(): boolean;
 							public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+							/** @deprecated */
+							public requestFitSystemWindows(): void;
 							public focusableViewAvailable(param0: globalAndroid.view.View): void;
 							public addView(param0: globalAndroid.view.View): void;
 							public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -31972,7 +32280,6 @@ declare module com {
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 							public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 							public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number): void;
-							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 							public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -31993,34 +32300,10 @@ declare module com {
 							public focusSearch(param0: number): globalAndroid.view.View;
 							public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 							public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+							/** @deprecated */
+							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public constructor(param0: globalAndroid.content.Context);
 						}
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module color {
-					export class MaterialColors extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.color.MaterialColors>;
-						public static ALPHA_FULL: number;
-						public static ALPHA_MEDIUM: number;
-						public static ALPHA_DISABLED: number;
-						public static ALPHA_LOW: number;
-						public static ALPHA_DISABLED_LOW: number;
-						public constructor();
-						public static getColor(param0: globalAndroid.view.View, param1: number, param2: number): number;
-						public static layer(param0: number, param1: number, param2: number): number;
-						public static layer(param0: number, param1: number): number;
-						public static layer(param0: globalAndroid.view.View, param1: number, param2: number): number;
-						public static getColor(param0: globalAndroid.view.View, param1: number): number;
-						public static layer(param0: globalAndroid.view.View, param1: number, param2: number, param3: number): number;
 					}
 				}
 			}
@@ -32134,17 +32417,14 @@ declare module com {
 						public constructor(param0: globalAndroid.content.Context);
 						public setBackgroundTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
 						public setBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
-						public setTranslationZ(param0: number): void;
 						public sendAccessibilityEvent(param0: number): void;
 						public getMeasuredContentRect(param0: globalAndroid.graphics.Rect): void;
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
-						public setScaleY(param0: number): void;
 						public setCompatElevation(param0: number): void;
 						public setExpandedComponentIdHint(param0: number): void;
 						public setHideMotionSpec(param0: com.google.android.material.animation.MotionSpec): void;
 						public getRippleColorStateList(): globalAndroid.content.res.ColorStateList;
 						public setSupportBackgroundTintList(param0: globalAndroid.content.res.ColorStateList): void;
-						public getContentRect(param0: globalAndroid.graphics.Rect): boolean;
 						public getSupportImageTintMode(): globalAndroid.graphics.PorterDuff.Mode;
 						public setImageDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public getContentBackground(): globalAndroid.graphics.drawable.Drawable;
@@ -32156,14 +32436,13 @@ declare module com {
 						public setExpanded(param0: boolean): boolean;
 						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
 						public onTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
+						/** @deprecated */
+						public getRippleColor(): number;
 						public getCompatHoveredFocusedTranslationZ(): number;
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public setScaleX(param0: number): void;
 						public getUseCompatPadding(): boolean;
-						public setTranslationY(param0: number): void;
 						public setShowMotionSpec(param0: com.google.android.material.animation.MotionSpec): void;
 						public isOrWillBeShown(): boolean;
-						public getRippleColor(): number;
 						public clearCustomSize(): void;
 						public getShowMotionSpec(): com.google.android.material.animation.MotionSpec;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -32184,8 +32463,9 @@ declare module com {
 						public setCompatHoveredFocusedTranslationZResource(param0: number): void;
 						public onAttachedToWindow(): void;
 						public setUseCompatPadding(param0: boolean): void;
+						/** @deprecated */
+						public setBackgroundDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public getCompatPressedTranslationZ(): number;
-						public addTransformationListener(param0: com.google.android.material.animation.TransformationListener<com.google.android.material.floatingactionbutton.FloatingActionButton>): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public setImageResource(param0: number): void;
 						public drawableStateChanged(): void;
@@ -32194,7 +32474,6 @@ declare module com {
 						public getBackgroundTintList(): globalAndroid.content.res.ColorStateList;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 						public setSupportImageTintList(param0: globalAndroid.content.res.ColorStateList): void;
-						public removeTransformationListener(param0: com.google.android.material.animation.TransformationListener<com.google.android.material.floatingactionbutton.FloatingActionButton>): void;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 						public isOrWillBeHidden(): boolean;
@@ -32211,11 +32490,12 @@ declare module com {
 						public show(): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 						public addOnHideAnimationListener(param0: globalAndroid.animation.Animator.AnimatorListener): void;
-						public setTranslationX(param0: number): void;
 						public getSupportImageTintList(): globalAndroid.content.res.ColorStateList;
 						public onSaveInstanceState(): globalAndroid.os.Parcelable;
 						public setShowMotionSpecResource(param0: number): void;
 						public onRestoreInstanceState(param0: globalAndroid.os.Parcelable): void;
+						/** @deprecated */
+						public getContentRect(param0: globalAndroid.graphics.Rect): boolean;
 					}
 					export module FloatingActionButton {
 						export class BaseBehavior<T>  extends androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<any> {
@@ -32266,13 +32546,6 @@ declare module com {
 							public hashCode(): number;
 							public annotationType(): java.lang.Class<any>;
 							public toString(): string;
-							public equals(param0: any): boolean;
-						}
-						export class TransformationListenerWrapper extends java.lang.Object implements com.google.android.material.floatingactionbutton.FloatingActionButtonImpl.InternalTransformationListener {
-							public static class: java.lang.Class<com.google.android.material.floatingactionbutton.FloatingActionButton.TransformationListenerWrapper>;
-							public hashCode(): number;
-							public onTranslationChanged(): void;
-							public onScaleChanged(): void;
 							public equals(param0: any): boolean;
 						}
 					}
@@ -32331,19 +32604,6 @@ declare module com {
 							public onAnimationEnd(param0: globalAndroid.animation.Animator): void;
 							public onAnimationResume(param0: globalAndroid.animation.Animator): void;
 							public onAnimationRepeat(param0: globalAndroid.animation.Animator): void;
-						}
-						export class InternalTransformationListener extends java.lang.Object {
-							public static class: java.lang.Class<com.google.android.material.floatingactionbutton.FloatingActionButtonImpl.InternalTransformationListener>;
-							/**
-							 * Constructs a new instance of the com.google.android.material.floatingactionbutton.FloatingActionButtonImpl$InternalTransformationListener interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-							 */
-							public constructor(implementation: {
-								onTranslationChanged(): void;
-								onScaleChanged(): void;
-							});
-							public constructor();
-							public onTranslationChanged(): void;
-							public onScaleChanged(): void;
 						}
 						export class InternalVisibilityChangedListener extends java.lang.Object {
 							public static class: java.lang.Class<com.google.android.material.floatingactionbutton.FloatingActionButtonImpl.InternalVisibilityChangedListener>;
@@ -32428,12 +32688,13 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public getBaseline(): number;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public onMeasure(param0: number, param1: number): void;
 						public getTextDirection(): number;
@@ -32449,7 +32710,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -32464,6 +32724,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -32486,6 +32748,8 @@ declare module com {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -32597,7 +32861,6 @@ declare module com {
 				export module internal {
 					export class CollapsingTextHelper extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.internal.CollapsingTextHelper>;
-						public setExpandedBounds(param0: globalAndroid.graphics.Rect): void;
 						public getExpandedTextColor(): globalAndroid.content.res.ColorStateList;
 						public setCollapsedTextColor(param0: globalAndroid.content.res.ColorStateList): void;
 						public getText(): string;
@@ -32622,7 +32885,6 @@ declare module com {
 						public getExpandedTypeface(): globalAndroid.graphics.Typeface;
 						public getCollapsedTypeface(): globalAndroid.graphics.Typeface;
 						public setCollapsedTextGravity(param0: number): void;
-						public setCollapsedBounds(param0: globalAndroid.graphics.Rect): void;
 						public constructor(param0: globalAndroid.view.View);
 						public setExpandedBounds(param0: number, param1: number, param2: number, param3: number): void;
 						public getCollapsedTextColor(): globalAndroid.content.res.ColorStateList;
@@ -32635,22 +32897,6 @@ declare module com {
 						public setText(param0: string): void;
 						public setExpandedTextColor(param0: globalAndroid.content.res.ColorStateList): void;
 						public getCurrentCollapsedTextColor(): number;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module internal {
-					export class ContextUtils extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.internal.ContextUtils>;
-						public constructor();
-						public static getActivity(param0: globalAndroid.content.Context): globalAndroid.app.Activity;
 					}
 				}
 			}
@@ -32736,12 +32982,13 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public isSingleLine(): boolean;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public getLineSpacing(): number;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public onMeasure(param0: number, param1: number): void;
@@ -32758,7 +33005,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -32773,6 +33019,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -32799,6 +33047,8 @@ declare module com {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -32826,13 +33076,14 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public onSizeChanged(param0: number, param1: number, param2: number, param3: number): void;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
 						public getForegroundGravity(): number;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -32849,7 +33100,6 @@ declare module com {
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public jumpDrawablesToCurrentState(): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -32866,6 +33116,8 @@ declare module com {
 						public drawableHotspotChanged(param0: number, param1: number): void;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -32892,6 +33144,8 @@ declare module com {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -32940,11 +33194,12 @@ declare module com {
 						public showsIcon(): boolean;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public prefersCondensedTitle(): boolean;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -32963,7 +33218,6 @@ declare module com {
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
 						public setTitle(param0: string): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public setShortcut(param0: boolean, param1: string): void;
 						public setNeedsEmptyIcon(param0: boolean): void;
@@ -32981,6 +33235,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public recycle(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -32989,7 +33245,6 @@ declare module com {
 						public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public addView(param0: globalAndroid.view.View): void;
 						public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
-						public setIconSize(param0: number): void;
 						public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
 						public childDrawableStateChanged(param0: globalAndroid.view.View): void;
@@ -33010,6 +33265,8 @@ declare module com {
 						public onCreateDrawableState(param0: number): native.Array<number>;
 						public getItemData(): androidx.appcompat.view.menu.MenuItemImpl;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -33047,7 +33304,6 @@ declare module com {
 						public getItemHorizontalPadding(): number;
 						public setItemBackground(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public getItemBackground(): globalAndroid.graphics.drawable.Drawable;
-						public setItemIconSize(param0: number): void;
 						public getId(): number;
 						public setId(param0: number): void;
 						public getMenuView(param0: globalAndroid.view.ViewGroup): androidx.appcompat.view.menu.MenuView;
@@ -33154,12 +33410,13 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public computeHorizontalScrollOffset(): number;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
 						public dispatchNestedScroll(param0: number, param1: number, param2: number, param3: number, param4: native.Array<number>): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public hasNestedScrollingParent(param0: number): boolean;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
@@ -33179,7 +33436,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public startNestedScroll(param0: number): boolean;
 						public getWindowAnimations(): number;
@@ -33198,6 +33454,8 @@ declare module com {
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 						public computeVerticalScrollRange(): number;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -33224,6 +33482,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public computeHorizontalScrollRange(): number;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public computeVerticalScrollExtent(): number;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
@@ -33300,10 +33560,11 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public getTextDirection(): number;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -33318,7 +33579,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -33334,6 +33594,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public onAttachedToWindow(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -33359,6 +33621,8 @@ declare module com {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -33422,49 +33686,8 @@ declare module com {
 						public static checkMaterialTheme(param0: globalAndroid.content.Context): void;
 						public static obtainTintedStyledAttributes(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: native.Array<number>, param3: number, param4: number, param5: native.Array<number>): androidx.appcompat.widget.TintTypedArray;
 						public static checkAppCompatTheme(param0: globalAndroid.content.Context): void;
-						public static createThemedContext(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number): globalAndroid.content.Context;
 						public static isAppCompatTheme(param0: globalAndroid.content.Context): boolean;
 						public static isMaterialTheme(param0: globalAndroid.content.Context): boolean;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module internal {
-					export class TouchDelegateGroup extends globalAndroid.view.TouchDelegate {
-						public static class: java.lang.Class<com.google.android.material.internal.TouchDelegateGroup>;
-						public onTouchEvent(param0: globalAndroid.view.MotionEvent): boolean;
-						public removeTouchDelegate(param0: globalAndroid.view.TouchDelegate): void;
-						public addTouchDelegate(param0: globalAndroid.view.TouchDelegate): void;
-						public clearTouchDelegates(): void;
-						public getTouchDelegates(): java.util.List<globalAndroid.view.TouchDelegate>;
-						public constructor(param0: globalAndroid.view.View);
-						public constructor(param0: globalAndroid.graphics.Rect, param1: globalAndroid.view.View);
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module internal {
-					export class TouchTargetUtils extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.internal.TouchTargetUtils>;
-						public static extendViewTouchTarget(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number, param3: number, param4: number, param5: number): void;
-						public constructor();
-						public static extendViewTouchTarget(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number, param5: number): void;
-						public static getOrCreateTouchDelegateGroup(param0: globalAndroid.view.View): com.google.android.material.internal.TouchDelegateGroup;
-						public static findViewAncestor(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 					}
 				}
 			}
@@ -33563,7 +33786,6 @@ declare module com {
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
@@ -33577,6 +33799,8 @@ declare module com {
 						public getHeaderCount(): number;
 						public setItemTextAppearance(param0: number): void;
 						public isTextDirectionResolved(): boolean;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public removeHeaderView(param0: globalAndroid.view.View): void;
 						public requestTransparentRegion(param0: globalAndroid.view.View): void;
@@ -33594,6 +33818,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public onSaveInstanceState(): globalAndroid.os.Parcelable;
 						public setItemIconPaddingResource(param0: number): void;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getHeaderView(param0: number): globalAndroid.view.View;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
@@ -33605,10 +33831,11 @@ declare module com {
 						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public isTextAlignmentResolved(): boolean;
 						public getItemTextColor(): globalAndroid.content.res.ColorStateList;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setItemBackgroundResource(param0: number): void;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -33616,7 +33843,6 @@ declare module com {
 						public removeView(param0: globalAndroid.view.View): void;
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public setCheckedItem(param0: number): void;
-						public setItemIconSize(param0: number): void;
 						public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public isLayoutDirectionResolved(): boolean;
@@ -33678,96 +33904,10 @@ declare module com {
 	export module google {
 		export module android {
 			export module material {
-				export module radiobutton {
-					export class MaterialRadioButton extends androidx.appcompat.widget.AppCompatRadioButton {
-						public static class: java.lang.Class<com.google.android.material.radiobutton.MaterialRadioButton>;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-						public setChecked(param0: boolean): void;
-						public getSupportButtonTintList(): globalAndroid.content.res.ColorStateList;
-						public constructor(param0: globalAndroid.content.Context);
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public getSupportButtonTintMode(): globalAndroid.graphics.PorterDuff.Mode;
-						public sendAccessibilityEvent(param0: number): void;
-						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
-						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public setSupportButtonTintList(param0: globalAndroid.content.res.ColorStateList): void;
-						public setSupportButtonTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
-						public isChecked(): boolean;
-						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
-						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public onPreDraw(): boolean;
-						public toggle(): void;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module resources {
-					export class CancelableFontCallback extends com.google.android.material.resources.TextAppearanceFontCallback {
-						public static class: java.lang.Class<com.google.android.material.resources.CancelableFontCallback>;
-						public constructor(param0: com.google.android.material.resources.CancelableFontCallback.ApplyFont, param1: globalAndroid.graphics.Typeface);
-						public constructor();
-						public cancel(): void;
-						public onFontRetrieved(param0: globalAndroid.graphics.Typeface, param1: boolean): void;
-						public onFontRetrievalFailed(param0: number): void;
-					}
-					export module CancelableFontCallback {
-						export class ApplyFont extends java.lang.Object {
-							public static class: java.lang.Class<com.google.android.material.resources.CancelableFontCallback.ApplyFont>;
-							/**
-							 * Constructs a new instance of the com.google.android.material.resources.CancelableFontCallback$ApplyFont interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-							 */
-							public constructor(implementation: {
-								apply(param0: globalAndroid.graphics.Typeface): void;
-							});
-							public constructor();
-							public apply(param0: globalAndroid.graphics.Typeface): void;
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module resources {
-					export class MaterialAttributes extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.resources.MaterialAttributes>;
-						public constructor();
-						public static resolveAttributeOrThrow(param0: globalAndroid.view.View, param1: number): globalAndroid.util.TypedValue;
-						public static resolveAttribute(param0: globalAndroid.content.Context, param1: number): globalAndroid.util.TypedValue;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
 				export module resources {
 					export class MaterialResources extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.resources.MaterialResources>;
 						public static getColorStateList(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.TypedArray, param2: number): globalAndroid.content.res.ColorStateList;
-						public static getColorStateList(param0: globalAndroid.content.Context, param1: androidx.appcompat.widget.TintTypedArray, param2: number): globalAndroid.content.res.ColorStateList;
 						public static getDrawable(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.TypedArray, param2: number): globalAndroid.graphics.drawable.Drawable;
 						public static getTextAppearance(param0: globalAndroid.content.Context, param1: globalAndroid.content.res.TypedArray, param2: number): com.google.android.material.resources.TextAppearance;
 					}
@@ -33796,14 +33936,12 @@ declare module com {
 						public shadowDx: number;
 						public shadowDy: number;
 						public shadowRadius: number;
+						public updateMeasureState(param0: globalAndroid.content.Context, param1: globalAndroid.text.TextPaint, param2: androidx.core.content.res.ResourcesCompat.FontCallback): void;
 						public getFont(param0: globalAndroid.content.Context): globalAndroid.graphics.Typeface;
-						public updateMeasureState(param0: globalAndroid.content.Context, param1: globalAndroid.text.TextPaint, param2: com.google.android.material.resources.TextAppearanceFontCallback): void;
-						public getFontAsync(param0: globalAndroid.content.Context, param1: globalAndroid.text.TextPaint, param2: com.google.android.material.resources.TextAppearanceFontCallback): void;
-						public getFontAsync(param0: globalAndroid.content.Context, param1: com.google.android.material.resources.TextAppearanceFontCallback): void;
-						public updateDrawState(param0: globalAndroid.content.Context, param1: globalAndroid.text.TextPaint, param2: com.google.android.material.resources.TextAppearanceFontCallback): void;
+						public updateDrawState(param0: globalAndroid.content.Context, param1: globalAndroid.text.TextPaint, param2: androidx.core.content.res.ResourcesCompat.FontCallback): void;
 						public constructor(param0: globalAndroid.content.Context, param1: number);
-						public getFallbackFont(): globalAndroid.graphics.Typeface;
 						public updateTextPaintMeasureState(param0: globalAndroid.text.TextPaint, param1: globalAndroid.graphics.Typeface): void;
+						public getFontAsync(param0: globalAndroid.content.Context, param1: globalAndroid.text.TextPaint, param2: androidx.core.content.res.ResourcesCompat.FontCallback): void;
 					}
 				}
 			}
@@ -33821,23 +33959,6 @@ declare module com {
 						public constructor();
 						public static setShouldLoadFontSynchronously(param0: boolean): void;
 						public static shouldLoadFontSynchronously(): boolean;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module resources {
-					export abstract class TextAppearanceFontCallback extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.resources.TextAppearanceFontCallback>;
-						public constructor();
-						public onFontRetrieved(param0: globalAndroid.graphics.Typeface, param1: boolean): void;
-						public onFontRetrievalFailed(param0: number): void;
 					}
 				}
 			}
@@ -33904,26 +34025,6 @@ declare module com {
 		export module android {
 			export module material {
 				export module shadow {
-					export class ShadowRenderer extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.shadow.ShadowRenderer>;
-						public drawEdgeShadow(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Matrix, param2: globalAndroid.graphics.RectF, param3: number): void;
-						public constructor();
-						public constructor(param0: number);
-						public getShadowPaint(): globalAndroid.graphics.Paint;
-						public setShadowColor(param0: number): void;
-						public drawCornerShadow(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Matrix, param2: globalAndroid.graphics.RectF, param3: number, param4: number, param5: number): void;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module shadow {
 					export class ShadowViewDelegate extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.shadow.ShadowViewDelegate>;
 						/**
@@ -33952,43 +34053,9 @@ declare module com {
 		export module android {
 			export module material {
 				export module shape {
-					export class CornerFamily extends java.lang.Object implements java.lang.annotation.Annotation {
-						public static class: java.lang.Class<com.google.android.material.shape.CornerFamily>;
-						/**
-						 * Constructs a new instance of the com.google.android.material.shape.CornerFamily interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-						 */
-						public constructor(implementation: {
-							equals(param0: any): boolean;
-							hashCode(): number;
-							toString(): string;
-							annotationType(): java.lang.Class<any>;
-						});
-						public constructor();
-						public static ROUNDED: number;
-						public static CUT: number;
-						public equals(param0: any): boolean;
-						public hashCode(): number;
-						public toString(): string;
-						public annotationType(): java.lang.Class<any>;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module shape {
 					export class CornerTreatment extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.shape.CornerTreatment>;
-						public cornerSize: number;
 						public constructor();
-						public constructor(param0: number);
-						public getCornerSize(): number;
-						public setCornerSize(param0: number): void;
 						public getCornerPath(param0: number, param1: number, param2: com.google.android.material.shape.ShapePath): void;
 					}
 				}
@@ -34022,7 +34089,7 @@ declare module com {
 					export class EdgeTreatment extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.shape.EdgeTreatment>;
 						public constructor();
-						public getEdgePath(param0: number, param1: number, param2: number, param3: com.google.android.material.shape.ShapePath): void;
+						public getEdgePath(param0: number, param1: number, param2: com.google.android.material.shape.ShapePath): void;
 					}
 				}
 			}
@@ -34057,112 +34124,38 @@ declare module com {
 				export module shape {
 					export class MaterialShapeDrawable extends globalAndroid.graphics.drawable.Drawable implements androidx.core.graphics.drawable.TintAwareDrawable {
 						public static class: java.lang.Class<com.google.android.material.shape.MaterialShapeDrawable>;
-						public static SHADOW_COMPAT_MODE_DEFAULT: number;
-						public static SHADOW_COMPAT_MODE_NEVER: number;
-						public static SHADOW_COMPAT_MODE_ALWAYS: number;
-						public constructor(param0: com.google.android.material.shape.ShapeAppearanceModel);
-						public setPaintShadowEnabled(param0: boolean): void;
+						public getShapedViewModel(): com.google.android.material.shape.ShapePathModel;
 						public getShadowElevation(): number;
 						public getScale(): number;
-						public getShadowCompatRotation(): number;
-						public getShadowVerticalOffset(): number;
+						public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
 						public setShadowColor(param0: number): void;
-						public isStateful(): boolean;
+						public getStrokeWidth(): number;
+						public setColorFilter(param0: globalAndroid.graphics.ColorFilter): void;
+						public isPointInTransparentRegion(param0: number, param1: number): boolean;
+						public setUseTintColorForShadow(param0: boolean): void;
 						public setTintMode(param0: globalAndroid.graphics.PorterDuff.Mode): void;
 						public setTintList(param0: globalAndroid.content.res.ColorStateList): void;
 						public setInterpolation(param0: number): void;
-						public getShapedViewModel(): com.google.android.material.shape.ShapeAppearanceModel;
 						public setPaintStyle(param0: globalAndroid.graphics.Paint.Style): void;
 						public constructor();
 						public getTintList(): globalAndroid.content.res.ColorStateList;
 						public setShadowElevation(param0: number): void;
-						public getTransparentRegion(): globalAndroid.graphics.Region;
-						public getStrokeTintList(): globalAndroid.content.res.ColorStateList;
-						public setShapeAppearanceModel(param0: com.google.android.material.shape.ShapeAppearanceModel): void;
-						public setStroke(param0: number, param1: number): void;
-						public getInterpolation(): number;
-						public setScale(param0: number): void;
-						public setAlpha(param0: number): void;
-						public getOutline(param0: any): void;
-						public setStrokeTint(param0: globalAndroid.content.res.ColorStateList): void;
-						public isShadowEnabled(): boolean;
-						public setStrokeWidth(param0: number): void;
-						public setStrokeTint(param0: number): void;
-						public draw(param0: globalAndroid.graphics.Canvas): void;
-						public getShapeAppearanceModel(): com.google.android.material.shape.ShapeAppearanceModel;
-						public getShadowCompatibilityMode(): number;
-						public setShadowEnabled(param0: boolean): void;
-						public setShapedViewModel(param0: com.google.android.material.shape.ShapePathModel): void;
-						public setStrokeColor(param0: globalAndroid.content.res.ColorStateList): void;
-						public setShadowCompatibilityMode(param0: number): void;
-						public getConstantState(): globalAndroid.graphics.drawable.Drawable.ConstantState;
-						public setColorFilter(param0: number, param1: globalAndroid.graphics.PorterDuff.Mode): void;
-						public getStrokeColor(): globalAndroid.content.res.ColorStateList;
-						public setStroke(param0: number, param1: globalAndroid.content.res.ColorStateList): void;
-						public getStrokeWidth(): number;
-						public setColorFilter(param0: globalAndroid.graphics.ColorFilter): void;
-						public getStrokeTint(): number;
-						public setShadowCompatRotation(param0: number): void;
-						public isPointInTransparentRegion(param0: number, param1: number): boolean;
-						public setUseTintColorForShadow(param0: boolean): void;
-						public getPathForSize(param0: globalAndroid.graphics.Rect, param1: globalAndroid.graphics.Path): void;
-						public drawShape(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Paint, param2: globalAndroid.graphics.Path, param3: globalAndroid.graphics.RectF): void;
-						public onStateChange(param0: native.Array<number>): boolean;
-						public getFillColor(): globalAndroid.content.res.ColorStateList;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public setFillColor(param0: globalAndroid.content.res.ColorStateList): void;
 						public getShadowRadius(): number;
+						public getTransparentRegion(): globalAndroid.graphics.Region;
 						public setTint(param0: number): void;
+						public getInterpolation(): number;
 						public getPaintStyle(): globalAndroid.graphics.Paint.Style;
 						public getOpacity(): number;
-						public getBoundsAsRectF(): globalAndroid.graphics.RectF;
-						public setStrokePaintShader(param0: globalAndroid.graphics.Shader): void;
-						public setShadowVerticalOffset(param0: number): void;
+						public setScale(param0: number): void;
+						public setAlpha(param0: number): void;
+						public isShadowEnabled(): boolean;
 						public setShadowRadius(param0: number): void;
-						public setCornerRadius(param0: number): void;
-						public setPaintFlags(param0: number): void;
-						public getPaintFlags(): number;
-					}
-					export module MaterialShapeDrawable {
-						export class CompatibilityShadowMode extends java.lang.Object implements java.lang.annotation.Annotation {
-							public static class: java.lang.Class<com.google.android.material.shape.MaterialShapeDrawable.CompatibilityShadowMode>;
-							/**
-							 * Constructs a new instance of the com.google.android.material.shape.MaterialShapeDrawable$CompatibilityShadowMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-							 */
-							public constructor(implementation: {
-								equals(param0: any): boolean;
-								hashCode(): number;
-								toString(): string;
-								annotationType(): java.lang.Class<any>;
-							});
-							public constructor();
-							public hashCode(): number;
-							public annotationType(): java.lang.Class<any>;
-							public toString(): string;
-							public equals(param0: any): boolean;
-						}
-						export class MaterialShapeDrawableState extends globalAndroid.graphics.drawable.Drawable.ConstantState {
-							public static class: java.lang.Class<com.google.android.material.shape.MaterialShapeDrawable.MaterialShapeDrawableState>;
-							public newDrawable(): globalAndroid.graphics.drawable.Drawable;
-							public newDrawable(param0: globalAndroid.content.res.Resources): globalAndroid.graphics.drawable.Drawable;
-							public getChangingConfigurations(): number;
-							public newDrawable(param0: globalAndroid.content.res.Resources, param1: globalAndroid.content.res.Resources.Theme): globalAndroid.graphics.drawable.Drawable;
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module shape {
-					export class MaterialShapeUtils extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.shape.MaterialShapeUtils>;
-						public constructor();
+						public setStrokeWidth(param0: number): void;
+						public draw(param0: globalAndroid.graphics.Canvas): void;
+						public getPathForSize(param0: number, param1: number, param2: globalAndroid.graphics.Path): void;
+						public setShadowEnabled(param0: boolean): void;
+						public setShapedViewModel(param0: com.google.android.material.shape.ShapePathModel): void;
+						public constructor(param0: com.google.android.material.shape.ShapePathModel);
 					}
 				}
 			}
@@ -34192,50 +34185,6 @@ declare module com {
 		export module android {
 			export module material {
 				export module shape {
-					export class ShapeAppearanceModel extends java.lang.Object {
-						public static class: java.lang.Class<com.google.android.material.shape.ShapeAppearanceModel>;
-						public constructor(param0: com.google.android.material.shape.ShapeAppearanceModel);
-						public getTopEdge(): com.google.android.material.shape.EdgeTreatment;
-						public getLeftEdge(): com.google.android.material.shape.EdgeTreatment;
-						public setAllCorners(param0: number, param1: number): void;
-						public setAllCorners(param0: com.google.android.material.shape.CornerTreatment): void;
-						public setBottomRightCorner(param0: number, param1: number): void;
-						public setTopRightCorner(param0: number, param1: number): void;
-						public setTopLeftCorner(param0: number, param1: number): void;
-						public getTopLeftCorner(): com.google.android.material.shape.CornerTreatment;
-						public setTopEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
-						public getRightEdge(): com.google.android.material.shape.EdgeTreatment;
-						public setBottomLeftCorner(param0: com.google.android.material.shape.CornerTreatment): void;
-						public constructor();
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public setBottomRightCorner(param0: com.google.android.material.shape.CornerTreatment): void;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number, param4: number);
-						public getTopRightCorner(): com.google.android.material.shape.CornerTreatment;
-						public getBottomLeftCorner(): com.google.android.material.shape.CornerTreatment;
-						public setRightEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
-						public setEdgeTreatments(param0: com.google.android.material.shape.EdgeTreatment, param1: com.google.android.material.shape.EdgeTreatment, param2: com.google.android.material.shape.EdgeTreatment, param3: com.google.android.material.shape.EdgeTreatment): void;
-						public setAllEdges(param0: com.google.android.material.shape.EdgeTreatment): void;
-						public setTopRightCorner(param0: com.google.android.material.shape.CornerTreatment): void;
-						public setBottomEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
-						public setCornerRadius(param0: number): void;
-						public setCornerTreatments(param0: com.google.android.material.shape.CornerTreatment, param1: com.google.android.material.shape.CornerTreatment, param2: com.google.android.material.shape.CornerTreatment, param3: com.google.android.material.shape.CornerTreatment): void;
-						public setLeftEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
-						public getBottomEdge(): com.google.android.material.shape.EdgeTreatment;
-						public setTopLeftCorner(param0: com.google.android.material.shape.CornerTreatment): void;
-						public getBottomRightCorner(): com.google.android.material.shape.CornerTreatment;
-						public setBottomLeftCorner(param0: number, param1: number): void;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
-				export module shape {
 					export class ShapePath extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.shape.ShapePath>;
 						public startX: number;
@@ -34251,16 +34200,6 @@ declare module com {
 						public applyToPath(param0: globalAndroid.graphics.Matrix, param1: globalAndroid.graphics.Path): void;
 					}
 					export module ShapePath {
-						export class ArcShadowOperation extends com.google.android.material.shape.ShapePath.ShadowCompatOperation {
-							public static class: java.lang.Class<com.google.android.material.shape.ShapePath.ArcShadowOperation>;
-							public constructor(param0: com.google.android.material.shape.ShapePath.PathArcOperation);
-							public draw(param0: globalAndroid.graphics.Matrix, param1: com.google.android.material.shadow.ShadowRenderer, param2: number, param3: globalAndroid.graphics.Canvas): void;
-						}
-						export class LineShadowOperation extends com.google.android.material.shape.ShapePath.ShadowCompatOperation {
-							public static class: java.lang.Class<com.google.android.material.shape.ShapePath.LineShadowOperation>;
-							public constructor(param0: com.google.android.material.shape.ShapePath.PathLineOperation, param1: number, param2: number);
-							public draw(param0: globalAndroid.graphics.Matrix, param1: com.google.android.material.shadow.ShadowRenderer, param2: number, param3: globalAndroid.graphics.Canvas): void;
-						}
 						export class PathArcOperation extends com.google.android.material.shape.ShapePath.PathOperation {
 							public static class: java.lang.Class<com.google.android.material.shape.ShapePath.PathArcOperation>;
 							public left: number;
@@ -34293,10 +34232,6 @@ declare module com {
 							public constructor();
 							public applyToPath(param0: globalAndroid.graphics.Matrix, param1: globalAndroid.graphics.Path): void;
 						}
-						export abstract class ShadowCompatOperation extends java.lang.Object {
-							public static class: java.lang.Class<com.google.android.material.shape.ShapePath.ShadowCompatOperation>;
-							public draw(param0: globalAndroid.graphics.Matrix, param1: com.google.android.material.shadow.ShadowRenderer, param2: number, param3: globalAndroid.graphics.Canvas): void;
-						}
 					}
 				}
 			}
@@ -34309,12 +34244,29 @@ declare module com {
 		export module android {
 			export module material {
 				export module shape {
-					export class ShapePathModel extends com.google.android.material.shape.ShapeAppearanceModel {
+					export class ShapePathModel extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.shape.ShapePathModel>;
+						public setBottomLeftCorner(param0: com.google.android.material.shape.CornerTreatment): void;
 						public constructor();
-						public constructor(param0: com.google.android.material.shape.ShapeAppearanceModel);
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number, param4: number);
+						public getTopEdge(): com.google.android.material.shape.EdgeTreatment;
+						public getLeftEdge(): com.google.android.material.shape.EdgeTreatment;
+						public setAllCorners(param0: com.google.android.material.shape.CornerTreatment): void;
+						public setBottomRightCorner(param0: com.google.android.material.shape.CornerTreatment): void;
+						public getTopRightCorner(): com.google.android.material.shape.CornerTreatment;
+						public getBottomLeftCorner(): com.google.android.material.shape.CornerTreatment;
+						public setRightEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
+						public setEdgeTreatments(param0: com.google.android.material.shape.EdgeTreatment, param1: com.google.android.material.shape.EdgeTreatment, param2: com.google.android.material.shape.EdgeTreatment, param3: com.google.android.material.shape.EdgeTreatment): void;
+						public setAllEdges(param0: com.google.android.material.shape.EdgeTreatment): void;
+						public setTopRightCorner(param0: com.google.android.material.shape.CornerTreatment): void;
+						public setBottomEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
+						public setCornerTreatments(param0: com.google.android.material.shape.CornerTreatment, param1: com.google.android.material.shape.CornerTreatment, param2: com.google.android.material.shape.CornerTreatment, param3: com.google.android.material.shape.CornerTreatment): void;
+						public getTopLeftCorner(): com.google.android.material.shape.CornerTreatment;
+						public setLeftEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
+						public getBottomEdge(): com.google.android.material.shape.EdgeTreatment;
+						public setTopLeftCorner(param0: com.google.android.material.shape.CornerTreatment): void;
+						public getBottomRightCorner(): com.google.android.material.shape.CornerTreatment;
+						public setTopEdge(param0: com.google.android.material.shape.EdgeTreatment): void;
+						public getRightEdge(): com.google.android.material.shape.EdgeTreatment;
 					}
 				}
 			}
@@ -34331,7 +34283,7 @@ declare module com {
 						public static class: java.lang.Class<com.google.android.material.shape.TriangleEdgeTreatment>;
 						public constructor();
 						public constructor(param0: number, param1: boolean);
-						public getEdgePath(param0: number, param1: number, param2: number, param3: com.google.android.material.shape.ShapePath): void;
+						public getEdgePath(param0: number, param1: number, param2: com.google.android.material.shape.ShapePath): void;
 					}
 				}
 			}
@@ -34346,8 +34298,6 @@ declare module com {
 				export module snackbar {
 					export abstract class BaseTransientBottomBar<B>  extends java.lang.Object {
 						public static class: java.lang.Class<com.google.android.material.snackbar.BaseTransientBottomBar<any>>;
-						public static ANIMATION_MODE_SLIDE: number;
-						public static ANIMATION_MODE_FADE: number;
 						public static LENGTH_INDEFINITE: number;
 						public static LENGTH_SHORT: number;
 						public static LENGTH_LONG: number;
@@ -34356,18 +34306,13 @@ declare module com {
 						public setBehavior(param0: com.google.android.material.snackbar.BaseTransientBottomBar.Behavior): B;
 						public isShown(): boolean;
 						public constructor(param0: globalAndroid.view.ViewGroup, param1: globalAndroid.view.View, param2: com.google.android.material.snackbar.ContentViewCallback);
-						public setAnchorView(param0: globalAndroid.view.View): B;
 						public getDuration(): number;
-						public getAnchorView(): globalAndroid.view.View;
 						public dismiss(): void;
 						public removeCallback(param0: com.google.android.material.snackbar.BaseTransientBottomBar.BaseCallback<B>): B;
 						public getContext(): globalAndroid.content.Context;
-						public setAnchorView(param0: number): B;
 						public getBehavior(): com.google.android.material.snackbar.BaseTransientBottomBar.Behavior;
 						public setDuration(param0: number): B;
 						public isShownOrQueued(): boolean;
-						public getAnimationMode(): number;
-						public setAnimationMode(param0: number): B;
 						public show(): void;
 						public getSnackbarBaseLayoutResId(): number;
 						public getNewBehavior(): com.google.android.material.behavior.SwipeDismissBehavior<any>;
@@ -34376,23 +34321,6 @@ declare module com {
 						public addCallback(param0: com.google.android.material.snackbar.BaseTransientBottomBar.BaseCallback<B>): B;
 					}
 					export module BaseTransientBottomBar {
-						export class AnimationMode extends java.lang.Object implements java.lang.annotation.Annotation {
-							public static class: java.lang.Class<com.google.android.material.snackbar.BaseTransientBottomBar.AnimationMode>;
-							/**
-							 * Constructs a new instance of the com.google.android.material.snackbar.BaseTransientBottomBar$AnimationMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-							 */
-							public constructor(implementation: {
-								equals(param0: any): boolean;
-								hashCode(): number;
-								toString(): string;
-								annotationType(): java.lang.Class<any>;
-							});
-							public constructor();
-							public hashCode(): number;
-							public annotationType(): java.lang.Class<any>;
-							public toString(): string;
-							public equals(param0: any): boolean;
-						}
 						export abstract class BaseCallback<B>  extends java.lang.Object {
 							public static class: java.lang.Class<com.google.android.material.snackbar.BaseTransientBottomBar.BaseCallback<any>>;
 							public static DISMISS_EVENT_SWIPE: number;
@@ -34504,7 +34432,6 @@ declare module com {
 							public addView(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.view.ViewGroup.LayoutParams): void;
 							public onStopNestedScroll(param0: globalAndroid.view.View): void;
 							public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-							public setOnClickListener(param0: globalAndroid.view.View.OnClickListener): void;
 							public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 							public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 							public isLayoutRequested(): boolean;
@@ -34513,6 +34440,8 @@ declare module com {
 							public isTextDirectionResolved(): boolean;
 							public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public isLayoutDirectionResolved(): boolean;
+							/** @deprecated */
+							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public canResolveTextDirection(): boolean;
 							public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 							public onDetachedFromWindow(): void;
@@ -34522,8 +34451,9 @@ declare module com {
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 							public canResolveLayoutDirection(): boolean;
 							public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+							/** @deprecated */
+							public requestFitSystemWindows(): void;
 							public focusableViewAvailable(param0: globalAndroid.view.View): void;
 							public addView(param0: globalAndroid.view.View): void;
 							public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -34547,7 +34477,6 @@ declare module com {
 							public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 							public onAttachedToWindow(): void;
 							public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 							public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -34564,6 +34493,8 @@ declare module com {
 							public focusSearch(param0: number): globalAndroid.view.View;
 							public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 							public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+							/** @deprecated */
+							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public constructor(param0: globalAndroid.content.Context);
 						}
 					}
@@ -34610,7 +34541,6 @@ declare module com {
 						public static make(param0: globalAndroid.view.View, param1: number, param2: number): com.google.android.material.snackbar.Snackbar;
 						public isShown(): boolean;
 						public setAction(param0: number, param1: globalAndroid.view.View.OnClickListener): com.google.android.material.snackbar.Snackbar;
-						public setCallback(param0: com.google.android.material.snackbar.Snackbar.Callback): com.google.android.material.snackbar.Snackbar;
 						public getDuration(): number;
 						public dismiss(): void;
 						public setText(param0: string): com.google.android.material.snackbar.Snackbar;
@@ -34620,6 +34550,8 @@ declare module com {
 						public setActionTextColor(param0: globalAndroid.content.res.ColorStateList): com.google.android.material.snackbar.Snackbar;
 						public static make(param0: globalAndroid.view.View, param1: string, param2: number): com.google.android.material.snackbar.Snackbar;
 						public setText(param0: number): com.google.android.material.snackbar.Snackbar;
+						/** @deprecated */
+						public setCallback(param0: com.google.android.material.snackbar.Snackbar.Callback): com.google.android.material.snackbar.Snackbar;
 						public setActionTextColor(param0: number): com.google.android.material.snackbar.Snackbar;
 					}
 					export module Snackbar {
@@ -34674,6 +34606,8 @@ declare module com {
 							public onMeasure(param0: number, param1: number): void;
 							public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public isLayoutDirectionResolved(): boolean;
+							/** @deprecated */
+							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public canResolveTextDirection(): boolean;
 							public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 							public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
@@ -34682,8 +34616,9 @@ declare module com {
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 							public canResolveLayoutDirection(): boolean;
 							public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+							/** @deprecated */
+							public requestFitSystemWindows(): void;
 							public focusableViewAvailable(param0: globalAndroid.view.View): void;
 							public addView(param0: globalAndroid.view.View): void;
 							public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -34705,7 +34640,6 @@ declare module com {
 							public getTextAlignment(): number;
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 							public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 							public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -34722,6 +34656,8 @@ declare module com {
 							public focusSearch(param0: number): globalAndroid.view.View;
 							public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 							public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+							/** @deprecated */
+							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public constructor(param0: globalAndroid.content.Context);
 						}
 					}
@@ -34748,10 +34684,11 @@ declare module com {
 						public onFinishInflate(): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public onMeasure(param0: number, param1: number): void;
 						public getTextDirection(): number;
@@ -34769,7 +34706,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
@@ -34784,6 +34720,8 @@ declare module com {
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public animateContentIn(param0: number, param1: number): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
@@ -34808,6 +34746,8 @@ declare module com {
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -34884,38 +34824,6 @@ declare module com {
 	export module google {
 		export module android {
 			export module material {
-				export module switchmaterial {
-					export class SwitchMaterial extends androidx.appcompat.widget.SwitchCompat {
-						public static class: java.lang.Class<com.google.android.material.switchmaterial.SwitchMaterial>;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable): void;
-						public setChecked(param0: boolean): void;
-						public constructor(param0: globalAndroid.content.Context);
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
-						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public sendAccessibilityEvent(param0: number): void;
-						public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
-						public scheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable, param1: java.lang.Runnable, param2: number): void;
-						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
-						public isChecked(): boolean;
-						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
-						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public onPreDraw(): boolean;
-						public toggle(): void;
-						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet);
-						public onKeyMultiple(param0: number, param1: number, param2: globalAndroid.view.KeyEvent): boolean;
-					}
-				}
-			}
-		}
-	}
-}
-
-declare module com {
-	export module google {
-		export module android {
-			export module material {
 				export module tabs {
 					export class TabItem extends globalAndroid.view.View {
 						public static class: java.lang.Class<com.google.android.material.tabs.TabItem>;
@@ -34952,8 +34860,6 @@ declare module com {
 						public static class: java.lang.Class<com.google.android.material.tabs.TabLayout>;
 						public static MODE_SCROLLABLE: number;
 						public static MODE_FIXED: number;
-						public static TAB_LABEL_VISIBILITY_UNLABELED: number;
-						public static TAB_LABEL_VISIBILITY_LABELED: number;
 						public static GRAVITY_FILL: number;
 						public static GRAVITY_CENTER: number;
 						public static INDICATOR_GRAVITY_BOTTOM: number;
@@ -34988,10 +34894,8 @@ declare module com {
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public onKeyLongPress(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-						public setSelectedTabIndicatorHeight(param0: number): void;
 						public onKeyDown(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public requestLayout(): void;
 						public notifySubtreeAccessibilityStateChanged(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
@@ -35004,6 +34908,8 @@ declare module com {
 						public isTextDirectionResolved(): boolean;
 						public getTabAt(param0: number): com.google.android.material.tabs.TabLayout.Tab;
 						public clearOnTabSelectedListeners(): void;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public getTabSelectedIndicator(): globalAndroid.graphics.drawable.Drawable;
 						public onAttachedToWindow(): void;
 						public removeTab(param0: com.google.android.material.tabs.TabLayout.Tab): void;
@@ -35015,17 +34921,20 @@ declare module com {
 						public addView(param0: globalAndroid.view.View): void;
 						public getTabRippleColor(): globalAndroid.content.res.ColorStateList;
 						public createContextMenu(param0: globalAndroid.view.ContextMenu): void;
-						public setTabsFromPagerAdapter(param0: androidx.viewpager.widget.PagerAdapter): void;
 						public childDrawableStateChanged(param0: globalAndroid.view.View): void;
 						public requestFitSystemWindows(): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 						public isInlineLabel(): boolean;
 						public updateViewLayout(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public getParentForAccessibility(): globalAndroid.view.ViewParent;
+						/** @deprecated */
+						public setOnTabSelectedListener(param0: com.google.android.material.tabs.TabLayout.BaseOnTabSelectedListener<any>): void;
 						public hasUnboundedRipple(): boolean;
 						public getTextAlignment(): number;
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public addTab(param0: com.google.android.material.tabs.TabLayout.Tab, param1: boolean): void;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -35037,10 +34946,13 @@ declare module com {
 						public setInlineLabelResource(param0: number): void;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
+						/** @deprecated */
+						public setTabsFromPagerAdapter(param0: androidx.viewpager.widget.PagerAdapter): void;
 						public shouldDelayChildPressedState(): boolean;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public getSelectedTabPosition(): number;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
@@ -35049,6 +34961,8 @@ declare module com {
 						public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
 						public getTabTextColors(): globalAndroid.content.res.ColorStateList;
 						public setSelectedTabIndicator(param0: number): void;
+						/** @deprecated */
+						public setSelectedTabIndicatorHeight(param0: number): void;
 						public createTabFromPool(): com.google.android.material.tabs.TabLayout.Tab;
 						public showContextMenuForChild(param0: globalAndroid.view.View): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -35057,7 +34971,6 @@ declare module com {
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
 						public getTabCount(): number;
 						public getTabIndicatorGravity(): number;
-						public setOnTabSelectedListener(param0: com.google.android.material.tabs.TabLayout.BaseOnTabSelectedListener<any>): void;
 						public setSelectedTabIndicatorColor(param0: number): void;
 						public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
@@ -35104,23 +35017,6 @@ declare module com {
 							public onTabUnselected(param0: T): void;
 							public onTabReselected(param0: T): void;
 							public onTabSelected(param0: T): void;
-						}
-						export class LabelVisibility extends java.lang.Object implements java.lang.annotation.Annotation {
-							public static class: java.lang.Class<com.google.android.material.tabs.TabLayout.LabelVisibility>;
-							/**
-							 * Constructs a new instance of the com.google.android.material.tabs.TabLayout$LabelVisibility interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
-							 */
-							public constructor(implementation: {
-								equals(param0: any): boolean;
-								hashCode(): number;
-								toString(): string;
-								annotationType(): java.lang.Class<any>;
-							});
-							public constructor();
-							public hashCode(): number;
-							public annotationType(): java.lang.Class<any>;
-							public toString(): string;
-							public equals(param0: any): boolean;
 						}
 						export class Mode extends java.lang.Object implements java.lang.annotation.Annotation {
 							public static class: java.lang.Class<com.google.android.material.tabs.TabLayout.Mode>;
@@ -35181,6 +35077,8 @@ declare module com {
 							public onMeasure(param0: number, param1: number): void;
 							public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public isLayoutDirectionResolved(): boolean;
+							/** @deprecated */
+							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public canResolveTextDirection(): boolean;
 							public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 							public onDescendantInvalidated(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
@@ -35188,8 +35086,9 @@ declare module com {
 							public onNestedPrePerformAccessibilityAction(param0: globalAndroid.view.View, param1: number, param2: globalAndroid.os.Bundle): boolean;
 							public canResolveLayoutDirection(): boolean;
 							public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+							/** @deprecated */
+							public requestFitSystemWindows(): void;
 							public focusableViewAvailable(param0: globalAndroid.view.View): void;
 							public addView(param0: globalAndroid.view.View): void;
 							public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -35211,7 +35110,6 @@ declare module com {
 							public getTextAlignment(): number;
 							public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 							public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 							public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -35228,6 +35126,8 @@ declare module com {
 							public focusSearch(param0: number): globalAndroid.view.View;
 							public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 							public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
+							/** @deprecated */
+							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						}
 						export class Tab extends java.lang.Object {
 							public static class: java.lang.Class<com.google.android.material.tabs.TabLayout.Tab>;
@@ -35250,7 +35150,6 @@ declare module com {
 							public getIcon(): globalAndroid.graphics.drawable.Drawable;
 							public setContentDescription(param0: number): com.google.android.material.tabs.TabLayout.Tab;
 							public getTag(): any;
-							public setTabLabelVisibility(param0: number): com.google.android.material.tabs.TabLayout.Tab;
 							public getContentDescription(): string;
 							public setCustomView(param0: number): com.google.android.material.tabs.TabLayout.Tab;
 						}
@@ -35317,6 +35216,8 @@ declare module com {
 							public onMeasure(param0: number, param1: number): void;
 							public onNestedPreFling(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public isLayoutDirectionResolved(): boolean;
+							/** @deprecated */
+							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public canResolveTextDirection(): boolean;
 							public onNestedPreScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: native.Array<number>): void;
 							public onInitializeAccessibilityEvent(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
@@ -35326,8 +35227,9 @@ declare module com {
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number, param3: number);
 							public canResolveLayoutDirection(): boolean;
 							public onStartNestedScroll(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): boolean;
-							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public requestSendAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): boolean;
+							/** @deprecated */
+							public requestFitSystemWindows(): void;
 							public focusableViewAvailable(param0: globalAndroid.view.View): void;
 							public addView(param0: globalAndroid.view.View): void;
 							public requestChildRectangleOnScreen(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect, param2: boolean): boolean;
@@ -35351,7 +35253,6 @@ declare module com {
 							public getTextAlignment(): number;
 							public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
 							public onKeyUp(param0: number, param1: globalAndroid.view.KeyEvent): boolean;
-							public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 							public showContextMenuForChild(param0: globalAndroid.view.View, param1: number, param2: number): boolean;
 							public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
 							public clearChildFocus(param0: globalAndroid.view.View): void;
@@ -35371,6 +35272,8 @@ declare module com {
 							public sendAccessibilityEventUnchecked(param0: globalAndroid.view.accessibility.AccessibilityEvent): void;
 							public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 							public setSelected(param0: boolean): void;
+							/** @deprecated */
+							public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 							public constructor(param0: globalAndroid.content.Context);
 						}
 						export class ViewPagerOnTabSelectedListener extends java.lang.Object implements com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
@@ -35489,7 +35392,6 @@ declare module com {
 						public recomputeViewAttributes(param0: globalAndroid.view.View): void;
 						public canResolveTextDirection(): boolean;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public setCounterEnabled(param0: boolean): void;
 						public addView(param0: globalAndroid.view.View, param1: globalAndroid.view.ViewGroup.LayoutParams): void;
 						public getEditText(): globalAndroid.widget.EditText;
@@ -35505,6 +35407,8 @@ declare module com {
 						public setErrorTextColor(param0: globalAndroid.content.res.ColorStateList): void;
 						public setBoxCornerRadii(param0: number, param1: number, param2: number, param3: number): void;
 						public isTextDirectionResolved(): boolean;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public setHintTextAppearance(param0: number): void;
 						public requestTransparentRegion(param0: globalAndroid.view.View): void;
@@ -35527,6 +35431,8 @@ declare module com {
 						public isHelperTextEnabled(): boolean;
 						public setCounterMaxLength(param0: number): void;
 						public onSaveInstanceState(): globalAndroid.os.Parcelable;
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -35538,13 +35444,13 @@ declare module com {
 						public getCounterMaxLength(): number;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public setPasswordVisibilityToggleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public onLayout(param0: boolean, param1: number, param2: number, param3: number, param4: number): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
-						public getBaseline(): number;
 						public setErrorTextAppearance(param0: number): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public getTypeface(): globalAndroid.graphics.Typeface;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setBoxStrokeColor(param0: number): void;
@@ -35603,7 +35509,6 @@ declare module com {
 							public constructor();
 							public constructor(param0: com.google.android.material.textfield.TextInputLayout);
 							public onInitializeAccessibilityNodeInfo(param0: globalAndroid.view.View, param1: androidx.core.view.accessibility.AccessibilityNodeInfoCompat): void;
-							public constructor(param0: any);
 							public onPopulateAccessibilityEvent(param0: globalAndroid.view.View, param1: globalAndroid.view.accessibility.AccessibilityEvent): void;
 						}
 						export type AccessibilityDelegate = comgoogleandroidmaterialtextfieldTextInputLayoutAccessibilityDelegate
@@ -35646,8 +35551,6 @@ declare module com {
 					export class MaterialComponentsViewInflater extends androidx.appcompat.app.AppCompatViewInflater {
 						public static class: java.lang.Class<com.google.android.material.theme.MaterialComponentsViewInflater>;
 						public constructor();
-						public createCheckBox(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatCheckBox;
-						public createRadioButton(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatRadioButton;
 						public createButton(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet): androidx.appcompat.widget.AppCompatButton;
 					}
 				}
@@ -35786,10 +35689,11 @@ declare module com {
 						public getCircularRevealOverlayDrawable(): globalAndroid.graphics.drawable.Drawable;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setRevealInfo(param0: com.google.android.material.circularreveal.CircularRevealWidget.RevealInfo): void;
 						public getTextDirection(): number;
@@ -35806,7 +35710,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -35825,6 +35728,8 @@ declare module com {
 						public isOpaque(): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -35850,6 +35755,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setCircularRevealScrimColor(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -35877,10 +35784,11 @@ declare module com {
 						public getCircularRevealOverlayDrawable(): globalAndroid.graphics.drawable.Drawable;
 						public clearChildFocus(param0: globalAndroid.view.View): void;
 						public requestChildFocus(param0: globalAndroid.view.View, param1: globalAndroid.view.View): void;
+						/** @deprecated */
+						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public onNestedFling(param0: globalAndroid.view.View, param1: number, param2: number, param3: boolean): boolean;
 						public childHasTransientStateChanged(param0: globalAndroid.view.View, param1: boolean): void;
 						public isTextAlignmentResolved(): boolean;
-						public invalidateChild(param0: globalAndroid.view.View, param1: globalAndroid.graphics.Rect): void;
 						public addView(param0: globalAndroid.view.View, param1: number, param2: number): void;
 						public setRevealInfo(param0: com.google.android.material.circularreveal.CircularRevealWidget.RevealInfo): void;
 						public getTextDirection(): number;
@@ -35897,7 +35805,6 @@ declare module com {
 						public canResolveTextDirection(): boolean;
 						public unscheduleDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
 						public requestDisallowInterceptTouchEvent(param0: boolean): void;
-						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public isLayoutDirectionResolved(): boolean;
 						public draw(param0: globalAndroid.graphics.Canvas): void;
 						public onNestedScroll(param0: globalAndroid.view.View, param1: number, param2: number, param3: number, param4: number): void;
@@ -35916,6 +35823,8 @@ declare module com {
 						public isOpaque(): boolean;
 						public isTextDirectionResolved(): boolean;
 						public startActionModeForChild(param0: globalAndroid.view.View, param1: globalAndroid.view.ActionMode.Callback, param2: number): globalAndroid.view.ActionMode;
+						/** @deprecated */
+						public requestFitSystemWindows(): void;
 						public focusSearch(param0: globalAndroid.view.View, param1: number): globalAndroid.view.View;
 						public onStopNestedScroll(param0: globalAndroid.view.View): void;
 						public invalidateDrawable(param0: globalAndroid.graphics.drawable.Drawable): void;
@@ -35941,6 +35850,8 @@ declare module com {
 						public onNestedScrollAccepted(param0: globalAndroid.view.View, param1: globalAndroid.view.View, param2: number): void;
 						public setCircularRevealScrimColor(param0: number): void;
 						public constructor(param0: globalAndroid.content.Context, param1: globalAndroid.util.AttributeSet, param2: number);
+						/** @deprecated */
+						public invalidateChildInParent(param0: native.Array<number>, param1: globalAndroid.graphics.Rect): globalAndroid.view.ViewParent;
 						public getParent(): globalAndroid.view.ViewParent;
 						public getLayoutDirection(): number;
 						public canResolveTextAlignment(): boolean;
@@ -35960,6 +35871,8 @@ declare module com {
 //android.support.v4.media.session.MediaSessionCompatApi21.CallbackProxy:1
 //android.support.v4.media.session.MediaSessionCompatApi23.CallbackProxy:1
 //android.support.v4.media.session.MediaSessionCompatApi24.CallbackProxy:1
+//androidx.appcompat.view.menu.BaseMenuWrapper:1
+//androidx.appcompat.view.menu.BaseWrapper:1
 //androidx.arch.core.internal.FastSafeIterableMap:2
 //androidx.arch.core.internal.SafeIterableMap:2
 //androidx.arch.core.internal.SafeIterableMap.AscendingIterator:2
@@ -35988,8 +35901,6 @@ declare module com {
 //androidx.core.util.Pools.Pool:1
 //androidx.core.util.Pools.SimplePool:1
 //androidx.core.util.Pools.SynchronizedPool:1
-//androidx.core.util.Supplier:1
-//androidx.core.view.ViewCompat.AccessibilityViewProperty:1
 //androidx.customview.widget.FocusStrategy.BoundsAdapter:1
 //androidx.customview.widget.FocusStrategy.CollectionAdapter:2
 //androidx.customview.widget.FocusStrategy.SequentialComparator:1
@@ -36031,7 +35942,6 @@ declare module com {
 //androidx.recyclerview.widget.TileList:1
 //androidx.recyclerview.widget.TileList.Tile:1
 //androidx.transition.PathProperty:1
-//com.google.android.material.animation.TransformationListener:1
 //com.google.android.material.appbar.AppBarLayout.BaseBehavior:1
 //com.google.android.material.appbar.AppBarLayout.BaseBehavior.BaseDragCallback:1
 //com.google.android.material.appbar.AppBarLayout.BaseOnOffsetChangedListener:1

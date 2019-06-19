@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3E944C4C61C317F04FCA72D5 /* Pods_TNSWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DA784D6AE838F6BE65AB7D /* Pods_TNSWidgets.framework */; };
 		8B7321CF1D097ECD00884AC6 /* TNSLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B7321CD1D097ECD00884AC6 /* TNSLabel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8B7321D01D097ECD00884AC6 /* TNSLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B7321CE1D097ECD00884AC6 /* TNSLabel.m */; };
 		B8E76F52212C2DA2009CFCE2 /* NSObject+Swizzling.h in Headers */ = {isa = PBXBuildFile; fileRef = B8E76F50212C2DA2009CFCE2 /* NSObject+Swizzling.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0CA2D2E3500594F250B7E5AD /* Pods-TNSWidgets.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TNSWidgets.release.xcconfig"; path = "Pods/Target Support Files/Pods-TNSWidgets/Pods-TNSWidgets.release.xcconfig"; sourceTree = "<group>"; };
 		8B7321CD1D097ECD00884AC6 /* TNSLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNSLabel.h; sourceTree = "<group>"; };
 		8B7321CE1D097ECD00884AC6 /* TNSLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNSLabel.m; sourceTree = "<group>"; };
 		B8E76F50212C2DA2009CFCE2 /* NSObject+Swizzling.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+Swizzling.h"; sourceTree = "<group>"; };
@@ -43,6 +45,8 @@
 		B8E76F59212C2F4E009CFCE2 /* UIView+PropertyBag.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+PropertyBag.m"; sourceTree = "<group>"; };
 		B8E76F5C212C3134009CFCE2 /* UIView+PassThroughParent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+PassThroughParent.h"; sourceTree = "<group>"; };
 		B8E76F5D212C3134009CFCE2 /* UIView+PassThroughParent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+PassThroughParent.m"; sourceTree = "<group>"; };
+		BA714249C33720A4C73F2D73 /* Pods-TNSWidgets.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TNSWidgets.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TNSWidgets/Pods-TNSWidgets.debug.xcconfig"; sourceTree = "<group>"; };
+		C9DA784D6AE838F6BE65AB7D /* Pods_TNSWidgets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TNSWidgets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F915D3531EC9EF5E00071914 /* TNSProcess.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TNSProcess.m; path = ../TNSProcess.m; sourceTree = "<group>"; };
 		F915D3541EC9EF5E00071914 /* TNSProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNSProcess.h; path = ../TNSProcess.h; sourceTree = "<group>"; };
 		F98F5CAF1CD0EFEA00978308 /* TNSWidgets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TNSWidgets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -60,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E944C4C61C317F04FCA72D5 /* Pods_TNSWidgets.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,12 +79,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		23F4E40A96EF6D33AE4654D3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C9DA784D6AE838F6BE65AB7D /* Pods_TNSWidgets.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		50D824CFC5BFEB60164D83B1 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				BA714249C33720A4C73F2D73 /* Pods-TNSWidgets.debug.xcconfig */,
+				0CA2D2E3500594F250B7E5AD /* Pods-TNSWidgets.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		F98F5CA51CD0EFEA00978308 = {
 			isa = PBXGroup;
 			children = (
 				F98F5CB11CD0EFEA00978308 /* TNSWidgets */,
 				F98F5CBD1CD0EFEA00978308 /* TNSWidgetsTests */,
 				F98F5CB01CD0EFEA00978308 /* Products */,
+				50D824CFC5BFEB60164D83B1 /* Pods */,
+				23F4E40A96EF6D33AE4654D3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -146,6 +170,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F98F5CC31CD0EFEA00978308 /* Build configuration list for PBXNativeTarget "TNSWidgets" */;
 			buildPhases = (
+				A19DC6B35DC47BC836BB21AE /* [CP] Check Pods Manifest.lock */,
 				F98F5CAA1CD0EFEA00978308 /* Sources */,
 				F98F5CAB1CD0EFEA00978308 /* Frameworks */,
 				F98F5CAC1CD0EFEA00978308 /* Headers */,
@@ -229,6 +254,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A19DC6B35DC47BC836BB21AE /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TNSWidgets-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F98F5CAA1CD0EFEA00978308 /* Sources */ = {
@@ -353,6 +403,7 @@
 		};
 		F98F5CC41CD0EFEA00978308 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BA714249C33720A4C73F2D73 /* Pods-TNSWidgets.debug.xcconfig */;
 			buildSettings = {
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -369,6 +420,7 @@
 		};
 		F98F5CC51CD0EFEA00978308 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0CA2D2E3500594F250B7E5AD /* Pods-TNSWidgets.release.xcconfig */;
 			buildSettings = {
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;

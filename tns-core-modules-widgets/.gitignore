@@ -46,6 +46,8 @@ local.properties
 ios/TNSWidgets/TNSWidgets.xcodeproj/project.xcworkspace/xcuserdata/
 ios/TNSWidgets/TNSWidgets.xcodeproj/xcuserdata/
 ios/TNSWidgets/DerivedData/
+ios/TNSWidgets/Pods/
+xcuserdata/
 
 android/widgets/bin
 android/widgets/.settings
