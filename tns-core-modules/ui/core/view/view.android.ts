@@ -267,8 +267,8 @@ export class View extends ViewCommon {
     nativeViewProtected: android.view.View;
 
     // TODO: Implement unobserve that detach the touchListener.
-    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
-        super.observe(type, callback, thisArg);
+    _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+        super._observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
             this.setOnTouchListener();
         }
