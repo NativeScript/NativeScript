@@ -359,7 +359,7 @@ export class CssState {
      * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
      */
     public onChange(): void {
-        let view = this.viewRef.get();
+        const view = this.viewRef.get();
         if (view && view.isLoaded) {
             this.unsubscribeFromDynamicUpdates();
             this.updateMatch();
@@ -371,13 +371,14 @@ export class CssState {
     }
 
     public isSelectorsLatestVersionApplied(): boolean {
-        let view = this.viewRef.get();
-        if (view) {
-            return this.viewRef.get()._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, traceCategories.Style, traceMessageType.warn);
+
+            return false;
         }
 
-        traceWrite(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, traceCategories.Style, traceMessageType.warn);
-        return false;
+        return this.viewRef.get()._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
     }
 
     public onLoaded(): void {
@@ -394,29 +395,32 @@ export class CssState {
 
     @profile
     private updateMatch() {
-        let view = this.viewRef.get();
-        if (view._styleScope) {
+        const view = this.viewRef.get();
+        if (view && view._styleScope) {
             this._appliedSelectorsVersion = view._styleScope._getSelectorsVersion();
             this._match = view._styleScope.matchSelectors(view);
         } else {
             this._match = CssState.emptyMatch;
         }
+
         this._matchInvalid = false;
     }
 
     @profile
     private updateDynamicState(): void {
-        let view = this.viewRef.get();
-        if (view) {
-            const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(view) : true);
-            view._batchUpdate(() => {
-                this.stopKeyframeAnimations();
-                this.setPropertyValues(matchingSelectors);
-                this.playKeyframeAnimations(matchingSelectors);
-            });
-        } else {
+        const view = this.viewRef.get();
+        if (!view) {
             traceWrite(`updateDynamicState not executed to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+            return;
         }
+
+        const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(view) : true);
+        view._batchUpdate(() => {
+            this.stopKeyframeAnimations();
+            this.setPropertyValues(matchingSelectors);
+            this.playKeyframeAnimations(matchingSelectors);
+        });
     }
 
     private playKeyframeAnimations(matchingSelectors: SelectorCore[]): void {
@@ -436,14 +440,16 @@ export class CssState {
         });
 
         if (this._playsKeyframeAnimations = animations.length > 0) {
-            let view = this.viewRef.get();
-            if (view) {
-                animations.map(animation => animation.play(<View>view));
-                Object.freeze(animations);
-                this._appliedAnimations = animations;
-            } else {
-                traceWrite(`KeyframeAnimations cannot play because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.error);
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`KeyframeAnimations cannot play because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+                return;
             }
+
+            animations.map(animation => animation.play(<View>view));
+            Object.freeze(animations);
+            this._appliedAnimations = animations;
         }
     }
 
@@ -457,7 +463,7 @@ export class CssState {
             .forEach(animation => animation.cancel());
         this._appliedAnimations = CssState.emptyAnimationArray;
 
-        let view = this.viewRef.get();
+        const view = this.viewRef.get();
         if (view) {
             view.style["keyframe:rotate"] = unsetValue;
             view.style["keyframe:scaleX"] = unsetValue;
@@ -466,10 +472,11 @@ export class CssState {
             view.style["keyframe:translateY"] = unsetValue;
             view.style["keyframe:backgroundColor"] = unsetValue;
             view.style["keyframe:opacity"] = unsetValue;
-            this._playsKeyframeAnimations = false;
         } else {
-            traceWrite(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.error);
+            traceWrite(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
         }
+
+        this._playsKeyframeAnimations = false;
     }
 
     /**
@@ -564,12 +571,14 @@ export class CssState {
     }
 
     toString(): string {
-        let view = this.viewRef.get();
-        if (view) {
-            return `${view}._cssState`;
-        } else {
+        const view = this.viewRef.get();
+        if (!view) {
             traceWrite(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+            return "";
         }
+
+        return `${view}._cssState`;
     }
 }
 CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;

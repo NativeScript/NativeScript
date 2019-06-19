@@ -29,13 +29,14 @@ export class Style extends Observable implements StyleDefinition {
     }
 
     toString() {
-        let view = this.viewRef.get();
-        if (view) {
-            return `${view}.style`;
-
-        } else {
+        const view = this.viewRef.get();
+        if (!view) {
             traceWrite(`toString() of Style cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+            return "";
         }
+
+        return `${view}.style`;
     }
 
     public fontInternal: Font;

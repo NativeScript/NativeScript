@@ -180,7 +180,7 @@ export const zeroLength: Length = { value: 0, unit: "px" };
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
         } else {
@@ -193,7 +193,7 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
         } else {
@@ -252,7 +252,7 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
         } else {
@@ -265,7 +265,7 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
         } else {
@@ -278,7 +278,7 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
         } else {
@@ -291,7 +291,7 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
         } else {
@@ -857,7 +857,7 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectiveBorderTopWidth = value;
         } else {
@@ -877,7 +877,7 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectiveBorderRightWidth = value;
         } else {
@@ -897,7 +897,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectiveBorderBottomWidth = value;
         } else {
@@ -917,7 +917,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.effectiveBorderLeftWidth = value;
         } else {
@@ -1150,7 +1150,7 @@ export namespace Visibility {
 
 export const visibilityProperty = new CssProperty<Style, Visibility>({
     name: "visibility", cssName: "visibility", defaultValue: Visibility.VISIBLE, affectsLayout: isIOS, valueConverter: Visibility.parse, valueChanged: (target, oldValue, newValue) => {
-        let view = target.viewRef.get();
+        const view = target.viewRef.get();
         if (view) {
             view.isCollapsed = (newValue === Visibility.COLLAPSE);
         } else {

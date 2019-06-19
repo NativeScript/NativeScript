@@ -914,7 +914,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const oldValue: U = key in this ? this[key] : defaultValue;
             let value: U;
             let unsetNativeValue = false;
-            if (reset && view) {
+            if (reset) {
                 // If unsetValue - we want to reset this property.
                 let parent = view.parent;
                 let style = parent ? parent.style : null;
@@ -1031,25 +1031,33 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         const converter = options.converter;
 
         function setLocalValue(this: T, value: string | P): void {
-            let view = this.viewRef.get()
-            if (view) {
-                view._batchUpdate(() => {
-                    for (let [p, v] of converter(value)) {
-                        this[p.name] = v;
-                    }
-                });
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`setLocalValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+    
+                return;
             }
+
+            view._batchUpdate(() => {
+                for (let [p, v] of converter(value)) {
+                    this[p.name] = v;
+                }
+            });
         }
 
         function setCssValue(this: T, value: string): void {
-            let view = this.viewRef.get()
-            if (view) {
-                view._batchUpdate(() => {
-                    for (let [p, v] of converter(value)) {
-                        this[p.cssName] = v;
-                    }
-                });
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`setCssValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+    
+                return;
             }
+
+            view._batchUpdate(() => {
+                for (let [p, v] of converter(value)) {
+                    this[p.cssName] = v;
+                }
+            });
         }
 
         this.cssValueDescriptor = {
