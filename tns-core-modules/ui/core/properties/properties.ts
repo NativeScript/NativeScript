@@ -4,6 +4,12 @@ import { ViewBase } from "../view-base";
 
 // Types.
 import { WrappedValue, PropertyChangeData } from "../../../data/observable";
+import {
+    write as traceWrite,
+    categories as traceCategories,
+    messageType as traceMessageType,
+} from "../../../trace";
+
 import { Style } from "../../styling/style";
 
 import { profile } from "../../../profiling";
@@ -125,7 +131,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 if (affectsLayout) {
                     this.requestLayout();
                 }
-                
+
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -466,6 +472,13 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         const property = this;
 
         function setLocalValue(this: T, newValue: U | string): void {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`${newValue} not set to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+                return;
+            }
+
             const reset = newValue === unsetValue || newValue === "";
             let value: U;
             if (reset) {
@@ -482,60 +495,64 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.viewRef.get();
-                if (view) {
-                    if (reset) {
-                        delete this[key];
-                        if (valueChanged) {
-                            valueChanged(this, oldValue, value);
-                        }
-    
-                        if (view[setNative]) {
-                            if (view._suspendNativeUpdatesCount) {
-                                if (view._suspendedUpdates) {
-                                    view._suspendedUpdates[propertyName] = property;
-                                }
-                            } else {
-                                if (defaultValueKey in this) {
-                                    view[setNative](this[defaultValueKey]);
-                                    delete this[defaultValueKey];
-                                } else {
-                                    view[setNative](defaultValue);
-                                }
+                if (reset) {
+                    delete this[key];
+                    if (valueChanged) {
+                        valueChanged(this, oldValue, value);
+                    }
+
+                    if (view[setNative]) {
+                        if (view._suspendNativeUpdatesCount) {
+                            if (view._suspendedUpdates) {
+                                view._suspendedUpdates[propertyName] = property;
                             }
-                        }
-                    } else {
-                        this[key] = value;
-                        if (valueChanged) {
-                            valueChanged(this, oldValue, value);
-                        }
-    
-                        if (view[setNative]) {
-                            if (view._suspendNativeUpdatesCount) {
-                                if (view._suspendedUpdates) {
-                                    view._suspendedUpdates[propertyName] = property;
-                                }
+                        } else {
+                            if (defaultValueKey in this) {
+                                view[setNative](this[defaultValueKey]);
+                                delete this[defaultValueKey];
                             } else {
-                                if (!(defaultValueKey in this)) {
-                                    this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-                                }
-                                view[setNative](value);
+                                view[setNative](defaultValue);
                             }
                         }
                     }
-    
-                    if (this.hasListeners(eventName)) {
-                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
+                } else {
+                    this[key] = value;
+                    if (valueChanged) {
+                        valueChanged(this, oldValue, value);
                     }
-    
-                    if (affectsLayout) {
-                        view.requestLayout();
+
+                    if (view[setNative]) {
+                        if (view._suspendNativeUpdatesCount) {
+                            if (view._suspendedUpdates) {
+                                view._suspendedUpdates[propertyName] = property;
+                            }
+                        } else {
+                            if (!(defaultValueKey in this)) {
+                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                            }
+                            view[setNative](value);
+                        }
                     }
+                }
+
+                if (this.hasListeners(eventName)) {
+                    this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
+                }
+
+                if (affectsLayout) {
+                    view.requestLayout();
                 }
             }
         }
 
         function setCssValue(this: T, newValue: U | string): void {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`${newValue} not set to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+                return;
+            }
+
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -559,55 +576,52 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.viewRef.get();
-                if (view) {
-                    if (reset) {
-                        delete this[key];
-                        if (valueChanged) {
-                            valueChanged(this, oldValue, value);
-                        }
-    
-                        if (view[setNative]) {
-                            if (view._suspendNativeUpdatesCount) {
-                                if (view._suspendedUpdates) {
-                                    view._suspendedUpdates[propertyName] = property;
-                                }
-                            } else {
-                                if (defaultValueKey in this) {
-                                    view[setNative](this[defaultValueKey]);
-                                    delete this[defaultValueKey];
-                                } else {
-                                    view[setNative](defaultValue);
-                                }
+                if (reset) {
+                    delete this[key];
+                    if (valueChanged) {
+                        valueChanged(this, oldValue, value);
+                    }
+
+                    if (view[setNative]) {
+                        if (view._suspendNativeUpdatesCount) {
+                            if (view._suspendedUpdates) {
+                                view._suspendedUpdates[propertyName] = property;
                             }
-                        }
-                    } else {
-                        this[key] = value;
-                        if (valueChanged) {
-                            valueChanged(this, oldValue, value);
-                        }
-    
-                        if (view[setNative]) {
-                            if (view._suspendNativeUpdatesCount) {
-                                if (view._suspendedUpdates) {
-                                    view._suspendedUpdates[propertyName] = property;
-                                }
+                        } else {
+                            if (defaultValueKey in this) {
+                                view[setNative](this[defaultValueKey]);
+                                delete this[defaultValueKey];
                             } else {
-                                if (!(defaultValueKey in this)) {
-                                    this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-                                }
-                                view[setNative](value);
+                                view[setNative](defaultValue);
                             }
                         }
                     }
-    
-                    if (this.hasListeners(eventName)) {
-                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
+                } else {
+                    this[key] = value;
+                    if (valueChanged) {
+                        valueChanged(this, oldValue, value);
                     }
-    
-                    if (affectsLayout) {
-                        view.requestLayout();
+
+                    if (view[setNative]) {
+                        if (view._suspendNativeUpdatesCount) {
+                            if (view._suspendedUpdates) {
+                                view._suspendedUpdates[propertyName] = property;
+                            }
+                        } else {
+                            if (!(defaultValueKey in this)) {
+                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                            }
+                            view[setNative](value);
+                        }
                     }
+                }
+
+                if (this.hasListeners(eventName)) {
+                    this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
+                }
+
+                if (affectsLayout) {
+                    view.requestLayout();
                 }
             }
         }
@@ -722,12 +736,18 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
                 set(this: T, boxedValue: U | string) {
+                    const view = this.viewRef.get();
+                    if (!view) {
+                        traceWrite(`${boxedValue} not set to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+                        return;
+                    }
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
                     const reset = boxedValue === unsetValue || boxedValue === "";
-        
+
                     if (reset) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
@@ -764,8 +784,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         valueChanged(this, oldValue, value);
                     }
 
-                    const view = this.viewRef.get();
-                    if (view && view[setNative] && (computedValueChanged || isSet !== wasSet)) {
+                    if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
                         if (view._suspendNativeUpdatesCount) {
                             if (view._suspendedUpdates) {
                                 view._suspendedUpdates[propertyName] = property;
@@ -916,7 +935,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                     if (valueChanged) {
                         valueChanged(this, oldValue, value);
                     }
-    
+
                     if (view[setNative]) {
                         if (view._suspendNativeUpdatesCount) {
                             if (view._suspendedUpdates) {
@@ -934,20 +953,20 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                                 if (!(defaultValueKey in this)) {
                                     this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
                                 }
-    
+
                                 view[setNative](value);
                             }
                         }
                     }
-    
+
                     if (this.hasListeners(eventName)) {
                         this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
-    
+
                     if (affectsLayout) {
                         view.requestLayout();
                     }
-    
+
                     view.eachChild((child) => {
                         const childStyle = child.style;
                         const childValueSource = childStyle[sourceKey] || ValueSource.Default;
