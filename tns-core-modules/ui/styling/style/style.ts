@@ -18,8 +18,14 @@ import {
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
 export class Style extends Observable implements StyleDefinition {
-    constructor(public viewRef: WeakRef<ViewBase>) {
+    constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
         super();
+
+        if (ownerView instanceof ViewBase) {
+            this.viewRef = new WeakRef(ownerView);
+        } else if (ownerView instanceof WeakRef) {
+            this.viewRef = ownerView;
+        }
     }
 
     toString() {
@@ -135,5 +141,15 @@ export class Style extends Observable implements StyleDefinition {
     public alignSelf: AlignSelf;
 
     public PropertyBag: { new(): { [property: string]: string }, prototype: { [property: string]: string } };
+
+    public viewRef: WeakRef<ViewBase>;
+
+    public get view(): ViewBase {
+        if (this.viewRef) {
+            return this.viewRef.get();
+        }
+
+        return undefined;
+    }
 }
 Style.prototype.PropertyBag = class { [property: string]: string; }
