@@ -839,10 +839,16 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
     }
 
     public _initDefaultNativeValue(target: T): void {
+        const view = target.viewRef.get();
+        if (!view) {
+            traceWrite(`_initDefaultNativeValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+            return;
+        }
+
         const defaultValueKey = this.defaultValueKey;
 
         if (!(defaultValueKey in target)) {
-            const view = target.viewRef.get();
             const getDefault = this.getDefault;
             target[defaultValueKey] = view[getDefault] ? view[getDefault]() : this.defaultValue;
         }
@@ -885,6 +891,13 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const property = this;
 
         const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`${boxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+    
+                return;
+            }
+
             const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
             if (reset) {
@@ -899,7 +912,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             }
 
             const oldValue: U = key in this ? this[key] : defaultValue;
-            const view = this.viewRef.get();
             let value: U;
             let unsetNativeValue = false;
             if (reset && view) {
@@ -930,58 +942,55 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.viewRef.get();
-                if (view) {
-                    if (valueChanged) {
-                        valueChanged(this, oldValue, value);
-                    }
-
-                    if (view[setNative]) {
-                        if (view._suspendNativeUpdatesCount) {
-                            if (view._suspendedUpdates) {
-                                view._suspendedUpdates[propertyName] = property;
-                            }
-                        } else {
-                            if (unsetNativeValue) {
-                                if (defaultValueKey in this) {
-                                    view[setNative](this[defaultValueKey]);
-                                    delete this[defaultValueKey];
-                                } else {
-                                    view[setNative](defaultValue);
-                                }
-                            } else {
-                                if (!(defaultValueKey in this)) {
-                                    this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-                                }
-
-                                view[setNative](value);
-                            }
-                        }
-                    }
-
-                    if (this.hasListeners(eventName)) {
-                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
-                    }
-
-                    if (affectsLayout) {
-                        view.requestLayout();
-                    }
-
-                    view.eachChild((child) => {
-                        const childStyle = child.style;
-                        const childValueSource = childStyle[sourceKey] || ValueSource.Default;
-                        if (reset) {
-                            if (childValueSource === ValueSource.Inherited) {
-                                setDefaultFunc.call(childStyle, unsetValue);
-                            }
-                        } else {
-                            if (childValueSource <= ValueSource.Inherited) {
-                                setInheritedFunc.call(childStyle, value);
-                            }
-                        }
-                        return true;
-                    });
+                if (valueChanged) {
+                    valueChanged(this, oldValue, value);
                 }
+
+                if (view[setNative]) {
+                    if (view._suspendNativeUpdatesCount) {
+                        if (view._suspendedUpdates) {
+                            view._suspendedUpdates[propertyName] = property;
+                        }
+                    } else {
+                        if (unsetNativeValue) {
+                            if (defaultValueKey in this) {
+                                view[setNative](this[defaultValueKey]);
+                                delete this[defaultValueKey];
+                            } else {
+                                view[setNative](defaultValue);
+                            }
+                        } else {
+                            if (!(defaultValueKey in this)) {
+                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                            }
+
+                            view[setNative](value);
+                        }
+                    }
+                }
+
+                if (this.hasListeners(eventName)) {
+                    this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
+                }
+
+                if (affectsLayout) {
+                    view.requestLayout();
+                }
+
+                view.eachChild((child) => {
+                    const childStyle = child.style;
+                    const childValueSource = childStyle[sourceKey] || ValueSource.Default;
+                    if (reset) {
+                        if (childValueSource === ValueSource.Inherited) {
+                            setDefaultFunc.call(childStyle, unsetValue);
+                        }
+                    } else {
+                        if (childValueSource <= ValueSource.Inherited) {
+                            setInheritedFunc.call(childStyle, value);
+                        }
+                    }
+                    return true;
+                });
             }
         };
 

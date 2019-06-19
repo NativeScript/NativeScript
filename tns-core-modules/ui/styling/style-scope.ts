@@ -414,6 +414,8 @@ export class CssState {
                 this.setPropertyValues(matchingSelectors);
                 this.playKeyframeAnimations(matchingSelectors);
             });
+        } else {
+            traceWrite(`updateDynamicState not executed to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
         }
     }
 
@@ -477,43 +479,47 @@ export class CssState {
      * @param matchingSelectors
      */
     private setPropertyValues(matchingSelectors: SelectorCore[]): void {
-        let view = this.viewRef.get();
-        if (view) {
-            const newPropertyValues = new view.style.PropertyBag();
-            matchingSelectors.forEach(selector =>
-                selector.ruleset.declarations.forEach(declaration =>
-                    newPropertyValues[declaration.property] = declaration.value));
-            Object.freeze(newPropertyValues);
-    
-            const oldProperties = this._appliedPropertyValues;
-            for (const key in oldProperties) {
-                if (!(key in newPropertyValues)) {
-                    if (key in view.style) {
-                        view.style[`css:${key}`] = unsetValue;
-                    } else {
-                        // TRICKY: How do we unset local value?
-                    }
-                }
-            }
-            for (const property in newPropertyValues) {
-                if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
-                    continue;
-                }
-                const value = newPropertyValues[property];
-                try {
-                    if (property in view.style) {
-                        view.style[`css:${property}`] = value;
-                    } else {
-                        const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-                        view[camelCasedProperty] = value;
-                    }
-                } catch (e) {
-                    traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
-                }
-            }
-    
-            this._appliedPropertyValues = newPropertyValues;
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+            return;
         }
+
+        const newPropertyValues = new view.style.PropertyBag();
+        matchingSelectors.forEach(selector =>
+            selector.ruleset.declarations.forEach(declaration =>
+                newPropertyValues[declaration.property] = declaration.value));
+        Object.freeze(newPropertyValues);
+
+        const oldProperties = this._appliedPropertyValues;
+        for (const key in oldProperties) {
+            if (!(key in newPropertyValues)) {
+                if (key in view.style) {
+                    view.style[`css:${key}`] = unsetValue;
+                } else {
+                    // TRICKY: How do we unset local value?
+                }
+            }
+        }
+        for (const property in newPropertyValues) {
+            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+                continue;
+            }
+            const value = newPropertyValues[property];
+            try {
+                if (property in view.style) {
+                    view.style[`css:${property}`] = value;
+                } else {
+                    const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+                    view[camelCasedProperty] = value;
+                }
+            } catch (e) {
+                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+            }
+        }
+
+        this._appliedPropertyValues = newPropertyValues;
     }
 
     private subscribeForDynamicUpdates(): void {
