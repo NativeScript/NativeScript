@@ -21,10 +21,11 @@ export class Style extends Observable implements StyleDefinition {
     constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
         super();
 
-        if (ownerView instanceof ViewBase) {
-            this.viewRef = new WeakRef(ownerView);
-        } else if (ownerView instanceof WeakRef) {
-            this.viewRef = ownerView;
+        // HACK: Could not find better way for cross platform WeakRef type checking.
+        if (ownerView.constructor.toString().indexOf("[native code]") !== -1) {
+            this.viewRef = <WeakRef<ViewBase>>ownerView;
+        } else  {
+            this.viewRef = new WeakRef(<ViewBase>ownerView);
         }
     }
 
