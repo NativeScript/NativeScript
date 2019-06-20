@@ -1,0 +1,22 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+        <TextField  id="s0" row="0" col="0" autocorrect="false" textWrap="true" text="border-width: 5;"/>
+        <TextField  id="s1" row="0" col="1" autocorrect="false" textWrap="true" text="border-width: 5; border-color: red;"/>
+        <TextField  id="s2" row="0" col="2" autocorrect="false" textWrap="true" text="border-width: 5; border-color: red red red green;"/>
+        <TextField  id="s3" row="1" col="0" autocorrect="false" textWrap="true" text="border-width: 5; border-color: red; border-radius: 5;"/>
+        <TextField  id="s4" row="1" col="1" autocorrect="false" textWrap="true" text="border-width: 5; border-color: red; border-radius: 50;"/>
+        <TextField  id="s5" row="1" col="2" autocorrect="false" textWrap="true" text="border-width: 5 10 15 20; border-color: red;"/>
+        <TextField  id="s6" row="2" col="0" autocorrect="false" textWrap="true" text="border-width: 5; border-color: red green blue yellow;"/>
+        <TextField  id="s7" row="2" col="1" autocorrect="false" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow;"/>
+        <TextField  id="s8" row="2" col="2" autocorrect="false" textWrap="true" text="border-width: 5 10; border-color: red green;"/>
+        <TextField  id="s9" row="3" col="0" autocorrect="false" textWrap="true" text="border-width: 15 10 5; border-color: red green blue;"/>
+        <TextField id="s10" row="3" col="1" autocorrect="false" textWrap="true" text="border-width: 5 0; border-color: black;"/>
+        <TextField id="s11" row="3" col="2" autocorrect="false" textWrap="true" text="background-color: magenta;"/>
+        <TextField id="s12" row="4" col="0" autocorrect="false" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; border-radius: 5 10 15 20;"/>
+        <TextField id="s13" row="4" col="1" autocorrect="false" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; border-radius: 5;"/>
+        <TextField id="s14" row="4" col="2" autocorrect="false" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; background-color: magenta;"/>
+        <TextField id="s15" row="5" col="0" autocorrect="false" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; background-image: url('~/resources/images/test2.png');"/>
+        <TextField id="s16" row="5" col="1" autocorrect="false" textWrap="true" text="border-width: 5; border-color: red; padding: 5;"/>
+        <TextField id="s17" row="5" col="2" autocorrect="false" textWrap="true" text="border-width: 5 6 7 8; border-color: red green blue yellow; padding: 5 6 7 8;"/>
+    </GridLayout>
+</Page>

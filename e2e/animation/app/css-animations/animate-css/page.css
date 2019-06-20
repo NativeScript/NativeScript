@@ -1,4 +1,4 @@
-@import '~/css-animations/animate-css/animate.css';
+@import './animate.css';
 
 .myRubberBand {
     animation-name: rubberBand;

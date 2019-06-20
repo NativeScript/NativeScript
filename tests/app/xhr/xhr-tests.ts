@@ -1,5 +1,5 @@
 /* tslint:disable:no-unused-variable */
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as types from "tns-core-modules/utils/types";
 
 export var test_XMLHttpRequest_isDefined = function () {

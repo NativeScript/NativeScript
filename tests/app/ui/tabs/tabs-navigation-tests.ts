@@ -1,5 +1,5 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";

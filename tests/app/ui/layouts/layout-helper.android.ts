@@ -3,7 +3,7 @@ import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 
 import * as utils from "tns-core-modules/utils/utils";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as def from "./layout-helper";
 
 var DELTA = 0.1;

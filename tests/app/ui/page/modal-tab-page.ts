@@ -1,6 +1,6 @@
 import { NavigatedData } from "tns-core-modules/ui/page";
 import { View } from "tns-core-modules/ui/core/view";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { stack } from "tns-core-modules/ui/frame";
 import { isAndroid } from "tns-core-modules/platform";
 

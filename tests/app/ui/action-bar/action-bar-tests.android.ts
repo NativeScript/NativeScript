@@ -1,15 +1,15 @@
-﻿import * as actionTestsCommon from "./action-bar-tests-common";
-import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
+import { createPageAndNavigate } from "./action-bar-tests-common";
 import { ActionItem } from "tns-core-modules/ui/action-bar";
 import { Visibility } from "tns-core-modules/ui/enums";
 import { Button } from "tns-core-modules/ui/button";
 
-global.moduleMerge(actionTestsCommon, exports);
+export * from "./action-bar-tests-common";
 
 export function test_actionItem_visibility() {
     const actionItem = new ActionItem();
     actionItem.text = "Test";
-    const page = actionTestsCommon.createPageAndNavigate();
+    const page = createPageAndNavigate();
     page.actionBar.actionItems.addItem(actionItem);
     const toolbar = <androidx.appcompat.widget.Toolbar>page.actionBar.nativeViewProtected;
     const menu = toolbar.getMenu();
@@ -21,8 +21,8 @@ export function test_actionItem_visibility() {
 
 export function test_navigationButton_visibility() {
     const actionItem = new ActionItem();
-    actionItem.icon = "~/small-image.png";
-    const page = actionTestsCommon.createPageAndNavigate();
+    actionItem.icon = "~/assets/small-image.png";
+    const page = createPageAndNavigate();
     page.actionBar.navigationButton = actionItem;
 
     const toolbar = <androidx.appcompat.widget.Toolbar>page.actionBar.nativeViewProtected;
@@ -34,10 +34,10 @@ export function test_navigationButton_visibility() {
 
 export function test_navigationButton_contentDecription() {
     const actionItem = new ActionItem();
-    actionItem.icon = "~/small-image.png";
+    actionItem.icon = "~/assets/small-image.png";
     const actionItemText = "NavButton with small-image";
     actionItem.text = actionItemText;
-    const page = actionTestsCommon.createPageAndNavigate();
+    const page = createPageAndNavigate();
     page.actionBar.navigationButton = actionItem;
 
     const toolbar = <androidx.appcompat.widget.Toolbar>page.actionBar.nativeViewProtected;
@@ -50,7 +50,7 @@ export function test_set_actionView_to_attached_actionItem_propagates_context() 
     const actionButton = new Button();
     actionItem.actionView = actionButton;
 
-    const page = actionTestsCommon.createPageAndNavigate();
+    const page = createPageAndNavigate();
 
     // sanity check
     TKUnit.assertNotNull(page.content._context, "Page content context should not be null");
@@ -69,7 +69,7 @@ export function test_set_actionView_to_attached_actionItem_propagates_context() 
 export function test_add_actionItem_with_actionView_propagates_context() {
     const actionItem = new ActionItem();
 
-    const page = actionTestsCommon.createPageAndNavigate();
+    const page = createPageAndNavigate();
 
     // sanity check
     TKUnit.assertNotNull(page.content._context, "Page content context should not be null");

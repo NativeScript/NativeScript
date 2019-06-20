@@ -2,7 +2,7 @@
 
 // Definitions.
 import { NavigationTransition, BackstackEntry } from "../frame";
-import { AnimationType } from "./fragment.transitions";
+import { AnimationType } from "./fragment.transitions.types";
 
 // Types.
 import { Transition, AndroidTransitionType } from "../transition/transition";
@@ -14,6 +14,8 @@ import { device } from "../../platform";
 import lazy from "../../utils/lazy";
 
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
+
+export { AnimationType } from "./fragment.transitions.types";
 
 interface TransitionListener {
     new(entry: ExpandedEntry, transition: android.transition.Transition): ExpandedTransitionListener;

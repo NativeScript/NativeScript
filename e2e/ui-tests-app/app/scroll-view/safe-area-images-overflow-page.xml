@@ -1,0 +1,24 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" actionBarHidden="true" class="page">
+
+    <GridLayout rows="*">
+        <ScrollView row="0" backgroundColor="DarkSlateGray">
+            <StackLayout>
+                <Image stretch="aspectFill" iosOverflowSafeArea="true" height="200" src="~/resources/images/woods.jpg"></Image>
+                <StackLayout backgroundColor="DarkSalmon">
+                    <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper." textWrap="true" />
+                </StackLayout>
+                <Image stretch="aspectFill" iosOverflowSafeArea="true" height="200" src="~/resources/images/woods.jpg"></Image>
+                <StackLayout backgroundColor="YellowGreen">
+                    <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper." textWrap="true" />
+                </StackLayout>
+                <Image stretch="aspectFill" iosOverflowSafeArea="true" height="200" src="~/resources/images/woods.jpg"></Image>
+                <StackLayout backgroundColor="DimGray">
+                    <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper." textWrap="true" />
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+
+        <!-- status bar overlay -->
+        <GridLayout row="0" backgroundColor="White" opacity="0.4" height="0" verticalAlignment="top"></GridLayout>
+    </GridLayout>
+</Page>

@@ -1,3 +1,6 @@
+// TODO: Delete `tns-core-modules/xml/xml.js` from source control after
+// https://github.com/NativeScript/nativescript-dev-webpack/issues/932
+
 import * as definition from ".";
 import * as easysax from "../js-libs/easysax";
 

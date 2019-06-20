@@ -1,5 +1,5 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import * as builder from "tns-core-modules/ui/builder";
 import { Label } from "tns-core-modules/ui/label";
 import { Button } from "tns-core-modules/ui/button";

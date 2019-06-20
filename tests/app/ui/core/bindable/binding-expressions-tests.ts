@@ -1,6 +1,6 @@
 ﻿import * as frameModule from "tns-core-modules/ui/frame";
 import * as textFieldModule from "tns-core-modules/ui/text-field";
-import * as helper from "../../helper";
+import * as helper from "../../../ui-helper";
 
 export var test_BindingExpressions_ArrayAccess = function () {
     navigateToPage("bindingExpressions_arrayAccess_testPage");
@@ -84,5 +84,5 @@ export var assertElementValueIsNaN = function (elementId: string) {
 }
 
 export var navigateToPage = function (pageName: string) {
-    helper.navigateToModule("/ui/test-pages/" + pageName);
+    helper.navigateToModule("ui/test-pages/" + pageName);
 }

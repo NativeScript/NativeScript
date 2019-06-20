@@ -1,0 +1,11 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+    <StackLayout>
+        <Label text="hint" />
+        <TextField secure="true" text="test" hint="hint"></TextField>
+        <TextField secure="true" text="text"></TextField>
+        <TextField secure="true" hint="hint" maxLength="3" ></TextField>
+        <Label text="bindings" />
+        <TextField id="textField" automationText="textField" text="{{ textProperty }}" />
+        <TextField id="textFieldSecured" automationText="textFieldSecured" text="{{ textProperty }}" />
+    </StackLayout>
+</Page>

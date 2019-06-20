@@ -1,0 +1,17 @@
+<Page>
+  <Page.actionBar>
+      <ActionBar title="TextView hint color"/>
+  </Page.actionBar>
+    <StackLayout>
+        <Label text="Should change text and color" />
+        <TextView id="tv1Hint" hint="hint1 pink" text="" color="pink" fontSize="32" />
+
+        <Label text="Should change apply text" />
+        <TextView id="tv2Hint" hint="hint2 orange" color="orange" fontSize="32" />
+
+        <Label text="Should change only color of hint" />
+        <TextView id="tv3Hint" hint="hint3 blue" color="blue" fontSize="32" />
+
+        <Button id="btn" text="Change text and color" tap="changeTextAndColor"/>
+    </StackLayout>
+</Page>

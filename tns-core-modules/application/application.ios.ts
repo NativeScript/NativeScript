@@ -270,7 +270,8 @@ class IOSApplication implements IOSApplicationDefinition {
 }
 
 const iosApp = new IOSApplication();
-exports.ios = iosApp;
+
+export { iosApp as ios };
 setApplication(iosApp);
 
 // attach on global, so it can be overwritten in NativeScript Angular

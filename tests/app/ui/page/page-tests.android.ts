@@ -1,11 +1,11 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as PageTestCommon from "./page-tests-common";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import { addLabelToPage } from "./page-tests-common";
 import { Page } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
 import { topmost } from "tns-core-modules/ui/frame";
 
-global.moduleMerge(PageTestCommon, exports);
+export * from "./page-tests-common";
 
 export function test_NavigateToNewPage_WithAndroidCache() {
     // Clear history if any.
@@ -58,7 +58,7 @@ export function test_NavigateToNewPage_InnerControl() {
     const pageFactory = function () {
         testPage = new Page();
         testPage.id = "testPage_test_NavigateToNewPage_InnerControl";
-        PageTestCommon.addLabelToPage(testPage);
+        addLabelToPage(testPage);
         return testPage;
     };
 

@@ -59,7 +59,7 @@ A test will fail if assert is not satisfied or if an error is thrown during exec
 There is a large set of asserting functions available in the [`tests/app/TKUnit.ts`](tests/app/TKUnit.ts) module. We recommend using those in your tests.
 
 ```typescript
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 
 export function testSomethingWorksFast() {
     let arr = [1, 2, 3];

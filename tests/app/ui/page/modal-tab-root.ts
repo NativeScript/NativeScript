@@ -1,6 +1,6 @@
 import { ShownModallyData } from "tns-core-modules/ui/core/view";
 import { TabView } from "tns-core-modules/ui/tab-view/tab-view";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { stack } from "tns-core-modules/ui/frame";
 import { isIOS } from "tns-core-modules/platform"
 

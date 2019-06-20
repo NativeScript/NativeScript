@@ -1,0 +1,21 @@
+﻿<Page>
+  <StackLayout>
+    <Button automationText="Change" text="Change" tap="buttonTap" />
+    <Label automationText="label" id="label" textWrap="true" style="text-decoration: underline; text-transform: capitalize; letter-spacing: 0.1; line-height: 7;"
+      text="The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog." />
+    <Button automationText="button" id="button" ios:textWrap="true" style="text-decoration: underline; text-transform: capitalize; letter-spacing: 0.1; line-height: 7;"
+      text="The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog." />
+    <TextView automationText="textView" id="textView" style="text-decoration: underline; text-transform: capitalize; letter-spacing: 0.1; line-height: 7;"
+      text="The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog." />
+    <Label automationText="formattedText" id="formattedText" textWrap="true" style="text-decoration: underline; text-transform: capitalize; letter-spacing: 0.1; line-height: 7;">
+      <Label.formattedText>
+        <FormattedString>
+          <FormattedString.spans>
+            <Span text="The quick brown fox jumps over the lazy dog." style="font-weight: bold; color: green;" />
+            <Span text="The quick brown fox jumps over the lazy dog." style="font-style: italic; color: blue;" />
+          </FormattedString.spans>
+        </FormattedString>
+      </Label.formattedText>
+    </Label>
+  </StackLayout>
+</Page>

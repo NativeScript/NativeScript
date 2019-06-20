@@ -5,8 +5,8 @@ import { Frame, getFrameById, topmost, NavigationEntry } from "tns-core-modules/
 import { getRootView } from "tns-core-modules/application";
 import { Label } from "tns-core-modules/ui/label";
 import { Page } from "tns-core-modules/ui/page";
-import * as helper from "../helper";
-import * as TKUnit from "../../TKUnit";
+import * as helper from "../../ui-helper";
+import * as TKUnit from "../../tk-unit";
 
 const NAV_WAIT = 15;
 function emptyNavigationQueue(frame: Frame) {

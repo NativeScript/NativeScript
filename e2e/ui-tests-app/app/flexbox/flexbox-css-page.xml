@@ -1,0 +1,43 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true" loaded="resetStyles">
+    <GridLayout rows="200, *">
+        <FlexboxLayout style="flex-wrap: wrap;">
+
+            <Button text="r" tap="resetStyles" automationText="reset" />
+
+            <!--container-->
+            <Button text="f" tag="flex-flow: row-reverse wrap-reverse;" tap="flexFlow" automationText="flexFlow" />
+
+            <!--items-->
+            <Button text="o1" tag="#container { flex-wrap: wrap; } #itemRowReverse-0 { order: 0; } #itemRowReverse-1 { order: 2; }"                     tap="applyStyles" automationText="o1" />
+            <Button text="g1" tag="#container { flex-wrap: wrap; } #itemColumnReverse-0 { flex-grow: 1; } #itemColumnReverse-1 { flex-grow: 1; }"       tap="applyStyles" automationText="g1" />
+            <Button text="s1" tag="#container { flex-wrap: nowrap; } #itemColumnReverse-0 { flex-shrink: 0; } #itemColumnReverse-1 { flex-shrink: 0; }" tap="applyStyles" automationText="s1" />
+            <Button text="a1" tag="#container { flex-wrap: nowrap; } .one { align-self: center; }"                                                      tap="applyStyles" automationText="a1" />
+
+            <!--flex-->
+            <Button text="f0" tag="#container { flex-wrap: nowrap; } #itemRowReverse-1 { flex: 0 1; } #itemColumn-1 { flex: 0 1; } #itemColumnReverse-1 { flex: 0 1; }" tap="applyStyles" automationText="f0" />
+            <Button text="f1" tag="#container { flex-wrap: wrap; } #itemRowReverse-1 { flex: 3; } #itemColumn-1 { flex: 2; } #itemColumnReverse-1 { flex: 1; }"         tap="applyStyles" automationText="f1" />
+            <Button text="f2" tag="#container { flex-wrap: nowrap; } #itemRowReverse-1 { flex: 3 0; } #itemColumn-1 { flex: 2 0; } #itemColumnReverse-1 { flex: 1 0; }" tap="applyStyles" automationText="f2" />
+
+        </FlexboxLayout>
+
+        <FlexboxLayout row="1" id="container" automationText="container">
+            <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-0" id="itemRow-0" class="zero" margin="10" />
+            <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-0" id="itemRowReverse-0" class="zero" />
+            <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-0" id="itemColumn-0" class="zero" />
+            <Label text="column-reverse" tap="select" backgroundColor="lightsalmon" automationText="itemColumnReverse-0" id="itemColumnReverse-0" class="zero" />
+
+            <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-1" id="itemRow-1" class="one" />
+            <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-1" id="itemRowReverse-1" class="one" />
+            <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-1" id="itemColumn-1" class="one" />
+            <Label text="column-reverse" tap="select" backgroundColor="lightsalmon" automationText="itemColumnReverse-1" id="itemColumnReverse-1" class="one" />
+
+            <!--
+            <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-2" id="itemRow-2" class="two" />
+            <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-2" id="itemRowReverse-2" class="two" />
+            <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-2" id="itemColumn-2" class="two" />
+            <Label text="column-reverse" tap="select" backgroundColor="lightsalmon" automationText="itemColumnReverse-2" id="itemColumnReverse-2" class="two" />
+            -->
+
+        </FlexboxLayout>
+    </GridLayout>
+</Page>

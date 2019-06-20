@@ -1,8 +1,8 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 // >> article-creating-view
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import * as utils from "tns-core-modules/utils/utils";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 
 // >> article-require-placeholder-module

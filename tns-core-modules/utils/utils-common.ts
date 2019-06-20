@@ -36,7 +36,7 @@ export function getModuleName(path: string): string {
     return moduleName.substring(0, moduleName.lastIndexOf("."));
 }
 
-export module layout {
+export module layoutCommon {
     const MODE_SHIFT = 30;
     const MODE_MASK = 0x3 << MODE_SHIFT;
 
@@ -51,9 +51,9 @@ export module layout {
 
     export function getMode(mode: number): string {
         switch (mode) {
-            case layout.EXACTLY:
+            case layoutCommon.EXACTLY:
                 return "Exact";
-            case layout.AT_MOST:
+            case layoutCommon.AT_MOST:
                 return "AtMost";
             default:
                 return "Unspecified";

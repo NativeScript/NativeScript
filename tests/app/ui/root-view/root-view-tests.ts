@@ -1,11 +1,11 @@
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { Page, View } from "tns-core-modules/ui/page";
 import { Frame, NavigationEntry, stack } from "tns-core-modules/ui/frame";
 import { _resetRootView, getRootView } from "tns-core-modules/application";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
+import { TabView } from "tns-core-modules/ui/tab-view";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as myCustomControlWithoutXml from "./mymodule/MyControl";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 function createTestFrameRootEntry() {
     const page = new Page();
@@ -23,19 +23,24 @@ function createTestFrameRootEntry() {
     };
 }
 
-export function test_custom_component_rootview_css_applied() {
-    var entry = {
-        moduleName: "ui/root-view/root-modules/custom-component-root"
-    };
+// Loading module without XML and bundle is not supported at this moment
+// export function test_custom_component_rootview_css_applied() {
+//     var entry = {
+//         moduleName: "ui/root-view/root-modules/custom-component-root"
+//     };
 
-    _resetRootView(entry);
+//     _resetRootView(entry);
 
-    var rootView = getRootView();
-    TKUnit.waitUntilReady(() => rootView.isLoaded);
+//     var rootView = getRootView();
+//     TKUnit.waitUntilReady(() => rootView.isLoaded);
 
-    TKUnit.assert(rootView instanceof myCustomControlWithoutXml.MyControl);
-    helper.assertViewBackgroundColor(rootView, "#0000FF");
-};
+//     TKUnit.assert(rootView instanceof myCustomControlWithoutXml.MyControl);
+//     helper.assertViewBackgroundColor(rootView, "#0000FF");
+// };
+
+// export function test_custom_component_rootview_layout_updates() {
+//     layout_invalidate_test("./ui/root-view/root-modules/custom-component-root");
+// }
 
 export function test_tabview_rootview_css_applied() {
     var entry = {
@@ -67,10 +72,6 @@ export function test_gridlayout_rootview_css_applied() {
 
 export function test_gridlayout_rootview_layout_updates() {
     layout_invalidate_test("ui/root-view/root-modules/gridlayout-root");
-}
-
-export function test_custom_component_rootview_layout_updates() {
-    layout_invalidate_test("ui/root-view/root-modules/custom-component-root");
 }
 
 export function test_tabview_rootview_layout_updates() {

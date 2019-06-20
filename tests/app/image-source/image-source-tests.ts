@@ -2,14 +2,14 @@
 import * as imageAssetModule from "tns-core-modules/image-asset";
 import * as fs from "tns-core-modules/file-system";
 import * as app from "tns-core-modules/application";
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as platform from "tns-core-modules/platform";
 
-const imagePath = "~/logo.png";
-const splashscreenPath = "~/splashscreen.png";
+const imagePath = "~/assets/logo.png";
+const splashscreenPath = "~/assets/splashscreen.png";
 const splashscreenWidth = 372;
 const splashscreenHeight = 218;
-const smallImagePath = "~/small-image.png";
+const smallImagePath = "~/assets/small-image.png";
 
 export function testFromResource() {
     // >> imagesource-resname

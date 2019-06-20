@@ -1,0 +1,26 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigate">
+    <TabView id="tab-view" tabTextColor="green" selectedTabTextColor="red" tabBackgroundColor="yellow">
+        <TabView.items>
+            <TabViewItem iconSource="~/resources/images/icon.png">
+                <TabViewItem.view>
+                    <Button text="undefined" tap="onChangeRenderingMode"/>
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem iconSource="~/resources/images/add_to_fav@3x.png">
+                <TabViewItem.view>
+                    <Button text="undefined" tap="onChangeRenderingMode"/>
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem iconSource="~/resources/images/icon.png" title="NativeScript">
+                <TabViewItem.view>
+                    <Button text="undefined" tap="onChangeRenderingMode"/>
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem iconSource="~/resources/images/add_to_fav@3x.png" title="Favorites">
+                <TabViewItem.view>
+                    <Button text="undefined" tap="onChangeRenderingMode"/>
+                </TabViewItem.view>
+            </TabViewItem>
+        </TabView.items>
+    </TabView>
+</Page>

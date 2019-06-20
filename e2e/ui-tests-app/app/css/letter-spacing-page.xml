@@ -1,0 +1,79 @@
+﻿<Page>
+  <ScrollView>
+    <StackLayout>
+      <WrapLayout>
+        <Label text="labelLabel" autocorrect="false" style="letter-spacing: -0.1;" />
+        <Label text="labelLabel" autocorrect="false" style="letter-spacing: 0;" />
+        <Label text="labelLabel" autocorrect="false" style="letter-spacing: 0.1;" />
+        <Label>
+            <Span text="just bold" fontWeight="bold" />
+        </Label>
+      </WrapLayout>
+      <Label autocorrect="false" text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <Label autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="label" fontWeight="bold" color="#0000ff" />
+              <Span text="Label" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
+      <WrapLayout>
+        <Button text="buttonButton" autocorrect="false" style="letter-spacing: -0.1;" />
+        <Button text="buttonButton" autocorrect="false" style="letter-spacing: 0;" />
+        <Button text="buttonButton" autocorrect="false" style="letter-spacing: 0.1;" />
+      </WrapLayout>
+      <Button text="buttonButton" autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <!--<android>-->
+      <Button autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+        <Button.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="button" fontWeight="bold" color="#0000ff" />
+              <Span text="Button" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Button.formattedText>
+      </Button>
+      <!--</android>-->
+      <WrapLayout>
+        <TextField text="textField" autocorrect="false" style="letter-spacing: -0.1;" />
+        <TextField text="textField" autocorrect="false" style="letter-spacing: 0;" />
+        <TextField text="textField" autocorrect="false" style="letter-spacing: 0.1;" />
+      </WrapLayout>
+      <TextField text="textField" autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <!--<android>-->
+      <TextField autocorrect="false" autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+        <TextField.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="Field" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextField.formattedText>
+      </TextField>
+      <!--</android>-->
+      <WrapLayout>
+        <TextView autocorrect="false" text="textView" style="letter-spacing: -0.1;" />
+        <TextView autocorrect="false" text="textView" style="letter-spacing: 0;" />
+        <TextView autocorrect="false" text="textView" style="letter-spacing: 0.1;" />
+      </WrapLayout>
+      <TextView autocorrect="false" text="textView" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <!--<android>-->
+      <TextView autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+        <TextView.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="View" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextView.formattedText>
+      </TextView>
+      <!--</android>-->
+    </StackLayout>
+  </ScrollView>
+</Page>

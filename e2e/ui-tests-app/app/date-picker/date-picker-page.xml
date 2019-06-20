@@ -1,0 +1,6 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+    <StackLayout>
+        <DatePicker day="1" month="9" year="2017" verticalAlignment="center"/>
+        <DatePicker day="1" month="10" year="2017" verticalAlignment="center"/>
+    </StackLayout>
+</Page>

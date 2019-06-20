@@ -2,7 +2,7 @@
 import * as colorModule from "tns-core-modules/color";
 var Color = colorModule.Color;
 // << color-require
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 
 export var test_Hex_Color = function () {
     // >> color-hex
