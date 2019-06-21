@@ -29,5 +29,5 @@ export function test_view_is_NOT_module_root_component() {
 
 export function test_load_component_from_missing_module_throws() {
     assertThrows(() => getViewComponent(MISSING_MODULE),
-        "Loading component from a missing module SHOULD throw an error.")
+        "Loading component from a missing module SHOULD throw an error.");
 }

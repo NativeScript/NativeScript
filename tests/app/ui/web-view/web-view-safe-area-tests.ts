@@ -26,11 +26,11 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     private getViews(template: string) {
         let root = parse(template);
@@ -38,7 +38,7 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
             root,
             list: root.getViewById("webview") as WebView
         };
-    };
+    }
 
     private webview_in_full_screen(webView: WebView, pageOptions?: helper.PageOptions) {
         const l = left(webView);

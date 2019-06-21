@@ -76,11 +76,11 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: [Page, Stack
 }
 
 export interface PageOptions {
-    pageCss?: any,
-    actionBar?: boolean,
-    actionBarFlat?: boolean,
-    actionBarHidden?: boolean,
-    tabBar?: boolean
+    pageCss?: any;
+    actionBar?: boolean;
+    actionBarFlat?: boolean;
+    actionBarHidden?: boolean;
+    tabBar?: boolean;
 }
 
 export function buildUIAndRunTest<T extends View>(controlToTest: T, testFunction: (views: [T, Page]) => void, options?: PageOptions) {

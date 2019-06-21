@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import * as fs from "tns-core-modules/file-system";
 import * as enums from "tns-core-modules/ui/enums";
 import * as resolver from "tns-core-modules/file-system/file-name-resolver";
@@ -8,35 +8,35 @@ var androidPhonePortraitContext: resolver.PlatformContext = {
     height: 640,
     deviceType: enums.DeviceType.Phone,
     os: "android"
-}
+};
 
 var androidPhoneLandsacpeContext: resolver.PlatformContext = {
     width: 640,
     height: 360,
     deviceType: enums.DeviceType.Phone,
     os: "android"
-}
+};
 
 var androidTabletPortraitContext: resolver.PlatformContext = {
     width: 600,
     height: 960,
     deviceType: enums.DeviceType.Tablet,
     os: "android"
-}
+};
 
 var iPhonePortraitContext: resolver.PlatformContext = {
     width: 320,
     height: 480,
     deviceType: enums.DeviceType.Phone,
     os: "ios"
-}
+};
 
 var iPhoneLandscapeContext: resolver.PlatformContext = {
     width: 480,
     height: 320,
     deviceType: enums.DeviceType.Phone,
     os: "ios"
-}
+};
 
 export function test_findFileMatch_fileName() {
     var candidates: Array<string> = [
@@ -45,8 +45,8 @@ export function test_findFileMatch_fileName() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.xml")
-};
+    testTemplate(candidates, androidPhonePortraitContext, "test.xml");
+}
 
 export function test_findFileMatch_os_android() {
     var candidates: Array<string> = [
@@ -56,8 +56,8 @@ export function test_findFileMatch_os_android() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.android.xml")
-};
+    testTemplate(candidates, androidPhonePortraitContext, "test.android.xml");
+}
 
 export function test_findFileMatch_os_ios() {
     var candidates: Array<string> = [
@@ -67,8 +67,8 @@ export function test_findFileMatch_os_ios() {
         "other.xml"
     ];
 
-    testTemplate(candidates, iPhonePortraitContext, "test.ios.xml")
-};
+    testTemplate(candidates, iPhonePortraitContext, "test.ios.xml");
+}
 
 export function test_findFileMatch_os_fallback() {
     var candidates: Array<string> = [
@@ -77,8 +77,8 @@ export function test_findFileMatch_os_fallback() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.xml")
-};
+    testTemplate(candidates, androidPhonePortraitContext, "test.xml");
+}
 
 export function test_findFileMatch_minWH_fallback() {
     var candidates: Array<string> = [
@@ -87,7 +87,7 @@ export function test_findFileMatch_minWH_fallback() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.xml")
+    testTemplate(candidates, androidPhonePortraitContext, "test.xml");
 }
 
 export function test_findFileMatch_minWH_best_value() {
@@ -100,7 +100,7 @@ export function test_findFileMatch_minWH_best_value() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml")
+    testTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml");
 }
 
 export function test_findFileMatch_minW_fallback() {
@@ -110,7 +110,7 @@ export function test_findFileMatch_minW_fallback() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.xml")
+    testTemplate(candidates, androidPhonePortraitContext, "test.xml");
 }
 
 export function test_findFileMatch_minW_best_value() {
@@ -123,7 +123,7 @@ export function test_findFileMatch_minW_best_value() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidTabletPortraitContext, "test.minW600.xml")
+    testTemplate(candidates, androidTabletPortraitContext, "test.minW600.xml");
 }
 
 export function test_findFileMatch_minH_fallback() {
@@ -133,7 +133,7 @@ export function test_findFileMatch_minH_fallback() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhoneLandsacpeContext, "test.xml")
+    testTemplate(candidates, androidPhoneLandsacpeContext, "test.xml");
 }
 
 export function test_findFileMatch_minH_best_value() {
@@ -146,7 +146,7 @@ export function test_findFileMatch_minH_best_value() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.minH600.xml")
+    testTemplate(candidates, androidPhonePortraitContext, "test.minH600.xml");
 }
 
 export function test_findFileMatch_orienation_fallback() {
@@ -156,7 +156,7 @@ export function test_findFileMatch_orienation_fallback() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidTabletPortraitContext, "test.xml")
+    testTemplate(candidates, androidTabletPortraitContext, "test.xml");
 }
 
 export function test_findFileMatch_orienation_portrait() {
@@ -167,7 +167,7 @@ export function test_findFileMatch_orienation_portrait() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidTabletPortraitContext, "test.port.xml")
+    testTemplate(candidates, androidTabletPortraitContext, "test.port.xml");
 }
 
 export function test_findFileMatch_orienation_landscape() {
@@ -178,7 +178,7 @@ export function test_findFileMatch_orienation_landscape() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhoneLandsacpeContext, "test.land.xml")
+    testTemplate(candidates, androidPhoneLandsacpeContext, "test.land.xml");
 }
 
 export function test_findFileMatch_choose_most_specific_file() {
@@ -189,7 +189,7 @@ export function test_findFileMatch_choose_most_specific_file() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidPhonePortraitContext, "test.android.port.xml")
+    testTemplate(candidates, androidPhonePortraitContext, "test.android.port.xml");
 }
 
 export function test_findFileMatch_with_multiple_matches_loads_by_priority() {
@@ -204,7 +204,7 @@ export function test_findFileMatch_with_multiple_matches_loads_by_priority() {
         "other.xml"
     ];
 
-    testTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml")
+    testTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml");
 }
 
 function testTemplate(candidates: Array<string>, context: resolver.PlatformContext, expected: string) {

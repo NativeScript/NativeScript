@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
@@ -65,7 +65,7 @@ function _clickHandlerFactory(index: number) {
         };
 
         helper.navigateWithHistory(pageFactory);
-    }
+    };
 }
 
 function _createFrameView(): frameModule.Frame {
@@ -101,7 +101,7 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     helper.waitUntilNavigatedFrom(() => topFrame.navigate(pageFactory), topFrame);
 
@@ -155,7 +155,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     let rootPage = helper.getCurrentPage();
 
@@ -214,13 +214,13 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     function createLoadedFor(tabIndex: number) {
         return function () {
             loadedEventsCount[tabIndex] = loadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     function createUnloadedFor(tabIndex: number) {
         return function () {
             unloadedEventsCount[tabIndex] = unloadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     tabView.items.forEach((item, i) => {

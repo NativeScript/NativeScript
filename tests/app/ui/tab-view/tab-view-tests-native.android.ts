@@ -1,4 +1,4 @@
-﻿import { TabView } from "tns-core-modules/ui/tab-view";
+import { TabView } from "tns-core-modules/ui/tab-view";
 
 export function getNativeTabCount(tabView: TabView): number {
     const pagerAdapter: androidx.viewpager.widget.PagerAdapter = (<any>tabView)._pagerAdapter;
@@ -23,7 +23,7 @@ export function getNativeFont(tabView: TabView): any {
         return {
             typeface: tv.getTypeface(),
             size: tv.getTextSize()
-        }
+        };
     }
 
     return null;
@@ -34,5 +34,5 @@ export function getOriginalFont(tabView: TabView): any {
     return {
         typeface: tv.getTypeface(),
         size: tv.getTextSize()
-    }
+    };
 }

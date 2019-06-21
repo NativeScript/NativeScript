@@ -1,4 +1,4 @@
-﻿import * as textFieldModule from "tns-core-modules/ui/text-field";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
 import * as colorModule from "tns-core-modules/color";
 import * as utilsModule from "tns-core-modules/utils/utils";
 import * as enums from "tns-core-modules/ui/enums";
@@ -35,7 +35,7 @@ export function getNativeBackgroundColor(textField: textFieldModule.TextField): 
         return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
     }
     else {
-        return new colorModule.Color(bkg.backgroundColor)
+        return new colorModule.Color(bkg.backgroundColor);
     }
 }
 

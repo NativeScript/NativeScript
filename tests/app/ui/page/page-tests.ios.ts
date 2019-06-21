@@ -1,4 +1,4 @@
-﻿import { Page, layout, View, EventData } from "tns-core-modules/ui/page";
+import { Page, layout, View, EventData } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
 import { topmost } from "tns-core-modules/ui/frame";
 import * as TKUnit from "../../tk-unit";
@@ -34,7 +34,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
     let onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
-    }
+    };
 
     var navigatedToEventHandler = function (args) {
         var basePath = "ui/page/";

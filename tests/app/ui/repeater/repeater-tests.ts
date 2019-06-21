@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as app from "tns-core-modules/application";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
@@ -44,7 +44,7 @@ export function test_set_items_to_array_loads_all_items() {
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
         TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
         TKUnit.assert(getChildAtText(repeater, 2) === "blue", "Item not created for index 2");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -57,7 +57,7 @@ export function test_set_items_to_array_creates_views() {
 
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -80,7 +80,7 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
         // TKUnit.wait(ASYNC);
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -109,7 +109,7 @@ export function test_refresh_reloads_all_items() {
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
         TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
         TKUnit.assert(getChildAtText(repeater, 2) === "blue", "Item not created for index 2");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -125,7 +125,7 @@ export function test_set_itmes_to_null_clears_items() {
         repeater.items = null;
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 0, "views count.");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -144,7 +144,7 @@ export function test_set_itemsLayout_accepted() {
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assert((<stackLayoutModule.StackLayout>repeater.itemsLayout).orientation === "horizontal", "views count.");
         TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -160,7 +160,7 @@ export function test_set_itmes_to_undefiend_clears_items() {
         repeater.items = undefined;
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 0, "views count.");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -176,7 +176,7 @@ export function test_set_itmes_to_different_source_loads_new_items() {
         repeater.items = ["a", "b", "c", "d"];
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "views count.");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -194,7 +194,7 @@ export function test_set_items_to_observable_array_loads_all_items() {
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
         TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
         TKUnit.assert(getChildAtText(repeater, 2) === "blue", "Item not created for index 2");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -213,7 +213,7 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
         // The Repeater will be updated automatically.
         // << article-push-to-observablearray
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -232,7 +232,7 @@ export function test_remove_from_observable_array_refreshes_the_Repeater() {
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 2, "getChildrenCount");
 
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -252,7 +252,7 @@ export function test_splice_observable_array_refreshes_the_Repeater() {
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
 
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -283,7 +283,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter(new Date(), "DD.MM.YYYY"), "element");
-    };
+    }
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
@@ -314,7 +314,7 @@ export function test_ItemTemplateFactoryFunction() {
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
             return label;
-        }
+        };
         repeater.items = [1, 2, 3];
 
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
@@ -357,15 +357,15 @@ export var test_RepeaterItemsGestureBindings = function () {
                 childItem.eachChildView(eachChildCallback);
             }
             return true;
-        }
+        };
 
         repeater.eachChildView(eachChildCallback);
 
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
-    }
+    };
 
     helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures-page", null, testFunc);
-}
+};
 
 export var test_RepeaterItemsParentBindingsShouldWork = function () {
     var testFunc = function (page: pageModule.Page) {
@@ -383,15 +383,15 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
                 childItem.eachChildView(eachChildCallback);
             }
             return true;
-        }
+        };
 
         repeater.eachChildView(eachChildCallback);
 
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
-    }
+    };
 
     helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures-page", null, testFunc);
-}
+};
 
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
     var repeater = new repeaterModule.Repeater();

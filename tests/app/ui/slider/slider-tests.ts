@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { View } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
@@ -24,9 +24,9 @@ import { Slider } from "tns-core-modules/ui/slider";
 // << article-binding-slider-properties
 
 interface SliderValues {
-    min?: number,
-    max?: number,
-    value?: number,
+    min?: number;
+    max?: number;
+    value?: number;
 }
 
 const TEST_VALUE = 50;
@@ -60,7 +60,7 @@ export function test_set_TNS_value_updates_native_value() {
     function testAction(views: Array<View>) {
         slider.value = TEST_VALUE;
         TKUnit.assertEqual(getNativeValue(slider), TEST_VALUE, "Native value is different from TNS value.");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -70,7 +70,7 @@ export function test_set_native_value_updates_TNS_value() {
     function testAction(views: Array<View>) {
         setNativeValue(slider, TEST_VALUE);
         TKUnit.assertEqual(slider.value, TEST_VALUE, "Native value is different from TNS value.");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -98,7 +98,7 @@ export function test_set_native_value_triggers_propertyChanged() {
     }
 
     helper.buildUIAndRunTest(slider, testAction);
-};
+}
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
 if (isIOS) {
@@ -108,7 +108,7 @@ if (isIOS) {
 
         function testAction(views: Array<View>) {
             TKUnit.assertEqual(slider.color.ios.CGColor, slider.ios.thumbTintColor.CGColor, "slider.color");
-        };
+        }
 
         helper.buildUIAndRunTest(slider, testAction);
     };
@@ -119,7 +119,7 @@ if (isIOS) {
 
         function testAction(views: Array<View>) {
             TKUnit.assertEqual((<Color>slider.backgroundColor).ios.CGColor, slider.ios.minimumTrackTintColor.CGColor, "slider.backgroundColor");
-        };
+        }
 
         helper.buildUIAndRunTest(slider, testAction);
     };
@@ -138,7 +138,7 @@ export function test_default_native_values() {
     function testAction(views: Array<View>) {
         TKUnit.assertEqual(getNativeValue(slider), 0, "Default native slider.value");
         TKUnit.assertEqual(getNativeMaxValue(slider), 100, "Default native slider.maxValue");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -167,7 +167,7 @@ export function test_values_change_native_values() {
         slider.value = 15;
         TKUnit.assertEqual(getNativeValue(slider), isIOS ? 15 : 5, "5: wrong native slider.value");
         TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, "5: Wrong native slider.maxValue");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -180,7 +180,7 @@ export function test_set_min_max_value() {
 
     function testAction(views: Array<View>) {
         assertSliderValuesDefault(slider);
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -193,7 +193,7 @@ export function test_set_min_value_max() {
 
     function testAction(views: Array<View>) {
         assertSliderValuesDefault(slider);
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -206,7 +206,7 @@ export function test_set_max_min_value() {
 
     function testAction(views: Array<View>) {
         assertSliderValuesDefault(slider);
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -219,7 +219,7 @@ export function test_set_max_value_min() {
 
     function testAction(views: Array<View>) {
         assertSliderValuesDefault(slider);
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -232,7 +232,7 @@ export function test_set_value_min_max() {
 
     function testAction(views: Array<View>) {
         assertSliderValuesDefault(slider);
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -245,7 +245,7 @@ export function test_set_value_max_min() {
 
     function testAction(views: Array<View>) {
         assertSliderValuesDefault(slider);
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -256,7 +256,7 @@ export function test_set_value_less_than_min_should_set_value_to_min() {
     function testAction(views: Array<View>) {
         slider.value = -10;
         assertSliderValues(slider, { value: 0 });
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -268,7 +268,7 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
         slider.maxValue = 10;
         slider.value = 20;
         assertSliderValues(slider, { value: 10 });
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -284,7 +284,7 @@ export function test_set_maxValue_should_adjust_value() {
 
         TKUnit.assertEqual(slider.maxValue, 40, "slider.maxValue");
         TKUnit.assertEqual(slider.value, 40, "slider.value");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -301,7 +301,7 @@ export function test_set_maxValue_should_adjust_value_but_respect_minValue() {
     function testAction(views: Array<View>) {
         slider.maxValue = 30;
         assertSliderValues(slider, { min: 50, max: 50, value: 50 });
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -315,7 +315,7 @@ export function test_set_minValue_should_adjust_value() {
     function testAction(views: Array<View>) {
         slider.minValue = 60;
         assertSliderValues(slider, { min: 60, value: 60 });
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -330,7 +330,7 @@ export function test_set_minValue_should_adjust_value_and_maxValue() {
         const newMin = 120;
         slider.minValue = newMin;
         assertSliderValues(slider, { min: newMin, max: newMin, value: newMin });
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -356,7 +356,7 @@ export function test_property_changed_event_when_setting_minValue_no_adjust() {
         // Assert
         TKUnit.assert(changedProperties["minValue"], "Property changed for minValue not called.");
         TKUnit.assertEqual(allChanges, 1, "Property changed callbacks.");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -383,7 +383,7 @@ export function test_property_changed_event_when_setting_minValue_with_adjust() 
         TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assert(changedProperties["minValue"], "Property changed for 'minValue' not called.");
         TKUnit.assertEqual(allChanges, 2, "Property changed callbacks.");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -409,7 +409,7 @@ export function test_property_changed_event_when_setting_maxValue_no_adjust() {
         // Assert
         TKUnit.assert(changedProperties["maxValue"], "Property changed for maxValue not called.");
         TKUnit.assertEqual(allChanges, 1, "Property changed callbacks.");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }
@@ -436,7 +436,7 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
         TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assert(changedProperties["maxValue"], "Property changed for 'maxValue' not called.");
         TKUnit.assertEqual(allChanges, 2, "Property changed callbacks.");
-    };
+    }
 
     helper.buildUIAndRunTest(slider, testAction);
 }

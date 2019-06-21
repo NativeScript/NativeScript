@@ -61,7 +61,7 @@ function retry(count: number, action: () => void) {
 
 export function test_time_returns_number() {
     assertEqual(typeof time(), "number");
-};
+}
 
 export function test_isRunning() {
     resetProfiles();
@@ -121,7 +121,7 @@ export function test_start_stop() {
     const res = timer(name);
 
     assertEqual(res.count, 1);
-};
+}
 
 export function test_start_stop_count() {
     resetProfiles();
@@ -134,7 +134,7 @@ export function test_start_stop_count() {
 
     const res = timer(name);
     assertEqual(res.count, 10);
-};
+}
 
 export function test_profile_decorator_count() {
     resetProfiles();
@@ -178,7 +178,7 @@ export function test_start_stop_performance() {
         assertEqual(res.count, count);
         assert(res.totalTime <= 500, `Total time for ${count} timer operations is too much: ${res.totalTime}`);
     });
-};
+}
 
 export function test_profile_decorator_performance() {
     retry(5, () => {

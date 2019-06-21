@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as listPickerTestsNative from "./list-picker-tests-native";
@@ -35,7 +35,7 @@ export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
         var actualValue = listPicker.items;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -44,7 +44,7 @@ export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -54,7 +54,7 @@ export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreate
         var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -64,7 +64,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
         var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -76,7 +76,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -90,7 +90,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -102,7 +102,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
@@ -114,7 +114,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
     var listPicker = _createListPicker();
@@ -126,7 +126,7 @@ export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
         var actualValue = listPicker.items.length;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
     var listPicker = _createListPicker();
@@ -138,7 +138,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 // export var testSettingNegativeSelectedIndexShouldThrow = function () {
 //     var listPicker = _createListPicker();
@@ -175,7 +175,7 @@ export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = funct
 
     let actualValue = listPicker.selectedIndex;
     TKUnit.assertEqual(actualValue, expectedValue);
-}
+};
 
 export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
     if (!application.android) {
@@ -189,7 +189,7 @@ export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
         var actualValue = listPicker.nativeViewProtected.getMaxValue();
         TKUnit.assertEqual(actualValue, expectedValue);
     });
-}
+};
 
 export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
     if (!application.android) {
@@ -202,7 +202,7 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
         var actualValue = listPicker.nativeViewProtected.editText.getText().toString();
         TKUnit.assertEqual(actualValue, expectedValue);
     });
-}
+};
 
 export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
     if (!application.android) {
@@ -216,7 +216,7 @@ export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly =
         var actualValue = listPicker.nativeViewProtected.editText.getText().toString();
         TKUnit.assertEqual(actualValue, expectedValue);
     });
-}
+};
 
 export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
     if (!application.android) {
@@ -231,4 +231,4 @@ export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = func
         var actualValue = listPicker.nativeViewProtected.editText.getText().toString();
         TKUnit.assertEqual(actualValue, expectedValue);
     });
-}
+};

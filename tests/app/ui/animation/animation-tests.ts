@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import { Label } from "tns-core-modules/ui/label";
@@ -106,7 +106,7 @@ export function test_CancellingAnimation(done) {
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
-                done()
+                done();
             } else {
                 done(e);
             }
@@ -133,7 +133,7 @@ export function test_CancellingAnimate(done) {
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
-                done()
+                done();
             } else {
                 done(e);
             }
@@ -571,7 +571,7 @@ export function test_AnimationsAreAlwaysPlayed(done) {
     animation1.play()
         .then(() => {
             TKUnit.assert(label.opacity === 0, `Label opacity should be 0 after first animation, actual value is ${label.opacity}.`);
-            return animation2.play()
+            return animation2.play();
         })
         .then(() => {
             TKUnit.assert(label.opacity === 1, `Label opacity should be 1 after second animation, actual value is ${label.opacity}.`);

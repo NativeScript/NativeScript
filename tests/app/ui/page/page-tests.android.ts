@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { addLabelToPage } from "./page-tests-common";
 import { Page } from "tns-core-modules/ui/page";
@@ -107,4 +107,4 @@ export var test_Resolve_Fragment_ForPage = function () {
 
     const fragment = frame.android.fragmentForPage(frame._currentEntry);
     TKUnit.assertNotNull(fragment, "Failed to resolve native fragment for page");
-}
+};

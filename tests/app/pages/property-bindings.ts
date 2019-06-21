@@ -67,7 +67,7 @@ export function createPage() {
             targetProperty: desc.name,
         };
         control.bind(options, slider);
-    };
+    }
 
     function createBooleanPropertyUI(desc: BoolPropertyDescriptor) {
         var lbl = new labels.Label();
@@ -85,7 +85,7 @@ export function createPage() {
             targetProperty: desc.name,
         };
         control.bind(options, sw);
-    };
+    }
 
     function createStringPropertyUI(desc: StringPropertyDescriptor) {
         var lbl = new labels.Label();
@@ -102,7 +102,7 @@ export function createPage() {
             targetProperty: desc.name,
         };
         control.bind(options, txt);
-    };
+    }
 
     createNumericPropertyUI({ name: "style.minWidth", value: 30, min: 10, max: 300 });
     createNumericPropertyUI({ name: "style.width", value: 100, min: 10, max: 300 });

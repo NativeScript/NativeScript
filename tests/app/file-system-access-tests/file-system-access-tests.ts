@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import * as fs from "tns-core-modules/file-system";
 
 export var test_UTF8_BOM_is_not_returned = function () {
@@ -12,7 +12,7 @@ export var test_UTF8_BOM_is_not_returned = function () {
 
     var onError = function (error) {
         TKUnit.assert(false, "Could not read file utf8.txt");
-    }
+    };
 
     var text = file.readTextSync(onError);
     if (text) {
@@ -39,4 +39,4 @@ export var test_leading_slash_is_not_returned = function () {
     var path = fs.path.join(...parts);
 
     TKUnit.assertEqual(path, expected, "Leading slash should not be part of the path");
-}
+};

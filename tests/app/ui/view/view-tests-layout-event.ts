@@ -21,7 +21,7 @@ export function test_event_LayoutChanged_GetActualSize() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_LayoutChanged_Listeners() {
     const test = function (views: Array<View>) {
@@ -38,7 +38,7 @@ export function test_event_LayoutChanged_Listeners() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_LayoutChanged_IsRaised() {
     helper.clearPage();
@@ -66,7 +66,7 @@ export function test_event_LayoutChanged_IsRaised() {
     TKUnit.assert(buttonLayoutChanged);
 
     newPage.content = null;
-};
+}
 
 export function test_event_LayoutChanged_IsRaised_ChildMarginChanged() {
     const test = function (views: Array<View>) {
@@ -90,7 +90,7 @@ export function test_event_LayoutChanged_IsRaised_ChildMarginChanged() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_LayoutChanged_IsRaised_ParentMarginChanged() {
     const test = function (views: Array<View>) {
@@ -114,7 +114,7 @@ export function test_event_LayoutChanged_IsRaised_ParentMarginChanged() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_LayoutChanged_IsNotRaised_TransformChanged() {
     helper.do_PageTest_WithStackLayout_AndButton(([page, stack, button, ActionBar]) => {
@@ -141,8 +141,8 @@ export function test_event_LayoutChanged_IsNotRaised_TransformChanged() {
 
         TKUnit.assertEqual(stackLayoutChangedCount, 0);
         TKUnit.assertEqual(buttonLayoutChangedCount, 0);
-    })
-};
+    });
+}
 
 export function test_event_LayoutChanged_IsRaised_StackLayout_SizeChanged() {
     const test = function (views: Array<View>) {
@@ -166,4 +166,4 @@ export function test_event_LayoutChanged_IsRaised_StackLayout_SizeChanged() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}

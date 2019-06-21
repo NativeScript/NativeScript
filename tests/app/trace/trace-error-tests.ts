@@ -1,4 +1,4 @@
-﻿import {
+import {
     ErrorHandler, getErrorHandler, setErrorHandler, DefaultErrorHandler,
     error as traceError
 } from "tns-core-modules/trace";
@@ -11,14 +11,14 @@ export function setUpModule() {
 
 // before each
 export function tearDown() {
-    setErrorHandler(cachedErrorHandler)
+    setErrorHandler(cachedErrorHandler);
 }
 
 export function test_DefaultErrorHandler_throws() {
     setErrorHandler(new DefaultErrorHandler());
     TKUnit.assertThrows(() => {
-        traceError(new Error("TEST"))
-    }, "DefaultErrorHandler should throw.", "TEST")
+        traceError(new Error("TEST"));
+    }, "DefaultErrorHandler should throw.", "TEST");
 }
 
 export function test_trace_error_should_call_handler() {
@@ -30,7 +30,7 @@ export function test_trace_error_should_call_handler() {
     });
     traceError(new Error("TEST"));
 
-    TKUnit.assert(called, "trace.error() should call handler")
+    TKUnit.assert(called, "trace.error() should call handler");
 }
 
 export function test_trace_error_should_create_error_from_string() {
@@ -44,8 +44,8 @@ export function test_trace_error_should_create_error_from_string() {
     });
     traceError("TEST");
 
-    TKUnit.assert(called, "trace.error() should call handler;")
-    TKUnit.assert(actualError instanceof Error, "trace.error() wrap string in error")
+    TKUnit.assert(called, "trace.error() should call handler;");
+    TKUnit.assert(actualError instanceof Error, "trace.error() wrap string in error");
 }
 
 export function test_trace_error_should_pass_errors() {
@@ -62,6 +62,6 @@ export function test_trace_error_should_pass_errors() {
     });
     traceError(testError);
     
-    TKUnit.assert(called, "trace.error() should call handler;")
-    TKUnit.assertDeepEqual(actualError, testError)
+    TKUnit.assert(called, "trace.error() should call handler;");
+    TKUnit.assertDeepEqual(actualError, testError);
 }

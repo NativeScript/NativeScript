@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 //>> label-require
@@ -670,7 +670,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.height = 100;
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", label => {
@@ -680,7 +680,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.height = 100;
             return host;
         });
-    };
+    }
 
     public test_SettingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "", label => {
@@ -689,7 +689,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             host.orientation = "horizontal";
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "Hello World", label => {
@@ -698,7 +698,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             host.orientation = "horizontal";
             return host;
         });
-    };
+    }
 
     public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
         this.requestLayoutFixture(true, "", label => {
@@ -749,7 +749,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         label._addChildFromBuilder("FormattedString", formattedString);
         label._removeView(formattedString);
-    };
+    }
 }
 
 export function createTestCase(): LabelTest {

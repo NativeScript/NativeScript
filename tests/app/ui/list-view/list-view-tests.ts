@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { UITest } from "../../ui-test";
 import { getResources as appGetResources } from "tns-core-modules/application";
@@ -506,7 +506,7 @@ export class ListViewTest extends UITest<ListView> {
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
             return label;
-        }
+        };
         listView.items = [1, 2, 3];
 
         this.waitUntilListViewReady();
@@ -587,7 +587,7 @@ export class ListViewTest extends UITest<ListView> {
         var testConverter = function (value) {
             converterCalledCounter++;
             return value;
-        }
+        };
 
         appGetResources()["testConverter"] = testConverter;
 
@@ -610,7 +610,7 @@ export class ListViewTest extends UITest<ListView> {
         var testConverter = function (value) {
             converterCalledCounter++;
             return value;
-        }
+        };
 
         appGetResources()["testConverter"] = testConverter;
 
@@ -736,7 +736,7 @@ export class ListViewTest extends UITest<ListView> {
             let array = new ArrayBuffer(4 * 1024 * 1024);
             if (!array) {
                 ///
-            };
+            }
         }
 
         GC();

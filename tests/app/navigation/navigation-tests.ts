@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import { EventData, Page, NavigatedData } from "tns-core-modules/ui/page";
 import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
 import { StackLayout, } from "tns-core-modules/ui/layouts/stack-layout";
@@ -75,7 +75,7 @@ export function test_backAndForwardParentPage_nestedFrames() {
         parentPage.content = stack;
 
         return parentPage;
-    }
+    };
 
     const back = pages => topmostFrame().goBack(topmostFrame().backStack[topmostFrame().backStack.length - pages]);
     const currentPageMustBe = tag => TKUnit.assertEqual(topmostFrame().currentPage["tag"], tag, "Expected current page to be " + tag + " it was " + topmostFrame().currentPage["tag"] + " instead.");
@@ -464,7 +464,7 @@ function _test_Navigate_From_Page_Event_Handler(eventName: string) {
             const secondPageFactory = function (): Page {
                 const secondPage = new Page();
                 secondPage.id = "second-page";
-                secondPage.on(Page.navigatedToEvent, () => { secondPageNavigatedTo = true });
+                secondPage.on(Page.navigatedToEvent, () => { secondPageNavigatedTo = true; });
 
                 return secondPage;
             };

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as segmentedBarTestsNative from "./segmented-bar-tests-native";
 import { buildUIAndRunTest } from "../../ui-helper";
 import { View } from "tns-core-modules/ui/core/view";
@@ -42,7 +42,7 @@ export var testWhenSegmentedBarIsCreatedItemsAreUndefined = function () {
         var actualValue = segmentedBar.items;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -51,7 +51,7 @@ export var testWhenSegmentedBarIsCreatedSelectedIndexIsUndefined = function () {
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -61,7 +61,7 @@ export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreate
         var actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
     var segmentedBar = _createSegmentedBar();
@@ -81,13 +81,13 @@ export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
         var options: BindingOptions = {
             sourceProperty: "items",
             targetProperty: "items"
-        }
+        };
 
         segmentedBar.bind(options, model);
 
         TKUnit.assert(segmentedBarTestsNative.checkNativeItemsTextColor(segmentedBar), "Items text color not preserved" + "; Expected: " + segmentedBar.color);
     });
-}
+};
 
 export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -97,7 +97,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
         var actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -119,7 +119,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -133,7 +133,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -145,7 +145,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
     buildUIAndRunTest(_createSegmentedBar(), function (views: Array<View>) {
@@ -157,7 +157,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
     var segmentedBar = _createSegmentedBar();
@@ -169,7 +169,7 @@ export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
         var actualValue = segmentedBar.items.length;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
     var segmentedBar = _createSegmentedBar();
@@ -181,7 +181,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = function () {
     var oldIndex;
@@ -210,7 +210,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = funct
         TKUnit.assertEqual(oldIndex, 3);
         TKUnit.assertEqual(newIndex, 9);
     });
-}
+};
 
 export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative = function () {
     var oldIndex;
@@ -239,7 +239,7 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative =
         TKUnit.assertEqual(oldIndex, 3);
         TKUnit.assertEqual(newIndex, 9);
     });
-}
+};
 
 export var testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function () {
     const segmentedBar = _createSegmentedBar();
@@ -262,7 +262,7 @@ export var testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function (
         segmentedBarTestsNative.setNativeSelectedIndex(segmentedBar, 1);
         TKUnit.assertEqual(newSelectedIndex, 1);
     });
-}
+};
 
 export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
     let segmentedBar = new segmentedBarModule.SegmentedBar();

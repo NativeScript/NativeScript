@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { View, isIOS, unsetValue } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
@@ -137,7 +137,7 @@ export function test_event_onContextChanged_IsRaised_WhenAttached() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_onContextChanged_IsRaised_WhenAttached_Dynamically() {
     const test = function (views: Array<View>) {
@@ -148,7 +148,7 @@ export function test_event_onContextChanged_IsRaised_WhenAttached_Dynamically() 
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_tearDownUI_IsRaised() {
     let btn;
@@ -201,7 +201,7 @@ export function test_events_tearDownUIAndRemovedFromNativeVisualTree_AreRaised_W
 
         TKUnit.assertNull(btnNativeParent, "button NativeParent should be null");
         TKUnit.assertNull(stackNativeParent, "stack NativeParent should be null");
-    }
+    };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
 }

@@ -71,7 +71,7 @@ export var testFileFromPath = function () {
             // << (hide)
         });
     // << file-system-create
-}
+};
 
 export var testFolderFromPath = function () {
     // >> file-system-create-folder
@@ -83,7 +83,7 @@ export var testFolderFromPath = function () {
     folder.remove();
     // << (hide)
     // << file-system-create-folder
-}
+};
 
 export var testFileWrite = function () {
     // >> file-system-write-string
@@ -124,7 +124,7 @@ export var testGetFile = function () {
     file.remove();
     // << (hide)
     // << file-system-create-file
-}
+};
 
 export var testGetFolder = function () {
     // >> file-system-get-folder
@@ -319,7 +319,7 @@ export var testEnumEntities = function () {
                 testFolderFound = true;
             }
         }
-    }
+    };
     // << (hide)
     documents.eachEntity(function (entity) {
         console.log(entity.name);
@@ -490,7 +490,7 @@ export var testFolderRemove = function () {
             // << (hide)
         });
     // << file-system-remove-folder
-}
+};
 
 export var testFolderClear = function () {
     // >> file-system-clear-folder
@@ -550,7 +550,7 @@ export function testKnownFolderRemove(done) {
         function (error) {
             done(null);
         });
-};
+}
 
 export function test_FSEntity_Properties() {
     var documents = fs.knownFolders.documents();

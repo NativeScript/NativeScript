@@ -70,11 +70,11 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
     public testWhenTabViewIsCreatedItemsAreUndefined = function () {
         TKUnit.assertEqual(this.testView.items, undefined, "Items should be undefined initally.");
-    }
+    };
 
     public testWhenTabViewIsCreatedSelectedIndexIsUndefined = function () {
         TKUnit.assertEqual(this.testView.selectedIndex, -1, "selectedIndex should be undefined initally.");
-    }
+    };
 
     public testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeTabsIsCreated = function () {
         this.testView.items = this._createItems(10);
@@ -84,7 +84,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
 
         TKUnit.assertEqual(actualValue, expectedValue, "NativeItems not equal to JS items.");
-    }
+    };
 
     public testWhenSettingItemsToEmptyArrayZeroNativeTabsAreCreated = function () {
         var tabView = this.testView;
@@ -95,7 +95,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         var actualValue = tabViewTestsNative.getNativeTabCount(tabView);
 
         TKUnit.assertEqual(actualValue, expectedValue, "Should have 0 native tabs.");
-    }
+    };
 
     public testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
         var tabView = this.testView;
@@ -125,7 +125,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         var expectedValue = 0;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "When bound selectedIndex should be 0.");
-    }
+    };
 
     public testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
 
@@ -141,7 +141,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public testSelectedIndexBecomesUndefinedWhenItemsSetToUndefined = function () {
         var tabView = this.testView;
@@ -153,7 +153,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public testSelectedIndexBecomesUndefinedWhenItemsSetToNull = function () {
         var tabView = this.testView;
@@ -165,7 +165,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
         var tabView = this.testView;
@@ -176,7 +176,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
         var actualValue = tabView.items.length;
         TKUnit.assertEqual(actualValue, expectedValue, "items.length should be 10");
-    }
+    };
 
     public testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
         var tabView = this.testView;
@@ -187,7 +187,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
-    }
+    };
 
     public testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
         var tabView = this.testView;
@@ -200,7 +200,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
             tabView.items = [item];
 
         }, "Binding TabView to a TabViewItem with undefined view should throw.");
-    }
+    };
 
     public testBindingToTabEntryWithNullViewShouldThrow = function () {
         var tabView = this.testView;
@@ -213,7 +213,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
             tabView.items = [item];
 
         }, "Binding TabView to a TabViewItem with null view should throw.");
-    }
+    };
 
     public testWhenSelectingATabNativelySelectedIndexIsUpdatedProperly = function () {
         var tabView = this.testView;
@@ -228,7 +228,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
-    }
+    };
 
     public testWhenSelectingATabNativelySelectedIndexChangedEventIsRaised = function () {
         var tabView = this.testView;
@@ -259,7 +259,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
         TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
-    }
+    };
 
     public testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventIsRaised = function () {
         var tabView = this.testView;
@@ -279,7 +279,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         tabView.on(tabViewModule.TabView.selectedIndexChangedEvent, (args: tabViewModule.SelectedIndexChangedEventData) => {
             actualOldIndex = args.oldIndex;
             actualNewIndex = args.newIndex;
-            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView")
+            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView");
         });
 
         tabView.selectedIndex = expectedNewIndex;
@@ -289,7 +289,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
         TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
-    }
+    };
 
     public test_FontIsReappliedWhenTabItemsChange = function () {
         const assertFontsAreEqual = (actual: any, expected: any, message?: string) => {
@@ -299,7 +299,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
                 TKUnit.assertEqual(actual.typeface, expected.typeface, `${message} [typeface]`);
                 TKUnit.assertEqual(actual.size, expected.size, `${message} [size]`);
             }
-        }
+        };
 
         this.testView.items = this._createItems(1);
         this.waitUntilSelectedItemIsFullyLoaded();
@@ -325,7 +325,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 
         this.testView.style.font = unsetValue;
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), originalFont, "Font must be the original one after resetting the style.");
-    }
+    };
 }
 
 export function createTestCase(): TabViewTest {

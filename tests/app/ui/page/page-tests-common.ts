@@ -66,7 +66,7 @@ export function test_PageLoaded_is_called_once() {
     let loaded = 0;
     const handler = function (data) {
         loaded++;
-    }
+    };
 
     const pageFactory = function (): Page {
         page1 = new Page();
@@ -187,7 +187,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
             name: "slide",
             duration: 10,
         } : undefined
-    }
+    };
 
     helper.navigateWithEntry(navigationEntry);
     helper.goBack();
@@ -388,7 +388,7 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() 
     let page: Page;
     const loadedEventHandler = function (args) {
         TKUnit.assertNotEqual(topmost().currentPage, args.object, "When a page is loaded it should not yet be the current page.");
-    }
+    };
 
     const pageFactory = function (): Page {
         page = new Page();
@@ -408,7 +408,7 @@ export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage(
     let page: Page;
     const navigatedEventHandler = function (args) {
         TKUnit.assertEqual(topmost().currentPage, args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.navigatedTo event handler. Expected: ${args.object.id}; Actual: ${topmost().currentPage.id};`);
-    }
+    };
 
     const pageFactory = function (): Page {
         page = new Page();
@@ -457,14 +457,14 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosedWithResult = returnValue === result;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         const page = <Page>args.object;
         page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
 
         closeModalGetter(args)(result);
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args: NavigatedData) {
         const page = <Page>args.object;
@@ -479,12 +479,12 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
         modalPage.content = button;
 
         (<Button>page.content).showModal(modalPage, {}, modalCloseCallback);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const button = new Button();
         button.text = "TAP";
@@ -508,7 +508,7 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosed = true;
-    }
+    };
 
     const createTabItems = function (count: number) {
         var items = new Array<TabViewItem>();
@@ -524,13 +524,13 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
         }
 
         return items;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         const page = <Page>args.object;
         page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
         args.closeCallback();
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -541,12 +541,12 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
         modalPage.on(View.shownModallyEvent, modalPageShownModallyEventHandler);
         const tabViewItem = (<TabView>page.content).items[0];
         tabViewItem.showModal(modalPage, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const tabView = new TabView();
         tabView.items = createTabItems(2);
@@ -570,7 +570,7 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosed = true;
-    }
+    };
 
     const createTabItems = function (count: number) {
         var items = new Array<TabViewItem>();
@@ -586,13 +586,13 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
         }
 
         return items;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         const page = <Page>args.object;
         page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
         args.closeCallback();
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -608,12 +608,12 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const tabView = new TabView();
         tabView.items = createTabItems(2);
@@ -645,7 +645,7 @@ export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
         }
 
         return items;
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -660,12 +660,12 @@ export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
         }
 
         navigatedTo = true;
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const tabView = new TabView();
         tabView.items = createTabItems(2);
@@ -692,7 +692,7 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
         } else {
             forwardCounter++;
         }
-    }
+    };
 
     const pageFactory1 = function (): Page {
         page1 = new Page();
@@ -726,7 +726,7 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosed = true;
-    }
+    };
 
     const createTabItems = function (count: number) {
         var items = new Array<TabViewItem>();
@@ -742,11 +742,11 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
         }
 
         return items;
-    }
+    };
 
     const tabViewShownModallyEventHandler = function (args: ShownModallyData) {
         args.closeCallback("return value");
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -757,7 +757,7 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
         tabView.on(View.shownModallyEvent, tabViewShownModallyEventHandler);
 
         page.showModal(tabView, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -800,7 +800,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         TKUnit.assertEqual(returnValue, "return value", "Modal-page must return value!");
         modalClosed = true;
         TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
-    }
+    };
 
     let modalPage: Page;
     let shownModally = 0;
@@ -808,19 +808,19 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     const onShownModal = function (args: ShownModallyData) {
         shownModally++;
         modalPage.off(Page.shownModallyEvent, onShownModal);
-    }
+    };
 
     let modalLoaded = 0;
     const onModalLoaded = function (args: EventData) {
         modalLoaded++;
         modalPage.off(Page.loadedEvent, onModalLoaded);
-    }
+    };
 
     let modalUnloaded = 0;
     const onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
-    }
+    };
 
     const navigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -875,7 +875,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
     const modalCloseCallback = function (returnValue: any) {
         TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
         ready = true;
-    }
+    };
 
     const hostNavigatingToEventHandler = function () {
         hostNavigatingToCount++;
@@ -895,7 +895,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
 
     const modalPageShownModallyEventHandler = function () {
         TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
-    }
+    };
 
     const hostNavigatedToEventHandler2 = function (args: NavigatedData) {
         const page = <Page>args.object;
@@ -912,7 +912,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
         modalPage.on(Frame.shownModallyEvent, modalPageShownModallyEventHandler);
 
         page.showModal(modalPage, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -956,7 +956,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
 
     const modalCloseCallback = function (returnValue: any) {
         ready = true;
-    }
+    };
 
     const modalNavigatingToEventHandler = function () {
         modalNavigatingToCount++;
@@ -989,7 +989,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
         modalPage.on(Page.navigatedFromEvent, modalNavigatedFromEventHandler);
 
         (args.object as Frame).navigate(() => modalPage);
-    }
+    };
 
     let modalFrame;
 
@@ -1001,7 +1001,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
         modalFrame.on(Frame.shownModallyEvent, modalFrameShownModallyEventHandler);
 
         page.showModal(modalFrame, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1040,18 +1040,18 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
     const modalCloseCallback = function (returnValue: any) {
         TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
         ready = true;
-    }
+    };
 
     const modalFrameShowingModallyEventHandler = function (args: ShownModallyData) {
         showingModallyCount++;
-    }
+    };
 
     const modalFrameShownModallyEventHandler = function (args: ShownModallyData) {
         shownModallyCount++;
         TKUnit.assertEqual(stack().length, 2, "Host and modal frame should be instantiated at this point!");
 
         args.closeCallback("return value");
-    }
+    };
 
     let modalFrame;
 
@@ -1076,7 +1076,7 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
         TKUnit.assertEqual(stack().length, 2, "Host and modal frame should be instantiated at this point!");
 
         page.showModal(modalFrame, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1110,11 +1110,11 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
 
     const modalCloseCallback = function (returnValue: any) {
         ready = true;
-    }
+    };
 
     const modalPageShowingModallyEventHandler = function (args: ShownModallyData) {
         showingModallyCount++;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         shownModallyCount++;
@@ -1122,7 +1122,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
         setTimeout(() => {
             args.closeCallback("return value");
         }, 0);
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -1138,7 +1138,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
         modalPage.on(Page.shownModallyEvent, modalPageShownModallyEventHandler);
 
         page.showModal(modalPage, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1173,15 +1173,15 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
     const modalCloseCallback = function (returnValue: any) {
         TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
         setTimeout(() => ready = true, 50);
-    }
+    };
 
     const modalTabViewShowingModallyEventHandler = function (args: ShownModallyData) {
         showingModallyCount++;
-    }
+    };
 
     const modalTabViewShownModallyEventHandler = function (args: ShownModallyData) {
         shownModallyCount++;
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -1201,7 +1201,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
         TKUnit.assertEqual(stack().length, 2, "Host and tab modal frame should be instantiated at this point!");
 
         page.showModal(modalTabView, {}, modalCloseCallback, false, false);
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1244,7 +1244,7 @@ export function test_percent_width_and_height_support() {
     testPage.content = stackLayout;
 
     const pageWidth = testPage.getMeasuredWidth();
-    const pageHeight = testPage.getMeasuredHeight()
+    const pageHeight = testPage.getMeasuredHeight();
 
     TKUnit.assertEqual(pageWidth, Math.round(pageWidth / 2), "Current page MeasuredWidth incorrect");
     TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");
