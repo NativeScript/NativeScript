@@ -6,6 +6,7 @@ import * as appCommonModule from "../../application/application-common";
 
 import { findMatch } from "../../module-name-resolver/qualifier-matcher/qualifier-matcher";
 
+@Deprecated
 export class FileNameResolver implements FileNameResolverDefinition {
     private _context: PlatformContext;
     private _cache = {};
