@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as searchBarTestsNative from "./search-bar-tests-native";
@@ -21,6 +21,7 @@ var _createSearchBarFunc = function (): searchBarModule.SearchBar {
     var searchBar = new searchBarModule.SearchBar();
     // << article-creating-searchbar
     searchBar.text = "searchBar";
+
     return searchBar;
 };
 

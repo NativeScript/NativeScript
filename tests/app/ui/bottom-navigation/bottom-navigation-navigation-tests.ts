@@ -14,6 +14,7 @@ var ASYNC = 2;
 function _createBottomNavigation(): BottomNavigation {
     var tabView = new BottomNavigation();
     tabView.id = "BottomNavigation";
+
     return tabView;
 }
 
@@ -26,6 +27,7 @@ function _createContentItems(count: number): Array<TabContentItem> {
         tabEntry.view = label;
         items.push(tabEntry);
     }
+
     return items;
 }
 
@@ -73,6 +75,7 @@ function _clickHandlerFactory(index: number) {
             var detailsPage = new Page();
             detailsPage.id = "details-page";
             detailsPage.content = detailsLabel;
+
             return detailsPage;
         };
 
@@ -83,6 +86,7 @@ function _clickHandlerFactory(index: number) {
 function _createFrameView(): frameModule.Frame {
     const frame = new frameModule.Frame();
     frame.navigate({ create: () => new Page() });
+
     return frame;
 }
 
@@ -246,6 +250,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     const tabViewPage = new Page();
     helper.navigateWithHistory(() => {
         tabViewPage.content = tabView;
+
         return tabViewPage;
     });
     TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView), ASYNC);

@@ -13,6 +13,7 @@ let pageFactory = function (): Page {
     page.actionBarHidden = true;
     page.id = `NavTestPage${id++}`;
     page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
     return page;
 };
 
@@ -61,6 +62,7 @@ export function test_backAndForwardParentPage_nestedFrames() {
     const page = (title) => {
         const p = new Page();
         p["tag"] = title;
+
         return p;
     };
 
@@ -122,6 +124,7 @@ function _test_backToEntry(transition?: NavigationTransition) {
         p.actionBarHidden = true;
         p.id = `NavTestPage${id++}`;
         p["tag"] = tag;
+
         return p;
     };
 
@@ -286,6 +289,7 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -335,6 +339,7 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back(transit
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -374,6 +379,7 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward(tran
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -420,6 +426,7 @@ function _test_NavigationEvents_WithClearHistory(transition?: NavigationTransiti
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 

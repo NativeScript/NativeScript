@@ -168,16 +168,19 @@ export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
 
 export function navigate(pageFactory: () => Page, navigationContext?: any): Page {
     let entry: frame.NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: true };
+
     return navigateWithEntry(entry);
 }
 
 export function navigateWithHistory(pageFactory: () => Page, navigationContext?: any): Page {
     let entry: frame.NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: false };
+
     return navigateWithEntry(entry);
 }
 
 export function navigateToModule(moduleName: string, context?: any): Page {
     let entry: frame.NavigationEntry = { moduleName: moduleName, context: context, animated: false, clearHistory: true };
+
     return navigateWithEntry(entry);
 }
 
@@ -193,6 +196,7 @@ export function getClearCurrentPage(): Page {
     page.className = unsetValue;
     page.id = unsetValue;
     page.css = "";
+
     return page;
 }
 
@@ -233,6 +237,7 @@ export function navigateWithEntry(entry: frame.NavigationEntry, topFrame?: frame
     };
 
     waitUntilNavigatedFrom(() => topFrame ? topFrame.navigate(entry) : frame.topmost().navigate(entry));
+
     return page;
 }
 

@@ -34,6 +34,7 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             list: root.getViewById("webview") as WebView

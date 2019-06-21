@@ -34,6 +34,7 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             list: root.getViewById("repeater") as Repeater

@@ -143,6 +143,7 @@ export function test_binding_value_to_model() {
 function getNativeValue(mySwitch: switchModule.Switch): boolean {
     if (platform.isAndroid) {
         const nativeView: android.widget.Switch = mySwitch.nativeViewProtected;
+
         return nativeView.isChecked();
     } else if (mySwitch.ios) {
         return mySwitch.ios.on;

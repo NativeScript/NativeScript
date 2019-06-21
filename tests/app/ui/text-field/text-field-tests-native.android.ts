@@ -13,11 +13,13 @@ export function getNativeHint(textField: textFieldModule.TextField): string {
 
 export function getNativeSecure(textField: textFieldModule.TextField): boolean {
     var inputType = textField.android.getInputType();
+
     return (((inputType & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) === android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) || ((inputType & android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD) === android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD));
 }
 
 export function getNativeFontSize(textField: textFieldModule.TextField): number {
     var density = utilsModule.layout.getDisplayDensity();
+
     return textField.android.getTextSize() / density;
 }
 

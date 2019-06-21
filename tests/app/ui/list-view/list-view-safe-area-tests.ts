@@ -35,6 +35,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             list: root.getViewById("list") as ListView,

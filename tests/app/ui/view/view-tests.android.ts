@@ -270,16 +270,19 @@ export const test_StylePropertiesDefaultValuesCache = function () {
 
 export function getUniformNativeBorderWidth(v: View): number {
     const bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
+
     return bkg ? bkg.getUniformBorderWidth() : 0;
 }
 
 export function checkUniformNativeBorderColor(v: View): boolean {
     const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
+
     return bkg && bkg.getUniformBorderColor() === (<Color>v.borderColor).android;
 }
 
 export function getUniformNativeCornerRadius(v: View): number {
     const bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
+
     return bkg ? bkg.getUniformBorderRadius() : 0;
 }
 
@@ -291,6 +294,7 @@ export function checkNativeBackgroundColor(v: View): boolean {
 
 export function checkNativeBackgroundImage(v: View): boolean {
     const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
+
     return bkg && !types.isNullOrUndefined(bkg.getBackgroundImage());
 }
 

@@ -55,6 +55,7 @@ export function createPage() {
 //    }
 
     page.content = btn;
+
     return page;
 }
 //export var Page = page; 

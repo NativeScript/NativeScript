@@ -11,6 +11,7 @@ function getViewComponent(componentModule: string) {
     const moduleNamePath = path.join(testDir, componentModule);
     const fileName = path.join(testDir, `${componentModule}.xml`);
     const view = loadPage(moduleNamePath, fileName);
+
     return view;
 }
 

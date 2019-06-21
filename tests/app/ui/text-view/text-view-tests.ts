@@ -44,6 +44,7 @@ var _createTextViewFunc = function (): textViewModule.TextView {
     var textView = new textViewModule.TextView();
     // << text-view-create
     textView.text = "textView";
+
     return textView;
 };
 

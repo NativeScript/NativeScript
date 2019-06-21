@@ -37,6 +37,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             grid: root.getViewById("grid") as GridLayout,

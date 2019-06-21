@@ -32,6 +32,7 @@ export function getNativeFont(tabView: BottomNavigation): any {
 
 export function getOriginalFont(tabView: BottomNavigation): any {
     const tv: android.widget.TextView = (<org.nativescript.widgets.BottomNavigationBar>(<any>tabView)._bottomNavigationBar).getTextViewForItemAt(0);
+
     return {
         typeface: tv.getTypeface(),
         size: tv.getTextSize()

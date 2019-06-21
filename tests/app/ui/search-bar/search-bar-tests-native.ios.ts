@@ -5,6 +5,7 @@ import { getColor } from "../../ui-helper";
 export function getNativeHintColor(searchBar: SearchBar): Color {
     if ((<any>searchBar)._textField) {
         const placeholder = (<any>searchBar)._textField.valueForKey("placeholderLabel");
+
         return getColor(placeholder.textColor);
     }
 

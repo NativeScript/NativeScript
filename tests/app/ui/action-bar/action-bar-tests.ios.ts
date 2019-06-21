@@ -32,6 +32,7 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -68,6 +69,7 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 

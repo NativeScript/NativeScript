@@ -323,6 +323,7 @@ export var testEnumEntities = function () {
     // << (hide)
     documents.eachEntity(function (entity) {
         console.log(entity.name);
+
         // Return true to continue, or return false to stop the iteration.
         return true;
     });
@@ -570,6 +571,7 @@ export function test_FileSize(done) {
     var file = fs.knownFolders.documents().getFile("Test_File_Size.txt");
     file.writeText("Hello World!").then(() => {
         TKUnit.assert(file.size === "Hello World!".length);
+
         return file.remove();
     }).then(() => done())
     .catch(done);
@@ -581,6 +583,7 @@ export function test_UnlockAfterWrite(done) {
         return file.readText();
     }).then(value => {
         TKUnit.assert(value === "Hello World!");
+
         return file.remove();
     }).then(() => done())
     .catch(done);

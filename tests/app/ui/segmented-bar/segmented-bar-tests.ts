@@ -16,6 +16,7 @@ function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
     var segmentedBar = new segmentedBarModule.SegmentedBar();
     // << article-create-segmentedbar
     segmentedBar.id = "SegmentedBar";
+
     return segmentedBar;
 }
 
@@ -32,6 +33,7 @@ function _createItems(count: number): Array<segmentedBarModule.SegmentedBarItem>
         bar.title = i + "";
         items.push(bar);
     }
+
     return items;
 }
 

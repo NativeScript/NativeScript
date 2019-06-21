@@ -106,6 +106,7 @@ function test<U extends { root: View }>(ui: () => U, setup: (ui: U) => void, tes
 
 let getViews = (template: string) => {
     let root = parse(template);
+
     return {
         root,
         flexbox: root.getViewById("flexbox") as FlexboxLayout,

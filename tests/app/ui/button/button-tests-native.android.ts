@@ -13,6 +13,7 @@ export function getNativeTextWrap(button: buttonModule.Button): boolean {
 
 export function getNativeFontSize(button: buttonModule.Button): number {
     var density = utilsModule.layout.getDisplayDensity();
+
     return button.android.getTextSize() / density;
 }
 

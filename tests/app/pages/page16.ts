@@ -1,4 +1,4 @@
-﻿import * as pageModule from "tns-core-modules/ui/page";
+import * as pageModule from "tns-core-modules/ui/page";
 import * as buttonModule from "tns-core-modules/ui/button";
 import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as frame from "tns-core-modules/ui/frame";
@@ -51,5 +51,6 @@ export function createPage() {
     stackLayout.addChild(btn2);
 
     page.content = stackLayout;
+
     return page;
 }

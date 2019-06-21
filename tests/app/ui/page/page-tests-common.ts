@@ -49,6 +49,7 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
         label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -72,6 +73,7 @@ export function test_PageLoaded_is_called_once() {
         page1 = new Page();
         page1.id = `page1_test_PageLoaded_is_called_once`;
         addLabelToPage(page1, "Page 1");
+
         return page1;
     };
 
@@ -83,6 +85,7 @@ export function test_PageLoaded_is_called_once() {
         page2.id = `page2_test_PageLoaded_is_called_once`;
         addLabelToPage(page2, "Page 2");
         page2.on(Label.loadedEvent, handler);
+
         return page2;
     };
 
@@ -104,6 +107,7 @@ export function test_NavigateToNewPage() {
         const label = new Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
+
         return testPage;
     };
 
@@ -205,6 +209,7 @@ export function test_NavigateTo_WithContext() {
         testPage.on(Page.navigatedToEvent, function () {
             //console.log(JSON.stringify(context));
         });
+
         return testPage;
     };
 
@@ -236,6 +241,7 @@ export function test_NavigateTo_WithBindingContext() {
         testPage.on(Page.navigatingToEvent, function (args: NavigatedData) {
             bindingContext = (<Page>args.object).bindingContext;
         });
+
         return testPage;
     };
 
@@ -260,6 +266,7 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
         testPage = new Page();
         testPage.id = "testPage_test_FrameBackStack_WhenNavigatingForwardAndBack";
         addLabelToPage(testPage);
+
         return testPage;
     };
 
@@ -314,6 +321,7 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
         testPage = new Page();
         testPage.id = "testPage_test_NavigateToPageCreatedWithNavigationEntry";
         addLabelToPage(testPage, expectedText);
+
         return testPage;
     };
 
@@ -397,6 +405,7 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() 
         const label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -417,6 +426,7 @@ export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage(
         const label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -428,6 +438,7 @@ export function test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult
     _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) => {
         const page = <Page>args.object;
         const button = <Button>page.content;
+
         return button.closeModal.bind(button);
     }, "return value");
 }
@@ -436,6 +447,7 @@ export function test_WhenInnerViewCallsCloseModal_WithoutArguments_ShouldWork() 
     _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) => {
         const page = <Page>args.object;
         const button = <Button>page.content;
+
         return button.closeModal.bind(button);
     });
 }
@@ -698,6 +710,7 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
         page1 = new Page();
         page1.id = "page1_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page1.on(Page.navigatedToEvent, navigatedEventHandler);
+
         return page1;
     };
 
@@ -705,6 +718,7 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
         page2 = new Page();
         page2.id = "page2_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page2.on(Page.navigatedToEvent, navigatedEventHandler);
+
         return page2;
     };
 
@@ -767,6 +781,7 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -846,6 +861,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -926,6 +942,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -1011,6 +1028,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -1086,6 +1104,7 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -1148,6 +1167,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -1211,6 +1231,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 

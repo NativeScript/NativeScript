@@ -18,6 +18,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
         var tabView = new tabViewModule.TabView();
         // << article-create-tabview
         tabView.id = "TabView";
+
         return tabView;
     }
 
@@ -37,6 +38,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
             tabEntry.view = label;
             items.push(tabEntry);
         }
+
         return items;
     }
 

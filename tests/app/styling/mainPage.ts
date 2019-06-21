@@ -44,6 +44,7 @@ export function createPage() {
 
     var page = new pagesModule.Page();
     page.content = stack;
+
     return page;
 }
 //export var Page = page;

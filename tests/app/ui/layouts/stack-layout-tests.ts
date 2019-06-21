@@ -1,4 +1,4 @@
-﻿import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
@@ -22,6 +22,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         this.btn2 = new layoutHelper.MyButton();
         this.btn2.text = "btn2";
         this.rootLayout.addChild(this.btn2);
+
         return this.rootLayout;
     }
 
@@ -205,6 +206,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         btn.margin = "10%";
         btn.text = "1";
         layout.addChild(btn);
+
         return btn;
     }
 

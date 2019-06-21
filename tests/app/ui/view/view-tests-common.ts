@@ -23,6 +23,7 @@ export function test_eachDescendant() {
         const callback = function (child: View): boolean {
             TKUnit.assert(child === views[counter]);
             counter++;
+
             return true;
         };
 
@@ -67,6 +68,7 @@ export function test_eachDescendant_Break_Iteration() {
         const callback = function (child: View): boolean {
             TKUnit.assert(child === views[0]);
             counter++;
+
             return false;
         };
 
@@ -280,6 +282,7 @@ const customShortHandProperty = new ShorthandProperty<Style, string>({
     cssName: "custom-short-hand",
     converter(value: string): [CssProperty<any, any>, any][] {
         const values = value.split(",");
+
         return [
             [customCssAProperty, values[0]],
             [customCssBProperty, values[1]]
@@ -359,6 +362,7 @@ class TestView extends LayoutBase {
 
     [customViewProperty.getDefault](): string {
         this.viewPropGetDefaultCounter++;
+
         return "customViewPropertyDefaultValue";
     }
     [customViewProperty.setNative](value: string) {
@@ -368,6 +372,7 @@ class TestView extends LayoutBase {
 
     [customCssProperty.getDefault](): string {
         this.cssPropGetDefaultCounter++;
+
         return "customCssPropertyDefaultValue";
     }
     [customCssProperty.setNative](value: string) {
@@ -377,6 +382,7 @@ class TestView extends LayoutBase {
 
     [customCssAnimationProperty.getDefault](): string {
         this.cssAnimPropGetDefaultCounter++;
+
         return "customCssAnimationPropertyDefaultValue";
     }
     [customCssAnimationProperty.setNative](value: string) {

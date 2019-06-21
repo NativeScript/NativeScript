@@ -19,13 +19,16 @@ function createAnimationFromCSS(css: string, name: string): keyframeAnimation.Ke
     let selector = findSelectorInScope(scope, name);
     if (selector !== undefined) {
         let animation = scope.getAnimations(selector.ruleset)[0];
+
         return animation;
     }
+
     return undefined;
 }
 
 function findSelectorInScope(scope: styleScope.StyleScope, cssClass: string): SelectorCore {
     let selectors = scope.query({cssClasses: new Set([cssClass])});
+
     return selectors[0];
 }
 
@@ -429,5 +432,6 @@ function getTransformsValues(declarations) {
 
 function getTransforms(declarations) {
     const [ translate, rotate, scale  ] = [...declarations];
+
     return { translate, rotate, scale };
 }

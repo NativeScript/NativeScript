@@ -17,6 +17,7 @@ function _testTransition(navigationTransition: NavigationTransition) {
             let page = new Page();
             page.id = testId;
             page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
             return page;
         },
         animated: true,
@@ -37,6 +38,7 @@ export function test_Transitions() {
         const page = new Page();
         page.id = "TransitionsTestPage_MAIN";
         page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return page;
     });
 

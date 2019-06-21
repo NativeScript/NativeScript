@@ -32,6 +32,7 @@ export function test_actionItem_inherit_bindingContext() {
         label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -195,6 +196,7 @@ export function test_Setting_ActionItems_doesnt_thrown() {
         label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -408,6 +410,7 @@ export function createPageAndNavigate() {
         const label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 

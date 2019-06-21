@@ -5,6 +5,7 @@ export var test_UTF8_BOM_is_not_returned = function () {
     var path = fs.path.join(fs.knownFolders.currentApp().path, "file-system-access-tests", "xml.expected");
     if (!fs.File.exists(path)) {
         TKUnit.assert(false, "Could not read file utf8.txt");
+
         return;
     }
 
@@ -27,6 +28,7 @@ export var test_file_exists_on_folder = function () {
 
     if (!fs.Folder.exists(path)) {
         TKUnit.assert(false, `Could not read path ${path}`);
+
         return;
     }
 

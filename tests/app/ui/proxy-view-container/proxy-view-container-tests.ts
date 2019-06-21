@@ -285,6 +285,7 @@ function waitUntilElementLayoutIsValid(view: View, timeoutSec?: number): void {
 function createBtn(text: string): Button {
     const b = new Button();
     b.text = text;
+
     return b;
 }
 

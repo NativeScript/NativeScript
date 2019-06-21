@@ -14,6 +14,7 @@ var ASYNC = 2;
 function _createTabView(): TabView {
     var tabView = new TabView();
     tabView.id = "TabView";
+
     return tabView;
 }
 
@@ -28,6 +29,7 @@ function _createItems(count: number): Array<TabViewItem> {
         tabEntry["index"] = i;
         items.push(tabEntry);
     }
+
     return items;
 }
 
@@ -61,6 +63,7 @@ function _clickHandlerFactory(index: number) {
             var detailsPage = new Page();
             detailsPage.id = "details-page";
             detailsPage.content = detailsLabel;
+
             return detailsPage;
         };
 
@@ -71,6 +74,7 @@ function _clickHandlerFactory(index: number) {
 function _createFrameView(): frameModule.Frame {
     const frame = new frameModule.Frame();
     frame.navigate({ create: () => new Page() });
+
     return frame;
 }
 
@@ -231,6 +235,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     const tabViewPage = new Page();
     helper.navigateWithHistory(() => {
         tabViewPage.content = tabView;
+
         return tabViewPage;
     });
     TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView), ASYNC);

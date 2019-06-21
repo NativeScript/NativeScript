@@ -13,6 +13,7 @@ export function test_recycling() {
 var _createHtmlViewFunc = function (): htmlViewModule.HtmlView {
     // >> htmlview-create
     var htmlView = new htmlViewModule.HtmlView();
+
     // << htmlview-create
     return htmlView;
 };

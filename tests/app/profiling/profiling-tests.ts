@@ -50,6 +50,7 @@ function retry(count: number, action: () => void) {
     for (var i = 1; i <= count; i++) {
         try {
             action();
+
             return;
         } catch (e) {
             if (i === count) {

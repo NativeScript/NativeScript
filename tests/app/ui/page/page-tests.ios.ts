@@ -12,6 +12,7 @@ export function test_NavigateToNewPage_InnerControl() {
     var pageFactory = function (): Page {
         testPage = new Page();
         addLabelToPage(testPage);
+
         return testPage;
     };
 
@@ -54,6 +55,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
         var label = new Label();
         label.text = "Modal Page";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -66,11 +68,13 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 
 function getHeight(view: View): number {
     const bounds = view._getCurrentLayoutBounds();
+
     return bounds.bottom - bounds.top;
 }
 
 function getNativeHeight(view: View): number {
     const bounds = view.nativeViewProtected.frame;
+
     return layout.toDevicePixels(bounds.size.height);
 }
 

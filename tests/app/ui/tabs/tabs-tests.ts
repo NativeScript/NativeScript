@@ -12,6 +12,7 @@ export class TabsTest extends UITest<Tabs> {
     public create(): Tabs {
         var tabView = new Tabs();
         tabView.id = "TabView";
+
         return tabView;
     }
 
@@ -30,6 +31,7 @@ export class TabsTest extends UITest<Tabs> {
             tabEntry.view = label;
             items.push(tabEntry);
         }
+
         return items;
     }
 

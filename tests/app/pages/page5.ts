@@ -1,4 +1,4 @@
-﻿import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
 import * as pages from "tns-core-modules/ui/page";
 import * as buttons from "tns-core-modules/ui/button";
 import * as app from "tns-core-modules/application";
@@ -80,6 +80,7 @@ export function createPage() {
     grid.addChild(btn);
 
     page.content = grid;
+
     return page;
 }
 //export var Page = page;

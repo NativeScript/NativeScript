@@ -1,4 +1,4 @@
-﻿import * as labelModule from "tns-core-modules/ui/label";
+import * as labelModule from "tns-core-modules/ui/label";
 import * as enums from "tns-core-modules/ui/enums";
 import * as colorModule from "tns-core-modules/color";
 import { getColor } from "../../ui-helper";
@@ -22,5 +22,6 @@ export function getNativeBackgroundColor(label: labelModule.Label): colorModule.
         return undefined;
     }
     var uiColor = UIColor.colorWithCGColor(layer.backgroundColor);
+
     return getColor(uiColor);
 }

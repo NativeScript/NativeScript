@@ -13,6 +13,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
     public create(): BottomNavigation {
         var tabView = new BottomNavigation();
         tabView.id = "TabView";
+
         return tabView;
     }
 
@@ -31,6 +32,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
             tabEntry.view = label;
             items.push(tabEntry);
         }
+
         return items;
     }
 

@@ -13,6 +13,7 @@ function _createListPicker(): listPickerModule.ListPicker {
     var listPicker = new listPickerModule.ListPicker();
     // << article-create-listpicker
     listPicker.id = "ListPicker";
+
     return listPicker;
 }
 
@@ -21,6 +22,7 @@ function _createItems(count: number): Array<number> {
     for (var i = 0; i < count; i++) {
         items.push(i);
     }
+
     return items;
 }
 

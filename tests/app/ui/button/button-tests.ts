@@ -83,6 +83,7 @@ var _createButtonFunc = function (): buttonModule.Button {
     var button = new buttonModule.Button();
     // << button-create
     button.text = "Button";
+
     return button;
 };
 

@@ -22,6 +22,7 @@ export function getNativeHint(textView: textViewModule.TextView): string {
 
 export function getNativeFontSize(textView: textViewModule.TextView): number {
     var density = utilsModule.layout.getDisplayDensity();
+
     return textView.android.getTextSize() / density;
 }
 

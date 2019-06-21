@@ -211,6 +211,7 @@ export function test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCol
                 sourceProperty: sourcePropertyName,
                 targetProperty: targetPropertyName
             }, bindContext);
+
             return new WeakRef(button);
         }
 
@@ -538,6 +539,7 @@ export function test_BindingContext_NavigatingForwardAndBack() {
 export function test_BindingToSource_FailsAfterBindingContextChange() {
     const createLabel = function () {
         const label = new Label();
+
         return label;
     };
     const labelViewModel = new Observable();
@@ -562,6 +564,7 @@ export function test_BindingToParentView_ShouldNotLeaveGarbageInViewModel() {
         const stack = new StackLayout();
         const label = new Label();
         stack.addChild(label);
+
         return stack;
     };
     const stackViewModel = new Observable();
@@ -588,6 +591,7 @@ export function test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel() {
         const stack = new StackLayout();
         const label = new Label();
         stack.addChild(label);
+
         return stack;
     };
     const stackViewModel = new Observable();
@@ -612,6 +616,7 @@ export function test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel() {
 export function test_BindingToDictionaryAtAppLevel() {
     const createLabel = function () {
         const label = new Label();
+
         return label;
     };
     const pageViewModel = new Observable();
@@ -639,6 +644,7 @@ export function test_BindingToDictionaryAtAppLevel() {
 export function test_BindingConverterCalledEvenWithNullValue() {
     const createLabel = function () {
         const label = new Label();
+
         return label;
     };
     const pageViewModel = new Observable();
@@ -1022,6 +1028,7 @@ export function test_BindingHitsGetterTooManyTimes() {
 
         public get dummyProperty(): string {
             counter++;
+
             return this._dummyProperty;
         }
 
@@ -1235,6 +1242,7 @@ class RelatedPropsClass extends Observable {
     public get prop2(): string {
         this.prop1 = !this._prop1;
         this.notifyPropertyChange("prop2", this._prop2);
+
         return this._prop2;
     }
 

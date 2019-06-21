@@ -1,4 +1,4 @@
-﻿import * as segmentedBarModule from "tns-core-modules/ui/segmented-bar";
+import * as segmentedBarModule from "tns-core-modules/ui/segmented-bar";
 
 export function getNativeItemsCount(bar: segmentedBarModule.SegmentedBar): number {
     return (<UISegmentedControl>bar.nativeViewProtected).numberOfSegments;
@@ -8,6 +8,7 @@ export function checkNativeItemsTextColor(bar: segmentedBarModule.SegmentedBar):
     var attrs = (<UISegmentedControl>bar.nativeViewProtected).titleTextAttributesForState(UIControlState.Normal);
     var nativeViewColor = bar.color && attrs && attrs.valueForKey(NSForegroundColorAttributeName);
     var barColor = bar.color.ios;
+
     return barColor.isEqual(nativeViewColor);
 }
 

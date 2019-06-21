@@ -65,6 +65,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     // Common
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             child0: root.getViewById("child0") as view.View,
@@ -292,6 +293,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     // Dock
     private getDockViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             childLeft: root.getViewById("childLeft") as view.View,
@@ -803,6 +805,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     // Grid
     private getGridViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             grid: root.getViewById("grid") as GridLayout,

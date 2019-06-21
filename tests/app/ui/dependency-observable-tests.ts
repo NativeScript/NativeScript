@@ -18,6 +18,7 @@ var propertyNameCount = 0;
 
 function generatePropertyName() {
     var name = "test" + propertyNameCount++;
+
     return name;
 }
 

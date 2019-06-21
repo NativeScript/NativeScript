@@ -20,6 +20,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         let rootLayout = new DockLayout();
         rootLayout.height = { value: 300, unit: "px" };
         rootLayout.width = { value: 300, unit: "px" };
+
         return rootLayout;
     }
 

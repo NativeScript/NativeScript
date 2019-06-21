@@ -687,6 +687,7 @@ export function test_parse_NestedRepeaters() {
             if (v instanceof Label) {
                 lbls.push(v);
             }
+
             return true;
         });
 

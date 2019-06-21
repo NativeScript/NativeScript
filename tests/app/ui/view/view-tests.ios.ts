@@ -37,6 +37,7 @@ export function checkNativeBackgroundColor(v: View): boolean {
     if (v.ios instanceof UILabel) {
         var cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
         var cgColor2 = (<UIColor>(<Color>v.backgroundColor).ios).CGColor;
+
         return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
     }
 
@@ -60,6 +61,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
     function trackCount() {
         let result = layout.backgroundDrawCount;
         layout.backgroundDrawCount = 0;
+
         return result;
     }
 

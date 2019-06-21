@@ -267,6 +267,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
         var month = value.getMonth() + 1;
         result = result.replace("MM", month < 10 ? "0" + month : month);
         result = result.replace("YYYY", value.getFullYear());
+
         return result;
     };
 
@@ -313,6 +314,7 @@ export function test_ItemTemplateFactoryFunction() {
             var label = new Label();
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+
             return label;
         };
         repeater.items = [1, 2, 3];
@@ -356,6 +358,7 @@ export var test_RepeaterItemsGestureBindings = function () {
             else if (childItem instanceof layoutBaseModule.LayoutBase) {
                 childItem.eachChildView(eachChildCallback);
             }
+
             return true;
         };
 
@@ -382,6 +385,7 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
             else if (childItem instanceof layoutBaseModule.LayoutBase) {
                 childItem.eachChildView(eachChildCallback);
             }
+
             return true;
         };
 

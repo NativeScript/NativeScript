@@ -465,6 +465,7 @@ export class ListViewTest extends UITest<ListView> {
             var month = value.getMonth() + 1;
             result = result.replace("MM", month < 10 ? "0" + month : month);
             result = result.replace("YYYY", value.getFullYear());
+
             return result;
         };
 
@@ -505,6 +506,7 @@ export class ListViewTest extends UITest<ListView> {
             var label = new Label();
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+
             return label;
         };
         listView.items = [1, 2, 3];
@@ -586,6 +588,7 @@ export class ListViewTest extends UITest<ListView> {
 
         var testConverter = function (value) {
             converterCalledCounter++;
+
             return value;
         };
 
@@ -609,6 +612,7 @@ export class ListViewTest extends UITest<ListView> {
 
         var testConverter = function (value) {
             converterCalledCounter++;
+
             return value;
         };
 
@@ -789,6 +793,7 @@ export class ListViewTest extends UITest<ListView> {
                 new ArrayBuffer(4 * 1024 * 1024);
             }
             GC();
+
             return !weakRef.get();
         });
 
@@ -808,6 +813,7 @@ export class ListViewTest extends UITest<ListView> {
             if (nativeElement instanceof android.view.ViewGroup) {
                 return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText() + "";
             }
+
             return (<android.widget.TextView>nativeElement).getText() + "";
         }
         else if (listView.ios) {
@@ -998,6 +1004,7 @@ export class ListViewTest extends UITest<ListView> {
                 }
             });
         }
+
         return items;
     }
 }

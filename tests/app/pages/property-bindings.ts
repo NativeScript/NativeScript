@@ -121,6 +121,7 @@ export function createPage() {
     createStringPropertyUI({ name: "className", value: "testClass" });
 
     page.css = ".testClass { background-color: LightGreen }";
+
     return page;
 }
 //export var Page = page;

@@ -42,6 +42,7 @@ var _createTextFieldFunc = function (): TextField {
     var textField = new TextField();
     // << creating-textfield
     textField.text = "textField";
+
     return textField;
 };
 
@@ -100,6 +101,7 @@ function createFormattedString(value: any): FormattedString {
     span.text = value;
     var result = new FormattedString();
     result.spans.push(span);
+
     return result;
 }
 

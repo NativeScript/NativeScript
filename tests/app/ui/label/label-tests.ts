@@ -29,6 +29,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public create(): LabelModule.Label {
         const label = new LabelModule.Label();
         label.text = "Label";
+
         return label;
     }
 
@@ -648,6 +649,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -658,6 +660,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -668,6 +671,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
     }
@@ -678,6 +682,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
     }
@@ -687,6 +692,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
     }
@@ -696,6 +702,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
     }
@@ -705,6 +712,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -714,6 +722,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -723,6 +732,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -732,6 +742,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
