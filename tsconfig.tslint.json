@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.shared",
+    "compilerOptions": {
+        "noUnusedLocals": true,
+        "noUnusedParameters": true
+    },
+    "include": [
+        "tests"
+    ],
+    "exclude": [
+        "**/node_modules/**",
+        "**/platforms/**"
+    ]
+}

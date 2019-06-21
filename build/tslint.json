@@ -29,7 +29,7 @@
         ],
         "quotemark": [true, "double"],
         "radix": false,
-        "semicolon": false,
+        "semicolon": true,
         "triple-equals": [true, "allow-null-check"],
         "typedef": [false,
             "callSignature",
