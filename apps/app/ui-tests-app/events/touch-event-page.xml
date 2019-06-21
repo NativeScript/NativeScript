@@ -1,7 +1,0 @@
-﻿<Page>
-  <GridLayout rows="*, auto, *" >
-    <GridLayout backgroundColor="lightgreen" id="target" automationText="target" margin="20" touch="onTouch"/>
-    <Button row="1" text="clear" tap="clear"/>
-    <TextView row="2" text="here" id="output" automationText="output" style="font-size: 10, font-family: monospace;"/>
-  </GridLayout>
-</Page>

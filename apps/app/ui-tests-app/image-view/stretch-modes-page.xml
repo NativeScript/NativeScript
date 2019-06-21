@@ -1,7 +1,0 @@
-<Page navigatingTo="navigatingTo">
-    <GridLayout rows="auto, *">
-        <WrapLayout id="root" width="300" backgroundColor="orange" horizontalAlignment="left" verticalAlignment="top" margin="6">
-        </WrapLayout>
-        <Label id="label" row="1" />
-    </GridLayout>
-</Page>
