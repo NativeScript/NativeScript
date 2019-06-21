@@ -26,6 +26,7 @@ function initializeTextTransformation(): void {
     class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
         constructor(public textBase: TextBase) {
             super();
+
             return global.__native(this);
         }
 
@@ -38,6 +39,7 @@ function initializeTextTransformation(): void {
             else {
                 const text = this.textBase.text;
                 const stringValue = (text === null || text === undefined) ? "" : text.toString();
+
                 return getTransformedText(stringValue, this.textBase.textTransform);
             }
         }
@@ -145,6 +147,7 @@ export class TextBase extends TextBaseCommon {
     [textTransformProperty.setNative](value: TextTransform) {
         if (value === "initial") {
             this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
+
             return;
         }
 
@@ -298,6 +301,7 @@ export class TextBase extends TextBaseCommon {
     _setNativeText(reset: boolean = false): void {
         if (reset) {
             this.nativeTextViewProtected.setText(null);
+
             return;
         }
 

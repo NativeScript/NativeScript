@@ -52,6 +52,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
 
     public get currentContext(): android.content.Context {
         console.log("application.currentContext is deprecated; use startActivity, foregroundActivity, or context instead");
+
         return this.foregroundActivity;
     }
 
@@ -381,6 +382,7 @@ function ensureBroadCastReceiverClass() {
         constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
             super();
             this._onReceiveCallback = onReceiveCallback;
+
             return global.__native(this);
         }
 

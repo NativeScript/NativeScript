@@ -60,6 +60,7 @@ export function viewMatchesModuleContext(
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
     const stateEventNames = pseudoClasses.map(s => ":" + s);
     const listeners = Symbol("listeners");
+
     return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
         function update(change: number) {
             let prev = this[listeners] || 0;
@@ -105,6 +106,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     get css(): string {
         const scope = this._styleScope;
+
         return scope && scope.css;
     }
     set css(value: string) {
@@ -163,9 +165,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.eachChildView((child) => {
             if (child._onLivesync(context)) {
                 handled = true;
+
                 return false;
             }
         });
+
         return handled;
     }
 
@@ -181,6 +185,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             }
 
             this.changeCssFile(context.path);
+
             return true;
         }
 
@@ -711,6 +716,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         if (!this._cssType) {
             this._cssType = this.typeName.toLowerCase();
         }
+
         return this._cssType;
     }
     set cssType(type: string) {
@@ -954,6 +960,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let changed: boolean = this._currentWidthMeasureSpec !== widthMeasureSpec || this._currentHeightMeasureSpec !== heightMeasureSpec;
         this._currentWidthMeasureSpec = widthMeasureSpec;
         this._currentHeightMeasureSpec = heightMeasureSpec;
+
         return changed;
     }
 
@@ -972,6 +979,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this._oldTop = top;
         this._oldRight = right;
         this._oldBottom = bottom;
+
         return { boundsChanged, sizeChanged };
     }
 
@@ -1035,6 +1043,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         animation.target = this;
         const anim = new animationModule.Animation([animation]);
         this._localAnimations.add(anim);
+
         return anim;
     }
 

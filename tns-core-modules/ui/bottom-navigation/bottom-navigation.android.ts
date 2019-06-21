@@ -32,6 +32,7 @@ function makeFragmentName(viewId: number, id: number): string {
 function getTabById(id: number): BottomNavigation {
     const ref = tabs.find(ref => {
         const tab = ref.get();
+
         return tab && tab._domId === id;
     });
 
@@ -49,6 +50,7 @@ function initializeNativeClasses() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -58,6 +60,7 @@ function initializeNativeClasses() {
             args.putInt(INDEX, index);
             const fragment = new TabFragmentImplementation();
             fragment.setArguments(args);
+
             return fragment;
         }
 
@@ -82,6 +85,7 @@ function initializeNativeClasses() {
 
         constructor(context: android.content.Context, public owner: BottomNavigation) {
             super(context);
+
             return global.__native(this);
         }
 

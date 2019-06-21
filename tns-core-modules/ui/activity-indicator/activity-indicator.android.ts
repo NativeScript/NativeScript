@@ -1,4 +1,4 @@
-﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility, Color } from "./activity-indicator-common";
+import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility, Color } from "./activity-indicator-common";
 
 export * from "./activity-indicator-common";
 
@@ -9,6 +9,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         const progressBar =  new android.widget.ProgressBar(this._context);
         progressBar.setVisibility(android.view.View.INVISIBLE);
         progressBar.setIndeterminate(true);
+
         return progressBar;
     }
 

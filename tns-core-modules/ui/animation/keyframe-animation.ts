@@ -149,6 +149,7 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
     public cancel() {
         if (!this.isPlaying) {
             traceWrite("Keyframe animation is already playing.", traceCategories.Animation, traceType.warn);
+
             return;
         }
 
@@ -169,6 +170,7 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
     public play(view: View): Promise<void> {
         if (this._isPlaying) {
             traceWrite("Keyframe animation is already playing.", traceCategories.Animation, traceType.warn);
+
             return new Promise<void>(resolve => {
                 resolve();
             });

@@ -102,6 +102,7 @@ function initializeDialogFragment() {
             context: android.content.Context,
             themeResId: number) {
             super(context, themeResId);
+
             return global.__native(this);
         }
 
@@ -143,6 +144,7 @@ function initializeDialogFragment() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -177,6 +179,7 @@ function initializeDialogFragment() {
             }
 
             dialog.setCanceledOnTouchOutside(this._cancelable);
+
             return dialog;
         }
 
@@ -557,6 +560,7 @@ export class View extends ViewCommon {
 
         let nativeArray = (<any>Array).create("int", 2);
         this.nativeViewProtected.getLocationInWindow(nativeArray);
+
         return {
             x: layout.toDeviceIndependentPixels(nativeArray[0]),
             y: layout.toDeviceIndependentPixels(nativeArray[1]),
@@ -570,6 +574,7 @@ export class View extends ViewCommon {
 
         let nativeArray = (<any>Array).create("int", 2);
         this.nativeViewProtected.getLocationOnScreen(nativeArray);
+
         return {
             x: layout.toDeviceIndependentPixels(nativeArray[0]),
             y: layout.toDeviceIndependentPixels(nativeArray[1]),
@@ -587,6 +592,7 @@ export class View extends ViewCommon {
         this.nativeViewProtected.getLocationOnScreen(myArray);
         let otherArray = (<any>Array).create("int", 2);
         otherView.nativeViewProtected.getLocationOnScreen(otherArray);
+
         return {
             x: layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
             y: layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
@@ -994,6 +1000,7 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
             if (child instanceof View) {
                 this._updateNativeLayoutParams(child);
             }
+
             return true;
         }
 

@@ -23,6 +23,7 @@ function initializeNativeClasses(): void {
     class FormatterImpl extends java.lang.Object implements android.widget.NumberPicker.Formatter {
         constructor(private owner: ListPicker) {
             super();
+
             return global.__native(this);
         }
 
@@ -35,6 +36,7 @@ function initializeNativeClasses(): void {
     class ValueChangeListenerImpl extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
         constructor(private owner: ListPicker) {
             super();
+
             return global.__native(this);
         }
 
@@ -80,6 +82,7 @@ export class ListPicker extends ListPickerBase {
         picker.setMaxValue(0);
         picker.setValue(0);
         picker.setWrapSelectorWheel(false);
+
         return picker;
     }
 
@@ -152,7 +155,8 @@ export class ListPicker extends ListPickerBase {
 
     [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
     const editText = (<any>this.nativeViewProtected).editText;
-        return {
+
+    return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: editText ? editText.getTextColors().getDefaultColor() : -1
         };

@@ -68,6 +68,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 
     if (result.error) {
         callbacks.rejectCallback(new Error(result.error.toString()));
+
         return;
     }
 
@@ -111,6 +112,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 } else {
                     str = result.responseAsString;
                 }
+
                 return parseJSON(str);
             },
             toImage: () => {
@@ -249,6 +251,7 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
     if (encoding === HttpResponseEncoding.GBK) {
         charsetName = "GBK";
     }
+
     return raw.toString(charsetName);
 }
 

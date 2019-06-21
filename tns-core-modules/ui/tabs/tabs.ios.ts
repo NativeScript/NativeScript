@@ -29,6 +29,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     public static initWithOwner(owner: WeakRef<Tabs>): MDCTabBarDelegateImpl {
         let delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -58,6 +59,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerImpl {
         const handler = <UIPageViewControllerImpl>UIPageViewControllerImpl.alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);
         handler._owner = owner;
+
         return handler;
     }
 
@@ -246,6 +248,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDataSourceImpl {
         let dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
         dataSource._owner = owner;
+
         return dataSource;
     }
 
@@ -329,6 +332,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDelegateImpl {
         let delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -751,6 +755,7 @@ export class Tabs extends TabsBase {
 
         if (newController) {
             (<any>item).setViewController(newController, newController.view);
+
             return newController;
         }
 

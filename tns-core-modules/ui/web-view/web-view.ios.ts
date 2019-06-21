@@ -8,6 +8,7 @@ class WKNavigationDelegateImpl extends NSObject
     public static initWithOwner(owner: WeakRef<WebView>): WKNavigationDelegateImpl {
         const handler = <WKNavigationDelegateImpl>WKNavigationDelegateImpl.new();
         handler._owner = owner;
+
         return handler;
     }
     private _owner: WeakRef<WebView>;
@@ -108,6 +109,7 @@ export class WebView extends WebViewBase {
             true,
             "allowFileAccessFromFileURLs"
         );
+
         return new WKWebView({
             frame: CGRectZero,
             configuration: configuration

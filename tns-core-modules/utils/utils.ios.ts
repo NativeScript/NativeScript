@@ -40,6 +40,7 @@ export module layout {
 
         nativeSize.width = layoutCommon.round(toDevicePixels(nativeSize.width));
         nativeSize.height = layoutCommon.round(toDevicePixels(nativeSize.height));
+
         return nativeSize;
     }
 }
@@ -80,6 +81,7 @@ export module ios {
         const device = UIDevice.currentDevice;
         const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
         const isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
+
         return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
     }
 
@@ -92,11 +94,13 @@ export module ios {
 
             const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
             controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
+
             return controller.presentPreviewAnimated(true);
         }
         catch (e) {
             traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
         }
+
         return false;
     }
 
@@ -160,6 +164,7 @@ export function openUrl(location: string): boolean {
         // We Don't do anything with an error.  We just output it
         traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
     }
+
     return false;
 }
 
@@ -168,6 +173,7 @@ class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UI
 
     public getViewController(): UIViewController {
         const app = UIApplication.sharedApplication;
+
         return app.keyWindow.rootViewController;
     }
 

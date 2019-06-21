@@ -334,6 +334,7 @@ function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor)
 
     if (!img) {
         callback(background.color && background.color.ios);
+
         return;
     }
 
@@ -399,6 +400,7 @@ function _flipImage(originalImage: UIImage): UIImage {
     CGContextRestoreGState(context);
     const flippedImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+
     return flippedImage;
 }
 
@@ -884,5 +886,6 @@ function polygonPath(value: string, bounds: Rect): UIBezierPath {
     }
 
     CGPathAddLineToPoint(path, null, firstPoint.x, firstPoint.y);
+
     return path;
 }

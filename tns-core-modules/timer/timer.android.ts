@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Android specific timer functions implementation.
  */
 let timeoutHandler;
@@ -11,6 +11,7 @@ function createHandlerAndGetId(): number {
     }
 
     timerId++;
+
     return timerId;
 }
 

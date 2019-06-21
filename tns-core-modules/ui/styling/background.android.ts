@@ -104,6 +104,7 @@ export module ad {
 
 function fromBase64(source: string): android.graphics.Bitmap {
     const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
+
     return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 }
 
@@ -136,6 +137,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
       Math.sin(Math.PI * alpha),
       2
     );
+
     return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
 }
 

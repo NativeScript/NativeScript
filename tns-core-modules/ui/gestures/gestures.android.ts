@@ -40,12 +40,14 @@ function initializeTapAndDoubleTapGestureListener() {
             this._observer = observer;
             this._target = target;
             this._type = type;
+
             return global.__native(this);
         }
 
         public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
             this._handleSingleTap(motionEvent);
             this._lastUpTime = Date.now();
+
             return true;
         }
 
@@ -54,6 +56,7 @@ function initializeTapAndDoubleTapGestureListener() {
             if ((tapTime - this._lastUpTime) <= TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout) {
                 this._handleDoubleTap(motionEvent);
             }
+
             return true;
         }
 
@@ -138,6 +141,7 @@ function initializePinchGestureListener() {
                 GestureStateTypes.changed);
 
             _executeCallback(this._observer, args);
+
             return true;
         }
 
@@ -238,6 +242,7 @@ const TO_DEGREES = (180 / Math.PI);
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
     const observer = new GesturesObserver(target, callback, context);
     observer.observe(type);
+
     return observer;
 }
 
@@ -470,6 +475,7 @@ class CustomPanGestureDetector {
                 this.trackChange(event);
                 break;
         }
+
         return true;
     }
 
@@ -528,6 +534,7 @@ class CustomPanGestureDetector {
 
             res.x /= (count * this.density);
             res.y /= (count * this.density);
+
             return res;
         }
     }
@@ -607,6 +614,7 @@ class CustomRotateGestureDetector {
                 }
                 break;
         }
+
         return true;
     }
 
@@ -697,6 +705,7 @@ class TouchGestureEventData implements TouchGestureEventData {
         if (!this._activePointers) {
             this._activePointers = [new Pointer(this.android.getActionIndex(), this.android)];
         }
+
         return this._activePointers;
     }
 

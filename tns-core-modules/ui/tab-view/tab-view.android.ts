@@ -35,6 +35,7 @@ function makeFragmentName(viewId: number, id: number): string {
 function getTabById(id: number): TabView {
     const ref = tabs.find(ref => {
         const tab = ref.get();
+
         return tab && tab._domId === id;
     });
 
@@ -52,6 +53,7 @@ function initializeNativeClasses() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -61,6 +63,7 @@ function initializeNativeClasses() {
             args.putInt(INDEX, index);
             const fragment = new TabFragmentImplementation();
             fragment.setArguments(args);
+
             return fragment;
         }
 
@@ -91,11 +94,13 @@ function initializeNativeClasses() {
 
         constructor(public owner: TabView) {
             super();
+
             return global.__native(this);
         }
 
         getCount() {
             const items = this.items;
+
             return items ? items.length : 0;
         }
 
@@ -207,6 +212,7 @@ function initializeNativeClasses() {
             // Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
             // Related to: https://github.com/NativeScript/NativeScript/issues/6466
             this._commitCurrentTransaction();
+
             return null;
         }
 
@@ -259,6 +265,7 @@ function getDefaultAccentColor(context: android.content.Context): number {
         //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
         defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
     }
+
     return defaultAccentColor;
 }
 
@@ -610,6 +617,7 @@ export class TabView extends TabViewBase {
             if (length === 0) {
                 this._tabLayout.setItems(null, null);
                 this._pagerAdapter.notifyDataSetChanged();
+
                 return;
             }
 

@@ -39,6 +39,7 @@ export class Font extends FontBase {
         if (!this._uiFont) {
             this._uiFont = createUIFont(this, defaultFont);
         }
+
         return this._uiFont;
     }
 
@@ -210,6 +211,7 @@ function registerFontsInFolder(fontsFolderPath) {
             ((<fs.File>fileEntity).extension === ".ttf" || (<fs.File>fileEntity).extension === ".otf")) {
             ios.registerFont(fileEntity.name);
         }
+
         return true;
     });
 }

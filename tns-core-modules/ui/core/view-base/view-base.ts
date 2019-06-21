@@ -73,6 +73,7 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
     const descendantsCallback = function (child: ViewBaseDefinition): boolean {
         if (child.id === id) {
             retVal = child;
+
             // break the iteration by returning false
             return false;
         }
@@ -81,6 +82,7 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
     };
 
     eachDescendant(view, descendantsCallback);
+
     return retVal;
 }
 
@@ -95,6 +97,7 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
         if (continueIteration) {
             child.eachChild(localCallback);
         }
+
         return continueIteration;
     };
 
@@ -343,6 +346,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.eachChild(child => {
             this.loadView(child);
+
             return true;
         });
 
@@ -360,6 +364,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.eachChild(child => {
             this.unloadView(child);
+
             return true;
         });
 
@@ -393,6 +398,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _batchUpdate<T>(callback: () => T): T {
         try {
             this._suspendNativeUpdates(SuspendType.Incremental);
+
             return callback();
         } finally {
             this._resumeNativeUpdates(SuspendType.Incremental);
@@ -459,6 +465,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                 allStates.push(this.pseudoClassAliases[name][i]);
             }
         }
+
         return allStates;
     }
 
@@ -751,6 +758,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.eachChild((child) => {
             child._setupUI(context);
+
             return true;
         });
     }
@@ -784,6 +792,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.eachChild((child) => {
             child._tearDownUI(force);
+
             return true;
         });
 
@@ -874,8 +883,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _applyXmlAttribute(attribute: string, value: string): boolean {
         if (attribute === "style" || attribute === "rows" || attribute === "columns" || attribute === "fontAttributes") {
             this[attribute] = value;
+
             return true;
         }
+
         return false;
     }
 
@@ -927,6 +938,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._cssState.onChange();
         eachDescendant(this, (child: ViewBase) => {
             child._cssState.onChange();
+
             return true;
         });
     }
@@ -943,6 +955,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this._onCssStateChange();
             this.eachChild(child => {
                 child._inheritStyleScope(styleScope);
+
                 return true;
             });
         }
@@ -950,6 +963,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     public showModal(...args): ViewBase {
         const parent = this.parent;
+
         return parent && parent.showModal(...args);
     }
 
@@ -963,6 +977,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _dialogClosed(): void {
         eachDescendant(this, (child: ViewBase) => {
             child._dialogClosed();
+
             return true;
         });
     }
@@ -970,6 +985,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _onRootViewReset(): void {
         eachDescendant(this, (child: ViewBase) => {
             child._onRootViewReset();
+
             return true;
         });
     }

@@ -8,6 +8,7 @@
         "indent": [true, "spaces", 4],
         "jsdoc-format": false,
         "max-line-length": [false, 120],
+        "newline-before-return": true,
         "no-arg": true,
         "no-bitwise": false,
         "no-consecutive-blank-lines": true,

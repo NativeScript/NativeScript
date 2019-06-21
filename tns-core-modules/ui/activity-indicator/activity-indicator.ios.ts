@@ -8,6 +8,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     createNativeView() {
         const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
         view.hidesWhenStopped = true;
+
         return view;
     }
 

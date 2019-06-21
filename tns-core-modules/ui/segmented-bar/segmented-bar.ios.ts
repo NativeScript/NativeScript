@@ -107,6 +107,7 @@ class SelectionHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<SegmentedBar>): SelectionHandlerImpl {
         let handler = <SelectionHandlerImpl>SelectionHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

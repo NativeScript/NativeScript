@@ -28,6 +28,7 @@ class UITabBarControllerImpl extends UITabBarController {
     public static initWithOwner(owner: WeakRef<BottomNavigation>): UITabBarControllerImpl {
         let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 
@@ -80,6 +81,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     public static initWithOwner(owner: WeakRef<BottomNavigation>): UITabBarControllerDelegateImpl {
         let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -128,6 +130,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     public static initWithOwner(owner: WeakRef<BottomNavigation>): UINavigationControllerDelegateImpl {
         let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -323,6 +326,7 @@ export class BottomNavigation extends TabNavigationBase {
             page.actionBarHidden = true;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = true;
+
             // TODO
             // if (traceEnabled()) {
             //     traceWrite(`TabView hid action bar`, traceCategories.Debug);
@@ -335,6 +339,7 @@ export class BottomNavigation extends TabNavigationBase {
             page.actionBarHidden = false;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = undefined;
+
             // TODO
             // if (traceEnabled()) {
             //     traceWrite(`TabView restored action bar`, traceCategories.Debug);
@@ -348,6 +353,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         if (newController) {
             (<any>item).setViewController(newController, newController.view);
+
             return newController;
         }
 
@@ -371,6 +377,7 @@ export class BottomNavigation extends TabNavigationBase {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._ios.viewControllers = null;
+
             return;
         }
 

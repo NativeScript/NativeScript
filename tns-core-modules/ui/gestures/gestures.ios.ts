@@ -10,6 +10,7 @@ export * from "./gestures-common";
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
     const observer = new GesturesObserver(target, callback, context);
     observer.observe(type);
+
     return observer;
 }
 
@@ -22,6 +23,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
         if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UITapGestureRecognizer) {
             return false;
         }
+
         return true;
     }
 
@@ -33,6 +35,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
             && otherGestureRecognizer.numberOfTapsRequired === 2) {
             return true;
         }
+
         return false;
     }
 }
@@ -469,6 +472,7 @@ class TouchGestureEventData implements TouchGestureEventData {
         if (this._mainPointer === undefined) {
             this._mainPointer = this.ios.touches.anyObject();
         }
+
         return this._mainPointer;
     }
 

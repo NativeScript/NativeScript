@@ -35,6 +35,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
             if (this.itemTemplate) {
                 return parse(this.itemTemplate, this);
             }
+
             return undefined;
         }
     };
@@ -72,6 +73,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
                 }
 
                 this._itemTemplateSelectorBindable.bindingContext = item;
+
                 return this._itemTemplateSelectorBindable.get("templateKey");
             };
         }
@@ -124,6 +126,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 
     private _getDataItem(index: number): any {
         let thisItems = <ItemsSource>this.items;
+
         return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
     }
 
@@ -133,6 +136,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
             targetProperty: "text",
             sourceProperty: "$value"
         });
+
         return lbl;
     }
 

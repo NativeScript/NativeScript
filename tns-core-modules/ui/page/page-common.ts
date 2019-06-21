@@ -1,4 +1,4 @@
-﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
+import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
 import {
     ContentView, View, Property, CssProperty, Color, isIOS,
     booleanConverter, Style, EventData, CSSType
@@ -38,6 +38,7 @@ export class PageBase extends ContentView implements PageDefinition {
             this._actionBar = new ActionBar();
             this._addView(this._actionBar);
         }
+
         return this._actionBar;
     }
     set actionBar(value: ActionBar) {
@@ -87,6 +88,7 @@ export class PageBase extends ContentView implements PageDefinition {
 
     get frame(): Frame {
         const frame = this.parent;
+
         return frame instanceof Frame ? frame : undefined;
     }
 

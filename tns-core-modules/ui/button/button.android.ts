@@ -29,6 +29,7 @@ function initializeClickListener(): void {
     class ClickListenerImpl extends java.lang.Object implements android.view.View.OnClickListener {
         constructor(public owner: Button) {
             super();
+
             return global.__native(this);
         }
 
@@ -61,6 +62,7 @@ export class Button extends ButtonBase {
         if (!AndroidButton) {
             AndroidButton = android.widget.Button;
         }
+
         return new AndroidButton(this._context);
     }
 

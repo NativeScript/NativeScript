@@ -93,6 +93,7 @@ const orientationQualifier: QualifierSpec = {
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const isLandscape: number = (context.width > context.height) ? 1 : -1;
+
         return (value === "land") ? isLandscape : -isLandscape;
     }
 };
@@ -214,6 +215,7 @@ function checkQualifier(value: string, context: PlatformContext) {
             if (result > 0) {
                 result += (supportedQualifiers.length - i) * PRIORITY_STEP;
             }
+
             return result;
         }
     }

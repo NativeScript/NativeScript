@@ -72,6 +72,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 
         if (!options.url) {
           reject(new Error("Request url was empty."));
+
           return;
         }
 

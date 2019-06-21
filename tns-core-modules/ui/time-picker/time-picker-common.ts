@@ -1,4 +1,4 @@
-﻿import { TimePicker as TimePickerDefinition } from ".";
+import { TimePicker as TimePickerDefinition } from ".";
 import { View, Property, CSSType } from "../core/view";
 
 export * from "../core/view";
@@ -61,6 +61,7 @@ function isGreaterThanMinTime(picker: TimePickerDefinition, hour?: number, minut
     if (picker.minHour === undefined || picker.minMinute === undefined) {
         return true;
     }
+
     return getMinutes(hour !== undefined ? hour : picker.hour) + (minute !== undefined ? minute : picker.minute) >= getMinutes(picker.minHour) + picker.minMinute;
 }
 
@@ -68,6 +69,7 @@ function isLessThanMaxTime(picker: TimePickerDefinition, hour?: number, minute?:
     if (!isDefined(picker.maxHour) || !isDefined(picker.maxMinute)) {
         return true;
     }
+
     return getMinutes(isDefined(hour) ? hour : picker.hour) + (isDefined(minute) ? minute : picker.minute) <= getMinutes(picker.maxHour) + picker.maxMinute;
 }
 
@@ -75,6 +77,7 @@ function toString(value: number | Date): string {
     if (value instanceof Date) {
         return value + "";
     }
+
     return value < 10 ? `0${value}` : `${value}`;
 }
 

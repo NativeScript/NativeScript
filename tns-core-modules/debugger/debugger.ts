@@ -204,6 +204,7 @@ export namespace NetworkAgent {
 
     function getTimeStamp(): number {
         const d = new Date();
+
         return Math.round(d.getTime() / 1000);
     }
 

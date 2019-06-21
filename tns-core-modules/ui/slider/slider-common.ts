@@ -1,4 +1,4 @@
-﻿import { Slider as SliderDefinition } from ".";
+import { Slider as SliderDefinition } from ".";
 import { View, Property, CoercibleProperty, isIOS, CSSType } from "../core/view";
 
 export * from "../core/view";
@@ -20,6 +20,7 @@ export const valueProperty = new CoercibleProperty<SliderBase, number>({
     name: "value", defaultValue: 0, coerceValue: (target, value) => {
         value = Math.max(value, target.minValue);
         value = Math.min(value, target.maxValue);
+
         return value;
     }, valueConverter: (v) => isIOS ? parseFloat(v) : parseInt(v)
 });

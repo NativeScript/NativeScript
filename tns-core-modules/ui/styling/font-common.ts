@@ -84,6 +84,7 @@ export function parseFontFamily(value: string): Array<string> {
             result.push(str);
         }
     }
+
     return result;
 }
 

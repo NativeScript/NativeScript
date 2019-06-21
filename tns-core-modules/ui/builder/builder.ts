@@ -32,12 +32,14 @@ export function parse(value: string | Template, context: any): View {
     } else {
         const exports = context ? getExports(context) : undefined;
         const componentModule = parseInternal(value, exports);
+
         return componentModule && componentModule.component;
     }
 }
 
 export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
     const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
+
     return parseInternal(dummyComponent, context).component["itemTemplates"];
 }
 
@@ -63,6 +65,7 @@ export function loadPage(moduleNamePath: string, fileName: string, context?: any
     if (componentView && moduleNamePath) {
         markAsModuleRoot(componentView, moduleNamePath);
     }
+
     return componentView;
 }
 
@@ -75,6 +78,7 @@ const loadModule = profile("loadModule", (moduleNamePath: string, entry: ViewEnt
         if (moduleExportsResolvedPath) {
             // Exclude extension when doing require.
             moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3);
+
             return global.loadModule(moduleExportsResolvedPath);
         }
     }
@@ -318,6 +322,7 @@ namespace xml2ui {
         private _next: XmlConsumer;
         public pipe<Next extends XmlConsumer>(next: Next) {
             this._next = next;
+
             return next;
         }
         protected next(args: xml.ParserEvent) {
@@ -362,6 +367,7 @@ namespace xml2ui {
         return (e: Error, p: xml.Position) => {
             const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
             e = new SourceError(e, source, "Building UI from XML.");
+
             return e;
         };
     }
@@ -391,6 +397,7 @@ namespace xml2ui {
                     }
 
                     this.currentPlatformContext = args.elementName;
+
                     return;
                 }
             }
@@ -398,6 +405,7 @@ namespace xml2ui {
             if (args.eventType === xml.ParserEventType.EndElement) {
                 if (PlatformFilter.isPlatform(args.elementName)) {
                     this.currentPlatformContext = undefined;
+
                     return;
                 }
             }
@@ -412,6 +420,7 @@ namespace xml2ui {
         private static isPlatform(value: string): boolean {
             if (value) {
                 const toLower = value.toLowerCase();
+
                 return toLower === android || toLower === ios;
             }
 
@@ -576,6 +585,7 @@ namespace xml2ui {
                 let childParser = new TemplateParser(this, this.templateProperty, false);
                 childParser["key"] = args.attributes["key"];
                 this._childParsers.push(childParser);
+
                 return childParser;
             }
 
@@ -590,6 +600,7 @@ namespace xml2ui {
                         });
                     }
                     this._value = templates;
+
                     return this.parent.parse(args);
                 }
             }
@@ -641,6 +652,7 @@ namespace xml2ui {
                     //Ignore the default ...tns.xsd namespace URL
                     namespace = undefined;
                 }
+
                 return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath, !this.currentRootView);
             }
         }
@@ -687,6 +699,7 @@ namespace xml2ui {
                             sourceTracker: this.sourceTracker
                         });
                         complexProperty.parser = parser;
+
                         return parser;
                     }
 

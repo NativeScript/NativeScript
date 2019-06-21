@@ -607,6 +607,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             traceWrite(`Change Handled: Replacing page ${context.path}`, traceCategories.Livesync);
 
             this.replacePage(context);
+
             return true;
         }
 
@@ -646,6 +647,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         this.navigate(newEntry);
+
         return true;
     }
 
@@ -685,6 +687,7 @@ export function goBack(): boolean {
     const top = topmost();
     if (top && top.canGoBack()) {
         top.goBack();
+
         return true;
     } else if (top) {
         let parentFrameCanGoBack = false;
@@ -700,6 +703,7 @@ export function goBack(): boolean {
 
         if (parentFrame && parentFrameCanGoBack) {
             parentFrame.goBack();
+
             return true;
         }
     }

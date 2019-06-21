@@ -27,6 +27,7 @@ export class Label extends TextBase implements LabelDefinition {
         if (!TextView) {
             TextView = android.widget.TextView;
         }
+
         return new TextView(this._context);
     }
 

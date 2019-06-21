@@ -67,6 +67,7 @@ function getPropertyNameValuePair(param, knownOptions, callback) {
             nameValuePair[namedParamConstants.propName] = propertyName;
             nameValuePair[namedParamConstants.propValue] = propertyValue;
         }
+
         return nameValuePair;
     }
 

@@ -83,6 +83,7 @@ function _generateAmpMap(): any {
             ampCodes.set(key, objCodes[key]);
         }
     }
+
     return ampCodes;
 }
 
@@ -101,6 +102,7 @@ function _HandleAmpEntities(found: string, decimalValue: string, hexValue: strin
         if (res) {
             return String.fromCharCode(res);
         }
+
         // Invalid word; so we just return it
         return found;
     }
@@ -266,6 +268,7 @@ export class XmlParser implements definition.XmlParser {
 
                 if (result.prefix === key) {
                     result.namespace = stackEntry[key];
+
                     return result;
                 }
             }

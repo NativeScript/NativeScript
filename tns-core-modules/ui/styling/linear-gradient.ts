@@ -26,6 +26,7 @@ export class LinearGradient {
                 offset: offsetUnit
             };
         });
+
         return result;
     }
 

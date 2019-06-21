@@ -49,6 +49,7 @@ export class Request {
             if (!value) {
                 this._mimeType = "text/plain";
                 this._resourceType = "Other";
+
                 return;
             }
 
@@ -242,6 +243,7 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
         let id = (++NetworkDomainDebugger.idSequence).toString();
         let resourceData = new Request(this, id);
         resources_datas[id] = resourceData;
+
         return resourceData;
     }
 }

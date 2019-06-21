@@ -1,4 +1,4 @@
-﻿import { View } from "./core/view";
+import { View } from "./core/view";
 import * as utils from "../utils/utils";
 
 export module ios {
@@ -22,6 +22,7 @@ export module ios {
 
         const statusFrame = app.statusBarFrame;
         const min = Math.min(statusFrame.size.width, statusFrame.size.height);
+
         return utils.layout.toDevicePixels(min);
     }
 

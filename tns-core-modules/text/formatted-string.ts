@@ -1,4 +1,4 @@
-﻿import { FormattedString as FormattedStringDefinition } from "./formatted-string";
+import { FormattedString as FormattedStringDefinition } from "./formatted-string";
 import { Span } from "./span";
 import { Observable, PropertyChangeData } from "../data/observable";
 import { ObservableArray, ChangedData } from "../data/observable-array";
@@ -77,6 +77,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
         if (!this._spans) {
             this._spans = new ObservableArray<Span>();
         }
+
         return this._spans;
     }
 
@@ -85,6 +86,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
         for (let i = 0, length = this._spans.length; i < length; i++) {
             result += this._spans.getItem(i).text;
         }
+
         return result;
     }
 

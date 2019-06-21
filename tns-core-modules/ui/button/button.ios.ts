@@ -231,6 +231,7 @@ class TapHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
         let handler = <TapHandlerImpl>TapHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

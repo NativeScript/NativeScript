@@ -124,6 +124,7 @@ export class FileSystemEntity {
             if (onError) {
                 onError(new Error("Cannot rename known folder."));
             }
+
             return;
         }
 
@@ -651,6 +652,7 @@ export module knownFolders {
                     path: folderPath
                 };
             }
+
             return undefined;
         }
     }
@@ -664,6 +666,7 @@ export module path {
 
     export function join(...paths: string[]): string {
         const fileAccess = getFileAccess();
+
         return fileAccess.joinPaths(paths);
     }
 

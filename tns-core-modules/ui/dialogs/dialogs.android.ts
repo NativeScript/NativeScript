@@ -18,6 +18,7 @@ function createAlertDialog(options?: DialogOptions): android.app.AlertDialog.Bui
     if (options && options.cancelable === false) {
         alert.setCancelable(false);
     }
+
     return alert;
 }
 

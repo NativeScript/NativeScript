@@ -20,6 +20,7 @@ class TimerTargetImpl extends NSObject {
         handler.callback = callback;
         handler.id = id;
         handler.shouldRepeat = shouldRepeat;
+
         return handler;
     }
 
@@ -65,6 +66,7 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
 
 export function setTimeout(callback: Function, milliseconds = 0, ...args): number {
     let invoke = () => callback(...args);
+
     return createTimerAndGetId(zonedCallback(invoke), milliseconds, false);
 }
 
@@ -77,6 +79,7 @@ export function clearTimeout(id: number): void {
 
 export function setInterval(callback: Function, milliseconds = 0, ...args): number {
     let invoke = () => callback(...args);
+
     return createTimerAndGetId(zonedCallback(invoke), milliseconds, true);
 }
 

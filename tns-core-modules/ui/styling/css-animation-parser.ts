@@ -87,6 +87,7 @@ export class CssAnimationParser {
             array.push(parsedKeyframes[parsedKeyframe]);
         }
         array.sort(function (a, b) { return a.duration - b.duration; });
+
         return array;
     }
 }

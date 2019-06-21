@@ -28,6 +28,7 @@ class ListViewCell extends UITableViewCell {
         const cell = <ListViewCell>ListViewCell.new();
         // Clear background by default - this will make cells transparent 
         cell.backgroundColor = null;
+
         return cell;
     }
 
@@ -35,6 +36,7 @@ class ListViewCell extends UITableViewCell {
         const cell = <this>super.initWithStyleReuseIdentifier(style, reuseIdentifier);
         // Clear background by default - this will make cells transparent 
         cell.backgroundColor = null;
+
         return cell;
     }
 
@@ -58,6 +60,7 @@ class ListViewCell extends UITableViewCell {
 function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eventName: string, indexPath: NSIndexPath) {
     let args = <ItemEventData>{ eventName: eventName, object: listView, index: indexPath.row, view: view, ios: cell, android: undefined };
     listView.notify(args);
+
     return args;
 }
 
@@ -69,11 +72,13 @@ class DataSource extends NSObject implements UITableViewDataSource {
     public static initWithOwner(owner: WeakRef<ListView>): DataSource {
         let dataSource = <DataSource>DataSource.new();
         dataSource._owner = owner;
+
         return dataSource;
     }
 
     public tableViewNumberOfRowsInSection(tableView: UITableView, section: number) {
         let owner = this._owner.get();
+
         return (owner && owner.items) ? owner.items.length : 0;
     }
 
@@ -100,6 +105,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
         else {
             cell = <ListViewCell>ListViewCell.initWithEmptyBackground();
         }
+
         return cell;
     }
 }
@@ -115,6 +121,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         const delegate = <UITableViewDelegateImpl>UITableViewDelegateImpl.new();
         delegate._owner = owner;
         delegate._measureCellMap = new Map<string, ListViewCell>();
+
         return delegate;
     }
 
@@ -131,6 +138,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
+
         return indexPath;
     }
 
@@ -171,6 +179,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
     public static initWithOwner(owner: WeakRef<ListView>): UITableViewRowHeightDelegateImpl {
         let delegate = <UITableViewRowHeightDelegateImpl>UITableViewRowHeightDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -187,6 +196,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
+
         return indexPath;
     }
 
@@ -324,6 +334,7 @@ export class ListView extends ListViewBase {
 
     public isItemAtIndexVisible(itemIndex: number): boolean {
         const indexes: NSIndexPath[] = Array.from(this.ios.indexPathsForVisibleRows);
+
         return indexes.some(visIndex => visIndex.row === itemIndex);
     }
 
@@ -401,6 +412,7 @@ export class ListView extends ListViewBase {
             const measuredSize = View.measureChild(this, cellView, this.widthMeasureSpec, heightMeasureSpec);
             const height = measuredSize.measuredHeight;
             this.setHeight(indexPath.row, height);
+
             return height;
         }
 
@@ -450,6 +462,7 @@ export class ListView extends ListViewBase {
         } finally {
             this._preparingCell = false;
         }
+
         return cellHeight;
     }
 

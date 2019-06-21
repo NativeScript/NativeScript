@@ -26,6 +26,7 @@ export class Label extends TextBase implements LabelDefinition {
     public createNativeView() {
         const view = TNSLabel.new();
         view.userInteractionEnabled = true;
+
         return view;
     }
 
@@ -115,6 +116,7 @@ export class Label extends TextBase implements LabelDefinition {
 
         nativeSize.width = layout.round(layout.toDevicePixels(nativeSize.width));
         nativeSize.height = layout.round(layout.toDevicePixels(nativeSize.height));
+
         return nativeSize;
     }
 

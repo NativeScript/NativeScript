@@ -53,6 +53,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
     const props = [];
     Object.getOwnPropertySymbols(map).forEach(symbol => props.push(map[symbol]));
+
     return props;
 }
 
@@ -397,6 +398,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
                             setInheritedValue.call(child, newValue);
                         }
                     }
+
                     return true;
                 });
             }
@@ -955,6 +957,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                             setInheritedFunc.call(childStyle, value);
                         }
                     }
+
                     return true;
                 });
             }
@@ -1267,6 +1270,7 @@ export function propagateInheritableCssProperties(parentStyle: Style, childStyle
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T {
     const set = new Set(values);
+
     return (value: any): value is T => set.has(value);
 }
 
@@ -1314,5 +1318,6 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
     result.push(["left", "auto"]);
     result.push(["bottom", "auto"]);
     result.push(["right", "auto"]);
+
     return result;
 }

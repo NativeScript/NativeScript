@@ -44,6 +44,7 @@ class NotificationObserver extends NSObject {
     public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         const observer = <NotificationObserver>super.new();
         observer._onReceiveCallback = onReceiveCallback;
+
         return observer;
     }
 
@@ -121,6 +122,7 @@ class IOSApplication implements IOSApplicationDefinition {
         const observer = NotificationObserver.initWithCallback(onReceiveCallback);
         NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
         this._observers.push(observer);
+
         return observer;
     }
 
@@ -371,6 +373,7 @@ function getViewController(view: View): UIViewController {
         // At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
         viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
         view.viewController = viewController;
+
         return viewController;
     }
 }

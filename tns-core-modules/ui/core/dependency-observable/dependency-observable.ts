@@ -15,6 +15,7 @@ function generatePropertyKey(name: string, ownerType: string, validate?: boolean
     if (validate) {
         validateRegisterParameters(name, ownerType);
     }
+
     return ownerType + "." + name;
 }
 
@@ -40,6 +41,7 @@ function getPropertyByNameAndType(name: string, owner: any): Property {
         }
         classInfo = classInfo.baseClassInfo;
     }
+
     return result;
 }
 
@@ -298,6 +300,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
     private _setValueInternal(property: Property, value: any, source: number) {
         if (value === unsetValue) {
             this._resetValue(property, source);
+
             return;
         }
 

@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import {
     CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
     AnimationPromise as AnimationPromiseDefinition,
@@ -107,6 +107,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         this.fixupAnimationPromise(animationFinishedPromise);
 
         this._isPlaying = true;
+
         return animationFinishedPromise;
     }
 
@@ -120,12 +121,14 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         promise.then = function () {
             const r = _then.apply(promise, arguments);
             _this.fixupAnimationPromise(r);
+
             return r;
         };
         const _catch = promise.catch;
         promise.catch = function () {
             const r = _catch.apply(promise, arguments);
             _this.fixupAnimationPromise(r);
+
             return r;
         };
     }

@@ -18,6 +18,7 @@ function loadActionIconFromFileOrResource(icon: string): UIImage {
         return img.ios;
     } else {
         traceMissingIcon(icon);
+
         return null;
     }
 }
@@ -28,6 +29,7 @@ class TapBarItemHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<ActionItemDefinition>): TapBarItemHandlerImpl {
         let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 
@@ -108,6 +110,7 @@ export class ActionBar extends ActionBarBase {
         const size = frame.size;
         const width = layout.toDevicePixels(size.width);
         const height = layout.toDevicePixels(size.height);
+
         return { width, height };
     }
 

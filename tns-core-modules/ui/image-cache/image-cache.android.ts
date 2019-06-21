@@ -10,6 +10,7 @@ function ensureLruBitmapCacheClass() {
     class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitmap> {
         constructor(cacheSize: number) {
             super(cacheSize);
+
             return global.__native(this);
         }
 
@@ -64,6 +65,7 @@ export class Cache extends common.Cache {
 
     public get(key: string): any {
         const result = this._cache.get(key);
+
         return result;
     }
 
