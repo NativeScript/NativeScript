@@ -1,3 +1,12 @@
+## [5.4.3](https://github.com/NativeScript/NativeScript/compare/5.4.2...5.4.3) (2019-06-21)
+
+
+### Bug Fixes
+
+* clear the `resolvedPage` when entry is being cleared, change the passed `View` to be a weak reference ([#7327](https://github.com/NativeScript/NativeScript/issues/7327)) ([dfe7621](https://github.com/NativeScript/NativeScript/commit/dfe7621))
+
+
+
 <a name="5.4.2"></a>
 ## [5.4.2](https://github.com/NativeScript/NativeScript/compare/5.4.1...5.4.2) (2019-06-06)
 
