@@ -2,7 +2,7 @@
 //var xmlModule = require("tns-core-modules/xml");
 // << xml-module-snippet
 
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as xmlModule from "tns-core-modules/xml";
 import * as fs from "tns-core-modules/file-system";
 import * as builder from "tns-core-modules/ui/builder";
@@ -185,8 +185,7 @@ export var test_XmlParser_NamespacesTest = function () {
 };
 
 export function test_MultiParserTemplate() {
-    const file = fs.File.fromPath(fs.path.join(__dirname, "itemTemplates.xml"));
-    const xml = file.readTextSync();
+    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml")
 
     const view: any = builder.parse(xml);
     TKUnit.assertNotNull(view.items)

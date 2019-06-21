@@ -106,7 +106,7 @@ export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEn
         const moduleExports = loadModule(moduleNamePath, entry);
 
         if (moduleExports && moduleExports.createPage) {
-            return moduleCreateView(moduleNamePath, moduleExports);
+            return moduleCreateView(entry.moduleName, moduleNamePath, moduleExports);
         } else {
             // cssFileName is loaded inside pageFromBuilder->loadPage
             return viewFromBuilder(moduleNamePath, moduleExports);
@@ -129,14 +129,19 @@ interface ModuleExports {
     createPage?: () => View;
 }
 
-const moduleCreateView = profile("module.createView", (moduleNamePath: string, moduleExports: ModuleExports): View => {
+const moduleCreateView = profile("module.createView", (moduleName: string, modulePath: string, moduleExports: ModuleExports): View => {
     const view = moduleExports.createPage();
-    const cssFileName = resolveFileName(moduleNamePath, "css");
 
-    // If there is no cssFile only appCss will be applied at loaded.
-    if (cssFileName) {
-        view.addCssFile(cssFileName);
+    const cssModuleName = moduleName + ".css";
+    if (global.moduleExists(cssModuleName)) {
+        view.addCssFile(cssModuleName);
+    } else {
+        const cssFileName = resolveFileName(modulePath, "css");
+        if (cssFileName) {
+            view.addCssFile(cssFileName);
+        }
     }
+
     return view;
 });
 
@@ -154,6 +159,9 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
 
     if (global.moduleExists(filePathRelativeToApp)) {
         const text = global.loadModule(filePathRelativeToApp);
+        componentModule = parseInternal(text, context, fileName, moduleNamePath);
+    } else if (global.moduleExists(fileName)) {
+        const text = global.loadModule(fileName);
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
     } else if (fileName && File.exists(fileName)) {
         const file = File.fromPath(fileName);

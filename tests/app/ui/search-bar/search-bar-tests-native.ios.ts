@@ -1,6 +1,6 @@
 import { SearchBar } from "tns-core-modules/ui/search-bar";
 import { Color } from "tns-core-modules/color";
-import { getColor } from "../helper";
+import { getColor } from "../../ui-helper";
 
 export function getNativeHintColor(searchBar: SearchBar): Color {
     if ((<any>searchBar)._textField) {

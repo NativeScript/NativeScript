@@ -1,0 +1,24 @@
+<Page>
+  <TabView tabTextColor="red">
+    <TabView.items>
+
+      <TabViewItem title="Tab 1">
+        <TabViewItem.view>
+          <Label text="Label 1" />
+        </TabViewItem.view>
+      </TabViewItem>
+
+      <TabViewItem title="Tab 2">
+        <TabViewItem.view>
+          <Label text="Label 2" />
+        </TabViewItem.view>
+      </TabViewItem>
+
+      <TabViewItem title="Tab 3">
+        <TabViewItem.view>
+          <Label text="Label 3" />
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>

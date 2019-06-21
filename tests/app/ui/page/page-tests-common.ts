@@ -14,8 +14,8 @@ function pageLoaded(args) {
 }
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
-import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
 import { Frame, stack } from "tns-core-modules/ui/frame";
@@ -286,9 +286,10 @@ export function test_LoadPageFromModule() {
 
 export function test_LoadPageFromDeclarativeWithCSS() {
     const topFrame = topmost();
-    helper.navigateToModule("ui/page/test-page-declarative-css");
+    helper.navigateToModule("ui/page/test-declarative-css-page");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
+
     const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page declarative file with css.");
     TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
@@ -296,9 +297,11 @@ export function test_LoadPageFromDeclarativeWithCSS() {
 
 export function test_LoadPageFromModuleWithCSS() {
     const topFrame = topmost();
-    helper.navigateToModule("ui/page/test-page-module-css");
+    
+    helper.navigateToModule("ui/page/test-module-css-page");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
+
     const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page module css.");
     TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");

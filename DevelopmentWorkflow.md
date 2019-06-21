@@ -42,12 +42,7 @@ Install devDependencies:
 npm install
 ```
 
-Run `setup` script. This will [`npm link`](https://docs.npmjs.com/cli/link) the `tns-core-modules` and `tns-core-modules-declarations` dependencies inside the `tests` and `apps` projects.
-
-```bash
-npm run setup
-```
-
+<!---
 ## TypeScript
 
 The following commands are commonly used to compile the `tns-core-modules`:
@@ -62,30 +57,26 @@ tsc --skipLibCheck
 tsc --skipLibCheck -w
 ```
 
+NOTE: transpile `tns-core-modules` only.
+
 The modules have `typescript` as a devDependency so you should also be able to use the locally installed TypeScript compiler from node_modules:
 
 ```bash
 ./node_modules/.bin/tsc
 ```
 
-You can compile the TypeScript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
+You can compile the TypeScript files in the `tns-core-modules` and `tns-platform-declarations` at once at the root of the repo:
 
 ```bash
 npm run tsc
 ```
+--->
 
 ## Running Unit Tests
 
-The test app is an ordinary NativeScript app that logs the test results as it go.
-After the [initial setup](#initial-setup) you can run the tests with:
-
-```bash
-# Make sure TypeScript is transpiled
-tsc
-
-# Run the tests app
-tns run ios --path tests
-tns run android --path tests
+```
+cd ./tests
+tns run android| ios
 ```
 
 ## Running the Test App

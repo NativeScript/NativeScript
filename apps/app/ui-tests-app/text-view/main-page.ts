@@ -5,15 +5,15 @@ import { Page } from "tns-core-modules/ui/page";
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
-    const wrapLayout = <WrapLayout>page.getViewById("wrapLayoutWithExamples");
+    const wrapLayout = <WrapLayout>page.getViewById("wrapLayoutWithExamples-page");
     page.bindingContext = new SubMainPageViewModel(wrapLayout, loadExamples());
 }
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("text-view-border", "text-view/text-view-border");
-    examples.set("text-view-hint-color", "text-view/text-view-hint-color");
-    examples.set("hint-text-color", "text-view/hint-text-color");
-    examples.set("scrolling-and-sizing", "text-view/scrolling-and-sizing");
+    examples.set("text-view-border", "text-view/text-view-border-page");
+    examples.set("text-view-hint-color", "text-view/text-view-hint-color-page");
+    examples.set("hint-text-color", "text-view/hint-text-color-page");
+    examples.set("scrolling-and-sizing", "text-view/scrolling-and-sizing-page");
     return examples;
 }

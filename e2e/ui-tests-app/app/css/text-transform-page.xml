@@ -1,0 +1,14 @@
+﻿<Page>
+    <Page.actionBar>
+        <ActionBar title="Text transform" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+  <StackLayout>
+    <Button id="ChangeText" text="Change text" autocorrect="false" tap="onChangeText" />
+    <Button id="Change" text="Change" autocorrect="false" tap="onChangeTextTransformation" />
+    <Label id="Label" text="label Label" autocorrect="false" style.textTransform="none" />
+    <Button id="Button" text="button Button" autocorrect="false" style.textTransform="none" />
+    <TextField id="TextField" text="textField textField" autocorrect="false" style.textTransform="none" />
+    <TextView id="TextView" text="textView textView" autocorrect="false" style.textTransform="none" />
+  </StackLayout>
+</Page>

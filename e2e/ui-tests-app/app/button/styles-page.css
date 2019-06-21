@@ -1,0 +1,5 @@
+﻿#page {
+    background-color: lightcoral;
+}
+
+@import url("../css/import.css");

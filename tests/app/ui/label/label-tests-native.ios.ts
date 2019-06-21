@@ -1,7 +1,7 @@
 ﻿import * as labelModule from "tns-core-modules/ui/label";
 import * as enums from "tns-core-modules/ui/enums";
 import * as colorModule from "tns-core-modules/color";
-import { getColor } from "../helper";
+import { getColor } from "../../ui-helper";
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
     switch (label.ios.textAlignment) {

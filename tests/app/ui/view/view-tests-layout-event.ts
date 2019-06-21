@@ -3,8 +3,8 @@ import * as commonTests from "./view-tests-common";
 import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout/stack-layout";
-import * as helper from "../helper";
-import * as TKUnit from "../../TKUnit";
+import * as helper from "../../ui-helper";
+import * as TKUnit from "../../tk-unit";
 import * as utils from "tns-core-modules/utils/utils";
 
 export function test_event_LayoutChanged_GetActualSize() {

@@ -1,20 +1,17 @@
-﻿import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
-import { Page, layout, View, EventData } from "tns-core-modules/ui/page";
-import { ios as iosView } from "tns-core-modules/ui/core/view";
+﻿import { Page, layout, View, EventData } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
 import { topmost } from "tns-core-modules/ui/frame";
-import * as uiUtils from "tns-core-modules/ui/utils";
-import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as PageTestCommon from "./page-tests-common";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import { addLabelToPage } from "./page-tests-common";
 
-global.moduleMerge(PageTestCommon, exports);
+export * from "./page-tests-common";
 
 export function test_NavigateToNewPage_InnerControl() {
     var testPage: Page;
     var pageFactory = function (): Page {
         testPage = new Page();
-        PageTestCommon.addLabelToPage(testPage);
+        addLabelToPage(testPage);
         return testPage;
     };
 
@@ -307,7 +304,7 @@ function getNativeHeight(view: View): number {
 //     tabItem.view = lbl;
 //     tabView.items = [tabItem];
 //     page.content = tabView;
-    
+
 //     helper.navigate(() => page);
 //     TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
 //     TKUnit.assertNotNull(lbl.viewController);

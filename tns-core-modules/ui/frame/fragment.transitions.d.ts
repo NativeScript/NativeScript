@@ -4,16 +4,10 @@
 
 import { NavigationTransition, BackstackEntry } from "../frame";
 
-//@private
 /**
  * @private
  */
-export const enum AnimationType {
-    enterFakeResourceId = -10,
-    exitFakeResourceId = -20,
-    popEnterFakeResourceId = -30,
-    popExitFakeResourceId = -40
-}
+export { AnimationType } from "./fragment.transitions.types";
 
 /**
  * @private

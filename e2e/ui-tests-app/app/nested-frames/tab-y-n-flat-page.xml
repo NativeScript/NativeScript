@@ -1,0 +1,14 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar flat="true">
+        <Label text="Parent page flat action bar"></Label>
+    </ActionBar>
+
+    <TabView selectedTabTextColor="green">
+        <TabViewItem title="First">
+            <GridLayout>
+                <Frame id="nestedFrame" defaultPage="nested-frames/nested-page" actionBarVisibility="never"></Frame>
+            </GridLayout>
+        </TabViewItem>
+    </TabView>
+</Page>

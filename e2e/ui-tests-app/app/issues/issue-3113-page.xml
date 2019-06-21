@@ -1,0 +1,7 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout>
+        <Button id="button1" text="transparent"/>
+        <Button id="button2" text="semi-transparent"/>
+        <Button id="button3" text="no-color"/>
+    </StackLayout>
+</Page>

@@ -1,0 +1,43 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.uitestsapp",
+    "tns-android": {
+      "version": "next"
+    },
+    "tns-ios": {
+      "version": "next"
+    }
+  },
+  "main": "app.js",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "tns-core-modules": "file:../../tns-core-modules"
+  },
+  "devDependencies": {
+    "@testdeck/mocha": "0.0.6",
+    "@types/chai": "~4.1.7",
+    "@types/mocha": "~5.2.5",
+    "@types/node": "~10.12.18",
+    "chai": "~4.1.2",
+    "mocha": "~5.2.0",
+    "mocha-junit-reporter": "~1.18.0",
+    "mocha-multi": "~1.0.1",
+    "mocha-typescript": "^1.1.17",
+    "mochawesome": "~3.1.2",
+    "nativescript-dev-appium": "next",
+    "nativescript-dev-webpack": "next",
+    "tns-platform-declarations": "next",
+    "typescript": "~3.4.1"
+  },
+  "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
+  "readme": "NativeScript Application",
+  "scripts": {
+    "e2e": "node ./node_modules/nativescript-dev-appium/check-dev-deps.js &&  tsc -p e2e  &&  mocha --opts ./e2e/config/mocha.opts ",
+    "e2e-watch": "tsc -p e2e --watch",
+    "pretest": "tsc -p e2e",
+    "test": "npx mocha --opts ./e2e/config/mocha.opts ",
+    "watch": "testdeck-watch"
+  }
+}

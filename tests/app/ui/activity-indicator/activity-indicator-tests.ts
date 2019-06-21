@@ -1,5 +1,5 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as imageModule from "tns-core-modules/ui/image";
 import * as platform from "tns-core-modules/platform";

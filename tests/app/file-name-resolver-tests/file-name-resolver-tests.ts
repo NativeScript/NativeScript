@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../TKUnit";
+﻿import * as TKUnit from "../tk-unit";
 import * as fs from "tns-core-modules/file-system";
 import * as enums from "tns-core-modules/ui/enums";
 import * as resolver from "tns-core-modules/file-system/file-name-resolver";

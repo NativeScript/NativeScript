@@ -1,0 +1,27 @@
+<Page>
+  <TabView style="color: green;">
+    <TabView.items>
+      <TabViewItem title="Title" automationText="tab1"  iconSource="res://add_to_fav">
+        <TabViewItem.view>
+          <GridLayout>
+            <Label text="Title and icon" verticalAlignment="center" horizontalAlignment="center"/>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem iconSource="res://add_to_fav" automationText="tab2" >
+        <TabViewItem.view>
+          <GridLayout>
+            <Label text="Only icon" verticalAlignment="center" horizontalAlignment="center"/>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Title" automationText="tab3">
+        <TabViewItem.view>
+          <GridLayout>
+            <Label text="Only title" verticalAlignment="center" horizontalAlignment="center"/>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>

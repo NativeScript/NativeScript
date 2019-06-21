@@ -1,0 +1,20 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <StackLayout class="p-10" row="0">
+            <ListView id="listView" items="{{ $value }}" height="300">
+                <ListView.itemTemplate>
+                    <StackLayout>
+                        <Label width="50%" height="150" text="{{ $value }}" backgroundColor="green"/>
+                    </StackLayout>
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+        <Button text="SCROLL" tap="onScroll" height="60"/>
+    </StackLayout>
+</Page>

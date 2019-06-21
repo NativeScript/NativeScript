@@ -1,5 +1,4 @@
-﻿import * as TKUnit from "../TKUnit";
-import * as helper from "../ui/helper";
+﻿import * as helper from "../ui-helper";
 import * as platform from "tns-core-modules/platform";
 import * as trace from "tns-core-modules/trace";
 import { Color } from "tns-core-modules/color";

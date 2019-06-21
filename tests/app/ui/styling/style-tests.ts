@@ -1,4 +1,4 @@
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as application from "tns-core-modules/application";
 import * as buttonModule from "tns-core-modules/ui/button";
 import * as labelModule from "tns-core-modules/ui/label";
@@ -6,12 +6,13 @@ import * as pageModule from "tns-core-modules/ui/page";
 import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as wrapModule from "tns-core-modules/ui/layouts/wrap-layout";
 import * as tabViewModule from "tns-core-modules/ui/tab-view";
-import * as helper from "../../ui/helper";
+import * as helper from "../../ui-helper";
 import * as types from "tns-core-modules/utils/types";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
 import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as color from "tns-core-modules/color";
+import * as fs from "tns-core-modules/file-system";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();
@@ -647,7 +648,7 @@ export function test_CSS_isAppliedOnPage_From_Import() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import url('~/ui/styling/test.css');";
+        page.css = "@import url('ui/styling/test-page.css');";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -658,7 +659,7 @@ export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import '~/ui/styling/test.css';";
+        page.css = "@import 'ui/styling/test-page.css';";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -669,7 +670,7 @@ export function test_CSS_isAppliedOnPage_From_addCssFile() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.addCssFile("~/ui/styling/test.css");
+        page.addCssFile(fs.knownFolders.currentApp().path + "/ui/styling/test-page.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -683,7 +684,7 @@ export function test_CSS_isAppliedOnPage_From_changeCssFile() {
     const testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewColor(testButton, "#0000FF");
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.changeCssFile("~/ui/styling/test.css");
+        page.changeCssFile(fs.knownFolders.currentApp().path + "/ui/styling/test-page.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
         TKUnit.assert(testButton.style.color === undefined, "Color should not have a value");
     }

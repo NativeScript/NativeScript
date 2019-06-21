@@ -1,5 +1,5 @@
-import * as helper from "../helper";
-import * as TKUnit from "../../TKUnit";
+import * as helper from "../../ui-helper";
+import * as TKUnit from "../../tk-unit";
 import { parse } from "tns-core-modules/ui/builder";
 import * as view from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";

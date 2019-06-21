@@ -1,0 +1,25 @@
+﻿<Page >
+  <ScrollView>
+    <StackLayout width="50">
+      <Button id="Change" automationText="Change" text="Change" tap="butonTap" />
+      <Label id="Label" automationText="Label" text="label Label" style.whiteSpace="normal" />
+      <Button id="Button" automationText="Button" text="button Button" style.whiteSpace="normal" />
+      <TextField id="TextField" automationText="TextField" text="textField textField" style.whiteSpace="normal" />
+      <TextView id="TextView" automationText="TextView" text="textView textView" style.whiteSpace="normal" />
+
+      <!--
+      <Label text="Label Normal" style="white-space:normal" />
+      <Label text="Label Nowrap" style="white-space:nowrap" />
+
+      <TextField text="TextField Normal" style="white-space:normal" />
+      <TextField text="TextField Nowrap" style="white-space:nowrap" />
+
+      <TextView text="TextView Normal" style="white-space:normal" />
+      <TextView text="TextView Nowrap" style="white-space:nowrap" />
+
+      <Button text="Button Normal" style="white-space:normal" />
+      <Button text="Button Nowrap" style="white-space:nowrap" />
+      -->
+    </StackLayout>
+  </ScrollView>
+</Page>

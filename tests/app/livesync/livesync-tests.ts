@@ -1,18 +1,18 @@
-import * as helper from "../ui/helper";
-import * as TKUnit from "../TKUnit";
+import * as helper from "../ui-helper";
+import * as TKUnit from "../tk-unit";
 
 import * as app from "tns-core-modules/application/application";
 import * as frame from "tns-core-modules/ui/frame";
-
+import * as fs from "tns-core-modules/file-system";
 import { Color } from "tns-core-modules/color";
 import { createViewFromEntry } from "tns-core-modules/ui/builder";
 import { Page } from "tns-core-modules/ui/page";
 import { Frame } from "tns-core-modules/ui/frame";
 
-const appCssFileName = "./app/application.css";
-const appNewCssFileName = "./app/app-new.css";
-const appNewScssFileName = "./app/app-new.scss";
-const buttonCssFileName = "./app/button-page.css";
+const appCssFileName = "/application-page.css";
+const appNewCssFileName = "app-new-page.css";
+const appNewScssFileName = "app-new-sass-page.css";
+const buttonCssFileName = "/button-page.css";
 
 const buttonPageModuleName = "livesync/livesync-button-page";
 const buttonHtmlPageFileName = "./livesync/livesync-button-page.html";
@@ -49,7 +49,7 @@ export function test_onLiveSync_ModuleContext_Script_TsFile() {
 }
 
 export function test_onLiveSync_ModuleContext_Style_CssFile() {
-    _test_onLiveSync_ModuleContext_TypeStyle({ type: "style", path: buttonCssFileName });
+    _test_onLiveSync_ModuleContext_TypeStyle({ type: "style", path: fs.knownFolders.currentApp().path + buttonCssFileName });
 }
 
 export function test_onLiveSync_ModuleContext_Markup_HtmlFile() {
@@ -96,7 +96,7 @@ export function setUp() {
 }
 
 export function tearDown() {
-    app.setCssFileName(appCssFileName);
+    app.setCssFileName(fs.knownFolders.currentApp().path + appCssFileName);
 }
 
 function _test_onLiveSync_ModuleContext_AppStyle(styleFileName: string) {
@@ -104,9 +104,9 @@ function _test_onLiveSync_ModuleContext_AppStyle(styleFileName: string) {
     const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
 
-    app.setCssFileName(styleFileName);
+    app.setCssFileName(fs.knownFolders.currentApp().path + "/" + styleFileName);
     const pageBeforeLiveSync = helper.getCurrentPage();
-    global.__onLiveSync({ type: "style", path: styleFileName });
+    global.__onLiveSync({ type: "style", path: fs.knownFolders.currentApp().path + "/" + styleFileName });
 
     const pageAfterLiveSync = helper.getCurrentPage();
     TKUnit.waitUntilReady(() => pageAfterLiveSync.getViewById("button").style.color.toString() === green.toString());

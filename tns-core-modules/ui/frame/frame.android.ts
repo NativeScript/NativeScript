@@ -46,7 +46,7 @@ let fragmentId = -1;
 export let moduleLoaded: boolean;
 
 if (global && global.__inspector) {
-    const devtools = require("tns-core-modules/debugger/devtools-elements.js");
+    const devtools = require("tns-core-modules/debugger/devtools-elements");
     devtools.attachDOMInspectorEventCallbacks(global.__inspector);
     devtools.attachDOMInspectorCommandCallbacks(global.__inspector);
 }

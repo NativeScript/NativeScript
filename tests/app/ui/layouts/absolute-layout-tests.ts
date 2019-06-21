@@ -1,10 +1,10 @@
 ﻿import * as testModule from "../../ui-test";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as labelModule from "tns-core-modules/ui/label";
 import * as colorModule from "tns-core-modules/color";
 import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 // >> absolute-layout-require
 import * as absoluteLayoutModule from "tns-core-modules/ui/layouts/absolute-layout";

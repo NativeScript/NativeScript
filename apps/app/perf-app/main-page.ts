@@ -9,7 +9,7 @@ import * as frame from "tns-core-modules/ui/frame";
 
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
-    let view = require("ui/core/view");
+    let view = require("tns-core-modules/ui/core/view");
 
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 

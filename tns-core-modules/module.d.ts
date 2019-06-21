@@ -45,6 +45,7 @@ declare namespace NodeJS {
         loadModule(name: string): any;
         moduleExists(name: string): boolean;
         moduleMerge(sourceExports: any, destExports: any): void;
+        onGlobalLayoutListener: any;
         zonedCallback(callback: Function): Function;
         Reflect?: any;
         Deprecated(target: Object, key?: string | symbol, descriptor?: any): any;
@@ -66,7 +67,7 @@ declare function clearTimeout(timeoutId: number): void;
 declare function setInterval(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearInterval(intervalId: number): void;
 
-declare type ModuleType = "markup" | "script" | "style"; 
+declare type ModuleType = "markup" | "script" | "style";
 
 /**
  * Define a module context for Hot Module Replacement.

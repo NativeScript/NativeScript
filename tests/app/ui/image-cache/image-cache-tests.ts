@@ -4,7 +4,7 @@ import * as types from "tns-core-modules/utils/types";
 import { device } from "tns-core-modules/platform";
 import lazy from "tns-core-modules/utils/lazy";
 
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 

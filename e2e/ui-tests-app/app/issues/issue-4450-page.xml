@@ -1,0 +1,8 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout id="root">
+        <SearchBar />
+        <Progress value="50" maxValue="100" margin="22" />
+        <Button text="set" tap="set" margin="2" />
+        <Button text="clear" tap="clear" margin="2" />
+    </StackLayout>
+</Page>

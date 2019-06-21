@@ -1,0 +1,15 @@
+﻿<Page loaded="onLoaded">
+  <AbsoluteLayout>
+    <!-- View Properties -->
+    <Button text="wh" tap="{{ onWidthHeight }}" id="widthHeight" automationText="widthHeight" style="background-color: lightblue;" />
+    <Button text="n" tap="{{ onMinWidthMinHeight }}" left="150" id="minWidthMinHeight" automationText="minWidthMinHeight" style="background-color: lightblue;" />
+    <Button text="m" tap="{{ onMargins }}" top="100" id="margins" automationText="margins" style="background-color: lightblue;" />
+    <Button text="a" tap="{{ onAlignments }}" left="150" top="100" id="alignments" automationText="alignments" style="background-color: lightblue;" />
+    <Button text="c" tap="{{ onCollapse }}" top="200" id="collapse" automationText="collapse" style="background-color: lightblue;" />
+    <Button text="v" tap="{{ onVisibile }}" left="150" top="200" id="visible" automationText="visible" style="background-color: lightblue;" />
+    <!-- Layout Properties -->
+    <Button text="p" tap="{{ onPaddings }}" top="300" id="paddings" automationText="paddings" style="background-color: lightgray;" />
+    <Button text="all" tap="{{ onAllProperties }}" left="150" top="300" id="allProperties" automationText="allProperties" style="background-color: aquamarine;" />
+    <Button text="s" tap="onSetLeftSetTop" top="400" id="setLeftSetTop" automationText="setLeftSetTop" style="background-color: lightgreen;" />
+  </AbsoluteLayout>
+</Page>

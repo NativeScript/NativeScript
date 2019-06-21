@@ -1,0 +1,55 @@
+<Page loaded="pageLoaded">
+    <StackLayout>
+        <StackLayout>
+            <Button text="RESET" tap="onScrollReset" height="30"/>
+            <Button text="SCROLL" tap="onScroll" height="30"/>
+            <Button text="SCROLL TO INDEX 50" tap="onScrollToIndex" height="30"/>
+            <Button text="SCROLL TO INDEX 50 ANIMATED" tap="onScrollToIndexAnimated" height="30"/>
+        </StackLayout>
+        <GridLayout id="grid-layout" columns="*,*" rows="*,*">
+            <ListView id="lv1" col="0" row="0" items="{{ items }}" itemTemplateSelector="selectItemTemplate">
+                <ListView.itemTemplates>
+                    <template key="red">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="red"/>
+                    </template>
+                    <template key="green">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="green"/>
+                    </template>
+                    <template key="yellow">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="yellow"/>
+                    </template>
+                </ListView.itemTemplates>
+            </ListView>
+            <ListView id="lv2" col="1" row="0" items="{{ items }}" itemTemplateSelector="id % 10 === 0 ? 'red' : id % 2 === 0 ? 'green' : 'yellow'">
+                <ListView.itemTemplates>
+                    <template key="red">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="red"/>
+                    </template>
+                    <template key="green">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="green"/>
+                    </template>
+                    <template key="yellow">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="yellow"/>
+                    </template>
+                </ListView.itemTemplates>
+            </ListView>
+            <ListView id="lv3" col="0" row="1" items="{{ items }}" itemTemplateSelector="$index % 10 === 0 ? 'wrong' : $index % 2 === 0 ? 'green' : 'yellow'">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value + ' itemTemplate' }}" textWrap="true"/>
+                </ListView.itemTemplate>
+                <ListView.itemTemplates>
+                    <template key="red">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="red"/>
+                    </template>
+                    <template key="green">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="green"/>
+                    </template>
+                    <template key="yellow">
+                        <Label text="{{ $value }}" textWrap="true" style.backgroundColor="yellow"/>
+                    </template>
+                </ListView.itemTemplates>
+            </ListView>
+            <ListView id="lv4" col="1" row="1" items="{{ items }}"></ListView>
+        </GridLayout>
+    </StackLayout>
+</Page>

@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <ListView items="{{ $value }}" backgroundColor="#003B46">
+        <ListView.itemTemplate>
+            <GridLayout columns="2*, 3*" backgroundColor="#07575B" margin="10">
+                <Image col="0" stretch="aspectFill" src="~/resources/images/woods.jpg"></Image>
+                <Label col="1" verticalAlignment="top" color="#C4DFE6" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. " textWrap="true"></Label>
+            </GridLayout>
+        </ListView.itemTemplate>
+    </ListView>
+</Page>

@@ -1,5 +1,5 @@
 ﻿var appSettings = require("tns-core-modules/application-settings");
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 
 var stringKey: string = "stringKey";
 var boolKey: string = "boolKey";

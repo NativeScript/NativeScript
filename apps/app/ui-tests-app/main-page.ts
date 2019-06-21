@@ -19,7 +19,7 @@ export function pageLoaded(args: EventData) {
     examples.set("events", "events/main-page");
     examples.set("fonts", "font/main-page");
     examples.set("flexbox", "flexbox/flexbox-main-page");
-    examples.set("htmlview", "html-view/html-view");
+    examples.set("htmlview", "html-view/html-view-page");
     examples.set("image-view", "image-view/main-page");
     examples.set("issues", "issues/main-page");
     examples.set("layouts", "layouts/main-page");
@@ -37,7 +37,7 @@ export function pageLoaded(args: EventData) {
     examples.set("text-view", "text-view/main-page");
     examples.set("webview", "web-view/main-page");
     examples.set("progress-bar", "progress-bar/main-page");
-    examples.set("date-picker", "date-picker/date-picker");
+    examples.set("date-picker", "date-picker/date-picker-page");
     examples.set("nested-frames", "nested-frames/main-page");
     page.bindingContext = new MainPageViewModel(wrapLayout, examples);
 

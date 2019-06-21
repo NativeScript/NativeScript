@@ -11,15 +11,15 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("fontbtn", "font/button");
-    examples.set("fontlbl", "font/label");
-    examples.set("fontfield", "font/text-field");
-    examples.set("fontview", "font/text-view");
-    examples.set("nordic", "font/nordic/nordic");
-    examples.set("customfonts", "font/custom-fonts");
-    examples.set("all-fonts", "font/all-fonts");
-    examples.set("awesome-3654", "font/font-awesome/issue-3654");
+    examples.set("fontbtn", "font/button-page");
+    examples.set("fontlbl", "font/label-page");
+    examples.set("fontfield", "font/text-field-page");
+    examples.set("fontview", "font/text-view-page");
+    examples.set("nordic", "font/nordic/nordic-page");
+    examples.set("customfonts", "font/custom-fonts-page");
+    examples.set("all-fonts", "font/all-fonts-page");
+    examples.set("awesome-3654", "font/font-awesome/issue-3654-page");
     examples.set("fonts-weight", "font/fonts-weight/main-page");
 
     return examples;
-} 
+}

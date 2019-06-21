@@ -126,8 +126,8 @@ export interface AndroidApplication {
 }
 
 const androidApp = new AndroidApplication();
-// use the exports object instead of 'export var' due to global namespace collision
-exports.android = androidApp;
+export { androidApp as android };
+
 setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
@@ -253,14 +253,14 @@ function initLifecycleCallbacks() {
     const subscribeForGlobalLayout = profile("subscribeForGlobalLayout", function (activity: androidx.appcompat.app.AppCompatActivity) {
         const rootView = activity.getWindow().getDecorView().getRootView();
         // store the listener not to trigger GC collection before collecting the method
-        this.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+        global.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
             onGlobalLayout() {
                 notify({ eventName: displayedEvent, object: androidApp, activity });
                 let viewTreeObserver = rootView.getViewTreeObserver();
-                viewTreeObserver.removeOnGlobalLayoutListener(this.onGlobalLayoutListener);
+                viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
             }
         });
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this.onGlobalLayoutListener);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
     });
 
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({

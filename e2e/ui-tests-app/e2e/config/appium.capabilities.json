@@ -1,0 +1,122 @@
+{
+    "android19": {
+        "platformName": "Android",
+        "platformVersion": "4.4",
+        "deviceName": "Emulator-Api19-Default",
+        "avd": "Emulator-Api19-Default",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android21": {
+        "platformName": "Android",
+        "platformVersion": "5.0",
+        "deviceName": "Emulator-Api21-Default",
+        "avd": "Emulator-Api21-Default",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android23": {
+        "platformName": "Android",
+        "platformVersion": "6.0",
+        "deviceName": "Emulator-Api23-Default",
+        "avd": "Emulator-Api23-Default",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android24": {
+        "platformName": "Android",
+        "platformVersion": "7.0",
+        "deviceName": "Emulator-Api24-Default",
+        "avd": "Emulator-Api24-Default",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android25": {
+        "platformName": "Android",
+        "platformVersion": "7.1",
+        "deviceName": "Emulator-Api25-Google",
+        "avd": "Emulator-Api25-Google",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android26": {
+        "platformName": "Android",
+        "platformVersion": "8.0",
+        "deviceName": "Emulator-Api26-Google",
+        "avd": "Emulator-Api26-Google",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android27": {
+        "platformName": "Android",
+        "platformVersion": "27",
+        "deviceName": "Emulator-Api27-Google",
+        "avd": "Emulator-Api27-Google",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "android28": {
+        "platformName": "Android",
+        "platformVersion": "28",
+        "deviceName": "Emulator-Api28-Google",
+        "avd": "Emulator-Api28-Google",
+        "lt": 60000,
+        "newCommandTimeout": 720,
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhone7": {
+        "platformName": "iOS",
+        "platformVersion": "/12.*/",
+        "deviceName": "iPhone 7",
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhone8": {
+        "platformName": "iOS",
+        "platformVersion": "/12*/",
+        "deviceName": "iPhone 8",
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhoneX": {
+        "platformName": "iOS",
+        "platformVersion": "/12*/",
+        "deviceName": "iPhone X",
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    },
+    "sim.iPhoneXS": {
+        "platformName": "ios",
+        "platformVersion": "/12*/",
+        "deviceName": "iPhone XS",
+        "noReset": false,
+        "fullReset": false,
+        "app": ""
+    }
+}

@@ -1,4 +1,4 @@
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as types from "tns-core-modules/utils/types";
 import * as virtualArrayModule from "tns-core-modules/data/virtual-array";
 
