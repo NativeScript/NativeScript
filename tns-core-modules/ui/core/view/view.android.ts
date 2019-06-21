@@ -819,7 +819,7 @@ export class View extends ViewCommon {
     [horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
         const nativeView = this.nativeViewProtected;
         const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-        // Set only if params gravity exists.
+        // Set only if params gravity exists.
         if (lp.gravity !== undefined) {
             switch (value) {
                 case "left":
@@ -857,7 +857,7 @@ export class View extends ViewCommon {
     [verticalAlignmentProperty.setNative](value: VerticalAlignment) {
         const nativeView = this.nativeViewProtected;
         const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-        // Set only if params gravity exists.
+        // Set only if params gravity exists.
         if (lp.gravity !== undefined) {
             switch (value) {
                 case "top":

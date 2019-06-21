@@ -7,7 +7,7 @@
     "include": [
         "tns-core-modules",
         "tests",
-        "e2e",
+        "e2e"
     ],
     "exclude": [
         "**/node_modules/**",

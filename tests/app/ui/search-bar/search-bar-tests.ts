@@ -14,7 +14,7 @@ import * as searchBarModule from "tns-core-modules/ui/search-bar";
 //      <SearchBar text="{{ search }}" />
 //  </Page>
 //```
-// </snippet>
+// </snippet>
 
 var _createSearchBarFunc = function (): searchBarModule.SearchBar {
     // >> article-creating-searchbar

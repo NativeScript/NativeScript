@@ -17,6 +17,7 @@
         "no-duplicate-variable": true,
         "no-empty": true,
         "no-eval": true,
+        "no-irregular-whitespace": true,
         "no-string-literal": false,
         "no-trailing-whitespace": false,
         "no-unused-expression": true,
