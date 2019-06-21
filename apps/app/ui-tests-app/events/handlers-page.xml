@@ -1,6 +1,0 @@
-<Page loaded="pageLoaded">
-  <StackLayout>
-    <Label text="Handlers as exports" tap="tapAction" doubleTap="doubleTapAction" />
-    <Label text="Bound handlers" tap="{{ tapAction }}" doubleTap="{{ doubleTapAction }}" />
-  </StackLayout>
-</Page>

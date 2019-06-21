@@ -7,8 +7,8 @@ export function webViewLoaded(args) {
 }
 
 const relUrl = "~/web-view/query.html" + "?foo=bar&urlType=relative";
-const absoluteUrl = `${fs.knownFolders.currentApp().path}/ui-tests-app/web-view/query.html` + "?foo=bar&urlType=absolute";
-const fileUrl = `file:///${fs.knownFolders.currentApp().path}/ui-tests-app/web-view/query.html` + "?foo=bar&urlType=filePrefix";
+const absoluteUrl = `${fs.knownFolders.currentApp().path}/web-view/query.html` + "?foo=bar&urlType=absolute";
+const fileUrl = `file:///${fs.knownFolders.currentApp().path}/web-view/query.html` + "?foo=bar&urlType=filePrefix";
 const htmlString = `<html>
     <head>
         <title>Test Page</title>
