@@ -3,6 +3,7 @@
         "arrow-return-shorthand": true,
         "class-name": true,
         "curly": true,
+        "deprecation": false,
         "forin": false,
         "indent": [true, "spaces", 4],
         "jsdoc-format": false,

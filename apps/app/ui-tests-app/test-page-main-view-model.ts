@@ -35,8 +35,8 @@ export class TestPageMainViewModel extends Observable {
         try {
             frame.topmost().navigate(TestPageMainViewModel.APP_NAME + "/" + exampleFullPath);
         } catch (error) {
+            console.log("EXAMPLE LOAD FAILED:" + error);
             alert("Cannot find example: " + exampleFullPath);
-
         }
     }
 

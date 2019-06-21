@@ -1,0 +1,10 @@
+<Page backgroundColor="skyblue">
+    <AbsoluteLayout backgroundColor="gold">
+        <Label originX="0" originY="0" top="0" left="0"
+               height="128" fontSize="64px" color="white"
+               textAlignment="center"
+               text="Tap here"
+               width="100%" backgroundColor="purple"
+               tap="animateHeight"/>
+    </AbsoluteLayout>
+</Page>

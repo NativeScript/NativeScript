@@ -1,23 +1,29 @@
 {
-    "extends": "../tsconfig.shared",
-    "exclude": [
-        "node_modules",
-        "platforms"
-    ],
     "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "./node_modules/tns-core-modules/*",
-                "./node_modules/*"
-            ],
-            "~/*": [
-                "app/*"
-            ]
-        },
+        "module": "commonjs",
+        "target": "es5",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "noEmitHelpers": true,
+        "noEmitOnError": false,
         "lib": [
             "es6",
             "dom"
-        ]
-    }
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "~/*": [
+                "app/*"
+            ]
+        }
+    },
+    "include": [
+        "../tns-core-modules",
+        "**/*"
+    ],
+    "exclude": [
+        "../tns-core-modules/node_modules",
+        "node_modules",
+        "platforms"
+    ]
 }

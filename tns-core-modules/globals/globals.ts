@@ -58,7 +58,19 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
                     global.registerModule(jsNickName, () => context(key));
                 }
             });
+        } else if (registerName.startsWith("./")) {
+            const moduleNickNames = [
+                // This is for supporting module names like "main/main-page.xml"
+                registerName.substr(2),
+            ];
+
+            moduleNickNames.forEach(moduleNickName => {
+                if (!global.moduleExists(moduleNickName)) {
+                    global.registerModule(moduleNickName, () => context(key));
+                }
+            });
         }
+
         if (isSourceFile || !global.moduleExists(registerName)) {
             global.registerModule(registerName, () => context(key));
         }
@@ -114,7 +126,6 @@ global.registerModule("fetch", () => require("fetch"));
 }
 
 function registerOnGlobalContext(name: string, module: string): void {
-
     Object.defineProperty(global, name, {
         get: function () {
             // We do not need to cache require() call since it is already cached in the runtime.
@@ -122,7 +133,7 @@ function registerOnGlobalContext(name: string, module: string): void {
 
             // Redefine the property to make sure the above code is executed only once.
             let resolvedValue = m[name];
-            Object.defineProperty(this, name, { value: resolvedValue, configurable: true, writable: true });
+            Object.defineProperty(global, name, { value: resolvedValue, configurable: true, writable: true });
 
             return resolvedValue;
         },

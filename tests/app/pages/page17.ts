@@ -29,7 +29,7 @@ export function buttonTap(args: observable.EventData) {
             currentPage.actionBar.android.icon = "res://ic_test";
         }
         else if (i % 3 === 1) {
-            currentPage.actionBar.android.icon = "~/test-icon.png";
+            currentPage.actionBar.android.icon = "~/assets/test-icon.png";
         }
         else if (i % 3 === 2) {
             currentPage.actionBar.android.icon = undefined;

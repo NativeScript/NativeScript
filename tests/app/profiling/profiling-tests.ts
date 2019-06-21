@@ -1,4 +1,4 @@
-import { assert, assertEqual, assertFalse, assertNull, assertTrue, assertThrows } from "../TKUnit";
+import { assert, assertEqual, assertFalse, assertNull, assertTrue, assertThrows } from "../tk-unit";
 import { enable, disable, profile, time, start, stop, timer, isRunning, resetProfiles } from "tns-core-modules/profiling";
 
 enable();

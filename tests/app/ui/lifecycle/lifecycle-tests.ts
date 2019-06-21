@@ -1,6 +1,6 @@
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 import * as btnCounter from "./pages/button-counter";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.

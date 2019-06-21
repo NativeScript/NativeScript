@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page loaded="pageLoaded">
+    <WrapLayout id="wrapLayoutWithExamples" orientation="horizontal"/>
+</Page>

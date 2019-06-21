@@ -2,7 +2,7 @@
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "../trace";
 
-import { layout as layoutCommon } from "./utils-common";
+import { layoutCommon } from "./utils-common";
 export * from "./utils-common";
 
 let mainScreenScale;
@@ -43,6 +43,10 @@ export module layout {
         return nativeSize;
     }
 }
+
+// TODO(webpack-workflow): Export all methods from layoutCommon
+// Think of a cleaner way to do that
+Object.assign(layout, layoutCommon);
 
 export module ios {
     export function getter<T>(_this: any, property: T | { (): T }): T {

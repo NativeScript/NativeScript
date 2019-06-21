@@ -1,6 +1,6 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 import * as app from "tns-core-modules/application";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
@@ -364,7 +364,7 @@ export var test_RepeaterItemsGestureBindings = function () {
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
     }
 
-    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures-page", null, testFunc);
 }
 
 export var test_RepeaterItemsParentBindingsShouldWork = function () {
@@ -390,7 +390,7 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
     }
 
-    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures-page", null, testFunc);
 }
 
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {

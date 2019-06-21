@@ -1,4 +1,4 @@
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as utils from "tns-core-modules/utils/utils";
 import { isIOS } from "tns-core-modules/platform";
 

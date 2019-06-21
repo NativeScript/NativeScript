@@ -10,12 +10,9 @@
         "tns-platform-declarations/references.d.ts",
         "tns-platform-declarations/android-*.d.ts",
         "tns-platform-declarations/android/android-*.d.ts",
-        "tests/node_modules",
-        "tests/package/",
-        "tests/platforms",
-        "apps/node_modules",
-        "apps/package/",
-        "apps/platforms",
+        "tns-platform-declarations/android/androidx-*.d.ts",
+        "tests/",
+        "apps/",
         "e2e/",
         "node_modules/",
         "package/",
@@ -23,7 +20,7 @@
         "build",
         "Deploy",
         "out",
-        "obj",       
+        "obj",
         "unit-tests/common-types.d.ts"
     ]
 }

@@ -5,7 +5,7 @@ import { Span } from "tns-core-modules/text/span";
 
 import { Observable } from "tns-core-modules/data/observable";
 import { Label } from "tns-core-modules/ui/label";
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 
 export function test_FormattedString_RemovesEventListeners_for_spans() {
     // >> formatted-string-set

@@ -1,0 +1,19 @@
+<Page>
+	<StackLayout>
+		<SegmentedBar selectedIndex="2" style="color: yellow; background-color: blue; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace; selected-background-color: red;">
+			<SegmentedBar.items>
+				<SegmentedBarItem title="Item 1" />
+				<SegmentedBarItem title="Item 2" />
+				<SegmentedBarItem title="Item 3" />
+			</SegmentedBar.items>
+		</SegmentedBar>
+		<SegmentedBar selectedIndex="2" style="margin: 5; color: blue; background-color: yellow; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace; height: 72; border-width: 2; border-radius: 7; border-color:green; selected-background-color: red;">
+			<SegmentedBar.items>
+				<SegmentedBarItem title="Item 1" />
+				<SegmentedBarItem title="Item 2" />
+				<SegmentedBarItem title="Item 3" />
+			</SegmentedBar.items>
+		</SegmentedBar>
+		<Button text="go to cleared page" tap="navigate" />
+	</StackLayout>
+</Page>

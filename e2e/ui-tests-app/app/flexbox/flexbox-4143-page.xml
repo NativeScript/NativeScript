@@ -1,0 +1,6 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <FlexboxLayout flexDirection="column" class="legend-wrapper bg-background" flexGrow="1">
+        <Label text="TyFitt" class="title"></Label>
+        <Label text="Workout is a life style." class="legend"></Label>
+    </FlexboxLayout>
+</Page>

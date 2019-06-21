@@ -24,6 +24,15 @@ def computeBuildToolsVersion() {
     }
 }
 
+def computeAndroidXVersion() {
+    if(project.hasProperty("androidxVersion")) {
+        return androidxVersion
+    }
+    else {
+        return "1.0.0"
+    }
+}
+
 def computeSupportVersion() {
     if(project.hasProperty("supportVersion")) {
         return supportVersion
@@ -62,7 +71,16 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:support-v4:' + computeSupportVersion()
+    
+    if(project.hasProperty("useAndroidX")) {
+        println 'Using androix'
+        def androidxVersion = computeAndroidXVersion()
+        implementation 'androidx.viewpager:viewpager:' + androidxVersion
+        implementation 'androidx.fragment:fragment:' + androidxVersion
+    } else {
+        println 'Using support library'
+        implementation 'com.android.support:support-v4:' + computeSupportVersion()
+    }
 }
 
 task cleanBuildDir (type: Delete) {

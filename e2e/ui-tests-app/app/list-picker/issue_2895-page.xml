@@ -1,0 +1,6 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+  <StackLayout>
+    <Button text="Toggle visibility" tap="{{ onTap }}" />
+    <ListPicker style="background-color: pink;" id="list_picker" items="{{ options }}" visibility="{{ showListPicker }}" />
+  </StackLayout>
+</Page>

@@ -2,7 +2,7 @@
     ErrorHandler, getErrorHandler, setErrorHandler, DefaultErrorHandler,
     error as traceError
 } from "tns-core-modules/trace";
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 
 let cachedErrorHandler: ErrorHandler;
 export function setUpModule() {

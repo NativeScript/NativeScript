@@ -1,8 +1,7 @@
 ﻿/* tslint:disable:no-unused-variable */
 import * as app from "tns-core-modules/application";
-import * as commonTests from "./application-tests-common";
 
-global.moduleMerge(commonTests, exports);
+export * from "./application-tests-common";
 
 // >> application-ios-observer
 //// Add the notification observer

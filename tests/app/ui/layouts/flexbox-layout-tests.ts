@@ -53,8 +53,8 @@ export namespace AlignSelf {
 
 import { View, unsetValue, Length, PercentLength } from "tns-core-modules/ui/core/view";
 import { Label } from "tns-core-modules/ui/label";
-import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { parse } from "tns-core-modules/ui/builder";
 import { dipToDp, left, top, right, bottom, height, width,
     paddingLeft, paddingTop, paddingRight, paddingBottom,

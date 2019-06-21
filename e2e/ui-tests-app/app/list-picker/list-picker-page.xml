@@ -1,0 +1,5 @@
+<Page loaded="loaded">
+	<StackLayout>
+		<ListPicker id="target" items="{{ items }}" style="color: deeppink; background-color:lightskyblue" />
+	</StackLayout>
+</Page>

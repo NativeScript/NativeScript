@@ -29,8 +29,8 @@ export function navigatingTo(args) {
 
         application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, handler);
 
-        if ((<any>android.support.v4.content.ContextCompat).checkSelfPermission(application.android.currentContext, (<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE) !== android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            (<any>android.support.v4.app.ActivityCompat).requestPermissions(application.android.currentContext, [(<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE], 1234);
+        if ((<any>androidx.core.content.ContextCompat).checkSelfPermission(application.android.currentContext, (<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE) !== android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            (<any>androidx.core.app.ActivityCompat).requestPermissions(application.android.currentContext, [(<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE], 1234);
         }
     } else {
         console.log("Permission for write to external storage GRANTED!")

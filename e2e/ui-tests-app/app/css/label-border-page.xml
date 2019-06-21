@@ -1,0 +1,22 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+        <Label  id="s0" row="0" col="0" textWrap="true" text="border-width: 5;"/>
+        <Label  id="s1" row="0" col="1" textWrap="true" text="border-width: 5; border-color: red;"/>
+        <Label  id="s2" row="0" col="2" textWrap="true" text="border-width: 5; border-color: red red red green;"/>
+        <Label  id="s3" row="1" col="0" textWrap="true" text="border-width: 5; border-color: red; border-radius: 5;"/>
+        <Label  id="s4" row="1" col="1" textWrap="true" text="border-width: 5; border-color: red; border-radius: 50;"/>
+        <Label  id="s5" row="1" col="2" textWrap="true" text="border-width: 5 10 15 20; border-color: red;"/>
+        <Label  id="s6" row="2" col="0" textWrap="true" text="border-width: 5; border-color: red green blue yellow;"/>
+        <Label  id="s7" row="2" col="1" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow;"/>
+        <Label  id="s8" row="2" col="2" textWrap="true" text="border-width: 5 10; border-color: red green;"/>
+        <Label  id="s9" row="3" col="0" textWrap="true" text="border-width: 15 10 5; border-color: red green blue;"/>
+        <Label id="s10" row="3" col="1" textWrap="true" text="border-width: 5 0; border-color: black;"/>
+        <Label id="s11" row="3" col="2" textWrap="true" text="background-color: magenta;"/>
+        <Label id="s12" row="4" col="0" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; border-radius: 5 10 15 20;"/>
+        <Label id="s13" row="4" col="1" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; border-radius: 5;"/>
+        <Label id="s14" row="4" col="2" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; background-color: magenta;"/>
+        <Label id="s15" row="5" col="0" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow; background-image: url('~/resources/images/test2.png');"/>
+        <Label id="s16" row="5" col="1" textWrap="true" text="border-width: 5; border-color: red; padding: 5;"/>
+        <Label id="s17" row="5" col="2" textWrap="true" text="border-width: 5 6 7 8; border-color: red green blue yellow; padding: 5 6 7 8;"/>
+    </GridLayout>
+</Page>

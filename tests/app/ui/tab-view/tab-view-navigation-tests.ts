@@ -1,5 +1,5 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+﻿import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
@@ -191,7 +191,7 @@ function tabViewIsFullyLoaded(tabView: TabView): boolean {
     }
 
     if (tabView.android) {
-        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
         if (viewPager.getChildCount() === 0) {
             return false;
         }
@@ -265,7 +265,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
     if (tabView.android) {
-        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
         var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
         var stackLayout = <org.nativescript.widgets.StackLayout>androidListView.getChildAt(0);
         var button = <android.widget.Button>stackLayout.getChildAt(0);

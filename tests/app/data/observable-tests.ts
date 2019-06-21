@@ -2,7 +2,7 @@
 import { Observable, fromObject, fromObjectRecursive, PropertyChangeData, EventData, WrappedValue } from "tns-core-modules/data/observable";
 // << observable-require
 
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as types from "tns-core-modules/utils/types";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 

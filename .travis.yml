@@ -3,20 +3,28 @@ env:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
 language: objective-c
-osx_image: xcode9.3
+osx_image: xcode10.2
+jdk:
+  - oraclejdk8
+  - openjdk8
+script:
+  - export JAVA_HOME=$HOME/openjdk8
+  - $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+  - # do stuff with open OpenJDK 11
+  - jdk_switcher use openjdk8
 install:
-  - brew update
-  - brew cask install android-sdk
+  # - brew update
+  # - brew cask install android-sdk
   # Suppress output of sdkmanager to keep log under the 4MB limit of travis-ci
-  - yes | sdkmanager "platforms;android-28" >/dev/null
-  - yes | sdkmanager "build-tools;28.0.3" >/dev/null
-  - yes | sdkmanager "extras;android;m2repository" >/dev/null
+  # - yes | sdkmanager "platforms;android-28" >/dev/null
+  # - yes | sdkmanager "build-tools;28.0.3" >/dev/null
+  # - yes | sdkmanager "extras;android;m2repository" >/dev/null
 before_script:
-  - export ANDROID_HOME=/usr/local/share/android-sdk
+  # - export ANDROID_HOME=/usr/local/share/android-sdk
   - npm install -g grunt-cli
   - npm install
 script:
-- npm run setup-widgets
+# - npm run setup-widgets
 - npm run setup
 - npm run tsc
 - npm run tslint

@@ -22,7 +22,7 @@ function generateItemId(): number {
 }
 
 interface MenuItemClickListener {
-    new(owner: ActionBar): android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+    new(owner: ActionBar): androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 }
 
 let appResources: android.content.res.Resources;
@@ -33,10 +33,10 @@ function initializeMenuItemClickListener(): void {
         return;
     }
 
-    AppCompatTextView = (<any>android).support.v7.widget.AppCompatTextView;
+    AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
-    @Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
-    class MenuItemClickListenerImpl extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
+    @Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
+    class MenuItemClickListenerImpl extends java.lang.Object implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener {
         constructor(public owner: ActionBar) {
             super();
             return global.__native(this);
@@ -111,7 +111,7 @@ export class NavigationButton extends ActionItem {
 
 export class ActionBar extends ActionBarBase {
     private _android: AndroidActionBarSettings;
-    public nativeViewProtected: android.support.v7.widget.Toolbar;
+    public nativeViewProtected: androidx.appcompat.widget.Toolbar;
 
     constructor() {
         super();
@@ -135,7 +135,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     public createNativeView() {
-        return new android.support.v7.widget.Toolbar(this._context);
+        return new androidx.appcompat.widget.Toolbar(this._context);
     }
 
     public initNativeView(): void {
@@ -393,7 +393,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     [flatProperty.setNative](value: boolean) {
-        const compat = <any>android.support.v4.view.ViewCompat;
+        const compat = <any>androidx.core.view.ViewCompat;
         if (compat.setElevation) {
             if (value) {
                 compat.setElevation(this.nativeViewProtected, 0);
@@ -405,7 +405,7 @@ export class ActionBar extends ActionBarBase {
     }
 }
 
-function getAppCompatTextView(toolbar: android.support.v7.widget.Toolbar): typeof AppCompatTextView {
+function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar): typeof AppCompatTextView {
     for (let i = 0, count = toolbar.getChildCount(); i < count; i++) {
         const child = toolbar.getChildAt(i);
         if (child instanceof AppCompatTextView) {

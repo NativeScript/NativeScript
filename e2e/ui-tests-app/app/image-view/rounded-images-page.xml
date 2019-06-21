@@ -1,0 +1,10 @@
+﻿<Page>
+  <GridLayout rows="*,*,*" columns="*,*">
+    <Image row="0" col="0" src="~/resources/images/gravatar.png" class="one"/>
+    <Image row="0" col="1" src="~/resources/images/gravatar.png" class="two"/>
+    <Image row="1" col="0" src="~/resources/images/gravatar.png" class="three"/>
+    <Image row="1" col="1" src="~/resources/images/gravatar.png" class="four"/>
+    <Image row="2" col="0" src="~/resources/images/gravatar.png" class="five"/>
+    <Image row="2" col="1" src="~/resources/images/gravatar.png" class="six"/>
+  </GridLayout>
+</Page>

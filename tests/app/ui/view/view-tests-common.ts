@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "tns-core-modules/ui/core/view";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
@@ -8,7 +8,7 @@ import { Color } from "tns-core-modules/color";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
 import * as types from "tns-core-modules/utils/types";
-import * as helper from "../../ui/helper";
+import * as helper from "../../ui-helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
@@ -947,7 +947,7 @@ export function testBackgroundImage() {
     lbl.className = "myClass";
     helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
         const page = <Page>views[1];
-        page.css = ".myClass { background-image: url('~/logo.png') }";
+        page.css = ".myClass { background-image: url('~/assets/logo.png') }";
         TKUnit.assertEqual(definition.checkNativeBackgroundImage(lbl), true, "Style background-image not loaded correctly.");
     });
 };

@@ -1,8 +1,8 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 import * as styleScope from "tns-core-modules/ui/styling/style-scope";
 import * as keyframeAnimation from "tns-core-modules/ui/animation/keyframe-animation";
 import * as enums from "tns-core-modules/ui/enums";
-import * as helper from "../../ui/helper";
+import * as helper from "../../ui-helper";
 import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as labelModule from "tns-core-modules/ui/label";
 import * as color from "tns-core-modules/color";
@@ -314,7 +314,7 @@ export function test_ReadAnimationWithUnsortedKeyframes() {
 }
 
 export function test_ReadAnimationsWithCSSImport() {
-    let css = "@import '~/ui/animation/test.css'; .test { animation-name: test; }";
+    let css = "@import 'ui/animation/test-page.css'; .test { animation-name: test; }";
     let animation = createAnimationFromCSS(css, "test");
     TKUnit.assertEqual(animation.keyframes.length, 3);
     TKUnit.assertEqual(animation.keyframes[1].declarations[0].property, "backgroundColor");

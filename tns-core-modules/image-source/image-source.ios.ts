@@ -180,6 +180,10 @@ export class ImageSource implements ImageSourceDefinition {
     get rotationAngle(): number {
         return NaN;
     }
+
+    set rotationAngle(_value: number) {
+        // compatibility with Android
+    }
 }
 
 function getFileName(path: string): string {

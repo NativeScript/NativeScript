@@ -1,4 +1,4 @@
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import { Label } from "tns-core-modules/ui/label";
 // >> observable-array-require
 import { ObservableArray, ChangedData, ChangeType } from "tns-core-modules/data/observable-array";

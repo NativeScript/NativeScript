@@ -1,0 +1,4 @@
+<StackLayout style.borderWidth="1" style.borderColor="black">
+    <Label class="ui-tests-app-issue-1639-yellow" text="customView3 yellow from app.css" textWrap="true" />
+    <Label class="local-yellow" text="customView3 yellow from customView3.css" textWrap="true" />
+</StackLayout>

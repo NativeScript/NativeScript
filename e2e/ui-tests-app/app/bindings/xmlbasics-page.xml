@@ -1,0 +1,21 @@
+﻿<Page>
+  <StackLayout>
+    <StackLayout loaded="stack0Loaded" orientation="horizontal">
+      <TextField id="tf" automationText="tf" text="{{ textSource }}" width="150" />
+      <Button id="btn" width="150" />
+    </StackLayout>
+    <StackLayout loaded="stack1Loaded">
+      <Label id="label" automationText="label" text="{{ text }}" />
+    </StackLayout>
+    <StackLayout loaded="stack2Loaded">
+      <Button id="button" automationText="button" text="{{ myProperty }}" tap="{{ myFunction }}" />
+    </StackLayout>
+    <StackLayout loaded="stack3Loaded">
+      <ListView id="listView" automationText="listView" items="{{ myItems }}">
+        <ListView.itemTemplate>
+          <Label id="item" text="{{ text }}"/>
+        </ListView.itemTemplate>
+      </ListView>
+    </StackLayout>
+  </StackLayout>
+</Page>

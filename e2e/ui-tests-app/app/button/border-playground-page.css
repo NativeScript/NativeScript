@@ -1,0 +1,13 @@
+StackLayout {
+    background-color: lightgray;
+}
+
+Button {
+    font-size: 8;
+    width: 70;
+    height: 40;
+}
+
+TextView {
+    font-size: 8;
+}
