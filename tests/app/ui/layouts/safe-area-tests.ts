@@ -113,7 +113,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
@@ -148,7 +148,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true }
@@ -163,7 +163,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { actionBarHidden: true }
@@ -178,7 +178,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
@@ -193,7 +193,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { tabBar: true }
@@ -208,7 +208,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true, tabBar: true }
@@ -312,7 +312,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getDockViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_in_full_screen_test(root, pageOptions);
             },
             pageOptions
@@ -347,7 +347,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true }
@@ -362,7 +362,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { actionBarHidden: true }
@@ -377,7 +377,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
@@ -392,7 +392,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { tabBar: true }
@@ -407,7 +407,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true, tabBar: true }
@@ -565,7 +565,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true }
@@ -580,7 +580,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { actionBarHidden: true }
@@ -595,7 +595,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
@@ -610,7 +610,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { tabBar: true }
@@ -625,7 +625,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true, tabBar: true }
@@ -860,7 +860,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true }
@@ -875,7 +875,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { actionBarHidden: true }
@@ -890,7 +890,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
@@ -905,7 +905,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { tabBar: true }
@@ -920,7 +920,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true, tabBar: true }
@@ -1097,7 +1097,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true }
@@ -1112,7 +1112,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { actionBarHidden: true }
@@ -1127,7 +1127,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
@@ -1142,7 +1142,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { tabBar: true }
@@ -1157,7 +1157,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true, tabBar: true }
@@ -1311,7 +1311,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true }
@@ -1326,7 +1326,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { actionBarHidden: true }
@@ -1341,7 +1341,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBarFlat: true }
@@ -1356,7 +1356,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_hidden_test(root);
             },
             { tabBar: true }
@@ -1371,7 +1371,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         this.executeSnippet(
             this.getViews(snippet),
             this.noop,
-            ({ root }) => { 
+            ({ root }) => {
                 this.layout_insets_top_action_bar_test(root);
             },
             { actionBar: true, tabBar: true }

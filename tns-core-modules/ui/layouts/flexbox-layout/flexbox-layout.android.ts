@@ -96,7 +96,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        (<any>this.nativeViewProtected).invalidateOrdersCache();   
+        (<any>this.nativeViewProtected).invalidateOrdersCache();
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {

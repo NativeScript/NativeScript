@@ -107,7 +107,7 @@ const styles = new Set();
 //- 100(Thin) (API16 -thin)
 //- 200(Extra Light / Ultra Light) (API16 -light)
 //- 300(Light) (API16 -light)
-//- 400(Normal) 
+//- 400(Normal)
 //- 500(Medium) (API21 -medium)
 //- 600(Semi Bold / Demi Bold) (API21 -medium)
 //- 700(Bold) (API16 -bold)

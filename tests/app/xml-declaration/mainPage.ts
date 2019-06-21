@@ -52,5 +52,5 @@ export function MyPageLoaded(args: observable.EventData) {
 }
 
 export function setPicture(args: observable.EventData) {
-    // 
+    //
 }

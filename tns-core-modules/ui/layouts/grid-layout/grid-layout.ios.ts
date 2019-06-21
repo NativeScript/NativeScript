@@ -712,7 +712,7 @@ class MeasureHelper {
 
             this.fixColumns();
 
-            // Measure all elements that have star columns(already fixed), but no stars at the rows 
+            // Measure all elements that have star columns(already fixed), but no stars at the rows
             this.measureFixedColumnsNoStarRows();
 
             this.fixRows();
@@ -725,7 +725,7 @@ class MeasureHelper {
             this.fixRows();
         }
         else if (!fixColumns && fixRows) {
-            // Measure all elements that have star rows(already fixed) but no star at the columns 
+            // Measure all elements that have star rows(already fixed) but no star at the columns
             this.measureNoStarColumnsFixedRows();
 
             // Then

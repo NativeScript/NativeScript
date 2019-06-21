@@ -7,7 +7,7 @@ import * as labelModule from "tns-core-modules/ui/label";
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> gestures-double-tap
     var label = new labelModule.Label();
-    var observer = label.on(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) { 
+    var observer = label.on(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) {
         console.log("Double Tap");
     });
     // << gestures-double-tap

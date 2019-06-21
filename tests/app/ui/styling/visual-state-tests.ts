@@ -91,4 +91,4 @@ export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
     };
 
     helper.do_PageTest_WithButton(test);
-}; 
+};

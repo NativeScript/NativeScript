@@ -152,10 +152,10 @@ export module FontWeight {
     export const thin: string = "100";
     export const extraLight: string = "200";
     export const light: string = "300";
-    export const normal: string = "normal"; // 400 
+    export const normal: string = "normal"; // 400
     export const medium: string = "500";
     export const semiBold: string = "600";
-    export const bold: string = "bold"; // 700 
+    export const bold: string = "bold"; // 700
     export const extraBold: string = "800";
     export const black: string = "900";
 }

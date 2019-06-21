@@ -16,11 +16,11 @@ import { Label } from "tns-core-modules/ui/label";
 import { TextField } from "tns-core-modules/ui/text-field";
 
 // <snippet module="ui/core/bindable" title="bindable">
-// For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
+// For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.
 // </snippet>
 
 // <snippet module="ui/core/weak-event-listener" title="weak-event-listener">
-// For information and example how to use weak event listeners please refer to special [**Events**](../../../../events.md) topic which has a dedicated part about weak event listeners. 
+// For information and example how to use weak event listeners please refer to special [**Events**](../../../../events.md) topic which has a dedicated part about weak event listeners.
 // </snippet>
 
 export function test_Bindable_Members() {

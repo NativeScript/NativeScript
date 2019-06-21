@@ -247,7 +247,7 @@ export function test_splice_observable_array_refreshes_the_Repeater() {
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
-        // Remove the first 2 elements and add 
+        // Remove the first 2 elements and add
         data.splice(0, 2, "d", "e", "f");
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
@@ -431,7 +431,7 @@ export function test_no_memory_leak_when_items_is_regular_array(done) {
 }
 
 export function test_no_memory_leak_when_items_is_observable_array(done) {
-    // Keep the reference to the observable array to test the weakEventListener 
+    // Keep the reference to the observable array to test the weakEventListener
     var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
 
     var createFunc = function (): repeaterModule.Repeater {

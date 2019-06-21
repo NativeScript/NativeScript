@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabStrip as TabStripDefinition } from ".";
 import { TabStripItem } from "../tab-strip-item";
 import { AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
@@ -29,7 +29,7 @@ export class TabStrip extends ViewBase implements TabStripDefinition, AddChildFr
             // selectedIndexProperty.coerce(this);
         }
     }
-} 
+}
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);

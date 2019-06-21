@@ -85,7 +85,7 @@ export function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
 function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
     if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
         return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + (b * 0x000001);
-    } else { 
+    } else {
         return null;
     }
 }
@@ -860,8 +860,8 @@ export interface QualifiedRule {
 
 const whitespaceRegEx = /[\s\t\n\r\f]*/gym;
 
-const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gym; // Besides $n, parse escape 
-const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gym; // Besides $n, parse escape 
+const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gym; // Besides $n, parse escape
+const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gym; // Besides $n, parse escape
 
 const commentRegEx = /(\/\*(?:[^\*]|\*[^\/])*\*\/)/gym;
 const numberRegEx = /[\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?/gym;

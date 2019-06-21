@@ -64,7 +64,7 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
     [srcProperty.setNative](src: string) {
         this.stopLoading();
 
-        // Add file:/// prefix for local files. 
+        // Add file:/// prefix for local files.
         // They should be loaded with _loadUrl() method as it handles query params.
         if (src.indexOf("~/") === 0) {
             src = `file:///${knownFolders.currentApp().path}/` + src.substr(2);

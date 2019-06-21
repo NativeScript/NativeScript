@@ -46,14 +46,14 @@ export function CSSType(type: string): ClassDecorator {
 
 export function viewMatchesModuleContext(
     view: ViewDefinition,
-    context: ModuleContext, 
+    context: ModuleContext,
     types: ModuleType[]): boolean {
         
     return context &&
         view._moduleName &&
-        context.type && 
+        context.type &&
         types.some(type => type === context.type) &&
-        context.path && 
+        context.path &&
         context.path.includes(view._moduleName);
 }
 

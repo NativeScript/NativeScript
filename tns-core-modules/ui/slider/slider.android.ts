@@ -84,7 +84,7 @@ export class Slider extends SliderBase {
     }
 
     /**
-     * There is no minValue in Android. We simulate this by subtracting the minValue from the native value and maxValue. 
+     * There is no minValue in Android. We simulate this by subtracting the minValue from the native value and maxValue.
      * We need this method to call native setMax and setProgress methods when minValue property is changed,
      * without handling the native value changed callback.
      */

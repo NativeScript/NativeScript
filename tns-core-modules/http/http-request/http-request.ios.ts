@@ -55,16 +55,16 @@ function ensureSessionNotFollowingRedirects() {
 
 let imageSource: typeof imageSourceModule;
 function ensureImageSource() {
-    if (!imageSource) {	
-        imageSource = require("image-source");	
-    }	
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
 }
 
 let fs: typeof fsModule;
-function ensureFileSystem() {	
-    if (!fs) {	
-        fs = require("file-system");	
-    }	
+function ensureFileSystem() {
+    if (!fs) {
+        fs = require("file-system");
+    }
 }
 
 export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {

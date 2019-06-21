@@ -850,7 +850,7 @@ export const testAlignContent_spaceBetween_withPadding = test(
         isBottomAlignedWith(text3, flexbox);
         isLeftAlignedWith(text3, flexbox);
     }
-);	
+);
 
 export const testAlignContent_spaceAround = test(
     activity_align_content_test,
@@ -1703,7 +1703,7 @@ let activity_wrap_parent_padding_horizontal_test = () => getViews(
     `<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="360" verticalAlignment="top" padding="32" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
         <Label id="text1" width="280" height="80" text="1" backgroundColor="red" />
         <Label id="text2" width="30" height="80" text="2" backgroundColor="green" />
-        <Label id="text3" width="100" height="80" text="3" backgroundColor="blue" /> 
+        <Label id="text3" width="100" height="80" text="3" backgroundColor="blue" />
     </FlexboxLayout>`
 );
 

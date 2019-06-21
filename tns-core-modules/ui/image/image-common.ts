@@ -1,4 +1,4 @@
-﻿import { Image as ImageDefinition, Stretch } from ".";
+import { Image as ImageDefinition, Stretch } from ".";
 import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter, CSSType, traceEnabled, traceWrite, traceCategories } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
@@ -83,7 +83,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
                         this.isLoading = false;
                     }
                 }, err => {
-                    // catch: Response content may not be converted to an Image 
+                    // catch: Response content may not be converted to an Image
                     this.isLoading = false;
                     if (traceEnabled()) {
                         if (typeof err === "object" && err.message) {

@@ -73,7 +73,7 @@ export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): str
         if (count > 10000 && parent) {
             result += setResultTime(noValue);
 
-            return;            
+            return;
         }
 
         const lbl = setup(parent);

@@ -45,7 +45,7 @@ function getProperties(property: string): Array<string> {
     }
 
     // first replace all '$parents[..]' with a safe string
-    // second removes all ] since they are not important for property access and not needed 
+    // second removes all ] since they are not important for property access and not needed
     // then split properties either on '.' or '['
     const parentsMatches = property.match(parentsRegex);
     result = property.replace(parentsRegex, "parentsMatch")

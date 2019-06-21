@@ -390,7 +390,7 @@ export function test_ExecuteCSSAnimation() {
 
 //    TKUnit.assertEqual(label.backgroundColor, undefined, "label.backgroundColor should be undefind");
 
-//    label.className = "l";    
+//    label.className = "l";
 //    TKUnit.assertEqual(label.backgroundColor, undefined, "label.backgroundColor should be undefind");
 
 //    label.className = "l2";

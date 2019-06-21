@@ -221,7 +221,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
 
         let currentValueSource = entry.valueSource;
         if (currentValueSource !== valueSource) {
-            // If current valueSource is larget than the one we reset - do nothing. 
+            // If current valueSource is larget than the one we reset - do nothing.
             // We are reseting property will lower priority and it won't change effectValue;
             // Reseting larger source means we somehow was able to set value without updating currentValueSource which is clearly a bug.
             return;

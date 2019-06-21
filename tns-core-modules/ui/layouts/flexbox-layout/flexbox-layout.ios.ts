@@ -607,9 +607,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
                     const childWidthMeasureSpec = makeMeasureSpec(roundedCalculatedWidth, EXACTLY);
 
-                    // NOTE: for controls that support internal content wrapping (e.g. UILabel) reducing the width 
-                    // might result in increased height e.g. text that could be shown on one line for larger 
-                    // width needs to be wrapped in two when width is reduced. 
+                    // NOTE: for controls that support internal content wrapping (e.g. UILabel) reducing the width
+                    // might result in increased height e.g. text that could be shown on one line for larger
+                    // width needs to be wrapped in two when width is reduced.
                     // As a result we cannot unconditionally measure with EXACTLY the current measured height
                     const childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentHeightMeasureSpec,
                         lp.effectivePaddingTop + lp.effectivePaddingBottom + lp.effectiveMarginTop

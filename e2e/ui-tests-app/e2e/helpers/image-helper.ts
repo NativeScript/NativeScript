@@ -18,7 +18,7 @@ export class ImageHelper {
     }
 
     public async compareElement(imageName: string, element: UIElement, tolerance: number, timeOutSeconds: number, toleranceType: ImageOptions = ImageOptions.pixel) {
-        imageName = this.increaseImageName(imageName);        
+        imageName = this.increaseImageName(imageName);
         const result = await this._driver.compareElement(element, imageName, tolerance, timeOutSeconds, toleranceType);
         this._imagesResults.set(imageName, result);
 
@@ -26,7 +26,7 @@ export class ImageHelper {
     }
 
     public async compareRectangle(imageName: string, element: IRectangle, tolerance: number, timeOutSeconds: number, toleranceType: ImageOptions = ImageOptions.pixel) {
-        imageName = this.increaseImageName(imageName);        
+        imageName = this.increaseImageName(imageName);
         const result = await this._driver.compareRectangle(element, imageName, timeOutSeconds, tolerance, toleranceType);
         this._imagesResults.set(imageName, result);
 

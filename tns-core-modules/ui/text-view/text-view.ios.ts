@@ -170,7 +170,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             if (placeholderColor) {
                 this.nativeTextViewProtected.textColor = placeholderColor.ios;
             } else if (color) {
-                // Use semi-transparent version of color for back-compatibility 
+                // Use semi-transparent version of color for back-compatibility
                 this.nativeTextViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
                 this.nativeTextViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);

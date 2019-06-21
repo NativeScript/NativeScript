@@ -3,7 +3,7 @@ import { unsetValue } from "tns-core-modules/ui/core/view";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { TextField } from "tns-core-modules/ui/text-field";
 
-function exectuteOnAll(page: Page, callback: (txt: TextView | TextField) => void) { 
+function exectuteOnAll(page: Page, callback: (txt: TextView | TextField) => void) {
     page.getViewById("container").eachChild((child) => {
         if (child instanceof TextView || child instanceof TextField) {
             callback(child);

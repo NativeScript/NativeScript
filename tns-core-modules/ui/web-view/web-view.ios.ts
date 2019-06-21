@@ -177,4 +177,4 @@ export class WebView extends WebViewBase {
     public reload() {
         this.ios.reload();
     }
-} 
+}

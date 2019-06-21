@@ -111,7 +111,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
                 this._addView(span);
 
                 // Then attach handlers - we skip the first nofitication because
-                // we raise change for the whole instance. 
+                // we raise change for the whole instance.
                 this.addPropertyChangeHandler(span);
             }
         }

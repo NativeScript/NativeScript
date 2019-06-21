@@ -664,7 +664,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             frameId: currentBackstackEntry.frameId
         };
 
-        const navigationContext: NavigationContext = { 
+        const navigationContext: NavigationContext = {
             entry: newBackstackEntry,
             isBackNavigation: false,
             navigationType: NavigationType.replace

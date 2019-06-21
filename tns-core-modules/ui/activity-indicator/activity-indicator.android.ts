@@ -23,7 +23,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     [visibilityProperty.getDefault](): Visibility {
-        return Visibility.HIDDEN;       
+        return Visibility.HIDDEN;
     }
     [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
@@ -36,7 +36,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
             case Visibility.COLLAPSE:
                 this.nativeViewProtected.setVisibility(android.view.View.GONE);
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
         }
     }

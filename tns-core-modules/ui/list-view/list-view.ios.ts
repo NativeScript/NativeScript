@@ -26,7 +26,7 @@ type ItemView = View & ViewItemIndex;
 class ListViewCell extends UITableViewCell {
     public static initWithEmptyBackground(): ListViewCell {
         const cell = <ListViewCell>ListViewCell.new();
-        // Clear background by default - this will make cells transparent 
+        // Clear background by default - this will make cells transparent
         cell.backgroundColor = null;
 
         return cell;
@@ -34,7 +34,7 @@ class ListViewCell extends UITableViewCell {
 
     initWithStyleReuseIdentifier(style: UITableViewCellStyle, reuseIdentifier: string): this {
         const cell = <this>super.initWithStyleReuseIdentifier(style, reuseIdentifier);
-        // Clear background by default - this will make cells transparent 
+        // Clear background by default - this will make cells transparent
         cell.backgroundColor = null;
 
         return cell;
@@ -43,7 +43,7 @@ class ListViewCell extends UITableViewCell {
     public willMoveToSuperview(newSuperview: UIView): void {
         let parent = <ListView>(this.view ? this.view.parent : null);
 
-        // When inside ListView and there is no newSuperview this cell is 
+        // When inside ListView and there is no newSuperview this cell is
         // removed from native visual tree so we remove it from our tree too.
         if (parent && !newSuperview) {
             parent._removeContainer(this);
@@ -93,7 +93,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 
             let cellView: View = cell.view;
             if (cellView && cellView.isLayoutRequired) {
-                // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
+                // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
                 let width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
                 let rowHeight = owner._effectiveRowHeight;

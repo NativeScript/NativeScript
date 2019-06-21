@@ -198,7 +198,7 @@ export function _updateCharactersInRangeReplacementString(formattedText: Formatt
             span._setTextInternal(newText);
 
             return;
-        } 
+        }
         currentLocation += span.text.length;
     }
 }

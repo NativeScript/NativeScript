@@ -27,7 +27,7 @@ export class Page extends PageBase {
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-        // Set the row property for the child 
+        // Set the row property for the child
         if (this.nativeViewProtected && child.nativeViewProtected) {
             if (child instanceof ActionBar) {
                 GridLayout.setRow(child, 0);

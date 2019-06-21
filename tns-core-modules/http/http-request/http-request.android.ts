@@ -25,24 +25,24 @@ let requestIdCounter = 0;
 const pendingRequests = {};
 
 let imageSource: typeof imageSourceModule;
-function ensureImageSource() {	
-    if (!imageSource) {	
-        imageSource = require("image-source");	
-    }	
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
 }
 
-let platform: typeof platformModule;	
-function ensurePlatform() {	
-    if (!platform) {	
-        platform = require("platform");	
-    }	
+let platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
 }
 
 let fs: typeof fsModule;
-function ensureFileSystem() {	
-    if (!fs) {	
-        fs = require("file-system");	
-    }	
+function ensureFileSystem() {
+    if (!fs) {
+        fs = require("file-system");
+    }
 }
 
 let completeCallback: org.nativescript.widgets.Async.CompleteCallback;

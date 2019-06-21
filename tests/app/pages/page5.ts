@@ -20,10 +20,10 @@ function printDeviceInfoAndroid() {
     console.log("metrics.heightPixels = " + metrics.heightPixels);   //metrics.heightPixels = 1776
 
     var config = app.android.context.getResources().getConfiguration();
-    console.log("config.screenWidthDp = " + config.screenWidthDp);   
-    console.log("config.screenHeightDp = " + config.screenHeightDp);   
-    console.log("config.smallestScreenWidthDp = " + config.smallestScreenWidthDp);   
-    console.log("config.orientation = " + (config.orientation === android.content.res.Configuration.ORIENTATION_PORTRAIT ? "portrait" : "ladscape"));   
+    console.log("config.screenWidthDp = " + config.screenWidthDp);
+    console.log("config.screenHeightDp = " + config.screenHeightDp);
+    console.log("config.smallestScreenWidthDp = " + config.smallestScreenWidthDp);
+    console.log("config.orientation = " + (config.orientation === android.content.res.Configuration.ORIENTATION_PORTRAIT ? "portrait" : "ladscape"));
 }
 
 function printDeviceInfoIOS() {
@@ -43,17 +43,17 @@ function printDeviceInfoIOS() {
 }
 
 function printTNSInfo() {
-    console.log("platform.device.model = " + platform.device.model);  
-    console.log("platform.device.os = " + platform.device.os);  
-    console.log("platform.device.osVersion = " + platform.device.osVersion);  
-    console.log("platform.device.sdkVersion = " + platform.device.sdkVersion);  
-    console.log("platform.device.deviceType = " + platform.device.deviceType);  
+    console.log("platform.device.model = " + platform.device.model);
+    console.log("platform.device.os = " + platform.device.os);
+    console.log("platform.device.osVersion = " + platform.device.osVersion);
+    console.log("platform.device.sdkVersion = " + platform.device.sdkVersion);
+    console.log("platform.device.deviceType = " + platform.device.deviceType);
 
     console.log("platform.screen.mainScreen.widthDIPs = " + platform.screen.mainScreen.widthDIPs);
-    console.log("platform.screen.mainScreen.heightDIPs = " + platform.screen.mainScreen.heightDIPs);  
-    console.log("platform.screen.mainScreen.scale = " + platform.screen.mainScreen.scale);  
-    console.log("platform.screen.mainScreen.widthPixels = " + platform.screen.mainScreen.widthPixels); 
-    console.log("platform.screen.mainScreen.heightPixels = " + platform.screen.mainScreen.heightPixels);  
+    console.log("platform.screen.mainScreen.heightDIPs = " + platform.screen.mainScreen.heightDIPs);
+    console.log("platform.screen.mainScreen.scale = " + platform.screen.mainScreen.scale);
+    console.log("platform.screen.mainScreen.widthPixels = " + platform.screen.mainScreen.widthPixels);
+    console.log("platform.screen.mainScreen.heightPixels = " + platform.screen.mainScreen.heightPixels);
 }
 
 function print() {

@@ -12,7 +12,7 @@ interface AndroidView {
     _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
 }
 
-// TODO: Change this implementation to use 
+// TODO: Change this implementation to use
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
     let SDK: number;

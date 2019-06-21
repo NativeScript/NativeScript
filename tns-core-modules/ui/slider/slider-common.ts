@@ -42,7 +42,7 @@ minValueProperty.register(SliderBase);
  */
 export const maxValueProperty = new CoercibleProperty<SliderBase, number>({
     name: "maxValue", defaultValue: 100, coerceValue: (target, value) => {
-        let minValue = target.minValue; 
+        let minValue = target.minValue;
         if (value < minValue) {
             value = minValue;
         }

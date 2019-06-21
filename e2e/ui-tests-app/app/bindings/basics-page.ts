@@ -20,13 +20,13 @@ export function createPage() {
     targetTwoWay.id = "textFieldTwoWay";
     buttonOneWay.id = "buttonOneWay";
     buttonTwoWay.id = "buttonTwoWay";
-    buttonSetText.id = "buttonSetText";    
+    buttonSetText.id = "buttonSetText";
 
     targetOneWay.automationText = "textFieldOneWay";
     targetTwoWay.automationText = "textFieldTwoWay";
     buttonSetText.automationText = "buttonSetText";
-    //buttonOneWay.automationText = "buttonOneWay";    
-    //buttonTwoWay.automationText = "buttonTwoWay";    
+    //buttonOneWay.automationText = "buttonOneWay";
+    //buttonTwoWay.automationText = "buttonTwoWay";
 
     buttonSetText.text = "SetText";
     buttonSetText.on(buttonModule.Button.tapEvent, function () {

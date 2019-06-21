@@ -119,7 +119,7 @@ export var testSearchBarPropertiesWithCSS = function () {
 export function test_DummyTestForSnippetOnly() {
     // >> article-searching
     var searchBar = new searchBarModule.SearchBar();
-    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) { 
+    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) {
         console.log("Search for " + (<searchBarModule.SearchBar>args.object).text);
     });
     searchBar.on(searchBarModule.SearchBar.clearEvent, function (args: observable.EventData) {

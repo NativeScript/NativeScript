@@ -93,7 +93,7 @@ function initializeNativeClasses() {
             this.owner.changeTab(position);
             this.owner.selectedIndex = position;
         }
-    }    
+    }
 
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
@@ -107,7 +107,7 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
         if (tabStripItem.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(tabStripItem.iconSource.substr(RESOURCE_PREFIX.length));
             if (result.iconId === 0) {
-                // TODO: 
+                // TODO:
                 // traceMissingIcon(tabStripItem.iconSource);
             }
         } else {
@@ -116,7 +116,7 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
             } else {
-                // TODO: 
+                // TODO:
                 // traceMissingIcon(tabStripItem.iconSource);
             }
         }

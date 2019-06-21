@@ -122,7 +122,7 @@ export class ListPicker extends ListPickerBase {
         const nativeView = this.nativeViewProtected;
         //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
         nativeView.setFormatter(null);
-        nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter 
+        nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter
 
         const editText = (<any>nativeView).editText;
         if (editText) {

@@ -53,8 +53,8 @@ export class StackLayout extends StackLayoutBase {
         this.eachLayoutChild((child, last) => {
             if (isVertical) {
 
-                // Measuring ListView, with no height property set, with layout.AT_MOST will 
-                // result in total height equal to the count ot all items multiplied by DEFAULT_HEIGHT = 44 or the 
+                // Measuring ListView, with no height property set, with layout.AT_MOST will
+                // result in total height equal to the count ot all items multiplied by DEFAULT_HEIGHT = 44 or the
                 // maximum available space for the StackLayout. Any following controls will be visible only if enough space left.
                 childSize = View.measureChild(this, child, childMeasureSpec, layout.makeMeasureSpec(remainingLength, measureSpec));
 

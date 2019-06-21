@@ -356,7 +356,7 @@ export class ListViewTest extends UITest<ListView> {
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
 
-        // Remove the first 2 elements and add 
+        // Remove the first 2 elements and add
         data.splice(0, 2, "d", "e", "f");
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 4, "getNativeViewCount");
@@ -648,7 +648,7 @@ export class ListViewTest extends UITest<ListView> {
     }
 
     public test_no_memory_leak_when_items_is_observable_array() {
-        // Keep the reference to the observable array to test the weakEventListener 
+        // Keep the reference to the observable array to test the weakEventListener
         var colors = new ObservableArray(["red", "green", "blue"]);
 
         let weakRef = new WeakRef<ListView>(this.testView);
@@ -771,7 +771,7 @@ export class ListViewTest extends UITest<ListView> {
         TKUnit.wait(0.1);
 
         var lastNativeElementVisible = this.checkItemVisibleAtIndex(listView, MANY_ITEMS.length - 1);
-        TKUnit.assertEqual(lastNativeElementVisible, true, "last element is visible");        
+        TKUnit.assertEqual(lastNativeElementVisible, true, "last element is visible");
     }
 
     public test_scrollToIndex_should_not_throw_if_items_not_set() {
