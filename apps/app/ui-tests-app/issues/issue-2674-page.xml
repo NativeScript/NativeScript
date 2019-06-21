@@ -1,5 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd">
-  <StackLayout style="color: white">
-    <Image src="~/ui-tests-app/resources/images/gravatar.png" stretch="aspectFill"/>
-  </StackLayout>
-</Page>
