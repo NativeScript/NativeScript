@@ -28,5 +28,6 @@ export function loadExamples() {
     examples.set("tab-view-android-swipe", "tab-view/tab-view-android-swipe-page");
     examples.set("tab-view-icon-title-placement", "tab-view/icon-title-placement-page");
     examples.set("tab-text-color", "tab-view/tab-text-color-page");
+
     return examples;
 }

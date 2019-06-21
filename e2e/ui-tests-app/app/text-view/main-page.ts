@@ -15,5 +15,6 @@ export function loadExamples() {
     examples.set("text-view-hint-color", "text-view/text-view-hint-color-page");
     examples.set("hint-text-color", "text-view/hint-text-color-page");
     examples.set("scrolling-and-sizing", "text-view/scrolling-and-sizing-page");
+
     return examples;
 }

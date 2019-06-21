@@ -1,4 +1,4 @@
-﻿import * as labelModule from "tns-core-modules/ui/label";
+import * as labelModule from "tns-core-modules/ui/label";
 import * as gestures from "tns-core-modules/ui/gestures";
 import * as button from "tns-core-modules/ui/button";
 import * as pages from "tns-core-modules/ui/page";
@@ -110,6 +110,7 @@ export function createPage() {
 
     var page = new pages.Page();
     page.content = stack;
+
     return page;
 }
 

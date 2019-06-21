@@ -89,6 +89,7 @@ export class TestPageMainViewModel extends Observable {
             if (a > b) {
                 return 1;
             }
+
             return a.localeCompare(b);
         });
 

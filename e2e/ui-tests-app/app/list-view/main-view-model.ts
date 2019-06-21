@@ -59,6 +59,7 @@ export class ViewModel extends Observable {
     for (let i = 0; i < 100; i++) {
       this._items.push(new Item(`Item`, i, 0));
     }
+
     return this._items;
   }
 }

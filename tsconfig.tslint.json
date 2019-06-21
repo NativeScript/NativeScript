@@ -5,7 +5,9 @@
         "noUnusedParameters": true
     },
     "include": [
-        "tests"
+        "tns-core-modules",
+        "tests",
+        "e2e",
     ],
     "exclude": [
         "**/node_modules/**",

@@ -1,4 +1,4 @@
-﻿import * as buttonModule from "tns-core-modules/ui/button";
+import * as buttonModule from "tns-core-modules/ui/button";
 import * as pageModule from "tns-core-modules/ui/page";
 import * as textFieldModule from "tns-core-modules/ui/text-field";
 import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
@@ -76,5 +76,6 @@ export function createPage() {
     stack.addChild(buttonTwoWay);
 
     page.content = stack;
+
     return page;
 }

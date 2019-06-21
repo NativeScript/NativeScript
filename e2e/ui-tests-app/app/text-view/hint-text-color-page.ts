@@ -8,6 +8,7 @@ function exectuteOnAll(page: Page, callback: (txt: TextView | TextField) => void
         if (child instanceof TextView || child instanceof TextField) {
             callback(child);
         }
+
         return true;
     });
 }

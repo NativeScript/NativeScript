@@ -14,5 +14,6 @@ export function loadExamples() {
     examples.set("webview", "web-view/web-view-page");
     examples.set("webtest", "web-view/web-view-test-page");
     examples.set("query", "web-view/query-params-page");
+
     return examples;
 }

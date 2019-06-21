@@ -125,6 +125,7 @@ function prepareTitle(text: string, fontSize: number) {
     title.borderWidth = 1;
     title.borderColor = white;
     title.textAlignment = "center";
+
     return title;
 }
 
@@ -161,6 +162,7 @@ function prepareLabel(fontFamily: string, fontStyle: string, fontWeight: string)
     if (fontFamily === "FontAwesome") {
         label.text += "\uF17B\uF10B";
     }
+
     return label;
 }
 

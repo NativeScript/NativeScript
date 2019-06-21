@@ -29,6 +29,7 @@ export function pageLoaded(args: EventData) {
         expression: "$value"
     });
     label.style.backgroundColor = backgroundColor;
+
     return label;
   };
 

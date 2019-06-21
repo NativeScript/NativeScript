@@ -16,5 +16,6 @@ export function loadExamples() {
     examples.set("height-basic", "animation/height-basic-page");
     examples.set("layout-stack-height", "animation/layout-stack-height-page");
     examples.set("effect-summary-details", "animation/effect-summary-details-page");
+
     return examples;
 }
