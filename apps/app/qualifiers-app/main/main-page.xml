@@ -1,0 +1,7 @@
+<Page navigatedTo="onNavigatedTo">
+    <StackLayout class="page-content">
+        <Label text="This is DEFAULT page" />
+        
+        <Button text="hey there" tap="navigate" />
+    </StackLayout>
+</Page>
