@@ -125,7 +125,7 @@ export namespace PercentLength {
                 if (isNaN(value) || !isFinite(value)) {
                     throw new Error(`Invalid value: ${fromValue}`);
                 }
-                return { unit: "%", value }
+                return { unit: "%", value };
             } else if (stringValue.indexOf("px") !== -1) {
                 stringValue = stringValue.replace("px", "").trim();
                 let value: px = parseFloat(stringValue);
@@ -533,8 +533,8 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 
     const affineMatrix = transformations
         .map(getTransformMatrix)
-        .reduce(multiplyAffine2d)
-    const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
+        .reduce(multiplyAffine2d);
+    const cssMatrix = matrixArrayToCssMatrix(affineMatrix);
 
     return decompose2DTransformMatrix(cssMatrix);
 }
@@ -599,7 +599,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
     },
     equalityComparer: (value1, value2) => {
         if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
-            return LinearGradient.equals(value1, value2)
+            return LinearGradient.equals(value1, value2);
         } else {
             return value1 === value2;
         }

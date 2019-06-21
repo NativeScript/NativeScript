@@ -1,4 +1,4 @@
-﻿// imported for definition purposes only
+// imported for definition purposes only
 import * as httpModule from "../../http";
 import * as imageSourceModule from "../../image-source";
 import * as fsModule from "../../file-system";
@@ -133,7 +133,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                                 headers: headers,
                                 mimeType: response.MIMEType,
                                 fromDiskCache: false
-                            }
+                            };
                             debugRequest.responseReceived(debugResponse);
                             debugRequest.loadingFinished();
                         }

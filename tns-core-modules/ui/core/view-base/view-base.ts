@@ -943,7 +943,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             this._onCssStateChange();
             this.eachChild(child => {
                 child._inheritStyleScope(styleScope);
-                return true
+                return true;
             });
         }
     }

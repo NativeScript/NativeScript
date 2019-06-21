@@ -1,7 +1,7 @@
-﻿import * as types from "./types";
-import { dispatchToMainThread, isMainThread } from "./mainthread-helper"
+import * as types from "./types";
+import { dispatchToMainThread, isMainThread } from "./mainthread-helper";
 
-export * from "./mainthread-helper"
+export * from "./mainthread-helper";
 
 export const RESOURCE_PREFIX = "res://";
 export const FILE_PREFIX = "file:///";
@@ -170,5 +170,5 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
     return function () {
         const argsToPass = arguments;
         executeOnMainThread(() => func.apply(this, argsToPass));
-    }
+    };
 }

@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 
@@ -6,7 +6,7 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabNavigationBase, itemsProperty, selectedIndexProperty } from "../tab-navigation-base/tab-navigation-base";
 import { Frame } from "../frame";
 import { ios as iosView, View, CSSType } from "../core/view";
-import { ios as iosUtils, layout } from "../../utils/utils"
+import { ios as iosUtils, layout } from "../../utils/utils";
 import { device } from "../../platform";
 import { Color } from "../../color";
 import { fromFileOrResource } from "../../image-source";
@@ -485,16 +485,16 @@ function getTitleAttributesForStates(tabView: BottomNavigation): TabStates {
     const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    result.normalState = { [NSFontAttributeName]: font }
+    result.normalState = { [NSFontAttributeName]: font };
     if (textColor) {
-        result.normalState[UITextAttributeTextColor] = textColor
+        result.normalState[UITextAttributeTextColor] = textColor;
     }
 
     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
     const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-    result.selectedState = { [NSFontAttributeName]: font }
+    result.selectedState = { [NSFontAttributeName]: font };
     if (selectedTextColor) {
-        result.selectedState[UITextAttributeTextColor] = selectedTextColor
+        result.selectedState[UITextAttributeTextColor] = selectedTextColor;
     }
 
     return result;

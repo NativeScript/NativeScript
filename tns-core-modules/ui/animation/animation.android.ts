@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { AnimationDefinition } from ".";
 import { View } from "../core/view";
 
@@ -279,7 +279,7 @@ export class Animation extends AnimationBase {
                     delete propertyAnimation.target[key];
                     cb();
                 }
-            }
+            };
         }
 
         let setLocal = this._valueSource === "animation";

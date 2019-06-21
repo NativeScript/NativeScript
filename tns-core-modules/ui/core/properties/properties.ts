@@ -254,7 +254,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
             const originalValue: U = coerceKey in target ? target[coerceKey] : defaultValue;
             // need that to make coercing but also fire change events
             target[propertyName] = originalValue;
-        }
+        };
 
         this.set = function (this: T, boxedValue: U): void {
             const reset = boxedValue === unsetValue;
@@ -335,7 +335,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                     }
                 }
             }
-        }
+        };
     }
 }
 
@@ -786,7 +786,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
                 }
-            }
+            };
         }
 
         const defaultPropertyDescriptor = descriptor(defaultValueKey, ValueSource.Default, false, false, false);
@@ -812,7 +812,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                 Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
             }
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
-        }
+        };
     }
 
     public _initDefaultNativeValue(target: T): void {
@@ -1034,7 +1034,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
                     this[property.cssLocalName] = value;
                 });
             }
-        }
+        };
 
         cssSymbolPropertyMap[key] = this;
     }

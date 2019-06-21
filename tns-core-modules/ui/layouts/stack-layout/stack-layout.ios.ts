@@ -1,4 +1,4 @@
-﻿import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
+import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
 import * as trace from "../../../trace";
 
 export * from "./stack-layout-common";
@@ -40,12 +40,12 @@ export class StackLayout extends StackLayoutBase {
         if (isVertical) {
             let childWidth = (widthMode === layout.UNSPECIFIED) ? 0 : width - horizontalPaddingsAndMargins;
             childWidth = Math.max(0, childWidth);
-            childMeasureSpec = layout.makeMeasureSpec(childWidth, widthMode)
+            childMeasureSpec = layout.makeMeasureSpec(childWidth, widthMode);
         }
         else {
             let childHeight = (heightMode === layout.UNSPECIFIED) ? 0 : height - verticalPaddingsAndMargins;
             childHeight = Math.max(0, childHeight);
-            childMeasureSpec = layout.makeMeasureSpec(childHeight, heightMode)
+            childMeasureSpec = layout.makeMeasureSpec(childHeight, heightMode);
         }
 
         let childSize: { measuredWidth: number; measuredHeight: number };
@@ -134,7 +134,7 @@ export class StackLayout extends StackLayoutBase {
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childTop + childHeight);
             childTop += childHeight;
-        })
+        });
     }
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }): void {

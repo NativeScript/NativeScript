@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from ".";
 import { Page } from "../page";
 
@@ -27,7 +27,7 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
     } else if (typeof arg === "function") {
         entry = {
             create: arg
-        }
+        };
     } else {
         entry = arg;
     }
@@ -39,7 +39,7 @@ export interface NavigationContext {
     entry: BackstackEntry;
     // TODO: remove isBackNavigation for NativeScript 6.0
     isBackNavigation: boolean;
-    navigationType: NavigationType
+    navigationType: NavigationType;
 }
 
 @CSSType("Frame")
@@ -139,7 +139,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             entry: backstackEntry,
             isBackNavigation: true,
             navigationType: NavigationType.back
-        }
+        };
 
         this._navigationQueue.push(navigationContext);
         this._processNextNavigationEntry();
@@ -208,7 +208,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             entry: backstackEntry,
             isBackNavigation: false,
             navigationType: NavigationType.forward
-        }
+        };
 
         this._navigationQueue.push(navigationContext);
         this._processNextNavigationEntry();
@@ -633,7 +633,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             create: currentEntry.create,
             moduleName: currentEntry.moduleName,
             backstackVisible: currentEntry.backstackVisible
-        }
+        };
 
         // If create returns the same page instance we can't recreate it.
         // Instead of navigation set activity content.
@@ -720,7 +720,7 @@ export const defaultPage = new Property<FrameBase, string>({
         frame.navigate({ moduleName: newValue });
     }
 });
-defaultPage.register(FrameBase)
+defaultPage.register(FrameBase);
 
 export const actionBarVisibilityProperty = new Property<FrameBase, "auto" | "never" | "always">({ name: "actionBarVisibility", defaultValue: "auto", affectsLayout: isIOS });
 actionBarVisibilityProperty.register(FrameBase);

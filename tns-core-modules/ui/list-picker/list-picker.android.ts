@@ -1,4 +1,4 @@
-﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
+import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
 import { ItemsSource } from ".";
 
 export * from "./list-picker-common";
@@ -155,7 +155,7 @@ export class ListPicker extends ListPickerBase {
         return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: editText ? editText.getTextColors().getDefaultColor() : -1
-        }
+        };
     }
     [colorProperty.setNative](value: { wheelColor: number, textColor: number } | Color) {
         let color: number;

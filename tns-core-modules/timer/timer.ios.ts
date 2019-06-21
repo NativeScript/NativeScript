@@ -1,4 +1,4 @@
-﻿import * as utils from "../utils/utils";
+import * as utils from "../utils/utils";
 
 //iOS specific timer functions implementation.
 const timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
@@ -6,14 +6,14 @@ let timerId = 0;
 
 interface KeyValuePair<K, V> {
     k: K;
-    v: V
+    v: V;
 }
 
 class TimerTargetImpl extends NSObject {
     private callback: Function;
     private disposed: boolean;
-    private id: number
-    private shouldRepeat: boolean
+    private id: number;
+    private shouldRepeat: boolean;
 
     public static initWithCallback(callback: Function, id: number, shouldRepeat: boolean): TimerTargetImpl {
         let handler = <TimerTargetImpl>TimerTargetImpl.new();

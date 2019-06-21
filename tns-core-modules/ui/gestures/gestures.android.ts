@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
@@ -288,7 +288,7 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     private _detach() {
-        this._notifyTouch = false
+        this._notifyTouch = false;
         this._simpleGestureDetector = null;
         this._scaleGestureDetector = null;
         this._swipeGestureDetector = null;
@@ -464,7 +464,7 @@ class CustomPanGestureDetector {
 
             case android.view.MotionEvent.ACTION_MOVE:
                 if (!this.isTracking) {
-                    this.trackStart(event)
+                    this.trackStart(event);
                 }
 
                 this.trackChange(event);
@@ -620,7 +620,7 @@ class CustomRotateGestureDetector {
             object: this.target,
             eventName: toString(GestureTypes.rotation),
             state: state
-        }
+        };
 
         _executeCallback(this.observer, args);
     }

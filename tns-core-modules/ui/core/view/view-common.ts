@@ -348,7 +348,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     if (typeof options.closeCallback === "function") {
                         options.closeCallback.apply(undefined, originalArgs);
                     }
-                }
+                };
 
                 that._hideNativeModalView(parent, whenClosedCallback);
             }
@@ -381,7 +381,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             object: this,
             context: this._modalContext,
             closeCallback: this._closeModalCallback
-        }
+        };
         this.notify(args);
     }
 

@@ -47,7 +47,7 @@ class WKNavigationDelegateImpl extends NSObject
         if (traceEnabled()) {
             traceWrite("WKNavigationDelegateClass.webViewDidStartProvisionalNavigation(" + webView.URL + ")", traceCategories.Debug);
         }
-    };
+    }
 
     public webViewDidFinishNavigation(webView: WKWebView, navigation: WKNavigation): void {
         if (traceEnabled()) {

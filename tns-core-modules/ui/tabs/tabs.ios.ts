@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
@@ -8,7 +8,7 @@ import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-n
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
-import { ios as iosUtils, layout } from "../../utils/utils"
+import { ios as iosUtils, layout } from "../../utils/utils";
 import { device } from "../../platform";
 import { fromFileOrResource } from "../../image-source";
 import { Color } from "../../color";
@@ -360,7 +360,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
         const nextViewControllerIndex = ownerViewControllers.indexOf(nextViewController);
 
         if (selectedIndex !== nextViewControllerIndex) {
-            owner.selectedIndex = nextViewControllerIndex
+            owner.selectedIndex = nextViewControllerIndex;
         }
         
         console.log("test");
@@ -1005,16 +1005,16 @@ function getTitleAttributesForStates(tabView: Tabs): TabStates {
     const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    result.normalState = { [NSFontAttributeName]: font }
+    result.normalState = { [NSFontAttributeName]: font };
     if (textColor) {
-        result.normalState[UITextAttributeTextColor] = textColor
+        result.normalState[UITextAttributeTextColor] = textColor;
     }
 
     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
     const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-    result.selectedState = { [NSFontAttributeName]: font }
+    result.selectedState = { [NSFontAttributeName]: font };
     if (selectedTextColor) {
-        result.selectedState[UITextAttributeTextColor] = selectedTextColor
+        result.selectedState[UITextAttributeTextColor] = selectedTextColor;
     }
 
     return result;

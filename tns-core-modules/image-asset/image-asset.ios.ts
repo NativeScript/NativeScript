@@ -16,7 +16,7 @@ export class ImageAsset extends ImageAssetBase {
             this.nativeImage = UIImage.imageWithContentsOfFile(asset);
         }
         else if (asset instanceof UIImage) {
-            this.nativeImage = asset
+            this.nativeImage = asset;
         }
         else {
             this.ios = asset;

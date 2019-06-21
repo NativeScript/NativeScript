@@ -84,7 +84,7 @@ function initializeWebViewClient(): void {
                 }
             }
         }
-    };
+    }
 
     WebViewClient = WebViewClientImpl;
 }

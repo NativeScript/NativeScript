@@ -65,7 +65,7 @@ function initializeNativeClasses() {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX)
+            this.index = args.getInt(INDEX);
             if (!this.tab) {
                 throw new Error(`Cannot find BottomNavigation`);
             }

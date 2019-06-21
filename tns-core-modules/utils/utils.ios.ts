@@ -1,4 +1,4 @@
-﻿import {
+import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "../trace";
 
@@ -88,7 +88,7 @@ export module ios {
     export function openFile(filePath: string): boolean {
         try {
             const appPath = getCurrentAppPath();
-            const path = filePath.replace("~", appPath)
+            const path = filePath.replace("~", appPath);
 
             const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
             controller.delegate = new UIDocumentInteractionControllerDelegateImpl();

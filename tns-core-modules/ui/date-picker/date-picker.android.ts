@@ -1,4 +1,4 @@
-﻿import {
+import {
     DatePickerBase, yearProperty, monthProperty, dayProperty,
     dateProperty, maxDateProperty, minDateProperty
 } from "./date-picker-common";
@@ -19,7 +19,7 @@ function initializeDateChangedListener(): void {
     @Interfaces([android.widget.DatePicker.OnDateChangedListener])
     class DateChangedListenerImpl extends java.lang.Object implements android.widget.DatePicker.OnDateChangedListener {
         constructor(public owner: DatePicker) {
-            super()
+            super();
             return global.__native(this);
         }
 

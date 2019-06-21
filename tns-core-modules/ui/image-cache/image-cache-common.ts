@@ -1,4 +1,4 @@
-﻿import * as definition from ".";
+import * as definition from ".";
 import * as observable from "../../data/observable";
 import * as imageSource from "../../image-source";
 
@@ -87,7 +87,7 @@ export class Cache extends observable.Observable implements definition.Cache {
                 const stackCompleted = function (result: imageSource.ImageSource, key: string) {
                     existingCompleted(result, key);
                     newRequest.completed(result, key);
-                }
+                };
 
                 existingRequest.completed = stackCompleted;
             }
@@ -101,7 +101,7 @@ export class Cache extends observable.Observable implements definition.Cache {
                 const stackError = function (key: string) {
                     existingError(key);
                     newRequest.error(key);
-                }
+                };
 
                 existingRequest.error = stackError;
             }

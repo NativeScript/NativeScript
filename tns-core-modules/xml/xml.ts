@@ -109,7 +109,7 @@ function _HandleAmpEntities(found: string, decimalValue: string, hexValue: strin
     }
 
     return String.fromCharCode(parseInt(hexValue, 16));
-};
+}
 
 export class XmlParser implements definition.XmlParser {
     //TODO: Add option to configure whether the parser should report ignorable whitespace, i.e. document formatting whitespace.
@@ -244,7 +244,7 @@ export class XmlParser implements definition.XmlParser {
     }
 
     private _resolveNamespace(fullName: string): { prefix: string; namespace: string; name: string; } {
-        const result: { prefix: string; namespace: string; name: string; } = { prefix: undefined, namespace: undefined, name: undefined }
+        const result: { prefix: string; namespace: string; name: string; } = { prefix: undefined, namespace: undefined, name: undefined };
         result.prefix = "";
         if (fullName.indexOf(":") !== -1) {
             const split = fullName.split(":");

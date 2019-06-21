@@ -47,7 +47,7 @@ interface ExpandedEntry extends BackstackEntry {
 
     transition: Transition;
     transitionName: string;
-    frameId: number
+    frameId: number;
     useLollipopTransition: boolean;
 }
 

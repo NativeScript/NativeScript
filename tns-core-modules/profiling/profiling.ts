@@ -102,7 +102,7 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
         } finally {
             stop(name);
         }
-    }
+    };
 }
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
@@ -191,7 +191,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 
     // return edited descriptor as opposed to overwriting the descriptor
     return descriptor;
-}
+};
 
 const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
     // save a reference to the original method this way we keep the values currently in the
@@ -212,7 +212,7 @@ const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
 
     // return edited descriptor as opposed to overwriting the descriptor
     return descriptor;
-}
+};
 
 function profileMethodNamed(name: string): MethodDecorator {
     return (target, key, descriptor: PropertyDescriptor) => {
@@ -229,7 +229,7 @@ function profileMethodNamed(name: string): MethodDecorator {
 
         // return edited descriptor as opposed to overwriting the descriptor
         return descriptor;
-    }
+    };
 }
 
 const voidMethodDecorator = () => {

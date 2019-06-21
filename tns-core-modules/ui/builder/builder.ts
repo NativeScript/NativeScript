@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { LoadOptions } from ".";
 import { View, ViewBase, Template, KeyedTemplate } from "../core/view";
 import { ViewEntry } from "../frame";
@@ -74,13 +74,13 @@ const loadModule = profile("loadModule", (moduleNamePath: string, entry: ViewEnt
         let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
         if (moduleExportsResolvedPath) {
             // Exclude extension when doing require.
-            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
+            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3);
             return global.loadModule(moduleExportsResolvedPath);
         }
     }
 
     return null;
-})
+});
 
 const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, moduleExports: any): View => {
     // Possible XML file path.
@@ -92,7 +92,7 @@ const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, modu
     // };
 
     return loadPage(moduleNamePath, fileName, moduleExports);
-})
+});
 
 export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {
     if (entry.create) {
@@ -165,7 +165,7 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
     } else if (fileName && File.exists(fileName)) {
         const file = File.fromPath(fileName);
-        const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message) });
+        const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message); });
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
     }
 
@@ -212,7 +212,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
             const jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
             if (jsFilePath) {
                 // Component has code file.
-                subExports = global.loadModule(jsFilePath)
+                subExports = global.loadModule(jsFilePath);
             }
         }
 
@@ -363,7 +363,7 @@ namespace xml2ui {
             const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
             e = new SourceError(e, source, "Building UI from XML.");
             return e;
-        }
+        };
     }
 
     interface SourceTracker {
@@ -376,7 +376,7 @@ namespace xml2ui {
                 const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
                 Source.set(component, source);
             }
-        }
+        };
     }
 
     export class PlatformFilter extends XmlProducerBase implements XmlProducer, XmlConsumer {

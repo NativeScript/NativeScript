@@ -1,4 +1,4 @@
-﻿import * as textModule from "../text";
+import * as textModule from "../text";
 import { getNativeApplication } from "../application";
 
 let applicationContext: android.content.Context;
@@ -66,7 +66,7 @@ export class FileSystemAccess {
         const onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
             return true;
-        }
+        };
 
         let errorOccurred;
         const localError = function (error: any) {
@@ -75,7 +75,7 @@ export class FileSystemAccess {
             }
 
             errorOccurred = true;
-        }
+        };
 
         this.enumEntities(path, onEntity, localError);
 

@@ -1,4 +1,4 @@
-﻿import * as common from "./image-cache-common";
+import * as common from "./image-cache-common";
 import * as trace from "../../trace";
 
 let LruBitmapCacheClass;
@@ -20,7 +20,7 @@ function ensureLruBitmapCacheClass() {
 
             return result;
         }
-    };
+    }
 
     LruBitmapCacheClass = LruBitmapCache;
 }

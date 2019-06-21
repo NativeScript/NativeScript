@@ -286,7 +286,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 // Omit divider
 
                 if (this.flexWrap !== FlexWrap.WRAP_REVERSE) {
-                    flexLine._maxBaseline = Math.max(flexLine._maxBaseline, FlexboxLayout.getBaseline(child) + lp.effectiveMarginTop)
+                    flexLine._maxBaseline = Math.max(flexLine._maxBaseline, FlexboxLayout.getBaseline(child) + lp.effectiveMarginTop);
                 } else {
                     flexLine._maxBaseline = Math.max(flexLine._maxBaseline, child.getMeasuredHeight() - FlexboxLayout.getBaseline(child) + lp.effectiveMarginBottom);
                 }

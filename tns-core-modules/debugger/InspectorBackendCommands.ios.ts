@@ -7,7 +7,7 @@ export function DomainDispatcher(domain: string): ClassDecorator {
 // Heap domain exposes JavaScript heap attributes and capabilities.
 export namespace HeapDomain {
 // JavaScriptCore HeapSnapshot JSON data.
-export type HeapSnapshotData = string
+export type HeapSnapshotData = string;
 
 export interface GarbageCollection {
     // The type of garbage collection.
@@ -18,13 +18,13 @@ export interface GarbageCollection {
 
 export interface GetPreviewMethodArguments { 
     // Identifier of the heap object within the snapshot. 
-    heapObjectId: number
+    heapObjectId: number;
 }
 export interface GetRemoteObjectMethodArguments { 
     // Identifier of the heap object within the snapshot. 
-    heapObjectId: number,
+    heapObjectId: number;
     // Symbolic group name that can be used to release multiple objects. 
-    objectGroup?: string
+    objectGroup?: string;
 }
 export interface HeapDomainDispatcher { 
     // Enables Heap domain events.
@@ -64,13 +64,13 @@ export class HeapFrontend {
 // Debugger domain exposes JavaScript debugging capabilities. It allows setting and removing breakpoints, stepping through execution, exploring stack traces, etc.
 export namespace DebuggerDomain {
 // Breakpoint identifier.
-export type BreakpointId = string
+export type BreakpointId = string;
 // Breakpoint action identifier.
-export type BreakpointActionIdentifier = number
+export type BreakpointActionIdentifier = number;
 // Unique script identifier.
-export type ScriptId = string
+export type ScriptId = string;
 // Call frame identifier.
-export type CallFrameId = string
+export type CallFrameId = string;
 
 export interface Location {
     // Script identifier as reported in the <code>Debugger.scriptParsed</code>.
@@ -170,85 +170,85 @@ export interface CSPViolationPauseReason {
 
 export interface SetBreakpointsActiveMethodArguments { 
     // New value for breakpoints active state. 
-    active: boolean
+    active: boolean;
 }
 export interface SetBreakpointByUrlMethodArguments { 
     // Line number to set breakpoint at. 
-    lineNumber: number,
+    lineNumber: number;
     // URL of the resources to set breakpoint on. 
-    url?: string,
+    url?: string;
     // Regex pattern for the URLs of the resources to set breakpoints on. Either <code>url</code> or <code>urlRegex</code> must be specified. 
-    urlRegex?: string,
+    urlRegex?: string;
     // Offset in the line to set breakpoint at. 
-    columnNumber?: number,
+    columnNumber?: number;
     // Options to apply to this breakpoint to modify its behavior. 
-    options?: BreakpointOptions
+    options?: BreakpointOptions;
 }
 export interface SetBreakpointMethodArguments { 
     // Location to set breakpoint in. 
-    location: Location,
+    location: Location;
     // Options to apply to this breakpoint to modify its behavior. 
-    options?: BreakpointOptions
+    options?: BreakpointOptions;
 }
 export interface RemoveBreakpointMethodArguments { 
-    breakpointId: BreakpointId
+    breakpointId: BreakpointId;
 }
 export interface ContinueToLocationMethodArguments { 
     // Location to continue to. 
-    location: Location
+    location: Location;
 }
 export interface SearchInContentMethodArguments { 
     // Id of the script to search in. 
-    scriptId: ScriptId,
+    scriptId: ScriptId;
     // String to search for. 
-    query: string,
+    query: string;
     // If true, search is case sensitive. 
-    caseSensitive?: boolean,
+    caseSensitive?: boolean;
     // If true, treats string parameter as regex. 
-    isRegex?: boolean
+    isRegex?: boolean;
 }
 export interface GetScriptSourceMethodArguments { 
     // Id of the script to get source for. 
-    scriptId: ScriptId
+    scriptId: ScriptId;
 }
 export interface SetScriptSourceMethodArguments { 
     // Absolute location of the script to set source for. 
-    scriptUrl: string,
+    scriptUrl: string;
     // Script source. 
-    scriptSource: string
+    scriptSource: string;
 }
 export interface GetFunctionDetailsMethodArguments { 
     // Id of the function to get location for. 
-    functionId: RuntimeDomain.RemoteObjectId
+    functionId: RuntimeDomain.RemoteObjectId;
 }
 export interface SetPauseOnExceptionsMethodArguments { 
     // Pause on exceptions mode. 
-    state: any /* none,uncaught,all */
+    state: any; /* none,uncaught,all */
 }
 export interface SetPauseOnAssertionsMethodArguments { 
-    enabled: boolean
+    enabled: boolean;
 }
 export interface EvaluateOnCallFrameMethodArguments { 
     // Call frame identifier to evaluate on. 
-    callFrameId: CallFrameId,
+    callFrameId: CallFrameId;
     // Expression to evaluate. 
-    expression: string,
+    expression: string;
     // String object group name to put result into (allows rapid releasing resulting object handles using <code>releaseObjectGroup</code>). 
-    objectGroup?: string,
+    objectGroup?: string;
     // Specifies whether command line API should be available to the evaluated expression, defaults to false. 
-    includeCommandLineAPI?: boolean,
+    includeCommandLineAPI?: boolean;
     // Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. 
-    doNotPauseOnExceptionsAndMuteConsole?: boolean,
+    doNotPauseOnExceptionsAndMuteConsole?: boolean;
     // Whether the result is expected to be a JSON object that should be sent by value. 
-    returnByValue?: boolean,
+    returnByValue?: boolean;
     // Whether preview should be generated for the result. 
-    generatePreview?: boolean,
+    generatePreview?: boolean;
     // Whether the resulting value should be considered for saving in the $n history. 
-    saveResult?: boolean
+    saveResult?: boolean;
 }
 export interface SetOverlayMessageMethodArguments { 
     // Overlay message to display when paused in debugger. 
-    message?: string
+    message?: string;
 }
 export interface DebuggerDomainDispatcher { 
     // Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
@@ -332,9 +332,9 @@ export class DebuggerFrontend {
 // Runtime domain exposes JavaScript runtime by means of remote evaluation and mirror objects. Evaluation results are returned as mirror object that expose object type, string representation and unique identifier that can be used for further object reference. Original objects are maintained in memory unless they are either explicitly released or are released along with the other objects in their object group.
 export namespace RuntimeDomain {
 // Unique object identifier.
-export type RemoteObjectId = string
+export type RemoteObjectId = string;
 // Id of an execution context.
-export type ExecutionContextId = number
+export type ExecutionContextId = number;
 
 export interface RemoteObject {
     // Object type.
@@ -529,89 +529,89 @@ export interface BasicBlock {
     executionCount: number;
 }
 
-export const enum SyntaxErrorType { None, Irrecoverable, UnterminatedLiteral, Recoverable }; 
+export const enum SyntaxErrorType { None, Irrecoverable, UnterminatedLiteral, Recoverable } 
 
 export interface ParseMethodArguments { 
     // Source code to parse. 
-    source: string
+    source: string;
 }
 export interface EvaluateMethodArguments { 
     // Expression to evaluate. 
-    expression: string,
+    expression: string;
     // Symbolic group name that can be used to release multiple objects. 
-    objectGroup?: string,
+    objectGroup?: string;
     // Determines whether Command Line API should be available during the evaluation. 
-    includeCommandLineAPI?: boolean,
+    includeCommandLineAPI?: boolean;
     // Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. 
-    doNotPauseOnExceptionsAndMuteConsole?: boolean,
+    doNotPauseOnExceptionsAndMuteConsole?: boolean;
     // Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page. 
-    contextId?: ExecutionContextId,
+    contextId?: ExecutionContextId;
     // Whether the result is expected to be a JSON object that should be sent by value. 
-    returnByValue?: boolean,
+    returnByValue?: boolean;
     // Whether preview should be generated for the result. 
-    generatePreview?: boolean,
+    generatePreview?: boolean;
     // Whether the resulting value should be considered for saving in the $n history. 
-    saveResult?: boolean
+    saveResult?: boolean;
 }
 export interface CallFunctionOnMethodArguments { 
     // Identifier of the object to call function on. 
-    objectId: RemoteObjectId,
+    objectId: RemoteObjectId;
     // Declaration of the function to call. 
-    functionDeclaration: string,
+    functionDeclaration: string;
     // Call arguments. All call arguments must belong to the same JavaScript world as the target object. 
-    arguments?: CallArgument[],
+    arguments?: CallArgument[];
     // Specifies whether function call should stop on exceptions and mute console. Overrides setPauseOnException state. 
-    doNotPauseOnExceptionsAndMuteConsole?: boolean,
+    doNotPauseOnExceptionsAndMuteConsole?: boolean;
     // Whether the result is expected to be a JSON object which should be sent by value. 
-    returnByValue?: boolean,
+    returnByValue?: boolean;
     // Whether preview should be generated for the result. 
-    generatePreview?: boolean
+    generatePreview?: boolean;
 }
 export interface GetPropertiesMethodArguments { 
     // Identifier of the object to return properties for. 
-    objectId: RemoteObjectId,
+    objectId: RemoteObjectId;
     // If true, returns properties belonging only to the object itself, not to its prototype chain. 
-    ownProperties?: boolean,
+    ownProperties?: boolean;
     // Whether preview should be generated for property values. 
-    generatePreview?: boolean
+    generatePreview?: boolean;
 }
 export interface GetDisplayablePropertiesMethodArguments { 
     // Identifier of the object to return properties for. 
-    objectId: RemoteObjectId,
+    objectId: RemoteObjectId;
     // Whether preview should be generated for property values. 
-    generatePreview?: boolean
+    generatePreview?: boolean;
 }
 export interface GetCollectionEntriesMethodArguments { 
     // Id of the collection to get entries for. 
-    objectId: RemoteObjectId,
+    objectId: RemoteObjectId;
     // Symbolic group name that can be used to release multiple. If not provided, it will be the same objectGroup as the RemoteObject determined from <code>objectId</code>. This is useful for WeakMap to release the collection entries. 
-    objectGroup?: string,
+    objectGroup?: string;
     // If provided skip to this index before collecting values. Otherwise, 0. 
-    startIndex?: number,
+    startIndex?: number;
     // If provided only return <code>numberToFetch</code> values. Otherwise, return values all the way to the end. 
-    numberToFetch?: number
+    numberToFetch?: number;
 }
 export interface SaveResultMethodArguments { 
     // Id or value of the object to save. 
-    value: CallArgument,
+    value: CallArgument;
     // Unique id of the execution context. To specify in which execution context script evaluation should be performed. If not provided, determine from the CallArgument's objectId. 
-    contextId?: ExecutionContextId
+    contextId?: ExecutionContextId;
 }
 export interface ReleaseObjectMethodArguments { 
     // Identifier of the object to release. 
-    objectId: RemoteObjectId
+    objectId: RemoteObjectId;
 }
 export interface ReleaseObjectGroupMethodArguments { 
     // Symbolic object group name. 
-    objectGroup: string
+    objectGroup: string;
 }
 export interface GetRuntimeTypesForVariablesAtOffsetsMethodArguments { 
     // An array of type locations we're requesting information for. Results are expected in the same order they're sent in. 
-    locations: TypeLocation[]
+    locations: TypeLocation[];
 }
 export interface GetBasicBlocksMethodArguments { 
     // Indicates which sourceID information is requested for. 
-    sourceID: string
+    sourceID: string;
 }
 export interface RuntimeDomainDispatcher { 
     // Parses JavaScript source code for errors.
@@ -701,11 +701,11 @@ export interface CallFrame {
 
 export interface SetMonitoringXHREnabledMethodArguments { 
     // Monitoring enabled state. 
-    enabled: boolean
+    enabled: boolean;
 }
 export interface AddInspectedNodeMethodArguments { 
     // DOM node id to be accessible by means of $0 command line API. 
-    nodeId: DOMDomain.NodeId
+    nodeId: DOMDomain.NodeId;
 }
 export interface ConsoleDomainDispatcher { 
     // Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification.
@@ -756,7 +756,7 @@ export interface SearchMatch {
 // Actions and events related to the inspected page belong to the page domain.
 export namespace PageDomain {
 // Unique script identifier.
-export type ScriptIdentifier = string
+export type ScriptIdentifier = string;
 
 export interface Frame {
     // Frame unique identifier.
@@ -831,107 +831,107 @@ export interface Cookie {
     session: boolean;
 }
 
-export const enum ResourceType { Document, Stylesheet, Image, Font, Script, XHR, WebSocket, Other }; 
+export const enum ResourceType { Document, Stylesheet, Image, Font, Script, XHR, WebSocket, Other } 
 
-export const enum CoordinateSystem { Viewport, Page }; 
+export const enum CoordinateSystem { Viewport, Page } 
 
 export interface AddScriptToEvaluateOnLoadMethodArguments { 
-    scriptSource: string
+    scriptSource: string;
 }
 export interface RemoveScriptToEvaluateOnLoadMethodArguments { 
-    identifier: ScriptIdentifier
+    identifier: ScriptIdentifier;
 }
 export interface ReloadMethodArguments { 
     // If true, browser cache is ignored (as if the user pressed Shift+refresh). 
-    ignoreCache?: boolean,
+    ignoreCache?: boolean;
     // If set, the script will be injected into all frames of the inspected page after reload. 
-    scriptToEvaluateOnLoad?: string
+    scriptToEvaluateOnLoad?: string;
 }
 export interface NavigateMethodArguments { 
     // URL to navigate the page to. 
-    url: string
+    url: string;
 }
 export interface DeleteCookieMethodArguments { 
     // Name of the cookie to remove. 
-    cookieName: string,
+    cookieName: string;
     // URL to match cooke domain and path. 
-    url: string
+    url: string;
 }
 export interface GetResourceContentMethodArguments { 
     // Frame id to get resource for. 
-    frameId: NetworkDomain.FrameId,
+    frameId: NetworkDomain.FrameId;
     // URL of the resource to get content for. 
-    url: string
+    url: string;
 }
 export interface SearchInResourceMethodArguments { 
     // Frame id for resource to search in. 
-    frameId: NetworkDomain.FrameId,
+    frameId: NetworkDomain.FrameId;
     // URL of the resource to search in. 
-    url: string,
+    url: string;
     // String to search for. 
-    query: string,
+    query: string;
     // If true, search is case sensitive. 
-    caseSensitive?: boolean,
+    caseSensitive?: boolean;
     // If true, treats string parameter as regex. 
-    isRegex?: boolean,
+    isRegex?: boolean;
     // Request id for resource to search in. 
-    requestId?: NetworkDomain.RequestId
+    requestId?: NetworkDomain.RequestId;
 }
 export interface SearchInResourcesMethodArguments { 
     // String to search for. 
-    text: string,
+    text: string;
     // If true, search is case sensitive. 
-    caseSensitive?: boolean,
+    caseSensitive?: boolean;
     // If true, treats string parameter as regex. 
-    isRegex?: boolean
+    isRegex?: boolean;
 }
 export interface SetDocumentContentMethodArguments { 
     // Frame id to set HTML for. 
-    frameId: NetworkDomain.FrameId,
+    frameId: NetworkDomain.FrameId;
     // HTML content to set. 
-    html: string
+    html: string;
 }
 export interface SetShowPaintRectsMethodArguments { 
     // True for showing paint rectangles 
-    result: boolean
+    result: boolean;
 }
 export interface SetScriptExecutionDisabledMethodArguments { 
     // Whether script execution should be disabled in the page. 
-    value: boolean
+    value: boolean;
 }
 export interface SetTouchEmulationEnabledMethodArguments { 
     // Whether the touch event emulation should be enabled. 
-    enabled: boolean
+    enabled: boolean;
 }
 export interface SetEmulatedMediaMethodArguments { 
     // Media type to emulate. Empty string disables the override. 
-    media: string
+    media: string;
 }
 export interface SetCompositingBordersVisibleMethodArguments { 
     // True for showing compositing borders. 
-    visible: boolean
+    visible: boolean;
 }
 export interface SnapshotNodeMethodArguments { 
     // Id of the node to snapshot. 
-    nodeId: DOMDomain.NodeId
+    nodeId: DOMDomain.NodeId;
 }
 export interface SnapshotRectMethodArguments { 
     // X coordinate 
-    x: number,
+    x: number;
     // Y coordinate 
-    y: number,
+    y: number;
     // Rectangle width 
-    width: number,
+    width: number;
     // Rectangle height 
-    height: number,
+    height: number;
     // Indicates the coordinate system of the supplied rectangle. 
-    coordinateSystem: CoordinateSystem
+    coordinateSystem: CoordinateSystem;
 }
 export interface HandleJavaScriptDialogMethodArguments { 
     // Whether to accept or dismiss the dialog. 
-    accept: boolean,
+    accept: boolean;
     // The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog. 
-    promptText?: string
+    promptText?: string;
 }
 export interface PageDomainDispatcher { 
     // Enables page domain notifications.
@@ -1031,13 +1031,13 @@ export class PageFrontend {
 // Network domain allows tracking network activities of the page. It exposes information about http, file, data and other requests and responses, their headers, bodies, timing, etc.
 export namespace NetworkDomain {
 // Unique loader identifier.
-export type LoaderId = string
+export type LoaderId = string;
 // Unique frame identifier.
-export type FrameId = string
+export type FrameId = string;
 // Unique request identifier.
-export type RequestId = string
+export type RequestId = string;
 // Number of seconds since epoch.
-export type Timestamp = number
+export type Timestamp = number;
 
 export interface Headers {
 }
@@ -1144,21 +1144,21 @@ export interface Initiator {
 
 export interface SetExtraHTTPHeadersMethodArguments { 
     // Map with extra HTTP headers. 
-    headers: Headers
+    headers: Headers;
 }
 export interface GetResponseBodyMethodArguments { 
     // Identifier of the network request to get content for. 
-    requestId: RequestId
+    requestId: RequestId;
 }
 export interface SetCacheDisabledMethodArguments { 
     // Cache disabled state. 
-    cacheDisabled: boolean
+    cacheDisabled: boolean;
 }
 export interface LoadResourceMethodArguments { 
     // Frame to load the resource from. 
-    frameId: FrameId,
+    frameId: FrameId;
     // URL of the resource to load. 
-    url: string
+    url: string;
 }
 export interface NetworkDomainDispatcher { 
     // Enables network tracking, network events will now be delivered to the client.
@@ -1238,9 +1238,9 @@ export class NetworkFrontend {
 // This domain exposes DOM read/write operations. Each DOM Node is represented with its mirror object that has an <code>id</code>. This <code>id</code> can be used to get additional information on the Node, resolve it into the JavaScript object wrapper, etc. It is important that client receives DOM events only for the nodes that are known to the client. Backend keeps track of the nodes that were sent to the client and never sends the same node twice. It is client's responsibility to collect information about the nodes that were sent to the client.
 export namespace DOMDomain {
 // Unique DOM node identifier.
-export type NodeId = number
+export type NodeId = number;
 // Unique DOM node identifier used to reference a node that may not have been pushed to the front-end.
-export type BackendNodeId = number
+export type BackendNodeId = number;
 
 export interface Node {
     // Node identifier that is passed into the rest of the DOM messages as the <code>nodeId</code>. Backend will only push node with given <code>id</code> once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client.
@@ -1317,69 +1317,69 @@ export interface HighlightConfig {
     marginColor?: RGBAColor;
 }
 
-export const enum PseudoType { Before, After }; 
+export const enum PseudoType { Before, After } 
 
-export const enum ShadowRootType { UserAgent, Open, Closed }; 
+export const enum ShadowRootType { UserAgent, Open, Closed } 
 
-export const enum LiveRegionRelevant { Additions, Removals, Text }; 
+export const enum LiveRegionRelevant { Additions, Removals, Text } 
 
 export interface RemoveNodeMethodArguments { 
     // Id of the node to remove. 
-    nodeId: NodeId
+    nodeId: NodeId;
 }
 export interface SetAttributeValueMethodArguments { 
     // Id of the element to set attribute for. 
-    nodeId: NodeId,
+    nodeId: NodeId;
     // Attribute name. 
-    name: string,
+    name: string;
     // Attribute value. 
-    value: string
+    value: string;
 }
 export interface SetAttributesAsTextMethodArguments { 
     // Id of the element to set attributes for. 
-    nodeId: NodeId,
+    nodeId: NodeId;
     // Text with a number of attributes. Will parse this text using HTML parser. 
-    text: string,
+    text: string;
     // Attribute name to replace with new attributes derived from text in case text parsed successfully. 
-    name?: string
+    name?: string;
 }
 export interface RemoveAttributeMethodArguments { 
     // Id of the element to remove attribute from. 
-    nodeId: NodeId,
+    nodeId: NodeId;
     // Name of the attribute to remove. 
-    name: string
+    name: string;
 }
 export interface PerformSearchMethodArguments { 
     // Plain text or query selector or XPath search query. 
-    query: string,
+    query: string;
     // Ids of nodes to use as starting points for the search. 
-    nodeIds?: NodeId[]
+    nodeIds?: NodeId[];
 }
 export interface GetSearchResultsMethodArguments { 
     // Unique search session identifier. 
-    searchId: string,
+    searchId: string;
     // Start index of the search result to be returned. 
-    fromIndex: number,
+    fromIndex: number;
     // End index of the search result to be returned. 
-    toIndex: number
+    toIndex: number;
 }
 export interface DiscardSearchResultsMethodArguments { 
     // Unique search session identifier. 
-    searchId: string
+    searchId: string;
 }
 export interface HighlightNodeMethodArguments { 
     // A descriptor for the highlight appearance. 
-    highlightConfig: HighlightConfig,
+    highlightConfig: HighlightConfig;
     // Identifier of the node to highlight. 
-    nodeId?: NodeId,
+    nodeId?: NodeId;
     // JavaScript object id of the node to be highlighted. 
-    objectId?: RuntimeDomain.RemoteObjectId
+    objectId?: RuntimeDomain.RemoteObjectId;
 }
 export interface ResolveNodeMethodArguments { 
     // Id of the node to resolve. 
-    nodeId: NodeId,
+    nodeId: NodeId;
     // Symbolic group name that can be used to release multiple objects. 
-    objectGroup?: string
+    objectGroup?: string;
 }
 export interface DOMDomainDispatcher { 
     enable(): void;
@@ -1466,7 +1466,7 @@ export class DOMFrontend {
 // CSS
 // This domain exposes CSS read/write operations. All CSS objects (stylesheets, rules, and styles) have an associated 'id' used in subsequent operations on the related object. Each object type has a specific 'id' structure, and those are not interchangeable between objects of different kinds. CSS objects can be loaded using the <code>get*ForNode()</code> calls (which accept a DOM node id). A client can also discover all the existing stylesheets with the <code>getAllStyleSheets()</code> method (or keeping track of the <code>styleSheetAdded</code>/<code>styleSheetRemoved</code> events) and subsequently load the required stylesheet contents using the <code>getStyleSheet[Text]()</code> methods.
 export namespace CSSDomain {
-export type StyleSheetId = string
+export type StyleSheetId = string;
 
 export interface PseudoElementMatches {
     // Pseudo element type.
@@ -1673,22 +1673,22 @@ export interface StyleDeclarationEdit {
     text: string;
 }
 
-export const enum StyleSheetOrigin { Injected, UserAgent, Inspector, Regular }; 
+export const enum StyleSheetOrigin { Injected, UserAgent, Inspector, Regular } 
 
 export interface GetMatchedStylesForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+    nodeId: DOMDomain.NodeId;
 }
 export interface GetInlineStylesForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+    nodeId: DOMDomain.NodeId;
 }
 export interface GetComputedStyleForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+    nodeId: DOMDomain.NodeId;
 }
 export interface GetPlatformFontsForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+    nodeId: DOMDomain.NodeId;
 }
 export interface GetStyleSheetTextMethodArguments { 
-    styleSheetId: StyleSheetId
+    styleSheetId: StyleSheetId;
 }
 export interface CSSDomainDispatcher { 
     // Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received.

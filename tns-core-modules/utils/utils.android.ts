@@ -1,4 +1,4 @@
-﻿import {
+import {
     write as traceWrite,
     categories as traceCategories,
     messageType as traceMessageType,
@@ -124,7 +124,7 @@ export module ad {
         let windowToken: android.os.IBinder;
 
         if (nativeView instanceof android.view.View) {
-            windowToken = nativeView.getWindowToken()
+            windowToken = nativeView.getWindowToken();
         } else if (androidApp.foregroundActivity instanceof androidx.appcompat.app.AppCompatActivity) {
             const decorView = androidApp.foregroundActivity.getWindow().getDecorView();
             windowToken = decorView ? decorView.getWindowToken() : null;
@@ -189,7 +189,7 @@ export module ad {
             let result = 0;
             try {
                 if (!attr) {
-                    attr = java.lang.Class.forName("androidx.appcompat.R$attr")
+                    attr = java.lang.Class.forName("androidx.appcompat.R$attr");
                 }
 
                 let colorID = 0;

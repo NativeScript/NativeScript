@@ -1,4 +1,4 @@
-﻿import {
+import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
     AndroidApplication as AndroidApplicationDefinition, AndroidActivityNewIntentEventData,
     AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
@@ -218,7 +218,7 @@ export function getNativeApplication(): android.app.Application {
 
         // we cannot work without having the app instance
         if (!nativeApp) {
-            throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
+            throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.");
         }
     }
 

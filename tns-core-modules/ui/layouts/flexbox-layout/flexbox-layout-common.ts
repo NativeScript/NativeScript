@@ -317,7 +317,7 @@ const flexFlowProperty = new ShorthandProperty<Style, string>({
         }
         return properties;
     }
-})
+});
 flexFlowProperty.register(Style);
 
 // flex: inital | auto | none | <flex-grow> <flex-shrink> || <flex-basis>
@@ -374,5 +374,5 @@ const flexProperty = new ShorthandProperty<Style, string>({
         return properties;
 
     }
-})
+});
 flexProperty.register(Style);

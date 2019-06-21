@@ -1,4 +1,4 @@
-﻿import { Font } from "../styling/font";
+import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty,
@@ -123,7 +123,7 @@ export class SearchBar extends SearchBarBase {
     }
 
     public createNativeView() {
-        const nativeView = new androidx.appcompat.widget.SearchView(this._context)
+        const nativeView = new androidx.appcompat.widget.SearchView(this._context);
         nativeView.setIconified(false);
         return nativeView;
     }

@@ -65,7 +65,7 @@ function initializeNativeClasses() {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX)
+            this.index = args.getInt(INDEX);
             if (!this.tab) {
                 throw new Error(`Cannot find TabView`);
             }
@@ -484,7 +484,7 @@ export class Tabs extends TabsBase {
 
         const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
             return !!items.filter((item) => {
-                return item._domId === currentItem._domId
+                return item._domId === currentItem._domId;
             })[0];
         });
 

@@ -373,7 +373,7 @@ export class View extends ViewCommon {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
-                traceCategories.ViewHierarchy, traceMessageType.error)
+                traceCategories.ViewHierarchy, traceMessageType.error);
             return;
         }
 
@@ -448,7 +448,7 @@ export class View extends ViewCommon {
 
     protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         if (!parent || !parent.viewController) {
-            traceError("Trying to hide modal view but no parent with viewController specified.")
+            traceError("Trying to hide modal view but no parent with viewController specified.");
             return;
         }
 
@@ -901,7 +901,7 @@ export namespace ios {
 
         const inWindow = CGRectMake(inWindowLeft, inWindowTop, frame.size.width, frame.size.height);
 
-        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow }
+        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow };
     }
 
     export class UILayoutViewController extends UIViewController {

@@ -49,7 +49,7 @@ class ListViewCell extends UITableViewCell {
     }
 
     public get view(): View {
-        return this.owner ? this.owner.get() : null
+        return this.owner ? this.owner.get() : null;
     }
 
     public owner: WeakRef<View>;
@@ -293,7 +293,7 @@ export class ListView extends ListViewBase {
         // mimic Android behavior that silently coerces index values within [0, itemsLength - 1] range
         if (itemsLength > 0) {
             if (index < 0) {
-                index = 0
+                index = 0;
             } else if (index >= itemsLength) {
                 index = itemsLength - 1;
             }

@@ -1,4 +1,4 @@
-﻿import {
+import {
     iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     ApplicationEventData,
@@ -71,7 +71,7 @@ class CADisplayLinkTarget extends NSObject {
     }
     public static ObjCExposedMethods = {
         "onDisplayed": { returns: interop.types.void, params: [CADisplayLink] }
-    }
+    };
 }
 
 class IOSApplication implements IOSApplicationDefinition {
@@ -277,7 +277,7 @@ setApplication(iosApp);
 // attach on global, so it can be overwritten in NativeScript Angular
 (<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
     iosApp._onLivesync(context);
-}
+};
 
 let mainEntry: NavigationEntry;
 function createRootView(v?: View) {
@@ -395,4 +395,4 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 
     const rootView = getRootView();
     livesync(rootView, context);
-}
+};

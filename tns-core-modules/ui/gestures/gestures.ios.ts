@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
@@ -502,6 +502,6 @@ class TouchGestureEventData implements TouchGestureEventData {
     }
 
     getY(): number {
-        return this.getMainPointer().locationInView(this.view.nativeViewProtected).y
+        return this.getMainPointer().locationInView(this.view.nativeViewProtected).y;
     }
 }

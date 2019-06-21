@@ -37,7 +37,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
             }
             return undefined;
         }
-    }
+    };
 
     public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
     public _effectiveRowHeight: number = autoEffectiveRowHeight;
@@ -200,7 +200,7 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 
         return value;
     }
-})
+});
 itemTemplatesProperty.register(ListViewBase);
 
 const defaultRowHeight: Length = "auto";

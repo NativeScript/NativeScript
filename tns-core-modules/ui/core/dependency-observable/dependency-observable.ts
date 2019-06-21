@@ -1,4 +1,4 @@
-﻿import {
+import {
     PropertyMetadata as PropertyMetadataDefinition, Property as PropertyDefinition, PropertyEntry as PropertyEntryDefinition,
     DependencyObservable as DependencyObservableDefinition, NativeValueResult,
     PropertyChangedCallback, PropertyValidationCallback, PropertyEqualityComparer
@@ -90,7 +90,7 @@ export class Property implements PropertyDefinition {
     public onValidateValue;
     public onValueChanged: PropertyChangedCallback;
 
-    public valueConverter: (value: string) => any
+    public valueConverter: (value: string) => any;
 
     constructor(public name: string, public ownerType: string, public metadata: PropertyMetadata, valueConverter?: (value: string) => any) {
         throw new Error("* @deprecated use 'ui/core/properties' module instead.");
@@ -267,7 +267,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
                 propertyName: propName,
                 object: this,
                 value: newValue
-            }
+            };
             this.notify(ngChangedData);
         }
     }

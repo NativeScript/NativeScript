@@ -31,7 +31,7 @@ export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 export type BackgroundSize = "auto" | "cover" | "contain" | {
     x: LengthPercentage,
     y: "auto" | LengthPercentage
-}
+};
 export type HorizontalAlign = "left" | "center" | "right";
 export type VerticalAlign = "top" | "center" | "bottom";
 export interface HorizontalAlignWithOffset {
@@ -40,7 +40,7 @@ export interface HorizontalAlignWithOffset {
 }
 export interface VerticalAlignWithOffset {
     readonly align: "top" | "bottom";
-    readonly offset: LengthPercentage
+    readonly offset: LengthPercentage;
 }
 export interface BackgroundPosition {
     readonly x: HorizontalAlign | HorizontalAlignWithOffset;
@@ -262,7 +262,7 @@ export enum colors {
     whitesmoke = 0xFFF5F5F5,
     yellow = 0xFFFFFF00,
     yellowgreen = 0xFF9ACD32
-};
+}
 
 export function parseColorKeyword(value, start: number, keyword = parseKeyword(value, start)): Parsed<ARGB> {
     if (keyword && keyword.value in colors) {
@@ -286,7 +286,7 @@ function parseKeyword(text: string, start: number = 0): Parsed<Keyword> {
     }
     const end = keywordRegEx.lastIndex;
     const value = result[1];
-    return { start, end, value }
+    return { start, end, value };
 }
 
 const backgroundRepeatKeywords = new Set([ "repeat", "repeat-x", "repeat-y", "no-repeat" ]);
@@ -336,7 +336,7 @@ const angleUnitsToRadMap: { [unit: string]: (start: number, end: number, value: 
     "rad": (start: number, end: number, rad: number) => ({ start, end, value: rad }),
     "grad": (start: number, end: number, grad: number) => ({ start, end, value: grad / 200 * Math.PI }),
     "turn": (start: number, end: number, turn: number) => ({ start, end, value: turn * Math.PI * 2 })
-}
+};
 export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
     const angleResult = parseUnit(value, start);
     if (angleResult) {
@@ -377,7 +377,7 @@ const backgroundPositionKeywordsDirection: {[align: string]: "x" | "center" | "y
     "center": "center",
     "top": "y",
     "bottom": "y"
-}
+};
 export function parseBackgroundPosition(text: string, start: number = 0, keyword = parseKeyword(text, start)): Parsed<BackgroundPosition> {
     function formatH(align: Parsed<HorizontalAlign>, offset: Parsed<LengthPercentage>) {
         if (align.value === "center") {
@@ -464,7 +464,7 @@ const sideDirections = {
     right: Math.PI * 1 / 2,
     bottom: Math.PI * 2 / 2,
     left: Math.PI * 3 / 2
-}
+};
 const cornerDirections = {
     top: {
         right: Math.PI * 1 / 4,
@@ -482,7 +482,7 @@ const cornerDirections = {
         top: Math.PI * 7 / 4,
         bottom: Math.PI * 5 / 4
     }
-}
+};
 function parseDirection(text: string, start: number = 0): Parsed<Angle> {
     directionRegEx.lastIndex = start;
     const result = directionRegEx.exec(text);
@@ -496,7 +496,7 @@ function parseDirection(text: string, start: number = 0): Parsed<Angle> {
         const value = cornerDirections[firstDirection][secondDirection];
         return value === undefined ? null : { start, end, value };
     } else {
-        return { start, end, value: sideDirections[firstDirection] }
+        return { start, end, value: sideDirections[firstDirection] };
     }
 }
 
@@ -755,7 +755,7 @@ export function parseSimpleSelectorSequence(text: string, start: number): Parsed
         end = simpleSelector.end;
         simpleSelector = parseSimpleSelector(text, end);
     }
-    return { start, end, value }
+    return { start, end, value };
 }
 
 const combinatorRegEx = /\s*(\+|~|>)?\s*/gy;
@@ -767,7 +767,7 @@ export function parseCombinator(text: string, start: number = 0): Parsed<Combina
     }
     const end = combinatorRegEx.lastIndex;
     const value = <Combinator>result[1] || " ";
-    return { start, end, value }
+    return { start, end, value };
 }
 
 const whiteSpaceRegEx = /\s*/gy;
@@ -795,8 +795,8 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
         if (combinator) {
             pair[1] = combinator.value;
         }
-        pair = [simpleSelectorSequence.value, undefined]
-        value.push(pair)
+        pair = [simpleSelectorSequence.value, undefined];
+        value.push(pair);
 
         combinator = parseCombinator(text, end);
         if (combinator) {
@@ -1058,7 +1058,7 @@ export class CSS3Parser {
     private consumeAMatchToken(): "*=" | "$=" | "|=" | "~=" | "^=" | null {
         if (this.text[this.nextInputCodePointIndex + 1] === "=") {
             const token = this.text.substr(this.nextInputCodePointIndex, 2);
-            this.nextInputCodePointIndex += 2
+            this.nextInputCodePointIndex += 2;
             return <"*=" | "$=" | "|=" | "~=" | "^=">token;
         }
         return null;
@@ -1300,7 +1300,7 @@ export class CSS3Parser {
             name: (<AtKeywordToken>inputToken).text,
             prelude: [],
             block: undefined
-        }
+        };
         while (inputToken = this.consumeAToken()) {
             if (inputToken === ";") {
                 return atRule;
@@ -1448,7 +1448,7 @@ export class CSSNativeScript {
             stylesheet: {
                 rules: this.parseRules(stylesheet.rules)
             }
-        }
+        };
     }
 
     private parseRules(rules: Rule[]): any {
@@ -1469,7 +1469,7 @@ export class CSSNativeScript {
             return {
                 import: rule.prelude.map(m => typeof m === "string" ? m : m.text).join("").trim(),
                 type: "import"
-            }
+            };
         }
         return;
     }
@@ -1479,7 +1479,7 @@ export class CSSNativeScript {
             type: "rule",
             selectors: this.preludeToSelectorsStringArray(rule.prelude),
             declarations: this.ruleBlockToDeclarations(rule.block.values)
-        }
+        };
     }
 
     private ruleBlockToDeclarations(declarationsInputTokens: InputToken[]): { type: "declaration", property: string, value: string }[] {

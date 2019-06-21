@@ -1,4 +1,4 @@
-﻿// imported for definition purposes only
+// imported for definition purposes only
 import * as httpModule from "../../http";
 import * as imageSourceModule from "../../image-source";
 import * as platformModule from "../../platform";
@@ -249,7 +249,7 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
     if (encoding === HttpResponseEncoding.GBK) {
         charsetName = "GBK";
     }
-    return raw.toString(charsetName)
+    return raw.toString(charsetName);
 }
 
 export function addHeader(headers: httpModule.Headers, key: string, value: string): void {

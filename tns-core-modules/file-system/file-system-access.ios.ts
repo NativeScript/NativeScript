@@ -1,4 +1,4 @@
-﻿import { encoding as textEncoding } from "../text";
+import { encoding as textEncoding } from "../text";
 import { ios } from "../utils/utils";
 
 // TODO: Implement all the APIs receiving callback using async blocks
@@ -86,7 +86,7 @@ export class FileSystemAccess {
 
             if (!exists) {
                 try {
-                    fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null)
+                    fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null);
                 }
                 catch (ex) {
                     if (onError) {
@@ -148,7 +148,7 @@ export class FileSystemAccess {
         const onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
             return true;
-        }
+        };
 
         let errorOccurred;
         const localError = function (error: any) {
@@ -157,7 +157,7 @@ export class FileSystemAccess {
             }
 
             errorOccurred = true;
-        }
+        };
 
         this.enumEntities(path, onEntity, localError);
 

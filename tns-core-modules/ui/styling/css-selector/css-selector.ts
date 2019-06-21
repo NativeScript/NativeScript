@@ -1,4 +1,4 @@
-﻿import { Node, Declaration, Changes, ChangeMap } from ".";
+import { Node, Declaration, Changes, ChangeMap } from ".";
 import { isNullOrUndefined } from "../../../utils/types";
 import { escapeRegexSymbols } from "../../../utils/utils-common";
 
@@ -63,7 +63,7 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: b
         cls.prototype.combinator = undefined;
         cls.prototype.dynamic = dynamic;
         return cls;
-    }
+    };
 }
 
 declare type Combinator = "+" | ">" | "~" | " ";
@@ -475,7 +475,7 @@ interface SelectorInDocument {
     sel: SelectorCore;
 }
 interface SelectorMap {
-    [key: string]: SelectorInDocument[]
+    [key: string]: SelectorInDocument[];
 }
 export class SelectorsMap<T extends Node> implements LookupSorter {
     private id: SelectorMap = {};

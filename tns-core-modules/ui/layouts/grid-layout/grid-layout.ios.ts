@@ -1,4 +1,4 @@
-﻿import {
+import {
     GridLayoutBase, ItemSpec, View, layout
 } from "./grid-layout-common";
 
@@ -242,7 +242,7 @@ class MeasureSpecs {
 
     public child: View;
     private column: ItemSpec;
-    private row: ItemSpec
+    private row: ItemSpec;
     private columnIndex: number = 0;
     private rowIndex: number = 0;
 

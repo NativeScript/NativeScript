@@ -1,4 +1,4 @@
-﻿import {
+import {
     TimePickerBase, timeProperty, minuteIntervalProperty,
     minuteProperty, minMinuteProperty, maxMinuteProperty,
     hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
@@ -150,5 +150,5 @@ class UITimePickerChangeHandlerImpl extends NSObject {
 
     public static ObjCExposedMethods = {
         "valueChanged": { returns: interop.types.void, params: [UIDatePicker] }
-    }
+    };
 }

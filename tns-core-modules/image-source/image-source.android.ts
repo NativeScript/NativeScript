@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { ImageSource as ImageSourceDefinition } from ".";
 import { ImageAsset } from "../image-asset";
 import * as httpModule from "../http";
@@ -127,7 +127,7 @@ export class ImageSource implements ImageSourceDefinition {
     public loadFromBase64(source: string): boolean {
         if (typeof source === "string") {
             const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
-            this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
+            this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
         return this.android != null;
     }

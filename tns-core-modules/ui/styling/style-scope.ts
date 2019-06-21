@@ -563,7 +563,7 @@ export class StyleScope {
     }
 
     public addCss(cssString: string, cssFileName?: string): void {
-        this.appendCss(cssString, cssFileName)
+        this.appendCss(cssString, cssFileName);
     }
 
     public addCssFile(cssFileName: string): void {

@@ -265,7 +265,7 @@ export class Animation extends AnimationBase {
             else {
                 Animation._createNativeAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
             }
-        }
+        };
     }
 
     private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe"): AnimationInfo {

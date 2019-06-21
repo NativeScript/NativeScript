@@ -1,4 +1,4 @@
-﻿import { Font } from "../styling/font";
+import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, isEnabledProperty
@@ -190,7 +190,7 @@ export class SearchBar extends SearchBarBase {
         return null;
     }
     [textFieldBackgroundColorProperty.setNative](value: Color | UIColor) {
-        const color = value instanceof Color ? value.ios : value
+        const color = value instanceof Color ? value.ios : value;
         const textField = this._textField;
         if (textField) {
             textField.backgroundColor = color;

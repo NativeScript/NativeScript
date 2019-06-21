@@ -214,14 +214,14 @@ export class Background implements BackgroundDefinition {
         return this.borderTopWidth > 0
             || this.borderRightWidth > 0
             || this.borderBottomWidth > 0
-            || this.borderLeftWidth > 0
+            || this.borderLeftWidth > 0;
     }
 
     public hasBorderRadius(): boolean {
         return this.borderTopLeftRadius > 0
             || this.borderTopRightRadius > 0
             || this.borderBottomRightRadius > 0
-            || this.borderBottomLeftRadius > 0
+            || this.borderBottomLeftRadius > 0;
     }
 
     public hasUniformBorderColor(): boolean {
@@ -253,21 +253,21 @@ export class Background implements BackgroundDefinition {
             return this.borderTopColor;
         }
         return undefined;
-    };
+    }
 
     public getUniformBorderWidth(): number {
         if (this.hasUniformBorderWidth()) {
             return this.borderTopWidth;
         }
         return 0;
-    };
+    }
 
     public getUniformBorderRadius(): number {
         if (this.hasUniformBorderRadius()) {
             return this.borderTopLeftRadius;
         }
         return 0;
-    };
+    }
 
     public toString(): string {
         return `isEmpty: ${this.isEmpty()}; color: ${this.color}; image: ${this.image}; repeat: ${this.repeat}; position: ${this.position}; size: ${this.size}; borderTopColor: ${this.borderTopColor}; borderRightColor: ${this.borderRightColor}; borderBottomColor: ${this.borderBottomColor}; borderLeftColor: ${this.borderLeftColor}; borderTopWidth: ${this.borderTopWidth}; borderRightWidth: ${this.borderRightWidth}; borderBottomWidth: ${this.borderBottomWidth}; borderLeftWidth: ${this.borderLeftWidth}; borderTopLeftRadius: ${this.borderTopLeftRadius}; borderTopRightRadius: ${this.borderTopRightRadius}; borderBottomRightRadius: ${this.borderBottomRightRadius}; borderBottomLeftRadius: ${this.borderBottomLeftRadius}; clipPath: ${this.clipPath};`;

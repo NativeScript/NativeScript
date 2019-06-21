@@ -1,4 +1,4 @@
-﻿import { Font as FontDefinition, ParsedFont } from "./font";
+import { Font as FontDefinition, ParsedFont } from "./font";
 import { makeValidator, makeParser } from "../core/properties";
 
 export abstract class Font implements FontDefinition {
@@ -132,7 +132,7 @@ export function parseFont(fontValue: string): ParsedFont {
         fontStyle: "normal",
         fontVariant: "normal",
         fontWeight: "normal"
-    }
+    };
 
     const parts = fontValue.split(/\s+/);
     let part: string;

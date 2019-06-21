@@ -1,4 +1,4 @@
-﻿import { BindingOptions } from ".";
+import { BindingOptions } from ".";
 import { ViewBase } from "../view-base";
 
 import { unsetValue } from "../properties";
@@ -134,7 +134,7 @@ export class Binding {
         if (context !== undefined && context !== null) {
             this.update(context);
         }
-    };
+    }
 
     public clearSource(): void {
         this.propertyChangeListeners.forEach((observable, index, map) => {
@@ -287,7 +287,7 @@ export class Binding {
     }
 
     private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>, parentProperies?: string) {
-        let objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty)
+        let objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty);
         let prop = parentProperies || "";
 
         for (let i = 0, length = objectsAndProperties.length; i < length; i++) {
@@ -448,7 +448,7 @@ export class Binding {
 
                 const newProps = sourceProps.slice(changedPropertyIndex + 1);
                 // add new weak event listeners
-                const newObject = data.object[sourceProps[changedPropertyIndex]]
+                const newObject = data.object[sourceProps[changedPropertyIndex]];
                 if (!types.isNullOrUndefined(newObject) && typeof newObject === "object") {
                     this.addPropertyChangeListeners(new WeakRef(newObject), newProps, parentProps);
                 }
@@ -579,7 +579,7 @@ export class Binding {
             return {
                 instance: new WeakRef(this.sourceAsObject(resolvedObj)),
                 property: prop
-            }
+            };
         }
         return null;
     }

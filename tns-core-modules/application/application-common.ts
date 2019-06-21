@@ -1,4 +1,4 @@
-﻿// Require globals first so that snapshot takes __extends function.
+// Require globals first so that snapshot takes __extends function.
 require("globals");
 
 import { Observable, EventData } from "../data/observable";
@@ -124,8 +124,8 @@ export function addCss(cssText: string): void {
 
 global.__onUncaughtError = function (error: NativeScriptError) {
     events.notify(<UnhandledErrorEventData>{ eventName: uncaughtErrorEvent, object: app, android: error, ios: error, error: error });
-}
+};
 
 global.__onDiscardedError = function (error: NativeScriptError) {
     events.notify(<DiscardedErrorEventData>{ eventName: discardedErrorEvent, object: app, error: error });
-}
+};

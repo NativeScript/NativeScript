@@ -1,4 +1,4 @@
-﻿import { Label as LabelDefinition } from ".";
+import { Label as LabelDefinition } from ".";
 import { Background } from "../styling/background";
 import {
     TextBase, View, layout,
@@ -38,7 +38,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
     set textWrap(value: boolean) {
         if (typeof value === "string") {
-            value = booleanConverter(value)
+            value = booleanConverter(value);
         }
 
         this.style.whiteSpace = value ? "normal" : "nowrap";

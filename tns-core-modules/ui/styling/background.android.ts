@@ -6,7 +6,7 @@ import { parse } from "../../css-value";
 import { path, knownFolders } from "../../file-system";
 import * as application from "../../application";
 import { profile } from "../../profiling";
-export * from "./background-common"
+export * from "./background-common";
 
 interface AndroidView {
     _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
@@ -74,7 +74,7 @@ export module ad {
             const cachedDrawable = androidView._cachedDrawable;
             let defaultDrawable: android.graphics.drawable.Drawable;
             if (cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState) {
-                defaultDrawable = cachedDrawable.newDrawable(nativeView.getResources())
+                defaultDrawable = cachedDrawable.newDrawable(nativeView.getResources());
             } else if (cachedDrawable instanceof android.graphics.drawable.Drawable) {
                 defaultDrawable = cachedDrawable;
             } else {
@@ -104,7 +104,7 @@ export module ad {
 
 function fromBase64(source: string): android.graphics.Bitmap {
     const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
-    return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
+    return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 }
 
 function fromGradient(gradient: LinearGradient): org.nativescript.widgets.LinearGradientDefinition {

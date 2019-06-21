@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import {
     iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
 } from ".";
@@ -86,7 +86,7 @@ export class Frame extends FrameBase {
         let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
         if (isReplace) {
             animated = true;
-            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 }
+            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 };
             viewController[TRANSITION] = navigationTransition;
         } else if (animated) {
             navigationTransition = this._getNavigationTransition(backstackEntry.entry);

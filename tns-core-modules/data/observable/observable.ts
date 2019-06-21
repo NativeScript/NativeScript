@@ -1,4 +1,4 @@
-﻿import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from ".";
+import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from ".";
 
 interface ListenerEntry {
     callback: (data: EventData) => void;
@@ -29,7 +29,7 @@ let _wrappedValues = [
     new WrappedValue(null),
     new WrappedValue(null),
     new WrappedValue(null)
-]
+];
 
 export class Observable implements ObservableDefinition {
     public static propertyChangeEvent = "propertyChange";

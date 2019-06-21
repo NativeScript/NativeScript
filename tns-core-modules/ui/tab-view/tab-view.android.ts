@@ -7,7 +7,7 @@ import {
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
     fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
     traceWrite, Color, traceMissingIcon
-} from "./tab-view-common"
+} from "./tab-view-common";
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
@@ -68,7 +68,7 @@ function initializeNativeClasses() {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX)
+            this.index = args.getInt(INDEX);
             if (!this.tab) {
                 throw new Error(`Cannot find TabView`);
             }
@@ -589,7 +589,7 @@ export class TabView extends TabViewBase {
 
         const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
             return !!items.filter((item) => {
-                return item._domId === currentItem._domId
+                return item._domId === currentItem._domId;
             })[0];
         });
 
