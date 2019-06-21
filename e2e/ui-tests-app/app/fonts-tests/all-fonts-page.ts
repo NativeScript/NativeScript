@@ -50,12 +50,12 @@ if (isIOS) {
     const nsFontFamilies = UIFont.familyNames;
     for (let i = 0; i < nsFontFamilies.count; i++) {
         const family = nsFontFamilies.objectAtIndex(i);
-        fontFamilies.push(family)
+        fontFamilies.push(family);
 
         const nsFonts = UIFont.fontNamesForFamilyName(family);
         for (let j = 0; j < nsFonts.count; j++) {
             const font = nsFonts.objectAtIndex(j);
-            fontNames.push(font)
+            fontNames.push(font);
         }
     }
 

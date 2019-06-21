@@ -5,7 +5,7 @@ const CSS = `
 #tab2 { text-transform: lowercase; }
 #tab3 { text-transform: uppercase; }
 #tab4 { text-transform: capitalize; }
-`
+`;
 
 export function applyTap(args) {
     var page = <Page>args.object.page;

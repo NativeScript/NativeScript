@@ -4,7 +4,7 @@ function set(what: string) {
     return function(args) {
         let containerCss = " #container { " + args.object.tag + " }" ;
         args.object.page.addCss(containerCss);
-    }
+    };
 }
 
 export const flexDirection = set("flexDirection");

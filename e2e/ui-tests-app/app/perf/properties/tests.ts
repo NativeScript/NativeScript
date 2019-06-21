@@ -192,7 +192,7 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
-                style.fontWeight = i % 2 === 0 ? "bold" : "normal"
+                style.fontWeight = i % 2 === 0 ? "bold" : "normal";
             }
         });
         result += setResultTime(time);
@@ -258,7 +258,7 @@ export function setBindingContextWithParentsBound(counts: Array<number>, parent:
 function setupParents(parent: LayoutBase, bindToContext: boolean = false): void {
     for (let i = 0; i < 3; i++) {
         let stack = new StackLayout();
-        parent.addChild(stack)
+        parent.addChild(stack);
         for (let j = 0; j < 3; j++) {
             let innerStack = new StackLayout();
             stack.addChild(innerStack);

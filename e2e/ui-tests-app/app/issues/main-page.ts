@@ -31,7 +31,7 @@ export function loadExamples() {
     examples.set("ng-repo-1599", "issues/issue-ng-repo-1599-page");
     examples.set("ng-repo-1626", "issues/issue-ng-repo-1626-page");
     examples.set("6439", "issues/issue-6439-page");
-    examples.set("open-file-6895", "issues/open-file-6895-page")
+    examples.set("open-file-6895", "issues/open-file-6895-page");
 
     return examples;
 }

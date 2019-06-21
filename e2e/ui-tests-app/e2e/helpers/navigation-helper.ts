@@ -56,5 +56,3 @@ export class NavigationHelper {
         throw new Error("Not implemented!");
     }
 }
-
-

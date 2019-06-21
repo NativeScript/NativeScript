@@ -38,7 +38,7 @@ export function onPopoverModal(args: EventData) {
         ios: {
             presentationStyle: UIModalPresentationStyle.Popover
         }
-    }
+    };
 
     view.showModal("modal-no-page/modal-no-page", options);
 }

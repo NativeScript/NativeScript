@@ -24,7 +24,7 @@ export class ActionItemPostitionView extends observable.Observable {
     set text(value: string) {
         if (this._text !== value) {
             this._text = value;
-            this.notifyPropertyChange("text", value)
+            this.notifyPropertyChange("text", value);
         }
     }
 
