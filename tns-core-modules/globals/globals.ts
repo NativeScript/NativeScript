@@ -35,7 +35,16 @@ interface ExtensionMap {
     [originalFileExtension: string]: string;
 }
 
-const defaultExtensionMap = { ".js": ".js", ".ts": ".js", ".css": ".css", ".scss": ".css", ".xml": ".xml", ".less": ".css", ".sass": ".css" };
+const defaultExtensionMap = {
+    ".js": ".js",
+    ".ts": ".js",
+    ".css": ".css",
+    ".scss": ".css",
+    ".less": ".css",
+    ".sass": ".css",
+    ".xml": ".xml"
+};
+
 global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
     context.keys().forEach(key => {
         const extDotIndex = key.lastIndexOf(".");
@@ -88,18 +97,14 @@ global.moduleExists = function (name: string): boolean {
 }
 
 global.loadModule = function (name: string): any {
-    // console.log("[global.loadModule]", name);
-
     const loader = modules.get(name);
     if (loader) {
-        // console.log("[global.loadModule] loader: ", name, loader);
         return loader(name);
     }
 
     for (let resolver of (<any>global).moduleResolvers) {
         const result = resolver(name);
         if (result) {
-            // console.log("[global.loadModule] resolver: ", name, result);
             modules.set(name, () => result);
             return result;
         }
@@ -107,7 +112,6 @@ global.loadModule = function (name: string): any {
 }
 
 global.getRegisteredModules = function (): string[] {
-    // console.log("[global.getRegisteredModules]", name);
     return Array.from(modules.keys());
 }
 
