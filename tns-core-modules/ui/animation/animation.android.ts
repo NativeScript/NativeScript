@@ -1,8 +1,8 @@
 ﻿// Definitions.
-import { AnimationDefinition } from ".";
+import { AnimationDefinition, AnimationPromise } from ".";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,

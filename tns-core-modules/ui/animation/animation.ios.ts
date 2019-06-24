@@ -1,7 +1,7 @@
-import { AnimationDefinition } from ".";
+import { AnimationDefinition, AnimationPromise } from ".";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
@@ -318,7 +318,7 @@ export class Animation extends AnimationBase {
                 }
                 break;
             case Properties.translate:
-                animation._originalValue = {x: animation.target.translateX, y: animation.target.translateY};
+                animation._originalValue = { x: animation.target.translateX, y: animation.target.translateY };
                 animation._propertyResetCallback = (value, valueSource) => {
                     animation.target.style[setLocal ? translateXProperty.name : translateXProperty.keyframe] = value.x;
                     animation.target.style[setLocal ? translateYProperty.name : translateYProperty.keyframe] = value.y;
@@ -334,7 +334,7 @@ export class Animation extends AnimationBase {
                 if (toValue.y === 0) {
                     toValue.y = 0.001;
                 }
-                animation._originalValue = {x: animation.target.scaleX, y: animation.target.scaleY};
+                animation._originalValue = { x: animation.target.scaleX, y: animation.target.scaleY };
                 animation._propertyResetCallback = (value, valueSource) => {
                     animation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x;
                     animation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y;
