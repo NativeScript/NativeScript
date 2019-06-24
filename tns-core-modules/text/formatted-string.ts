@@ -13,8 +13,6 @@ export module knownCollections {
     export const spans = "spans";
 }
 
-const CHILD_SPAN = "Span";
-
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
     private _spans: ObservableArray<Span>;
 
@@ -95,7 +93,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === CHILD_SPAN) {
+        if (value instanceof Span) {
             this.spans.push(value);
         }
     }
@@ -109,7 +107,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
                 this._addView(span);
 
                 // Then attach handlers - we skip the first nofitication because
-                // we raise change for the whole instance. 
+                // we raise change for the whole instance.
                 this.addPropertyChangeHandler(span);
             }
         }
