@@ -12,7 +12,7 @@ import * as helper from "../../ui-helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { isAndroid } from "tns-core-modules/platform";
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 
 export function test_eachDescendant() {
@@ -470,10 +470,10 @@ export function test_NativeSetter_called_only_once_with_cssValue() {
     const testView = new TestView("view");
     testView.id = "myID";
     const pageCSS = `
-    #myID { 
-        custom: testViewValue; 
-        custom-css-property: testCssValue; 
-        custom-css-animation-property: testCssAnimValue; 
+    #myID {
+        custom: testViewValue;
+        custom-css-property: testCssValue;
+        custom-css-animation-property: testCssAnimValue;
     }`;
 
     helper.buildUIAndRunTest(testView, () => {
@@ -494,10 +494,10 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
     testView.customCssAnimationProperty = "testCssAnimationValueLocal";
     testView.custom = "testViewValueLocal";
     const pageCSS = `
-    #myID { 
-        custom-css-property: testCssValueCSS; 
-        custom: testViewValueCSS; 
-        custom-css-animation-property: testCssAnimValueCSS;         
+    #myID {
+        custom-css-property: testCssValueCSS;
+        custom: testViewValueCSS;
+        custom-css-animation-property: testCssAnimValueCSS;
     }`;
 
     helper.buildUIAndRunTest(testView, () => {

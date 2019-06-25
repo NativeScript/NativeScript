@@ -4,7 +4,7 @@ import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as frameModule from "tns-core-modules/ui/frame";
-import { Page, NavigatedData } from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { Button } from "tns-core-modules/ui/button";
@@ -121,12 +121,6 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
     var topFrame = frameModule.topmost();
 
-    let oldChache;
-    if (topFrame.android) {
-        oldChache = topFrame.android.cachePagesOnNavigate;
-        topFrame.android.cachePagesOnNavigate = true;
-    }
-
     let tabViewPage: Page;
     let tabView: TabView;
 
@@ -172,10 +166,6 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
     frameModule.goBack();
 
     TKUnit.waitUntilReady(() => topFrame.currentPage === rootPage);
-
-    if (topFrame.android) {
-        topFrame.android.cachePagesOnNavigate = oldChache;
-    }
 
     TKUnit.assert(tabView.items[0].view instanceof ListView, "ListView should be created when navigating back to the main page.");
 }

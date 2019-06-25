@@ -57,7 +57,7 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
     return componentModule && componentModule.component;
 }
 
-export function loadPage(moduleNamePath: string, fileName: string, context?: any): View {
+export function _loadPage(moduleNamePath: string, fileName: string, context?: any): View {
     const componentModule = loadInternal(fileName, context, moduleNamePath);
     const componentView = componentModule && componentModule.component;
     if (componentView && moduleNamePath) {
@@ -91,7 +91,7 @@ const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, modu
     //     page["isBiOrientational"] = true;
     // };
 
-    return loadPage(moduleNamePath, fileName, moduleExports);
+    return _loadPage(moduleNamePath, fileName, moduleExports);
 })
 
 export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {

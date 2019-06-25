@@ -1,4 +1,4 @@
-import { AppiumDriver, logError, IRectangle, logInfo, SearchOptions } from "nativescript-dev-appium";
+import { AppiumDriver, IRectangle, logInfo } from "nativescript-dev-appium";
 
 export class NavigationHelper {
 
@@ -56,5 +56,3 @@ export class NavigationHelper {
         throw new Error("Not implemented!");
     }
 }
-
-

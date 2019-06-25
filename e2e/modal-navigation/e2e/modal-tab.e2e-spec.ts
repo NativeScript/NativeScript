@@ -2,7 +2,6 @@ import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-app
 import { Screen, driverDefaultWaitTime } from "./screen"
 import {
     roots,
-    modalFrameBackground,
     modalTabViewBackground,
     testSecondPageBackground,
     testSecondPageClose,

@@ -90,6 +90,5 @@ application.on(application.discardedErrorEvent, function(args: application.Disca
 
 application.setCssFileName("app.css");
 
-application.start({ moduleName: "main-page" });
+application._start({ moduleName: "main-page" });
 // application.run({ moduleName: "app-root" });
-// application.run();

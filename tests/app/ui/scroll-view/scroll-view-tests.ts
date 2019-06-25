@@ -3,7 +3,6 @@ import { Button } from "tns-core-modules/ui/button";
 import { Page, isIOS } from "tns-core-modules/ui/page";
 import { UITest } from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
-import * as frame from "tns-core-modules/ui/frame";
 import * as helper from "../../ui-helper";
 
 // >> article-require-scrollview-module
@@ -135,7 +134,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
         this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), true);
 
-        // No synchronous change. 
+        // No synchronous change.
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
 
         TKUnit.waitUntilReady(() => TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9));

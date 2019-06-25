@@ -431,17 +431,17 @@ export class BottomNavigation extends TabNavigationBase {
         return image;
     }
 
-    private _updateIOSTabBarColorsAndFonts(): void {
-        if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
-            return;
-        }
+    // private _updateIOSTabBarColorsAndFonts(): void {
+    //     if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
+    //         return;
+    //     }
 
-        const tabBar = <UITabBar>this.ios.tabBar;
-        const states = getTitleAttributesForStates(this);
-        for (let i = 0; i < tabBar.items.count; i++) {
-            applyStatesToItem(tabBar.items[i], states);
-        }
-    }
+    //     const tabBar = <UITabBar>this.ios.tabBar;
+    //     const states = getTitleAttributesForStates(this);
+    //     for (let i = 0; i < tabBar.items.count; i++) {
+    //         applyStatesToItem(tabBar.items[i], states);
+    //     }
+    // }
 
     // TODO: Move this to TabStripItem
     // [fontInternalProperty.getDefault](): Font {

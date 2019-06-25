@@ -1,5 +1,4 @@
-import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
-import { assert } from "chai";
+import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
 
 describe("button-background-suite", () => {
@@ -76,11 +75,9 @@ describe("button-background-suite", () => {
         await backgroundPage.executeScenario("background_42_position", "42");
     });
 
-
     it("background_43_position", async function () {
         await backgroundPage.executeScenario("background_43_position", "43");
     });
-
 
     it("background_44_position", async function () {
         await backgroundPage.executeScenario("background_44_position", "44");

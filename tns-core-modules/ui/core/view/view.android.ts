@@ -263,14 +263,12 @@ export class View extends ViewCommon {
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: androidx.fragment.app.FragmentManager;
     private _rootManager: androidx.fragment.app.FragmentManager;
-    private _originalElevation: number;
-    private _originalStateListAnimator: any; /* android.animation.StateListAnimator; */
 
     nativeViewProtected: android.view.View;
 
     // TODO: Implement unobserve that detach the touchListener.
-    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
-        super.observe(type, callback, thisArg);
+    _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+        super._observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
             this.setOnTouchListener();
         }

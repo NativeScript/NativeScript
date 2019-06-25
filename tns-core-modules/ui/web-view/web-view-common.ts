@@ -85,13 +85,6 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
             this._loadData(src);
         }
     }
-
-    get url(): string {
-        throw new Error("Property url of WebView is deprecated. Use src instead");
-    }
-    set url(value: string) {
-        throw new Error("Property url of WebView is deprecated. Use src instead")
-    }
 }
 export interface WebViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
