@@ -80,7 +80,7 @@ export function test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow()
     helper.navigate(pageFactory);
 }
 
-export var test_Resolve_Fragment_ForPage = function () {
+export function test_Resolve_Fragment_ForPage() {
     let testPage: Page;
     const pageFactory = () => {
         testPage = new Page();

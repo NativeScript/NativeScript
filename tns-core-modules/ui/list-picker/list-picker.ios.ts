@@ -6,7 +6,7 @@ export * from "./list-picker-common";
 
 export class ListPicker extends ListPickerBase {
     nativeViewProtected: UIPickerView;
-    // tslint:disable-next-line 
+    // tslint:disable-next-line
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
     

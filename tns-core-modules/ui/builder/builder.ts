@@ -96,7 +96,7 @@ const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, modu
     // };
 
     return _loadPage(moduleNamePath, fileName, moduleExports);
-})
+});
 
 export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {
     if (entry.create) {

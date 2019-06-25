@@ -8,7 +8,7 @@ import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-n
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
-import { /*ios as iosUtils,*/ layout } from "../../utils/utils"
+import { /*ios as iosUtils,*/ layout } from "../../utils/utils";
 // import { device } from "../../platform";
 import { fromFileOrResource } from "../../image-source";
 

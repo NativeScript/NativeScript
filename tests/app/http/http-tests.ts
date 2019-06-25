@@ -20,7 +20,7 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 
 export var test_getString_fail = function (done) {
     http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).catch(function (e) {
-        done(null)
+        done(null);
     });
 };
 

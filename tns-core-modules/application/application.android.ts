@@ -142,13 +142,13 @@ export function _start(entry?: NavigationEntry | string) {
     }
 }
 
-export function _shouldCreateRootFrame(): boolean {	
-    return createRootFrame.value;	
-}	
+export function _shouldCreateRootFrame(): boolean {
+    return createRootFrame.value;
+}
 
- export function run(entry?: NavigationEntry | string) {	
-    createRootFrame.value = false;	
-    _start(entry);	
+export function run(entry?: NavigationEntry | string) {
+    createRootFrame.value = false;
+    _start(entry);
 }
 
 const CALLBACKS = "_callbacks";

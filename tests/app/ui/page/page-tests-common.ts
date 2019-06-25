@@ -488,7 +488,7 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
         modalPage.content = button;
 
         (<Button>page.content).showModal(modalPage, { context: {}, closeCallback: modalCloseCallback });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -555,7 +555,7 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -777,7 +777,7 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -923,7 +923,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
 
     const modalPageShownModallyEventHandler = function () {
         TKUnit.assertEqual(_stack().length, 1, "Single frame should be instantiated at this point!");
-    }
+    };
 
     const hostNavigatedToEventHandler2 = function (args: NavigatedData) {
         const page = <Page>args.object;
@@ -945,7 +945,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1040,7 +1040,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1121,7 +1121,7 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1189,7 +1189,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1258,7 +1258,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();

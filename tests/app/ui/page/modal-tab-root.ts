@@ -2,7 +2,7 @@ import { ShownModallyData } from "tns-core-modules/ui/core/view";
 import { TabView } from "tns-core-modules/ui/tab-view/tab-view";
 import * as TKUnit from "../../tk-unit";
 import { _stack } from "tns-core-modules/ui/frame";
-import { isIOS } from "tns-core-modules/platform"
+import { isIOS } from "tns-core-modules/platform";
 
 export function onShownModally(args: ShownModallyData) {
     const tabView = <TabView>args.object;
