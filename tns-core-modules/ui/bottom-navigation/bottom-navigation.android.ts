@@ -110,6 +110,7 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
             const is = fromFileOrResource(tabStripItem.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                // tslint:disable-next-line:deprecation
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
             } else {
                 // TODO: 
@@ -355,7 +356,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = false;
+        // const smoothScroll = false;
 
         // if (traceEnabled()) {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);

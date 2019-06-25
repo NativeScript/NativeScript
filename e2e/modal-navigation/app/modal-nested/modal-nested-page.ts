@@ -1,4 +1,3 @@
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { NavigatedData } from "tns-core-modules/ui/page";
 import { View, EventData } from "tns-core-modules/ui/core/view";
 

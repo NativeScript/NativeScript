@@ -5,7 +5,6 @@ import { Button } from "tns-core-modules/ui/button";
 import * as types from "tns-core-modules/utils/types";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Label } from "tns-core-modules/ui/label";
-import * as frame from "tns-core-modules/ui/frame";
 import * as trace from "tns-core-modules/trace";
 import { Color } from "tns-core-modules/color";
 // enable the trace, it is disabled by default
@@ -292,13 +291,4 @@ export function checkNativeBackgroundColor(v: View): boolean {
 export function checkNativeBackgroundImage(v: View): boolean {
     const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
     return bkg && !types.isNullOrUndefined(bkg.getBackgroundImage());
-}
-
-let SDK: number;
-function getSDK() {
-    if (!SDK) {
-        SDK = android.os.Build.VERSION.SDK_INT;
-    }
-
-    return SDK;
 }

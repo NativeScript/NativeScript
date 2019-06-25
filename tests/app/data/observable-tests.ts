@@ -575,5 +575,6 @@ export function test_fromObjectRecursive_does_not_override_source_object_propert
     const myObj = {};
     const source = { name: "a", value: myObj };
     const observable = fromObjectRecursive(source);
+    TKUnit.assertNotNull(observable);
     TKUnit.assertEqual(source.value, myObj);
 }

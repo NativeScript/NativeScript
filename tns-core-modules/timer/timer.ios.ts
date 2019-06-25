@@ -1,6 +1,4 @@
-﻿import * as utils from "../utils/utils";
-
-//iOS specific timer functions implementation.
+﻿//iOS specific timer functions implementation.
 const timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
 let timerId = 0;
 

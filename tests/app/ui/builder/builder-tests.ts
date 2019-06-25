@@ -1,5 +1,5 @@
 import { path } from "tns-core-modules/file-system";
-import { loadPage } from "tns-core-modules/ui/builder";
+import { _loadPage } from "tns-core-modules/ui/builder";
 import { assertEqual, assertNull, assertThrows } from "../../tk-unit";
 
 const COMPONENT_MODULE = "component-module";
@@ -10,7 +10,7 @@ const testDir = "ui/builder";
 function getViewComponent(componentModule: string) {
     const moduleNamePath = path.join(testDir, componentModule);
     const fileName = path.join(testDir, `${componentModule}.xml`);
-    const view = loadPage(moduleNamePath, fileName);
+    const view = _loadPage(moduleNamePath, fileName);
     return view;
 }
 

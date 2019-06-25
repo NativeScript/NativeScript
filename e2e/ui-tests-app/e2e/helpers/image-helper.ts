@@ -1,4 +1,4 @@
-import { AppiumDriver, logError, IRectangle, UIElement, logInfo, SearchOptions } from "nativescript-dev-appium";
+import { AppiumDriver, logError, IRectangle, UIElement } from "nativescript-dev-appium";
 import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { assert } from "chai";
 
