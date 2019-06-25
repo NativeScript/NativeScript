@@ -1,7 +1,0 @@
-﻿<Page navigatingTo="navigatingTo">
-  <GridLayout rows="*, auto, *" >
-    <GridLayout backgroundColor="lightgreen" id="target" automationText="target" width="100" height="100" pan="onPan"/>
-    <Button row="1" text="clear" tap="clear"/>
-    <TextView row="2" text="here" id="output" automationText="output" style="font-size: 10, font-family: monospace;"/>
-  </GridLayout>
-</Page>
