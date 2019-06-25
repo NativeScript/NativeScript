@@ -42,7 +42,7 @@ export class Button extends ButtonBase {
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
-    _updateHandler(subscribe: boolean) {
+    _updateButtonStateChangeHandler(subscribe: boolean) {
         if (subscribe) {
             if (!this._stateChangedHandler) {
                 this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, (s: string) => {
