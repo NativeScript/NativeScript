@@ -8,12 +8,17 @@ describe("button-background-suite", () => {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
+        await driver.resetApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
     });
 
     after(async function () {
         await backgroundPage.endSuite();
+    });
+
+    beforeEach(function () {
+        backgroundPage.imageHelper.testName = this.currentTest.title;
     });
 
     afterEach(async function () {
@@ -24,8 +29,8 @@ describe("button-background-suite", () => {
 
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
-        backgroundPage.imageHelper.assertImages();
+        await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        backgroundPage.imageHelper.assertImages()
     });
 
     it("background_12", async function () {
@@ -35,7 +40,7 @@ describe("button-background-suite", () => {
     it("background_13", async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
+        await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
         backgroundPage.imageHelper.assertImages();
     });
 
@@ -75,9 +80,11 @@ describe("button-background-suite", () => {
         await backgroundPage.executeScenario("background_42_position", "42");
     });
 
+
     it("background_43_position", async function () {
         await backgroundPage.executeScenario("background_43_position", "43");
     });
+
 
     it("background_44_position", async function () {
         await backgroundPage.executeScenario("background_44_position", "44");

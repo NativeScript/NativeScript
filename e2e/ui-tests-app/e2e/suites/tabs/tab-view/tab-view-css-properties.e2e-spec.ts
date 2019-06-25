@@ -2,8 +2,13 @@ import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescr
 import { TabViewBasePage } from "./tab-view-base-page";
 import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { Platform } from "mobile-devices-controller";
+import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
 
-describe("tab-view-css-suite", async function () {
+const suite = "tabs";
+const spec = "tab-view";
+const fullSuiteName = `${suite}-${spec}`;
+
+describe(`${fullSuiteName}-css-suite`, async function () {
     let driver: AppiumDriver;
     let tabViewBasePage: TabViewBasePage;
 
@@ -21,12 +26,17 @@ describe("tab-view-css-suite", async function () {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        tabViewBasePage = new TabViewBasePage(driver);
+        await driver.resetApp();
+        tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.onload);
         await tabViewBasePage.init("tabViewCss");
     });
 
     after(async function () {
         await tabViewBasePage.endSuite();
+    });
+
+    beforeEach(function () {
+        tabViewBasePage.imageHelper.testName = `${fullSuiteName}-${this.currentTest.title.replace(suite, "")}`;
     });
 
     afterEach(async function () {
@@ -39,20 +49,21 @@ describe("tab-view-css-suite", async function () {
 
     for (let index = 0; index < samples.length; index++) {
         const sample = samples[index];
-        const imageName = `tabViewCss_${sample.replace("-", "_").replace(" ", "_").replace(":", "_").replace(";", "").replace("__", "_")}`;
+        const imageName = `${spec}-${sample.replace(/[^a-z]/ig, "-").replace(/-+/g,"-").replace(/-$/, "")}`;
         it(imageName, async function () {
-            if (driver.platformName === Platform.ANDROID && sample === "All") {
+            if (driver.platformName === Platform.ANDROID 
+                && (sample === "All" || sample === "reset")) {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);
             }
             const scenarioBtn = await driver.waitForElement(sample);
             await scenarioBtn.click();
             await driver.wait(2000);
-            await tabViewBasePage.imageHelper.compareScreen(imageName, 5, 0, ImageOptions.pixel);
+            await tabViewBasePage.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
             if (sample === "All") {
                 const tabTwo = await driver.waitForElement("twO");
                 await driver.wait(2000);
 
-                await tabViewBasePage.imageHelper.compareElement(`${imageName}_1`, tabTwo, 0, 2);
+                await tabViewBasePage.imageHelper.compareElement(tabTwo, { timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
             }
             tabViewBasePage.imageHelper.assertImages();
         });

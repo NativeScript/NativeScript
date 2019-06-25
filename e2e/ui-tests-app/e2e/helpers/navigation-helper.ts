@@ -1,26 +1,44 @@
 import { AppiumDriver, IRectangle, logInfo } from "nativescript-dev-appium";
 
+export enum ElementCacheStrategy {
+    allAtOnce,
+    onload,
+    none,
+}
+
+export interface ICachedElement {
+    name: string;
+    children: Map<string, ICachedElement>;
+    parent?: ICachedElement;
+    rect?: IRectangle;
+}
+
 export class NavigationHelper {
 
-    protected _samples: Map<string, IRectangle> = new Map();
+    private _cachedElements: ICachedElement;
+    private _currentSuite: ICachedElement;
 
-    constructor(protected _driver: AppiumDriver, protected _suitMainPage: Array<string>, private _shouldCacheElements: boolean = false) {
+    constructor(protected _driver: AppiumDriver, protected _suitMainPageNavigationLinks: Array<string>, private _elemtsCacheStrategy: ElementCacheStrategy = ElementCacheStrategy.onload) {
     }
 
     async initSuite() {
-        await this.navigateToSuitMainPage();
-        if (this._shouldCacheElements) {
-            const allSamples = await this._driver.findElementsByClassName(this._driver.locators.button);
-            for (let index = 0; index < allSamples.length; index++) {
-                const element = allSamples[index];
-                const rect = await element.getRectangle();
-                const text = (await element.text()).toLowerCase();
-                if (!this._samples.has(text)) {
-                    console.log(text);
-                    this._samples.set(text, rect);
+        if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce
+            || this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
+            if (this._currentSuite) {
+                while (this._currentSuite.parent) this._currentSuite = this._currentSuite.parent;
+            } else {
+                if (!this._cachedElements || this._cachedElements.children.size == 0) {
+                    this._cachedElements = { name: "initSuite", children: new Map<string, ICachedElement>() };
+                    if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce) {
+                        await this.cacheAllElements(this._cachedElements);
+                    }
                 }
+
+                this._currentSuite = this._cachedElements;
             }
         }
+
+        await this.navigateToSuitMainPage();
     }
 
     async endSuite() {
@@ -29,17 +47,42 @@ export class NavigationHelper {
     }
 
     async navigateToSuitMainPage() {
-        for (let index = 0; index < this._suitMainPage.length; index++) {
-            const mainPage = this._suitMainPage[index];
+        for (let index = 0; index < this._suitMainPageNavigationLinks.length; index++) {
+            const mainPage = this._suitMainPageNavigationLinks[index];
             await this.navigateToSample(mainPage);
         }
     }
 
     async navigateToSample(sample: string) {
         logInfo(`Navigate to ${sample}`);
-        if (this._samples.size > 0) {
-            const sampleElement = this._samples.get(sample.toLowerCase());
+        sample = sample.toLowerCase();
+        if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce) {
+            if (!this._currentSuite.children.has(sample)) {
+                await this.cacheAllElements(this._currentSuite);
+            }
+            if (!this._currentSuite.children.has(sample)) {
+                throw new Error(`Could not find ${sample}`);
+            }
+            const sampleElement = this._currentSuite.children.get(sample).rect;
             await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
+            this._currentSuite = this._currentSuite.children.get(sample);
+        } else if (this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
+            if (this._currentSuite.children.has(sample)) {
+                const sampleElement = this._currentSuite.children.get(sample).rect;
+                await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
+                this._currentSuite = this._currentSuite.children.get(sample);
+            } else {
+                const sampleElement = await this._driver.waitForElement(sample);
+                if (!sampleElement) {
+                    throw new Error(`Could not find ${sample}`);
+                }
+                const rect = await sampleElement.getRectangle();
+                const text = (await sampleElement.text()).toLowerCase();
+                const newSuite: ICachedElement = { name: text, rect: rect, children: new Map(), parent: this._currentSuite };
+                this._currentSuite.children.set(sample, newSuite);
+                this._currentSuite = newSuite;
+                await this._driver.clickPoint(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+            }
         } else {
             const sampleElement = await this._driver.waitForElement(sample);
             await sampleElement.click();
@@ -48,11 +91,26 @@ export class NavigationHelper {
 
     async navigateBackToSuitMainPage() {
         logInfo(`Navigate to back`);
+        this._currentSuite = this._currentSuite.parent;
         await this._driver.navBack();
     }
 
     async swipeBackToSuitMainPage() {
         logInfo(`Swipe to back`);
         throw new Error("Not implemented!");
+    }
+
+
+    private async cacheAllElements(cachedElements: ICachedElement) {
+        const allSamples = await this._driver.findElementsByClassName(this._driver.locators.button);
+        for (let index = 0; index < allSamples.length; index++) {
+            const element = allSamples[index];
+            const rect = await element.getRectangle();
+            const text = (await element.text()).toLowerCase();
+            if (!cachedElements.children.has(text)) {
+                console.log(text);
+                cachedElements.children.set(text, { parent: cachedElements, name: text, rect: rect, children: new Map() });
+            }
+        }
     }
 }
