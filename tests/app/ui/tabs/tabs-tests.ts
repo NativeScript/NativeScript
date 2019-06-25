@@ -1,6 +1,5 @@
 import { UITest } from "../../ui-test";
 import { Label } from "tns-core-modules/ui/label";
-import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./tabs-tests-native";

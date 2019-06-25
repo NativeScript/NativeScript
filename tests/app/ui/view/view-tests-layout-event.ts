@@ -1,11 +1,8 @@
-import * as commonTests from "./view-tests-common";
-
 import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout/stack-layout";
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import * as utils from "tns-core-modules/utils/utils";
 
 export function test_event_LayoutChanged_GetActualSize() {
     const test = function (views: Array<View>) {
@@ -25,7 +22,6 @@ export function test_event_LayoutChanged_GetActualSize() {
 
 export function test_event_LayoutChanged_Listeners() {
     const test = function (views: Array<View>) {
-        let stackLayoutChanged = false;
         let buttonLayoutChanged = false;
 
         views[1].on(View.layoutChangedEvent, (data) => {

@@ -12,7 +12,7 @@ import * as helper from "../../ui-helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { isAndroid } from "tns-core-modules/platform";
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 
 export function test_eachDescendant() {

@@ -218,6 +218,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 
 export class ListView extends ListViewBase {
     public nativeViewProtected: UITableView;
+    // tslint:disable-next-line
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;

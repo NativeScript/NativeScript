@@ -14,7 +14,6 @@ import { isEnabled as traceEnabled, write as traceWrite, categories as traceCate
 import { PercentLength } from "../styling/style-properties";
 
 export { Color, traceEnabled, traceWrite, traceCategories, traceType };
-export { AnimationPromise } from ".";
 
 export module Properties {
     export const opacity = "opacity";
@@ -90,7 +89,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
     protected _rejectAlreadyPlaying(): AnimationPromiseDefinition {
         const reason = "Animation is already playing.";
         traceWrite(reason, traceCategories.Animation, traceType.warn);
-        
+
         return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
             reject(reason);
         });

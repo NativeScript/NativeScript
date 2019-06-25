@@ -1,8 +1,6 @@
 ﻿/* tslint:disable:class-name */
 import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from ".";
 
-import * as utils from "../utils/utils";
-
 export module platformNames {
     export const android = "Android";
     export const ios = "iOS";

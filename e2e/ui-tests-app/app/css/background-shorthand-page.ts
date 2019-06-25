@@ -1,5 +1,4 @@
 import * as pages from "tns-core-modules/ui/page";
-import { EventData } from "tns-core-modules/data/observable";
 import * as button from "tns-core-modules/ui/button";
 
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";

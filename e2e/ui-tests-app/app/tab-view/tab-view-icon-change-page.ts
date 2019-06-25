@@ -1,5 +1,3 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { Button } from "tns-core-modules/ui/button";
 import { TabView, SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-view";
 
 export function onSelectedIndexChanged(args: SelectedIndexChangedEventData) {

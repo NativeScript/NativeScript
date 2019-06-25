@@ -11,14 +11,6 @@ export module ios {
     export function getActualHeight(uiView: any /* UIView */): number;
 
     /**
-     * @deprecated
-     * 
-     * @param rootView 
-     * @param parentBounds 
-     */
-    export function _layoutRootView(rootView: View, parentBounds: any /* CGRect */): void;
-
-    /**
      * Gets the height of the status bar in device pixels.
      * @param viewController when specified it is used to check preferStatusBarHidden property.
      */

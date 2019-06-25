@@ -655,7 +655,7 @@ export const testJustifyContent_spaceAround_flexDirection_column_withPadding = t
     ({ root, flexbox, text1, text2, text3 }) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
         space = space / 6; // Divide by the number of children * 2
-    
+
         closeEnough(top(text1), paddingTop(flexbox) + space);
         closeEnough(bottom(text1) + 2 * space, top(text2));
         closeEnough(bottom(text2) + 2 * space, top(text3));
@@ -1524,8 +1524,8 @@ export const testMinWidth_initial_width_less_than_minWidth = test(
     noop,
     ({ root, flexbox, text1, text2, text3 }) => {
         let minWidth = 100;
-        closeEnough(width(text1), dipToDp(100));
-        closeEnough(width(text2), width(flexbox) - dipToDp(100));
+        closeEnough(width(text1), dipToDp(minWidth));
+        closeEnough(width(text2), width(flexbox) - dipToDp(minWidth));
     }
 );
 

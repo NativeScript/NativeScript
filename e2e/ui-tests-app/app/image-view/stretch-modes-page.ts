@@ -1,9 +1,6 @@
 import { Image, Stretch } from "tns-core-modules/ui/image";
 import { Label } from "tns-core-modules/ui/label";
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import { Color } from "tns-core-modules/color";
-import * as imageSource from "tns-core-modules/image-source";
-import { isAndroid } from "tns-core-modules/platform";
 
 const sources = [
     { w: 32, h: 18, src: "i32x18" },

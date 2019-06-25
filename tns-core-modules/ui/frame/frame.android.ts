@@ -1,14 +1,14 @@
 // Definitions.
 import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
-    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition, NavigationEntry
+    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
 import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, stack, NavigationType,
+    FrameBase, goBack, _stack, NavigationType,
     Observable, View, traceCategories, traceEnabled, traceError, traceWrite
 } from "./frame-common";
 
@@ -599,7 +599,6 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 
     private _showActionBar = true;
     private _owner: Frame;
-    public cachePagesOnNavigate: boolean = true;
 
     constructor(owner: Frame) {
         super();
@@ -660,7 +659,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
             return activity;
         }
 
-        let frames = stack();
+        let frames = _stack();
         for (let length = frames.length, i = length - 1; i >= 0; i--) {
             activity = frames[i].android.activity;
             if (activity) {
@@ -1221,7 +1220,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         savedInstanceState: android.os.Bundle,
         fireLaunchEvent: boolean
     ): void {
-        const shouldCreateRootFrame = application.shouldCreateRootFrame();
+        const shouldCreateRootFrame = application._shouldCreateRootFrame();
         let rootView = this._rootView;
 
         if (traceEnabled()) {

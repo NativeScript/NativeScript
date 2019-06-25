@@ -3,8 +3,6 @@ import {
     dateProperty, maxDateProperty, minDateProperty, colorProperty, Color
 } from "./date-picker-common";
 
-import { ios } from "../../utils/utils";
-
 export * from "./date-picker-common";
 
 export class DatePicker extends DatePickerBase {

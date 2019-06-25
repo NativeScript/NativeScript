@@ -154,6 +154,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         } else {
             page._tearDownUI(true);
         }
+        
+        removed.resolvedPage = null;
     }
 
     // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
@@ -715,7 +717,7 @@ export function goBack(): boolean {
     return false;
 }
 
-export function stack(): Array<FrameBase> {
+export function _stack(): Array<FrameBase> {
     return frameStack;
 }
 

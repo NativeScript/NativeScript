@@ -1,5 +1,4 @@
-import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
-import { assert } from "chai";
+import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
 
 describe("button-background-suite", () => {

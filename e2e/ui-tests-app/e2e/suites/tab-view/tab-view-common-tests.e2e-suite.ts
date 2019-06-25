@@ -1,4 +1,4 @@
-import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
+import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-appium";
 import { TabViewBasePage } from "./tab-view-base-page";
 import { Platform } from "mobile-devices-controller";
 
@@ -87,7 +87,7 @@ describe("tab-view-common-tests-suite", async function () {
         await tabViewBasePage.imageHelper.compareScreen("tabView_icon_change", 5, 0.01);
 
         btns = await driver.findElementsByClassName(driver.locators.button, 5000);
-        await btns[index - 1 ].tap();
+        await btns[index - 1].tap();
         await tabViewBasePage.imageHelper.compareScreen("tabView_icon_change", 5, 0.01);
 
         await tabViewBasePage.imageHelper.assertImages();

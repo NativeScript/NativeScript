@@ -9,7 +9,7 @@ import { Page } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, check,
+    equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftWith, isAboveWith, isRightWith, isBelowWith
 } from "./layout-tests-helper";
