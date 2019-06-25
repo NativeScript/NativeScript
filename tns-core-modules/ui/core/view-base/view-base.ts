@@ -192,7 +192,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _domId: number;
     public _context: any;
     public _isAddedToNativeVisualTree: boolean;
-    public _cssState: ssm.CssState = new ssm.CssState(this);
+    public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
     public _styleScope: ssm.StyleScope;
     public _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
     public _suspendNativeUpdatesCount: SuspendType;
@@ -249,7 +249,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     constructor() {
         super();
         this._domId = viewIdCounter++;
-        this._style = new Style(this);
+        this._style = new Style(new WeakRef(this));
     }
 
     // Used in Angular.
