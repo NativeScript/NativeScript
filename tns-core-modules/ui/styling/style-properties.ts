@@ -219,7 +219,10 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
     //       on the animation property, so fake it here. x_x
     valueChanged: (target, oldValue, newValue) => {
         if (isIOS) {
-            target.view.requestLayout();
+            const view = target.viewRef.get();
+            if (view) {
+                view.requestLayout();
+            }
         }
     }, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
@@ -230,7 +233,10 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
     //       on the animation property, so fake it here. -_-
     valueChanged: (target, oldValue, newValue) => {
         if (isIOS) {
-            target.view.requestLayout();
+            const view = target.viewRef.get();
+            if (view) {
+                view.requestLayout();
+            }
         }
     }, valueConverter: PercentLength.parse,
 
