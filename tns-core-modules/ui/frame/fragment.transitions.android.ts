@@ -1,6 +1,7 @@
 /// <reference path="transition-definitions.android.d.ts"/>
 
 // Definitions.
+import { NavigationType } from "./frame-common";
 import { NavigationTransition, BackstackEntry } from "../frame";
 import { AnimationType } from "./fragment.transitions.types";
 
@@ -175,7 +176,7 @@ export function _setAndroidFragmentTransitions(
             // we do not use Android backstack so setting popEnter / popExit is meaningless (3rd and 4th optional args)
             fragmentTransaction.setCustomAnimations(AnimationType.enterFakeResourceId, AnimationType.exitFakeResourceId);
         }
-        
+
         setupAllAnimation(newEntry, transition);
         if (currentFragmentNeedsDifferentAnimation) {
             setupExitAndPopEnterAnimation(currentEntry, transition);
@@ -733,12 +734,13 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
         completedEntries.delete(frameId);
         waitingQueue.delete(frameId);
 
+        const navigationContext = frame._executingContext || { navigationType: NavigationType.back };
         let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
         current = current || entry;
         // Will be null if Frame is shown modally...
         // transitionOrAnimationCompleted fires again (probably bug in android).
-        if (current && frame._executingContext) {
-            setTimeout(() => frame.setCurrent(current, frame._executingContext.navigationType));
+        if (current) {
+            setTimeout(() => frame.setCurrent(current, navigationContext.navigationType));
         }
     } else {
         completedEntries.set(frameId, entry);
