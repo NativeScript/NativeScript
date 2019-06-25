@@ -2,7 +2,7 @@
 import * as platform from "tns-core-modules/platform";
 import * as trace from "tns-core-modules/trace";
 import { Color } from "tns-core-modules/color";
-import { NavigationEntry, NavigationTransition, topmost as topmostFrame } from "tns-core-modules/ui/frame";
+import { NavigationEntry, NavigationTransition } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { AnimationCurve } from "tns-core-modules/ui/enums"
 import { CustomTransition } from "./custom-transition";
@@ -27,12 +27,6 @@ function _testTransition(navigationTransition: NavigationTransition) {
 }
 
 export function test_Transitions() {
-    const topmost = topmostFrame();
-    const mainTestPage = topmost.currentPage;
-    const mainPageFactory = function (): Page {
-        return mainTestPage;
-    };
-
     helper.navigate(() => {
         const page = new Page();
         page.id = "TransitionsTestPage_MAIN"
