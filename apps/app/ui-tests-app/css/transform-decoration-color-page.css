@@ -1,8 +1,0 @@
-Label, Button, TextField, TextView {
-    font-size: 12;
-    text-align: left;
-}
-
-TextView {
-    margin-bottom: 10;
-}

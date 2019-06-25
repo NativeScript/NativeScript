@@ -1,3 +1,0 @@
-<Page>
-  <WebView src="https://www.google.com" loadFinished="onLoadFinished" />
-</Page>
