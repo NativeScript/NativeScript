@@ -133,7 +133,6 @@ export function test_setInterval_callbackCalledDuringPeriod(done) {
 
 export function test_setInterval_callbackCalledWithExtraArgs(done) {
     let counter: number = 0;
-    const expected: number = 4;
     const rnd: number = Math.random();
 
     const start = TKUnit.time();
@@ -148,8 +147,6 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
 };
 
 export function test_setInterval_callbackShouldBeCleared(done) {
-    let counter = 0;
-
     const start = TKUnit.time();
     // >> timer-set-interval
     const id = timer.setInterval(() => {

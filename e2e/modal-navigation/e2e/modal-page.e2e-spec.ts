@@ -3,7 +3,6 @@ import { Screen, driverDefaultWaitTime } from "./screen"
 import {
     roots,
     modalPageBackground,
-    testSecondPageBackground,
     testNestedModalFrameBackground,
     testNestedModalPageBackground,
     testDialogBackground

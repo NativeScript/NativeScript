@@ -6,9 +6,6 @@ import * as text from "tns-core-modules/ui/text-field";
 import * as color from "tns-core-modules/color";
 import * as list from "tns-core-modules/ui/list-view";
 
-//// Enable page caching
-//frame.topmost().android.cachePagesOnNavigate = true;
-
 export function createPage() {
     var page = new pages.Page();
     var stack = new stackModule.StackLayout();

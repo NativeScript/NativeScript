@@ -2,7 +2,6 @@
 import { EventData, Page, NavigatedData } from "tns-core-modules/ui/page";
 import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
 import { StackLayout, } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout, } from "tns-core-modules/ui/layouts/grid-layout";
 import { Color } from "tns-core-modules/color";
 import * as helper from "../ui-helper";
 import * as frame from "tns-core-modules/ui/frame";
@@ -110,7 +109,7 @@ export function test_backAndForwardParentPage_nestedFrames() {
     back(2);
     TKUnit.waitUntilReady(() => topmostFrame().navigationQueueIsEmpty());
 
-    const frameStack = frame.stack();
+    const frameStack = frame._stack();
     TKUnit.assertEqual(frameStack.length, 1, "There should be only one frame left in the stack");
     TKUnit.assertEqual(topmostFrame().currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
@@ -181,7 +180,7 @@ export function test_backToEntry_WithTransition() {
 
 function _test_ClearHistory(transition?: NavigationTransition) {
     let topmost = topmostFrame();
-    let x = 0;
+
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: !!transition });
     TKUnit.assertEqual(topmost.backStack.length, 0, "1.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "1.topmost.canGoBack().");
@@ -239,12 +238,6 @@ export function test_ClearHistoryWithTransitionDoesNotBreakNavigation() {
 export function test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransition() {
     const topmost = topmostFrame();
 
-    let originalCachePagesOnNavigate: boolean;
-    if (topmost.android) {
-        originalCachePagesOnNavigate = topmost.android.cachePagesOnNavigate;
-        topmostFrame().android.cachePagesOnNavigate = true;
-    }
-
     let mainTestPage = topmost.currentPage;
     let mainPageFactory = function (): Page {
         return mainTestPage;
@@ -261,10 +254,6 @@ export function test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalT
 
     // Go back to main
     helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, transition: { name: "fade", duration: 10 }, animated: true });
-
-    if (topmost.android) {
-        topmostFrame().android.cachePagesOnNavigate = originalCachePagesOnNavigate;
-    }
 
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
     TKUnit.assertEqual(topmost.backStack.length, 0, "Back stack should be empty at the end of the test.");

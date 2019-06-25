@@ -4,12 +4,11 @@ import { parse } from "tns-core-modules/ui/builder";
 import * as view from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";
 import { ListView } from "tns-core-modules/ui/list-view";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import { ViewModel } from "./list-view-view-model";
 import { UITest } from "../../ui-test";
 import {
-    dipToDp, left, top, right, bottom, height, width,
-    equal, check, lessOrCloseEnough, greaterOrCloseEnough,
+    left, top, right, bottom, height, width,
+    equal, lessOrCloseEnough, greaterOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith
 } from "../layouts/layout-tests-helper";
 

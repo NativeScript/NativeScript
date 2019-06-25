@@ -3,7 +3,6 @@ import * as imageAssetModule from "tns-core-modules/image-asset";
 import * as fs from "tns-core-modules/file-system";
 import * as app from "tns-core-modules/application";
 import * as TKUnit from "../tk-unit";
-import * as platform from "tns-core-modules/platform";
 
 const imagePath = "~/assets/logo.png";
 const splashscreenPath = "~/assets/splashscreen.png";
@@ -86,7 +85,7 @@ export function testFromAssetFileNotFound(done) {
         keepAspectRatio: true
     };
 
-    let img = imageSource.fromAsset(asset).then((source) => {
+    imageSource.fromAsset(asset).then((source) => {
         done("Should not resolve with invalid file name.");
     }, (error) => {
         TKUnit.assertNotNull(error);
@@ -102,7 +101,7 @@ export function testFromAssetSimple(done) {
         keepAspectRatio: true
     };
 
-    let img = imageSource.fromAsset(asset).then((source) => {
+    imageSource.fromAsset(asset).then((source) => {
         TKUnit.assertEqual(source.width, splashscreenWidth);
         TKUnit.assertEqual(source.height, splashscreenHeight);
         done();
@@ -157,7 +156,7 @@ export function testFromAssetWithScalingAndAspectRatio(done) {
         keepAspectRatio: true
     };
 
-    let img = imageSource.fromAsset(asset).then((source) => {
+    imageSource.fromAsset(asset).then((source) => {
         TKUnit.assertEqual(source.width, 18);
         TKUnit.assertEqual(source.height, scaleHeight);
         done();
@@ -173,7 +172,7 @@ export function testFromAssetWithScalingAndDefaultAspectRatio(done) {
     asset.options.width = scaleWidth;
     asset.options.height = scaleHeight;
 
-    let img = imageSource.fromAsset(asset).then((source) => {
+    imageSource.fromAsset(asset).then((source) => {
         TKUnit.assertEqual(source.width, 18);
         TKUnit.assertEqual(source.height, scaleHeight);
         done();
@@ -192,7 +191,7 @@ export function testFromAssetWithBiggerScaling(done) {
         keepAspectRatio: false
     };
 
-    let img = imageSource.fromAsset(asset).then((source) => {
+    imageSource.fromAsset(asset).then((source) => {
         TKUnit.assertEqual(source.width, scaleWidth);
         TKUnit.assertEqual(source.height, scaleHeight);
         done();

@@ -25,6 +25,11 @@ import {
     matrixArrayToCssMatrix,
     multiplyAffine2d,
 } from "../../matrix";
+import {
+    write as traceWrite,
+    categories as traceCategories,
+    messageType as traceMessageType,
+} from "../../trace";
 
 import * as parser from "../../css/parser";
 import { LinearGradient } from "./linear-gradient";
@@ -185,7 +190,12 @@ export const zeroLength: Length = { value: 0, unit: "px" };
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
@@ -193,7 +203,12 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }, valueConverter: Length.parse
 });
 minHeightProperty.register(Style);
@@ -204,7 +219,10 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
     //       on the animation property, so fake it here. x_x
     valueChanged: (target, oldValue, newValue) => {
         if (isIOS) {
-            target.view.requestLayout();
+            const view = target.viewRef.get();
+            if (view) {
+                view.requestLayout();
+            }
         }
     }, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
@@ -215,7 +233,10 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
     //       on the animation property, so fake it here. -_-
     valueChanged: (target, oldValue, newValue) => {
         if (isIOS) {
-            target.view.requestLayout();
+            const view = target.viewRef.get();
+            if (view) {
+                view.requestLayout();
+            }
         }
     }, valueConverter: PercentLength.parse,
 
@@ -265,7 +286,12 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
@@ -273,7 +299,12 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
@@ -281,7 +312,12 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
@@ -289,7 +325,12 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }, valueConverter: Length.parse
 });
 paddingBottomProperty.register(Style);
@@ -850,7 +891,12 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderTopWidth = value;
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectiveBorderTopWidth = value;
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
         const background = target.backgroundInternal.withBorderTopWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -865,7 +911,12 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderRightWidth = value;
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectiveBorderRightWidth = value;
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
         const background = target.backgroundInternal.withBorderRightWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -880,7 +931,12 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderBottomWidth = value;
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectiveBorderBottomWidth = value;
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
         const background = target.backgroundInternal.withBorderBottomWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -895,7 +951,12 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }
 
-        target.view.effectiveBorderLeftWidth = value;
+        const view = target.viewRef.get();
+        if (view) {
+            view.effectiveBorderLeftWidth = value;
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
         const background = target.backgroundInternal.withBorderLeftWidth(value);
         target.backgroundInternal = background;
     }, valueConverter: Length.parse
@@ -1123,7 +1184,12 @@ export namespace Visibility {
 
 export const visibilityProperty = new CssProperty<Style, Visibility>({
     name: "visibility", cssName: "visibility", defaultValue: Visibility.VISIBLE, affectsLayout: isIOS, valueConverter: Visibility.parse, valueChanged: (target, oldValue, newValue) => {
-        target.view.isCollapsed = (newValue === Visibility.COLLAPSE);
+        const view = target.viewRef.get();
+        if (view) {
+            view.isCollapsed = (newValue === Visibility.COLLAPSE);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
     }
 });
 visibilityProperty.register(Style);

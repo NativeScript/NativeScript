@@ -192,7 +192,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _domId: number;
     public _context: any;
     public _isAddedToNativeVisualTree: boolean;
-    public _cssState: ssm.CssState = new ssm.CssState(this);
+    public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
     public _styleScope: ssm.StyleScope;
     public _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
     public _suspendNativeUpdatesCount: SuspendType;
@@ -249,7 +249,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     constructor() {
         super();
         this._domId = viewIdCounter++;
-        this._style = new Style(this);
+        this._style = new Style(new WeakRef(this));
     }
 
     // Used in Angular.
@@ -863,20 +863,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this.deletePseudoClass(this._visualState);
         this._visualState = state;
         this.addPseudoClass(state);
-    }
-
-    /**
-     * @deprecated
-     * 
-     * This used to be the way to set attribute values in early {N} versions.
-     * Now attributes are expected to be set as plain properties on the view instances.
-     */
-    public _applyXmlAttribute(attribute: string, value: string): boolean {
-        if (attribute === "style" || attribute === "rows" || attribute === "columns" || attribute === "fontAttributes") {
-            this[attribute] = value;
-            return true;
-        }
-        return false;
     }
 
     public setInlineStyle(style: string): void {

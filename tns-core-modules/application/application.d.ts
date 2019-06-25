@@ -186,13 +186,6 @@ export function on(event: "livesync", callback: (args: EventData) => void);
 export function off(eventNames: string, callback?: any, thisArg?: any);
 
 /**
- * @deprecated use application.run() instead.
- *
- * Call this method to start the application. Important: All code after this method call will not be executed!
- */
-export function start(entry?: NavigationEntry | string);
-
-/**
  * Call this method to run the application. Important: All code after this method call will not be executed!
  * Compared to start this method won't create Frame as root view.
  */
@@ -204,12 +197,15 @@ export function run(entry?: NavigationEntry | string);
  */
 export function _resetRootView(entry?: NavigationEntry | string);
 
-//@private
-/**
- * Internal method use to check if a root Frame should be automatically created as root view.
- * @private
- */
-export function shouldCreateRootFrame(): boolean;
+//@private	
+/**		
+ * @private	
+ */	
+export function _shouldCreateRootFrame(): boolean;
+/**		
+ * @private	
+ */	
+export function _start(entry?: NavigationEntry | string);
 //@endprivate
 
 /**
@@ -409,11 +405,6 @@ export class AndroidApplication extends Observable {
      * The currently active (loaded) [android Activity](http://developer.android.com/reference/android/app/Activity.html). This property is automatically updated upon Activity events.
      */
     foregroundActivity: any /* androidx.appcompat.app.AppCompatActivity */;
-
-    /**
-     * @deprecated use startActivity, foregroundActivity or context instead
-     */
-    currentContext: any /* android.content.Context */;
 
     /**
      * The main (start) Activity for the application.

@@ -1,9 +1,7 @@
 import * as TKUnit from "../../tk-unit";
-import { isAndroid } from "tns-core-modules/platform";
 import { _resetRootView } from "tns-core-modules/application/";
 import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
-// import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { Tabs, TabContentItem, TabStrip, TabStripItem } from "tns-core-modules/ui/tabs";
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
@@ -17,16 +15,6 @@ function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
     pages.forEach(page => page.on("navigatedTo", navigatedTo));
     action();
     TKUnit.waitUntilReady(() => completed === pages.length, maxTimeout);
-}
-
-function waitUntilTabViewReady(page: Page, action: Function) {
-    action();
-
-    if (isAndroid) {
-        TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment.isAdded());
-    } else {
-        TKUnit.waitUntilReady(() => page.isLoaded);
-    }
 }
 
 function createPage(i: number) {
