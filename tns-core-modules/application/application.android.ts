@@ -127,8 +127,9 @@ setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
+const createRootFrame = { value: true };
 
-export function run(entry?: NavigationEntry | string) {
+export function _start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
@@ -141,6 +142,15 @@ export function run(entry?: NavigationEntry | string) {
     }
 }
 
+export function _shouldCreateRootFrame(): boolean {	
+    return createRootFrame.value;	
+}	
+
+ export function run(entry?: NavigationEntry | string) {	
+    createRootFrame.value = false;	
+    _start(entry);	
+}
+
 const CALLBACKS = "_callbacks";
 
 export function _resetRootView(entry?: NavigationEntry | string) {
@@ -149,6 +159,7 @@ export function _resetRootView(entry?: NavigationEntry | string) {
         throw new Error("Cannot find android activity.");
     }
 
+    createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     if (!callbacks) {

@@ -310,7 +310,7 @@ export function getRootView() {
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
 let started: boolean = false;
-function _start(entry?: string | NavigationEntry) {
+export function _start(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
