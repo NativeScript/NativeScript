@@ -1,6 +1,6 @@
 /* tslint:disable:no-unused-variable */
 import * as app from "tns-core-modules/application";
-import * as TKUnit from "../tk-unit"; 
+import * as TKUnit from "../tk-unit";
 
 export * from "./application-tests-common";
 
@@ -40,7 +40,6 @@ if (app.android) {
 export var testAndroidApplicationInitialized = function () {
     TKUnit.assert(app.android, "Android application not initialized.");
     TKUnit.assert(app.android.context, "Android context not initialized.");
-    TKUnit.assert(app.android.currentContext, "Android currentContext not initialized.");
     TKUnit.assert(app.android.foregroundActivity, "Android foregroundActivity not initialized.");
     TKUnit.assert(app.android.foregroundActivity.isNativeScriptActivity, "Andorid foregroundActivity.isNativeScriptActivity is true");
     TKUnit.assert(app.android.startActivity, "Android startActivity not initialized.");

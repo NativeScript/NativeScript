@@ -21,7 +21,6 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
-import { isAndroid } from "../../../platform";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
@@ -194,7 +193,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+    _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {
             this._gestureObservers[type] = [];
         }
@@ -212,7 +211,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
             let gesture = gestureFromString(arg);
             if (gesture && !this._isEvent(arg)) {
-                this.observe(gesture, callback, thisArg);
+                this._observe(gesture, callback, thisArg);
             } else {
                 let events = (arg).split(",");
                 if (events.length > 0) {
@@ -220,7 +219,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                         let evt = events[i].trim();
                         let gst = gestureFromString(evt);
                         if (gst && !this._isEvent(arg)) {
-                            this.observe(gst, callback, thisArg);
+                            this._observe(gst, callback, thisArg);
                         } else {
                             super.addEventListener(evt, callback, thisArg);
                         }
@@ -230,7 +229,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 }
             }
         } else if (typeof arg === "number") {
-            this.observe(<GestureTypes>arg, callback, thisArg);
+            this._observe(<GestureTypes>arg, callback, thisArg);
         }
     }
 

@@ -144,7 +144,7 @@ export function test_ReadTransformNone() {
 
 export function test_ReadScale() {
     const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scale(-5, 12.3pt); } }", "test");
-    const { scale, rotate } = getTransforms(animation.keyframes[0].declarations);
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(scale.property, "scale");
     TKUnit.assertAreClose(scale.value.x, -5, DELTA);
@@ -213,7 +213,7 @@ export function test_ReadTranslate() {
 
 export function test_ReadTranslateSingle() {
     const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translate(30); } }", "test");
-    const { translate, rotate } = getTransforms(animation.keyframes[0].declarations);
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(translate.property, "translate");
     TKUnit.assertAreClose(translate.value.x, 30, DELTA);
@@ -387,7 +387,7 @@ export function test_ExecuteCSSAnimation() {
 
 //    TKUnit.assertEqual(label.backgroundColor, undefined, "label.backgroundColor should be undefind");
 
-//    label.className = "l";    
+//    label.className = "l";
 //    TKUnit.assertEqual(label.backgroundColor, undefined, "label.backgroundColor should be undefind");
 
 //    label.className = "l2";

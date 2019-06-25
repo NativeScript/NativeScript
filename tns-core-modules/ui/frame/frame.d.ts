@@ -15,13 +15,6 @@ export * from "../page";
  */
 export class Frame extends View {
     /**
-     * @deprecated
-     *
-     * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
-     */
-    public static androidOptionSelectedEvent: string;
-
-    /**
      * Navigates to the previous entry (if any) in the back stack.
      * @param to The backstack entry to navigate back to.
      */
@@ -190,11 +183,6 @@ export class Frame extends View {
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
     on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
-
-    /**
-     * Raised when native android [onOptionsItemSelected method](http://developer.android.com/reference/android/app/Activity.html#onOptionsItemSelected(android.view.MenuItem)) is called.
-     */
-    on(event: "optionSelected", callback: (args: EventData) => void, thisArg?: any);
 }
 
 /**
@@ -218,12 +206,12 @@ export function topmost(): Frame;
  */
 export function goBack();
 
+//@private
 /**
- * @deprecated use getFrameById() if you want to retrieve a frame different than the topmost one
- *
- * Gets the frames stack.
+ * @private
  */
-export function stack(): Array<Frame>;
+export function _stack(): Array<Frame>;
+//@endprivate
 
 /**
  * Represents an entry to be used to create a view or load it form file
@@ -369,22 +357,6 @@ export interface BackstackEntry {
 }
 
 /**
- * Represents the data passed to the androidOptionSelected event.
- * This event is raised by the Android OS when an option in the Activity's action bar has been selected.
- */
-export interface AndroidOptionEventData extends EventData {
-    /**
-     * Gets the Android-specific menu item that has been selected.
-     */
-    item: any /* android.view.IMenuItem */;
-
-    /**
-     * True to mark the event as handled (that is to prevent the default processing).
-     */
-    handled: boolean;
-}
-
-/**
  * Represents the Android-specific Frame object, aggregated within the common Frame one.
  * In Android there are two types of navigation - using new Activity instances or using Fragments within the main Activity.
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
@@ -416,13 +388,6 @@ export interface AndroidFrame extends Observable {
     showActionBar: boolean;
 
     /**
-     * @deprecated this property is not used internally
-     *
-     * Gets or sets whether the page UI will be cached when navigating away from the page.
-     */
-    cachePagesOnNavigate: boolean;
-
-    /**
      * Finds the native androidx.fragment.app.Fragment instance created for the specified Page.
      * @param page The Page instance to search for.
      */
@@ -433,10 +398,6 @@ export interface AndroidActivityCallbacks {
     getRootView(): View;
     resetActivityContent(activity: any): void;
 
-    /**
-     * @deprecated use onCreate(activity, savedInstanceState, intent, superFunc) instead.
-     */
-    onCreate(activity: any, savedInstanceState: any, superFunc: Function): void;
     onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function): void;
     onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
     onStart(activity: any, superFunc: Function): void;
