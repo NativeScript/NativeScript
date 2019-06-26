@@ -1,11 +1,11 @@
 
-let callback: (args:any) => void;
+let callback: (args: any) => void;
 export function test(args: any) {
-    if(callback){
-        callback(args);        
+    if (callback) {
+        callback(args);
     }
 }
 
-export function setCallback(cb: (args:any) => void) {
+export function setCallback(cb: (args: any) => void) {
     callback = cb;
 }

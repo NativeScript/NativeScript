@@ -196,7 +196,6 @@ export function testPageWithXmlCssJs_XmlCssJsQualifiers() {
     assertXmlCssJs(page.getViewById("test-id"));
 }
 
-
 export function testPageWithXmlCss_NoJS_XmlQualifier() {
     // Arrange
     registerTestModule(`${testPrefix}/test.xml`, loadWrongXml);
