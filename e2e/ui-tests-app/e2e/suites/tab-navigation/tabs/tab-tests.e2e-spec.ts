@@ -4,9 +4,8 @@ import { Platform } from "mobile-devices-controller";
 
 const suite = "tabs";
 const spec = "tabs";
-const fullSuiteName = `${suite}-${spec}`;
 
-describe(`${fullSuiteName}-tests-suite`, async function () {
+describe(`${suite}-${spec}-tests-suite`, async function () {
     let driver: AppiumDriver;
     let tabsViewBasePage: TabsViewBasePage;
 
@@ -22,12 +21,8 @@ describe(`${fullSuiteName}-tests-suite`, async function () {
         await tabsViewBasePage.endSuite();
     });
 
-    beforeEach(function () {
-        tabsViewBasePage.imageHelper.testName = `${fullSuiteName}-${this.currentTest.title.replace(suite, "")}`;
-    });
-
     beforeEach(async function () {
-        tabsViewBasePage.imageHelper.testName = this.currentTest.title;
+        tabsViewBasePage.imageHelper.setImageName(suite, spec, this.currentTest.title);
         tabsViewBasePage.imageHelper.defualtOptions = {
             imageName: this.currentTest.title,
             tolerance: 0.01,

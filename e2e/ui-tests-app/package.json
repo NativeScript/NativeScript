@@ -38,6 +38,8 @@
     "test-debug": "./node_modules/.bin/ns-dev-appium --startSession",
     "test-watch": "tsc -p e2e --watch",
     "pretest": "tsc -p e2e",
-    "watch": "testdeck-watch"
+    "watch": "testdeck-watch",
+    "load-images": "./e2e/scripts/sparse-checkout.sh uitestsapp https://github.com/NativeScript/functional-tests-images.git $PWD/../../../functional-tests-images",
+    "update-emulators": "cd $PWD/../../../functional-tests-images  && . ./scripts/update-emulators.sh --appName uitestsapp"
   }
 }

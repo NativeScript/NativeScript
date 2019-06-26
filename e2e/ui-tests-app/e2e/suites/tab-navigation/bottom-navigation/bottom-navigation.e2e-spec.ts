@@ -2,11 +2,10 @@ import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-app
 import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
 import { Platform } from "mobile-devices-controller";
 
-const suite = "tabs";
+const suite = "tab-navigation";
 const spec = "bottom-navigation";
-const fullSuiteName = `${suite}-${spec}`;
 
-describe(`${fullSuiteName}-tests-suite`, async function () {
+describe(`${suite}-${spec}-tests-suite`, async function () {
     let driver: AppiumDriver;
     let bottomNavigationBasePage: BottomNavigationBasePage;
 
@@ -22,14 +21,9 @@ describe(`${fullSuiteName}-tests-suite`, async function () {
         await bottomNavigationBasePage.endSuite();
     });
 
-    beforeEach(function () {
-        bottomNavigationBasePage.imageHelper.testName = `${fullSuiteName}-${this.currentTest.title.replace(suite, "")}`;
-    });
-
     beforeEach(async function () {
-        bottomNavigationBasePage.imageHelper.testName = this.currentTest.title;
+        bottomNavigationBasePage.imageHelper.setImageName(suite, spec, this.currentTest.title);
         bottomNavigationBasePage.imageHelper.defualtOptions = {
-            imageName: this.currentTest.title,
             tolerance: 0.01,
             timeOutSeconds: 5
         }

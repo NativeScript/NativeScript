@@ -1,7 +1,10 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
 
-describe("button-background-suite", () => {
+const suite = "tab-navigation";
+const spec = "bottom-navigation";
+
+describe(`${suite}-${spec}-suite`, () => {
     let driver: AppiumDriver;
     let backgroundPage: ButtonBackgroundPage;
 
@@ -18,7 +21,7 @@ describe("button-background-suite", () => {
     });
 
     beforeEach(function () {
-        backgroundPage.imageHelper.testName = this.currentTest.title;
+        backgroundPage.imageHelper.setImageName(suite, spec, this.currentTest.title);
     });
 
     afterEach(async function () {

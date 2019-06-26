@@ -13,18 +13,17 @@ interface IImageComppareOptions {
 export class ImageHelper {
 
     private _imagesResults = new Map<string, boolean>();
+    private _testName: string;
 
     constructor(private _driver: AppiumDriver, private _imageComppareOptions?: IImageComppareOptions) {
         this._driver.imageHelper.waitOnCreatingInitialSnapshot = (this._imageComppareOptions && this._imageComppareOptions.waitOnCreatingInitialSnapshot) || this.defualtOptions.waitOnCreatingInitialSnapshot;
     }
 
-    public testName: string;
-
     public defualtOptions: IImageComppareOptions = {
         timeOutSeconds: 2,
         tolerance: 0,
         toleranceType: ImageOptions.pixel,
-        waitOnCreatingInitialSnapshot: 2,
+        waitOnCreatingInitialSnapshot: 2000,
     }
 
     get imageComppareOptions() {
@@ -37,8 +36,8 @@ export class ImageHelper {
     }
 
     public async compareScreen(options?: IImageComppareOptions) {
-        options =  this.extendOptions(options);
-        const imageName = this.increaseImageName( options.imageName || this.testName);
+        options = this.extendOptions(options);
+        const imageName = this.increaseImageName(options.imageName || this._testName);
         const result = await this._driver.compareScreen(imageName, options.timeOutSeconds, options.tolerance, options.toleranceType)
         this._imagesResults.set(imageName, result);
 
@@ -46,8 +45,8 @@ export class ImageHelper {
     }
 
     public async compareElement(element: UIElement, options?: IImageComppareOptions) {
-        options =  this.extendOptions(options);
-        const imageName = this.increaseImageName( options.imageName || this.testName);
+        options = this.extendOptions(options);
+        const imageName = this.increaseImageName(options.imageName || this._testName);
         const result = await this._driver.compareElement(element, imageName, options.tolerance, options.timeOutSeconds, options.toleranceType)
         this._imagesResults.set(imageName, result);
 
@@ -55,8 +54,8 @@ export class ImageHelper {
     }
 
     public async compareRectangle(element: IRectangle, options?: IImageComppareOptions) {
-        options =  this.extendOptions(options);
-        const imageName = this.increaseImageName( options.imageName || this.testName);
+        options = this.extendOptions(options);
+        const imageName = this.increaseImageName(options.imageName || this._testName);
         const result = await this._driver.compareRectangle(element, imageName, options.timeOutSeconds, options.tolerance, options.toleranceType)
         this._imagesResults.set(imageName, result);
 
@@ -81,6 +80,11 @@ export class ImageHelper {
         this._imagesResults.clear();
     }
 
+    public setImageName(suite: string, spec: string, testsName: string) {
+        this._testName = `${suite}-${spec}-${testsName.replace(suite, "").replace(spec, "")}`.replace(/(\-+)/ig,"-").replace(/(\_+)/ig,"_");
+        return this._testName;
+    }
+
     private increaseImageName(imageName: string) {
         if (this._imagesResults.size > 1) {
             const number = /\d+$/.test(imageName) ? +`${/\d+$/.exec(imageName)}` + 1 : `2`;
@@ -90,8 +94,8 @@ export class ImageHelper {
         return imageName;
     }
 
-    private extendOptions(options: IImageComppareOptions){
-        options =options || {};
+    private extendOptions(options: IImageComppareOptions) {
+        options = options || {};
         Object.getOwnPropertyNames(this.defualtOptions).forEach(prop => {
             if (!options[prop]) {
                 options[prop] = this.defualtOptions[prop];

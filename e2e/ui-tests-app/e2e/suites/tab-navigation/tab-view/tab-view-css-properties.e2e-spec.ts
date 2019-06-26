@@ -6,9 +6,8 @@ import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
 
 const suite = "tabs";
 const spec = "tab-view";
-const fullSuiteName = `${suite}-${spec}`;
 
-describe(`${fullSuiteName}-css-suite`, async function () {
+describe(`${suite}-${spec}-css-suite`, async function () {
     let driver: AppiumDriver;
     let tabViewBasePage: TabViewBasePage;
 
@@ -36,7 +35,7 @@ describe(`${fullSuiteName}-css-suite`, async function () {
     });
 
     beforeEach(function () {
-        tabViewBasePage.imageHelper.testName = `${fullSuiteName}-${this.currentTest.title.replace(suite, "")}`;
+        tabViewBasePage.imageHelper.setImageName(suite, spec, this.currentTest.title);
     });
 
     afterEach(async function () {
@@ -49,7 +48,7 @@ describe(`${fullSuiteName}-css-suite`, async function () {
 
     for (let index = 0; index < samples.length; index++) {
         const sample = samples[index];
-        const imageName = `${spec}-${sample.replace(/[^a-z]/ig, "-").replace(/-+/g,"-").replace(/-$/, "")}`;
+        const imageName = `${spec}-${sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig,"-").replace(/(_+)/ig,"_").replace(/-$/, "")}`;
         it(imageName, async function () {
             if (driver.platformName === Platform.ANDROID 
                 && (sample === "All" || sample === "reset")) {
