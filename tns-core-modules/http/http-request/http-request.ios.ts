@@ -1,4 +1,4 @@
-﻿// imported for definition purposes only
+// imported for definition purposes only
 import * as httpModule from "../../http";
 import * as imageSourceModule from "../../image-source";
 import * as fsModule from "../../file-system";
@@ -55,16 +55,16 @@ function ensureSessionNotFollowingRedirects() {
 
 let imageSource: typeof imageSourceModule;
 function ensureImageSource() {
-    if (!imageSource) {	
-        imageSource = require("image-source");	
-    }	
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
 }
 
 let fs: typeof fsModule;
-function ensureFileSystem() {	
-    if (!fs) {	
-        fs = require("file-system");	
-    }	
+function ensureFileSystem() {
+    if (!fs) {
+        fs = require("file-system");
+    }
 }
 
 export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
@@ -72,6 +72,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 
         if (!options.url) {
           reject(new Error("Request url was empty."));
+
           return;
         }
 
@@ -133,7 +134,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                                 headers: headers,
                                 mimeType: response.MIMEType,
                                 fromDiskCache: false
-                            }
+                            };
                             debugRequest.responseReceived(debugResponse);
                             debugRequest.loadingFinished();
                         }

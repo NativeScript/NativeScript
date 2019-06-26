@@ -1,4 +1,4 @@
-﻿import { TextFieldBase, secureProperty, whiteSpaceProperty, WhiteSpace, keyboardTypeProperty } from "./text-field-common";
+import { TextFieldBase, secureProperty, whiteSpaceProperty, WhiteSpace, keyboardTypeProperty } from "./text-field-common";
 
 export * from "./text-field-common";
 
@@ -11,7 +11,7 @@ export class TextField extends TextFieldBase {
     }
 
     public _onReturnPress() {
-        this.notify({ eventName: TextField.returnPressEvent, object: this })
+        this.notify({ eventName: TextField.returnPressEvent, object: this });
     }
 
     [secureProperty.setNative]() {

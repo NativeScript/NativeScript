@@ -26,14 +26,15 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             list: root.getViewById("list") as ListView,
@@ -43,7 +44,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
                 [root.getViewById("cell20") as ListView, root.getViewById("cell21") as ListView, root.getViewById("cell22") as ListView]
             ]
         };
-    };
+    }
 
     private list_view_in_full_screen(listView: ListView, pageOptions?: helper.PageOptions) {
         const l = left(listView);
@@ -182,7 +183,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
                 greaterOrCloseEnough(width(cells[1][0]), width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or close enough cell11 width<${width(cells[1][1])}>`);
                 lessOrCloseEnough(width(cells[1][1]), width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or close enough cell12 width<${width(cells[1][2])}>`);
 
-                const sumOfNestedListViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
+                const sumOfNestedListViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
                 equal(width(root), sumOfNestedListViewWidths, `grid width<${width(root)}> sum of nested list views width <${sumOfNestedListViewWidths}>`);
             },
             pageOptions
@@ -210,7 +211,7 @@ function setBindingContext(list: ListView) {
     return function () {
         const page = list.page;
         page.bindingContext = new ViewModel();
-    }
+    };
 }
 
 export function createTestCase(): ListViewSafeAreaTest {

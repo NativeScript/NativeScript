@@ -8,8 +8,8 @@ const sources = [
     { w: 18, h: 32, src: "i18x32" }
 ].map(({w, h, src})  => ({w, h, src: `res://${src}` }));
 const stretchModes: Stretch[] = ["none", "aspectFill", "aspectFit", "fill"];
-const widths = [ +8, 0, -8 ]
-const heights = [ +8, 0, -8 ]
+const widths = [ +8, 0, -8 ];
+const heights = [ +8, 0, -8 ];
 
 export function navigatingTo(args) {
     const variants: { src: string, stretch: Stretch, width: number, height: number }[] = [];

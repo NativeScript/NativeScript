@@ -1,4 +1,4 @@
-﻿// Types.
+// Types.
 import { View } from "../core/view";
 import { Color } from "../../color";
 import { Page } from "../page";
@@ -121,6 +121,7 @@ export function getButtonColors(): { color: Color, backgroundColor: Color } {
         buttonColor = btn.color;
         buttonBackgroundColor = <Color>btn.backgroundColor;
     });
+
     return { color: buttonColor, backgroundColor: buttonBackgroundColor };
 }
 
@@ -137,6 +138,7 @@ export function getLabelColor(): Color {
     applySelectors(label, (lbl) => {
         labelColor = lbl.color;
     });
+
     return labelColor;
 }
 
@@ -153,6 +155,7 @@ export function getTextFieldColor(): Color {
     applySelectors(textField, (tf) => {
         textFieldColor = tf.color;
     });
+
     return textFieldColor;
 }
 

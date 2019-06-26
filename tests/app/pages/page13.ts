@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as btns from "tns-core-modules/ui/button";
 import * as layout from "tns-core-modules/ui/layouts/stack-layout";
 
@@ -20,6 +20,7 @@ export function createPage() {
     btn.marginBottom = 100;
 
     page.content = linearLayout;
+
     return page;
 }
 
@@ -29,5 +30,6 @@ function addButton(layout: layout.StackLayout, text: "left" | "center" | "right"
     btn.horizontalAlignment = text;
     layout.addChild(btn);
     layout.style.paddingLeft = 5;
+
     return btn;
 }

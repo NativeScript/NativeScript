@@ -31,7 +31,7 @@ export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 export type BackgroundSize = "auto" | "cover" | "contain" | {
     x: LengthPercentage,
     y: "auto" | LengthPercentage
-}
+};
 export type HorizontalAlign = "left" | "center" | "right";
 export type VerticalAlign = "top" | "center" | "bottom";
 export interface HorizontalAlignWithOffset {
@@ -40,7 +40,7 @@ export interface HorizontalAlignWithOffset {
 }
 export interface VerticalAlignWithOffset {
     readonly align: "top" | "bottom";
-    readonly offset: LengthPercentage
+    readonly offset: LengthPercentage;
 }
 export interface BackgroundPosition {
     readonly x: HorizontalAlign | HorizontalAlignWithOffset;
@@ -57,6 +57,7 @@ export function parseURL(text: string, start: number = 0): Parsed<URL> {
     }
     const end = urlRegEx.lastIndex;
     const value: URL = result[2] || result[3];
+
     return { start, end, value };
 }
 
@@ -77,13 +78,14 @@ export function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
     } else if (hex.length === 3) {
         argb = parseInt("0xFF" + hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]);
     }
+
     return { start, end, value: argb };
 }
 
 function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
     if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
         return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + (b * 0x000001);
-    } else { 
+    } else {
         return null;
     }
 }
@@ -97,6 +99,7 @@ export function parseRGBColor(text: string, start: number = 0): Parsed<ARGB> {
     }
     const end = rgbColorRegEx.lastIndex;
     const value = result[1] && rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]));
+
     return { start, end, value };
 }
 
@@ -109,6 +112,7 @@ export function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
     }
     const end = rgbaColorRegEx.lastIndex;
     const value = rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
+
     return { start, end, value };
 }
 
@@ -262,14 +266,16 @@ export enum colors {
     whitesmoke = 0xFFF5F5F5,
     yellow = 0xFFFFFF00,
     yellowgreen = 0xFF9ACD32
-};
+}
 
 export function parseColorKeyword(value, start: number, keyword = parseKeyword(value, start)): Parsed<ARGB> {
     if (keyword && keyword.value in colors) {
         const end = keyword.end;
         const value = colors[keyword.value];
+
         return { start, end, value };
     }
+
     return null;
 }
 
@@ -286,7 +292,8 @@ function parseKeyword(text: string, start: number = 0): Parsed<Keyword> {
     }
     const end = keywordRegEx.lastIndex;
     const value = result[1];
-    return { start, end, value }
+
+    return { start, end, value };
 }
 
 const backgroundRepeatKeywords = new Set([ "repeat", "repeat-x", "repeat-y", "no-repeat" ]);
@@ -294,8 +301,10 @@ export function parseRepeat(value: string, start: number = 0, keyword = parseKey
     if (keyword && backgroundRepeatKeywords.has(keyword.value)) {
         const end = keyword.end;
         const value = <BackgroundRepeat>keyword.value;
+
         return { start, end, value };
     }
+
     return null;
 }
 
@@ -309,6 +318,7 @@ export function parseUnit(text: string, start: number = 0): Parsed<Unit<string>>
     const end = unitRegEx.lastIndex;
     const value = parseFloat(result[1]);
     const unit = <any>result[2] || "dip";
+
     return { start, end, value: { value, unit }};
 }
 
@@ -326,8 +336,10 @@ export function parsePercentageOrLength(text: string, start: number = 0): Parsed
         } else {
             return null;
         }
+
         return { start, end, value };
     }
+
     return null;
 }
 
@@ -336,13 +348,15 @@ const angleUnitsToRadMap: { [unit: string]: (start: number, end: number, value: 
     "rad": (start: number, end: number, rad: number) => ({ start, end, value: rad }),
     "grad": (start: number, end: number, grad: number) => ({ start, end, value: grad / 200 * Math.PI }),
     "turn": (start: number, end: number, turn: number) => ({ start, end, value: turn * Math.PI * 2 })
-}
+};
 export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
     const angleResult = parseUnit(value, start);
     if (angleResult) {
         const { start, end, value } = angleResult;
+
         return (angleUnitsToRadMap[value.unit] || ((_, __, ___) => null))(start, end, value.value);
     }
+
     return null;
 }
 
@@ -352,6 +366,7 @@ export function parseBackgroundSize(value: string, start: number = 0, keyword = 
     if (keyword && backgroundSizeKeywords.has(keyword.value)) {
         end = keyword.end;
         const value = <"auto" | "cover" | "contain">keyword.value;
+
         return { start, end, value };
     }
 
@@ -362,11 +377,13 @@ export function parseBackgroundSize(value: string, start: number = 0, keyword = 
         const secondLength = parsePercentageOrLength(value, firstLength.end);
         if (secondLength) {
             end = secondLength.end;
+
             return { start, end, value: { x: firstLength.value, y: secondLength.value }};
         } else {
             return { start, end, value: { x: firstLength.value, y: "auto" }};
         }
     }
+
     return null;
 }
 
@@ -377,7 +394,7 @@ const backgroundPositionKeywordsDirection: {[align: string]: "x" | "center" | "y
     "center": "center",
     "top": "y",
     "bottom": "y"
-}
+};
 export function parseBackgroundPosition(text: string, start: number = 0, keyword = parseKeyword(text, start)): Parsed<BackgroundPosition> {
     function formatH(align: Parsed<HorizontalAlign>, offset: Parsed<LengthPercentage>) {
         if (align.value === "center") {
@@ -386,6 +403,7 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
         if (offset && offset.value.value !== 0) {
             return { align: align.value, offset: offset.value };
         }
+
         return align.value;
     }
     function formatV(align: Parsed<VerticalAlign>, offset: Parsed<LengthPercentage>) {
@@ -395,6 +413,7 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
         if (offset && offset.value.value !== 0) {
             return { align: align.value, offset: offset.value };
         }
+
         return align.value;
     }
     let end = start;
@@ -448,6 +467,7 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
             const secondLength = parsePercentageOrLength(text, end);
             if (secondLength) {
                 end = secondLength.end;
+
                 return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: { align: "top", offset: secondLength.value }}};
             } else {
                 return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: "center" }};
@@ -464,7 +484,7 @@ const sideDirections = {
     right: Math.PI * 1 / 2,
     bottom: Math.PI * 2 / 2,
     left: Math.PI * 3 / 2
-}
+};
 const cornerDirections = {
     top: {
         right: Math.PI * 1 / 4,
@@ -482,7 +502,7 @@ const cornerDirections = {
         top: Math.PI * 7 / 4,
         bottom: Math.PI * 5 / 4
     }
-}
+};
 function parseDirection(text: string, start: number = 0): Parsed<Angle> {
     directionRegEx.lastIndex = start;
     const result = directionRegEx.exec(text);
@@ -494,9 +514,10 @@ function parseDirection(text: string, start: number = 0): Parsed<Angle> {
     if (result[2]) {
         const secondDirection = result[2];
         const value = cornerDirections[firstDirection][secondDirection];
+
         return value === undefined ? null : { start, end, value };
     } else {
-        return { start, end, value: sideDirections[firstDirection] }
+        return { start, end, value: sideDirections[firstDirection] };
     }
 }
 
@@ -550,8 +571,10 @@ export function parseColorStop(text: string, start: number = 0): Parsed<ColorSto
     const offset = parsePercentageOrLength(text, end);
     if (offset) {
         end = offset.end;
+
         return { start, end, value: { argb: color.value, offset: offset.value }};
     }
+
     return { start, end, value: { argb: color.value }};
 }
 
@@ -573,6 +596,7 @@ export function parseLinearGradient(text: string, start: number = 0): Parsed<Lin
             const angleArg = parseAngle(text, start) || parseDirection(text, start);
             if (angleArg) {
                 angle = angleArg.value;
+
                 return angleArg;
             }
         }
@@ -580,6 +604,7 @@ export function parseLinearGradient(text: string, start: number = 0): Parsed<Lin
         const colorStop = parseColorStop(text, start);
         if (colorStop) {
             colors.push(colorStop.value);
+
             return colorStop;
         }
 
@@ -601,6 +626,7 @@ function parseSlash(text: string, start: number): Parsed<"/"> {
         return null;
     }
     const end = slashRegEx.lastIndex;
+
     return { start, end, value: "/" };
 }
 
@@ -656,6 +682,7 @@ export function parseBackground(text: string, start: number = 0): Parsed<Backgro
 
         return null;
     }
+
     return { start, end, value };
 }
 
@@ -703,6 +730,7 @@ export function parseUniversalSelector(text: string, start: number = 0): Parsed<
         return null;
     }
     const end = universalSelectorRegEx.lastIndex;
+
     return { start, end, value: { type: "*" }};
 }
 
@@ -717,6 +745,7 @@ export function parseSimpleIdentifierSelector(text: string, start: number = 0): 
     const type = <"#" | "." | ":" | "">result[1];
     const identifier: string = result[2];
     const value = <TypeSelector | ClassSelector | IdSelector | PseudoClassSelector>{ type, identifier };
+
     return { start, end, value };
 }
 
@@ -732,8 +761,10 @@ export function parseAttributeSelector(text: string, start: number): Parsed<Attr
     if (result[2]) {
         const test = <AttributeSelectorTest>result[2];
         const value = result[3] || result[4] || result[5];
+
         return { start, end, value: { type: "[]", property, test, value }};
     }
+
     return { start, end, value: { type: "[]", property }};
 }
 
@@ -755,7 +786,8 @@ export function parseSimpleSelectorSequence(text: string, start: number): Parsed
         end = simpleSelector.end;
         simpleSelector = parseSimpleSelector(text, end);
     }
-    return { start, end, value }
+
+    return { start, end, value };
 }
 
 const combinatorRegEx = /\s*(\+|~|>)?\s*/gy;
@@ -767,7 +799,8 @@ export function parseCombinator(text: string, start: number = 0): Parsed<Combina
     }
     const end = combinatorRegEx.lastIndex;
     const value = <Combinator>result[1] || " ";
-    return { start, end, value }
+
+    return { start, end, value };
 }
 
 const whiteSpaceRegEx = /\s*/gy;
@@ -795,8 +828,8 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
         if (combinator) {
             pair[1] = combinator.value;
         }
-        pair = [simpleSelectorSequence.value, undefined]
-        value.push(pair)
+        pair = [simpleSelectorSequence.value, undefined];
+        value.push(pair);
 
         combinator = parseCombinator(text, end);
         if (combinator) {
@@ -804,6 +837,7 @@ export function parseSelector(text: string, start: number = 0): Parsed<Selector>
         }
         expectSimpleSelector = combinator && combinator.value !== " "; // Simple selector must follow non trailing white space combinator
     } while (combinator);
+
     return { start, end, value };
 }
 
@@ -826,8 +860,8 @@ export interface QualifiedRule {
 
 const whitespaceRegEx = /[\s\t\n\r\f]*/gym;
 
-const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gym; // Besides $n, parse escape 
-const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gym; // Besides $n, parse escape 
+const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gym; // Besides $n, parse escape
+const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gym; // Besides $n, parse escape
 
 const commentRegEx = /(\/\*(?:[^\*]|\*[^\/])*\*\/)/gym;
 const numberRegEx = /[\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?/gym;
@@ -942,6 +976,7 @@ export class CSS3Parser {
             inputToken = this.consumeAToken();
             tokens.push(inputToken);
         } while (inputToken);
+
         return tokens;
     }
 
@@ -953,6 +988,7 @@ export class CSS3Parser {
         if (this.reconsumedInputToken) {
             let result = this.reconsumedInputToken;
             this.reconsumedInputToken = null;
+
             return result;
         }
         const char = this.text[this.nextInputCodePointIndex];
@@ -969,6 +1005,7 @@ export class CSS3Parser {
             case "{":
             case "}":
                 this.nextInputCodePointIndex++;
+
                 return <any>char;
             case "#": return this.consumeAHashToken() || this.consumeADelimToken();
             case " ":
@@ -1000,6 +1037,7 @@ export class CSS3Parser {
                         throw new Error("Unicode tokens not supported!");
                     }
                 }
+
                 return this.consumeAnIdentLikeToken() || this.consumeADelimToken();
             case "$":
             case "*":
@@ -1026,6 +1064,7 @@ export class CSS3Parser {
         whitespaceRegEx.lastIndex = this.nextInputCodePointIndex;
         whitespaceRegEx.exec(this.text);
         this.nextInputCodePointIndex = whitespaceRegEx.lastIndex;
+
         return " ";
     }
 
@@ -1036,31 +1075,38 @@ export class CSS3Parser {
             return { type: TokenObjectType.hash, text: "#" + hashName.text };
         }
         this.nextInputCodePointIndex--;
+
         return null;
     }
 
     private consumeCDO(): "<!--" | null {
         if (this.text.substr(this.nextInputCodePointIndex, 4) === "<!--") {
             this.nextInputCodePointIndex += 4;
+
             return "<!--";
         }
+
         return null;
     }
 
     private consumeCDC(): "-->" | null {
         if (this.text.substr(this.nextInputCodePointIndex, 3) === "-->") {
             this.nextInputCodePointIndex += 3;
+
             return "-->";
         }
+
         return null;
     }
 
     private consumeAMatchToken(): "*=" | "$=" | "|=" | "~=" | "^=" | null {
         if (this.text[this.nextInputCodePointIndex + 1] === "=") {
             const token = this.text.substr(this.nextInputCodePointIndex, 2);
-            this.nextInputCodePointIndex += 2
+            this.nextInputCodePointIndex += 2;
+
             return <"*=" | "$=" | "|=" | "~=" | "^=">token;
         }
+
         return null;
     }
 
@@ -1101,8 +1147,10 @@ export class CSS3Parser {
             if (name.text.toLowerCase() === "url") {
                 return this.consumeAURLToken();
             }
+
             return <FunctionInputToken>{ type: TokenObjectType.functionToken, name: name.text, text: name.text + "(" };
         }
+
         return name;
     }
 
@@ -1156,6 +1204,7 @@ export class CSS3Parser {
                 this.nextInputCodePointIndex++;
                 const end = this.nextInputCodePointIndex;
                 urlToken.text = this.text.substring(start, end);
+
                 return urlToken;
             } else {
                 // TODO: Handle bad-url.
@@ -1175,6 +1224,7 @@ export class CSS3Parser {
                     this.consumeAWhitespace();
                     if (this.text[this.nextInputCodePointIndex] === ")") {
                         this.nextInputCodePointIndex++;
+
                         return urlToken;
                     } else {
                         // TODO: Bar url! Consume remnants.
@@ -1192,6 +1242,7 @@ export class CSS3Parser {
                     urlToken.text += char;
             }
         }
+
         return urlToken;
     }
 
@@ -1206,6 +1257,7 @@ export class CSS3Parser {
             return null;
         }
         this.nextInputCodePointIndex = nameRegEx.lastIndex;
+
         // TODO: Perform string escaping.
         return { type: TokenObjectType.ident, text: result[0] };
     }
@@ -1217,6 +1269,7 @@ export class CSS3Parser {
             return { type: TokenObjectType.atKeyword, text: name.text };
         }
         this.nextInputCodePointIndex--;
+
         return null;
     }
 
@@ -1228,9 +1281,11 @@ export class CSS3Parser {
                 return null; // TODO: Handle <bad-comment>
             }
             this.nextInputCodePointIndex = commentRegEx.lastIndex;
+
             // The CSS spec tokenizer does not emmit comment tokens
             return this.consumeAToken();
         }
+
         return null;
     }
 
@@ -1247,6 +1302,7 @@ export class CSS3Parser {
         const stylesheet: Stylesheet = {
             rules: this.consumeAListOfRules()
         };
+
         return stylesheet;
     }
 
@@ -1286,6 +1342,7 @@ export class CSS3Parser {
                 rules.push(qualifiedRule);
             }
         }
+
         return rules;
     }
 
@@ -1300,15 +1357,17 @@ export class CSS3Parser {
             name: (<AtKeywordToken>inputToken).text,
             prelude: [],
             block: undefined
-        }
+        };
         while (inputToken = this.consumeAToken()) {
             if (inputToken === ";") {
                 return atRule;
             } else if (inputToken === "{") {
                 atRule.block = this.consumeASimpleBlock(inputToken);
+
                 return atRule;
             } else if ((<InputTokenObject>inputToken).type === TokenObjectType.simpleBlock && (<SimpleBlock>inputToken).associatedToken === "{") {
                 atRule.block = <SimpleBlock>inputToken;
+
                 return atRule;
             }
             this.reconsumeTheCurrentInputToken(inputToken);
@@ -1317,6 +1376,7 @@ export class CSS3Parser {
                 atRule.prelude.push(component);
             }
         }
+
         return atRule;
     }
 
@@ -1335,11 +1395,13 @@ export class CSS3Parser {
             if (inputToken === "{") {
                 let block = this.consumeASimpleBlock(inputToken);
                 qualifiedRule.block = block;
+
                 return qualifiedRule;
             } else if ((<InputTokenObject>inputToken).type === TokenObjectType.simpleBlock) {
                 const simpleBlock: SimpleBlock = <SimpleBlock>inputToken;
                 if (simpleBlock.associatedToken === "{") {
                     qualifiedRule.block = simpleBlock;
+
                     return qualifiedRule;
                 }
             }
@@ -1349,6 +1411,7 @@ export class CSS3Parser {
                 qualifiedRule.prelude.push(componentValue);
             }
         }
+
         // TODO: This is a parse error, log parse errors!
         return null;
     }
@@ -1365,11 +1428,13 @@ export class CSS3Parser {
             case "[":
             case "(":
                 this.nextInputCodePointIndex++;
+
                 return this.consumeASimpleBlock(inputToken);
         }
         if (typeof inputToken === "object" && inputToken.type === TokenObjectType.functionToken) {
             return this.consumeAFunction((<FunctionInputToken>inputToken).name);
         }
+
         return inputToken;
     }
 
@@ -1396,6 +1461,7 @@ export class CSS3Parser {
                 this.nextInputCodePointIndex++;
                 const end = this.nextInputCodePointIndex;
                 block.text = this.text.substring(start, end);
+
                 return block;
             }
             const value = this.consumeAComponentValue();
@@ -1404,6 +1470,7 @@ export class CSS3Parser {
             }
         }
         block.text = this.text.substring(start);
+
         return block;
     }
 
@@ -1417,6 +1484,7 @@ export class CSS3Parser {
         do {
             if (this.nextInputCodePointIndex >= this.text.length) {
                 funcToken.text = name + "(" + this.text.substring(start);
+
                 return funcToken;
             }
             const nextInputToken = this.text[this.nextInputCodePointIndex];
@@ -1425,6 +1493,7 @@ export class CSS3Parser {
                     this.nextInputCodePointIndex++;
                     const end = this.nextInputCodePointIndex;
                     funcToken.text = name + "(" + this.text.substring(start, end);
+
                     return funcToken;
                 default:
                     const component = this.consumeAComponentValue();
@@ -1448,7 +1517,7 @@ export class CSSNativeScript {
             stylesheet: {
                 rules: this.parseRules(stylesheet.rules)
             }
-        }
+        };
     }
 
     private parseRules(rules: Rule[]): any {
@@ -1469,8 +1538,9 @@ export class CSSNativeScript {
             return {
                 import: rule.prelude.map(m => typeof m === "string" ? m : m.text).join("").trim(),
                 type: "import"
-            }
+            };
         }
+
         return;
     }
 
@@ -1479,7 +1549,7 @@ export class CSSNativeScript {
             type: "rule",
             selectors: this.preludeToSelectorsStringArray(rule.prelude),
             declarations: this.ruleBlockToDeclarations(rule.block.values)
-        }
+        };
     }
 
     private ruleBlockToDeclarations(declarationsInputTokens: InputToken[]): { type: "declaration", property: string, value: string }[] {
@@ -1520,6 +1590,7 @@ export class CSSNativeScript {
         if (property || value) {
             declarations.push({ type: "declaration", property, value });
         }
+
         return declarations;
     }
 
@@ -1543,6 +1614,7 @@ export class CSSNativeScript {
         if (selector) {
             selectors.push(selector.trim());
         }
+
         return selectors;
     }
 }

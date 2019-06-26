@@ -45,4 +45,4 @@ export var testAndroidApplicationInitialized = function () {
     TKUnit.assert(app.android.startActivity, "Android startActivity not initialized.");
     TKUnit.assert(app.android.nativeApp, "Android nativeApp not initialized.");
     TKUnit.assert(app.android.packageName, "Android packageName not initialized.");
-}
+};

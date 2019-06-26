@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { ImageSource as ImageSourceDefinition } from ".";
 import { ImageAsset } from "../image-asset";
 import * as httpModule from "../http";
@@ -115,6 +115,7 @@ export class ImageSource implements ImageSourceDefinition {
 
     public loadFromData(data: any): boolean {
         this.android = android.graphics.BitmapFactory.decodeStream(data);
+
         return this.android != null;
     }
 
@@ -127,8 +128,9 @@ export class ImageSource implements ImageSourceDefinition {
     public loadFromBase64(source: string): boolean {
         if (typeof source === "string") {
             const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
-            this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
+            this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
+
         return this.android != null;
     }
 
@@ -157,6 +159,7 @@ export class ImageSource implements ImageSourceDefinition {
 
         const res = this.android.compress(targetFormat, quality, outputStream);
         outputStream.close();
+
         return res;
     }
 
@@ -216,37 +219,44 @@ function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitma
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
     const image = new ImageSource();
+
     return image.fromAsset(asset);
 }
 
 export function fromResource(name: string): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromResource(name) ? image : null;
 }
 
 export function fromFile(path: string): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromFile(path) ? image : null;
 }
 
 export function fromData(data: any): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromData(data) ? image : null;
 }
 
 export function fromBase64(source: string): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromBase64(source) ? image : null;
 }
 
 export function fromNativeSource(source: any): ImageSource {
     const imageSource = new ImageSource();
     imageSource.setNativeSource(source);
+
     return imageSource;
 }
 
 export function fromUrl(url: string): Promise<ImageSourceDefinition> {
     ensureHttp();
+
     return http.getImage(url);
 }
 
@@ -258,5 +268,6 @@ export function fromFileOrResource(path: string): ImageSource {
     if (path.indexOf(RESOURCE_PREFIX) === 0) {
         return fromResource(path.substr(RESOURCE_PREFIX.length));
     }
+
     return fromFile(path);
 }

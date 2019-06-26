@@ -1,4 +1,4 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
+import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
@@ -152,11 +152,13 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 
     get _selectedView(): View {
         let selectedIndex = this.selectedIndex;
+
         return selectedIndex > -1 ? this.items[selectedIndex].view : null;
     }
 
     get _childrenCount(): number {
         const items = this.items;
+
         return items ? items.length : 0;
     }
 

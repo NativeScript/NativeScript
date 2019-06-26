@@ -28,7 +28,7 @@ export class ListPickerView extends Observable {
     set showListPicker(value: string) {
         if (this._showListPicker !== value) {
             this._showListPicker = value;
-            this.notifyPropertyChange("showListPicker", value)
+            this.notifyPropertyChange("showListPicker", value);
         }
     }
 

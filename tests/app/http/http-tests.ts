@@ -20,7 +20,7 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 
 export var test_getString_fail = function (done) {
     http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).catch(function (e) {
-        done(null)
+        done(null);
     });
 };
 
@@ -148,7 +148,7 @@ export var test_gzip_request_explicit = function(done) {
     }, function (e) {
         done(e);
     });
-}
+};
 
 export var test_gzip_request_implicit = function(done) {
     var result;
@@ -167,7 +167,7 @@ export var test_gzip_request_implicit = function(done) {
     }, function (e) {
         done(e);
     });
-}
+};
 
 export var test_getImage_isDefined = function () {
     TKUnit.assert(typeof (http.getImage) !== "undefined", "Method http.getImage() should be defined!");

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { UITest } from "../../ui-test";
 import { getResources as appGetResources } from "tns-core-modules/application";
@@ -356,7 +356,7 @@ export class ListViewTest extends UITest<ListView> {
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
 
-        // Remove the first 2 elements and add 
+        // Remove the first 2 elements and add
         data.splice(0, 2, "d", "e", "f");
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 4, "getNativeViewCount");
@@ -465,6 +465,7 @@ export class ListViewTest extends UITest<ListView> {
             var month = value.getMonth() + 1;
             result = result.replace("MM", month < 10 ? "0" + month : month);
             result = result.replace("YYYY", value.getFullYear());
+
             return result;
         };
 
@@ -505,8 +506,9 @@ export class ListViewTest extends UITest<ListView> {
             var label = new Label();
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+
             return label;
-        }
+        };
         listView.items = [1, 2, 3];
 
         this.waitUntilListViewReady();
@@ -586,8 +588,9 @@ export class ListViewTest extends UITest<ListView> {
 
         var testConverter = function (value) {
             converterCalledCounter++;
+
             return value;
-        }
+        };
 
         appGetResources()["testConverter"] = testConverter;
 
@@ -609,8 +612,9 @@ export class ListViewTest extends UITest<ListView> {
 
         var testConverter = function (value) {
             converterCalledCounter++;
+
             return value;
-        }
+        };
 
         appGetResources()["testConverter"] = testConverter;
 
@@ -644,7 +648,7 @@ export class ListViewTest extends UITest<ListView> {
     }
 
     public test_no_memory_leak_when_items_is_observable_array() {
-        // Keep the reference to the observable array to test the weakEventListener 
+        // Keep the reference to the observable array to test the weakEventListener
         var colors = new ObservableArray(["red", "green", "blue"]);
 
         let weakRef = new WeakRef<ListView>(this.testView);
@@ -736,7 +740,7 @@ export class ListViewTest extends UITest<ListView> {
             let array = new ArrayBuffer(4 * 1024 * 1024);
             if (!array) {
                 ///
-            };
+            }
         }
 
         GC();
@@ -767,7 +771,7 @@ export class ListViewTest extends UITest<ListView> {
         TKUnit.wait(0.1);
 
         var lastNativeElementVisible = this.checkItemVisibleAtIndex(listView, MANY_ITEMS.length - 1);
-        TKUnit.assertEqual(lastNativeElementVisible, true, "last element is visible");        
+        TKUnit.assertEqual(lastNativeElementVisible, true, "last element is visible");
     }
 
     public test_scrollToIndex_should_not_throw_if_items_not_set() {
@@ -789,6 +793,7 @@ export class ListViewTest extends UITest<ListView> {
                 new ArrayBuffer(4 * 1024 * 1024);
             }
             GC();
+
             return !weakRef.get();
         });
 
@@ -808,6 +813,7 @@ export class ListViewTest extends UITest<ListView> {
             if (nativeElement instanceof android.view.ViewGroup) {
                 return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText() + "";
             }
+
             return (<android.widget.TextView>nativeElement).getText() + "";
         }
         else if (listView.ios) {
@@ -998,6 +1004,7 @@ export class ListViewTest extends UITest<ListView> {
                 }
             });
         }
+
         return items;
     }
 }

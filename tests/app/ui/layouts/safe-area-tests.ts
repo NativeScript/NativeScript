@@ -32,11 +32,11 @@ export class SafeAreaTests extends testModule.UITest<any> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     public test_layout_changed_event_count() {
         const page = <Page>parse(`
@@ -59,19 +59,20 @@ export class SafeAreaTests extends testModule.UITest<any> {
         helper.navigate(() => page);
         label.height = 100;
         TKUnit.waitUntilReady(() => labelLayoutChangedCounter === 2);
-        TKUnit.assert(gridLayoutChangedCounter === 1, `${grid} layoutChanged event count - actual:${gridLayoutChangedCounter}; expected: 1`)
+        TKUnit.assert(gridLayoutChangedCounter === 1, `${grid} layoutChanged event count - actual:${gridLayoutChangedCounter}; expected: 1`);
     }
 
     // Common
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             child0: root.getViewById("child0") as view.View,
             child1: root.getViewById("child1") as view.View,
             child2: root.getViewById("child2") as view.View
         };
-    };
+    }
 
     private layout_insets_top_action_bar_test(layout: view.View) {
         const app = UIApplication.sharedApplication;
@@ -80,7 +81,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         const topInset = statusBarHeight + actionBarHeight;
 
         const insets = layout.getSafeAreaInsets();
-        equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`)
+        equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
     }
 
     private layout_insets_top_action_bar_hidden_test(layout: view.View) {
@@ -89,7 +90,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
         const topInset = statusBarHeight;
 
         const insets = layout.getSafeAreaInsets();
-        equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`)
+        equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
     }
 
     private layout_in_full_screen_test(layout: view.View, pageOptions?: helper.PageOptions) {
@@ -292,6 +293,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     // Dock
     private getDockViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             childLeft: root.getViewById("childLeft") as view.View,
@@ -300,7 +302,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
             childBottom: root.getViewById("childBottom") as view.View,
             childFill: root.getViewById("childFill") as view.View,
         };
-    };
+    }
 
     private dock_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
@@ -500,7 +502,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 const sumOfNestedDockHeights = height(childTop) + height(childFill) + height(childBottom);
                 equal(height(root), sumOfNestedDockHeights, `dock height<${height(root)}> sum of nested docks height <${sumOfNestedDockHeights}>`);
 
-                const sumOfNestedDockWidths = width(childLeft) + width(childFill) + width(childRight)
+                const sumOfNestedDockWidths = width(childLeft) + width(childFill) + width(childRight);
                 equal(width(root), sumOfNestedDockWidths, `dock width<${width(root)}> sum of nested docks width <${sumOfNestedDockWidths}>`);
             },
             pageOptions
@@ -803,6 +805,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     // Grid
     private getGridViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             grid: root.getViewById("grid") as GridLayout,
@@ -812,7 +815,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
                 [root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View]
             ]
         };
-    };
+    }
 
     private grid_layout_in_full_screen(pageOptions?: helper.PageOptions) {
         const snippet = `
@@ -1030,8 +1033,8 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
                 greaterOrCloseEnough(width(cells[1][0]), width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or close enough cell11 width<${width(cells[1][1])}>`);
                 lessOrCloseEnough(width(cells[1][1]), width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or close enough cell12 width<${width(cells[1][2])}>`);
-
-                const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
+                
+                const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
                 equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
             },
             pageOptions

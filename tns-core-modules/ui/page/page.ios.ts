@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { Frame, BackstackEntry } from "../frame";
 import { NavigationType } from "../frame/frame-common";
 
@@ -74,6 +74,7 @@ class UIViewControllerImpl extends UIViewController {
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
         const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
         controller._owner = owner;
+
         return controller;
     }
 

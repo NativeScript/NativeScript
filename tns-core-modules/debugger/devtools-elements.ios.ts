@@ -9,7 +9,7 @@ export function attachDOMInspectorEventCallbacks(DOMDomainFrontend: InspectorEve
 
     DOMDomainFrontend.childNodeInserted = (parentId: number, lastId: number, node: DOMNode) => {
         originalChildNodeInserted(parentId, lastId, node.toObject());
-    }
+    };
 }
 
 export function attachDOMInspectorCommandCallbacks(DOMDomainBackend: InspectorCommands) {

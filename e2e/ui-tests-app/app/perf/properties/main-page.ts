@@ -10,6 +10,7 @@ function getStack(stack: StackLayout): StackLayout {
     let p = new StackLayout();
     stack.removeChildren();
     stack.addChild(p);
+
     return p;
 }
 

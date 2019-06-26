@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as button from "tns-core-modules/ui/button";
 import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 
@@ -16,5 +16,6 @@ export function createPage() {
 
     var page = new pages.Page();
     page.content = stack;
+
     return page;
 }

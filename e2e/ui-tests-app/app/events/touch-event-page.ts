@@ -1,4 +1,4 @@
-﻿import { TextView } from "tns-core-modules/ui/text-view";
+import { TextView } from "tns-core-modules/ui/text-view";
 import * as gestures from "tns-core-modules/ui/gestures";
 
 export function onTouch(args: gestures.TouchGestureEventData) {
@@ -11,14 +11,14 @@ export function onTouch(args: gestures.TouchGestureEventData) {
     let pointers = args.getActivePointers();
     for (let index = 0; index < pointers.length; index++) {
         p = pointers[index];
-        msg += " p" + index + "[" + Math.round(p.getX()) + ", " + Math.round(p.getY()) + "]"
+        msg += " p" + index + "[" + Math.round(p.getX()) + ", " + Math.round(p.getY()) + "]";
     }
 
     msg += " ALL: ";
     pointers = args.getAllPointers();
     for (let index = 0; index < pointers.length; index++) {
         p = pointers[index];
-        msg += " p" + index + "[" + Math.round(p.getX()) + ", " + Math.round(p.getY()) + "]"
+        msg += " p" + index + "[" + Math.round(p.getX()) + ", " + Math.round(p.getY()) + "]";
     }
 
     console.log(msg);

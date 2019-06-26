@@ -1,4 +1,4 @@
-﻿import * as pageModule from "tns-core-modules/ui/page";
+import * as pageModule from "tns-core-modules/ui/page";
 import * as labelModule from "tns-core-modules/ui/label";
 import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as textViewModule from "tns-core-modules/ui/text-view";
@@ -20,6 +20,7 @@ export function createPage() {
     });
 
     page.content = stackLayout;
+
     return page;
 }
 

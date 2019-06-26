@@ -1,12 +1,12 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
-import { Screen, driverDefaultWaitTime } from "./screen"
+import { Screen, driverDefaultWaitTime } from "./screen";
 import {
     roots,
     modalPageBackground,
     testNestedModalFrameBackground,
     testNestedModalPageBackground,
     testDialogBackground
-} from "./shared.e2e-spec"
+} from "./shared.e2e-spec";
 
 describe("modal-page:", async function () {
 
@@ -65,5 +65,5 @@ describe("modal-page:", async function () {
                 await testNestedModalPageBackground(driver, screen, false);
             });
         });
-    };
+    }
 });

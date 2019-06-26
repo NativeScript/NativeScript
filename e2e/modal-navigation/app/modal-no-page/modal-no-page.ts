@@ -16,9 +16,9 @@ export function showDialog(args: EventData) {
         okButtonText: "Yes",
         cancelButtonText: "No"
 
-    }
+    };
 
     confirm(options).then((result: boolean) => {
         console.log(result);
-    })
+    });
 }

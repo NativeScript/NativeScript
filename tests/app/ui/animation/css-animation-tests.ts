@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as styleScope from "tns-core-modules/ui/styling/style-scope";
 import * as keyframeAnimation from "tns-core-modules/ui/animation/keyframe-animation";
 import * as enums from "tns-core-modules/ui/enums";
@@ -19,13 +19,16 @@ function createAnimationFromCSS(css: string, name: string): keyframeAnimation.Ke
     let selector = findSelectorInScope(scope, name);
     if (selector !== undefined) {
         let animation = scope.getAnimations(selector.ruleset)[0];
+
         return animation;
     }
+
     return undefined;
 }
 
 function findSelectorInScope(scope: styleScope.StyleScope, cssClass: string): SelectorCore {
     let selectors = scope.query({cssClasses: new Set([cssClass])});
+
     return selectors[0];
 }
 
@@ -351,7 +354,7 @@ export function test_LoadAnimationProgrammatically() {
 export function test_ExecuteCSSAnimation() {
     let mainPage = helper.getCurrentPage();
     mainPage.css = null;
-    let label = new labelModule.Label()
+    let label = new labelModule.Label();
     label.text = "label";
     let stackLayout = new stackModule.StackLayout();
     stackLayout.addChild(label);
@@ -429,5 +432,6 @@ function getTransformsValues(declarations) {
 
 function getTransforms(declarations) {
     const [ translate, rotate, scale  ] = [...declarations];
+
     return { translate, rotate, scale };
 }

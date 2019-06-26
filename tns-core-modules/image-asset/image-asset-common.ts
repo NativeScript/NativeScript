@@ -57,6 +57,7 @@ export function getRequestedImageSize(src: { width: number, height: number }, op
         reqWidth = safeAspectSize.width;
         reqHeight = safeAspectSize.height;
     }
+
     return {
         width: reqWidth,
         height: reqHeight

@@ -17,6 +17,7 @@ function initializeWebViewClient(): void {
 
         constructor(public owner: WebViewBase) {
             super();
+
             return global.__native(this);
         }
 
@@ -24,6 +25,7 @@ function initializeWebViewClient(): void {
             if (traceEnabled()) {
                 traceWrite("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", traceCategories.Debug);
             }
+
             return false;
         }
 
@@ -84,7 +86,7 @@ function initializeWebViewClient(): void {
                 }
             }
         }
-    };
+    }
 
     WebViewClient = WebViewClientImpl;
 }
@@ -96,6 +98,7 @@ export class WebView extends WebViewBase {
         const nativeView = new android.webkit.WebView(this._context);
         nativeView.getSettings().setJavaScriptEnabled(true);
         nativeView.getSettings().setBuiltInZoomControls(true);
+
         return nativeView;
     }
 
@@ -153,6 +156,7 @@ export class WebView extends WebViewBase {
         if (nativeView) {
             return nativeView.canGoForward();
         }
+
         return false;
     }
 

@@ -1,4 +1,4 @@
-﻿// Required by TypeScript compiler
+// Required by TypeScript compiler
 require("./ts-helpers");
 
 // This method iterates all the keys in the source exports object and copies them to the destination exports one.
@@ -7,7 +7,7 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
     for (let key in sourceExports) {
         destExports[key] = sourceExports[key];
     }
-}
+};
 
 import * as timerModule from "../timer";
 import * as dialogsModule from "../ui/dialogs";
@@ -20,7 +20,7 @@ const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
 global.registerModule = function (name: string, loader: ModuleLoader): void {
     // console.log("[global.registerModule]", name);
     modules.set(name, loader);
-}
+};
 
 global._unregisterModule = function (name: string): void {
     // console.log("[global._unregisterModule]", name);
@@ -90,11 +90,11 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
             global.registerModule(registerName, () => context(key));
         }
     });
-}
+};
 
 global.moduleExists = function (name: string): boolean {
     return modules.has(name);
-}
+};
 
 global.loadModule = function (name: string): any {
     const loader = modules.get(name);
@@ -106,10 +106,11 @@ global.loadModule = function (name: string): any {
         const result = resolver(name);
         if (result) {
             modules.set(name, () => result);
+
             return result;
         }
     }
-}
+};
 
 global.getRegisteredModules = function (): string[] {
     return Array.from(modules.keys());
@@ -126,7 +127,7 @@ global.zonedCallback = function (callback: Function): Function {
     } else {
         return callback;
     }
-}
+};
 
 global.registerModule("timer", () => require("timer"));
 global.registerModule("ui/dialogs", () => require("ui/dialogs"));
@@ -143,7 +144,7 @@ global.registerModule("fetch", () => require("fetch"));
             }
         });
     }
-}
+};
 
 function registerOnGlobalContext(name: string, module: string): void {
     Object.defineProperty(global, name, {
@@ -190,7 +191,7 @@ export function install() {
                 Headers: fetch.Headers,
                 Request: fetch.Request,
                 Response: fetch.Response,
-            }
+            };
         }
         const consoleModule = require("console").Console;
         // Object.assign call will fire an error when trying to write to a read-only property of an object, such as 'console'
@@ -227,11 +228,12 @@ export function Deprecated(target: Object, key?: string | symbol, descriptor?: a
             console.log(`${key.toString()} is deprecated`);
 
             return originalMethod.apply(this, args);
-        }
+        };
 
         return descriptor;
     } else {
         console.log(`${(target && (<any>target).name || target)} is deprecated`);
+
         return target;
     }
 }
@@ -246,11 +248,12 @@ export function Experimental(target: Object, key?: string | symbol, descriptor?:
             console.log(`${key.toString()} is experimental`);
 
             return originalMethod.apply(this, args);
-        }
+        };
 
         return descriptor;
     } else {
         console.log(`${(target && (<any>target).name || target)} is experimental`);
+
         return target;
     }
 }

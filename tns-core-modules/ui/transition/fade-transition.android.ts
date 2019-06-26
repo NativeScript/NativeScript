@@ -1,4 +1,4 @@
-﻿import { Transition, AndroidTransitionType } from "./transition";
+import { Transition, AndroidTransitionType } from "./transition";
 
 export class FadeTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
@@ -23,6 +23,7 @@ export class FadeTransition extends Transition {
         }
 
         animator.setInterpolator(this.getCurve());
+
         return animator;
     }
 }

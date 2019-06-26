@@ -144,6 +144,7 @@ export class XMLHttpRequest {
                 break;
             }
         }
+
         return result;
     }
 
@@ -203,6 +204,7 @@ export class XMLHttpRequest {
         for (let i in this._headers) {
             result += i + ": " + this._headers[i] + "\r\n";
         }
+
         return result.substr(0, result.length - 2);
     }
 
@@ -286,6 +288,7 @@ export class XMLHttpRequest {
         if (this._readyState === this.UNSENT || this._readyState === this.OPENED || this._errorFlag) {
             return "";
         }
+
         return statuses[this._status];
     }
 }

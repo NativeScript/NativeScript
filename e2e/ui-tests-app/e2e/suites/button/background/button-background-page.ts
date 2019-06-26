@@ -48,5 +48,5 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
         await this.tapBtn(button);
         await this.imageHelper.compareElement(imageName, presenter, 18, 5, ImageOptions.pixel);
         this.imageHelper.assertImages();
-    };
+    }
 }

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as searchBarTestsNative from "./search-bar-tests-native";
@@ -14,13 +14,14 @@ import * as searchBarModule from "tns-core-modules/ui/search-bar";
 //      <SearchBar text="{{ search }}" />
 //  </Page>
 //```
-// </snippet>
+// </snippet>
 
 var _createSearchBarFunc = function (): searchBarModule.SearchBar {
     // >> article-creating-searchbar
     var searchBar = new searchBarModule.SearchBar();
     // << article-creating-searchbar
     searchBar.text = "searchBar";
+
     return searchBar;
 };
 
@@ -118,7 +119,7 @@ export var testSearchBarPropertiesWithCSS = function () {
 export function test_DummyTestForSnippetOnly() {
     // >> article-searching
     var searchBar = new searchBarModule.SearchBar();
-    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) { 
+    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) {
         console.log("Search for " + (<searchBarModule.SearchBar>args.object).text);
     });
     searchBar.on(searchBarModule.SearchBar.clearEvent, function (args: observable.EventData) {

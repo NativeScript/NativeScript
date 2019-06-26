@@ -16,7 +16,7 @@ export class ImageAsset extends ImageAssetBase {
             this.nativeImage = UIImage.imageWithContentsOfFile(asset);
         }
         else if (asset instanceof UIImage) {
-            this.nativeImage = asset
+            this.nativeImage = asset;
         }
         else {
             this.ios = asset;
@@ -44,6 +44,7 @@ export class ImageAsset extends ImageAssetBase {
             let newSize = CGSizeMake(requestedSize.width, requestedSize.height);
             let resizedImage = this.scaleImage(this.nativeImage, newSize);
             callback(resizedImage, null);
+
             return;
         }
 
@@ -72,6 +73,7 @@ export class ImageAsset extends ImageAssetBase {
         image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
         let resultImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
+
         return resultImage;
     }
 }

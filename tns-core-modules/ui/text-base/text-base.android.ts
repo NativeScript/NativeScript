@@ -1,4 +1,4 @@
-﻿import { TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base";
+import { TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base";
 import { Font } from "../styling/font";
 import { backgroundColorProperty } from "../styling/style-properties";
 import {
@@ -26,6 +26,7 @@ function initializeTextTransformation(): void {
     class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
         constructor(public textBase: TextBase) {
             super();
+
             return global.__native(this);
         }
 
@@ -38,6 +39,7 @@ function initializeTextTransformation(): void {
             else {
                 const text = this.textBase.text;
                 const stringValue = (text === null || text === undefined) ? "" : text.toString();
+
                 return getTransformedText(stringValue, this.textBase.textTransform);
             }
         }
@@ -145,6 +147,7 @@ export class TextBase extends TextBaseCommon {
     [textTransformProperty.setNative](value: TextTransform) {
         if (value === "initial") {
             this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
+
             return;
         }
 
@@ -268,28 +271,28 @@ export class TextBase extends TextBaseCommon {
     }
 
     [paddingTopProperty.getDefault](): Length {
-        return { value: this._defaultPaddingTop, unit: "px" }
+        return { value: this._defaultPaddingTop, unit: "px" };
     }
     [paddingTopProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
     [paddingRightProperty.getDefault](): Length {
-        return { value: this._defaultPaddingRight, unit: "px" }
+        return { value: this._defaultPaddingRight, unit: "px" };
     }
     [paddingRightProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
     [paddingBottomProperty.getDefault](): Length {
-        return { value: this._defaultPaddingBottom, unit: "px" }
+        return { value: this._defaultPaddingBottom, unit: "px" };
     }
     [paddingBottomProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
     [paddingLeftProperty.getDefault](): Length {
-        return { value: this._defaultPaddingLeft, unit: "px" }
+        return { value: this._defaultPaddingLeft, unit: "px" };
     }
     [paddingLeftProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
@@ -298,6 +301,7 @@ export class TextBase extends TextBaseCommon {
     _setNativeText(reset: boolean = false): void {
         if (reset) {
             this.nativeTextViewProtected.setText(null);
+
             return;
         }
 

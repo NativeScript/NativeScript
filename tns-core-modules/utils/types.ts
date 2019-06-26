@@ -1,4 +1,4 @@
-﻿export function isString(value: any): boolean {
+export function isString(value: any): boolean {
     return typeof value === "string" || value instanceof String;
 }
 
@@ -14,6 +14,7 @@ export function isFunction(value: any): boolean {
     if (!value) {
         return false;
     }
+
     return typeof value === "function";
 }
 
@@ -21,6 +22,7 @@ export function isObject(value: any): boolean {
     if (!value) {
         return false;
     }
+
     return typeof value === "object";
 }
 
@@ -67,6 +69,7 @@ export function getBaseClasses(object): Array<string> {
         result.push(info.name);
         info = info.baseClassInfo;
     }
+
     return result;
 }
 
@@ -107,6 +110,7 @@ export class ClassInfo {
         if (constructorProto.__proto__) {
             result = getClassInfo(constructorProto.__proto__);
         }
+
         return result;
     }
 }

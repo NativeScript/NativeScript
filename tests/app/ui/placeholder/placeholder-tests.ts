@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 // >> article-creating-view
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import * as utils from "tns-core-modules/utils/utils";
@@ -46,7 +46,7 @@ export function test_placeholder_creatingView() {
         } else if (isAndroid) {
             TKUnit.assert(p.nativeViewProtected instanceof android.widget.TextView, "Native view should be android.widget.TextView. Current value: " + p.nativeViewProtected);
         }
-    };
+    }
 
     helper.buildUIAndRunTest(p, testAction);
 }
@@ -60,7 +60,7 @@ export function test_placeholder_will_not_crash_wihout_creatingView() {
         } else if (isAndroid) {
             TKUnit.assert(p.android === undefined, "android view should be undefined. Current value: " + p.android);
         }
-    };
+    }
 
     helper.buildUIAndRunTest(p, testAction);
 }

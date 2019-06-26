@@ -130,19 +130,22 @@ export namespace PercentLength {
                 if (isNaN(value) || !isFinite(value)) {
                     throw new Error(`Invalid value: ${fromValue}`);
                 }
-                return { unit: "%", value }
+
+                return { unit: "%", value };
             } else if (stringValue.indexOf("px") !== -1) {
                 stringValue = stringValue.replace("px", "").trim();
                 let value: px = parseFloat(stringValue);
                 if (isNaN(value) || !isFinite(value)) {
                     throw new Error(`Invalid value: ${fromValue}`);
                 }
+
                 return { unit: "px", value };
             } else {
                 let value: dip = parseFloat(stringValue);
                 if (isNaN(value) || !isFinite(value)) {
                     throw new Error(`Invalid value: ${fromValue}`);
                 }
+
                 return value;
             }
         } else {
@@ -168,12 +171,14 @@ export namespace Length {
                 if (isNaN(value) || !isFinite(value)) {
                     throw new Error(`Invalid value: ${stringValue}`);
                 }
+
                 return { unit: "px", value };
             } else {
                 let value: dip = parseFloat(stringValue);
                 if (isNaN(value) || !isFinite(value)) {
                     throw new Error(`Invalid value: ${stringValue}`);
                 }
+
                 return value;
             }
         } else {
@@ -251,6 +256,7 @@ const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
             PercentLength.equals(this.marginTop, this.marginLeft)) {
             return this.marginTop;
         }
+
         return `${PercentLength.convertToString(this.marginTop)} ${PercentLength.convertToString(this.marginRight)} ${PercentLength.convertToString(this.marginBottom)} ${PercentLength.convertToString(this.marginLeft)}`;
     },
     converter: convertToMargins
@@ -277,6 +283,7 @@ const paddingProperty = new ShorthandProperty<Style, string | Length>({
             Length.equals(this.paddingTop, this.paddingLeft)) {
             return this.paddingTop;
         }
+
         return `${Length.convertToString(this.paddingTop)} ${Length.convertToString(this.paddingRight)} ${Length.convertToString(this.paddingBottom)} ${Length.convertToString(this.paddingLeft)}`;
     },
     converter: convertToPaddings
@@ -420,6 +427,7 @@ function parseThickness(value: string): Thickness {
 function convertToMargins(this: void, value: string | PercentLength): [CssProperty<any, any>, any][] {
     if (typeof value === "string" && value !== "auto") {
         let thickness = parseThickness(value);
+
         return [
             [marginTopProperty, PercentLength.parse(thickness.top)],
             [marginRightProperty, PercentLength.parse(thickness.right)],
@@ -440,6 +448,7 @@ function convertToMargins(this: void, value: string | PercentLength): [CssProper
 function convertToPaddings(this: void, value: string | Length): [CssProperty<any, any>, any][] {
     if (typeof value === "string" && value !== "auto") {
         let thickness = parseThickness(value);
+
         return [
             [paddingTopProperty, Length.parse(thickness.top)],
             [paddingRightProperty, Length.parse(thickness.right)],
@@ -544,6 +553,7 @@ function convertToTransform(value: string): [CssProperty<any, any>, any][] {
     }
 
     const { translate, rotate, scale } = transformConverter(value);
+
     return [
         [translateXProperty, translate.x],
         [translateYProperty, translate.y],
@@ -574,8 +584,8 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 
     const affineMatrix = transformations
         .map(getTransformMatrix)
-        .reduce(multiplyAffine2d)
-    const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
+        .reduce(multiplyAffine2d);
+    const cssMatrix = matrixArrayToCssMatrix(affineMatrix);
 
     return decompose2DTransformMatrix(cssMatrix);
 }
@@ -640,7 +650,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
     },
     equalityComparer: (value1, value2) => {
         if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
-            return LinearGradient.equals(value1, value2)
+            return LinearGradient.equals(value1, value2);
         } else {
             return value1 === value2;
         }
@@ -737,6 +747,7 @@ function parseBorderColor(value: string): { top: Color, right: Color, bottom: Co
     let result: { top: Color, right: Color, bottom: Color, left: Color } = { top: undefined, right: undefined, bottom: undefined, left: undefined };
     if (value.indexOf("rgb") === 0) {
         result.top = result.right = result.bottom = result.left = new Color(value);
+
         return result;
     }
 
@@ -778,6 +789,7 @@ function parseBorderColor(value: string): { top: Color, right: Color, bottom: Co
     else {
         throw new Error(`Expected 1, 2, 3 or 4 parameters. Actual: ${value}`);
     }
+
     return result;
 }
 
@@ -797,6 +809,7 @@ const borderColorProperty = new ShorthandProperty<Style, string | Color>({
     converter: function (value) {
         if (typeof value === "string") {
             let fourColors = parseBorderColor(value);
+
             return [
                 [borderTopColorProperty, fourColors.top],
                 [borderRightColorProperty, fourColors.right],
@@ -864,6 +877,7 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
     converter: function (value) {
         if (typeof value === "string" && value !== "auto") {
             let borderWidths = parseThickness(value);
+
             return [
                 [borderTopWidthProperty, borderWidths.top],
                 [borderRightWidthProperty, borderWidths.right],
@@ -972,11 +986,13 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
             Length.equals(this.borderTopLeftRadius, this.borderBottomLeftRadius)) {
             return this.borderTopLeftRadius;
         }
+
         return `${Length.convertToString(this.borderTopLeftRadius)} ${Length.convertToString(this.borderTopRightRadius)} ${Length.convertToString(this.borderBottomRightRadius)} ${Length.convertToString(this.borderBottomLeftRadius)}`;
     },
     converter: function (value) {
         if (typeof value === "string") {
             let borderRadius = parseThickness(value);
+
             return [
                 [borderTopLeftRadiusProperty, borderRadius.top],
                 [borderTopRightRadiusProperty, borderRadius.right],
@@ -1054,6 +1070,7 @@ function isClipPathValid(value: string): boolean {
         return true;
     }
     let functionName = value.substring(0, value.indexOf("(")).trim();
+
     return supportedPaths.indexOf(functionName) !== -1;
 }
 

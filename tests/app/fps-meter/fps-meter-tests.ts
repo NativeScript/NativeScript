@@ -1,4 +1,4 @@
-﻿// >> fps-meter-require
+// >> fps-meter-require
 import * as fpsMeter from "tns-core-modules/fps-meter";
 // << fps-meter-require
 
@@ -12,4 +12,4 @@ export var test_DummyTestForSnippetOnly0 = function () {
     fpsMeter.removeCallback(callbackId);
     fpsMeter.stop();
     // << fps-meter-logging
-}
+};

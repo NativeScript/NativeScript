@@ -7,7 +7,7 @@ function createCloseCallback(label: Label, context?: string): (username: string,
         result = context ? context + "/" + result : result;
         console.log(result);
         label.text = result;
-    }
+    };
 }
 
 function openModal(page: Page, label: Label, context: string) {

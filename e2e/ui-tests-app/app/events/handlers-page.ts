@@ -8,9 +8,9 @@ export function pageLoaded(args: observable.EventData) {
 }
 
 export function tapAction(args: gestures.GestureEventData) {
-    console.log("tapAction")
+    console.log("tapAction");
 }
 
 export function doubleTapAction(args: gestures.GestureEventData) {
-    console.log("doubleTapAction")
+    console.log("doubleTapAction");
 }
