@@ -1,4 +1,4 @@
-﻿import { BindingOptions } from ".";
+import { BindingOptions } from ".";
 import { ViewBase } from "../view-base";
 
 import { unsetValue } from "../properties";
@@ -45,7 +45,7 @@ function getProperties(property: string): Array<string> {
     }
 
     // first replace all '$parents[..]' with a safe string
-    // second removes all ] since they are not important for property access and not needed 
+    // second removes all ] since they are not important for property access and not needed
     // then split properties either on '.' or '['
     const parentsMatches = property.match(parentsRegex);
     result = property.replace(parentsRegex, "parentsMatch")
@@ -59,6 +59,7 @@ function getProperties(property: string): Array<string> {
         }
     }
     propertiesCache[property] = result;
+
     return result;
 }
 
@@ -69,6 +70,7 @@ export function getEventOrGestureName(name: string): string {
 // NOTE: method fromString from "ui/gestures";
 export function isGesture(eventOrGestureName: string): boolean {
     let t = eventOrGestureName.trim().toLowerCase();
+
     return t === "tap"
         || t === "doubletap"
         || t === "pinch"
@@ -88,6 +90,7 @@ export function isEventOrGesture(name: string, view: ViewBase): boolean {
 
         return view.constructor && evt in view.constructor || isGesture(eventOrGestureName.toLowerCase());
     }
+
     return false;
 }
 
@@ -134,7 +137,7 @@ export class Binding {
         if (context !== undefined && context !== null) {
             this.update(context);
         }
-    };
+    }
 
     public clearSource(): void {
         this.propertyChangeListeners.forEach((observable, index, map) => {
@@ -169,6 +172,7 @@ export class Binding {
         else if (objectType === "string") {
             source = new String(source);
         }
+
         /* tslint:enable */
         return source;
     }
@@ -177,6 +181,7 @@ export class Binding {
         const target = this.targetOptions.instance.get();
         if (!target) {
             this.unbind();
+
             return;
         }
 
@@ -287,7 +292,7 @@ export class Binding {
     }
 
     private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>, parentProperies?: string) {
-        let objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty)
+        let objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty);
         let prop = parentProperies || "";
 
         for (let i = 0, length = objectsAndProperties.length; i < length; i++) {
@@ -316,6 +321,7 @@ export class Binding {
         let escapedSourceProperty = escapeRegexSymbols(this.options.sourceProperty);
         let expRegex = new RegExp(escapedSourceProperty, "g");
         let resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
+
         return resultExp;
     }
 
@@ -382,10 +388,12 @@ export class Binding {
 
                 return result;
             }
+
             return new Error(expression + " is not a valid expression.");
         }
         catch (e) {
             let errorMessage = "Run-time error occured in file: " + e.sourceURL + " at line: " + e.line + " and column: " + e.column;
+
             return new Error(errorMessage);
         }
     }
@@ -448,7 +456,7 @@ export class Binding {
 
                 const newProps = sourceProps.slice(changedPropertyIndex + 1);
                 // add new weak event listeners
-                const newObject = data.object[sourceProps[changedPropertyIndex]]
+                const newObject = data.object[sourceProps[changedPropertyIndex]];
                 if (!types.isNullOrUndefined(newObject) && typeof newObject === "object") {
                     this.addPropertyChangeListeners(new WeakRef(newObject), newProps, parentProps);
                 }
@@ -576,11 +584,13 @@ export class Binding {
         if (objectsAndProperties.length > 0) {
             let resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
             let prop = objectsAndProperties[objectsAndProperties.length - 1].property;
+
             return {
                 instance: new WeakRef(this.sourceAsObject(resolvedObj)),
                 property: prop
-            }
+            };
         }
+
         return null;
     }
 

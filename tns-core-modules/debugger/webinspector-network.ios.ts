@@ -29,7 +29,7 @@ const documentTypeByMimeType = {
     "text/x-javascript": "Script",
     "text/x-json": "Script",
     "text/typescript": "Script"
-}
+};
 
 export class Request {
 
@@ -49,6 +49,7 @@ export class Request {
             if (!value) {
                 this._mimeType = "text/plain";
                 this._resourceType = "Other";
+
                 return;
             }
 
@@ -234,7 +235,7 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
             content: content.toString(), // Not sure why however we need to call toString() for NSString
             mimeType: "application/octet-stream",
             status: 200
-        }
+        };
     }
 
     public static idSequence: number = 0;
@@ -242,6 +243,7 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
         let id = (++NetworkDomainDebugger.idSequence).toString();
         let resourceData = new Request(this, id);
         resources_datas[id] = resourceData;
+
         return resourceData;
     }
 }

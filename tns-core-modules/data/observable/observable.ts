@@ -1,4 +1,4 @@
-﻿import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from ".";
+import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from ".";
 
 interface ListenerEntry {
     callback: (data: EventData) => void;
@@ -19,6 +19,7 @@ export class WrappedValue implements WrappedValueDefinition {
     public static wrap(value: any) {
         const w = _wrappedValues[_wrappedIndex++ % 5];
         w.wrapped = value;
+
         return w;
     }
 }
@@ -29,7 +30,7 @@ let _wrappedValues = [
     new WrappedValue(null),
     new WrappedValue(null),
     new WrappedValue(null)
-]
+];
 
 export class Observable implements ObservableDefinition {
     public static propertyChangeEvent = "propertyChange";
@@ -242,11 +243,13 @@ function addPropertiesFromObject(observable: ObservableFromObject, source: any, 
 export function fromObject(source: any): Observable {
     let observable = new ObservableFromObject();
     addPropertiesFromObject(observable, source, false);
+
     return observable;
 }
 
 export function fromObjectRecursive(source: any): Observable {
     let observable = new ObservableFromObject();
     addPropertiesFromObject(observable, source, true);
+
     return observable;
 }

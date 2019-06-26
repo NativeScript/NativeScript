@@ -10,7 +10,7 @@ function applyCss() {
         // console.log(boxCss);
         args.object.page.addCss(boxCss);
         // console.log(args.object.page.css);
-    }
+    };
 }
 
 export function applyStyles(args) {

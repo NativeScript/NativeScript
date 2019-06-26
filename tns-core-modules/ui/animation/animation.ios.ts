@@ -57,6 +57,7 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
         delegate._finishedCallback = finishedCallback;
         delegate._propertyAnimation = propertyAnimation;
         delegate._valueSource = valueSource;
+
         return delegate;
     }
 
@@ -138,6 +139,7 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             }
             else if (curve instanceof CubicBezierAnimationCurve) {
                 let animationCurve = <CubicBezierAnimationCurve>curve;
+
                 return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
             }
             else {
@@ -221,12 +223,14 @@ export class Animation extends AnimationBase {
         this._finishedAnimations = 0;
         this._cancelledAnimations = 0;
         this._iOSAnimationFunction();
+
         return animationFinishedPromise;
     }
 
     public cancel(): void {
         if (!this.isPlaying) {
             traceWrite("Animation is not currently playing.", traceCategories.Animation, traceType.warn);
+
             return;
         }
 
@@ -253,6 +257,7 @@ export class Animation extends AnimationBase {
                     traceWrite("Animation " + (index - 1).toString() + " was cancelled. Will skip the rest of animations and call finishedCallback(true).", traceCategories.Animation);
                 }
                 finishedCallback(cancelled);
+
                 return;
             }
 
@@ -265,7 +270,7 @@ export class Animation extends AnimationBase {
             else {
                 Animation._createNativeAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
             }
-        }
+        };
     }
 
     private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe"): AnimationInfo {
@@ -565,6 +570,7 @@ export class Animation extends AnimationBase {
             animation1.delay === animation2.delay &&
             animation1.iterations === animation2.iterations &&
             animation1.curve === animation2.curve;
+
         return result;
     }
 
@@ -626,6 +632,7 @@ export class Animation extends AnimationBase {
                 result.push(newTransformAnimation);
             }
         }
+
         return result;
     }
 }

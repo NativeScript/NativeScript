@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as imageSource from "tns-core-modules/image-source";
 import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
 import * as enums from "tns-core-modules/ui/enums";
@@ -43,5 +43,6 @@ export function createPage() {
     var page = new pages.Page();
     page.content = stack;
     page.css = "GridLayout { background-color: yellow } image { background-color: green } label { background-color: red } stackpnael { background-color: pink }";
+
     return page;
 }

@@ -1,6 +1,6 @@
-import { Property } from "tns-core-modules/ui/core/properties"
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base"
-import { parse } from "tns-core-modules/ui/builder"
+import { Property } from "tns-core-modules/ui/core/properties";
+import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { parse } from "tns-core-modules/ui/builder";
 
 export module knownTemplates {
     export var template = "template";

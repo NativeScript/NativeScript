@@ -45,7 +45,7 @@ export function test_percent_margin_set_to_page_support() {
     let topFrameHeight = topFrame.getMeasuredHeight();
 
     let currentPageWidth = currentPage.getMeasuredWidth();
-    let currentPageHeight = currentPage.getMeasuredHeight()
+    let currentPageHeight = currentPage.getMeasuredHeight();
 
     let marginLeft = topFrameWidth * 0.1;
     let marginTop = topFrameHeight * 0.1;

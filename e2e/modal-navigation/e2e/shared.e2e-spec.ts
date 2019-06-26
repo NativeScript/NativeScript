@@ -1,5 +1,5 @@
 import { AppiumDriver } from "nativescript-dev-appium";
-import { Screen } from "./screen"
+import { Screen } from "./screen";
 
 const time = 1;
 

@@ -1,4 +1,4 @@
-﻿// imported for definition purposes only
+// imported for definition purposes only
 import * as platformModule from "../platform";
 
 import { FileSystemAccess } from "./file-system-access";
@@ -12,7 +12,7 @@ function getFileAccess(): FileSystemAccess {
     }
 
     return fileAccess;
-};
+}
 
 let platform: typeof platformModule;
 function ensurePlatform() {
@@ -28,7 +28,7 @@ function createFile(info: { path: string; name: string; extension: string }) {
     file._extension = info.extension;
 
     return file;
-};
+}
 
 function createFolder(info: { path: string; name: string; }) {
     const documents = knownFolders.documents();
@@ -47,7 +47,7 @@ function createFolder(info: { path: string; name: string; }) {
     folder._name = info.name;
 
     return folder;
-};
+}
 
 export class FileSystemEntity {
     _path: string;
@@ -60,7 +60,7 @@ export class FileSystemEntity {
     get parent(): Folder {
         const onError = function (error) {
             throw error;
-        }
+        };
 
         const folderInfo = getFileAccess().getParent(this.path, onError);
         if (!folderInfo) {
@@ -109,7 +109,7 @@ export class FileSystemEntity {
             const localError = function (error) {
                 hasError = true;
                 reject(error);
-            }
+            };
 
             this.renameSync(newName, localError);
 
@@ -124,6 +124,7 @@ export class FileSystemEntity {
             if (onError) {
                 onError(new Error("Cannot rename known folder."));
             }
+
             return;
         }
 
@@ -146,7 +147,7 @@ export class FileSystemEntity {
             }
 
             return null;
-        }
+        };
 
         fileAccess.rename(this.path, newPath, localError);
         this._path = newPath;
@@ -179,7 +180,7 @@ export class File extends FileSystemEntity {
     public static fromPath(path: string) {
         const onError = function (error) {
             throw error;
-        }
+        };
 
         const fileInfo = getFileAccess().getFile(path, onError);
         if (!fileInfo) {
@@ -329,7 +330,7 @@ export class Folder extends FileSystemEntity {
     public static fromPath(path: string): Folder {
         const onError = function (error) {
             throw error;
-        }
+        };
 
         const folderInfo = getFileAccess().getFolder(path, onError);
         if (!folderInfo) {
@@ -383,7 +384,7 @@ export class Folder extends FileSystemEntity {
 
         const onError = function (error) {
             throw error;
-        }
+        };
 
         const fileInfo = fileAccess.getFile(path, onError);
         if (!fileInfo) {
@@ -399,7 +400,7 @@ export class Folder extends FileSystemEntity {
 
         const onError = function (error) {
             throw error;
-        }
+        };
 
         const folderInfo = fileAccess.getFolder(path, onError);
         if (!folderInfo) {
@@ -456,11 +457,11 @@ export class Folder extends FileSystemEntity {
             }
 
             return onEntity(entity);
-        }
+        };
 
         const onError = function (error) {
             throw error;
-        }
+        };
 
         getFileAccess().eachEntity(this.path, onSuccess, onError);
     }
@@ -480,7 +481,7 @@ export module knownFolders {
         }
 
         return _documents;
-    };
+    }
 
     export function temp(): Folder {
         if (!_temp) {
@@ -491,7 +492,7 @@ export module knownFolders {
         }
 
         return _temp;
-    };
+    }
 
     export function currentApp(): Folder {
         if (!_app) {
@@ -502,7 +503,7 @@ export module knownFolders {
         }
 
         return _app;
-    };
+    }
 
     export module ios {
         function _checkPlatform(knownFolderName: string) {
@@ -526,7 +527,7 @@ export module knownFolders {
             }
 
             return _library;
-        };
+        }
 
         let _developer: Folder;
         export function developer(): Folder {
@@ -542,7 +543,7 @@ export module knownFolders {
             }
 
             return _developer;
-        };
+        }
 
         let _desktop: Folder;
         export function desktop(): Folder {
@@ -558,7 +559,7 @@ export module knownFolders {
             }
 
             return _desktop;
-        };
+        }
 
         let _downloads: Folder;
         export function downloads(): Folder {
@@ -574,7 +575,7 @@ export module knownFolders {
             }
 
             return _downloads;
-        };
+        }
 
         let _movies: Folder;
         export function movies(): Folder {
@@ -590,7 +591,7 @@ export module knownFolders {
             }
 
             return _movies;
-        };
+        }
 
         let _music: Folder;
         export function music(): Folder {
@@ -606,7 +607,7 @@ export module knownFolders {
             }
 
             return _music;
-        };
+        }
 
         let _pictures: Folder;
         export function pictures(): Folder {
@@ -622,7 +623,7 @@ export module knownFolders {
             }
 
             return _pictures;
-        };
+        }
 
         let _sharedPublic: Folder;
         export function sharedPublic(): Folder {
@@ -638,7 +639,7 @@ export module knownFolders {
             }
 
             return _sharedPublic;
-        };
+        }
 
         function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): { folder: Folder; path: string } {
             const fileAccess = (<any>getFileAccess());
@@ -651,6 +652,7 @@ export module knownFolders {
                     path: folderPath
                 };
             }
+
             return undefined;
         }
     }
@@ -664,6 +666,7 @@ export module path {
 
     export function join(...paths: string[]): string {
         const fileAccess = getFileAccess();
+
         return fileAccess.joinPaths(paths);
     }
 

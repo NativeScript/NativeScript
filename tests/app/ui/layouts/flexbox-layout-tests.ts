@@ -101,11 +101,12 @@ function test<U extends { root: View }>(ui: () => U, setup: (ui: U) => void, tes
             waitUntilTestElementLayoutIsValid(i.root);
             test(i);
         });
-    }
-};
+    };
+}
 
 let getViews = (template: string) => {
     let root = parse(template);
+
     return {
         root,
         flexbox: root.getViewById("flexbox") as FlexboxLayout,
@@ -627,7 +628,7 @@ export const testJustifyContent_spaceBetween_flexDirection_column_withPadding = 
 export const testJustifyContent_spaceAround_flexDirection_column = test(
     activity_justify_content_test,
     ({ flexbox }) => {
-        flexbox.justifyContent = JustifyContent.SPACE_AROUND
+        flexbox.justifyContent = JustifyContent.SPACE_AROUND;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
     ({ root, flexbox, text1, text2, text3 }) => {
@@ -1292,7 +1293,7 @@ export const testAlignItems_flexEnd_flexDirection_column = test(
         isRightWith(text1, flexbox, flexLineSize);
         isRightWith(text2, flexbox, flexLineSize);
     }
-)
+);
 
 export const testAlignItems_center_flexDirection_column = test(
     activity_align_items_test,
@@ -1406,7 +1407,7 @@ let activity_flex_wrap_test = () => getViews(
         <Label id="text2" width="160" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="160" height="120" text="3" backgroundColor="blue" />
     </FlexboxLayout>`
-)
+);
 
 export const testFlexDirection_row_reverse = test(
     activity_flex_wrap_test,
@@ -1680,7 +1681,7 @@ export const testWrapBefore2 = test(
         isBelow(text3, text2);
         equal(height(flexbox), height(text1) + height(text3));
     }
-)
+);
 
 export const testWrapBefore_nowrap = test(
     activity_wrap_before_test,
@@ -1740,7 +1741,7 @@ let activity_wrap_child_margin_horizontal_test = () => getViews(
         <Label id="text2" width="30" height="80" text="2" margin="32" backgroundColor="green" />
         <Label id="text3" width="100" height="80" text="3" backgroundColor="blue" />
     </FlexboxLayout>`
-)
+);
 
 export const testWrap_childMargin_horizontal = test(
     activity_wrap_child_margin_horizontal_test,
@@ -1780,7 +1781,7 @@ let activity_first_item_large_vertical_test = () => getViews(
         <Label id="text2" width="60" height="120" text="2" backgroundColor="green" />
         <Label id="text3" width="6" height="300" text="3" backgroundColor="blue" />
     </FlexboxLayout>`
-)
+);
 
 export const testFirstItemLarge_vertical = test(
     activity_first_item_large_vertical_test,

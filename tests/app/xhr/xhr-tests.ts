@@ -235,7 +235,7 @@ export function test_raises_onload_Event(done) {
     let xhr = new XMLHttpRequest();
     xhr.onload = () => {
         done(null);
-    }
+    };
     xhr.open("GET", "https://httpbin.org/get");
     xhr.send();
 }
@@ -245,7 +245,7 @@ export function test_xhr_events() {
 
     let loadCallbackFired = false, loadEventFired = false;
     xhr.onload = () => loadCallbackFired = true;
-    let badEvent = () => { throw new Error("Shouldn't call me") }
+    let badEvent = () => { throw new Error("Shouldn't call me"); };
     xhr.addEventListener("load", () => loadEventFired = true);
     xhr.addEventListener("load", badEvent);
     xhr.removeEventListener("load", badEvent);
@@ -273,13 +273,13 @@ export function test_xhr_responseType_rss() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw },
+            toString: function() { return this.raw; },
             raw: rawRssFeed
         },
         headers: {
             "Content-Type": "application/rss+xml"
         }
-    }
+    };
 
     xhr._loadResponse(response);
     TKUnit.assertEqual(xhr.responseType, "text");
@@ -291,14 +291,14 @@ export function test_xhr_responseType_text() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw },
+            toString: function() { return this.raw; },
             raw: "response body"
         },
         headers: {
             "Content-Type": "text/plain"
         }
 
-    }
+    };
     xhr._loadResponse(response);
 
     TKUnit.assertEqual(xhr.responseType, "text");
@@ -310,7 +310,7 @@ export function test_xhr_responseType_switched_to_JSON_if_header_present() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw },
+            toString: function() { return this.raw; },
             raw: "{\"data\": 42}"
         },
         headers: {
@@ -330,7 +330,7 @@ export function test_xhr_responseType_switched_to_JSON_if_headers_content_type_h
         statusCode: 200,
         content: {
             toString: function () {
-                return this.raw
+                return this.raw;
             },
             raw: "{\"data\": 42}"
         },
@@ -366,7 +366,7 @@ export function test_raises_onerror_Event(done) {
     let xhr = new XMLHttpRequest();
     xhr.onerror = () => {
         done(null);
-    }
+    };
     xhr.open("GET", "https://no-such-domain-httpbin.org");
     xhr.send();
 }
@@ -390,22 +390,22 @@ export function test_getResponseHeader() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw },
+            toString: function() { return this.raw; },
             raw: "{\"data\": 42}"
         },
         headers: {
             "content-type": "application/json"
         }
 
-    }
+    };
     xhr._loadResponse(response);
 
     TKUnit.assertEqual(xhr.getResponseHeader("Content-Type"), "application/json");
-};
+}
 
 export function test_soap_content_types_recognized_as_text() {
     const xhr = <any>new XMLHttpRequest();
 
     TKUnit.assertTrue(xhr.isTextContentType("text/xml"), "text/xml failed to be recognized as a text response type");
     TKUnit.assertTrue(xhr.isTextContentType("application/xml"), "application/xml failed to be recognized as a text response type");
-};
+}

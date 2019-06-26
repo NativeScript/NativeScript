@@ -28,7 +28,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 
         this[method]("focus", this._focusHandler);
         this[method]("blur", this._blurHandler);
-    };
+    }
 }
 
 // TODO: Why not name it - hintColor property??

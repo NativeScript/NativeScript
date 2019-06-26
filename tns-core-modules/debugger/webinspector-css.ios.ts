@@ -71,7 +71,7 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
                     glyphCount: 0
                 }
             ]
-        }
+        };
     }
     // Returns the current textual content and the URL for a stylesheet.
     getStyleSheetText(params: inspectorCommandTypes.CSSDomain.GetStyleSheetTextMethodArguments): { text: string } {

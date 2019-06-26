@@ -28,7 +28,7 @@ export function onModalNoPage(args: EventData) {
         fullscreen: false
     });
 
-    view.showModal("modal-no-page/modal-no-page", { 
+    view.showModal("modal-no-page/modal-no-page", {
         context: "context",
         closeCallback: () => console.log("home-page modal frame closed"),
         fullscreen: false
@@ -44,7 +44,7 @@ export function onPopoverModal(args: EventData) {
         ios: {
             presentationStyle: UIModalPresentationStyle.Popover
         }
-    }
+    };
 
     view.showModal("modal-no-page/modal-no-page", options);
 }
@@ -85,8 +85,8 @@ export function onAndroidBackEvents(args: EventData) {
     view.showModal("android-back-button/android-back-button-page", {
         context: null,
         closeCallback: () => console.log("android-back-button modal page layout closed"),
-        fullscreen: true, 
-        animated: true, 
+        fullscreen: true,
+        animated: true,
         stretched: true
     });
 }

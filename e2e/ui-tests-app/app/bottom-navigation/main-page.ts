@@ -10,7 +10,7 @@ export function pageLoaded(args: EventData) {
 }
 
 export function loadExamples() {
-    const examples = new Map<string, string>();    
+    const examples = new Map<string, string>();
     examples.set("bottom-navigation", "bottom-navigation/bottom-navigation-page");
     examples.set("issue-5470", "bottom-navigation/issue-5470-page");
     examples.set("background-color", "bottom-navigation/background-color-page");

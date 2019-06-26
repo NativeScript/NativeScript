@@ -13,7 +13,7 @@ export function loaded(args) {
 }
 
 export function toggle(args) {
-    console.log("toggle : ")
+    console.log("toggle : ");
     let context = args.object.bindingContext;
     console.dir(context);
     context.set("selected", !context.selected);

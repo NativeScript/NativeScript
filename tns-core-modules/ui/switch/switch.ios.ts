@@ -1,4 +1,4 @@
-﻿import {
+import {
     SwitchBase, layout, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty, offBackgroundColorProperty
 } from "./switch-common";
 
@@ -11,6 +11,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<Switch>): SwitchChangeHandlerImpl {
         let handler = <SwitchChangeHandlerImpl>SwitchChangeHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

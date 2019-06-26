@@ -1,4 +1,4 @@
-﻿import { Repeater as RepeaterDefinition, ItemsSource } from ".";
+import { Repeater as RepeaterDefinition, ItemsSource } from ".";
 import { Label } from "../label";
 import { LayoutBase, CustomLayoutView, View, Template, Property, layout, CSSType } from "../layouts/layout-base";
 import { StackLayout } from "../layouts/stack-layout";
@@ -76,11 +76,13 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
             targetProperty: "text",
             sourceProperty: "$value"
         });
+
         return lbl;
     }
 
     private _getDataItem(index: number): any {
         let items = <ItemsSource>this.items;
+
         return items.getItem ? items.getItem(index) : this.items[index];
     }
 

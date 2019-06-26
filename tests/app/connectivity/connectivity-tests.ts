@@ -1,4 +1,4 @@
-﻿// >> connectivity-require
+// >> connectivity-require
 import * as connectivity from "tns-core-modules/connectivity";
 // << connectivity-require
 
@@ -17,7 +17,7 @@ export var test_DummyTestForSnippetOnly0 = function () {
             break;
     }
     // << connectivity-type
-}
+};
 
 export var test_DummyTestForSnippetOnly1 = function () {
     // >> connectivity-monitoring
@@ -37,4 +37,4 @@ export var test_DummyTestForSnippetOnly1 = function () {
     //...
     connectivity.stopMonitoring();
     // << connectivity-monitoring
-}
+};

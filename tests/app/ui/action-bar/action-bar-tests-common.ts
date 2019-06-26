@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as builder from "tns-core-modules/ui/builder";
 import { Label } from "tns-core-modules/ui/label";
@@ -32,6 +32,7 @@ export function test_actionItem_inherit_bindingContext() {
         label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -46,7 +47,7 @@ export function test_actionBar_inherit_bindingContext_inXML() {
     p.bindingContext = { myProp: "success" };
 
     TKUnit.assertEqual(p.actionBar.title, "success", "actionBar.title");
-};
+}
 
 export function test_actionItem_inherit_bindingContext_inXML() {
     const p = <Page>builder.parse(
@@ -58,7 +59,7 @@ export function test_actionItem_inherit_bindingContext_inXML() {
     const actionItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(actionItem.text, "success", "actionItem.text");
-};
+}
 
 export function test_actionItem_page_property_inXML() {
     const p = <Page>builder.parse(
@@ -69,7 +70,7 @@ export function test_actionItem_page_property_inXML() {
     const actionItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(actionItem.page, p, "actionItem.page");
-};
+}
 
 export function test_actionItem_actionView_inXML() {
     const p = <Page>builder.parse(
@@ -79,7 +80,7 @@ export function test_actionItem_actionView_inXML() {
 
     const label = <Label>p.actionBar.actionItems.getItemAt(0).actionView;
     TKUnit.assert(label instanceof Label, "ActionItem.actionView not loaded correctly");
-};
+}
 
 export function test_actionItem_actionView_inherit_bindingContext_inXML() {
     const p = <Page>builder.parse(
@@ -91,7 +92,7 @@ export function test_actionItem_actionView_inherit_bindingContext_inXML() {
     const label = <Label>p.actionBar.actionItems.getItemAt(0).actionView;
     TKUnit.assert(label instanceof Label, "ActionItem.actionView not loaded correctly");
     TKUnit.assertEqual(label.text, "success", "ActionItem.actionView");
-};
+}
 
 export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() {
     const p = <Page>builder.parse(
@@ -100,7 +101,7 @@ export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() 
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
 
     TKUnit.assertFalse(p.actionBar._isEmpty(), "ActionItem.actionView is set but ActionBar reports empty");
-};
+}
 
 export function test_navigationButton_inherit_bindingContext_inXML() {
     const p = <Page>builder.parse(
@@ -111,7 +112,7 @@ export function test_navigationButton_inherit_bindingContext_inXML() {
 
     const navButton = p.actionBar.navigationButton;
     TKUnit.assertEqual(navButton.text, "success", "actionItem.text");
-};
+}
 
 export function test_titleView_inherit_bindingContext_inXML() {
     const p = <Page>builder.parse(
@@ -123,7 +124,7 @@ export function test_titleView_inherit_bindingContext_inXML() {
     const centerBtn = <Button>p.actionBar.titleView;
     TKUnit.assert(centerBtn instanceof Button, "titleView not loaded correctly");
     TKUnit.assertEqual(centerBtn.text, "success", "actionItem.text");
-};
+}
 
 export function test_titleView_inXML() {
     const p = <Page>builder.parse(
@@ -133,7 +134,7 @@ export function test_titleView_inXML() {
 
     const centerBtn = <Button>p.actionBar.titleView;
     TKUnit.assert(centerBtn instanceof Button, "titleView not loaded correctly");
-};
+}
 
 export function test_titleView_inXML_short_definition() {
     const p = <Page>builder.parse(
@@ -143,7 +144,7 @@ export function test_titleView_inXML_short_definition() {
 
     const centerBtn = <Button>p.actionBar.titleView;
     TKUnit.assert(centerBtn instanceof Button, "titleView not loaded correctly");
-};
+}
 
 export function test_ActionBar_is_not_empty_when_titleView_is_set() {
     const p = <Page>builder.parse(
@@ -152,7 +153,7 @@ export function test_ActionBar_is_not_empty_when_titleView_is_set() {
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
 
     TKUnit.assertFalse(p.actionBar._isEmpty(), "titleView is set but ActionBar reports empty");
-};
+}
 
 export function test_ActionBarItemBindingToEvent() {
     const p = <Page>builder.parse("<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap=\"{{ test }}\"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>");
@@ -195,6 +196,7 @@ export function test_Setting_ActionItems_doesnt_thrown() {
         label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -233,7 +235,7 @@ export function test_ActionBar_set_title_as_number_doesnt_thrown() {
     }
 
     TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
-};
+}
 
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
 
@@ -408,6 +410,7 @@ export function createPageAndNavigate() {
         const label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 

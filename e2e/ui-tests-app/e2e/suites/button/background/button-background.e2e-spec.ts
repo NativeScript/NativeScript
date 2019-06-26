@@ -25,7 +25,7 @@ describe("button-background-suite", () => {
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
         await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
-        backgroundPage.imageHelper.assertImages()
+        backgroundPage.imageHelper.assertImages();
     });
 
     it("background_12", async function () {

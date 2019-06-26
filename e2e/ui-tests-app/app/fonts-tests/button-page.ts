@@ -27,6 +27,7 @@ export function resetStyles(args) {
         v.style.borderTopRightRadius = unsetValue;
         v.style.borderBottomRightRadius = unsetValue;
         v.style.borderBottomLeftRadius = unsetValue;
+
         return true;
     });
 }

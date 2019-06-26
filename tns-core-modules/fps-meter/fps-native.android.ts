@@ -1,4 +1,4 @@
-﻿import * as definition from "./fps-native"; 
+import * as definition from "./fps-native";
 
 export class FPSCallback implements definition.FPSCallback {
     private impl: android.view.Choreographer.FrameCallback;

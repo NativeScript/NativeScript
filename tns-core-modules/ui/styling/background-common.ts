@@ -55,108 +55,126 @@ export class Background implements BackgroundDefinition {
     public withColor(value: Color): Background {
         const clone = this.clone();
         clone.color = value;
+
         return clone;
     }
 
     public withImage(value: string | LinearGradient): Background {
         const clone = this.clone();
         clone.image = value;
+
         return clone;
     }
 
     public withRepeat(value: BackgroundRepeat): Background {
         const clone = this.clone();
         clone.repeat = value;
+
         return clone;
     }
 
     public withPosition(value: string): Background {
         const clone = this.clone();
         clone.position = value;
+
         return clone;
     }
 
     public withSize(value: string): Background {
         const clone = this.clone();
         clone.size = value;
+
         return clone;
     }
 
     public withBorderTopColor(value: Color): Background {
         const clone = this.clone();
         clone.borderTopColor = value;
+
         return clone;
     }
 
     public withBorderRightColor(value: Color): Background {
         const clone = this.clone();
         clone.borderRightColor = value;
+
         return clone;
     }
 
     public withBorderBottomColor(value: Color): Background {
         const clone = this.clone();
         clone.borderBottomColor = value;
+
         return clone;
     }
 
     public withBorderLeftColor(value: Color): Background {
         const clone = this.clone();
         clone.borderLeftColor = value;
+
         return clone;
     }
 
     public withBorderTopWidth(value: number): Background {
         const clone = this.clone();
         clone.borderTopWidth = value;
+
         return clone;
     }
 
     public withBorderRightWidth(value: number): Background {
         const clone = this.clone();
         clone.borderRightWidth = value;
+
         return clone;
     }
 
     public withBorderBottomWidth(value: number): Background {
         const clone = this.clone();
         clone.borderBottomWidth = value;
+
         return clone;
     }
 
     public withBorderLeftWidth(value: number): Background {
         const clone = this.clone();
         clone.borderLeftWidth = value;
+
         return clone;
     }
 
     public withBorderTopLeftRadius(value: number): Background {
         const clone = this.clone();
         clone.borderTopLeftRadius = value;
+
         return clone;
     }
 
     public withBorderTopRightRadius(value: number): Background {
         const clone = this.clone();
         clone.borderTopRightRadius = value;
+
         return clone;
     }
 
     public withBorderBottomRightRadius(value: number): Background {
         const clone = this.clone();
         clone.borderBottomRightRadius = value;
+
         return clone;
     }
 
     public withBorderBottomLeftRadius(value: number): Background {
         const clone = this.clone();
         clone.borderBottomLeftRadius = value;
+
         return clone;
     }
 
     public withClipPath(value: string): Background {
         const clone = this.clone();
         clone.clipPath = value;
+
         return clone;
     }
 
@@ -214,14 +232,14 @@ export class Background implements BackgroundDefinition {
         return this.borderTopWidth > 0
             || this.borderRightWidth > 0
             || this.borderBottomWidth > 0
-            || this.borderLeftWidth > 0
+            || this.borderLeftWidth > 0;
     }
 
     public hasBorderRadius(): boolean {
         return this.borderTopLeftRadius > 0
             || this.borderTopRightRadius > 0
             || this.borderBottomRightRadius > 0
-            || this.borderBottomLeftRadius > 0
+            || this.borderBottomLeftRadius > 0;
     }
 
     public hasUniformBorderColor(): boolean {
@@ -252,22 +270,25 @@ export class Background implements BackgroundDefinition {
         if (this.hasUniformBorderColor()) {
             return this.borderTopColor;
         }
+
         return undefined;
-    };
+    }
 
     public getUniformBorderWidth(): number {
         if (this.hasUniformBorderWidth()) {
             return this.borderTopWidth;
         }
+
         return 0;
-    };
+    }
 
     public getUniformBorderRadius(): number {
         if (this.hasUniformBorderRadius()) {
             return this.borderTopLeftRadius;
         }
+
         return 0;
-    };
+    }
 
     public toString(): string {
         return `isEmpty: ${this.isEmpty()}; color: ${this.color}; image: ${this.image}; repeat: ${this.repeat}; position: ${this.position}; size: ${this.size}; borderTopColor: ${this.borderTopColor}; borderRightColor: ${this.borderRightColor}; borderBottomColor: ${this.borderBottomColor}; borderLeftColor: ${this.borderLeftColor}; borderTopWidth: ${this.borderTopWidth}; borderRightWidth: ${this.borderRightWidth}; borderBottomWidth: ${this.borderBottomWidth}; borderLeftWidth: ${this.borderLeftWidth}; borderTopLeftRadius: ${this.borderTopLeftRadius}; borderTopRightRadius: ${this.borderTopRightRadius}; borderBottomRightRadius: ${this.borderBottomRightRadius}; borderBottomLeftRadius: ${this.borderBottomLeftRadius}; clipPath: ${this.clipPath};`;

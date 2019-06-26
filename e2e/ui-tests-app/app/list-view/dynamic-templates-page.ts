@@ -7,7 +7,7 @@ export function pageLoaded(args) {
 
     page.bindingContext = {
         "items": viewModel.items
-    }
+    };
 }
 
 exports.onItemTap = function (args) {
@@ -18,4 +18,4 @@ exports.onItemTap = function (args) {
 
     currentItem.age = currentItem.age + 1;
     listArray.setItem(index, currentItem);
-}
+};

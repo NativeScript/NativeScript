@@ -23,7 +23,7 @@ function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.FlexboxLayout
             setter(lp, value);
             nativeView.setLayoutParams(lp);
         }
-    }
+    };
 }
 
 View.prototype[orderProperty.setNative] = makeNativeSetter<Order>((lp, value) => lp.order = value);
@@ -43,7 +43,7 @@ const flexWrapMap = {
     [FlexWrap.NOWRAP]: 0, //FlexboxLayoutWidget.FLEX_WRAP_NOWRAP,
     [FlexWrap.WRAP]: 1, //FlexboxLayoutWidget.FLEX_WRAP_WRAP,
     [FlexWrap.WRAP_REVERSE]: 2 //FlexboxLayoutWidget.FLEX_WRAP_WRAP_REVERSE
-}
+};
 
 const justifyContentMap = {
     [JustifyContent.FLEX_START]: 0, //FlexboxLayoutWidget.JUSTIFY_CONTENT_FLEX_START,
@@ -51,7 +51,7 @@ const justifyContentMap = {
     [JustifyContent.CENTER]: 2, //FlexboxLayoutWidget.JUSTIFY_CONTENT_CENTER,
     [JustifyContent.SPACE_BETWEEN]: 3, //FlexboxLayoutWidget.JUSTIFY_CONTENT_SPACE_BETWEEN
     [JustifyContent.SPACE_AROUND]: 4 //FlexboxLayoutWidget.JUSTIFY_CONTENT_SPACE_AROUND,
-}
+};
 
 const alignItemsMap = {
     [AlignItems.FLEX_START]: 0, //FlexboxLayoutWidget.ALIGN_ITEMS_FLEX_START,
@@ -59,7 +59,7 @@ const alignItemsMap = {
     [AlignItems.CENTER]: 2, //FlexboxLayoutWidget.ALIGN_ITEMS_CENTER,
     [AlignItems.BASELINE]: 3, //FlexboxLayoutWidget.ALIGN_ITEMS_BASELINE,
     [AlignItems.STRETCH]: 4 //FlexboxLayoutWidget.ALIGN_ITEMS_STRETCH
-}
+};
 
 const alignContentMap = {
     [AlignContent.FLEX_START]: 0, //FlexboxLayoutWidget.ALIGN_CONTENT_FLEX_START,
@@ -68,7 +68,7 @@ const alignContentMap = {
     [AlignContent.SPACE_BETWEEN]: 3, //FlexboxLayoutWidget.ALIGN_CONTENT_SPACE_BETWEEN,
     [AlignContent.SPACE_AROUND]: 4, //FlexboxLayoutWidget.ALIGN_CONTENT_SPACE_AROUND,
     [AlignContent.STRETCH]: 5 //FlexboxLayoutWidget.ALIGN_CONTENT_STRETCH
-}
+};
 
 const alignSelfMap = {
     [AlignSelf.AUTO]: -1, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_AUTO,
@@ -77,7 +77,7 @@ const alignSelfMap = {
     [AlignSelf.CENTER]: 2, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_CENTER,
     [AlignSelf.BASELINE]: 3, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_BASELINE,
     [AlignSelf.STRETCH]: 4 //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_STRETCH
-}
+};
 
 export class FlexboxLayout extends FlexboxLayoutBase {
     nativeViewProtected: org.nativescript.widgets.FlexboxLayout;
@@ -96,7 +96,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     public resetNativeView(): void {
         super.resetNativeView();
-        (<any>this.nativeViewProtected).invalidateOrdersCache();   
+        (<any>this.nativeViewProtected).invalidateOrdersCache();
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {
