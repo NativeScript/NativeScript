@@ -33,7 +33,7 @@ describe(`${suite}-${spec}-suite`, () => {
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
         await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
-        backgroundPage.imageHelper.assertImages()
+        backgroundPage.imageHelper.assertImages();
     });
 
     it("background_12", async function () {
@@ -83,11 +83,9 @@ describe(`${suite}-${spec}-suite`, () => {
         await backgroundPage.executeScenario("background_42_position", "42");
     });
 
-
     it("background_43_position", async function () {
         await backgroundPage.executeScenario("background_43_position", "43");
     });
-
 
     it("background_44_position", async function () {
         await backgroundPage.executeScenario("background_44_position", "44");

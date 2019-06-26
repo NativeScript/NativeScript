@@ -48,9 +48,9 @@ describe(`${suite}-${spec}-css-suite`, async function () {
 
     for (let index = 0; index < samples.length; index++) {
         const sample = samples[index];
-        const imageName = `${spec}-${sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig,"-").replace(/(_+)/ig,"_").replace(/-$/, "")}`;
+        const imageName = `${spec}-${sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig, "-").replace(/(_+)/ig, "_").replace(/-$/, "")}`;
         it(imageName, async function () {
-            if (driver.platformName === Platform.ANDROID 
+            if (driver.platformName === Platform.ANDROID
                 && (sample === "All" || sample === "reset")) {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);
             }

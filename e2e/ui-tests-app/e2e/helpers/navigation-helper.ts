@@ -25,9 +25,11 @@ export class NavigationHelper {
         if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce
             || this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
             if (this._currentSuite) {
-                while (this._currentSuite.parent) this._currentSuite = this._currentSuite.parent;
+                while (this._currentSuite.parent) {
+                    this._currentSuite = this._currentSuite.parent;
+                }
             } else {
-                if (!this._cachedElements || this._cachedElements.children.size == 0) {
+                if (!this._cachedElements || this._cachedElements.children.size === 0) {
                     this._cachedElements = { name: "initSuite", children: new Map<string, ICachedElement>() };
                     if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce) {
                         await this.cacheAllElements(this._cachedElements);
@@ -99,7 +101,6 @@ export class NavigationHelper {
         logInfo(`Swipe to back`);
         throw new Error("Not implemented!");
     }
-
 
     private async cacheAllElements(cachedElements: ICachedElement) {
         const allSamples = await this._driver.findElementsByClassName(this._driver.locators.button);
