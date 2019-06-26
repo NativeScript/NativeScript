@@ -92,7 +92,7 @@ export class Button extends ButtonBase {
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
-    _updateHandler(subscribe: boolean) {
+    _updateButtonStateChangeHandler(subscribe: boolean) {
         if (subscribe) {
             this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
                 switch (args.action) {

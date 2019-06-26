@@ -43,30 +43,29 @@ export function test_load_ShouldNotCrashWithoutExports() {
     TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 }
 
-// Loading module without XML and bundle is not supported at this moment
-// export function test_loadWithOptionsNoXML() {
-//     var v = builder.load({
-//         path: "~/xml-declaration/mymodule",
-//         name: "MyControl",
-//         exports: exports,
-//         page: new Page()
-//     });
+export function test_loadWithOptionsNoXML() {
+    var v = builder.load({
+        path: "~/xml-declaration/mymodule",
+        name: "MyControl",
+        exports: exports,
+        page: new Page()
+    });
 
-//     TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
-// };
+    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+}
 
-// export function test_loadWithOptionsNoXML_CSSIsApplied() {
-//     let newPage = helper.getCurrentPage();
-//     newPage.content = builder.load({
-//         path: "~/xml-declaration/mymodule",
-//         name: "MyControl",
-//         exports: exports,
-//         page: newPage
-//     });
+export function test_loadWithOptionsNoXML_CSSIsApplied() {
+    let newPage = helper.getCurrentPage();
+    newPage.content = builder.load({
+        path: "~/xml-declaration/mymodule",
+        name: "MyControl",
+        exports: exports,
+        page: newPage
+    });
 
-//     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-//     helper.assertViewBackgroundColor(newPage.content, "#FF0000");
-// };
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    helper.assertViewBackgroundColor(newPage.content, "#FF0000");
+}
 
 export function test_loadInheritedPageAndResolveFromChild() {
     var basePath = "xml-declaration/";
@@ -160,98 +159,104 @@ export function test_parse_ShouldNotCrashWithoutExports() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 }
 
-// component-builder do not support [CODEFILE/IMPORT] with bundle at this point
+export function test_parse_ShouldResolveExportsFromCodeFile() {
+    var page = builder.parse("<Page codeFile='~/xml-declaration/custom-code-file-page' loaded='loaded'></Page>");
+    page._emit("loaded");
 
-// export function test_parse_ShouldResolveExportsFromCodeFile() {
-//     var page = builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' loaded='loaded'></Page>");
-//     page._emit("loaded");
+    TKUnit.assert((<any>page).customCodeLoaded, "Parse should resolve exports from custom code file.");
+}
 
-//     TKUnit.assert((<any>page).customCodeLoaded, "Parse should resolve exports from custom code file.");
-// }
+export function test_parse_ShouldResolveExportsFromImport() {
+    var page = builder.parse("<Page import='~/xml-declaration/custom-code-file-page' loaded='loaded'></Page>");
+    page._emit("loaded");
 
-// export function test_parse_ShouldResolveExportsFromImport() {
-//     var page = builder.parse("<Page import='~/xml-declaration/custom-code-file' loaded='loaded'></Page>");
-//     page._emit("loaded");
+    TKUnit.assert((<any>page).customCodeLoaded, "Parse should resolve exports from import.");
+}
 
-//     TKUnit.assert((<any>page).customCodeLoaded, "Parse should resolve exports from import.");
-// }
+export function test_parse_ShouldResolveExportsFromCodeFileForPageContent() {
+    var page = builder.parse("<Page codeFile='~/xml-declaration/custom-code-file-page' loaded='loaded'><Button loaded='loaded' /></Page>");
+    (<any>page).content._emit("loaded");
 
-// export function test_parse_ShouldResolveExportsFromCodeFileForPageContent() {
-//     var page = builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' loaded='loaded'><Button loaded='loaded' /></Page>");
-//     (<any>page).content._emit("loaded");
+    TKUnit.assert((<any>page).content.customCodeLoaded, "Parse should resolve exports from custom code file for page content.");
+}
 
-//     TKUnit.assert((<any>page).content.customCodeLoaded, "Parse should resolve exports from custom code file for page content.");
-// }
+export function test_parse_ShouldThrowErrorWhenInvalidCodeFileIsSpecified() {
+    var e: Error;
+    try {
+        builder.parse("<Page codeFile='~/xml-declaration/some-code-file' loaded='pageLoaded'></Page>");
+    } catch (ex) {
+        e = ex;
+    }
 
-// export function test_parse_ShouldThrowErrorWhenInvalidCodeFileIsSpecified() {
-//     var e: Error;
-//     try {
-//         builder.parse("<Page codeFile='~/xml-declaration/some-code-file' loaded='pageLoaded'></Page>");
-//     } catch (ex) {
-//         e = ex;
-//     }
+    TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
+}
 
-//     TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
-// };
+export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
+    var p = <Page>builder.parse(`
+    <Page codeFile="~/xml-declaration/custom-code-file-page" xmlns:customControls="xml-declaration/mymodulewithxml">
+        <ListView items="{{ items }}" itemLoading="{{ itemLoading }}">
+            <ListView.itemTemplate>
+                <customControls:MyControl loaded="loaded" />
+            </ListView.itemTemplate>
+        </ListView>
+    </Page>`);
+    function testAction(views: Array<viewModule.View>) {
+        var ctrl;
 
-// export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
-//     var p = <Page>builder.parse("<Page codeFile=\"~/xml-declaration/custom-code-file\" xmlns:customControls=\"xml-declaration/mymodulewithxml\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><customControls:MyControl loaded=\"loaded\" /></ListView.itemTemplate></ListView></Page>");
+        var obj = new observable.Observable();
+        obj.set("items", [1]);
+        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+            ctrl = args.view;
+        });
+        p.bindingContext = obj;
 
-//     function testAction(views: Array<viewModule.View>) {
-//         var ctrl;
+        TKUnit.waitUntilReady(() => !!ctrl);
+        TKUnit.assert((<any>ctrl).customCodeLoaded, "Parse should resolve exports for templates from custom code file.");
+    }
 
-//         var obj = new observable.Observable();
-//         obj.set("items", [1]);
-//         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
-//             ctrl = args.view
-//         });
-//         p.bindingContext = obj;
+    helper.navigate(function () { return p; });
+    testAction([p.content, p]);
+}
 
-//         TKUnit.waitUntilReady(() => ctrl);
-//         TKUnit.assert((<any>ctrl).customCodeLoaded, "Parse should resolve exports for templates from custom code file.");
-//     };
+export function test_parse_css_is_applied_by_type_to_lower_case_dashed_components() {
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = <Page>builder.parse("<page cssFile='~/xml-declaration/custom-css-file-page.css'><stack-layout /></page>");
 
-//     helper.navigate(function () { return p; });
-//     testAction([p.content, p]);
-// }
+        return newPage;
+    };
 
-// component-builder do not support [CSSFILE] with bundle at this point
-// export function test_parse_css_is_applied_by_type_to_lower_case_dashed_components() {
-//     var newPage: Page;
-//     var pageFactory = function (): Page {
-//         newPage = <Page>builder.parse("<page cssFile='~/xml-declaration/custom-css-file.css'><stack-layout /></page>");
-//         return newPage;
-//     };
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
+}
 
-//     helper.navigate(pageFactory);
-//     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-//     helper.assertViewBackgroundColor(newPage.content, "#008000");
-// };
+export function test_parse_ShouldApplyCssFromCssFile() {
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = <Page>builder.parse("<Page cssFile='~/xml-declaration/custom-css-file-page.css'><Label class='MyClass' /></Page>");
 
-// export function test_parse_ShouldApplyCssFromCssFile() {
-//     var newPage: Page;
-//     var pageFactory = function (): Page {
-//         newPage = <Page>builder.parse("<Page cssFile='~/xml-declaration/custom-css-file.css'><Label class='MyClass' /></Page>");
-//         return newPage;
-//     };
+        return newPage;
+    };
 
-//     helper.navigate(pageFactory);
-//     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-//     helper.assertViewBackgroundColor(newPage.content, "#008000");
-// };
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
+}
 
-// export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
-//     var newPage: Page;
-//     var pageFactory = function (): Page {
-//         newPage = <Page>builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' cssFile='~/xml-declaration/custom-css-file.css' loaded='loaded'><Label class='MyClass' /></Page>");
-//         return newPage;
-//     };
+export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = <Page>builder.parse("<Page codeFile='~/xml-declaration/custom-code-file-page' cssFile='~/xml-declaration/custom-css-file-page.css' loaded='loaded'><Label class='MyClass' /></Page>");
 
-//     helper.navigate(pageFactory);
-//     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-//     TKUnit.assert((<any>newPage).customCodeLoaded, "Parse should resolve exports from custom code file.");
-//     helper.assertViewBackgroundColor(newPage.content, "#008000");
-// };
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    TKUnit.assert((<any>newPage).customCodeLoaded, "Parse should resolve exports from custom code file.");
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
+}
 
 export function test_parse_ShouldFindEventHandlersInExports() {
     var loaded;
@@ -511,13 +516,12 @@ export function test_parse_ShouldParseLowerCaseDashedComponentDeclaration() {
     TKUnit.assert(ctrl.getChildAt(1) instanceof segmentedBar.SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
 }
 
-// Loading module without XML and bundle is not supported at this moment
-// adding /MyControl will work
-// export function test_parse_ShouldParseCustomComponentWithoutXml() {
-//     var p = <Page>builder.parse("<Page xmlns:customControls=\"xml-declaration/mymodule\"><customControls:MyControl /></Page>");
-//     var ctrl = p.content;
-//     TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
-// };
+export function test_parse_ShouldParseCustomComponentWithoutXml() {
+    var p = <Page>builder.parse("<Page xmlns:customControls=\"xml-declaration/mymodule\"><customControls:MyControl /></Page>");
+    var ctrl = p.content;
+    TKUnit.assertNotNull(ctrl);
+    TKUnit.assertEqual(ctrl.className, "MyStackLayout", "Expected result custom control is created");
+}
 
 export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModules() {
     var p = <Page>builder.parse("<Page xmlns" + ":customControls=\"ui/label\"><customControls:Label /></Page>");
@@ -577,25 +581,25 @@ export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttri
     TKUnit.assertEqual(panel["myProperty"], "myValue", "customControl.myProperty");
 }
 
-// Loading module without XML and bundle is not supported at this moment
-// export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplate() {
-//     var p = <Page>builder.parse("<Page xmlns:customControls=\"xml-declaration/mymodule\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>");
+export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplate() {
+    var p = <Page>builder.parse("<Page xmlns:customControls=\"xml-declaration/mymodule\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>");
 
-//     function testAction(views: Array<viewModule.View>) {
-//         let ctrl;
-//         let obj = new observable.Observable();
-//         obj.set("items", [1]);
-//         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
-//             ctrl = args.view
-//         });
-//         p.bindingContext = obj;
-//         TKUnit.waitUntilReady(() => ctrl);
-//         TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
-//     };
+    function testAction(views: Array<viewModule.View>) {
+        let ctrl;
+        let obj = new observable.Observable();
+        obj.set("items", [1]);
+        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+            ctrl = args.view;
+        });
+        p.bindingContext = obj;
+        TKUnit.waitUntilReady(() => !!ctrl);
+        TKUnit.assertNotNull(ctrl);
+        TKUnit.assertEqual(ctrl.className, "MyStackLayout", "Expected result custom control is created");
+    }
 
-//     helper.navigate(function () { return p; });
-//     testAction([p.content, p]);
-// }
+    helper.navigate(function () { return p; });
+    testAction([p.content, p]);
+}
 
 export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
     var p = <Page>builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><ListView items=\"{{ subItems }}\" /></ListView.itemTemplate></ListView></Page>");
@@ -608,7 +612,7 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
             ctrl = args.view;
         });
         p.bindingContext = obj;
-        TKUnit.waitUntilReady(() => ctrl);
+        TKUnit.waitUntilReady(() => !!ctrl);
         TKUnit.assert(ctrl instanceof listViewModule.ListView, "Expected result: ListView!; Actual result: " + ctrl);
     }
 
@@ -643,7 +647,7 @@ export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplat
         });
 
         p.bindingContext = obj;
-        TKUnit.waitUntilReady(() => ctrl !== null);
+        TKUnit.waitUntilReady(() => !!ctrl);
         ctrl.selectedIndex = 1;
 
         TKUnit.assert(changed, "Expected result: true!; Actual result: " + changed);
@@ -849,30 +853,29 @@ export function test_EventInTemplate() {
     TKUnit.assert(notified, "Expected the child to raise the test event.");
 }
 
-//[XML-DECLARATION.test_EventInCodelessFragment] FAILED: Attempted to assign to readonly property., Stack: test_EventInCodelessFragment
-// export function test_EventInCodelessFragment() {
-//     var pageCode = global.loadModule("./xml-declaration/template-builder-tests/event-in-codeless-fragment");
+export function test_EventInCodelessFragment() {
+    var pageCode = global.loadModule("./xml-declaration/template-builder-tests/event-in-codeless-fragment");
 
-//     var notified = false;
-//     pageCode.test = (args) => {
-//         notified = true;
-//     }
+    var notified = false;
+    pageCode.setCallback((args) => {
+        notified = true;
+    });
 
-//     var page = builder.load("./xml-declaration/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
-//     TKUnit.assert(view, "Expected the xml to generate a page");
-//     var templateView = <TemplateView>page.getViewById("template-view");
-//     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
-//     templateView.parseTemplate();
-//     TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
-//     var childTemplateView = <TemplateView>templateView.getChildAt(0);
-//     TKUnit.assert(childTemplateView, "Expected the TemplateView's template to create a child TemplateView.");
-//     childTemplateView.notify({
-//         eventName: "test",
-//         object: childTemplateView
-//     });
+    var page = builder.load("./xml-declaration/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
+    TKUnit.assert(view, "Expected the xml to generate a page");
+    var templateView = <TemplateView>page.getViewById("template-view");
+    TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
+    templateView.parseTemplate();
+    TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
+    var childTemplateView = <TemplateView>templateView.getChildAt(0);
+    TKUnit.assert(childTemplateView, "Expected the TemplateView's template to create a child TemplateView.");
+    childTemplateView.notify({
+        eventName: "test",
+        object: childTemplateView
+    });
 
-//     TKUnit.assert(notified, "Expected the child to raise the test event.");
-// }
+    TKUnit.assert(notified, "Expected the child to raise the test event.");
+}
 
 export function test_tabview_selectedindex_will_work_from_xml() {
     var p = <Page>builder.parse(
