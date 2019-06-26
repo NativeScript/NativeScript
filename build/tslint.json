@@ -19,7 +19,7 @@
         "no-eval": true,
         "no-irregular-whitespace": true,
         "no-string-literal": false,
-        "no-trailing-whitespace": [true, "ignore-blank-lines"],
+        "no-trailing-whitespace": false,
         "no-unused-expression": true,
         "no-use-before-declare": false,
         "no-var-requires": false,
