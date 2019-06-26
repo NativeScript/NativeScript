@@ -31,3 +31,7 @@ typings/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# tests
+mochawesome-report
+e2e/resources/images/uitestsapp/*

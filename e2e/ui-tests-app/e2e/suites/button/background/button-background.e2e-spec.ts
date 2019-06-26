@@ -1,19 +1,27 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
 
-describe("button-background-suite", () => {
+const suite = "tab-navigation";
+const spec = "bottom-navigation";
+
+describe(`${suite}-${spec}-suite`, () => {
     let driver: AppiumDriver;
     let backgroundPage: ButtonBackgroundPage;
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
+        await driver.resetApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
     });
 
     after(async function () {
         await backgroundPage.endSuite();
+    });
+
+    beforeEach(function () {
+        backgroundPage.imageHelper.setImageName(suite, spec, this.currentTest.title);
     });
 
     afterEach(async function () {
@@ -24,7 +32,7 @@ describe("button-background-suite", () => {
 
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
+        await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
         backgroundPage.imageHelper.assertImages();
     });
 
@@ -35,7 +43,7 @@ describe("button-background-suite", () => {
     it("background_13", async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
+        await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
         backgroundPage.imageHelper.assertImages();
     });
 

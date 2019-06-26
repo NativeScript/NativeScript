@@ -2,7 +2,7 @@
   "nativescript": {
     "id": "org.nativescript.uitestsapp",
     "tns-android": {
-      "version": "next"
+      "version": "6.0.0-2019-06-24-113546-01"
     },
     "tns-ios": {
       "version": "next"
@@ -34,10 +34,12 @@
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
   "readme": "NativeScript Application",
   "scripts": {
-    "e2e": "node ./node_modules/nativescript-dev-appium/check-dev-deps.js &&  tsc -p e2e  &&  mocha --opts ./e2e/config/mocha.opts ",
-    "e2e-watch": "tsc -p e2e --watch",
+    "test": "mocha --opts ../config/mocha.opts",
+    "test-debug": "./node_modules/.bin/ns-dev-appium --startSession",
+    "test-watch": "tsc -p e2e --watch",
     "pretest": "tsc -p e2e",
-    "test": "npx mocha --opts ./e2e/config/mocha.opts ",
-    "watch": "testdeck-watch"
+    "watch": "testdeck-watch",
+    "load-images": "./e2e/scripts/sparse-checkout.sh uitestsapp https://github.com/NativeScript/functional-tests-images.git $PWD/../../../functional-tests-images",
+    "update-emulators": "cd $PWD/../../../functional-tests-images  && . ./scripts/update-emulators.sh --appName uitestsapp"
   }
 }
