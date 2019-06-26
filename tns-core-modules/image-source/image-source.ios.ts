@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { ImageSource as ImageSourceDefinition } from ".";
 import { ImageAsset } from "../image-asset";
 import * as httpModule from "../http";
@@ -35,6 +35,7 @@ export class ImageSource implements ImageSourceDefinition {
 
     public loadFromResource(name: string): boolean {
         this.ios = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
+
         return this.ios != null;
     }
 
@@ -60,6 +61,7 @@ export class ImageSource implements ImageSourceDefinition {
 
     public loadFromFile(path: string): boolean {
         this.ios = UIImage.imageWithContentsOfFile(getFileName(path));
+
         return this.ios != null;
     }
 
@@ -78,6 +80,7 @@ export class ImageSource implements ImageSourceDefinition {
 
     public loadFromData(data: any): boolean {
         this.ios = UIImage.imageWithData(data);
+
         return this.ios != null;
     }
 
@@ -191,6 +194,7 @@ function getFileName(path: string): string {
     if (fileName.indexOf("~/") === 0) {
         fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
     }
+
     return fileName;
 }
 
@@ -211,37 +215,44 @@ function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
     const image = new ImageSource();
+
     return image.fromAsset(asset);
 }
 
 export function fromResource(name: string): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromResource(name) ? image : null;
 }
 
 export function fromFile(path: string): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromFile(path) ? image : null;
 }
 
 export function fromData(data: any): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromData(data) ? image : null;
 }
 
 export function fromBase64(source: string): ImageSource {
     const image = new ImageSource();
+
     return image.loadFromBase64(source) ? image : null;
 }
 
 export function fromNativeSource(source: any): ImageSource {
     const imageSource = new ImageSource();
     imageSource.setNativeSource(source);
+
     return imageSource;
 }
 
 export function fromUrl(url: string): Promise<ImageSource> {
     ensureHttp();
+
     return http.getImage(url);
 }
 
@@ -253,5 +264,6 @@ export function fromFileOrResource(path: string): ImageSource {
     if (path.indexOf(RESOURCE_PREFIX) === 0) {
         return fromResource(path.substr(RESOURCE_PREFIX.length));
     }
+
     return fromFile(path);
 }

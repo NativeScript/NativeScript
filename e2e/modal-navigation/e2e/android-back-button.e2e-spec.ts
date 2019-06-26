@@ -1,5 +1,5 @@
 import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
-import { Screen, driverDefaultWaitTime, elementDefaultWaitTimeInSeconds } from "./screen"
+import { Screen, driverDefaultWaitTime, elementDefaultWaitTimeInSeconds } from "./screen";
 import { assert } from "chai";
 
 const exampleAndroidBackBtnEvents = "Android Back Btn Events";
@@ -37,5 +37,5 @@ describe("android-navigate-back", async function () {
         assert.isTrue(textElement !== null);
         await driver.navBack();
         await screen.loadedHome();
-    })
-})
+    });
+});

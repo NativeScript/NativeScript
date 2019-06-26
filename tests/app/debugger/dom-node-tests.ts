@@ -25,7 +25,7 @@ function getTestInspector(): InspectorCommands & InspectorEvents {
         childNodeRemoved(parentId: number, nodeId: number): void { /* to be replaced */ },
         attributeModified(nodeId: number, attrName: string, attrValue: string) { /* to be replaced */ },
         attributeRemoved(nodeId: number, attrName: string) { /* to be replaced */ }
-    }
+    };
 
     attachDOMInspectorCommandCallbacks(inspector);
     attachDOMInspectorEventCallbacks(inspector);
@@ -48,7 +48,7 @@ function getIOSDOMInspector() {
             getComputedStylesForNode(nodeId: number): any { return []; },
             setAttributeAsText(nodeId: number, text: string, name: string): void { /* */ }
         }
-    }
+    };
 }
 
 export function setUp(): void {
@@ -114,7 +114,7 @@ export function test_childNodeInserted_in_dom_node() {
     currentInspector.childNodeInserted = (parentId, lastNodeId, node) => {
         childNodeInsertedCalled = true;
         actualParentId = parentId;
-    }
+    };
 
     const stack = new StackLayout();
     stack.ensureDomNode();
@@ -155,7 +155,7 @@ export function test_childNodeInserted_at_index_in_dom_node() {
         assertEqual(lastNodeId, btn1._domId, "Child inserted at index 1's previous sibling does not match.");
         assertEqual(node.toObject().nodeId, lbl._domId, "Child id doesn't match");
         called = true;
-    }
+    };
 
     stack.insertChild(lbl, 1);
     assert(called, "childNodeInserted not called");
@@ -169,7 +169,7 @@ export function test_childNodeRemoved_in_dom_node() {
     currentInspector.childNodeRemoved = (parentId, nodeId) => {
         childNodeRemovedCalled = true;
         actualRemovedNodeId = nodeId;
-    }
+    };
 
     const stack = new StackLayout();
     stack.ensureDomNode();
@@ -213,7 +213,7 @@ export function test_property_change_calls_attributeModified() {
         assertEqual(attrName, "text", "attrName");
         assertEqual(attrValue, "new value", "attrValue");
         callbackCalled = true;
-    }
+    };
 
     btn.text = "new value";
 
@@ -231,7 +231,7 @@ export function test_property_change_from_native_calls_attributeModified() {
         assertEqual(attrName, "text", "attrName");
         assertEqual(attrValue, "new value", "attrValue");
         callbackCalled = true;
-    }
+    };
 
     textProperty.nativeValueChange(tv, "new value");
 
@@ -249,7 +249,7 @@ export function test_property_reset_calls_attributeRemoved() {
         assertEqual(nodeId, domNode.nodeId, "nodeId");
         assertEqual(attrName, "text", "attrName");
         callbackCalled = true;
-    }
+    };
 
     btn.text = unsetValue;
 
@@ -267,7 +267,7 @@ export function test_coercible_property_change_calls_attributeModified() {
         assertEqual(attrName, "value", "attrName");
         assertEqual(attrValue, "10", "attrValue");
         callbackCalled = true;
-    }
+    };
 
     slider.value = 10;
 
@@ -285,7 +285,7 @@ export function test_coercible_property_reset_calls_attributeRemoved() {
         assertEqual(nodeId, domNode.nodeId, "nodeId");
         assertEqual(attrName, "value", "attrName");
         callbackCalled = true;
-    }
+    };
 
     slider.value = unsetValue;
 
@@ -355,7 +355,7 @@ export function test_inspector_ui_removeNode() {
         childNodeRemovedCalled = true;
         assertEqual(parentId, expectedParentId);
         assertEqual(nodeId, expectedNodeId);
-    }
+    };
 
     currentInspector.removeNode(label.domNode.nodeId);
 

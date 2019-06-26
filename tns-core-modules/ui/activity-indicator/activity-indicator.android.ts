@@ -1,4 +1,4 @@
-﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility, Color } from "./activity-indicator-common";
+import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility, Color } from "./activity-indicator-common";
 
 export * from "./activity-indicator-common";
 
@@ -9,6 +9,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         const progressBar =  new android.widget.ProgressBar(this._context);
         progressBar.setVisibility(android.view.View.INVISIBLE);
         progressBar.setIndeterminate(true);
+
         return progressBar;
     }
 
@@ -22,7 +23,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     [visibilityProperty.getDefault](): Visibility {
-        return Visibility.HIDDEN;       
+        return Visibility.HIDDEN;
     }
     [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
@@ -35,7 +36,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
             case Visibility.COLLAPSE:
                 this.nativeViewProtected.setVisibility(android.view.View.GONE);
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
         }
     }

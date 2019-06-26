@@ -1,4 +1,4 @@
-﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from ".";
+import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from ".";
 import { LayoutBase, View, Observable, Property, makeParser, makeValidator, CSSType } from "../layout-base";
 
 export * from "../layout-base";
@@ -7,6 +7,7 @@ function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefined.");
     }
+
     return element;
 }
 
@@ -31,6 +32,7 @@ function convertGridLength(value: string): ItemSpec {
     }
     else if (value.indexOf("*") !== -1) {
         const starCount = parseInt(value.replace("*", "") || "1");
+
         return ItemSpec.create(starCount, GridUnitType.STAR);
     }
     else if (!isNaN(parseInt(value))) {
@@ -93,6 +95,7 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
         let spec = new ItemSpec();
         spec._value = value;
         spec._unitType = type;
+
         return spec;
     }
 

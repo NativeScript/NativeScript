@@ -1,4 +1,4 @@
-﻿// >> xml-module-snippet
+// >> xml-module-snippet
 //var xmlModule = require("tns-core-modules/xml");
 // << xml-module-snippet
 
@@ -185,9 +185,9 @@ export var test_XmlParser_NamespacesTest = function () {
 };
 
 export function test_MultiParserTemplate() {
-    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml")
+    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml");
 
     const view: any = builder.parse(xml);
-    TKUnit.assertNotNull(view.items)
+    TKUnit.assertNotNull(view.items);
     TKUnit.assertEqual(view.items.length, 1);
 }

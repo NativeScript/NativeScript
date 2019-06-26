@@ -1,4 +1,4 @@
-﻿import { Image } from "tns-core-modules/ui/image";
+import { Image } from "tns-core-modules/ui/image";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
@@ -49,10 +49,10 @@ export const test_setting_src_to_resource = function () {
 
         TKUnit.assert(width > 0, "Width should be greater than 0.");
         TKUnit.assert(height > 0, "Height should be greater than 0.");
-    }
+    };
 
     helper.buildUIAndRunTest(image, testFunc);
-}
+};
 
 const IMAGE_LOADED_EVENT = "isLoadingChange";
 

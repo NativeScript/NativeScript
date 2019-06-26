@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as buttons from "tns-core-modules/ui/button";
 import { VerticalAlignment } from "tns-core-modules/ui/core/view";
 
@@ -16,7 +16,7 @@ export function createPage() {
     btn.on(buttons.Button.tapEvent, function () {
         //page.css = "button { vertical-align:" + vAligns[(count++) % 4] + " }";
         btn.verticalAlignment = vAligns[(count++) % 4];
-    })
+    });
 
 //export function performanceTest() {
 //        var testBtn = new buttons.Button();
@@ -55,6 +55,7 @@ export function createPage() {
 //    }
 
     page.content = btn;
+
     return page;
 }
-//export var Page = page; 
+//export var Page = page;

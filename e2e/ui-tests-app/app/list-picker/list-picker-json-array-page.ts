@@ -32,6 +32,6 @@ export class ListPickerJsonArrayModel extends Observable {
 }
 
 export function navigatingTo(args: EventData) {
-  let page = <Page>args.object;    
+  let page = <Page>args.object;
   page.bindingContext = new ListPickerJsonArrayModel();
 }

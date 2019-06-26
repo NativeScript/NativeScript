@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as observable from "tns-core-modules/data/observable";
@@ -28,7 +28,7 @@ export function test_default_native_values() {
     function testAction(views: Array<viewModule.View>) {
         TKUnit.assertEqual(getNativeValue(progress), 0, "Default native progress.value");
         TKUnit.assertEqual(getNativeMaxValue(progress), 100, "Default native progress.maxValue");
-    };
+    }
 
     helper.buildUIAndRunTest(progress, testAction);
 }
@@ -39,7 +39,7 @@ export function test_set_TNS_value_updates_native_value() {
     function testAction(views: Array<viewModule.View>) {
         progress.value = 5;
         TKUnit.assertAreClose(getNativeValue(progress), 5, 0.001, "Native value is different from TNS value.");
-    };
+    }
 
     helper.buildUIAndRunTest(progress, testAction);
 }
@@ -51,7 +51,7 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
         progress.maxValue = 10;
         progress.value = 20;
         TKUnit.assertEqual(progress.value, 10, "progress.value");
-    };
+    }
 
     helper.buildUIAndRunTest(progress, testAction);
 }
@@ -64,10 +64,10 @@ if (platform.device.os === platform.platformNames.ios) {
 
         function testAction(views: Array<viewModule.View>) {
             TKUnit.assertEqual(progress.color.ios.CGColor, progress.ios.progressTintColor.CGColor, "progress.color");
-        };
+        }
 
         helper.buildUIAndRunTest(progress, testAction);
-    }
+    };
 
     exports.test_set_backgroundColor = function () {
         var progress = new progressModule.Progress();
@@ -75,10 +75,10 @@ if (platform.device.os === platform.platformNames.ios) {
 
         function testAction(views: Array<viewModule.View>) {
             TKUnit.assertEqual((<color.Color>progress.backgroundColor).ios.CGColor, progress.ios.trackTintColor.CGColor, "progress.color");
-        };
+        }
 
         helper.buildUIAndRunTest(progress, testAction);
-    }
+    };
 }
 
 export function test_set_maxValue_should_adjust_value() {
@@ -94,7 +94,7 @@ export function test_set_maxValue_should_adjust_value() {
 
         TKUnit.assertEqual(progress.maxValue, 10, "progress.maxValue");
         TKUnit.assertEqual(progress.value, 10, "progress.value");
-    };
+    }
 
     helper.buildUIAndRunTest(progress, testAction);
 }
@@ -126,7 +126,7 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
         TKUnit.assert(changedProperties["maxValue"], "Property changed for 'maxValue' not called.");
         TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assertEqual(allChanges, 2, "Property changed callbacks.");
-    };
+    }
 
     helper.buildUIAndRunTest(progress, testAction);
 }

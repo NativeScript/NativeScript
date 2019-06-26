@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 //>> label-require
@@ -29,6 +29,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public create(): LabelModule.Label {
         const label = new LabelModule.Label();
         label.text = "Label";
+
         return label;
     }
 
@@ -648,6 +649,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -658,6 +660,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -668,9 +671,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", label => {
@@ -678,33 +682,37 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
-    };
+    }
 
     public test_SettingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "Hello World", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
-    };
+    }
 
     public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -714,6 +722,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -723,6 +732,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -732,6 +742,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -749,7 +760,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         label._addChildFromBuilder("FormattedString", formattedString);
         label._removeView(formattedString);
-    };
+    }
 }
 
 export function createTestCase(): LabelTest {

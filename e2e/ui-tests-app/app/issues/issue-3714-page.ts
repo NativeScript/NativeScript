@@ -6,7 +6,7 @@ import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 export function toggle(args: EventData) {
     const page = <Page>((<any>args.object).page);
     
-    const getElementById = id => page.getViewById(id)
+    const getElementById = id => page.getViewById(id);
     
     const toggleBtn = <Button>getElementById("toggleUserInteraction");
     const isEnabled = toggleBtn.text === "disable" ? true : false;

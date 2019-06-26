@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
@@ -13,6 +13,7 @@ var ASYNC = 2;
 function _createBottomNavigation(): Tabs {
     var tabView = new Tabs();
     tabView.id = "BottomNavigation";
+
     return tabView;
 }
 
@@ -25,6 +26,7 @@ function _createContentItems(count: number): Array<TabContentItem> {
         tabEntry.view = label;
         items.push(tabEntry);
     }
+
     return items;
 }
 
@@ -72,16 +74,18 @@ function _clickHandlerFactory(index: number) {
             var detailsPage = new Page();
             detailsPage.id = "details-page";
             detailsPage.content = detailsLabel;
+
             return detailsPage;
         };
 
         helper.navigateWithHistory(pageFactory);
-    }
+    };
 }
 
 function _createFrameView(): frameModule.Frame {
     const frame = new frameModule.Frame();
     frame.navigate({ create: () => new Page() });
+
     return frame;
 }
 
@@ -113,7 +117,7 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     helper.waitUntilNavigatedFrom(() => topFrame.navigate(pageFactory), topFrame);
 
@@ -162,7 +166,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     let rootPage = helper.getCurrentPage();
 
@@ -218,13 +222,13 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     function createLoadedFor(tabIndex: number) {
         return function () {
             loadedEventsCount[tabIndex] = loadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     function createUnloadedFor(tabIndex: number) {
         return function () {
             unloadedEventsCount[tabIndex] = unloadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     tabView.items.forEach((item, i) => {
@@ -235,6 +239,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     const tabViewPage = new Page();
     helper.navigateWithHistory(() => {
         tabViewPage.content = tabView;
+
         return tabViewPage;
     });
     TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView), ASYNC);

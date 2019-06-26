@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as pagesModule from "tns-core-modules/ui/page";
@@ -44,8 +44,9 @@ var _createTextViewFunc = function (): textViewModule.TextView {
     var textView = new textViewModule.TextView();
     // << text-view-create
     textView.text = "textView";
+
     return textView;
-}
+};
 
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -59,7 +60,7 @@ export var testSetText = function () {
         var actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSetTextNull = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -71,7 +72,7 @@ export var testSetTextNull = function () {
         var actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSetTextUndefined = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -83,7 +84,7 @@ export var testSetTextUndefined = function () {
         var actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 // Supported for ios only.
 if (platform.device.os === platform.platformNames.ios) {
@@ -93,7 +94,7 @@ if (platform.device.os === platform.platformNames.ios) {
             textView.color = new colorModule.Color("red");
             TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.textColor.CGColor, "textView.color");
         });
-    }
+    };
 }
 
 export var testBindTextDirectlyToModel = function () {
@@ -106,7 +107,7 @@ export var testBindTextDirectlyToModel = function () {
         var options: bindable.BindingOptions = {
             sourceProperty: "username",
             targetProperty: "text"
-        }
+        };
         textView.bind(options, model);
         // textView.text is now "john"
         // >> (hide)
@@ -121,7 +122,7 @@ export var testBindTextDirectlyToModel = function () {
         // << (hide)
         // << binding-text-property-textview
     });
-}
+};
 
 export var testBindTextToBindingContext = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -135,7 +136,7 @@ export var testBindTextToBindingContext = function () {
         var options: bindable.BindingOptions = {
             sourceProperty: "username",
             targetProperty: "text"
-        }
+        };
 
         textView.bind(options);
         TKUnit.assert(textView.text === "john", "Actual: " + textView.text + "; Expected: " + "john");
@@ -145,7 +146,7 @@ export var testBindTextToBindingContext = function () {
         TKUnit.assert(textView.text === "mary", "Actual: " + textView.text + "; Expected: " + "mary");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "mary", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "mary");
     });
-}
+};
 
 export var testTextIsUpdatedWhenUserTypes = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -158,7 +159,7 @@ export var testTextIsUpdatedWhenUserTypes = function () {
         var actualValue = textView.text;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSetHint = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -173,7 +174,7 @@ export var testSetHint = function () {
         var actualValue = textViewTestsNative.getNativeHint(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testBindHintDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -186,7 +187,7 @@ export var testBindHintDirectlyToModel = function () {
         var options: bindable.BindingOptions = {
             sourceProperty: "hint",
             targetProperty: "hint"
-        }
+        };
         textView.bind(options, model);
         // TextView.hint is now "type your username here"
         // >> (hide)
@@ -201,7 +202,7 @@ export var testBindHintDirectlyToModel = function () {
         // << (hide)
         // << binding-hint-property-textview
     });
-}
+};
 
 export var testBindHintToBindingConext = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -216,7 +217,7 @@ export var testBindHintToBindingConext = function () {
         var options: bindable.BindingOptions = {
             sourceProperty: "hint",
             targetProperty: "hint"
-        }
+        };
 
         textView.bind(options);
         TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.hint + "; Expected: " + "type your username here");
@@ -226,7 +227,7 @@ export var testBindHintToBindingConext = function () {
         TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.hint + "; Expected: " + "type your password here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your password here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your password here");
     });
-}
+};
 
 export var testHintPlusTextiOS = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -250,7 +251,7 @@ export var testHintPlusTextiOS = function () {
         actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testHintColoriOS = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -278,7 +279,7 @@ export var testHintColoriOS = function () {
         actualValue = textViewTestsNative.getNativeColor(textView).hex;
         TKUnit.assert(actualValue === expectedNormalizedValue, "Actual: " + actualValue + "; Expected: " + expectedNormalizedValue);
     });
-}
+};
 
 export var testSetEditable = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -292,7 +293,7 @@ export var testSetEditable = function () {
         var actualValue = textViewTestsNative.getNativeEditable(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testBindEditableDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -304,7 +305,7 @@ export var testBindEditableDirectlyToModel = function () {
         var options: bindable.BindingOptions = {
             sourceProperty: "editable",
             targetProperty: "editable"
-        }
+        };
         textView.bind(options, model);
         // textView.editable is now false
         // >> (hide)
@@ -319,7 +320,7 @@ export var testBindEditableDirectlyToModel = function () {
         // << (hide)
         // << binding-editable-property
     });
-}
+};
 
 export var testBindEditableToBindingConext = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -333,7 +334,7 @@ export var testBindEditableToBindingConext = function () {
         var options: bindable.BindingOptions = {
             sourceProperty: "editable",
             targetProperty: "editable"
-        }
+        };
 
         textView.bind(options);
         TKUnit.assertFalse(textView.editable, ".ediable property should be false");
@@ -343,7 +344,7 @@ export var testBindEditableToBindingConext = function () {
         TKUnit.assertTrue(textView.editable, ".ediable property should be true");
         TKUnit.assertTrue(textViewTestsNative.getNativeEditable(textView), "native Editable should be true");
     });
-}
+};
 
 var expectedFontSize = 42;
 export var testLocalFontSizeFromCss = function () {
@@ -355,7 +356,7 @@ export var testLocalFontSizeFromCss = function () {
         var actualResult = textView.style.fontSize;
         TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
     });
-}
+};
 
 export var testNativeFontSizeFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -366,7 +367,7 @@ export var testNativeFontSizeFromCss = function () {
         var actualResult = textViewTestsNative.getNativeFontSize(textView);
         helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
     });
-}
+};
 
 export var testNativeFontSizeFromLocal = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -376,7 +377,7 @@ export var testNativeFontSizeFromLocal = function () {
         var actualResult = textViewTestsNative.getNativeFontSize(textView);
         helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
     });
-}
+};
 
 var expectedLineHeight = 10;
 export var testLocalLineHeightFromCss = function () {
@@ -388,7 +389,7 @@ export var testLocalLineHeightFromCss = function () {
         var actualResult = textView.style.lineHeight;
         TKUnit.assert(actualResult === expectedLineHeight, "Actual: " + actualResult + "; Expected: " + expectedLineHeight);
     });
-}
+};
 
 var expectedColorHex = "#FFFF0000";
 var expectedNormalizedColorHex = "#FF0000";
@@ -401,7 +402,7 @@ export var testLocalColorFromCss = function () {
         var actualResult = textView.style.color.hex;
         TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
-}
+};
 
 export var testNativeColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -412,7 +413,7 @@ export var testNativeColorFromCss = function () {
         var actualResult = textViewTestsNative.getNativeColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
-}
+};
 
 export var testNativeColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -422,7 +423,7 @@ export var testNativeColorFromLocal = function () {
         var actualResult = textViewTestsNative.getNativeColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
-}
+};
 
 var expectedBackgroundColorHex = "#FF00FF00";
 var expectedNormalizedBackgroundColorHex = "#00FF00";
@@ -435,7 +436,7 @@ export var testLocalBackgroundColorFromCss = function () {
         var actualResult = textView.style.backgroundColor.hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
-}
+};
 
 export var testNativeBackgroundColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -448,7 +449,7 @@ export var testNativeBackgroundColorFromCss = function () {
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
-}
+};
 
 export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -460,7 +461,7 @@ export var testNativeBackgroundColorFromLocal = function () {
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
-}
+};
 
 var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
@@ -472,7 +473,7 @@ export var testLocalTextAlignmentFromCss = function () {
         var actualResult = view.style.textAlignment;
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testNativeTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -483,7 +484,7 @@ export var testNativeTextAlignmentFromCss = function () {
         var actualResult = textViewTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testNativeTextAlignmentFromLocal = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -493,13 +494,13 @@ export var testNativeTextAlignmentFromLocal = function () {
         var actualResult = textViewTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testMemoryLeak = function (done) {
     helper.buildUIWithWeakRefAndInteract(_createTextViewFunc, function (textView) {
         textViewTestsNative.typeTextNatively(textView, "Hello, world!");
     }, done);
-}
+};
 
 export function test_watch_listerer_is_removed_at_onDetach() {
     if (platform.isAndroid) {

@@ -1,4 +1,4 @@
-﻿var appSettings = require("tns-core-modules/application-settings");
+var appSettings = require("tns-core-modules/application-settings");
 import * as TKUnit from "../tk-unit";
 
 var stringKey: string = "stringKey";
@@ -42,7 +42,7 @@ export var testDefaults = function () {
     TKUnit.assert("No string value" === defaultValue, "Bad default string value");
     TKUnit.assert(true === appSettings.getBoolean(noBoolKey, true), "Bad default boolean value");
     TKUnit.assert(123.45 === appSettings.getNumber(noNumberKey, 123.45), "Bad default number value");
-}
+};
 
 export var testDefaultsWithNoDefaultValueProvided = function () {
     var defaultValue = appSettings.getString("noStringKey");
@@ -106,7 +106,7 @@ export var testAllKeys = function () {
     TKUnit.assert(allKeys.indexOf(stringKey) !== -1, `${stringKey} is missing from .allKeys()`);
     TKUnit.assert(allKeys.indexOf(boolKey) !== -1, `${boolKey} is missing from .allKeys()`);
     TKUnit.assert(allKeys.indexOf(numberKey) !== -1, `${numberKey} is missing from .allKeys()`);
-}
+};
 
 export var testInvalidKey = function () {
     try {

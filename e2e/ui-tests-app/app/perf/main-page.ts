@@ -10,8 +10,9 @@ export function pageLoaded(args: EventData) {
 }
 
 export function loadExamples() {
-    const examples = new Map<string, string>();    
+    const examples = new Map<string, string>();
     examples.set("properties", "perf/properties/main-page");
     examples.set("memory-leaks", "perf/memory-leaks/main-page");
+
     return examples;
 }

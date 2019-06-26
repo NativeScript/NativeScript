@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import { Button } from "tns-core-modules/ui/button";
 import { Page, isIOS } from "tns-core-modules/ui/page";
 import { UITest } from "../../ui-test";
@@ -26,6 +26,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 
         // Use page with scrollableContent disabled for scroll-view tests
         (<any>this.testPage).scrollableContent = false;
+
         return scrollView;
     }
 

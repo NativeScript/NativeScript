@@ -1,4 +1,4 @@
-﻿import { DockLayoutBase, View, layout } from "./dock-layout-common";
+import { DockLayoutBase, View, layout } from "./dock-layout-common";
 
 export * from "./dock-layout-common";
 
@@ -100,6 +100,7 @@ export class DockLayout extends DockLayoutBase {
             if (last && this.stretchLastChild) {
                 // Last child with stretch - give it all the space and return;
                 View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
+
                 return;
             }
 

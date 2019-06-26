@@ -1,4 +1,4 @@
-﻿import { Page, ShownModallyData } from "tns-core-modules/ui/page";
+import { Page, ShownModallyData } from "tns-core-modules/ui/page";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
 
 export function onShowingModally(args: ShownModallyData) {
@@ -13,7 +13,7 @@ export function onShowingModally(args: ShownModallyData) {
             console.log("login-page.onLoginButtonTap");
             args.closeCallback(this.username, this.password);
         }
-    })
+    });
 }
 
 export function onShownModally(args: ShownModallyData) {

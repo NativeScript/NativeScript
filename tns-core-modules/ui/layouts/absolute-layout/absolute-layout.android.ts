@@ -1,4 +1,4 @@
-﻿import { AbsoluteLayoutBase, View, leftProperty, topProperty, Length } from "./absolute-layout-common";
+import { AbsoluteLayoutBase, View, leftProperty, topProperty, Length } from "./absolute-layout-common";
 
 export * from "./absolute-layout-common";
 
@@ -10,11 +10,11 @@ function makeNativeSetter<T>(setter: (this: View, lp: org.nativescript.widgets.C
             setter.call(this, lp, value);
             nativeView.setLayoutParams(lp);
         }
-    }
+    };
 }
 
-View.prototype[topProperty.setNative] = makeNativeSetter<number>(function(this: View, lp, value) { lp.top = Length.toDevicePixels(value, 0) });
-View.prototype[leftProperty.setNative] = makeNativeSetter<number>(function(this: View, lp, value) { lp.left = Length.toDevicePixels(value, 0) });
+View.prototype[topProperty.setNative] = makeNativeSetter<number>(function(this: View, lp, value) { lp.top = Length.toDevicePixels(value, 0); });
+View.prototype[leftProperty.setNative] = makeNativeSetter<number>(function(this: View, lp, value) { lp.left = Length.toDevicePixels(value, 0); });
 
 export class AbsoluteLayout extends AbsoluteLayoutBase {
     nativeViewProtected: org.nativescript.widgets.AbsoluteLayout;

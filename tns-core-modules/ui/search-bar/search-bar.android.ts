@@ -1,4 +1,4 @@
-﻿import { Font } from "../styling/font";
+import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty,
@@ -31,6 +31,7 @@ function initializeNativeClasses(): void {
     class CompatQueryTextListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnQueryTextListener {
         constructor(private owner: SearchBar) {
             super();
+
             return global.__native(this);
         }
 
@@ -45,6 +46,7 @@ function initializeNativeClasses(): void {
 
             this[SEARCHTEXT] = newText;
             this[QUERY] = undefined;
+
             return true;
         }
 
@@ -56,6 +58,7 @@ function initializeNativeClasses(): void {
             }
 
             this[QUERY] = query;
+
             return true;
         }
     }
@@ -64,11 +67,13 @@ function initializeNativeClasses(): void {
     class CompatCloseListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnCloseListener {
         constructor(private owner: SearchBar) {
             super();
+
             return global.__native(this);
         }
 
         onClose(): boolean {
             this.owner._emit(SearchBarBase.clearEvent);
+
             return true;
         }
     }
@@ -123,8 +128,9 @@ export class SearchBar extends SearchBarBase {
     }
 
     public createNativeView() {
-        const nativeView = new androidx.appcompat.widget.SearchView(this._context)
+        const nativeView = new androidx.appcompat.widget.SearchView(this._context);
         nativeView.setIconified(false);
+
         return nativeView;
     }
 
@@ -161,6 +167,7 @@ export class SearchBar extends SearchBarBase {
     [backgroundColorProperty.getDefault](): number {
         // TODO: Why do we get DrawingCacheBackgroundColor but set backgroundColor?????
         const result = this.nativeViewProtected.getDrawingCacheBackgroundColor();
+
         return result;
     }
     [backgroundColorProperty.setNative](value: Color) {
@@ -178,6 +185,7 @@ export class SearchBar extends SearchBarBase {
 
     [colorProperty.getDefault](): number {
         const textView = this._getTextView();
+
         return textView.getCurrentTextColor();
     }
     [colorProperty.setNative](value: Color) {
@@ -230,6 +238,7 @@ export class SearchBar extends SearchBarBase {
     }
     [textFieldBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
         const textView = this._getTextView();
+
         return textView.getBackground();
     }
     [textFieldBackgroundColorProperty.setNative](value: Color) {
@@ -242,6 +251,7 @@ export class SearchBar extends SearchBarBase {
     }
     [textFieldHintColorProperty.getDefault](): number {
         const textView = this._getTextView();
+
         return textView.getCurrentTextColor();
     }
     [textFieldHintColorProperty.setNative](value: Color) {

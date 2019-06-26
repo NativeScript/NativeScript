@@ -21,6 +21,7 @@ export module ios {
 
         const statusFrame = app.statusBarFrame;
         const min = Math.min(statusFrame.size.width, statusFrame.size.height);
+
         return utils.layout.toDevicePixels(min);
     }
 }

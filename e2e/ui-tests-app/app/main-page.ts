@@ -1,8 +1,8 @@
-﻿import { EventData } from "tns-core-modules/data/observable";
+import { EventData } from "tns-core-modules/data/observable";
 import { MainPageViewModel } from "./main-page-view-model";
 import { Page } from "tns-core-modules/ui/page";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
-import { isAndroid } from "tns-core-modules/platform"
+import { isAndroid } from "tns-core-modules/platform";
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;

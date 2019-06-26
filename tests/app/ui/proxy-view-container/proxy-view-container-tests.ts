@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
@@ -24,7 +24,7 @@ export function test_add_children_to_attached_proxy() {
         outer.addChild(createBtn("5"));
 
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -38,7 +38,7 @@ export function test_children_immediately_registered_in_parent_grid_layout() {
         proxy.addChild(createBtn("1"));
 
         assertNativeChildren(outer, ["1"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -53,7 +53,7 @@ export function test_children_registered_in_parent_grid_layout_on_attach() {
         outer.addChild(proxy);
 
         assertNativeChildren(outer, ["1"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -73,7 +73,7 @@ export function test_add_children_to_detached_proxy() {
         outer.addChild(createBtn("5"));
 
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -95,7 +95,7 @@ export function test_remove_proxy() {
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
         outer.removeChild(proxy);
         assertNativeChildren(outer, ["1", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -118,7 +118,7 @@ export function test_remove_child_of_attached_proxy() {
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
         proxy.removeChild(testBtn);
         assertNativeChildren(outer, ["1", "2", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -139,7 +139,7 @@ export function test_insert_inside_proxy() {
         assertNativeChildren(outer, ["1", "2", "4", "5"]);
         proxy.insertChild(createBtn("3"), 1);
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -159,7 +159,7 @@ export function test_insert_after_proxy() {
         assertNativeChildren(outer, ["1", "2", "3", "4"]);
         outer.insertChild(createBtn("5"), 2);
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -179,7 +179,7 @@ export function test_proxy_does_not_stop_request_layout_bubble() {
         TKUnit.assert(outer.isLayoutValid, "outer container isLayoutValid should be true");
         btn.requestLayout();
         TKUnit.assertFalse(outer.isLayoutValid, "outer container isLayoutValid should be invalidated here");
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -191,7 +191,7 @@ export function test_proxy_iniside_page() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(proxy, testAction);
 }
@@ -206,7 +206,7 @@ export function test_proxy_inside_scroll_view() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(scroll, testAction);
 }
@@ -221,7 +221,7 @@ export function test_proxy_inside_border() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(scroll, testAction);
 }
@@ -240,7 +240,7 @@ export function test_proxy_inside_listview_itemTemplate_crash() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(list, testAction);
 }
@@ -285,6 +285,7 @@ function waitUntilElementLayoutIsValid(view: View, timeoutSec?: number): void {
 function createBtn(text: string): Button {
     const b = new Button();
     b.text = text;
+
     return b;
 }
 

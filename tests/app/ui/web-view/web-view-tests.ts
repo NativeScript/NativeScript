@@ -16,6 +16,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
     public create(): webViewModule.WebView {
         // >> declare-webview
         let webView = new webViewModule.WebView();
+
         // << declare-webview
         return webView;
     }

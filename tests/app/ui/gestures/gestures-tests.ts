@@ -1,4 +1,4 @@
-﻿/* tslint:disable:no-unused-variable */
+/* tslint:disable:no-unused-variable */
 // >> gestures-require
 import * as gestures from "tns-core-modules/ui/gestures";
 // << gestures-require
@@ -7,11 +7,11 @@ import * as labelModule from "tns-core-modules/ui/label";
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> gestures-double-tap
     var label = new labelModule.Label();
-    var observer = label.on(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) { 
+    var observer = label.on(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) {
         console.log("Double Tap");
     });
     // << gestures-double-tap
-}
+};
 
 export var test_DummyTestForSnippetOnly01 = function () {
     // >> gestures-double-tap-alt
@@ -20,7 +20,7 @@ export var test_DummyTestForSnippetOnly01 = function () {
         console.log("Double Tap");
     });
     // << gestures-double-tap-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly1 = function () {
     // >> gestures-long-press
@@ -29,7 +29,7 @@ export var test_DummyTestForSnippetOnly1 = function () {
         console.log("Long Press");
     });
     // << gestures-long-press
-}
+};
 
 export var test_DummyTestForSnippetOnly11 = function () {
     // >> gestures-long-press-alt
@@ -38,7 +38,7 @@ export var test_DummyTestForSnippetOnly11 = function () {
         console.log("Long Press");
     });
     // << gestures-long-press-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly2 = function () {
     // >> gestures-pan
@@ -47,7 +47,7 @@ export var test_DummyTestForSnippetOnly2 = function () {
         console.log("Pan deltaX:" + args.deltaX + "; deltaY:" + args.deltaY + ";");
     });
     // << gestures-pan
-}
+};
 
 export var test_DummyTestForSnippetOnly22 = function () {
     // >> gestures-pan-alt
@@ -56,7 +56,7 @@ export var test_DummyTestForSnippetOnly22 = function () {
         console.log("Pan deltaX:" + args.deltaX + "; deltaY:" + args.deltaY + ";");
     });
     // << gestures-pan-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly3 = function () {
     // >> gestures-pan-pinch
@@ -65,7 +65,7 @@ export var test_DummyTestForSnippetOnly3 = function () {
         console.log("Pinch scale: " + args.scale);
     });
     // << gestures-pan-pinch
-}
+};
 
 export var test_DummyTestForSnippetOnly33 = function () {
     // >> gestures-pan-pinch-alt
@@ -74,7 +74,7 @@ export var test_DummyTestForSnippetOnly33 = function () {
         console.log("Pinch scale: " + args.scale);
     });
     // << gestures-pan-pinch-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly4 = function () {
     // >> gestures-rotation
@@ -83,7 +83,7 @@ export var test_DummyTestForSnippetOnly4 = function () {
         console.log("Rotation: " + args.rotation);
     });
     // << gestures-rotation
-}
+};
 
 export var test_DummyTestForSnippetOnly44 = function () {
     // >> gestures-rotation-alt
@@ -92,7 +92,7 @@ export var test_DummyTestForSnippetOnly44 = function () {
         console.log("Rotation: " + args.rotation);
     });
     // << gestures-rotation-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly5 = function () {
     // >> gestures-swipe
@@ -101,7 +101,7 @@ export var test_DummyTestForSnippetOnly5 = function () {
         console.log("Swipe direction: " + args.direction);
     });
     // << gestures-swipe
-}
+};
 
 export var test_DummyTestForSnippetOnly55 = function () {
     // >> gestures-swipe-alt
@@ -110,7 +110,7 @@ export var test_DummyTestForSnippetOnly55 = function () {
         console.log("Swipe direction: " + args.direction);
     });
     // << gestures-swipe-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly6 = function () {
     // >> gestures-tap
@@ -119,7 +119,7 @@ export var test_DummyTestForSnippetOnly6 = function () {
         console.log("Tap");
     });
     // << gestures-tap
-}
+};
 
 export var test_DummyTestForSnippetOnly66 = function () {
     // >> gestures-tap-alt
@@ -128,7 +128,7 @@ export var test_DummyTestForSnippetOnly66 = function () {
         console.log("Tap");
     });
     // << gestures-tap-alt
-}
+};
 
 export var test_DummyTestForSnippetOnly7 = function () {
     // >> gestures-stop-observe
@@ -138,7 +138,7 @@ export var test_DummyTestForSnippetOnly7 = function () {
     });
     observer.disconnect();
     // << gestures-stop-observe
-}
+};
 
 export var test_DummyTestForSnippetOnly8 = function () {
     // >> gestures-multiple
@@ -147,7 +147,7 @@ export var test_DummyTestForSnippetOnly8 = function () {
         console.log("Event: " + args.eventName);
     });
     // << gestures-multiple
-}
+};
 
 export var test_DummyTestForSnippetOnly88 = function () {
     // >> gestures-string
@@ -156,7 +156,7 @@ export var test_DummyTestForSnippetOnly88 = function () {
         console.log("Event: " + args.eventName);
     });
     // << gestures-string
-}
+};
 
 export var test_DummyTestForSnippetOnly9 = function () {
     // >> gestures-events-string
@@ -165,4 +165,4 @@ export var test_DummyTestForSnippetOnly9 = function () {
         console.log("Event: " + args.eventName);
     });
     // << gestures-events-string
-}
+};

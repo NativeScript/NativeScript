@@ -82,14 +82,14 @@ describe(rootType, async function () {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await screen.loadedElement(playerTwo.name) // wait for player
+                            await screen.loadedElement(playerTwo.name); // wait for player
                         }
 
                         await shared.testPlayerNavigatedBack(screen, driver);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerOne.name) // wait for players list
+                            await driver.waitForElement(playerOne.name); // wait for players list
                         }
 
                         await shared.testPlayerNavigated(playerTwo, screen);
@@ -101,7 +101,7 @@ describe(rootType, async function () {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await screen.loadedElement(somePage) // wait for some page
+                            await screen.loadedElement(somePage); // wait for some page
                         }
 
                         if (driver.isAndroid) {
@@ -259,7 +259,7 @@ describe(rootType, async function () {
                         await screen.loadedHome();
                     });
                 });
-            };
+            }
         });
     }
 });

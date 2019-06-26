@@ -1,4 +1,4 @@
-﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
+import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
 import { ActionBar } from "../action-bar";
 import { GridLayout } from "../layouts/grid-layout";
 import { device } from "../../platform";
@@ -17,6 +17,7 @@ export class Page extends PageBase {
         const layout = new org.nativescript.widgets.GridLayout(this._context);
         layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+
         return layout;
     }
 
@@ -26,7 +27,7 @@ export class Page extends PageBase {
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-        // Set the row property for the child 
+        // Set the row property for the child
         if (this.nativeViewProtected && child.nativeViewProtected) {
             if (child instanceof ActionBar) {
                 GridLayout.setRow(child, 0);
@@ -92,6 +93,7 @@ export class Page extends PageBase {
     [androidStatusBarBackgroundProperty.getDefault](): number {
         if (device.sdkVersion >= "21") {
             const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+
             return (<any>window).getStatusBarColor();
         }
 

@@ -1,4 +1,4 @@
-﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
+import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
 import { ItemsSource } from ".";
 
 export * from "./list-picker-common";
@@ -23,6 +23,7 @@ function initializeNativeClasses(): void {
     class FormatterImpl extends java.lang.Object implements android.widget.NumberPicker.Formatter {
         constructor(private owner: ListPicker) {
             super();
+
             return global.__native(this);
         }
 
@@ -35,6 +36,7 @@ function initializeNativeClasses(): void {
     class ValueChangeListenerImpl extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
         constructor(private owner: ListPicker) {
             super();
+
             return global.__native(this);
         }
 
@@ -80,6 +82,7 @@ export class ListPicker extends ListPickerBase {
         picker.setMaxValue(0);
         picker.setValue(0);
         picker.setWrapSelectorWheel(false);
+
         return picker;
     }
 
@@ -119,7 +122,7 @@ export class ListPicker extends ListPickerBase {
         const nativeView = this.nativeViewProtected;
         //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
         nativeView.setFormatter(null);
-        nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter 
+        nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter
 
         const editText = (<any>nativeView).editText;
         if (editText) {
@@ -152,10 +155,11 @@ export class ListPicker extends ListPickerBase {
 
     [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
     const editText = (<any>this.nativeViewProtected).editText;
-        return {
+
+    return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: editText ? editText.getTextColors().getDefaultColor() : -1
-        }
+        };
     }
     [colorProperty.setNative](value: { wheelColor: number, textColor: number } | Color) {
         let color: number;

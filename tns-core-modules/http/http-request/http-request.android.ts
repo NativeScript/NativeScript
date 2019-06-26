@@ -1,4 +1,4 @@
-﻿// imported for definition purposes only
+// imported for definition purposes only
 import * as httpModule from "../../http";
 import * as imageSourceModule from "../../image-source";
 import * as platformModule from "../../platform";
@@ -25,24 +25,24 @@ let requestIdCounter = 0;
 const pendingRequests = {};
 
 let imageSource: typeof imageSourceModule;
-function ensureImageSource() {	
-    if (!imageSource) {	
-        imageSource = require("image-source");	
-    }	
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
 }
 
-let platform: typeof platformModule;	
-function ensurePlatform() {	
-    if (!platform) {	
-        platform = require("platform");	
-    }	
+let platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
 }
 
 let fs: typeof fsModule;
-function ensureFileSystem() {	
-    if (!fs) {	
-        fs = require("file-system");	
-    }	
+function ensureFileSystem() {
+    if (!fs) {
+        fs = require("file-system");
+    }
 }
 
 let completeCallback: org.nativescript.widgets.Async.CompleteCallback;
@@ -68,6 +68,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 
     if (result.error) {
         callbacks.rejectCallback(new Error(result.error.toString()));
+
         return;
     }
 
@@ -111,6 +112,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 } else {
                     str = result.responseAsString;
                 }
+
                 return parseJSON(str);
             },
             toImage: () => {
@@ -249,7 +251,8 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
     if (encoding === HttpResponseEncoding.GBK) {
         charsetName = "GBK";
     }
-    return raw.toString(charsetName)
+
+    return raw.toString(charsetName);
 }
 
 export function addHeader(headers: httpModule.Headers, key: string, value: string): void {

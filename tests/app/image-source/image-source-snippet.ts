@@ -12,6 +12,6 @@ export function imageSourceFromAsset(imageAsset) {
         if (saved) {
             console.log("Image saved successfully!");
         }
-    })
+    });
 }
 // << imagesource-from-imageasset-save-to

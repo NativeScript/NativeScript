@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../../tk-unit";
+import * as TKUnit from "../../../tk-unit";
 import { Observable, EventData } from "tns-core-modules/data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "tns-core-modules/ui/core/weak-event-listener";
 import { forceGC } from "../../../ui-helper";
@@ -68,7 +68,7 @@ export function test_removeWeakEventListener_StopsListeningForEvent() {
     const target = new Target();
 
     addWeakEventListener(source, Observable.propertyChangeEvent, target.onEvent, target);
-    removeWeakEventListener(source, Observable.propertyChangeEvent, target.onEvent, target)
+    removeWeakEventListener(source, Observable.propertyChangeEvent, target.onEvent, target);
 
     source.set("testProp", "some value");
     TKUnit.assertEqual(target.counter, 0, "Handler should not be called.");
@@ -81,7 +81,7 @@ export function test_handlerIsCalled_WithTargetAsThis() {
     const handler = function (args: EventData) {
         TKUnit.assertEqual(this, target, "this should be the target");
         callbackCalled = true;
-    }
+    };
 
     addWeakEventListener(source, Observable.propertyChangeEvent, handler, target);
 
@@ -146,8 +146,8 @@ export function test_handlerIsDetached_WhenAllListenersAreRemoved() {
     addWeakEventListener(source, Observable.propertyChangeEvent, target1.onEvent, target1);
     addWeakEventListener(source, Observable.propertyChangeEvent, target2.onEvent, target2);
 
-    removeWeakEventListener(source, Observable.propertyChangeEvent, target1.onEvent, target1)
-    removeWeakEventListener(source, Observable.propertyChangeEvent, target2.onEvent, target2)
+    removeWeakEventListener(source, Observable.propertyChangeEvent, target1.onEvent, target1);
+    removeWeakEventListener(source, Observable.propertyChangeEvent, target2.onEvent, target2);
 
     TKUnit.assert(!source.hasListeners(Observable.propertyChangeEvent), "All events should be detached");
 }

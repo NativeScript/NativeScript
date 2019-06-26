@@ -83,6 +83,7 @@ export type FlexGrow = number;
 export namespace FlexGrow {
     export function isValid(value: any): boolean {
         const parsed = parseInt(value);
+
         return isFinite(parsed) && value >= 0;
     }
     export const parse = parseFloat;
@@ -92,6 +93,7 @@ export type FlexShrink = number;
 export namespace FlexShrink {
     export function isValid(value: any): boolean {
         const parsed = parseInt(value);
+
         return isFinite(parsed) && value >= 0;
     }
     export const parse = parseFloat;
@@ -105,8 +107,10 @@ export namespace FlexWrapBefore {
         }
         if (typeof value === "string") {
             const str = value.trim().toLowerCase();
+
             return str === "true" || str === "false";
         }
+
         return false;
     }
     export function parse(value: string): FlexWrapBefore {
@@ -131,6 +135,7 @@ function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");
     }
+
     return element;
 }
 
@@ -315,9 +320,10 @@ const flexFlowProperty = new ShorthandProperty<Style, string>({
                 }
             }
         }
+
         return properties;
     }
-})
+});
 flexFlowProperty.register(Style);
 
 // flex: inital | auto | none | <flex-grow> <flex-shrink> || <flex-basis>
@@ -371,8 +377,9 @@ const flexProperty = new ShorthandProperty<Style, string>({
                 // }
             }
         }
+
         return properties;
 
     }
-})
+});
 flexProperty.register(Style);

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { View, isIOS } from "tns-core-modules/ui/core/view";
 import { Page } from "tns-core-modules/ui/page";
@@ -42,8 +42,9 @@ var _createTextFieldFunc = function (): TextField {
     var textField = new TextField();
     // << creating-textfield
     textField.text = "textField";
+
     return textField;
-}
+};
 
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -57,7 +58,7 @@ export var testSetText = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 export var testSetTextNull = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -69,7 +70,7 @@ export var testSetTextNull = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 export var testSetTextUndefined = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -81,7 +82,7 @@ export var testSetTextUndefined = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 export var testSetTextToZero = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -93,13 +94,14 @@ export var testSetTextToZero = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 function createFormattedString(value: any): FormattedString {
     var span = new Span();
     span.text = value;
     var result = new FormattedString();
     result.spans.push(span);
+
     return result;
 }
 
@@ -113,7 +115,7 @@ export var testSetTextWithSpan = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 export var testSetTextNullWithSpan = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -125,7 +127,7 @@ export var testSetTextNullWithSpan = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 export var testSetTextUndefinedWithSpan = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -137,7 +139,7 @@ export var testSetTextUndefinedWithSpan = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 export var testSetTextToZeroWithSpan = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -149,7 +151,7 @@ export var testSetTextToZeroWithSpan = function () {
         var actualValue = getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
-}
+};
 
 /* tslint:disable */
 export var testSetHintToNumber = function () {
@@ -177,7 +179,7 @@ export var testBindTextDirectlyToModel = function () {
         var options: BindingOptions = {
             sourceProperty: "username",
             targetProperty: "text"
-        }
+        };
         textField.bind(options, model);
         // textField.text is now "john"
         // >> (hide)
@@ -192,7 +194,7 @@ export var testBindTextDirectlyToModel = function () {
         // << (hide)
         // << binding-text-property-second
     });
-}
+};
 
 // Supported for ios only.
 if (isIOS) {
@@ -202,7 +204,7 @@ if (isIOS) {
             textField.color = new Color("red");
             TKUnit.assert(textField.color.ios.CGColor.isEqual(textField.ios.textColor.CGColor), "textField.color");
         });
-    }
+    };
 }
 
 export var testBindTextToBindingContext = function () {
@@ -217,7 +219,7 @@ export var testBindTextToBindingContext = function () {
         var options: BindingOptions = {
             sourceProperty: "username",
             targetProperty: "text"
-        }
+        };
 
         textField.bind(options);
         TKUnit.assert(textField.text === "john", "Actual: " + textField.text + "; Expected: " + "john");
@@ -227,7 +229,7 @@ export var testBindTextToBindingContext = function () {
         TKUnit.assert(textField.text === "mary", "Actual: " + textField.text + "; Expected: " + "mary");
         TKUnit.assert(getNativeText(textField) === "mary", "Actual: " + getNativeText(textField) + "; Expected: " + "mary");
     });
-}
+};
 
 export var testTextIsUpdatedWhenUserTypes = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -240,7 +242,7 @@ export var testTextIsUpdatedWhenUserTypes = function () {
         var actualValue = textField.text;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSetHint = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -254,7 +256,7 @@ export var testSetHint = function () {
         var actualValue = getNativeHint(textField);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testBindHintDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -266,7 +268,7 @@ export var testBindHintDirectlyToModel = function () {
         var options: BindingOptions = {
             sourceProperty: "hint",
             targetProperty: "hint"
-        }
+        };
         textField.bind(options, model);
         // textField.hint is now "type your username here"
         // >> (hide)
@@ -281,7 +283,7 @@ export var testBindHintDirectlyToModel = function () {
         // << (hide)
         // << binding-hint-property-textfield
     });
-}
+};
 
 export var testBindHintToBindingConext = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -295,7 +297,7 @@ export var testBindHintToBindingConext = function () {
         var options: BindingOptions = {
             sourceProperty: "hint",
             targetProperty: "hint"
-        }
+        };
 
         textField.bind(options);
         TKUnit.assert(textField.hint === "type your username here", "Actual: " + textField.hint + "; Expected: " + "type your username here");
@@ -305,7 +307,7 @@ export var testBindHintToBindingConext = function () {
         TKUnit.assert(textField.hint === "type your password here", "Actual: " + textField.text + "; Expected: " + "type your password here");
         TKUnit.assert(getNativeHint(textField) === "type your password here", "Actual: " + getNativeHint(textField) + "; Expected: " + "type your password here");
     });
-}
+};
 
 export var testSetSecure = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -319,7 +321,7 @@ export var testSetSecure = function () {
         var actualValue = getNativeSecure(textField);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSetSecureAndKeyboardTypeNumber = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -332,7 +334,7 @@ export var testSetSecureAndKeyboardTypeNumber = function () {
         var actualValue = getNativeSecure(textField);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testSetKeyboardTypeNumberAndSecure = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -345,7 +347,7 @@ export var testSetKeyboardTypeNumberAndSecure = function () {
         var actualValue = getNativeSecure(textField);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
-}
+};
 
 export var testBindSecureDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -357,7 +359,7 @@ export var testBindSecureDirectlyToModel = function () {
         var options: BindingOptions = {
             sourceProperty: "secure",
             targetProperty: "secure"
-        }
+        };
         textField.bind(options, model);
         // textField.secure is now true
         // >> (hide)
@@ -372,7 +374,7 @@ export var testBindSecureDirectlyToModel = function () {
         // << (hide)
         // << binding-secure-property
     });
-}
+};
 
 export var testBindSecureToBindingConext = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -386,7 +388,7 @@ export var testBindSecureToBindingConext = function () {
         var options: BindingOptions = {
             sourceProperty: "secure",
             targetProperty: "secure"
-        }
+        };
 
         textField.bind(options);
         TKUnit.assert(textField.secure === true, "Actual: " + textField.secure + "; Expected: " + true);
@@ -396,7 +398,7 @@ export var testBindSecureToBindingConext = function () {
         TKUnit.assert(textField.secure === false, "Actual: " + textField.secure + "; Expected: " + false);
         TKUnit.assert(getNativeSecure(textField) === false, "Actual: " + getNativeSecure(textField) + "; Expected: " + false);
     });
-}
+};
 
 var expectedFontSize = 42;
 export var testLocalFontSizeFromCss = function () {
@@ -408,7 +410,7 @@ export var testLocalFontSizeFromCss = function () {
         var actualResult = textField.style.fontSize;
         TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
     });
-}
+};
 
 export var testNativeFontSizeFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -419,7 +421,7 @@ export var testNativeFontSizeFromCss = function () {
         var actualResult = getNativeFontSize(textField);
         helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
     });
-}
+};
 
 export var testNativeFontSizeFromLocal = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -429,7 +431,7 @@ export var testNativeFontSizeFromLocal = function () {
         var actualResult = getNativeFontSize(textField);
         helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
     });
-}
+};
 
 var expectedColorHex = "#FFFF0000";
 var expectedNormalizedColorHex = "#FF0000";
@@ -442,7 +444,7 @@ export var testLocalColorFromCss = function () {
         var actualResult = textField.style.color.hex;
         TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
-}
+};
 
 export var testNativeColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -453,7 +455,7 @@ export var testNativeColorFromCss = function () {
         var actualResult = getNativeColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
-}
+};
 
 export var testNativeColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -463,7 +465,7 @@ export var testNativeColorFromLocal = function () {
         var actualResult = getNativeColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
-}
+};
 
 var expectedBackgroundColorHex = "#FF00FF00";
 var expectedNormalizedBackgroundColorHex = "#00FF00";
@@ -476,7 +478,7 @@ export var testLocalBackgroundColorFromCss = function () {
         var actualResult = textField.style.backgroundColor.hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
-}
+};
 
 export var testNativeBackgroundColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -489,7 +491,7 @@ export var testNativeBackgroundColorFromCss = function () {
         var actualResult = getNativeBackgroundColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
-}
+};
 
 export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -501,7 +503,7 @@ export var testNativeBackgroundColorFromLocal = function () {
         var actualResult = getNativeBackgroundColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
-}
+};
 
 var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
@@ -513,7 +515,7 @@ export var testLocalTextAlignmentFromCss = function () {
         var actualResult = view.style.textAlignment;
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testNativeTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -524,7 +526,7 @@ export var testNativeTextAlignmentFromCss = function () {
         var actualResult = getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testNativeTextAlignmentFromLocal = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -534,13 +536,13 @@ export var testNativeTextAlignmentFromLocal = function () {
         var actualResult = getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testMemoryLeak = function (done) {
     helper.buildUIWithWeakRefAndInteract(_createTextFieldFunc, function (textField) {
         typeTextNatively(textField, "Hello, world!");
     }, done);
-}
+};
 
 export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
     var firstSpan = new Span();
@@ -574,7 +576,7 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = functi
         view.formattedText = null;
         TKUnit.assertEqual(view.text, "");
     });
-}
+};
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
     const view = new TextField();
@@ -637,10 +639,10 @@ export function test_android_ime_actions_move_focus() {
     const stack = new StackLayout();
     const addTextField = () => {
         const tf = new TextField();
-        (<any>tf).returnPress = 0
+        (<any>tf).returnPress = 0;
         tf.on("returnPress", (args) => (<any>args.object).returnPress++);
         stack.addChild(tf);
-    }
+    };
 
     addTextField();
     addTextField();
@@ -649,7 +651,7 @@ export function test_android_ime_actions_move_focus() {
     const assert = (index, count) => {
         const view: any = stack.getChildAt(index);
         TKUnit.assertEqual(view.returnPress, count, `TextField at ${index}, has incorrect returnPress.`);
-    }
+    };
     helper.buildUIAndRunTest(stack, (views: Array<View>) => {
         (stack.getChildAt(0) as TextField).focus();
 

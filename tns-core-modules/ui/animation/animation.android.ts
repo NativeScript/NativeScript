@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { AnimationDefinition, AnimationPromise } from ".";
 import { View } from "../core/view";
 
@@ -47,26 +47,31 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             if (traceEnabled()) {
                 traceWrite("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", traceCategories.Animation);
             }
+
             return easeIn();
         case "easeOut":
             if (traceEnabled()) {
                 traceWrite("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", traceCategories.Animation);
             }
+
             return easeOut();
         case "easeInOut":
             if (traceEnabled()) {
                 traceWrite("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", traceCategories.Animation);
             }
+
             return easeInOut();
         case "linear":
             if (traceEnabled()) {
                 traceWrite("Animation curve resolved to android.view.animation.LinearInterpolator().", traceCategories.Animation);
             }
+
             return linear();
         case "spring":
             if (traceEnabled()) {
                 traceWrite("Animation curve resolved to android.view.animation.BounceInterpolator().", traceCategories.Animation);
             }
+
             return bounce();
         case "ease":
             return (<any>androidx).core.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
@@ -173,6 +178,7 @@ export class Animation extends AnimationBase {
     public cancel(): void {
         if (!this.isPlaying) {
             traceWrite("Animation is not currently playing.", traceCategories.Animation, traceType.warn);
+
             return;
         }
 
@@ -279,7 +285,7 @@ export class Animation extends AnimationBase {
                     delete propertyAnimation.target[key];
                     cb();
                 }
-            }
+            };
         }
 
         let setLocal = this._valueSource === "animation";
