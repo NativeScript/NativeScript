@@ -17,11 +17,6 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
     public static ObjCProtocols = [UIGestureRecognizerDelegate];
 
     public gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
-        // If both gesture recognizers are of type UITapGestureRecognizer, do not allow
-        // simultaneous recognition.
-        if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UITapGestureRecognizer) {
-            return false;
-        }
         return true;
     }
 

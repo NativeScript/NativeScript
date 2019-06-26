@@ -865,6 +865,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this.addPseudoClass(state);
     }
 
+    /**
+     * @deprecated
+     * 
+     * This used to be the way to set attribute values in early {N} versions.
+     * Now attributes are expected to be set as plain properties on the view instances.
+     */
+    public _applyXmlAttribute(attribute: string, value: string): boolean {
+        console.log("ViewBase._applyXmlAttribute(...) is deprecated; set attributes as plain properties instead");
+
+        if (attribute === "style" || attribute === "rows" || attribute === "columns" || attribute === "fontAttributes") {
+            this[attribute] = value;
+
+            return true;
+        }
+
+        return false;
+    }
+
     public setInlineStyle(style: string): void {
         if (typeof style !== "string") {
             throw new Error("Parameter should be valid CSS string!");

@@ -397,8 +397,8 @@ export class CssState {
     private updateMatch() {
         const view = this.viewRef.get();
         if (view && view._styleScope) {
-            this._appliedSelectorsVersion = view._styleScope._getSelectorsVersion();
             this._match = view._styleScope.matchSelectors(view);
+            this._appliedSelectorsVersion = view._styleScope._getSelectorsVersion();
         } else {
             this._match = CssState.emptyMatch;
         }
