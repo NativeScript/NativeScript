@@ -18,7 +18,7 @@ const tests = [
     { name: "to right yellow-blue-pink", backgroundImage: "linear-gradient(to right, yellow, green, pink)"},
     { name: "-45deg green-blue-pink", backgroundImage: "linear-gradient(-45deg, green, blue, pink)"},
     { name: "45deg green-blue-pink", backgroundImage: "linear-gradient(45deg, green, blue, pink)"},
-]
+];
 
 export function onLoaded(args) {
     applyNextStyle(args);

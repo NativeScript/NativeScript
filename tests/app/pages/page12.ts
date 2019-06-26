@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as btns from "tns-core-modules/ui/button";
 import * as tb from "tns-core-modules/ui/text-field";
 import * as gridLayoutModule from "tns-core-modules/ui/layouts/grid-layout";
@@ -53,5 +53,6 @@ export function createPage() {
     gridLayout.addChild(txt2);
 
     page.content = gridLayout;
+
     return page;
 }

@@ -1,7 +1,7 @@
 import { EventData } from "tns-core-modules/data/observable";
 import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
-import { Color } from "tns-core-modules/color"; 
+import { Color } from "tns-core-modules/color";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { ScrollView } from "tns-core-modules/ui/scroll-view";
 
@@ -19,19 +19,19 @@ export function onToggle(args: EventData) {
         debugConsole.text += `> border-color: ${target.borderColor}\n`;
     }
     else if (button.text === "Width") {
-        target[button.id] = target[button.id] ? 0 : 10; 
+        target[button.id] = target[button.id] ? 0 : 10;
         debugConsole.text += `> border-width: ${target.borderWidth}\n`;
     }
     else if (button.text === "Radius") {
-        target[button.id] = target[button.id] ? 0 : 10; 
+        target[button.id] = target[button.id] ? 0 : 10;
         debugConsole.text += `> border-radius: ${target.borderRadius}\n`;
     }
     else if (button.text === "BGColor") {
-        target.backgroundColor = target.backgroundColor ? undefined : green; 
+        target.backgroundColor = target.backgroundColor ? undefined : green;
         debugConsole.text += `> background-color: ${target.backgroundColor}\n`;
     }
     else if (button.text === "BGImage") {
-        target.backgroundImage = target.backgroundImage ? undefined : `~/resources/images/test2.png`; 
+        target.backgroundImage = target.backgroundImage ? undefined : `~/resources/images/test2.png`;
         debugConsole.text += `> background-image: ${target.backgroundImage}\n`;
     }
     else if (button.text === "BGGradient") {

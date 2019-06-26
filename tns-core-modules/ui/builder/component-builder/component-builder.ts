@@ -1,4 +1,4 @@
-﻿// Deifinitions.
+// Deifinitions.
 import { ComponentModule } from ".";
 import { View } from "../../core/view";
 
@@ -102,6 +102,7 @@ const getComponentModuleExports = profile("getComponentModuleExports", (instance
             }
         }
     }
+
     return moduleExports;
 });
 
@@ -193,6 +194,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
     if (instance && instanceModule) {
         componentModule = { component: instance, exports: instanceModule };
     }
+
     return componentModule;
 }
 

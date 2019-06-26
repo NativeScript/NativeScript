@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import * as app from "tns-core-modules/application";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 
@@ -15,7 +15,7 @@ export function test_setTimeout_isDefined() {
         expected = "iOS";
     }
     TKUnit.assertEqual(platformModule.device.os, expected, "device.os");
-};
+}
 
 export function snippet_print_all() {
     // >> platform-current
@@ -35,7 +35,7 @@ export function snippet_print_all() {
     console.log("Screen height (DIPs): " + platformModule.screen.mainScreen.heightDIPs);
     console.log("Screen scale: " + platformModule.screen.mainScreen.scale);
     // << platform-current
-};
+}
 
 export function testIsIOSandIsAndroid() {
     if (isIOS) {

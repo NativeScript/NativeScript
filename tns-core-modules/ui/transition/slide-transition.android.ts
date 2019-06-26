@@ -1,4 +1,4 @@
-﻿import * as transition from "./transition";
+import * as transition from "./transition";
 import * as platform from "../../platform";
 import lazy from "../../utils/lazy";
 
@@ -113,6 +113,7 @@ export class SlideTransition extends transition.Transition {
             animator.setDuration(duration);
         }
         animator.setInterpolator(this.getCurve());
+
         return animator;
     }
 

@@ -11,6 +11,7 @@ export function addRemove(counts: Array<number>, parent: LayoutBase): string {
     counts.forEach((count) => {
         if (count > 10000) {
             result += setResultTime(noValue);
+
             return;
         }
 
@@ -48,6 +49,7 @@ export function setBackgroundColor(counts: Array<number>, parent?: LayoutBase): 
     counts.forEach((count) => {
         if (parent && count > 10000) {
             result += setResultTime(noValue);
+
             return;
         }
 
@@ -70,7 +72,8 @@ export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): str
     counts.forEach((count) => {
         if (count > 10000 && parent) {
             result += setResultTime(noValue);
-            return;            
+
+            return;
         }
 
         const lbl = setup(parent);
@@ -111,6 +114,7 @@ export function setColorWithParents(counts: Array<number>, parent: LayoutBase): 
     counts.forEach((count) => {
         if (count > 10000) {
             result += setResultTime(noValue);
+
             return;
         }
 
@@ -149,6 +153,7 @@ export function setFontSizeWithParents(counts: Array<number>, parent: LayoutBase
     counts.forEach((count) => {
         if (count > 1000) {
             result += setResultTime(noValue);
+
             return;
         }
 
@@ -186,13 +191,14 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
     counts.forEach((count) => {
         if (count > 1000) {
             result += setResultTime(noValue);
+
             return;
         }
 
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
-                style.fontWeight = i % 2 === 0 ? "bold" : "normal"
+                style.fontWeight = i % 2 === 0 ? "bold" : "normal";
             }
         });
         result += setResultTime(time);
@@ -221,6 +227,7 @@ export function setBindingContextWithParents(counts: Array<number>, parent: Layo
     counts.forEach((count) => {
         if (count > 10000) {
             result += setResultTime(noValue);
+
             return;
         }
         setupParents(parent);
@@ -240,6 +247,7 @@ export function setBindingContextWithParentsBound(counts: Array<number>, parent:
     counts.forEach((count) => {
         if (count > 1000) {
             result += setResultTime(noValue);
+
             return;
         }
 
@@ -258,7 +266,7 @@ export function setBindingContextWithParentsBound(counts: Array<number>, parent:
 function setupParents(parent: LayoutBase, bindToContext: boolean = false): void {
     for (let i = 0; i < 3; i++) {
         let stack = new StackLayout();
-        parent.addChild(stack)
+        parent.addChild(stack);
         for (let j = 0; j < 3; j++) {
             let innerStack = new StackLayout();
             stack.addChild(innerStack);
@@ -305,6 +313,7 @@ function executeTest(func: Function): string {
 
     const avg = total / average;
     const res = `${avg.toFixed(2)}`;
+
     return res;
 }
 

@@ -38,6 +38,7 @@ export function getDocument() {
     } catch (e) {
         console.log("ERROR in getDocument(): " + e);
     }
+
     return topMostFrame.domNode.toObject();
 }
 

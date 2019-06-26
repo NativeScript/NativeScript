@@ -11,23 +11,23 @@ export class ImageHelper {
 
     public async compareScreen(imageName: string, timeOutSeconds?: number, tolerance?: number, toleranceType?: ImageOptions) {
         imageName = this.increaseImageName(imageName);
-        const result = await this._driver.compareScreen(imageName, timeOutSeconds, tolerance, toleranceType)
+        const result = await this._driver.compareScreen(imageName, timeOutSeconds, tolerance, toleranceType);
         this._imagesResults.set(imageName, result);
 
         return result;
     }
 
     public async compareElement(imageName: string, element: UIElement, tolerance: number, timeOutSeconds: number, toleranceType: ImageOptions = ImageOptions.pixel) {
-        imageName = this.increaseImageName(imageName);        
-        const result = await this._driver.compareElement(element, imageName, tolerance, timeOutSeconds, toleranceType)
+        imageName = this.increaseImageName(imageName);
+        const result = await this._driver.compareElement(element, imageName, tolerance, timeOutSeconds, toleranceType);
         this._imagesResults.set(imageName, result);
 
         return result;
     }
 
     public async compareRectangle(imageName: string, element: IRectangle, tolerance: number, timeOutSeconds: number, toleranceType: ImageOptions = ImageOptions.pixel) {
-        imageName = this.increaseImageName(imageName);        
-        const result = await this._driver.compareRectangle(element, imageName, timeOutSeconds, tolerance, toleranceType)
+        imageName = this.increaseImageName(imageName);
+        const result = await this._driver.compareRectangle(element, imageName, timeOutSeconds, tolerance, toleranceType);
         this._imagesResults.set(imageName, result);
 
         return result;
@@ -44,7 +44,7 @@ export class ImageHelper {
         });
 
         this.reset();
-        assert.isTrue(!shouldFailTest, `Image comparisson failers`)
+        assert.isTrue(!shouldFailTest, `Image comparisson failers`);
     }
 
     public reset() {

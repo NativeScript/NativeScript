@@ -1,8 +1,8 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { assert } from "chai";
 
-const home = "Home"
-const first = "First"
+const home = "Home";
+const first = "First";
 const modal = "Modal";
 const modalFirst = "Modal First";
 const dialogConfirm = "Dialog";
@@ -33,7 +33,7 @@ export const elementDefaultWaitTimeInSeconds = 10;
 
 export class Screen {
 
-    private _driver: AppiumDriver
+    private _driver: AppiumDriver;
 
     constructor(driver: AppiumDriver) {
         this._driver = driver;

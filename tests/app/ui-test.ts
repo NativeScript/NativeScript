@@ -39,6 +39,7 @@ export class UITest<T extends View> implements trace.TraceWriter {
         const pageFactory = () => {
             const page = new Page();
             this._testPage = page;
+
             return page;
         };
 

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 import * as datePickerTestsNative from "./date-picker-tests-native";
 import * as color from "tns-core-modules/color";
@@ -46,6 +46,7 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     public create() {
         const datePicker = new datePickerModule.DatePicker();
         datePicker.id = "DatePicker";
+
         return datePicker;
     }
     

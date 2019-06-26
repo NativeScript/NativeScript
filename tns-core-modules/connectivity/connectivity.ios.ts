@@ -1,4 +1,4 @@
-﻿export enum connectionType {
+export enum connectionType {
     none = 0,
     wifi = 1,
     mobile = 2,
@@ -14,6 +14,7 @@ function _createReachability(host?: string): any {
             sa_len: 16,
             sa_family: 2
         });
+
         return SCNetworkReachabilityCreateWithAddress(null, zeroAddress);
     }
 }
@@ -25,11 +26,13 @@ function _getReachabilityFlags(host?: string): number {
     if (!gotFlags) {
         return null;
     }
+
     return flagsRef.value;
 }
 
 function _getConnectionType(host?: string): number {
     const flags = _getReachabilityFlags(host);
+
     return _getConnectionTypeFromFlags(flags);
 }
 

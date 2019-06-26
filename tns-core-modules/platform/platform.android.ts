@@ -1,4 +1,4 @@
-﻿/* tslint:disable:class-name */
+/* tslint:disable:class-name */
 import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from ".";
 import * as appModule from "../application";
 
@@ -123,6 +123,7 @@ class MainScreen implements ScreenMetricsDefinition {
             this._metrics = new android.util.DisplayMetrics();
             this.initMetrics();
         }
+
         return this._metrics;
     }
 

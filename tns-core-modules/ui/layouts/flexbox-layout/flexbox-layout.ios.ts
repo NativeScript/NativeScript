@@ -97,6 +97,7 @@ class Order {
         if (this.order !== another.order) {
             return this.order - another.order;
         }
+
         return this.index - another.index;
     }
 }
@@ -147,12 +148,14 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             let reorderedIndex = this._reorderedIndices[index];
             child = this.measureContext.childAt(reorderedIndex);
         }
+
         return child;
     }
 
     private _createReorderedIndices(): number[] {
         let childCount = this.measureContext.childrenCount;
         let orders = this._createOrders(childCount);
+
         return this._sortOrdersIntoReorderedIndices(childCount, orders);
     }
 
@@ -168,6 +171,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             reorderedIndices[i] = order.index;
             this._orderCache[i] = order.order;
         });
+
         return reorderedIndices;
     }
 
@@ -180,6 +184,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             order.index = i;
             orders.push(order);
         }
+
         return orders;
     }
 
@@ -201,6 +206,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -286,7 +292,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 // Omit divider
 
                 if (this.flexWrap !== FlexWrap.WRAP_REVERSE) {
-                    flexLine._maxBaseline = Math.max(flexLine._maxBaseline, FlexboxLayout.getBaseline(child) + lp.effectiveMarginTop)
+                    flexLine._maxBaseline = Math.max(flexLine._maxBaseline, FlexboxLayout.getBaseline(child) + lp.effectiveMarginTop);
                 } else {
                     flexLine._maxBaseline = Math.max(flexLine._maxBaseline, child.getMeasuredHeight() - FlexboxLayout.getBaseline(child) + lp.effectiveMarginBottom);
                 }
@@ -498,6 +504,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let childIndex = startIndex;
         if (flexLine._totalFlexGrow <= 0 || maxMainSize < flexLine._mainSize) {
             childIndex += flexLine._itemCount;
+
             return childIndex;
         }
         let sizeBeforeExpand = flexLine._mainSize;
@@ -556,6 +563,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         if (needsReexpand && sizeBeforeExpand !== flexLine._mainSize) {
             this._expandFlexItems(flexLine, flexDirection, maxMainSize, paddingAlongMainAxis, startIndex);
         }
+
         return childIndex;
     }
 
@@ -564,6 +572,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let sizeBeforeShrink = flexLine._mainSize;
         if (flexLine._totalFlexShrink <= 0 || maxMainSize > flexLine._mainSize) {
             childIndex += flexLine.itemCount;
+
             return childIndex;
         }
         let needsReshrink = false;
@@ -598,9 +607,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
                     const childWidthMeasureSpec = makeMeasureSpec(roundedCalculatedWidth, EXACTLY);
 
-                    // NOTE: for controls that support internal content wrapping (e.g. UILabel) reducing the width 
-                    // might result in increased height e.g. text that could be shown on one line for larger 
-                    // width needs to be wrapped in two when width is reduced. 
+                    // NOTE: for controls that support internal content wrapping (e.g. UILabel) reducing the width
+                    // might result in increased height e.g. text that could be shown on one line for larger
+                    // width needs to be wrapped in two when width is reduced.
                     // As a result we cannot unconditionally measure with EXACTLY the current measured height
                     const childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentHeightMeasureSpec,
                         lp.effectivePaddingTop + lp.effectivePaddingBottom + lp.effectiveMarginTop
@@ -642,6 +651,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         if (needsReshrink && sizeBeforeShrink !== flexLine._mainSize) {
             this._shrinkFlexItems(flexLine, flexDirection, maxMainSize, paddingAlongMainAxis, startIndex);
         }
+
         return childIndex;
     }
 
@@ -1342,6 +1352,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 }
                 break;
         }
+
         return layout.makeMeasureSpec(resultSize, resultMode);
     }
 }

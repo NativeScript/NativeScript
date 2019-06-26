@@ -53,7 +53,7 @@ export function test_tabview_rootview_css_applied() {
 
     TKUnit.assert(rootView instanceof TabView);
     helper.assertTabSelectedTabTextColor(rootView, "#0000FF");
-};
+}
 
 export function test_gridlayout_rootview_css_applied() {
     var entry = {
@@ -67,7 +67,7 @@ export function test_gridlayout_rootview_css_applied() {
 
     TKUnit.assert(rootView instanceof GridLayout);
     helper.assertViewBackgroundColor(rootView, "#0000FF");
-};
+}
 
 export function test_gridlayout_rootview_layout_updates() {
     layout_invalidate_test("ui/root-view/root-modules/gridlayout-root");

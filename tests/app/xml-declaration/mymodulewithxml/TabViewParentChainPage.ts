@@ -7,5 +7,5 @@ export function loaded(args) {
 }
 
 export function onNavigatingTo(args) {
-    (<Page>args.object).bindingContext = args.context; 
+    (<Page>args.object).bindingContext = args.context;
 }

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { Page } from "tns-core-modules/ui/page";
 import { isAndroid } from "tns-core-modules/platform";
@@ -72,7 +72,7 @@ export function test_reset_frame_to_frame() {
     const frameStack2 = _stack();
     TKUnit.assertEqual(rootView2, testFrameRoot2.root);
     TKUnit.assertEqual(frameStack2.length, 1);
-};
+}
 
 export function test_reset_frame_to_tab() {
     const testFrameRoot = createTestFrameRootEntry();
@@ -92,7 +92,7 @@ export function test_reset_frame_to_tab() {
     const frameStack2 = _stack();
     TKUnit.assertEqual(rootView2, testTabRoot.root);
     TKUnit.assertEqual(frameStack2.length, 2);
-};
+}
 
 export function test_reset_tab_to_frame() {
     const testTabRoot = createTestTabRootEntry();
@@ -112,7 +112,7 @@ export function test_reset_tab_to_frame() {
     const frameStack1 = _stack();
     TKUnit.assertEqual(rootView1, testFrameRoot.root);
     TKUnit.assertEqual(frameStack1.length, 1);
-};
+}
 
 export function test_reset_tab_to_tab() {
     const testTabRoot1 = createTestTabRootEntry();
@@ -132,7 +132,7 @@ export function test_reset_tab_to_tab() {
     const frameStack2 = _stack();
     TKUnit.assertEqual(rootView2, testTabRoot2.root);
     TKUnit.assertEqual(frameStack2.length, 2);
-};
+}
 
 export function test_reset_during_tab_index_change() {
     const testTabRoot = createTestTabRootEntry();

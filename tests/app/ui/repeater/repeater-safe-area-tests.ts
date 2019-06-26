@@ -21,19 +21,20 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             list: root.getViewById("repeater") as Repeater
         };
-    };
+    }
 
     private repeater_in_full_screen(repeater: Repeater, pageOptions?: helper.PageOptions) {
         const l = left(repeater);

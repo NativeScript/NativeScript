@@ -1,4 +1,4 @@
-﻿import { createPageAndNavigate } from "./action-bar-tests-common";
+import { createPageAndNavigate } from "./action-bar-tests-common";
 import * as PageModule from "tns-core-modules/ui/page";
 import * as TKUnit from "../../tk-unit";
 import * as LabelModule from "tns-core-modules/ui/label";
@@ -20,7 +20,7 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         navBarIsVisible = !page.actionBar.nativeView.hidden;
         console.log(navBarIsVisible);
         console.log(page.actionBar.nativeView.hidden);
-    }
+    };
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
@@ -32,6 +32,7 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -56,7 +57,7 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
         for (i = menuItems.length - 1; i >= 0; i--) {
             page.actionBar.actionItems.removeItem(menuItems[i]);
         }
-    }
+    };
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
@@ -68,6 +69,7 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 

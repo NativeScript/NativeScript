@@ -1,4 +1,4 @@
-﻿import { ItemEventData, ItemsSource } from ".";
+import { ItemEventData, ItemsSource } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, unsetValue, Observable, Color,
     separatorColorProperty, itemTemplatesProperty
@@ -29,6 +29,7 @@ function initializeItemClickListener(): void {
     class ItemClickListenerImpl extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
         constructor(public owner: ListView) {
             super();
+
             return global.__native(this);
         }
 
@@ -175,11 +176,13 @@ export class ListView extends ListViewBase {
         let nativeView = this.nativeViewProtected;
         const start = nativeView.getFirstVisiblePosition();
         const end =  nativeView.getLastVisiblePosition();
+
         return ( index >= start && index <= end );
     }
 
     [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
         let nativeView = this.nativeViewProtected;
+
         return {
             dividerHeight: nativeView.getDividerHeight(),
             divider: nativeView.getDivider()
@@ -219,6 +222,7 @@ function ensureListViewAdapterClass() {
     class ListViewAdapter extends android.widget.BaseAdapter {
         constructor(public owner: ListView) {
             super();
+
             return global.__native(this);
         }
 
@@ -229,6 +233,7 @@ function ensureListViewAdapterClass() {
         public getItem(i: number) {
             if (this.owner && this.owner.items && i < this.owner.items.length) {
                 let getItem = (<ItemsSource>this.owner.items).getItem;
+
                 return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
             }
 
@@ -241,6 +246,7 @@ function ensureListViewAdapterClass() {
             if (this.owner && item && this.owner.items) {
                 id = this.owner.itemIdGenerator(item, i, this.owner.items);
             }
+
             return long(id);
         }
 
@@ -255,6 +261,7 @@ function ensureListViewAdapterClass() {
         public getItemViewType(index: number) {
             let template = this.owner._getItemTemplate(index);
             let itemViewType = this.owner._itemTemplatesInternal.indexOf(template);
+
             return itemViewType;
         }
 

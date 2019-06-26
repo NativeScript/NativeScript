@@ -6,7 +6,7 @@ const setLabelTextAndLog = (args, text: string) => {
     const label = <Label>page.getViewById("resultLabel");
     label.set("text", text);
     console.log("on button tap");
-}
+};
 
 export function onTap(args: EventData) {
     setLabelTextAndLog(args, "onButtonTapResult");

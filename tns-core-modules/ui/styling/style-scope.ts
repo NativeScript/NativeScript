@@ -111,10 +111,12 @@ class CSSSource {
         const appPath = knownFolders.currentApp().path;
         if (!uri.startsWith(appPath)) {
             traceWrite(`${uri} does not start with ${appPath}`, traceCategories.Error, traceMessageType.error);
+
             return uri;
         }
 
         const relativeUri = `.${uri.substr(appPath.length)}`;
+
         return relativeUri;
     }
 
@@ -129,11 +131,13 @@ class CSSSource {
         }
 
         const file = CSSSource.resolveCSSPathFromURL(url);
+
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
 
     public static fromFileImport(url: string, keyframes: KeyframesMap, importSource: string): CSSSource {
         const file = CSSSource.resolveCSSPathFromURL(url, importSource);
+
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
 
@@ -141,6 +145,7 @@ class CSSSource {
     public static resolveCSSPathFromURL(url: string, importSource?: string): string {
         const app = knownFolders.currentApp().path;
         const file = resolveFileNameFromUrl(url, app, File.exists, importSource);
+
         return file;
     }
 
@@ -193,9 +198,11 @@ class CSSSource {
                     const stylesheet = cssparser.parseAStylesheet();
                     const cssNS = new CSSNativeScript();
                     this._ast = cssNS.parseStylesheet(stylesheet);
+
                     return;
                 case "rework":
                     this._ast = parseCss(this._source, { source: this._file });
+
                     return;
             }
         }
@@ -217,6 +224,7 @@ class CSSSource {
         const urlFromImportObject = importObject => {
             const importItem = importObject["import"] as string;
             const urlMatch = importItem && importItem.match(pattern);
+
             return urlMatch && urlMatch[2];
         };
 
@@ -238,6 +246,7 @@ class CSSSource {
             .map(getCssFile);
 
         const selectors = cssFiles.map(file => (file && file.selectors) || []);
+
         return selectors.reduce((acc, val) => acc.concat(val), []);
     }
 
@@ -273,6 +282,7 @@ export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
         }
     }
     if (changed) { mergeCssSelectors(); }
+
     return changed;
 }
 
@@ -289,6 +299,7 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): 
         applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
         mergeCssSelectors();
     }
+
     return changed;
 }
 
@@ -606,7 +617,7 @@ export class StyleScope {
     }
 
     public addCss(cssString: string, cssFileName?: string): void {
-        this.appendCss(cssString, cssFileName)
+        this.appendCss(cssString, cssFileName);
     }
 
     public addCssFile(cssFileName: string): void {
@@ -703,11 +714,13 @@ export class StyleScope {
     @profile
     public matchSelectors(view: ViewBase): SelectorsMatch<ViewBase> {
         this.ensureSelectors();
+
         return this._selectors.query(view);
     }
 
     public query(node: Node): SelectorCore[] {
         this.ensureSelectors();
+
         return this._selectors.query(node).selectors;
     }
 
@@ -785,6 +798,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
     importSourceParts.pop();
     // remove element in case of dot-segment for parent directory or add file name
     fileNameParts.forEach(p => isParentDirectory(p) ? importSourceParts.pop() : importSourceParts.push(p));
+
     return importSourceParts.join(path.separator);
 }
 

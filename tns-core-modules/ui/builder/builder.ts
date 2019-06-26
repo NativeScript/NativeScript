@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { LoadOptions } from ".";
 import { View, ViewBase, Template, KeyedTemplate } from "../core/view";
 import { ViewEntry } from "../frame";
@@ -32,12 +32,14 @@ export function parse(value: string | Template, context: any): View {
     } else {
         const exports = context ? getExports(context) : undefined;
         const componentModule = parseInternal(value, exports);
+
         return componentModule && componentModule.component;
     }
 }
 
 export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
     const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
+
     return parseInternal(dummyComponent, context).component["itemTemplates"];
 }
 
@@ -63,6 +65,7 @@ export function _loadPage(moduleNamePath: string, fileName: string, context?: an
     if (componentView && moduleNamePath) {
         markAsModuleRoot(componentView, moduleNamePath);
     }
+
     return componentView;
 }
 
@@ -74,13 +77,14 @@ const loadModule = profile("loadModule", (moduleNamePath: string, entry: ViewEnt
         let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
         if (moduleExportsResolvedPath) {
             // Exclude extension when doing require.
-            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
+            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3);
+
             return global.loadModule(moduleExportsResolvedPath);
         }
     }
 
     return null;
-})
+});
 
 const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, moduleExports: any): View => {
     // Possible XML file path.
@@ -92,7 +96,7 @@ const viewFromBuilder = profile("viewFromBuilder", (moduleNamePath: string, modu
     // };
 
     return _loadPage(moduleNamePath, fileName, moduleExports);
-})
+});
 
 export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {
     if (entry.create) {
@@ -165,7 +169,7 @@ function loadInternal(fileName: string, context?: any, moduleNamePath?: string):
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
     } else if (fileName && File.exists(fileName)) {
         const file = File.fromPath(fileName);
-        const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message) });
+        const text = file.readTextSync((error) => { throw new Error("Error loading file " + fileName + " :" + error.message); });
         componentModule = parseInternal(text, context, fileName, moduleNamePath);
     }
 
@@ -212,7 +216,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
             const jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
             if (jsFilePath) {
                 // Component has code file.
-                subExports = global.loadModule(jsFilePath)
+                subExports = global.loadModule(jsFilePath);
             }
         }
 
@@ -318,6 +322,7 @@ namespace xml2ui {
         private _next: XmlConsumer;
         public pipe<Next extends XmlConsumer>(next: Next) {
             this._next = next;
+
             return next;
         }
         protected next(args: xml.ParserEvent) {
@@ -362,8 +367,9 @@ namespace xml2ui {
         return (e: Error, p: xml.Position) => {
             const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
             e = new SourceError(e, source, "Building UI from XML.");
+
             return e;
-        }
+        };
     }
 
     interface SourceTracker {
@@ -376,7 +382,7 @@ namespace xml2ui {
                 const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
                 Source.set(component, source);
             }
-        }
+        };
     }
 
     export class PlatformFilter extends XmlProducerBase implements XmlProducer, XmlConsumer {
@@ -391,6 +397,7 @@ namespace xml2ui {
                     }
 
                     this.currentPlatformContext = args.elementName;
+
                     return;
                 }
             }
@@ -398,6 +405,7 @@ namespace xml2ui {
             if (args.eventType === xml.ParserEventType.EndElement) {
                 if (PlatformFilter.isPlatform(args.elementName)) {
                     this.currentPlatformContext = undefined;
+
                     return;
                 }
             }
@@ -412,6 +420,7 @@ namespace xml2ui {
         private static isPlatform(value: string): boolean {
             if (value) {
                 const toLower = value.toLowerCase();
+
                 return toLower === android || toLower === ios;
             }
 
@@ -576,6 +585,7 @@ namespace xml2ui {
                 let childParser = new TemplateParser(this, this.templateProperty, false);
                 childParser["key"] = args.attributes["key"];
                 this._childParsers.push(childParser);
+
                 return childParser;
             }
 
@@ -590,6 +600,7 @@ namespace xml2ui {
                         });
                     }
                     this._value = templates;
+
                     return this.parent.parse(args);
                 }
             }
@@ -641,6 +652,7 @@ namespace xml2ui {
                     //Ignore the default ...tns.xsd namespace URL
                     namespace = undefined;
                 }
+
                 return getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath, !this.currentRootView);
             }
         }
@@ -687,6 +699,7 @@ namespace xml2ui {
                             sourceTracker: this.sourceTracker
                         });
                         complexProperty.parser = parser;
+
                         return parser;
                     }
 
