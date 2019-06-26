@@ -1,4 +1,4 @@
-import { PlatformContext } from "./"
+import { PlatformContext } from "./";
 const MIN_WH: string = "minWH";
 const MIN_W: string = "minW";
 const MIN_H: string = "minH";
@@ -27,7 +27,7 @@ const minWidthHeightQualifier: QualifierSpec = {
 
         return PRIORITY_STEP - (actualLength - numVal);
     }
-}
+};
 
 const minWidthQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
@@ -47,7 +47,7 @@ const minWidthQualifier: QualifierSpec = {
 
         return PRIORITY_STEP - (actualWidth - numVal);
     }
-}
+};
 
 const minHeightQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
@@ -65,9 +65,9 @@ const minHeightQualifier: QualifierSpec = {
             return -1;
         }
 
-        return PRIORITY_STEP - (actualHeight - numVal)
+        return PRIORITY_STEP - (actualHeight - numVal);
     }
-}
+};
 
 const platformQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
@@ -78,7 +78,7 @@ const platformQualifier: QualifierSpec = {
     getMatchValue(value: string, context: PlatformContext): number {
         return value === context.os.toLowerCase() ? 1 : -1;
     }
-}
+};
 
 const orientationQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
@@ -88,9 +88,10 @@ const orientationQualifier: QualifierSpec = {
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const isLandscape: number = (context.width > context.height) ? 1 : -1;
+
         return (value === "land") ? isLandscape : -isLandscape;
     }
-}
+};
 
 // List of supported qualifiers ordered by priority
 const supportedQualifiers: Array<QualifierSpec> = [
@@ -127,6 +128,7 @@ function checkQualifier(value: string, context: PlatformContext) {
             if (result > 0) {
                 result += (supportedQualifiers.length - i) * PRIORITY_STEP;
             }
+
             return result;
         }
     }
@@ -135,7 +137,7 @@ function checkQualifier(value: string, context: PlatformContext) {
 }
 
 export function findMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string {
-    let bestValue = -1
+    let bestValue = -1;
     let result: string = null;
 
     for (let i = 0; i < candidates.length; i++) {

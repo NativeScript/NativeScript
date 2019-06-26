@@ -1,6 +1,6 @@
 import { createViewFromEntry } from "tns-core-modules/ui/builder";
 import { assertEqual, assertNull, assertThrows, assertNotNull, assert } from "../../tk-unit";
-import { _setResolver, ModuleNameResolver, PlatformContext } from "tns-core-modules/module-name-resolver"
+import { _setResolver, ModuleNameResolver, PlatformContext } from "tns-core-modules/module-name-resolver";
 import { Button } from "tns-core-modules/ui/button";
 import { navigate } from "../../ui-helper";
 import { Page, Color } from "tns-core-modules/ui/page";
@@ -9,7 +9,7 @@ const testPrefix = "bundle-file-qualifiers-tests";
 let modulesToCleanup: string[] = [];
 function registerTestModule(name, loader: (name: string) => void) {
     modulesToCleanup.push(name);
-    global.registerModule(name, loader)
+    global.registerModule(name, loader);
 }
 
 export function setUp() {
@@ -38,7 +38,7 @@ function createViewFromEntryAndNavigate(): Page {
 }
 
 function loadRightCss() {
-    return `.test-class { color: green }`
+    return `.test-class { color: green }`;
 }
 
 function loadRightXml() {
@@ -54,7 +54,7 @@ function loadRightJS() {
         testEvent: () => {
             testEventCalled = true;
         }
-    }
+    };
 }
 
 function loadRightJS_CreatePage() {
@@ -65,23 +65,24 @@ function loadRightJS_CreatePage() {
             btn.id = "test-id";
             btn.className = "test-class";
             btn.text = "right";
-            btn.on("tap", () => { testEventCalled = true; })
+            btn.on("tap", () => { testEventCalled = true; });
             page.content = btn;
+
             return page;
         }
-    }
+    };
 }
 
 function loadWrongCss(name: string) {
-    throw new Error(`Loading wrong CSS module: ${name}`)
+    throw new Error(`Loading wrong CSS module: ${name}`);
 }
 
 function loadWrongXml(name: string) {
-    throw new Error(`Loading wrong XML module: ${name}`)
+    throw new Error(`Loading wrong XML module: ${name}`);
 }
 
 function loadWrongJS(name: string) {
-    throw new Error(`Loading wrong JS module: ${name}`)
+    throw new Error(`Loading wrong JS module: ${name}`);
 }
 
 function assertXmlCss(btn: Button) {
@@ -111,19 +112,19 @@ export function testPageWithXmlCssJs_NoQualifiers() {
     const page = createViewFromEntryAndNavigate();
 
     // Assert
-    assertXmlCssJs(page.getViewById("test-id"))
+    assertXmlCssJs(page.getViewById("test-id"));
 }
 
 export function testPageWithJsCss_NoXML_NoQualifiers() {
     // Arrange
-    registerTestModule(`${testPrefix}/test`, loadRightJS_CreatePage)
+    registerTestModule(`${testPrefix}/test`, loadRightJS_CreatePage);
     registerTestModule(`${testPrefix}/test.css`, loadRightCss);
 
     // Act
     const page = createViewFromEntryAndNavigate();
 
     // Assert
-    assertXmlCssJs(page.getViewById("test-id"))
+    assertXmlCssJs(page.getViewById("test-id"));
 }
 
 export function testPageWithXmlCss_NoJS_NoQualifiers() {
@@ -211,7 +212,7 @@ export function testPageWithXmlCss_NoJS_XmlQualifier() {
 
 export function testPageWithJsCss_NoXML_JsQualifier() {
     // Arrange
-    registerTestModule(`${testPrefix}/test`, loadWrongJS)
+    registerTestModule(`${testPrefix}/test`, loadWrongJS);
     registerTestModule(`${testPrefix}/test.land`, loadRightJS_CreatePage);
     registerTestModule(`${testPrefix}/test.css`, loadRightCss);
 
@@ -240,7 +241,7 @@ export function testPageWithXmlCssJs_WithCssFile_NoQualifiers() {
     const page = createViewFromEntryAndNavigate();
 
     // Assert
-    assertXmlCssJs(page.getViewById("test-id"))
+    assertXmlCssJs(page.getViewById("test-id"));
 }
 
 export function testPageWithXmlCssJs_WithCssFile_WithQualifiers() {
@@ -255,7 +256,7 @@ export function testPageWithXmlCssJs_WithCssFile_WithQualifiers() {
     const page = createViewFromEntryAndNavigate();
 
     // Assert
-    assertXmlCssJs(page.getViewById("test-id"))
+    assertXmlCssJs(page.getViewById("test-id"));
 }
 
 function loadPageXmlWithCodeFile() {
@@ -275,7 +276,7 @@ export function testPageWithXmlCssJs_WithCodeFile_NoQualifiers() {
     const page = createViewFromEntryAndNavigate();
 
     // Assert
-    assertXmlCssJs(page.getViewById("test-id"))
+    assertXmlCssJs(page.getViewById("test-id"));
 }
 
 export function testPageWithXmlCssJs_WithCodeFile_WithQualifiers() {
@@ -289,7 +290,7 @@ export function testPageWithXmlCssJs_WithCodeFile_WithQualifiers() {
     const page = createViewFromEntryAndNavigate();
 
     // Assert
-    assertXmlCssJs(page.getViewById("test-id"))
+    assertXmlCssJs(page.getViewById("test-id"));
 }
 
 // --------------------------------------------------------------
@@ -390,7 +391,7 @@ function loadCodeCustomComponentJS() {
             this.id = "test-id";
             this.className = "test-class";
             this.text = "right";
-            this.on("tap", () => { testEventCalled = true; })
+            this.on("tap", () => { testEventCalled = true; });
         }
     }
 

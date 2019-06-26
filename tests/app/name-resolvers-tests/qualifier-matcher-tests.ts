@@ -7,35 +7,35 @@ export const androidPhonePortraitContext: PlatformContext = {
     height: 640,
     deviceType: enums.DeviceType.Phone,
     os: "android"
-}
+};
 
 export const androidPhoneLandscapeContext: PlatformContext = {
     width: 640,
     height: 360,
     deviceType: enums.DeviceType.Phone,
     os: "android"
-}
+};
 
 export const androidTabletPortraitContext: PlatformContext = {
     width: 600,
     height: 960,
     deviceType: enums.DeviceType.Tablet,
     os: "android"
-}
+};
 
 export const iPhonePortraitContext: PlatformContext = {
     width: 320,
     height: 480,
     deviceType: enums.DeviceType.Phone,
     os: "ios"
-}
+};
 
 export const iPhoneLandscapeContext: PlatformContext = {
     width: 480,
     height: 320,
     deviceType: enums.DeviceType.Phone,
     os: "ios"
-}
+};
 
 export function test_findFileMatch_fileName() {
     var candidates: Array<string> = [
@@ -44,8 +44,8 @@ export function test_findFileMatch_fileName() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml")
-};
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml");
+}
 
 export function test_findFileMatch_os_android() {
     var candidates: Array<string> = [
@@ -55,8 +55,8 @@ export function test_findFileMatch_os_android() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.android.xml")
-};
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.android.xml");
+}
 
 export function test_findFileMatch_os_ios() {
     var candidates: Array<string> = [
@@ -66,8 +66,8 @@ export function test_findFileMatch_os_ios() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, iPhonePortraitContext, "test.ios.xml")
-};
+    findMatchTemplate(candidates, iPhonePortraitContext, "test.ios.xml");
+}
 
 export function test_findFileMatch_os_fallback() {
     var candidates: Array<string> = [
@@ -76,8 +76,8 @@ export function test_findFileMatch_os_fallback() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml")
-};
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml");
+}
 
 export function test_findFileMatch_minWH_fallback() {
     var candidates: Array<string> = [
@@ -86,7 +86,7 @@ export function test_findFileMatch_minWH_fallback() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml")
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml");
 }
 
 export function test_findFileMatch_minWH_best_value() {
@@ -99,7 +99,7 @@ export function test_findFileMatch_minWH_best_value() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml")
+    findMatchTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml");
 }
 
 export function test_findFileMatch_minW_fallback() {
@@ -109,7 +109,7 @@ export function test_findFileMatch_minW_fallback() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml")
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.xml");
 }
 
 export function test_findFileMatch_minW_best_value() {
@@ -122,7 +122,7 @@ export function test_findFileMatch_minW_best_value() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidTabletPortraitContext, "test.minW600.xml")
+    findMatchTemplate(candidates, androidTabletPortraitContext, "test.minW600.xml");
 }
 
 export function test_findFileMatch_minH_fallback() {
@@ -132,7 +132,7 @@ export function test_findFileMatch_minH_fallback() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhoneLandscapeContext, "test.xml")
+    findMatchTemplate(candidates, androidPhoneLandscapeContext, "test.xml");
 }
 
 export function test_findFileMatch_minH_best_value() {
@@ -145,7 +145,7 @@ export function test_findFileMatch_minH_best_value() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.minH600.xml")
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.minH600.xml");
 }
 
 export function test_findFileMatch_orientation_fallback() {
@@ -155,7 +155,7 @@ export function test_findFileMatch_orientation_fallback() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidTabletPortraitContext, "test.xml")
+    findMatchTemplate(candidates, androidTabletPortraitContext, "test.xml");
 }
 
 export function test_findFileMatch_orientation_portrait() {
@@ -166,7 +166,7 @@ export function test_findFileMatch_orientation_portrait() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidTabletPortraitContext, "test.port.xml")
+    findMatchTemplate(candidates, androidTabletPortraitContext, "test.port.xml");
 }
 
 export function test_findFileMatch_orientation_landscape() {
@@ -177,7 +177,7 @@ export function test_findFileMatch_orientation_landscape() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhoneLandscapeContext, "test.land.xml")
+    findMatchTemplate(candidates, androidPhoneLandscapeContext, "test.land.xml");
 }
 
 export function test_findFileMatch_choose_most_specific_file() {
@@ -188,7 +188,7 @@ export function test_findFileMatch_choose_most_specific_file() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidPhonePortraitContext, "test.android.port.xml")
+    findMatchTemplate(candidates, androidPhonePortraitContext, "test.android.port.xml");
 }
 
 export function test_findFileMatch_with_multiple_matches_loads_by_priority() {
@@ -203,7 +203,7 @@ export function test_findFileMatch_with_multiple_matches_loads_by_priority() {
         "other.xml"
     ];
 
-    findMatchTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml")
+    findMatchTemplate(candidates, androidTabletPortraitContext, "test.minWH600.xml");
 }
 
 function findMatchTemplate(candidates: Array<string>, context: PlatformContext, expected: string) {

@@ -36,7 +36,7 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
 
     private getCandidates(path: string, ext: string): Array<string> {
         const candidates = this.moduleListProvider()
-            .filter((moduleName) => moduleName.startsWith(path) && (!ext || moduleName.endsWith(ext)))
+            .filter((moduleName) => moduleName.startsWith(path) && (!ext || moduleName.endsWith(ext)));
 
         return candidates;
     }

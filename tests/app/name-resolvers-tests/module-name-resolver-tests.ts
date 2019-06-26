@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import { ModuleNameResolver, ModuleListProvider } from "tns-core-modules/module-name-resolver";
 
 import {
@@ -16,8 +16,8 @@ const moduleProvider: ModuleListProvider = () => {
         "name-resolvers-tests/files/test.land.xml",
         "name-resolvers-tests/files/test.minWH600.xml",
         "name-resolvers-tests/files/test.xml",
-    ]
-}
+    ];
+};
 
 export function test_module_name_resolver_with_android_phone_portrait() {
     const moduleResolver = new ModuleNameResolver(androidPhonePortraitContext, moduleProvider);

@@ -39,7 +39,7 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
     let componentModule: ComponentModule;
 
     if (typeof pathOrOptions === "string") {
-        const moduleName = sanitizeModuleName(pathOrOptions)
+        const moduleName = sanitizeModuleName(pathOrOptions);
         componentModule = loadInternal(moduleName, context);
     } else {
         componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page, true);

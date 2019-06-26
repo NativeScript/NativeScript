@@ -24,8 +24,8 @@ global.registerModule = function (name: string, loader: ModuleLoader): void {
 
 global._unregisterModule = function (name: string): void {
     // console.log("[global._unregisterModule]", name);
-    modules.delete(name)
-}
+    modules.delete(name);
+};
 
 interface Context {
     keys(): string[];
@@ -114,7 +114,7 @@ global.loadModule = function (name: string): any {
 
 global.getRegisteredModules = function (): string[] {
     return Array.from(modules.keys());
-}
+};
 
 global.zonedCallback = function (callback: Function): Function {
     if ((<any>global).zone) {

@@ -35,7 +35,7 @@ export function test_custom_component_rootview_css_applied() {
     TKUnit.assertNotNull(rootView);
     TKUnit.assertEqual(rootView.className, "MyStackLayoutRoot", "Expected result custom control is created");
     helper.assertViewBackgroundColor(rootView, "#0000FF");
-};
+}
 
 export function test_custom_component_rootview_layout_updates() {
     layout_invalidate_test("./ui/root-view/root-modules/custom-component-root");
