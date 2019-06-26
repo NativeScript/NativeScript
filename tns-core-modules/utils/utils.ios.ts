@@ -50,7 +50,8 @@ Object.assign(layout, layoutCommon);
 
 export module ios {
     // TODO: remove for NativeScript 7.0
-    export function _getter<T>(_this: any, property: T | { (): T }): T {
+    export function getter<T>(_this: any, property: T | { (): T }): T {
+        console.log("utils.ios.getter() is deprecated; use the respective native property instead");
         if (typeof property === "function") {
             return (<{ (): T }>property).call(_this);
         } else {
