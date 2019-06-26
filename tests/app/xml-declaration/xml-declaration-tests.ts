@@ -210,7 +210,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
         });
         p.bindingContext = obj;
 
-        TKUnit.waitUntilReady(() => ctrl !== null);
+        TKUnit.waitUntilReady(() => !!ctrl);
         TKUnit.assert((<any>ctrl).customCodeLoaded, "Parse should resolve exports for templates from custom code file.");
     };
 
@@ -589,7 +589,7 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplat
             ctrl = args.view
         });
         p.bindingContext = obj;
-        TKUnit.waitUntilReady(() => ctrl);
+        TKUnit.waitUntilReady(() => !!ctrl);
         TKUnit.assertNotNull(ctrl)
         TKUnit.assertEqual(ctrl.className, "MyStackLayout", "Expected result custom control is created");
     };
@@ -609,7 +609,7 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
             ctrl = args.view
         });
         p.bindingContext = obj;
-        TKUnit.waitUntilReady(() => ctrl);
+        TKUnit.waitUntilReady(() => !!ctrl);
         TKUnit.assert(ctrl instanceof listViewModule.ListView, "Expected result: ListView!; Actual result: " + ctrl);
     };
 
@@ -644,7 +644,7 @@ export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplat
         });
 
         p.bindingContext = obj;
-        TKUnit.waitUntilReady(() => ctrl !== null);
+        TKUnit.waitUntilReady(() => !!ctrl);
         ctrl.selectedIndex = 1;
 
         TKUnit.assert(changed, "Expected result: true!; Actual result: " + changed);
@@ -849,30 +849,29 @@ export function test_EventInTemplate() {
     TKUnit.assert(notified, "Expected the child to raise the test event.");
 }
 
-// TODO(webpack-workflow): Enable this test when https://github.com/NativeScript/nativescript-dev-webpack/issues/865 is resolved
-// export function test_EventInCodelessFragment() {
-//     var pageCode = global.loadModule("./xml-declaration/template-builder-tests/event-in-codeless-fragment");
+export function test_EventInCodelessFragment() {
+    var pageCode = global.loadModule("./xml-declaration/template-builder-tests/event-in-codeless-fragment");
 
-//     var notified = false;
-//     pageCode.setCallback((args) => {
-//         notified = true;
-//     });
+    var notified = false;
+    pageCode.setCallback((args) => {
+        notified = true;
+    });
 
-//     var page = builder.load("./xml-declaration/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
-//     TKUnit.assert(view, "Expected the xml to generate a page");
-//     var templateView = <TemplateView>page.getViewById("template-view");
-//     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
-//     templateView.parseTemplate();
-//     TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
-//     var childTemplateView = <TemplateView>templateView.getChildAt(0);
-//     TKUnit.assert(childTemplateView, "Expected the TemplateView's template to create a child TemplateView.");
-//     childTemplateView.notify({
-//         eventName: "test",
-//         object: childTemplateView
-//     });
+    var page = builder.load("./xml-declaration/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
+    TKUnit.assert(view, "Expected the xml to generate a page");
+    var templateView = <TemplateView>page.getViewById("template-view");
+    TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
+    templateView.parseTemplate();
+    TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
+    var childTemplateView = <TemplateView>templateView.getChildAt(0);
+    TKUnit.assert(childTemplateView, "Expected the TemplateView's template to create a child TemplateView.");
+    childTemplateView.notify({
+        eventName: "test",
+        object: childTemplateView
+    });
 
-//     TKUnit.assert(notified, "Expected the child to raise the test event.");
-// }
+    TKUnit.assert(notified, "Expected the child to raise the test event.");
+}
 
 export function test_tabview_selectedindex_will_work_from_xml() {
     var p = <Page>builder.parse(
