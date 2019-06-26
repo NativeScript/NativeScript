@@ -1,0 +1,6 @@
+<GridLayout rows="* auto">
+    <Frame defaultPage="main/main-page">
+    </Frame>
+
+    <Label text="This is LANDSCAPE app-root" class="root-footer" row="1"/>
+</GridLayout>

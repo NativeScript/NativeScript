@@ -21,6 +21,7 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
+import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
@@ -183,7 +184,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 traceWrite(`Change Handled: Changing CSS for ${this}`, traceCategories.Livesync);
             }
 
-            this.changeCssFile(context.path);
+            // Always load styles with ".css" extension. Even when changes are in ".scss" ot ".less" files
+            const cssModuleName = `${sanitizeModuleName(context.path)}.css`;
+
+            this.changeCssFile(cssModuleName);
 
             return true;
         }

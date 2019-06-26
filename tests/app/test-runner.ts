@@ -91,8 +91,14 @@ allTests["FORMATTEDSTRING"] = formattedStringTests;
 import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
 allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
 
-import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
+import * as qualifierMatcherTests from "./name-resolvers-tests/qualifier-matcher-tests";
+allTests["QUALIFIER-MATCHER"] = qualifierMatcherTests;
+
+import * as fileNameResolverTests from "./name-resolvers-tests/file-name-resolver-tests";
 allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
+
+import * as moduleNameResolverTests from "./name-resolvers-tests/module-name-resolver-tests";
+allTests["MODULE-NAME-RESOLVER"] = moduleNameResolverTests;
 
 import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
 allTests["WEAK-EVENTS"] = weakEventsTests;
@@ -112,10 +118,7 @@ allTests["SCROLL-VIEW"] = scrollViewTests;
 import * as actionBarTests from "./ui/action-bar/action-bar-tests";
 allTests["ACTION-BAR"] = actionBarTests;
 
-//TODO: 13 tests commented out. Reasons:
-// 1. Loading module without XML and bundle is not supported at this moment
-// 2. Using CODEFILE/IMPORT/CSSFILE with bundle is not supported at this moment
-// 3. Attempted to assign to readonly property
+//TODO: 1 test commented out: test_EventInCodelessFragment
 import * as xmlDeclarationTests from "./xml-declaration/xml-declaration-tests";
 allTests["XML-DECLARATION"] = xmlDeclarationTests;
 
@@ -178,6 +181,9 @@ allTests["BORDER"] = borderTests;
 import * as builderTests from "./ui/builder/builder-tests";
 allTests["BUILDER"] = builderTests;
 
+import * as builderFileQualifierTests from "./ui/builder/builder-file-qualifiers-tests";
+allTests["BUILDER-QUALIFIERS"] = builderFileQualifierTests;
+
 import * as buttonTests from "./ui/button/button-tests";
 allTests["BUTTON"] = buttonTests;
 
@@ -220,8 +226,6 @@ allTests["PROGRESS"] = progressTests;
 import * as placeholderTests from "./ui/placeholder/placeholder-tests";
 allTests["PLACEHOLDER"] = placeholderTests;
 
-//TODO: 1 test commented out in page-tests-common. Reason:
-// 1. CSS is not applied when creating Label from code
 import * as pageTests from "./ui/page/page-tests";
 allTests["PAGE"] = pageTests;
 
@@ -293,8 +297,6 @@ allTests["BOTTOM-NAVIGATION-ROOT"] = bottomNavigationRootTests;
 import * as resetRootViewTests from "./ui/root-view/reset-root-view-tests";
 allTests["RESET-ROOT-VIEW"] = resetRootViewTests;
 
-//TODO: 2 test commented out. Reason:
-// 1.Loading module without XML and bundle is not supported at this moment
 import * as rootViewTests from "./ui/root-view/root-view-tests";
 allTests["ROOT-VIEW"] = rootViewTests;
 

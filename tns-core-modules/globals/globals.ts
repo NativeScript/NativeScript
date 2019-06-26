@@ -18,7 +18,13 @@ const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
 (<any>global).moduleResolvers = [global.require];
 
 global.registerModule = function (name: string, loader: ModuleLoader): void {
+    // console.log("[global.registerModule]", name);
     modules.set(name, loader);
+};
+
+global._unregisterModule = function (name: string): void {
+    // console.log("[global._unregisterModule]", name);
+    modules.delete(name);
 };
 
 interface Context {
@@ -29,7 +35,16 @@ interface ExtensionMap {
     [originalFileExtension: string]: string;
 }
 
-const defaultExtensionMap = { ".js": ".js", ".ts": ".js", ".css": ".css", ".scss": ".css", ".xml": ".xml", ".less": ".css", ".sass": ".css" };
+const defaultExtensionMap = {
+    ".js": ".js",
+    ".ts": ".js",
+    ".css": ".css",
+    ".scss": ".css",
+    ".less": ".css",
+    ".sass": ".css",
+    ".xml": ".xml"
+};
+
 global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
     context.keys().forEach(key => {
         const extDotIndex = key.lastIndexOf(".");
@@ -84,8 +99,9 @@ global.moduleExists = function (name: string): boolean {
 global.loadModule = function (name: string): any {
     const loader = modules.get(name);
     if (loader) {
-        return loader();
+        return loader(name);
     }
+
     for (let resolver of (<any>global).moduleResolvers) {
         const result = resolver(name);
         if (result) {
@@ -94,6 +110,10 @@ global.loadModule = function (name: string): any {
             return result;
         }
     }
+};
+
+global.getRegisteredModules = function (): string[] {
+    return Array.from(modules.keys());
 };
 
 global.zonedCallback = function (callback: Function): Function {
