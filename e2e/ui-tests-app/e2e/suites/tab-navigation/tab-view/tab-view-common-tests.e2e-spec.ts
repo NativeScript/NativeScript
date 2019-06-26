@@ -1,11 +1,13 @@
 import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-appium";
 import { TabViewBasePage } from "./tab-view-base-page";
 import { Platform } from "mobile-devices-controller";
+import { setImageName } from "../../../helpers/image-helper";
+import { assert } from "chai";
 
-const suite = "tabs";
-const spec = "tab-view";
+const suite = "tab-navigation";
+const spec = "tab-view-common";
 
-describe(`${suite}-${spec}-common-tests-suite`, async function () {
+describe(`${suite}-${spec}-suite`, async function () {
     let driver: AppiumDriver;
     let tabViewBasePage: TabViewBasePage;
 
@@ -22,8 +24,8 @@ describe(`${suite}-${spec}-common-tests-suite`, async function () {
     });
 
     beforeEach(async function () {
-        tabViewBasePage.imageHelper.setImageName(suite, spec, this.currentTest.title);
-        tabViewBasePage.imageHelper.defualtOptions = {
+        driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
+        driver.imageHelper.options = {
             tolerance: 0.01,
             timeOutSeconds: 5
         };
@@ -40,8 +42,8 @@ describe(`${suite}-${spec}-common-tests-suite`, async function () {
     it(`${spec}-style`, async function () {
         await tabViewBasePage.navigateToSample("tabStyle");
 
-        await tabViewBasePage.imageHelper.compareScreen({ timeOutSeconds: 5, tolerance: 0.01 });
-        await tabViewBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen({ timeOutSeconds: 5, tolerance: 0.01 });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
@@ -49,42 +51,42 @@ describe(`${suite}-${spec}-common-tests-suite`, async function () {
     it(`${spec}-more-items`, async function () {
         await tabViewBasePage.navigateToSample("tabmore");
 
-        await tabViewBasePage.imageHelper.compareScreen();
-        await tabViewBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-icons`, async function () {
         await tabViewBasePage.navigateToSample("tab-view-icons");
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         const rect = await (await driver.waitForElement("automatic")).getActualRectangle();
 
         await driver.clickPoint(rect.x + 10, rect.y + 10);
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         await driver.clickPoint(rect.x + 10, rect.y + 10);
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         await driver.clickPoint(rect.x + 10, rect.y + 10);
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
-        await tabViewBasePage.imageHelper.assertImages();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-fonts`, async function () {
         await tabViewBasePage.navigateToSample("text-transform");
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         await (await driver.waitForElement("apply")).tap();
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         await (await driver.waitForElement("reset")).tap();
-        await tabViewBasePage.imageHelper.compareScreen();
-        await tabViewBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
@@ -96,13 +98,13 @@ describe(`${suite}-${spec}-common-tests-suite`, async function () {
 
         let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
         await btns[index].tap();
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         btns = await driver.findElementsByClassName(driver.locators.button, 5000);
         await btns[index - 1].tap();
-        await tabViewBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
-        await tabViewBasePage.imageHelper.assertImages();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();
     });

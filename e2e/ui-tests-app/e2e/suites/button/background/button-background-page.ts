@@ -1,9 +1,8 @@
 import { AppiumDriver, logInfo, logError } from "nativescript-dev-appium";
 import { Platform } from "mobile-devices-controller";
-import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { PageObjectBaseModel } from "../../../page-object-base-model";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
-
+import { assert } from "chai";
 export class ButtonBackgroundPage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver) {
@@ -47,7 +46,7 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
     async executeScenario(imageName: string, button: string) {
         const presenter = await this.testElement();
         await this.tapBtn(button);
-        await this.imageHelper.compareElement(presenter, { imageName: imageName, tolerance: 0.1, timeOutSeconds: 5 });
-        this.imageHelper.assertImages();
+        await this._driver.imageHelper.compareElement(presenter, { imageName: imageName, tolerance: 0.1, timeOutSeconds: 5 });
+        assert.isTrue(this._driver.imageHelper.hasImageComparisonPassed());
     }
 }

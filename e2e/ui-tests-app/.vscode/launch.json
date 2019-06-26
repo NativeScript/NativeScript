@@ -15,7 +15,7 @@
                 "--colors",
                 "--opts",
                 "../config/mocha.opts",
-                "--grep=bottom-navigation",
+                "--grep=tab-view",
                 "-a",
 
             ],
