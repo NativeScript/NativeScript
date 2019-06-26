@@ -15,6 +15,7 @@ declare namespace NodeJS {
         android?: any;
         require(id: string): any;
         registerModule(name: string, loader: ((name: string) => any)): void;
+        _unregisterModule(name: string): void;
         /**
          * Register all modules from a webpack context.
          * The context is one created using the following webpack utility:
@@ -45,6 +46,7 @@ declare namespace NodeJS {
         loadModule(name: string): any;
         moduleExists(name: string): boolean;
         moduleMerge(sourceExports: any, destExports: any): void;
+        getRegisteredModules(): string[];
         onGlobalLayoutListener: any;
         zonedCallback(callback: Function): Function;
         Reflect?: any;
