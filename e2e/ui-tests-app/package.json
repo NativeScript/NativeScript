@@ -2,7 +2,7 @@
   "nativescript": {
     "id": "org.nativescript.uitestsapp",
     "tns-android": {
-      "version": "6.0.0-2019-06-24-113546-01"
+      "version": "next"
     },
     "tns-ios": {
       "version": "next"

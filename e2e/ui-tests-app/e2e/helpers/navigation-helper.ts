@@ -93,7 +93,10 @@ export class NavigationHelper {
 
     async navigateBackToSuitMainPage() {
         logInfo(`Navigate to back`);
-        this._currentSuite = this._currentSuite.parent;
+        if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce
+            || this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
+            this._currentSuite = this._currentSuite && this._currentSuite.parent;
+        }
         await this._driver.navBack();
     }
 

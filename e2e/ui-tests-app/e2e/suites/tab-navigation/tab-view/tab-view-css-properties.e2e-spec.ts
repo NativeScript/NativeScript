@@ -3,11 +3,13 @@ import { TabViewBasePage } from "./tab-view-base-page";
 import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { Platform } from "mobile-devices-controller";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
+import { setImageName } from "../../../helpers/image-helper";
+import { assert } from "chai";
 
-const suite = "tabs";
-const spec = "tab-view";
+const suite = "tab-navigation";
+const spec = "tab-view-css";
 
-describe(`${suite}-${spec}-css-suite`, async function () {
+describe(`${suite}-${spec}-suite`, async function () {
     let driver: AppiumDriver;
     let tabViewBasePage: TabViewBasePage;
 
@@ -35,7 +37,7 @@ describe(`${suite}-${spec}-css-suite`, async function () {
     });
 
     beforeEach(function () {
-        tabViewBasePage.imageHelper.setImageName(suite, spec, this.currentTest.title);
+        driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
     });
 
     afterEach(async function () {
@@ -57,14 +59,14 @@ describe(`${suite}-${spec}-css-suite`, async function () {
             const scenarioBtn = await driver.waitForElement(sample);
             await scenarioBtn.click();
             await driver.wait(2000);
-            await tabViewBasePage.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
+            await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
             if (sample === "All") {
                 const tabTwo = await driver.waitForElement("twO");
                 await driver.wait(2000);
 
-                await tabViewBasePage.imageHelper.compareElement(tabTwo, { timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
+                await driver.imageHelper.compareElement(tabTwo, { timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
             }
-            tabViewBasePage.imageHelper.assertImages();
+            assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         });
     }
 });

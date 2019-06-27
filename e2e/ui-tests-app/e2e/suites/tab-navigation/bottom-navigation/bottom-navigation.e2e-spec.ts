@@ -1,11 +1,13 @@
 import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-appium";
 import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
 import { Platform } from "mobile-devices-controller";
+import { assert } from "chai";
+import { setImageName } from "../../../helpers/image-helper";
 
 const suite = "tab-navigation";
 const spec = "bottom-navigation";
 
-describe(`${suite}-${spec}-tests-suite`, async function () {
+describe(`${suite}-${spec}-suite`, async function () {
     let driver: AppiumDriver;
     let bottomNavigationBasePage: BottomNavigationBasePage;
 
@@ -22,10 +24,11 @@ describe(`${suite}-${spec}-tests-suite`, async function () {
     });
 
     beforeEach(async function () {
-        bottomNavigationBasePage.imageHelper.setImageName(suite, spec, this.currentTest.title);
-        bottomNavigationBasePage.imageHelper.defualtOptions = {
+        driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
+        driver.imageHelper.options = {
             tolerance: 0.01,
-            timeOutSeconds: 5
+            timeOutSeconds: 5,
+            preserveImageName: true
         };
     });
 
@@ -40,23 +43,23 @@ describe(`${suite}-${spec}-tests-suite`, async function () {
     it(`${spec}-background-color`, async function () {
         await bottomNavigationBasePage.navigateToSample("background-color");
 
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-bottom-navigation`, async function () {
         await bottomNavigationBasePage.navigateToSample("bottom-navigation");
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-color`, async function () {
         await bottomNavigationBasePage.navigateToSample("color");
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
@@ -67,42 +70,42 @@ describe(`${suite}-${spec}-tests-suite`, async function () {
 
         let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
         await btns[index].tap();
-        await bottomNavigationBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
         btns = await driver.findElementsByClassName(driver.locators.button, 5000);
         await btns[index - 1].tap();
-        await bottomNavigationBasePage.imageHelper.compareScreen();
+        await driver.imageHelper.compareScreen();
 
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-icon-title-placment`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-title-placement");
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-issue-5470`, async function () {
         await bottomNavigationBasePage.navigateToSample("issue-5470");
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-swipe-enabled`, async function () {
         await bottomNavigationBasePage.navigateToSample("swipe-enabled");
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
-    it(`${spec}-tab-position`, async function () {
-        await bottomNavigationBasePage.navigateToSample("tab-position");
-        await bottomNavigationBasePage.imageHelper.compareScreen();
-        await bottomNavigationBasePage.imageHelper.assertImages();
+    it(`${spec}-tabs-position`, async function () {
+        await bottomNavigationBasePage.navigateToSample("tabs-position");
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 });

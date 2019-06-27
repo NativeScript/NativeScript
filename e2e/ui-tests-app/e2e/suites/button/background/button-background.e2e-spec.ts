@@ -1,8 +1,9 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
+import { assert } from "chai";
 
-const suite = "tab-navigation";
-const spec = "bottom-navigation";
+const suite = "button";
+const spec = "background";
 
 describe(`${suite}-${spec}-suite`, () => {
     let driver: AppiumDriver;
@@ -21,19 +22,21 @@ describe(`${suite}-${spec}-suite`, () => {
     });
 
     beforeEach(function () {
-        backgroundPage.imageHelper.setImageName(suite, spec, this.currentTest.title);
+        driver.imageHelper.testName = this.currentTest.title;
     });
 
     afterEach(async function () {
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
+            await driver.resetApp();
+            await backgroundPage.initSuite();
         }
     });
 
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
-        backgroundPage.imageHelper.assertImages();
+        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
     });
 
     it("background_12", async function () {
@@ -43,8 +46,8 @@ describe(`${suite}-${spec}-suite`, () => {
     it("background_13", async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
-        backgroundPage.imageHelper.assertImages();
+        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
     });
 
     // Border
